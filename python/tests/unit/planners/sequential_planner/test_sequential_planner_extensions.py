@@ -64,18 +64,18 @@ async def test_can_call_get_available_functions_with_functions():
     kernel = Kernel()
     functions_view = FunctionsView()
     function_view = KernelFunctionMetadata(
-        "functionName",
-        "pluginName",
-        "description",
-        [],
+        name="functionName",
+        plugin_name="pluginName",
+        description="description",
+        parameters=[],
         is_semantic=True,
         is_asynchronous=False,
     )
     native_function_view = KernelFunctionMetadata(
-        "nativeFunctionName",
-        "pluginName",
-        "description",
-        [],
+        name="nativeFunctionName",
+        plugin_name="pluginName",
+        description="description",
+        parameters=[],
         is_semantic=False,
         is_asynchronous=False,
     )
@@ -132,18 +132,18 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Arrange FunctionView
     functions_view = FunctionsView()
     function_view = KernelFunctionMetadata(
-        "functionName",
-        "pluginName",
-        "description",
-        [],
+        name="functionName",
+        plugin_name="pluginName",
+        description="description",
+        parameters=[],
         is_semantic=True,
         is_asynchronous=False,
     )
     native_function_view = KernelFunctionMetadata(
-        "nativeFunctionName",
-        "pluginName",
-        "description",
-        [],
+        name="nativeFunctionName",
+        plugin_name="pluginName",
+        description="description",
+        parameters=[],
         is_semantic=False,
         is_asynchronous=False,
     )

@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Opti
 
 from pydantic import Field, StringConstraints
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -86,6 +88,7 @@ class KernelFunction(KernelBaseModel):
     is_semantic: bool = Field(...)
     stream_function: Optional[Callable[..., Any]] = Field(default=None)
     parameters: List[KernelParameterMetadata] = Field(...)
+    return_parameter: Optional[KernelParameterMetadata] = None
     function: Callable[..., Any] = Field(...)
     plugins: Optional["KernelPluginCollection"] = Field(default=None)
     ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]] = Field(default=None)
@@ -100,14 +103,14 @@ class KernelFunction(KernelBaseModel):
         plugin_name: str,
         function_name: str,
         is_semantic: bool,
-        delegate_stream_function: Optional[Callable[..., Any]] = None,
+        return_parameter: Optional[KernelParameterMetadata] = None,
+        stream_function: Optional[Callable[..., Any]] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         """
         Initializes a new instance of the KernelFunction class
 
         Args:
-            delegate_type (DelegateTypes): The delegate type for the function
             delegate_function (Callable[..., Any]): The delegate function for the function
             parameters (List[ParameterView]): The parameters for the function
             description (str): The description for the function
@@ -122,11 +125,12 @@ class KernelFunction(KernelBaseModel):
         super().__init__(
             function=function,
             parameters=parameters,
+            return_parameter=return_parameter,
             description=description,
             plugin_name=plugin_name,
             name=function_name,
             is_semantic=is_semantic,
-            stream_function=delegate_stream_function,
+            stream_function=stream_function,
             chat_prompt_template=chat_prompt_template,
         )
 
@@ -330,34 +334,6 @@ class KernelFunction(KernelBaseModel):
             chat_prompt_template=function_config.prompt_template if function_config.has_chat_prompt else None,
         )
 
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def plugin_name(self) -> str:
-        return self._plugin_name
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-    @property
-    def parameters(self) -> List[KernelParameterMetadata]:
-        return self._parameters
-
-    @property
-    def is_semantic(self) -> bool:
-        return self._is_semantic
-
-    @property
-    def is_native(self) -> bool:
-        return not self._is_semantic
-
-    @property
-    def prompt_execution_settings(self) -> PromptExecutionSettings:
-        return self._ai_prompt_execution_settings
-
     def set_default_plugin_collection(self, plugins: "KernelPluginCollection") -> "KernelFunction":
         self.plugins = plugins
         return self
@@ -392,7 +368,7 @@ class KernelFunction(KernelBaseModel):
         return KernelFunctionMetadata(
             name=self.name,
             plugin_name=self.plugin_name,
-            description=self.description,
+            description=self.description or "",
             is_semantic=self.is_semantic,
             parameters=self.parameters,
         )
@@ -411,7 +387,7 @@ class KernelFunction(KernelBaseModel):
     ) -> "FunctionResult":
         function_arguments = self.gather_function_parameters(kernel, arguments)
         try:
-            result = self._function(**function_arguments)
+            result = self.function(**function_arguments)
             if isawaitable(result):
                 result = await result
         except Exception as e:
@@ -421,7 +397,7 @@ class KernelFunction(KernelBaseModel):
             )
         logger.debug("Function result: %s", result)
         logger.debug("Function result type %s", type(result))
-        if self._return_parameter and self._return_parameter.type_ == "FunctionResult":
+        if self.return_parameter and self.return_parameter.type_ == "FunctionResult":
             return result
         return FunctionResult(function=self.describe(), value=result)
 
@@ -434,11 +410,11 @@ class KernelFunction(KernelBaseModel):
         Yields:
             StreamingKernelContent or FunctionResult -- The results of the function, if there is an error a FunctionResult is yielded.
         """
-        if not self._stream_function:
+        if not self.stream_function:
             raise ValueError("Function does not support streaming")
         function_arguments = self.gather_function_parameters(kernel, arguments)
         try:
-            async for stream_msg in self._stream_function(**function_arguments):
+            async for stream_msg in self.stream_function(**function_arguments):
                 yield stream_msg
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
@@ -450,17 +426,17 @@ class KernelFunction(KernelBaseModel):
         # TODO: replace with service selector
         if arguments.execution_settings and len(arguments.execution_settings) > 1:
             exec_settings = (
-                arguments.execution_settings[self._ai_service.ai_model_id]
-                if self._ai_service.ai_model_id in arguments.execution_settings
-                else self._ai_prompt_execution_settings
+                arguments.execution_settings[self.ai_service.ai_model_id]
+                if self.ai_service.ai_model_id in arguments.execution_settings
+                else self.prompt_execution_settings
             )
         elif arguments.execution_settings and len(arguments.execution_settings) == 1:
             exec_settings = list(arguments.execution_settings.values())[0]
         else:
-            exec_settings = self._ai_prompt_execution_settings
+            exec_settings = self.prompt_execution_settings
 
         function_arguments = {}
-        for param in self._parameters:
+        for param in self.parameters:
             if param.name == "function":
                 function_arguments[param.name] = self.describe()
                 continue
@@ -468,7 +444,7 @@ class KernelFunction(KernelBaseModel):
                 function_arguments[param.name] = kernel
                 continue
             if param.name == "client":
-                function_arguments[param.name] = self._ai_service
+                function_arguments[param.name] = self.ai_service
                 continue
             if param.name == "request_settings":
                 function_arguments[param.name] = exec_settings

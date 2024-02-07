@@ -28,7 +28,7 @@ async def test_invoke_plan_constructed_with_function():
     test_function = plugin["uppercase"]
 
     plan = Plan(name="test", function=test_function)
-    result = await plan.invoke(kernel, KernelArguments(text="hello world "))
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
     assert str(result) == "HELLO WORLD "
 
 
@@ -44,7 +44,8 @@ async def test_invoke_empty_plan_with_added_function_step():
 
     plan = Plan(name="test")
     plan.add_steps([test_function])
-    result = await plan.invoke(kernel, KernelArguments(text="hello world "))
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
+    print(result)
     assert str(result) == "HELLO WORLD "
 
 
@@ -61,7 +62,7 @@ async def test_invoke_empty_plan_with_added_plan_step():
     plan = Plan(name="test")
     new_step = Plan(name="test", function=test_function)
     plan.add_steps([new_step])
-    result = await plan.invoke(kernel, KernelArguments(text="hello world "))
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
     assert str(result) == "HELLO WORLD "
 
 
@@ -80,12 +81,12 @@ async def test_invoke_multi_step_plan():
     new_step = Plan(name="test", function=test_function)
     new_step2 = Plan(name="test", function=test_function2)
     plan.add_steps([new_step, new_step2])
-    result = await plan.invoke(kernel, KernelArguments(text="hello world "))
+    result = await plan.invoke(kernel, KernelArguments(input="hello world "))
     assert str(result) == "HELLO WORLD"
 
 
 @pytest.mark.asyncio
-async def test_invoke_multi_step_plan_async_with_variables():
+async def test_invoke_multi_step_plan_with_arguments():
     # create a kernel
     kernel = sk.Kernel()
 

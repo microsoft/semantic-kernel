@@ -169,14 +169,7 @@ class ActionPlanner:
         return dedent(
             """
             [EXAMPLE]
-            - List of functions:
-            // Read a file.
-            FileIOPlugin.ReadAsync
-            Parameter ""path"": Source file.
-            // Write a file.
-            FileIOPlugin.WriteAsync
-            Parameter ""path"": Destination file. (default value: sample.txt)
-            Parameter ""content"": File content.
+            - List of functions:            
             // Get the current time.
             TimePlugin.Time
             No parameters.
@@ -184,14 +177,11 @@ class ActionPlanner:
             HttpPlugin.PostAsync
             Parameter ""body"": The body of the request.
             - End list of functions.
-            Goal: create a file called ""something.txt"".
+            Goal: get the current time.
             {""plan"":{
-            ""rationale"": ""the list contains a function that allows to create files"",
-            ""function"": ""FileIOPlugin.WriteAsync"",
-            ""parameters"": {
-            ""path"": ""something.txt"",
-            ""content"": null
-            }}}
+            ""rationale"": ""the list contains a function that gets the current time (now)"",
+            ""function"": ""TimePlugin.Time""
+            }}
             #END-OF-PLAN
             """
         )

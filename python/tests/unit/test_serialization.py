@@ -7,7 +7,6 @@ from pydantic import Field, Json
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
-from semantic_kernel.core_plugins.file_io_plugin import FileIOPlugin
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
@@ -142,7 +141,6 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 PROTOCOLS = [
     pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
-    FileIOPlugin,
     HttpPlugin,
     MathPlugin,
     TextMemoryPlugin,

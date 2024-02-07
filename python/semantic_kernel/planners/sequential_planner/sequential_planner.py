@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-from typing import TYPE_CHECKING
 
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
@@ -25,9 +25,6 @@ from semantic_kernel.prompt_template.semantic_function_config import (
     SemanticFunctionConfig,
 )
 
-if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_function import KernelFunction
-
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
     + "fulfill the request using functions. This ability is also known as decision making and function flow"
@@ -47,14 +44,9 @@ class SequentialPlanner:
     RESTRICTED_PLUGIN_NAME = "SequentialPlanner_Excluded"
 
     config: SequentialPlannerConfig
-<<<<<<< HEAD
-    _context: "KernelContext"
-    _function_flow_function: "KernelFunction"
-=======
     _kernel: "Kernel"
     _arguments: "KernelArguments"
-    _function_flow_function: "KernelFunctionBase"
->>>>>>> bc222ed61 (WIP on planners)
+    _function_flow_function: "KernelFunction"
 
     def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):
         assert isinstance(kernel, Kernel)

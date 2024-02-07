@@ -15,17 +15,17 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function_base import KernelFunctionBase
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_exception import KernelException
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Plan(KernelFunctionBase):
+class Plan:
     _state: KernelArguments = PrivateAttr()
     _steps: List["Plan"] = PrivateAttr()
-    _function: KernelFunctionBase = PrivateAttr()
+    _function: KernelFunction = PrivateAttr()
     _parameters: KernelArguments = PrivateAttr()
     _outputs: List[str] = PrivateAttr()
     _has_next_step: bool = PrivateAttr()
@@ -111,7 +111,7 @@ class Plan(KernelFunctionBase):
         self._steps = [] if steps is None else steps
         self._has_next_step = len(self._steps) > 0
         self._is_semantic = None
-        self._function = None if function is None else function
+        self._function = function or None
         self._prompt_execution_settings = None
 
         if function is not None:
@@ -146,6 +146,8 @@ class Plan(KernelFunctionBase):
         Returns:
             KernelContext: The updated context.
         """
+        if not arguments:
+            arguments = KernelArguments()
         if self._function is not None:
             try:
                 result = await self._function.invoke(kernel=kernel, arguments=arguments)
@@ -161,13 +163,26 @@ class Plan(KernelFunctionBase):
             return result
         else:
             # loop through steps until completion
+            partial_results = []
             while self.has_next_step:
                 function_arguments = copy(arguments)
                 self.add_variables_to_state(self._state, function_arguments)
-                await self.invoke_next_step(kernel, function_arguments)
-                self.update_arguments_with_outputs(arguments)
+                logger.error(
+                    "Invoking next step: "
+                    + str(self._steps[self._next_step_index].name)
+                    + " with arguments: "
+                    + str(function_arguments)
+                )
+                result = await self.invoke_next_step(kernel, function_arguments)
+                if result:
+                    partial_results.append(result)
+                    self._state[Plan.DEFAULT_RESULT_KEY] = str(result)
+                    arguments = self.update_arguments_with_outputs(arguments)
+                    logger.error(f"updated arguments: {arguments}")
 
-        return FunctionResult(function=self.describe(), value=arguments)
+            result_string = str(partial_results[-1]) if len(partial_results) > 0 else ""
+
+            return FunctionResult(function=self.describe(), value=result_string, metadata={"results": partial_results})
 
     def set_ai_configuration(
         self,
@@ -233,53 +248,46 @@ class Plan(KernelFunctionBase):
         self,
         kernel: Kernel,
         arguments: KernelArguments,
-    ) -> "Plan":
+    ) -> Optional["FunctionResult"]:
         return await self.invoke_next_step(kernel, arguments)
 
-    async def invoke_next_step(self, kernel: Kernel, arguments: KernelArguments) -> "Plan":
-        if self.has_next_step:
-            step = self._steps[self._next_step_index]
+    async def invoke_next_step(self, kernel: Kernel, arguments: KernelArguments) -> Optional["FunctionResult"]:
+        if not self.has_next_step:
+            return None
+        step = self._steps[self._next_step_index]
 
-            # merge the state with the current context variables for step execution
-            arguments = self.get_next_step_arguments(arguments, step)
+        # merge the state with the current context variables for step execution
+        arguments = self.get_next_step_arguments(arguments, step)
 
-            try:
-                result = await step.invoke(kernel, arguments)
-            except Exception as exc:
-                raise KernelException(
-                    KernelException.ErrorCodes.FunctionInvokeError,
-                    "Error occurred while running plan step: " + str(exc),
-                    exc,
-                ) from exc
+        try:
+            result = await step.invoke(kernel, arguments)
+        except Exception as exc:
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionInvokeError,
+                "Error occurred while running plan step: " + str(exc),
+                exc,
+            ) from exc
 
-            # Update state with result
-            self._state["input"] = str(result)
+        # Update state with result
+        self._state["input"] = str(result)
 
-            # Update plan result in state with matching outputs (if any)
-            if set(self._outputs).intersection(set(step._outputs)):
-                current_plan_result = ""
-                if Plan.DEFAULT_RESULT_KEY in self._state:
-                    current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
-                self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + result_value
+        # Update plan result in state with matching outputs (if any)
+        if set(self._outputs).intersection(set(step._outputs)):
+            current_plan_result = ""
+            if Plan.DEFAULT_RESULT_KEY in self._state:
+                current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
+            self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(result)
 
-            # Update state with outputs (if any)
-            # for output in step._outputs:
-            #     if output in result.variables.variables:
-            #         self._state.set(output, result.variables[output])
-            #     else:
-            #         self._state.set(output, result_value)
-
-            # Increment the step
-            self._next_step_index += 1
-
-        return self
+        # Increment the step
+        self._next_step_index += 1
+        return result
 
     def add_variables_to_state(self, state: KernelArguments, variables: KernelArguments) -> None:
         for key in variables.keys():
             if key not in state.keys():
                 state[key] = variables[key]
 
-    def update_arguments_with_outputs(self, arguments: KernelArguments) -> None:
+    def update_arguments_with_outputs(self, arguments: KernelArguments) -> KernelArguments:
         if Plan.DEFAULT_RESULT_KEY in self._state:
             result_string = self._state[Plan.DEFAULT_RESULT_KEY]
         else:
@@ -292,64 +300,73 @@ class Plan(KernelFunctionBase):
                 arguments[item] = self._state[item]
             else:
                 arguments[item] = result_string
+        return arguments
 
     def get_next_step_arguments(self, arguments: KernelArguments, step: "Plan") -> KernelArguments:
         # Priority for Input
         # - Parameters (expand from variables if needed)
-        # - KernelContext.Variables
+        # - KernelArguments
         # - Plan.State
         # - Empty if sending to another plan
         # - Plan.Description
-        input_string = ""
+        input_ = None
         step_input_value = step._parameters.get("input")
         variables_input_value = arguments.get("input")
         state_input_value = self._state.get("input")
         if step_input_value and step_input_value != "":
-            input_string = self.expand_from_arguments(arguments, step_input_value)
+            input_ = step_input_value
         elif variables_input_value and variables_input_value != "":
-            input_string = variables_input_value
+            input_ = variables_input_value
         elif state_input_value and state_input_value != "":
-            input_string = state_input_value
+            input_ = state_input_value
         elif len(step._steps) > 0:
-            input_string = ""
+            input_ = ""
         elif self._description is not None and self._description != "":
-            input_string = self._description
+            input_ = self._description
 
-        step_variables = KernelArguments(input=input_string)
+        step_arguments = KernelArguments(input=input_)
+        logger.debug(f"Step input: {step_arguments}")
 
         # Priority for remaining stepVariables is:
         # - Function Parameters (pull from variables or state by a key value)
         # - Step Parameters (pull from variables or state by a key value)
         # - All other variables. These are carried over in case the function wants access to the ambient content.
         function_params = step.describe()
-        for param in function_params.parameters:
-            if param.name in arguments:
-                step_variables[param.name] = arguments[param.name]
-            elif param.name in self._state and (self._state[param.name] is not None and self._state[param.name] != ""):
-                step_variables[param.name] = self._state[param.name]
+        if function_params:
+            logger.debug(f"Function parameters: {function_params.parameters}")
+            for param in function_params.parameters:
+                if param.name in arguments:
+                    step_arguments[param.name] = arguments[param.name]
+                elif param.name in self._state and (
+                    self._state[param.name] is not None and self._state[param.name] != ""
+                ):
+                    step_arguments[param.name] = self._state[param.name]
+        logger.debug(f"Added other parameters: {step_arguments}")
 
         for param_name, param_val in step.parameters.items():
-            if param_name in step_variables:
+            if param_name in step_arguments:
                 continue
 
             if param_name in arguments:
-                step_variables[param_name] = param_val
+                step_arguments[param_name] = param_val
             elif param_name in self._state:
-                step_variables[param_name] = self._state[param_name]
+                step_arguments[param_name] = self._state[param_name]
             else:
                 expanded_value = self.expand_from_arguments(arguments, param_val)
-                step_variables[param_name] = expanded_value
+                step_arguments[param_name] = expanded_value
 
         for item in arguments:
-            if item not in step_variables:
-                step_variables[item] = arguments[item]
+            if item not in step_arguments:
+                step_arguments[item] = arguments[item]
 
-        return step_variables
+        logger.debug(f"Final step arguments: {step_arguments}")
 
-    def expand_from_arguments(self, arguments: KernelArguments, input_string: str) -> str:
-        result = input_string
+        return step_arguments
+
+    def expand_from_arguments(self, arguments: KernelArguments, input_from_step: Any) -> str:
+        result = input_from_step
         variables_regex = r"\$(?P<var>\w+)"
-        matches = [m for m in re.finditer(variables_regex, input_string)]
+        matches = [m for m in re.finditer(variables_regex, str(input_from_step))]
         ordered_matches = sorted(matches, key=lambda m: len(m.group("var")), reverse=True)
 
         for match in ordered_matches:

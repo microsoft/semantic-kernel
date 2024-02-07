@@ -23,17 +23,17 @@ def test_init_native_function_with_input_description():
 
     native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
-    assert native_function._function == mock_method
-    assert native_function._parameters[0].name == "input"
-    assert native_function._parameters[0].description == "input"
-    assert not native_function._parameters[0].default_value
-    assert native_function._parameters[0].type_ == "str"
-    assert native_function._parameters[0].required is True
-    assert native_function._parameters[1].name == "arguments"
-    assert native_function._parameters[1].description == ""
-    assert not native_function._parameters[1].default_value
-    assert native_function._parameters[1].type_ == "KernelArguments"
-    assert native_function._parameters[1].required is True
+    assert native_function.function == mock_method
+    assert native_function.parameters[0].name == "input"
+    assert native_function.parameters[0].description == "input"
+    assert not native_function.parameters[0].default_value
+    assert native_function.parameters[0].type_ == "str"
+    assert native_function.parameters[0].required is True
+    assert native_function.parameters[1].name == "arguments"
+    assert native_function.parameters[1].description == ""
+    assert not native_function.parameters[1].default_value
+    assert native_function.parameters[1].type_ == "KernelArguments"
+    assert native_function.parameters[1].required is True
 
 
 def test_init_native_function_without_input_description():
@@ -57,12 +57,12 @@ def test_init_native_function_without_input_description():
 
     native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
-    assert native_function._function == mock_method
-    assert native_function._parameters[0].name == "arguments"
-    assert native_function._parameters[0].description == "Param 1 description"
-    assert native_function._parameters[0].default_value == "default_param1_value"
-    assert native_function._parameters[0].type_ == "str"
-    assert native_function._parameters[0].required is True
+    assert native_function.function == mock_method
+    assert native_function.parameters[0].name == "arguments"
+    assert native_function.parameters[0].description == "Param 1 description"
+    assert native_function.parameters[0].default_value == "default_param1_value"
+    assert native_function.parameters[0].type_ == "str"
+    assert native_function.parameters[0].required is True
 
 
 def test_init_native_function_from_kernel_function_decorator():
@@ -79,12 +79,12 @@ def test_init_native_function_from_kernel_function_decorator():
 
     native_function = KernelFunction.from_native_method(decorated_function, "MockPlugin")
 
-    assert native_function._function == decorated_function
-    assert native_function._parameters[0].name == "input"
-    assert native_function._parameters[0].description == "Test input description"
-    assert native_function._parameters[0].default_value == "test_default_value"
-    assert native_function._parameters[0].type_ == "str"
-    assert native_function._parameters[0].required is False
+    assert native_function.function == decorated_function
+    assert native_function.parameters[0].name == "input"
+    assert native_function.parameters[0].description == "Test input description"
+    assert native_function.parameters[0].default_value == "test_default_value"
+    assert native_function.parameters[0].type_ == "str"
+    assert native_function.parameters[0].required is False
 
 
 def test_init_native_function_from_kernel_function_decorator_defaults():

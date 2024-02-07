@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -52,7 +53,14 @@ async def test_it_can_create_plan(goal):
     kernel.plugins = KernelPluginCollection()
     mock_functions = []
     for name, pluginName, description, isSemantic in input:
-        function_view = KernelFunctionMetadata(name, pluginName, description, [], isSemantic, True)
+        function_view = KernelFunctionMetadata(
+            name=name,
+            plugin_name=pluginName,
+            description=description,
+            parameters=[],
+            is_semantic=isSemantic,
+            is_asynchronous=True,
+        )
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
         mock_function.invoke.return_value = FunctionResult(

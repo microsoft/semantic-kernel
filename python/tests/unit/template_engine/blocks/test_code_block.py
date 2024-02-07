@@ -35,7 +35,7 @@ class TestCodeBlock:
 
         function = KernelFunction(
             function_name="funcName",
-            plugin_name="",
+            plugin_name="pluginName",
             description="",
             function=invoke,
             parameters=[],
@@ -46,6 +46,8 @@ class TestCodeBlock:
         dkp = KernelPlugin(name="test", functions=[function])
         plugins = KernelPluginCollection()
         plugins.add(dkp)
+        kernel = Kernel()
+        kernel.plugins = plugins
 
         # Create a context with the variables, memory, and plugin collection
 
@@ -54,7 +56,7 @@ class TestCodeBlock:
         )
 
         with raises(ValueError):
-            await target.render_code(self.kernel, KernelArguments())
+            await target.render_code(kernel, KernelArguments())
 
     def test_it_has_the_correct_type(self):
         assert (
@@ -192,7 +194,7 @@ class TestCodeBlock:
         # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
             function_name="funcName",
-            plugin_name="",
+            plugin_name="pluginName",
             description="",
             function=invoke,
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
@@ -248,7 +250,7 @@ class TestCodeBlock:
         # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
             function=invoke,
-            plugin_name="",
+            plugin_name="pluginName",
             function_name="funcName",
             description="",
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
@@ -294,7 +296,7 @@ class TestCodeBlock:
         # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
             function=invoke,
-            plugin_name="",
+            plugin_name="pluginName",
             function_name="funcName",
             description="",
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
