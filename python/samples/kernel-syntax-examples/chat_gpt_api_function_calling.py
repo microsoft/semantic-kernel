@@ -11,7 +11,7 @@ from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_promp
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
-    get_function_calling_object,
+    get_tool_call_object,
 )
 from semantic_kernel.core_plugins import MathPlugin
 
@@ -30,8 +30,9 @@ you will return a full answer to me as soon as possible.
 
 kernel = sk.Kernel()
 
+# Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-api_version = "2023-07-01-preview"
+api_version = "2023-12-01-preview"
 kernel.add_chat_service(
     "chat-gpt",
     sk_oai.AzureChatCompletion(
@@ -55,16 +56,17 @@ kernel.import_plugin(MathPlugin(), plugin_name="math")
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 prompt_config = sk.PromptTemplateConfig(
-    execution_settings=sk_oai.AzureChatRequestSettings(
+    execution_settings=sk_oai.AzureChatPromptExecutionSettings(
         service_id="chat-gpt",
         ai_model_id=deployment_name,
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        function_call="auto",
-        functions=get_function_calling_object(kernel, {"exclude_plugin": ["ChatBot"]}),
+        tool_choice="auto",
+        tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
     )
 )
+
 prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 prompt_template.add_system_message(system_message)
 prompt_template.add_user_message("Hi there, who are you?")

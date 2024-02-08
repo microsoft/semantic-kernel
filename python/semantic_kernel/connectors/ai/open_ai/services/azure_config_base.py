@@ -127,6 +127,3 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         )
         base.update(client_settings)
         return base
-
-    def get_model_args(self) -> Dict[str, Any]:
-        return {"model": self.ai_model_id}

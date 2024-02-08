@@ -41,7 +41,7 @@ internal static class KernelHelpersUtils
         // Thus, we try to get the value from the kernel arguments dictionary.
         if (argument is UndefinedBindingResult result)
         {
-            return kernelArguments.TryGetValue(result.Value, out var variable) ? variable : result.Value;
+            return kernelArguments.TryGetValue(result.Value, out var variable) ? variable : null;
         }
 
         return argument;

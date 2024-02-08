@@ -15,8 +15,7 @@ Add Semantic Kernel events to your calendar - we're running two community calls 
 * Americas timezone: download the [calendar.ics](https://aka.ms/sk-community-calendar) file.
 * Asia Pacific timezone: download the [calendar-APAC.ics](https://aka.ms/sk-community-calendar-apac) file.
 
-To keep topics organized, please submit what you'd like us to cover here:
-[https://forms.office.com/r/BbXFzmmFys](https://forms.office.com/r/BbXFzmmFys)
+If you have any questions or if you would like to showcase your project(s), please email what you'd like us to cover here: skofficehours[at]microsoft.com.
 
 If you are unable to make it live, all meetings will be recorded and posted online.
 

@@ -245,7 +245,7 @@ internal sealed class Agent : IAgent
                 new AgentResponse
                 {
                     ThreadId = thread.Id,
-                    Message = string.Concat(messages.Select(m => m.Content)),
+                    Message = string.Join(Environment.NewLine, messages.Select(m => m.Content)),
                 };
 
             return response;
