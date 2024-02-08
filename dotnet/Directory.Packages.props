@@ -22,9 +22,9 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
-    <PackageVersion Include="System.ClientModel" Version="1.0.0" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+    <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.1" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
