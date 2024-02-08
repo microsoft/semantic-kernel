@@ -160,14 +160,26 @@ public sealed class OpenAIFileService
     private async Task<Stream> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
     {
         using var request = HttpRequest.CreateGetRequest(url);
-        using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        return await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return
+                new HttpResponseStream(
+                    await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false),
+                    response);
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
+        }
     }
 
     private async Task<TModel> ExecutePostRequestAsync<TModel>(string url, HttpContent payload, CancellationToken cancellationToken)
     {
-        using var response = await this._httpClient.PostAsync(url, payload, cancellationToken).ConfigureAwait(false);
+        using var request = HttpRequest.CreatePostRequest(url, payload);
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
