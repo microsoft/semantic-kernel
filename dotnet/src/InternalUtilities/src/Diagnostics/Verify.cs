@@ -83,7 +83,7 @@ internal static class Verify
         NotNullOrWhiteSpace(filename);
         if (!s_filenameRegex.IsMatch(filename))
         {
-            throw new ArgumentException($"Invalid file name format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
+            throw new ArgumentException($"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
         }
     }
 
