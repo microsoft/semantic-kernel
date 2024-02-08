@@ -26,9 +26,6 @@
     },
     {
       "pattern": "^https://platform.openai.com"
-    },
-    {
-      "pattern": "^https://aka.ms/opensource/security"
     }
   ],
   "timeout": "20s",
