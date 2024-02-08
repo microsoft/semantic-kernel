@@ -60,19 +60,24 @@ public sealed class ImageContentTests
         Assert.Equal(dataUriToExpect, result1);
     }
 
-    [Fact]
-    public void CreateForNullDataUriOrWithoutMediaTypeThrows()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void CreateForWithoutMediaTypeThrows(string? mediaType)
     {
         // Arrange
-        var data = BinaryData.FromString("this is a test", null);
-        var data2 = BinaryData.FromString("this is a test", string.Empty);
-        var data3 = BinaryData.FromString("this is a test", " ");
+        var data = BinaryData.FromString("this is a test", mediaType);
 
         // Assert
+        Assert.Throws<ArgumentNullException>(() => new ImageContent(data!));
+    }
+
+    [Fact]
+    public void CreateForNullDataUriThrows()
+    {
+        // Assert
         Assert.Throws<ArgumentNullException>(() => new ImageContent((BinaryData)null!));
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(data));
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(data2));
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(data3));
     }
 
     [Fact]
@@ -99,11 +104,6 @@ public sealed class ImageContentTests
 
         // Assert
         Assert.Equal(dataUriToExpect, result1);
-
-        // Assert throws if mediatype is null
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(BinaryData.FromBytes(bytes, null)));
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(BinaryData.FromBytes(bytes, string.Empty)));
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(BinaryData.FromBytes(bytes, " ")));
     }
 
     [Fact]

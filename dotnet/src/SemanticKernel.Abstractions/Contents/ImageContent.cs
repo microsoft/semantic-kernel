@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Mime;
 using System.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -57,7 +56,7 @@ public sealed class ImageContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        if (data.IsEmpty || string.IsNullOrWhiteSpace(data?.MediaType))
+        if (string.IsNullOrWhiteSpace(data?.MediaType) || data!.IsEmpty)
         {
             throw new ArgumentNullException(nameof(data), "MediaType is needed for DataUri Images");
         }
