@@ -8,7 +8,7 @@ import pytest
 try:
     from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import (
         AzureCosmosDBMemoryStore,
-    )
+)
 
     azure_cosmosdb_memory_store_installed = True
 except AssertionError:
@@ -16,11 +16,10 @@ except AssertionError:
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
 
-# Load environment variables
-(cosmos_api, cosmos_connstr) = azure_cosmos_db_settings_from_dot_env()
-
+# Either add your azure connection string here, or set it in the environment variable AZCOSMOS_CONNSTR.
+cosmos_connstr = ""
+cosmos_api = "mongo-vcore"
 index_name = "sk_test_vector_search_index"
 vector_dimensions = 1536
 num_lists = 1

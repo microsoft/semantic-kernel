@@ -71,7 +71,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
             mongodb_client = get_mongodb_search_client(cosmos_connstr)
-            database = mongodb_client(database_name)
+            database = mongodb_client[database_name]
             apiStore = MongoStoreApi(
                 collection_name,
                 index_name,
