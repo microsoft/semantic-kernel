@@ -38,19 +38,19 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// Returns a string containing the manual for all available functions.
     /// </summary>
     /// <param name="plugins">The plugins.</param>
-    /// <param name="config">The planner config.</param>
+    /// <param name="plannerOptions">The planner options.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
     internal static async Task<string> GetFunctionsManualAsync(
         this IReadOnlyKernelPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerOptions plannerOptions,
         string? semanticQuery = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
     }
@@ -59,21 +59,23 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// Returns a string containing the manual for all available functions in a JSON Schema format.
     /// </summary>
     /// <param name="plugins">The plugins.</param>
-    /// <param name="config">The planner config.</param>
+    /// <param name="plannerOptions">The planner options.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="includeOutputSchema">Indicates if the output or return type of the function should be included in the schema.</param>
+    /// <param name="nameDelimiter">The delimiter to use between the plugin name and the function name.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
     internal static async Task<string> GetJsonSchemaFunctionsManualAsync(
         this IReadOnlyKernelPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerOptions plannerOptions,
         string? semanticQuery = null,
         ILogger? logger = null,
         bool includeOutputSchema = true,
+        string nameDelimiter = "-",
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
         var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
@@ -82,35 +84,35 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     /// Returns a list of functions that are available to the user based on the semantic query and the excluded plugins and functions.
     /// </summary>
     /// <param name="plugins">The function provider.</param>
-    /// <param name="config">The planner config.</param>
+    /// <param name="plannerOptions">The planner options.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
     internal static async Task<IEnumerable<KernelFunctionMetadata>> GetFunctionsAsync(
         this IReadOnlyKernelPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerOptions plannerOptions,
         string? semanticQuery,
         ILogger? logger,
         CancellationToken cancellationToken)
     {
-        return config.GetAvailableFunctionsAsync is null ?
-            await plugins.GetAvailableFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false) :
-            await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
+        return plannerOptions.GetAvailableFunctionsAsync is null ?
+            await plugins.GetAvailableFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).ConfigureAwait(false) :
+            await plannerOptions.GetAvailableFunctionsAsync(plannerOptions, semanticQuery, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Returns a list of functions that are available to the user based on the semantic query and the excluded plugins and functions.
     /// </summary>
     /// <param name="plugins">The function provider.</param>
-    /// <param name="config">The planner config.</param>
+    /// <param name="plannerOptions">The planner options.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
     internal static async Task<IEnumerable<KernelFunctionMetadata>> GetAvailableFunctionsAsync(
         this IReadOnlyKernelPluginCollection plugins,
-        PlannerConfigBase config,
+        PlannerOptions plannerOptions,
         string? semanticQuery = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -118,12 +120,12 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         var functionsView = plugins.GetFunctionsMetadata();
 
         var availableFunctions = functionsView
-            .Where(s => !config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
+            .Where(s => !plannerOptions.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
+                && !plannerOptions.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
         List<KernelFunctionMetadata>? result = null;
-        var semanticMemoryConfig = config.SemanticMemoryConfig;
+        var semanticMemoryConfig = plannerOptions.SemanticMemoryConfig;
         if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig is null || semanticMemoryConfig.Memory is NullMemory)
         {
             // If no semantic query is provided, return all available functions.
