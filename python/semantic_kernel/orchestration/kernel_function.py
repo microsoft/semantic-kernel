@@ -263,6 +263,7 @@ class KernelFunction(KernelBaseModel):
                 except Exception as e:
                     # TODO: "critical exceptions"
                     context.fail(str(e), e)
+                return
 
             try:
                 chat_prompt = function_config.prompt_template
