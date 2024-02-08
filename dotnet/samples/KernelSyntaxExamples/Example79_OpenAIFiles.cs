@@ -51,7 +51,7 @@ public sealed class Example79_OpenAIFiles : BaseTest
         {
             // Retrieve file content
             var content = fileService.GetFileContent(fileReference.Id);
-            WriteLine($"# Content:");
+            WriteLine("# Content:");
             WriteLine(content);
 
             // Retrieve file metadata (again)
