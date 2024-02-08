@@ -38,7 +38,7 @@ kernel.add_chat_service("chat-gpt", chat_service)
 ## This method (using the PromptExecutionSettings base class) is the most generic, and it allows you to store request settings for different services in the same extension_data field. There are two downsides to this approach: the specific request setting class will be created dynamically for each call, this is overhead when using just a single service. and the request settings are not type checked, so you will receive error messages once the dynamic creation of the request settings class fails. # noqa: E501 E266
 
 ## 2. create the request settings directly for the service you are using: # noqa: E266
-# req_settings = sk_oai.AzureOpenAIChatPromptExecutionSettings(max_tokens=2000, temperature=0.7, top_p=0.8)
+# req_settings = sk_oai.AzureChatPromptExecutionSettings(max_tokens=2000, temperature=0.7, top_p=0.8)
 ## The second method is useful when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
 
 ## 3. create the request settings from the kernel based on the registered service class: # noqa: E266
