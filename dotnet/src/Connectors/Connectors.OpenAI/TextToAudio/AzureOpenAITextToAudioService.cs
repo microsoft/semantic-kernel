@@ -75,12 +75,19 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     }
 
     /// <inheritdoc/>
-    public Task<AudioContent> GetAudioContentAsync(string text, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<AudioContent> GetAudioContentAsync(
+        string text,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
         => this.InternalGetAudioContentAsync(text, executionSettings, cancellationToken);
 
     #region private
 
-    private async Task<AudioContent> InternalGetAudioContentAsync(string text, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+    private async Task<AudioContent> InternalGetAudioContentAsync(
+        string text,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
     {
         OpenAITextToAudioExecutionSettings? audioExecutionSettings = OpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
 
