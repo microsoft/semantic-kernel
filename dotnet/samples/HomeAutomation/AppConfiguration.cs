@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 namespace HomeAutomation;
 
 /// <summary>
-/// Loads configuration upon instanciation.
+/// Loads configuration upon instantiation.
 /// </summary>
 internal sealed class AppConfiguration
 {

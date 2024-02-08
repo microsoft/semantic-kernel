@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>49ca5664-7ada-401d-b4c4-31d19223526c</UserSecretsId>
-    <NoWarn>CA2007,VSTHRD111</NoWarn>
+    <NoWarn>CA2007,CA2208,CS1591,IDE0009,IDE0055,IDE0073,VSTHRD111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
