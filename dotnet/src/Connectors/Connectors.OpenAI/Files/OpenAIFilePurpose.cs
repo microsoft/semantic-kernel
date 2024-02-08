@@ -18,5 +18,5 @@ public enum OpenAIFilePurpose
     /// <summary>
     /// File to be used by fine-tuning jobs.
     /// </summary>
-    Finetuning,
+    FineTune,
 }

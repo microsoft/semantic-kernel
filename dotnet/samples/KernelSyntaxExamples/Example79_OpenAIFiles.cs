@@ -40,23 +40,26 @@ public sealed class Example79_OpenAIFiles : BaseTest
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
 
         // Upload file
+        var fileContent = new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream(ResourceFileName)!));
         var fileReference =
             await fileService.UploadContentAsync(
-                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream(ResourceFileName)!)),
+                fileContent,
                 new OpenAIFileUploadExecutionSettings(ResourceFileName, OpenAIFilePurpose.Assistants));
 
-        WriteLine($"# {fileReference.Id}");
+        WriteLine("SOURCE:");
+        WriteLine($"# Name: {fileReference.FileName}");
+        WriteLine("# Content:");
+        WriteLine(await fileContent.GetContentAsync());
 
         try
         {
-            // Retrieve file content
-            var content = fileService.GetFileContent(fileReference.Id);
-            WriteLine("# Content:");
-            WriteLine(content);
-
-            // Retrieve file metadata (again)
+            // Retrieve file metadata for validation.
             var copyReference = await fileService.GetFileAsync(fileReference.Id);
             Assert.Equal(fileReference.Id, copyReference.Id);
+            WriteLine("REFERENCE:");
+            WriteLine($"# ID: {fileReference.Id}");
+            WriteLine($"# Name: {fileReference.FileName}");
+            WriteLine($"# Purpose: {fileReference.Purpose}");
         }
         finally
         {

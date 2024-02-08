@@ -75,6 +75,9 @@ public sealed class OpenAIFileService
     /// <param name="id">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The file content as <see cref="BinaryContent"/></returns>
+    /// <remarks>
+    /// Files uploaded with <see cref="OpenAIFilePurpose.Assistants"/> do not support content retrieval.
+    /// </remarks>
     public BinaryContent GetFileContent(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
@@ -94,7 +97,7 @@ public sealed class OpenAIFileService
 
         var result = await this.ExecuteGetRequestAsync<FileInfo>($"{OpenAIApiEndpoint}/{id}", cancellationToken).ConfigureAwait(false);
 
-        return this.Convert(result);
+        return this.ConvertFileReference(result);
     }
 
     /// <summary>
@@ -106,7 +109,7 @@ public sealed class OpenAIFileService
     {
         var result = await this.ExecuteGetRequestAsync<FileInfoList>(OpenAIApiEndpoint, cancellationToken).ConfigureAwait(false);
 
-        return result.Data.Select(r => this.Convert(r)).ToArray();
+        return result.Data.Select(r => this.ConvertFileReference(r)).ToArray();
     }
 
     /// <summary>
@@ -121,9 +124,7 @@ public sealed class OpenAIFileService
         Verify.NotNull(settings, nameof(settings));
 
         using var formData = new MultipartFormDataContent();
-#pragma warning disable CA1308 // Normalize strings to uppercase - OpenAI requires lower case
-        using var contentPurpose = new StringContent(settings.Purpose.ToString().ToLowerInvariant());
-#pragma warning restore CA1308 // Normalize strings to uppercase
+        using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
         using var contentStream = await fileContent.GetStreamAsync().ConfigureAwait(false);
         using var contentFile = new StreamContent(contentStream);
         formData.Add(contentPurpose, "purpose");
@@ -131,7 +132,7 @@ public sealed class OpenAIFileService
 
         var result = await this.ExecutePostRequestAsync<FileInfo>(OpenAIApiEndpoint, formData, cancellationToken).ConfigureAwait(false);
 
-        return this.Convert(result);
+        return this.ConvertFileReference(result);
     }
 
     private async Task ExecuteDeleteRequestAsync(string url, CancellationToken cancellationToken)
@@ -178,7 +179,7 @@ public sealed class OpenAIFileService
 
     private async Task<TModel> ExecutePostRequestAsync<TModel>(string url, HttpContent payload, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreatePostRequest(url, payload);
+        using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = payload };
         using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
@@ -193,10 +194,8 @@ public sealed class OpenAIFileService
             };
     }
 
-    private OpenAIFileReference Convert(FileInfo result)
+    private OpenAIFileReference ConvertFileReference(FileInfo result)
     {
-        Enum.TryParse<OpenAIFilePurpose>(result.Purpose, ignoreCase: true, out var purpose);
-
         return
             new OpenAIFileReference
             {
@@ -204,9 +203,25 @@ public sealed class OpenAIFileService
                 FileName = result.FileName,
                 CreatedTimestamp = DateTimeOffset.FromUnixTimeSeconds(result.CreatedAt).UtcDateTime,
                 SizeInBytes = result.Bytes ?? 0,
-                Purpose = purpose,
+                Purpose = this.ConvertPurpose(result.Purpose),
             };
     }
+
+    private OpenAIFilePurpose ConvertPurpose(string purpose) =>
+        purpose.ToUpperInvariant() switch
+        {
+            "ASSISTANTS" => OpenAIFilePurpose.Assistants,
+            "FINE-TUNE" => OpenAIFilePurpose.FineTune,
+            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
+        };
+
+    private string ConvertPurpose(OpenAIFilePurpose purpose) =>
+        purpose switch
+        {
+            OpenAIFilePurpose.Assistants => "assistants",
+            OpenAIFilePurpose.FineTune => "fine-tune",
+            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
+        };
 
     private class FileInfoList
     {
