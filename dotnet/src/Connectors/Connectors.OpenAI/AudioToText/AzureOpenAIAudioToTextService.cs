@@ -44,7 +44,6 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
-
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
@@ -87,6 +86,10 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
     }
 
     /// <inheritdoc/>
-    public Task<TextContent> GetTextContentAsync(BinaryData audioData, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<TextContent> GetTextContentAsync(
+        BinaryData audioData,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
         => this._core.GetTextContentFromAudioAsync(audioData, executionSettings, cancellationToken);
 }
