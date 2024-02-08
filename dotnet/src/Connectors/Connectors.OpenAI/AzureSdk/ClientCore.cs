@@ -407,8 +407,8 @@ internal abstract class ClientCore
                 catch (OperationCanceledException)
                 {
                     // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
+                    //AddResponseMessage(chatOptions, chat, null, $"A tool filter requested cancellation after tool invocation. Result: {functionResult as string ?? JsonSerializer.Serialize(functionResult)}", toolCall.Id, this.Logger);
                     chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
-                    AddResponseMessage(chatOptions, chat, null, "A tool filter requested cancellation after tool invocation.", toolCall.Id, this.Logger);
                     break;
                 }
 

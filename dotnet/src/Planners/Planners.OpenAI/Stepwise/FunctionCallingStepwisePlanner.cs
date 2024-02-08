@@ -145,10 +145,9 @@ public sealed class FunctionCallingStepwisePlanner
 
         // TODO: set filters
         int iterationsRemaining = this.Config.MaxIterations - iterationsCompleted;
-        openAIExecutionSettings.ToolCallBehavior.Filters.Add(new TestFilter((iteration) => { return iteration < iterationsRemaining; }));
-        // openAIExecutionSettings.ToolCallBehavior.PreInvokeCallback = (iteration, _, _) => { return (iteration < iterationsRemaining); };
+        var testFilter = new TestFilter((iteration) => { return iteration < iterationsRemaining; });
+        openAIExecutionSettings.ToolCallBehavior.Filters.Add(testFilter);
         // openAIExecutionSettings.ToolCallBehavior.Filters.Add(new FinalAnswerFilter());
-
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
@@ -286,7 +285,10 @@ public sealed class FunctionCallingStepwisePlanner
         }
         public void OnToolInvoked(ToolInvokedContext context)
         {
-            throw new NotImplementedException();
+            if (context.ToolCall.FullyQualifiedName.Equals($"UserInteraction{OpenAIFunction.NameSeparator}SendFinalAnswer", StringComparison.Ordinal))
+            {
+                context.StopBehavior = ToolFilterStopBehavior.StopTools;
+            }
         }
     }
 
@@ -302,18 +304,20 @@ public sealed class FunctionCallingStepwisePlanner
 
         public void OnToolInvoking(ToolInvokingContext context)
         {
+            if (context.ToolCall.FunctionName.Equals("Subtract", StringComparison.Ordinal))
+            {
+                context.ToolCall.Arguments!["value"] = 1000;
+            }
         }
         
         public void OnToolInvoked(ToolInvokedContext context)
         {
-            //context.Cancel = true;
-            //context.Arguments["foo"] = "bar";
-            //context.ChatHistory.AddSystemMessage("TestFilter was here");
-            //context.ToolCallBehavior = null; // turn off subsequent tool calls
+            context.ChatHistory.AddSystemMessage("TestFilter was here");
 
             if (!this._shouldContinue(context.ModelIterations))
             {
                 context.StopBehavior = ToolFilterStopBehavior.StopTools;
+                //context.StopBehavior = ToolFilterStopBehavior.Cancel;
             }
         }
     }
