@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Http;
 /// <summary>
 /// Associate a response stream with its parent response for parity in life-cycle management.
 /// </summary>
+[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "This class is an internal utility.")]
 internal sealed class HttpResponseStream : Stream
 {
     private readonly Stream _stream;
