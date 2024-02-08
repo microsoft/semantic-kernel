@@ -116,7 +116,7 @@ public sealed class OpenAIFileService
         CancellationToken cancellationToken = default);
 }
 
-public sealed class OpenAIFileUploadRequest
+public sealed class OpenAIFileUploadExecutionSettings
 {
     public string FileName { get; }
  
