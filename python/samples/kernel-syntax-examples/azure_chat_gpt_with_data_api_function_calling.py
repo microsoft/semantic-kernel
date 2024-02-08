@@ -17,7 +17,7 @@ from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_promp
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
-    get_function_calling_object,
+    get_tool_call_object,
 )
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 
@@ -76,7 +76,7 @@ chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_co
 # to enable or disable function calling or set the function calling to a specific plugin.
 # see the openai_function_calling example for how to use this with a unrelated function definition
 filter = {"exclude_plugin": ["ChatBot"]}
-functions = get_function_calling_object(kernel, filter)
+functions = get_tool_call_object(kernel, filter)
 
 
 async def chat(context: sk.KernelContext) -> Tuple[bool, sk.KernelContext]:

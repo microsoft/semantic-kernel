@@ -860,6 +860,25 @@ internal abstract class ClientCore
                         break;
                 }
                 break;
+
+            case JsonElement formatElement:
+                // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
+                // Handling only string formatElement.
+                if (formatElement.ValueKind == JsonValueKind.String)
+                {
+                    string formatString = formatElement.GetString() ?? "";
+                    switch (formatString)
+                    {
+                        case "json_object":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                            break;
+
+                        case "text":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                            break;
+                    }
+                }
+                break;
         }
 
         executionSettings.ToolCallBehavior?.ConfigureOptions(kernel, options);
@@ -970,7 +989,7 @@ internal abstract class ClientCore
                             name.ValueKind == JsonValueKind.String &&
                             arguments.ValueKind == JsonValueKind.String)
                         {
-                            ftcs.Add(OpenAIFunctionToolCall.CreateChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                            ftcs.Add(new ChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
                         }
                     }
                     tools = ftcs;
