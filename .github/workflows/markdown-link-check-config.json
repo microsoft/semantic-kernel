@@ -26,6 +26,9 @@
     },
     {
       "pattern": "^https://platform.openai.com"
+    },
+    {
+      "pattern": "^https://www.microsoft.com/en-us"
     }
   ],
   "timeout": "20s",
