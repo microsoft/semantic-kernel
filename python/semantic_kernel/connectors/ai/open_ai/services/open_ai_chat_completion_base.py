@@ -198,7 +198,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     def _get_metadata_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Dict[str, Any]:
         """Get metadata from a chat choice."""
         return {
-            "logprobs": choice.logprobs,
+            "logprobs": getattr(choice, "logprobs", None),
         }
 
     def _get_tool_calls_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[List[ToolCall]]:
