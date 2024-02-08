@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Execution settings for OpenAI audio-to-text request.
 /// </summary>
-public class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
+public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Filename or identifier associated with audio data.
