@@ -6,17 +6,10 @@ import java.util.List;
 
 public class KernelFunctionMetadata {
 
-    /// <summary>The name of the function.</summary>
     private final String name;
-    /// <summary>The description of the function.</summary>
     private final String description;
-    /// <summary>The function's parameters.</summary>
     private final List<KernelParameterMetadata> parameters;
-
-
-    /// <summary>The function's return parameter.</summary>
     private final KernelReturnParameterMetadata<?> returnParameter;
-
 
     public KernelFunctionMetadata(
         String name,

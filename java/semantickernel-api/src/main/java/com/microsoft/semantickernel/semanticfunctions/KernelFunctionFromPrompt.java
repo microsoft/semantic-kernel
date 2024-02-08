@@ -140,11 +140,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                                         chatMessageContent.getMetadata()
                                     )
                                 );
-                            } else if (chatMessageContent.getAuthorRole()
-                                == AuthorRole.TOOL) {
-                                Mono<FunctionResult<String>> toolResult = invokeTool(kernel,
-                                    chatMessageContent.getContent());
-                                return toolResult.flux();
                             }
                             return Flux.empty();
                         })
@@ -152,7 +147,7 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
                             return new FunctionResult<>(
                                 new ContextVariable<>(
                                     variableType,
-                                    variableType.of(it.getResult()).getValue()
+                                    it.getResult() != null ? variableType.of(it.getResult()).getValue() : null
                                 ),
                                 it.getMetadata()
                             );
@@ -232,57 +227,6 @@ public class KernelFunctionFromPrompt extends DefaultKernelFunction {
         return invokeInternalAsync(kernel, arguments, variableType)
             .take(1)
             .single();
-    }
-
-    /*
-     * Given a json string, invoke the tool specified in the json string.
-     * At this time, the only tool we have is 'function'.
-     * The json string should be of the form:
-     * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
-     * where 'name' is <plugin name '-' function name>.
-     */
-    private Mono<FunctionResult<String>> invokeTool(Kernel kernel, String json) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(json);
-            jsonNode = jsonNode.get("function");
-            if (jsonNode != null) {
-                return invokeFunction(kernel, jsonNode);
-            }
-        } catch (Exception e) {
-            LOGGER.error("Failed to parse json", e);
-        }
-        return Mono.empty();
-    }
-
-    /*
-     * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
-     */
-    private Mono<FunctionResult<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
-        String name = jsonNode.get("name").asText();
-        String[] parts = name.split("-");
-        String pluginName = parts.length > 0 ? parts[0] : "";
-        String fnName = parts.length > 1 ? parts[1] : "";
-        JsonNode parameters = jsonNode.get("parameters");
-        if (parameters != null) {
-            KernelFunction kernelFunction = kernel.getPlugins().getFunction(pluginName, fnName);
-            if (kernelFunction == null) {
-                return Mono.empty();
-            }
-            ContextVariableType<String> variableType = ContextVariableTypes.getDefaultVariableTypeForClass(
-                String.class);
-            Map<String, ContextVariable<?>> variables = new HashMap<>();
-            parameters.fields().forEachRemaining(entry -> {
-                String paramName = entry.getKey();
-                String paramValue = entry.getValue().asText();
-                ContextVariable<String> contextVariable = new ContextVariable<>(variableType,
-                    paramValue);
-                variables.put(paramName, contextVariable);
-            });
-            KernelArguments arguments = KernelArguments.builder().withVariables(variables).build();
-            return kernelFunction.invokeAsync(kernel, arguments, variableType);
-        }
-        return Mono.empty();
     }
 
     public static KernelFunction create(
