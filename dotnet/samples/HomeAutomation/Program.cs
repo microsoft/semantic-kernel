@@ -50,8 +50,17 @@ internal static class Program
 /// <summary>
 /// Actual code to run.
 /// </summary>
-internal sealed class Worker(IHostApplicationLifetime hostApplicationLifetime, Kernel kernel) : BackgroundService
+internal sealed class Worker : BackgroundService
 {
+    private readonly IHostApplicationLifetime _hostApplicationLifetime;
+    private readonly Kernel _kernel;
+
+    public Worker(IHostApplicationLifetime hostApplicationLifetime, Kernel kernel)
+    {
+        _hostApplicationLifetime = hostApplicationLifetime;
+        _kernel = kernel;
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         const string TimePrompt = "What time is it?";
@@ -59,26 +68,26 @@ internal sealed class Worker(IHostApplicationLifetime hostApplicationLifetime, K
         Console.WriteLine($"Worker running at: {DateTimeOffset.Now}");
 
         // Get chat completion service
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
 
         // Enable auto function calling
         OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Get the response from the AI
-        ChatMessageContent chatResult = await chatCompletionService.GetChatMessageContentAsync(TimePrompt, openAIPromptExecutionSettings, kernel, stoppingToken);
+        ChatMessageContent chatResult = await chatCompletionService.GetChatMessageContentAsync(TimePrompt, openAIPromptExecutionSettings, _kernel, stoppingToken);
         Console.WriteLine($"Result is: {chatResult}");
 
         MyLightPlugin kitchenLight = new();
         MyLightPlugin bedroomLight = new();
-        kernel.ImportPluginFromObject(kitchenLight, "Kitchen");
-        kernel.ImportPluginFromObject(bedroomLight, "Bedroom");
+        _kernel.ImportPluginFromObject(kitchenLight, "Kitchen");
+        _kernel.ImportPluginFromObject(bedroomLight, "Bedroom");
 
-        chatResult = await chatCompletionService.GetChatMessageContentAsync("Turn on the kitchen light", openAIPromptExecutionSettings, kernel, stoppingToken);
+        chatResult = await chatCompletionService.GetChatMessageContentAsync("Turn on the kitchen light", openAIPromptExecutionSettings, _kernel, stoppingToken);
         Console.WriteLine($"Result to request to turn light on: {chatResult}");
 
-        chatResult = await chatCompletionService.GetChatMessageContentAsync("Is the bedroom light on?", openAIPromptExecutionSettings, kernel, stoppingToken);
+        chatResult = await chatCompletionService.GetChatMessageContentAsync("Is the bedroom light on?", openAIPromptExecutionSettings, _kernel, stoppingToken);
         Console.WriteLine($"Result to request to light status: {chatResult}");
 
-        hostApplicationLifetime.StopApplication();
+        _hostApplicationLifetime.StopApplication();
     }
 }
