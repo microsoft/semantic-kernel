@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Json.More;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -71,7 +67,7 @@ public sealed class FunctionCallingStepwisePlanner
         // Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         var clonedKernel = kernel.Clone();
 
-        // The final answer variables are set when the UserInteraction plugin is invoked
+        // The final answer flag is set when the UserInteraction plugin is invoked
         bool finalAnswerFound = false;
         string finalAnswer = string.Empty;
 
@@ -99,7 +95,7 @@ public sealed class FunctionCallingStepwisePlanner
 
             // Increment iteration based on the number of model round trips that occurred as a result of the request
             object? value = null;
-            chatResult.Metadata?.TryGetValue("ModelIterations", out value); // TODO: implement this, and also ToolInvocations?
+            chatResult.Metadata?.TryGetValue("ModelIterations", out value);
             if (value is not null and int)
             {
                 iteration += (int)value;
@@ -116,7 +112,7 @@ public sealed class FunctionCallingStepwisePlanner
                 // Success! we found a final answer, so return the planner result
                 return new FunctionCallingStepwisePlannerResult
                 {
-                    FinalAnswer = finalAnswer,
+                    FinalAnswer = chatResult.Content ?? finalAnswer,
                     ChatHistory = chatHistoryForSteps,
                     Iterations = iteration,
                 };
@@ -143,11 +139,10 @@ public sealed class FunctionCallingStepwisePlanner
     {
         openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions;
 
-        // TODO: set filters
+        // Set filters to stop automatic tool invocation when a final answer is found or max iterations limit is reached
         int iterationsRemaining = this.Config.MaxIterations - iterationsCompleted;
-        var testFilter = new TestFilter((iteration) => { return iteration < iterationsRemaining; });
-        openAIExecutionSettings.ToolCallBehavior.Filters.Add(testFilter);
-        // openAIExecutionSettings.ToolCallBehavior.Filters.Add(new FinalAnswerFilter());
+        openAIExecutionSettings.ToolCallBehavior.Filters.Add(new FinalAnswerFilter());
+        openAIExecutionSettings.ToolCallBehavior.Filters.Add(new MaxIterationsFilter((iteration) => { return iteration < iterationsRemaining; }));
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
@@ -273,52 +268,50 @@ public sealed class FunctionCallingStepwisePlanner
         public string SendFinalAnswer([Description("The final answer")] string answer)
         {
             this._setCompleted(answer);
-            return "Thanks";
+            return answer;
         }
     }
 
-    public sealed class FinalAnswerFilter : IToolFilter
+    #region Filters
+
+    // A tool filter that stops tool calling once the final answer has been found
+    private sealed class FinalAnswerFilter : IToolFilter
     {
-        public void OnToolInvoking(ToolInvokingContext context)
-        {
-            throw new NotImplementedException();
-        }
+        public void OnToolInvoking(ToolInvokingContext context) { }
+
         public void OnToolInvoked(ToolInvokedContext context)
         {
             if (context.ToolCall.FullyQualifiedName.Equals($"UserInteraction{OpenAIFunction.NameSeparator}SendFinalAnswer", StringComparison.Ordinal))
             {
-                context.StopBehavior = ToolFilterStopBehavior.StopTools;
+                // We've found the final answer, so cancel any remaining tool calls.
+                context.StopBehavior = ToolFilterStopBehavior.Cancel;
             }
         }
     }
 
-    public sealed class TestFilter : IToolFilter
+    /// <summary>
+    /// A tool filter that stops tool calling once the maximum model iterations have been reached.
+    /// </summary>
+    private sealed class MaxIterationsFilter : IToolFilter
     {
         private readonly Func<int, bool> _shouldContinue;
-        //private int modelIterations = 0;
 
-        public TestFilter(Func<int, bool> shouldContinue)
+        public MaxIterationsFilter(Func<int, bool> shouldContinue)
         {
             this._shouldContinue = shouldContinue;
         }
 
-        public void OnToolInvoking(ToolInvokingContext context)
-        {
-            if (context.ToolCall.FunctionName.Equals("Subtract", StringComparison.Ordinal))
-            {
-                context.ToolCall.Arguments!["value"] = 1000;
-            }
-        }
-        
+        public void OnToolInvoking(ToolInvokingContext context) { }
+
         public void OnToolInvoked(ToolInvokedContext context)
         {
-            context.ChatHistory.AddSystemMessage("TestFilter was here");
-
             if (!this._shouldContinue(context.ModelIterations))
             {
+                // We've reached the maximum iterations for the planner.
+                // Invoke any tool calls already specified, but stop requesting more tools.
                 context.StopBehavior = ToolFilterStopBehavior.StopTools;
-                //context.StopBehavior = ToolFilterStopBehavior.Cancel;
             }
         }
     }
+    #endregion
 }

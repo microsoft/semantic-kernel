@@ -2,6 +2,9 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+/// <summary>
+/// Interface for tool filters.
+/// </summary>
 public interface IToolFilter
 {
     /// <summary>

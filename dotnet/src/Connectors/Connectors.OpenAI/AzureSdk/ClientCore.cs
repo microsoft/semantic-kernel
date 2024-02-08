@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
@@ -176,25 +175,27 @@ internal abstract class ClientCore
         };
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions, int iterations)
     {
-        return new Dictionary<string, object?>(5)
+        return new Dictionary<string, object?>(6)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
+            { "Iterations", iterations },
         };
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
+    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions, int iterations)
     {
-        return new Dictionary<string, object?>(3)
+        return new Dictionary<string, object?>(4)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+            { "Iterations", iterations },
         };
     }
 
@@ -266,7 +267,7 @@ internal abstract class ClientCore
                 throw new KernelException("Chat completions not found");
             }
 
-            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
+            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData, iteration);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
@@ -521,7 +522,7 @@ internal abstract class ClientCore
             CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
-                metadata ??= GetResponseMetadata(update);
+                metadata ??= GetResponseMetadata(update, iteration);
                 streamedRole ??= update.Role;
                 finishReason = update.FinishReason ?? default;
 
