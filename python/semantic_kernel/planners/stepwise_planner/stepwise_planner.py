@@ -363,7 +363,7 @@ class StepwisePlanner:
                 PlanningException.ErrorCodes.CreatePlanError,
                 "Plugin collection not found in the kernel",
             )
-        functions_view = self._kernel.plugins.get_functions_view()
+        functions_view = self._kernel.plugins.get_list_of_function_metadata()
 
         excluded_plugins = self.config.excluded_plugins or []
         excluded_functions = self.config.excluded_functions or []

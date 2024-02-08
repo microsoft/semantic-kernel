@@ -80,7 +80,7 @@ class SequentialPlannerKernelExtension:
                 "Plugin collection not found in the context",
             )
 
-        functions_view = kernel.plugins.get_functions_view()
+        functions_view = kernel.plugins.get_list_of_function_metadata()
 
         available_functions: List[KernelFunctionMetadata] = [
             *functions_view.semantic_functions.values(),
