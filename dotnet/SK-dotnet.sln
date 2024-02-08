@@ -217,6 +217,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-F
 		src\InternalUtilities\test\Linq\AsyncEnumerable.cs = src\InternalUtilities\test\Linq\AsyncEnumerable.cs
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\HomeAutomation\HomeAutomation.csproj", "{13429BD6-4C4E-45EC-81AD-30BAC380AA60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -492,6 +494,12 @@ Global
 		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -564,6 +572,7 @@ Global
 		{87AB5AF5-5783-4372-9789-664895E0A2FF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{EB2C141A-AE5F-4080-8790-13EB16323CEF} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{607DD6FA-FA0D-45E6-80BA-22A373609E89} = {5C246969-D794-4EC3-8E8F-F90D4D166420}
+		{13429BD6-4C4E-45EC-81AD-30BAC380AA60} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
