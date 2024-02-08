@@ -5,10 +5,8 @@ from typing import Any, List, Optional, Tuple
 
 import pydantic as pdt
 
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
-)
+from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -68,7 +66,7 @@ class CodeBlock(Block):
 
         return True, ""
 
-    async def render_code_async(self, context):
+    async def render_code(self, context):
         if not self._validated:
             is_valid, error = self.is_valid()
             if not is_valid:
@@ -80,11 +78,11 @@ class CodeBlock(Block):
             return self._tokens[0].render(context.variables)
 
         if self._tokens[0].type == BlockTypes.FUNCTION_ID:
-            return await self._render_function_call_async(self._tokens[0], context)
+            return await self._render_function_call(self._tokens[0], context)
 
         raise ValueError(f"Unexpected first token type: {self._tokens[0].type}")
 
-    async def _render_function_call_async(self, f_block: FunctionIdBlock, context):
+    async def _render_function_call(self, f_block: FunctionIdBlock, context):
         if not context.plugins:
             raise ValueError("Plugin collection not set")
 
@@ -102,7 +100,7 @@ class CodeBlock(Block):
             input_value = self._tokens[1].render(variables_clone)
             variables_clone.update(input_value)
 
-        result = await function.invoke_async(variables=variables_clone, memory=context.memory)
+        result = await function.invoke(variables=variables_clone, memory=context.memory)
 
         if result.error_occurred:
             error_msg = (
@@ -116,12 +114,24 @@ class CodeBlock(Block):
         return result.result
 
     def _get_function_from_plugin_collection(
-        self, plugins: ReadOnlyPluginCollectionBase, f_block: FunctionIdBlock
-    ) -> Optional[KernelFunctionBase]:
-        if not f_block.plugin_name and plugins.has_function(None, f_block.function_name):
-            return plugins.get_function(None, f_block.function_name)
+        self, plugins: KernelPluginCollection, f_block: FunctionIdBlock
+    ) -> Optional[KernelFunction]:
+        """
+        Get the function from the plugin collection
 
-        if f_block.plugin_name and plugins.has_function(f_block.plugin_name, f_block.function_name):
-            return plugins.get_function(f_block.plugin_name, f_block.function_name)
+        Args:
+            plugins: The plugin collection
+            f_block: The function block that contains the function name
+
+        Returns:
+            The function if it exists, None otherwise.
+        """
+        if f_block.plugin_name is not None and len(f_block.plugin_name) > 0:
+            return plugins[f_block.plugin_name][f_block.function_name]
+        else:
+            # We now require a plug-in name, but if one isn't set then we'll try to find the function
+            for plugin in plugins:
+                if f_block.function_name in plugin:
+                    return plugin[f_block.function_name]
 
         return None

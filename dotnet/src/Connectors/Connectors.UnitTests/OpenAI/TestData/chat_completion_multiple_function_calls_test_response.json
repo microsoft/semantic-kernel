@@ -14,7 +14,7 @@
             "id": "1",
             "type": "function",
             "function": {
-              "name": "MyPlugin_GetCurrentWeather",
+              "name": "MyPlugin-GetCurrentWeather",
               "arguments": "{\n\"location\": \"Boston, MA\"\n}"
             }
           },
@@ -22,7 +22,7 @@
             "id": "2",
             "type": "function",
             "function": {
-              "name": "MyPlugin_FunctionWithException",
+              "name": "MyPlugin-FunctionWithException",
               "arguments": "{\n\"argument\": \"value\"\n}"
             }
           },
@@ -30,7 +30,7 @@
             "id": "3",
             "type": "function",
             "function": {
-              "name": "MyPlugin_NonExistentFunction",
+              "name": "MyPlugin-NonExistentFunction",
               "arguments": "{\n\"argument\": \"value\"\n}"
             }
           },
@@ -38,7 +38,7 @@
             "id": "4",
             "type": "function",
             "function": {
-              "name": "MyPlugin_InvalidArguments",
+              "name": "MyPlugin-InvalidArguments",
               "arguments": "invalid_arguments_format"
             }
           }

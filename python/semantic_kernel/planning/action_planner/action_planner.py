@@ -11,7 +11,7 @@ import regex
 
 from semantic_kernel import Kernel
 from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
 )
@@ -37,7 +37,7 @@ class ActionPlanner:
     config: ActionPlannerConfig
     _stop_sequence: str = "#END-OF-PLAN"
 
-    _planner_function: KernelFunctionBase
+    _planner_function: KernelFunction
 
     _kernel: Kernel
     _prompt_template: str
@@ -75,7 +75,7 @@ class ActionPlanner:
         self._kernel = kernel
         self._context = kernel.create_new_context()
 
-    async def create_plan_async(self, goal: str) -> Plan:
+    async def create_plan(self, goal: str) -> Plan:
         """
         :param goal: The input to the planner based on which the plan is made
         :return: a Plan object
@@ -88,7 +88,7 @@ class ActionPlanner:
 
         self._context.variables.update(goal)
 
-        generated_plan_raw = await self._planner_function.invoke_async(context=self._context)
+        generated_plan_raw = await self._planner_function.invoke(context=self._context)
         generated_plan_raw_str = str(generated_plan_raw)
 
         if not generated_plan_raw or not generated_plan_raw_str:
@@ -140,14 +140,15 @@ class ActionPlanner:
             plan = Plan(description=goal)
         elif "." in generated_plan["plan"]["function"]:
             plugin, fun = generated_plan["plan"]["function"].split(".")
-            function_ref = self._context.plugins.get_function(plugin, fun)
+            function_ref = self._context.plugins[plugin][fun]
             logger.info(
                 f"ActionPlanner has picked {plugin}.{fun}. Reference to this function"
                 f" found in context: {function_ref}"
             )
             plan = Plan(description=goal, function=function_ref)
         else:
-            function_ref = self._context.plugins.get_function(generated_plan["plan"]["function"])
+            plugin, func = generated_plan["plan"]["function"]
+            function_ref = self._context.plugins[plugin][func]
             logger.info(
                 f"ActionPlanner has picked {generated_plan['plan']['function']}.       "
                 "              Reference to this function found in context:"

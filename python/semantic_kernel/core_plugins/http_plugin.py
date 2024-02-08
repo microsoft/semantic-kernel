@@ -28,7 +28,7 @@ class HttpPlugin(KernelBaseModel):
     """
 
     @kernel_function(description="Makes a GET request to a uri", name="getAsync")
-    async def get_async(self, url: str) -> str:
+    async def get(self, url: str) -> str:
         """
         Sends an HTTP GET request to the specified URI and returns
         the response body as a string.
@@ -46,7 +46,7 @@ class HttpPlugin(KernelBaseModel):
 
     @kernel_function(description="Makes a POST request to a uri", name="postAsync")
     @kernel_function_context_parameter(name="body", description="The body of the request")
-    async def post_async(self, url: str, context: "KernelContext") -> str:
+    async def post(self, url: str, context: "KernelContext") -> str:
         """
         Sends an HTTP POST request to the specified URI and returns
         the response body as a string.
@@ -69,7 +69,7 @@ class HttpPlugin(KernelBaseModel):
 
     @kernel_function(description="Makes a PUT request to a uri", name="putAsync")
     @kernel_function_context_parameter(name="body", description="The body of the request")
-    async def put_async(self, url: str, context: "KernelContext") -> str:
+    async def put(self, url: str, context: "KernelContext") -> str:
         """
         Sends an HTTP PUT request to the specified URI and returns
         the response body as a string.
@@ -90,7 +90,7 @@ class HttpPlugin(KernelBaseModel):
                 return await response.text()
 
     @kernel_function(description="Makes a DELETE request to a uri", name="deleteAsync")
-    async def delete_async(self, url: str) -> str:
+    async def delete(self, url: str) -> str:
         """
         Sends an HTTP DELETE request to the specified URI and returns
         the response body as a string.

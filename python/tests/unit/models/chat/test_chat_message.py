@@ -30,7 +30,7 @@ async def test_chat_message_rendering(create_kernel):
     )
     context = kernel.create_new_context()
     context.variables["input"] = "world"
-    await message.render_message_async(context)
+    await message.render_message(context)
     assert message.role == "user"
     assert message.fixed_content == expected_content
     assert message.content_template == content_template

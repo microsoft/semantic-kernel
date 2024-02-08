@@ -76,14 +76,14 @@ class RedisMemoryStore(MemoryStoreBase):
         self._vector_type = np.float32 if vector_type == "FLOAT32" else np.float64
         self._vector_size = vector_size
 
-    async def close_async(self):
+    async def close(self):
         """
         Closes the Redis database connection
         """
         logger.info("Closing Redis connection")
         self._database.close()
 
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         """
         Creates a collection, implemented as a Redis index containing hashes
         prefixed with "collection_name:".
@@ -93,7 +93,7 @@ class RedisMemoryStore(MemoryStoreBase):
             collection_name {str} -- Name for a collection of embeddings
         """
 
-        if await self.does_collection_exist_async(collection_name):
+        if await self.does_collection_exist(collection_name):
             logger.info(f'Collection "{collection_name}" already exists.')
         else:
             index_def = IndexDefinition(prefix=f"{collection_name}:", index_type=IndexType.HASH)
@@ -118,7 +118,7 @@ class RedisMemoryStore(MemoryStoreBase):
                 logger.error(e)
                 raise e
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         """
         Returns a list of names of all collection names present in the data store.
 
@@ -128,7 +128,7 @@ class RedisMemoryStore(MemoryStoreBase):
         # Note: FT._LIST is a temporary command that may be deprecated in the future according to Redis
         return [name.decode() for name in self._database.execute_command("FT._LIST")]
 
-    async def delete_collection_async(self, collection_name: str, delete_records: bool = True) -> None:
+    async def delete_collection(self, collection_name: str, delete_records: bool = True) -> None:
         """
         Deletes a collection from the data store.
         If the collection does not exist, the database is left unchanged.
@@ -138,10 +138,10 @@ class RedisMemoryStore(MemoryStoreBase):
             delete_records {bool} -- Delete all data associated with the collection, default to True
 
         """
-        if await self.does_collection_exist_async(collection_name):
+        if await self.does_collection_exist(collection_name):
             self._ft(collection_name).dropindex(delete_documents=delete_records)
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """
         Determines if a collection exists in the data store.
 
@@ -157,7 +157,7 @@ class RedisMemoryStore(MemoryStoreBase):
         except ResponseError:
             return False
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """
         Upsert a memory record into the data store. Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
@@ -174,7 +174,7 @@ class RedisMemoryStore(MemoryStoreBase):
             str -- Redis key associated with the upserted memory record
         """
 
-        if not await self.does_collection_exist_async(collection_name):
+        if not await self.does_collection_exist(collection_name):
             logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
@@ -193,7 +193,7 @@ class RedisMemoryStore(MemoryStoreBase):
             logger.error(e)
             raise e
 
-    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """
         Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
@@ -212,12 +212,12 @@ class RedisMemoryStore(MemoryStoreBase):
 
         keys = list()
         for record in records:
-            record_key = await self.upsert_async(collection_name, record)
+            record_key = await self.upsert(collection_name, record)
             keys.append(record_key)
 
         return keys
 
-    async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """
         Gets a memory record from the data store. Does not guarantee that the collection exists.
 
@@ -230,7 +230,7 @@ class RedisMemoryStore(MemoryStoreBase):
             MemoryRecord -- The memory record if found, else None
         """
 
-        if not await self.does_collection_exist_async(collection_name):
+        if not await self.does_collection_exist(collection_name):
             logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
@@ -246,7 +246,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         return record
 
-    async def get_batch_async(
+    async def get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         """
@@ -263,13 +263,13 @@ class RedisMemoryStore(MemoryStoreBase):
 
         records = list()
         for key in keys:
-            record = await self.get_async(collection_name, key, with_embeddings)
+            record = await self.get(collection_name, key, with_embeddings)
             if record:
                 records.append(record)
 
         return records
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """
         Removes a memory record from the data store. Does not guarantee that the collection exists.
         If the key does not exist, do nothing.
@@ -278,13 +278,13 @@ class RedisMemoryStore(MemoryStoreBase):
             collection_name {str} -- Name for a collection of embeddings
             key {str} -- ID associated with the memory to remove
         """
-        if not await self.does_collection_exist_async(collection_name):
+        if not await self.does_collection_exist(collection_name):
             logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         self._database.delete(get_redis_key(collection_name, key))
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """
         Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
@@ -292,13 +292,13 @@ class RedisMemoryStore(MemoryStoreBase):
             collection_name {str} -- Name for a collection of embeddings
             keys {List[str]} -- IDs associated with the memory records to remove
         """
-        if not await self.does_collection_exist_async(collection_name):
+        if not await self.does_collection_exist(collection_name):
             logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         self._database.delete(*[get_redis_key(collection_name, key) for key in keys])
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -320,7 +320,7 @@ class RedisMemoryStore(MemoryStoreBase):
             List[Tuple[MemoryRecord, float]] -- Records and their relevance scores by descending
                 order, or an empty list if no relevant matches are found
         """
-        if not await self.does_collection_exist_async(collection_name):
+        if not await self.does_collection_exist(collection_name):
             logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
@@ -353,7 +353,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         return relevant_records
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -372,7 +372,7 @@ class RedisMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- Record and the relevance score, or None if not found
         """
-        matches = await self.get_nearest_matches_async(
+        matches = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
