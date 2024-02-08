@@ -57,6 +57,11 @@ public sealed class OpenAIFileServiceTests : IDisposable
                 this.CreateSuccessResponse(
                     """
                     {
+                        "id": "123",
+                        "filename": "test.txt",
+                        "purpose": "assistants",
+                        "bytes": 120000,
+                        "created_at": 1677610602
                     }
                     """);
         this._messageHandlerStub.ResponseToReturn = response;
@@ -87,6 +92,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
                     {
                         "id": "123",
                         "filename": "file.txt",
+                        "purpose": "assistants",
                         "bytes": 120000,
                         "created_at": 1677610602
                     }
@@ -126,12 +132,14 @@ public sealed class OpenAIFileServiceTests : IDisposable
                             {
                                 "id": "123",
                                 "filename": "file1.txt",
+                                "purpose": "assistants",
                                 "bytes": 120000,
                                 "created_at": 1677610602
                             },
                             {
                                 "id": "456",
                                 "filename": "file2.txt",
+                                "purpose": "assistants",
                                 "bytes": 999,
                                 "created_at": 1677610606
                             }
@@ -186,6 +194,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
                     {
                         "id": "123",
                         "filename": "test.txt",
+                        "purpose": "assistants",
                         "bytes": 120000,
                         "created_at": 1677610602
                     }
