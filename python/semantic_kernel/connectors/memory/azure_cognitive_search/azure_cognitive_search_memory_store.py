@@ -11,6 +11,7 @@ from azure.search.documents.indexes.models import (
     HnswVectorSearchAlgorithmConfiguration,
     SearchIndex,
     VectorSearch,
+    SearchResourceEncryptionKey
 )
 from azure.search.documents.models import Vector
 from numpy import ndarray
@@ -83,6 +84,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
+        search_resource_encryption_key: SearchResourceEncryptionKey = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -91,6 +93,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
                                                                       (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
+            search_resource_encryption_key {SearchResourceEncryptionKey}            -- Optional Use the Encryption Key to create the index (default: {None}).
+
         Returns:
             None
         """
@@ -129,13 +133,14 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             collection_index = await self._search_index_client.get_index(collection_name.lower())
         except ResourceNotFoundError:
             pass
-
+        
         if not collection_index:
             # Create the search index with the semantic settings
             index = SearchIndex(
                 name=collection_name.lower(),
                 fields=get_index_schema(self._vector_size),
                 vector_search=vector_search,
+                encryption_key=search_resource_encryption_key
             )
 
             await self._search_index_client.create_index(index)
