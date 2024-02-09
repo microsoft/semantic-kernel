@@ -206,7 +206,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentationExamples", "sa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateChatGptPlugin", "samples\CreateChatGptPlugin\Solution\CreateChatGptPlugin.csproj", "{87AB5AF5-5783-4372-9789-664895E0A2FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.OpenApi.Extensions", "src\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj", "{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.OpenApi.Extensions", "src\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj", "{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-AE5F-4080-8790-13EB16323CEF}"
 	ProjectSection(SolutionItems) = preProject
@@ -496,6 +496,8 @@ Global
 		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
