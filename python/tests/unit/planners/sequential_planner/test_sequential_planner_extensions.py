@@ -4,7 +4,6 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin_collection import (
@@ -62,7 +61,7 @@ async def test_can_call_get_available_functions_with_no_functions():
 async def test_can_call_get_available_functions_with_functions():
     arguments = KernelArguments()
     kernel = Kernel()
-    functions_view = FunctionsView()
+    functions_list = []
     kernel_function_metadata = KernelFunctionMetadata(
         name="functionName",
         plugin_name="pluginName",
@@ -79,11 +78,11 @@ async def test_can_call_get_available_functions_with_functions():
         is_semantic=False,
         is_asynchronous=False,
     )
-    functions_view.add_function(kernel_function_metadata)
-    functions_view.add_function(native_kernel_function_metadata)
+    functions_list.append(kernel_function_metadata)
+    functions_list.append(native_kernel_function_metadata)
 
     mock_plugins = Mock(spec=KernelPluginCollection)
-    mock_plugins.get_functions_view.return_value = functions_view
+    mock_plugins.get_list_of_function_metadata.return_value = functions_list
 
     kernel.plugins = mock_plugins
 
@@ -130,7 +129,7 @@ async def test_can_call_get_available_functions_with_functions():
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Arrange FunctionView
-    functions_view = FunctionsView()
+    functions_list = []
     kernel_function_metadata = KernelFunctionMetadata(
         name="functionName",
         plugin_name="pluginName",
@@ -147,8 +146,8 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
         is_semantic=False,
         is_asynchronous=False,
     )
-    functions_view.add_function(kernel_function_metadata)
-    functions_view.add_function(native_kernel_function_metadata)
+    functions_list.append(kernel_function_metadata)
+    functions_list.append(native_kernel_function_metadata)
 
     # Arrange Mock Memory and Result
     memory_query_result = MemoryQueryResult(
@@ -165,7 +164,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
     memory.search.return_value = [memory_query_result]
 
     mock_plugins = Mock(spec=KernelPluginCollection)
-    mock_plugins.get_functions_view.return_value = functions_view
+    mock_plugins.get_list_of_function_metadata.return_value = functions_list
 
     # Arrange GetAvailableFunctionsAsync parameters
     kernel = Kernel()

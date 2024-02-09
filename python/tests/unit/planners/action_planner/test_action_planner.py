@@ -8,7 +8,6 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -50,7 +49,8 @@ def test_throw_without_completion_service():
 def mock_kernel(plugins_input):
     kernel = Mock(spec=Kernel)
     plugins = MagicMock(spec=KernelPluginCollection)
-    functionsView = FunctionsView()
+    # functionsView = FunctionsView()
+    functions_list = []
 
     mock_plugins = {}
 
@@ -64,7 +64,7 @@ def mock_kernel(plugins_input):
             is_asynchronous=True,
         )
         mock_function = create_mock_function(kernel_function_metadata)
-        functionsView.add_function(kernel_function_metadata)
+        functions_list.append(kernel_function_metadata)
 
         if plugin_name not in mock_plugins:
             mock_plugins[plugin_name] = {}
@@ -77,7 +77,7 @@ def mock_kernel(plugins_input):
     plugins.__getitem__.side_effect = lambda plugin_name: MagicMock(__getitem__=mock_plugins[plugin_name].__getitem__)
 
     kernel.plugins = plugins
-    kernel.plugins.get_functions_view.return_value = functionsView
+    kernel.plugins.get_list_of_function_metadata.return_value = functions_list
     return kernel
 
 

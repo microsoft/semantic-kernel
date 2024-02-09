@@ -6,7 +6,6 @@ import pytest
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -49,7 +48,7 @@ async def test_it_can_create_plan(goal):
         ("Summarize", "SummarizePlugin", "Summarize something", True),
     ]
 
-    functionsView = FunctionsView()
+    functions_list = []
     kernel.plugins = KernelPluginCollection()
     mock_functions = []
     for name, pluginName, description, isSemantic in input:
@@ -62,7 +61,7 @@ async def test_it_can_create_plan(goal):
             is_asynchronous=True,
         )
         mock_function = create_mock_function(kernel_function_metadata)
-        functionsView.add_function(kernel_function_metadata)
+        functions_list.append(kernel_function_metadata)
         mock_function.invoke.return_value = FunctionResult(
             function=kernel_function_metadata, value="MOCK FUNCTION CALLED", metadata={}
         )
@@ -122,8 +121,8 @@ async def test_invalid_xml_throws():
     kernel.memory = memory
     plugins = Mock(spec=KernelPluginCollection)
 
-    functionsView = FunctionsView()
-    plugins.get_functions_view.return_value = functionsView
+    functions_list = []
+    plugins.get_list_of_function_metadata.return_value = functions_list
 
     plan_string = "<plan>notvalid<</plan>"
     function_result = FunctionResult(function=None, value=plan_string, metadata={})
