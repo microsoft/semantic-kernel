@@ -3,7 +3,7 @@
 using System;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
-namespace SemanticKernel.UnitTests.Fakes;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Fakes;
 
 public sealed class FakeEndpointProvider : IEndpointProvider
 {

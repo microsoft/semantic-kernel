@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Moq;
-using SemanticKernel.UnitTests.Fakes;
+using SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Fakes;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
