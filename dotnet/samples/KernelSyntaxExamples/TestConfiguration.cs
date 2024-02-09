@@ -39,6 +39,7 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
+    public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -173,6 +174,11 @@ public sealed class TestConfiguration
     public class MongoDBConfig
     {
         public string ConnectionString { get; set; }
+    }
+
+    public class ChatGPTRetrievalPluginConfig
+    {
+        public string Token { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
