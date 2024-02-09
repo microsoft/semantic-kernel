@@ -69,6 +69,7 @@ azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
 
 [tool.poetry.group.tests.dependencies]
+azure-search-documents = {version = "11.4.0b9", allow-prereleases = true}
 azure-core = "^1.28.0"
 
 [tool.poetry.group.usearch.dependencies]
