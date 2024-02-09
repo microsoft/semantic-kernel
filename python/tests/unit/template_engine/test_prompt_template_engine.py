@@ -9,8 +9,8 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.plugin_definition import kernel_function
-from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyPluginCollection,
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
@@ -28,12 +28,12 @@ def variables():
 
 @fixture
 def plugins():
-    return Mock(spec=ReadOnlyPluginCollection)
+    return Mock(spec=KernelPluginCollection)
 
 
 @fixture
 def context(variables, plugins):
-    return KernelContext(variables, NullMemory(), plugins)
+    return KernelContext(variables=variables, memory=NullMemory(), plugins=plugins)
 
 
 def test_it_renders_variables(target: PromptTemplateEngine, variables: ContextVariables):
@@ -126,7 +126,7 @@ async def test_it_renders_code_using_input(
     def my_function(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
-    func = KernelFunction.from_native_method(my_function)
+    func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
 
     variables.update("INPUT-BAR")
@@ -146,7 +146,7 @@ async def test_it_renders_code_using_variables(
     def my_function(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
-    func = KernelFunction.from_native_method(my_function)
+    func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
 
     variables.set("myVar", "BAR")
@@ -166,7 +166,7 @@ async def test_it_renders_code_using_variables_async(
     async def my_function(cx: KernelContext) -> str:
         return cx.variables.input
 
-    func = KernelFunction.from_native_method(my_function)
+    func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
 
     variables.set("myVar", "BAR")

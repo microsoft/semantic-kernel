@@ -85,7 +85,7 @@ public sealed class OpenAIFunctionTests
         FunctionDefinition result = sut.ToFunctionDefinition();
 
         // Assert
-        Assert.Equal("myplugin_myfunc", result.Name);
+        Assert.Equal("myplugin-myfunc", result.Name);
         Assert.Equal(sut.Description, result.Description);
     }
 
@@ -110,7 +110,7 @@ public sealed class OpenAIFunctionTests
         var act = JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters));
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests_TestFunction", functionDefinition.Name);
+        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
     }
@@ -133,7 +133,7 @@ public sealed class OpenAIFunctionTests
         FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests_TestFunction", functionDefinition.Name);
+        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
     }
