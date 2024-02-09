@@ -9,15 +9,12 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatC
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-
 import java.time.Instant;
-import java.util.List;
 
 public class Example59_OpenAIFunctionCalling {
 
@@ -30,23 +27,28 @@ public class Example59_OpenAIFunctionCalling {
         .getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
     public static class Plugin {
-        @DefineKernelFunction(name = "getCurrentTime", description = "Gets the current time for a city")
-        public String getCurrentTime() {
-            return Instant.now().toString();
+        @DefineKernelFunction(name = "getLatitudeOfCity", description = "Gets the latitude of a given city")
+        public String getLatitudeOfCity(
+            @KernelFunctionParameter(name = "cityName", description = "City name")
+            String cityName) {
+            return "1.0";
         }
-        @DefineKernelFunction(name = "getWeatherForCity", description = "Gets current weather of a city")
-        public String getWeatherForCity(@KernelFunctionParameter(name="cityName", description = "City name")
-                                                String cityName) {
-            return switch (cityName) {
-                case "Boston" -> "61 and rainy";
-                case "London" -> "55 and cloudy";
-                case "Miami" -> "80 and sunny";
-                case "Paris" -> "60 and rainy";
-                case "Tokyo" -> "50 and sunny";
-                case "Sydney" -> "75 and sunny";
-                case "Tel Aviv" -> "80 and sunny";
-                default -> "31 and snowing";
-            };
+
+        @DefineKernelFunction(name = "getLongitudeOfCity", description = "Gets the longitude of a given city")
+        public String getLongitudeOfCity(
+            @KernelFunctionParameter(name = "cityName", description = "City name")
+            String cityName) {
+            return "2.0";
+        }
+
+        @DefineKernelFunction(name = "getsTheWeatherAtAGivenLocation", description = "Gets the current weather at a given longitude and latitude")
+        public String getWeatherForCityAtTime(
+            @KernelFunctionParameter(name = "latitude", description = "latitude of the location")
+            String latitude,
+            @KernelFunctionParameter(name = "longitude", description = "longitude of the location")
+            String longitude
+        ) {
+            return "61 and rainy";
         }
     }
 
@@ -72,28 +74,25 @@ public class Example59_OpenAIFunctionCalling {
             .withOpenAIAsyncClient(client)
             .build();
 
-        KernelPlugin plugin = KernelPluginFactory.createFromFunctions("plugin", List.of(
-                KernelFunctionFactory.createFromMethod(Plugin.class.getMethod("getCurrentTime"),
-                        new Plugin(), "getCurrentTime", null, null, null),
-                KernelFunctionFactory.createFromMethod(Plugin.class.getMethod("getWeatherForCity", String.class),
-                        new Plugin(), "getWeatherForCity", null, null, null)
-        ));
+        KernelPlugin plugin = KernelPluginFactory.createFromObject(new Plugin(), "plugin");
 
         var kernel = Kernel.builder()
-                .withAIService(ChatCompletionService.class, chat)
-                .build();
+            .withAIService(ChatCompletionService.class, chat)
+            .build();
 
         kernel.getPlugins().add(plugin);
 
         var function = KernelFunctionFromPrompt.builder()
-            .withTemplate("Given the current time of day and weather, what is the likely color of the sky in Boston?")
+            .withTemplate(
+                "What is the current color of the sky in Thrapston?")
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
-                        .withTemperature(0.4)
-                        .withTopP(1)
-                        .withMaxTokens(100)
-                        .withToolCallBehavior(new ToolCallBehavior().autoInvoke(true))
-                        .build()
+                    .withTemperature(0.4)
+                    .withTopP(1)
+                    .withMaxTokens(100)
+                    .withToolCallBehavior(
+                        new ToolCallBehavior().autoInvoke(true))
+                    .build()
             )
             .build();
 
