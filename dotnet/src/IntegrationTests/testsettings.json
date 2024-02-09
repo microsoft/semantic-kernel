@@ -26,19 +26,19 @@
     "ApiKey": ""
   },
   "GoogleAI": {
+    "EmbeddingModelId": "embedding-001",
+    "ApiKey": "",
     "Gemini": {
-      "ModelId": "gemini-pro",
-      "EmbeddingModelId": "",
-      "ApiKey": ""
+      "ModelId": "gemini-pro"
     }
   },
   "VertexAI": {
+    "EmbeddingModelId": "textembedding-gecko",
+    "ApiKey": "",
+    "Location": "",
+    "ProjectId": "",
     "Gemini": {
-      "ModelId": "gemini-pro",
-      "EmbeddingModelId": "textembedding-gecko",
-      "ApiKey": "",
-      "Location": "",
-      "ProjectId": ""
+      "ModelId": "gemini-pro"
     }
   },
   "Bing": {
