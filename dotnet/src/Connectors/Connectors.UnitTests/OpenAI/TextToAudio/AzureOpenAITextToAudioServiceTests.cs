@@ -88,6 +88,34 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         Assert.True(result.AudioData.ToArray().SequenceEqual(expectedByteArray));
     }
 
+    [Theory]
+    [InlineData(true, "http://local-endpoint")]
+    [InlineData(false, "https://endpoint")]
+    public async Task GetAudioContentUsesValidBaseUrlAsync(bool useHttpClientBaseAddress, string expectedBaseAddress)
+    {
+        // Arrange
+        var expectedByteArray = new byte[] { 0x00, 0x00, 0xFF, 0x7F };
+
+        if (useHttpClientBaseAddress)
+        {
+            this._httpClient.BaseAddress = new Uri("http://local-endpoint");
+        }
+
+        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        await using var stream = new MemoryStream(expectedByteArray);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act
+        var result = await service.GetAudioContentAsync("Some text", new OpenAITextToAudioExecutionSettings("voice"));
+
+        // Assert
+        Assert.StartsWith(expectedBaseAddress, this._messageHandlerStub.RequestUri!.AbsoluteUri, StringComparison.InvariantCulture);
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

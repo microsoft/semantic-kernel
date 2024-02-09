@@ -21,8 +21,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0005")]
 public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 {
-    private const string DefaultApiVersion = "2024-02-15-preview";
-
     private readonly Dictionary<string, object?> _attributes = new();
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
@@ -126,7 +124,13 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 
     private HttpRequestMessage GetRequest(string text, string modelId, OpenAITextToAudioExecutionSettings executionSettings)
     {
-        var requestUrl = $"{this._endpoint.TrimEnd('/')}/openai/deployments/{this._deploymentName}/audio/speech?api-version={DefaultApiVersion}";
+        const string DefaultApiVersion = "2024-02-15-preview";
+
+        var baseUrl = !string.IsNullOrWhiteSpace(this._httpClient.BaseAddress?.AbsoluteUri) ?
+            this._httpClient.BaseAddress!.AbsoluteUri :
+            this._endpoint;
+
+        var requestUrl = $"openai/deployments/{this._deploymentName}/audio/speech?api-version={DefaultApiVersion}";
 
         var payload = new TextToAudioRequest(modelId, text, executionSettings.Voice)
         {
@@ -134,7 +138,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
             Speed = executionSettings.Speed
         };
 
-        return HttpRequest.CreatePostRequest(requestUrl, payload);
+        return HttpRequest.CreatePostRequest($"{baseUrl.TrimEnd('/')}/{requestUrl}", payload);
     }
 
     private string GetModelId(OpenAITextToAudioExecutionSettings executionSettings)

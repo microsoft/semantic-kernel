@@ -121,7 +121,11 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
 
     private HttpRequestMessage GetRequest(string text, OpenAITextToAudioExecutionSettings executionSettings)
     {
-        var requestUrl = "https://api.openai.com/v1/audio/speech";
+        const string DefaultBaseUrl = "https://api.openai.com";
+
+        var baseUrl = !string.IsNullOrWhiteSpace(this._httpClient.BaseAddress?.AbsoluteUri) ?
+            this._httpClient.BaseAddress!.AbsoluteUri :
+            DefaultBaseUrl;
 
         var payload = new TextToAudioRequest(this._modelId, text, executionSettings.Voice)
         {
@@ -129,7 +133,7 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
             Speed = executionSettings.Speed
         };
 
-        return HttpRequest.CreatePostRequest(requestUrl, payload);
+        return HttpRequest.CreatePostRequest($"{baseUrl.TrimEnd('/')}/v1/audio/speech", payload);
     }
 
     private void AddAttribute(string key, string? value)
