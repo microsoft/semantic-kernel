@@ -78,8 +78,8 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
 
     private async Task<AudioContent> InternalGetAudioContentAsync(
         string text,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
+        PromptExecutionSettings? executionSettings,
+        CancellationToken cancellationToken)
     {
         OpenAITextToAudioExecutionSettings? audioExecutionSettings = OpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
 
@@ -96,7 +96,7 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
 
     private async Task<HttpResponseMessage> SendRequestAsync(
         HttpRequestMessage request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
