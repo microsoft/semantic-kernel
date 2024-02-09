@@ -10,8 +10,8 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     HnswVectorSearchAlgorithmConfiguration,
     SearchIndex,
-    VectorSearch,
     SearchResourceEncryptionKey,
+    VectorSearch,
 )
 from azure.search.documents.models import Vector
 from numpy import ndarray
