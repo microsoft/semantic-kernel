@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Contents;
 /// <summary>
 /// Represents audio content return from a <see cref="ITextToAudioService" /> service.
 /// </summary>
-public sealed class AudioContent : KernelContent
+public class AudioContent : KernelContent
 {
     /// <summary>
     /// The audio binary data.
