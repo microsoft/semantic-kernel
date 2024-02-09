@@ -243,7 +243,7 @@ internal abstract class ClientCore
     internal async Task<TextContent> GetTextContentFromAudioAsync(
         BinaryData audioData,
         PromptExecutionSettings? executionSettings,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
