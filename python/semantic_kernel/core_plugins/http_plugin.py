@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 
 import aiohttp
 
-if sys.version_info > (3, 8):
+if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
