@@ -2,7 +2,6 @@
 
 import asyncio
 import os
-from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
@@ -12,14 +11,15 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     AzureDataSources,
     ExtraBody,
 )
-from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
-    chat_completion_with_function_call,
+    chat_completion_with_tool_call,
     get_tool_call_object,
 )
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 kernel = sk.Kernel()
 
@@ -31,7 +31,7 @@ azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
 az_source = AzureAISearchDataSources(**azure_ai_search_settings)
 az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
-req_settings = AzureChatPromptExecutionSettings(extra_body=extra)
+req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt")  # extra_body=extra,
 
 # For example, AI Search index may contain the following document:
 
@@ -44,7 +44,7 @@ chat_service = sk_oai.AzureChatCompletion(
     api_key=api_key,
     endpoint=endpoint,
     api_version="2023-12-01-preview",
-    use_extensions=True,
+    use_extensions=False,
 )
 kernel.add_chat_service(
     "chat-gpt",
@@ -76,45 +76,44 @@ chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_co
 # to enable or disable function calling or set the function calling to a specific plugin.
 # see the openai_function_calling example for how to use this with a unrelated function definition
 filter = {"exclude_plugin": ["ChatBot"]}
-functions = get_tool_call_object(kernel, filter)
+tools = get_tool_call_object(kernel, filter)
 
 
-async def chat(context: sk.KernelContext) -> Tuple[bool, sk.KernelContext]:
+async def chat() -> bool:
+    req_settings.tools = tools
+    req_settings.tool_choice = "auto"
     try:
         user_input = input("User:> ")
-        context.variables["user_input"] = user_input
+        arguments = KernelArguments(user_input=user_input, execution_settings=req_settings)
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
-        return False, None
+        return False
     except EOFError:
         print("\n\nExiting chat...")
-        return False, None
+        return False
 
     if user_input == "exit":
         print("\n\nExiting chat...")
-        return False, None
+        return False
 
-    context = await chat_completion_with_function_call(
-        kernel,
-        chat_plugin_name="ChatBot",
-        chat_function_name="Chat",
-        context=context,
-        functions=functions,
+    result = await chat_completion_with_tool_call(
+        kernel=kernel,
+        arguments=arguments,
+        chat_function=chat_function,
     )
-    print(f"Assistant:> {context.result}")
-    return True, context
+    print(f"Assistant:> {result}")
+    return True
 
 
 async def main() -> None:
     chatting = True
-    context = kernel.create_new_context()
     print(
         "Welcome to the chat bot!\
 \n  Type 'exit' to exit.\
 \n  Try a time question to see the function calling in action (i.e. what day is it?)."
     )
     while chatting:
-        chatting, context = await chat(context)
+        chatting = await chat()
 
 
 if __name__ == "__main__":

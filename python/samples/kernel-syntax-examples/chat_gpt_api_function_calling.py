@@ -10,7 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_promp
     OpenAIChatPromptTemplate,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
-    chat_completion_with_function_call,
+    chat_completion_with_tool_call,
     get_tool_call_object,
 )
 from semantic_kernel.core_plugins import MathPlugin
@@ -91,7 +91,7 @@ async def chat(context: sk.KernelContext) -> Tuple[bool, sk.KernelContext]:
         print("\n\nExiting chat...")
         return False, None
 
-    context = await chat_completion_with_function_call(
+    context = await chat_completion_with_tool_call(
         kernel,
         chat_plugin_name="ChatBot",
         chat_function_name="Chat",
