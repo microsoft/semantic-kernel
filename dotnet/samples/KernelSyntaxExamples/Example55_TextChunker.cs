@@ -4,49 +4,23 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.DeepDev;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 using Resources;
 using SharpToken;
+using Xunit;
+using Xunit.Abstractions;
 using static Microsoft.SemanticKernel.Text.TextChunker;
 
-public static class Example55_TextChunker
+namespace Examples;
+
+public class Example55_TextChunker : BaseTest
 {
-    private const string Text = @"The city of Venice, located in the northeastern part of Italy,
-is renowned for its unique geographical features. Built on more than 100 small islands in a lagoon in the
-Adriatic Sea, it has no roads, just canals including the Grand Canal thoroughfare lined with Renaissance and
-Gothic palaces. The central square, Piazza San Marco, contains St. Mark's Basilica, which is tiled with Byzantine
-mosaics, and the Campanile bell tower offering views of the city's red roofs.
-
-The Amazon Rainforest, also known as Amazonia, is a moist broadleaf tropical rainforest in the Amazon biome that
-covers most of the Amazon basin of South America. This basin encompasses 7 million square kilometers, of which
-5.5 million square kilometers are covered by the rainforest. This region includes territory belonging to nine nations
-and 3.4 million square kilometers of uncontacted tribes. The Amazon represents over half of the planet's remaining
-rainforests and comprises the largest and most biodiverse tract of tropical rainforest in the world.
-
-The Great Barrier Reef is the world's largest coral reef system composed of over 2,900 individual reefs and 900 islands
-stretching for over 2,300 kilometers over an area of approximately 344,400 square kilometers. The reef is located in the
-Coral Sea, off the coast of Queensland, Australia. The Great Barrier Reef can be seen from outer space and is the world's
-biggest single structure made by living organisms. This reef structure is composed of and built by billions of tiny organisms,
-known as coral polyps.";
-
-    public static Task RunAsync()
+    [Fact]
+    public void RunExample()
     {
-        RunExample();
-        RunExampleForTokenCounterType(TokenCounterType.SharpToken);
-        RunExampleForTokenCounterType(TokenCounterType.MicrosoftML);
-        RunExampleForTokenCounterType(TokenCounterType.MicrosoftMLRoberta);
-        RunExampleForTokenCounterType(TokenCounterType.DeepDev);
-        RunExampleWithHeader();
-
-        return Task.CompletedTask;
-    }
-
-    private static void RunExample()
-    {
-        Console.WriteLine("=== Text chunking ===");
+        WriteLine("=== Text chunking ===");
 
         var lines = TextChunker.SplitPlainTextLines(Text, 40);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120);
@@ -54,9 +28,14 @@ known as coral polyps.";
         WriteParagraphsToConsole(paragraphs);
     }
 
-    private static void RunExampleForTokenCounterType(TokenCounterType counterType)
+    [Theory]
+    [InlineData(TokenCounterType.SharpToken)]
+    [InlineData(TokenCounterType.MicrosoftML)]
+    [InlineData(TokenCounterType.MicrosoftMLRoberta)]
+    [InlineData(TokenCounterType.DeepDev)]
+    public void RunExampleForTokenCounterType(TokenCounterType counterType)
     {
-        Console.WriteLine($"=== Text chunking with a custom({counterType}) token counter ===");
+        WriteLine($"=== Text chunking with a custom({counterType}) token counter ===");
         var sw = new Stopwatch();
         sw.Start();
         var tokenCounter = s_tokenCounterFactory(counterType);
@@ -65,13 +44,14 @@ known as coral polyps.";
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: tokenCounter);
 
         sw.Stop();
-        Console.WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
+        WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
         WriteParagraphsToConsole(paragraphs);
     }
 
-    private static void RunExampleWithHeader()
+    [Fact]
+    public void RunExampleWithHeader()
     {
-        Console.WriteLine("=== Text chunking with chunk header ===");
+        WriteLine("=== Text chunking with chunk header ===");
 
         var lines = TextChunker.SplitPlainTextLines(Text, 40);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 150, chunkHeader: "DOCUMENT NAME: test.txt\n\n");
@@ -79,20 +59,20 @@ known as coral polyps.";
         WriteParagraphsToConsole(paragraphs);
     }
 
-    private static void WriteParagraphsToConsole(List<string> paragraphs)
+    private void WriteParagraphsToConsole(List<string> paragraphs)
     {
         for (var i = 0; i < paragraphs.Count; i++)
         {
-            Console.WriteLine(paragraphs[i]);
+            WriteLine(paragraphs[i]);
 
             if (i < paragraphs.Count - 1)
             {
-                Console.WriteLine("------------------------");
+                WriteLine("------------------------");
             }
         }
     }
 
-    private enum TokenCounterType
+    public enum TokenCounterType
     {
         SharpToken,
         MicrosoftML,
@@ -175,4 +155,26 @@ known as coral polyps.";
             TokenCounterType.MicrosoftMLRoberta => (string input) => MicrosoftMLRobertaTokenCounter(input),
             _ => throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null),
         };
+
+    private const string Text = @"The city of Venice, located in the northeastern part of Italy,
+is renowned for its unique geographical features. Built on more than 100 small islands in a lagoon in the
+Adriatic Sea, it has no roads, just canals including the Grand Canal thoroughfare lined with Renaissance and
+Gothic palaces. The central square, Piazza San Marco, contains St. Mark's Basilica, which is tiled with Byzantine
+mosaics, and the Campanile bell tower offering views of the city's red roofs.
+
+The Amazon Rainforest, also known as Amazonia, is a moist broadleaf tropical rainforest in the Amazon biome that
+covers most of the Amazon basin of South America. This basin encompasses 7 million square kilometers, of which
+5.5 million square kilometers are covered by the rainforest. This region includes territory belonging to nine nations
+and 3.4 million square kilometers of uncontacted tribes. The Amazon represents over half of the planet's remaining
+rainforests and comprises the largest and most biodiverse tract of tropical rainforest in the world.
+
+The Great Barrier Reef is the world's largest coral reef system composed of over 2,900 individual reefs and 900 islands
+stretching for over 2,300 kilometers over an area of approximately 344,400 square kilometers. The reef is located in the
+Coral Sea, off the coast of Queensland, Australia. The Great Barrier Reef can be seen from outer space and is the world's
+biggest single structure made by living organisms. This reef structure is composed of and built by billions of tiny organisms,
+known as coral polyps.";
+
+    public Example55_TextChunker(ITestOutputHelper output) : base(output)
+    {
+    }
 }

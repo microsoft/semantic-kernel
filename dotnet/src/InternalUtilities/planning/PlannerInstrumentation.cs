@@ -204,13 +204,13 @@ internal static partial class PlannerInstrumentation
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "Plan creation failed. Error: {Message}")]
+        Message = "Plan execution failed. Error: {Message}")]
     static partial void LogInvokePlanError(this ILogger logger, Exception exception, string message);
 
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Plan creation duration: {Duration}s.")]
+        Message = "Plan execution duration: {Duration}s.")]
     static partial void LogInvokePlanDuration(this ILogger logger, double duration);
 
 #pragma warning restore SYSLIB1006 // Multiple logging methods cannot use the same event id within a class

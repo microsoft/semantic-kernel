@@ -121,6 +121,14 @@ You can also run all the tests together under the [tests](tests/) folder.
 
 ## Tools and scripts
 
+## Implementation Decisions 
+
+### Asynchronous programming
+
+It's important to note that most of this library is written with asynchronous in mind. The 
+developer should always assume everything is asynchronous. One can use the function signature 
+with either `async def` or `def` to understand if something is asynchronous or not.
+
 ## Pydantic and Serialization
 
 [Pydantic Documentation](https://docs.pydantic.dev/1.10/)
@@ -170,7 +178,7 @@ from this field is sufficient to have these types of classes as valid Pydantic f
 any class using them as attributes to be serialized.
 
 ```python
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.kernel_pydantic import PydanticField
 
 class B(PydanticField): ... # correct, B is still an ABC because PydanticField subclasses ABC
 class B(PydanticField, ABC): ... # Also correct
@@ -223,13 +231,13 @@ class A:
         self.d = d
 ```
 
-You would convert this to a Pydantic class by subclassing from the `SKBaseModel` class.
+You would convert this to a Pydantic class by subclassing from the `KernelBaseModel` class.
 
 ```python
 from pydantic import Field
-from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
-class A(SKBaseModel):
+class A(KernelBaseModel):
     # The notation for the fields is similar to dataclasses.
     a: int
     b: float
@@ -255,14 +263,14 @@ class A:
         self.c = c
 ```
 
-You can uses the `SKGenericModel` to convert these to pydantic serializable classes.
+You can use the `KernelBaseModel` to convert these to pydantic serializable classes.
 
 ```python
 from typing import Generic
 
-from semantic_kernel.sk_pydantic import SKGenericModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
-class A(SKGenericModel, Generic[T1, T2]):
+class A(KernelBaseModel, Generic[T1, T2]):
     # T1 and T2 must be specified in the Generic argument otherwise, pydantic will
     # NOT be able to serialize this class
     a: int

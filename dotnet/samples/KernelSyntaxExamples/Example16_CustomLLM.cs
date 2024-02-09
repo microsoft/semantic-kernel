@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 /**
  * The following example shows how to plug a custom text generation model into SK.
@@ -24,18 +28,12 @@ using Microsoft.SemanticKernel.TextGeneration;
  *
  * Refer to example 33 for streaming chat completion.
  */
-public static class Example16_CustomLLM
+public class Example16_CustomLLM : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task CustomTextGenerationWithKernelFunctionAsync()
     {
-        await CustomTextGenerationWithKernelFunctionAsync();
-        await CustomTextGenerationAsync();
-        await CustomTextGenerationStreamAsync();
-    }
-
-    private static async Task CustomTextGenerationWithKernelFunctionAsync()
-    {
-        Console.WriteLine("\n======== Custom LLM - Text Completion - KernelFunction ========");
+        WriteLine("\n======== Custom LLM - Text Completion - KernelFunction ========");
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         // Add your text generation service as a singleton instance
@@ -48,39 +46,41 @@ public static class Example16_CustomLLM
         var paragraphWritingFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         const string Input = "Why AI is awesome";
-        Console.WriteLine($"Function input: {Input}\n");
+        WriteLine($"Function input: {Input}\n");
         var result = await paragraphWritingFunction.InvokeAsync(kernel, new() { ["input"] = Input });
 
-        Console.WriteLine(result);
+        WriteLine(result);
     }
 
-    private static async Task CustomTextGenerationAsync()
+    [Fact]
+    public async Task CustomTextGenerationAsync()
     {
-        Console.WriteLine("\n======== Custom LLM  - Text Completion - Raw ========");
+        WriteLine("\n======== Custom LLM  - Text Completion - Raw ========");
 
         const string Prompt = "Write one paragraph on why AI is awesome.";
         var completionService = new MyTextGenerationService();
 
-        Console.WriteLine($"Prompt: {Prompt}\n");
+        WriteLine($"Prompt: {Prompt}\n");
         var result = await completionService.GetTextContentAsync(Prompt);
 
-        Console.WriteLine(result);
+        WriteLine(result);
     }
 
-    private static async Task CustomTextGenerationStreamAsync()
+    [Fact]
+    public async Task CustomTextGenerationStreamAsync()
     {
-        Console.WriteLine("\n======== Custom LLM  - Text Completion - Raw Streaming ========");
+        WriteLine("\n======== Custom LLM  - Text Completion - Raw Streaming ========");
 
         const string Prompt = "Write one paragraph on why AI is awesome.";
         var completionService = new MyTextGenerationService();
 
-        Console.WriteLine($"Prompt: {Prompt}\n");
+        WriteLine($"Prompt: {Prompt}\n");
         await foreach (var message in completionService.GetStreamingTextContentsAsync(Prompt))
         {
-            Console.Write(message);
+            Write(message);
         }
 
-        Console.WriteLine();
+        WriteLine();
     }
 
     /// <summary>
@@ -116,5 +116,9 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
                 new(LLMResultText)
             });
         }
+    }
+
+    public Example16_CustomLLM(ITestOutputHelper output) : base(output)
+    {
     }
 }

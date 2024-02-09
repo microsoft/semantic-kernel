@@ -13,6 +13,38 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
 
 public sealed class OpenAIFunctionTests
 {
+    [Theory]
+    [InlineData(null, null, "", "")]
+    [InlineData("name", "description", "name", "description")]
+    public void ItInitializesOpenAIFunctionParameterCorrectly(string? name, string? description, string expectedName, string expectedDescription)
+    {
+        // Arrange & Act
+        var schema = KernelJsonSchema.Parse("{\"type\": \"object\" }");
+        var functionParameter = new OpenAIFunctionParameter(name, description, true, typeof(string), schema);
+
+        // Assert
+        Assert.Equal(expectedName, functionParameter.Name);
+        Assert.Equal(expectedDescription, functionParameter.Description);
+        Assert.True(functionParameter.IsRequired);
+        Assert.Equal(typeof(string), functionParameter.ParameterType);
+        Assert.Same(schema, functionParameter.Schema);
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("description", "description")]
+    public void ItInitializesOpenAIFunctionReturnParameterCorrectly(string? description, string expectedDescription)
+    {
+        // Arrange & Act
+        var schema = KernelJsonSchema.Parse("{\"type\": \"object\" }");
+        var functionParameter = new OpenAIFunctionReturnParameter(description, typeof(string), schema);
+
+        // Assert
+        Assert.Equal(expectedDescription, functionParameter.Description);
+        Assert.Equal(typeof(string), functionParameter.ParameterType);
+        Assert.Same(schema, functionParameter.Schema);
+    }
+
     [Fact]
     public void ItCanConvertToFunctionDefinitionWithNoPluginName()
     {
@@ -28,6 +60,19 @@ public sealed class OpenAIFunctionTests
     }
 
     [Fact]
+    public void ItCanConvertToFunctionDefinitionWithNullParameters()
+    {
+        // Arrange 
+        OpenAIFunction sut = new("plugin", "function", "description", null, null);
+
+        // Act
+        var result = sut.ToFunctionDefinition();
+
+        // Assert
+        Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{}}", result.Parameters.ToString());
+    }
+
+    [Fact]
     public void ItCanConvertToFunctionDefinitionWithPluginName()
     {
         // Arrange
@@ -40,7 +85,7 @@ public sealed class OpenAIFunctionTests
         FunctionDefinition result = sut.ToFunctionDefinition();
 
         // Assert
-        Assert.Equal("myplugin_myfunc", result.Name);
+        Assert.Equal("myplugin-myfunc", result.Name);
         Assert.Equal(sut.Description, result.Description);
     }
 
@@ -65,7 +110,7 @@ public sealed class OpenAIFunctionTests
         var act = JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters));
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests_TestFunction", functionDefinition.Name);
+        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
     }
@@ -88,7 +133,7 @@ public sealed class OpenAIFunctionTests
         FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests_TestFunction", functionDefinition.Name);
+        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
     }
