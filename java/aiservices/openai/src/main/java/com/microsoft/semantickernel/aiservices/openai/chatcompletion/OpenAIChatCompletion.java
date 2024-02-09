@@ -17,7 +17,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.azuresdk.OpenAIFunction;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
@@ -35,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -92,35 +90,35 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> messages,
-        PromptExecutionSettings promptExecutionSettings,
+        PromptExecutionSettings settings,
         Kernel kernel) {
 
         List<FunctionDefinition> functions = new ArrayList<>();
         if (kernel != null) {
             kernel.getPlugins().forEach(plugin ->
                 plugin.getFunctions().forEach((name, function) ->
-                    functions.add(OpenAIFunction.fromKernelFunctionMetadata(function.getMetadata(), plugin.getName()).toFunctionDefinition())
+                    functions.add(OpenAIFunction.toFunctionDefinition(function.getMetadata(), plugin.getName()))
                 )
             );
         }
 
         // Create copy to avoid reactor exceptions when updating the chat options messages internally
-        ChatCompletionsOptions options = getCompletionsOptions(this, new ArrayList<>(messages), functions, promptExecutionSettings);
+        ChatCompletionsOptions options = getCompletionsOptions(this, new ArrayList<>(messages), functions, settings);
 
         return internalChatMessageContentsAsync(
                 kernel,
                 options,
                 Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
-                        promptExecutionSettings.getToolCallBehavior() != null ? promptExecutionSettings.getToolCallBehavior().getMaximumAutoInvokeAttempts() : 0)
+                        settings != null && settings.getToolCallBehavior() != null ? settings.getToolCallBehavior().getMaximumAutoInvokeAttempts() : 0)
         );
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
             Kernel kernel,
-            ChatCompletionsOptions chatCompletionsOptions,
+            ChatCompletionsOptions options,
             int autoInvokeAttempts) {
-        AtomicReference<ChatCompletionsOptions> options = new AtomicReference<>(chatCompletionsOptions);
-        Mono<ChatCompletions> result = client.getChatCompletions(getModelId(), options.get());
+//        AtomicReference<ChatCompletionsOptions> options = new AtomicReference<>(chatCompletionsOptions);
+        Mono<ChatCompletions> result = client.getChatCompletions(getModelId(), options);
 
         return result.flatMap(completions -> {
             List<ChatResponseMessage> responseMessages = completions
@@ -130,14 +128,16 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
-            ChatResponseMessage response = responseMessages.get(0);
-            List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
-
             // Just return the result:
             // If we don't want to attempt to invoke any functions
             // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
+            if (autoInvokeAttempts == 0 || responseMessages.size() != 1) {
+                return getChatMessageContentsAsync(completions);
+            }
             // Or if there are no tool calls to be done
-            if (autoInvokeAttempts == 0 || responseMessages.size() != 1 || toolCalls == null || toolCalls.isEmpty()) {
+            ChatResponseMessage response = responseMessages.get(0);
+            List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
+            if (toolCalls == null || toolCalls.isEmpty()) {
                 return getChatMessageContentsAsync(completions);
             }
 
@@ -146,7 +146,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
             // Add the original assistant message to the chat options; this is required for the service
             // to understand the tool call responses
-            options.get().getMessages().add(requestMessage);
+            options.getMessages().add(requestMessage);
 
             return Flux.range(0, toolCalls.size()).flatMap(i -> {
                     // OpenAI only supports function tool call at the moment
@@ -156,10 +156,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                             .doOnNext(functionResult -> {
                                     // Add chat request tool message to the chat options
                                 ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(functionResult.getResult(), toolCall.getId());
-                                options.get().getMessages().add(requestToolMessage);
+                                options.getMessages().add(requestToolMessage);
                             });
                 }).collect(Collectors.toList())
-                    .then(internalChatMessageContentsAsync(kernel, options.get(), autoInvokeAttempts - 1));
+                    .then(internalChatMessageContentsAsync(kernel, options, autoInvokeAttempts - 1));
         });
     }
 
