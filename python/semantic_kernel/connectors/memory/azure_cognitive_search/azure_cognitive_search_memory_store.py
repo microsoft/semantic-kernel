@@ -84,7 +84,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
-        search_resource_encryption_key: SearchResourceEncryptionKey = None,
+        search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
