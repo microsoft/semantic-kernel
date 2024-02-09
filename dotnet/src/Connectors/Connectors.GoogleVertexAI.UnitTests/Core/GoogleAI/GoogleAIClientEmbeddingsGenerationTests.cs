@@ -108,13 +108,13 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
             values => Assert.Equal(testDataResponse.Embeddings[1].Values, values));
     }
 
-    private GoogleAIEmbeddingsClient CreateEmbeddingsClient(
+    private GoogleAIEmbeddingClient CreateEmbeddingsClient(
         string modelId = "fake-model",
         string apiKey = "fake-api-key",
         IEndpointProvider? endpointProvider = null,
         IHttpRequestFactory? httpRequestFactory = null)
     {
-        var client = new GoogleAIEmbeddingsClient(
+        var client = new GoogleAIEmbeddingClient(
             httpClient: this._httpClient,
             embeddingModelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
