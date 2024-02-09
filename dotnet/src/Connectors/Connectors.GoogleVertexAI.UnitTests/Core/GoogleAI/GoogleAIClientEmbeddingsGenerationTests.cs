@@ -75,9 +75,9 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
             values => Assert.Equal(testDataResponse.Embeddings[1].Values, values));
     }
 
-    private GoogleAIEmbeddingsClient CreateEmbeddingsClient(string modelId, string apiKey)
+    private GoogleAIEmbeddingClient CreateEmbeddingsClient(string modelId, string apiKey)
     {
-        var client = new GoogleAIEmbeddingsClient(
+        var client = new GoogleAIEmbeddingClient(
             httpClient: this._httpClient,
             embeddingModelId: modelId,
             httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),

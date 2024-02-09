@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
-internal interface IEmbeddingsClient
+internal interface IEmbeddingClient
 {
     /// <summary>
     /// Generates embeddings for the given data asynchronously.
