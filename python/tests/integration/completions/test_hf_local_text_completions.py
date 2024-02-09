@@ -10,9 +10,13 @@ from semantic_kernel.kernel import Kernel
 @pytest.mark.parametrize(
     ("model_name", "task", "input_str"),
     [
-        ("google-t5/t5-base", "text2text-generation", "translate English to Dutch: Hello, how are you?"),
         (
-            "Falconsai/text_summarization",
+            "patrickvonplaten/t5-tiny-random",
+            "text2text-generation",
+            "translate English to Dutch: Hello, how are you?",
+        ),
+        (
+            "jotamunz/billsum_tiny_summarization",
             "summarization",
             """
         Summarize: Whales are fully aquatic, open-ocean animals:
@@ -24,7 +28,7 @@ from semantic_kernel.kernel import Kernel
         in that the females are larger than males.
     """,
         ),
-        ("openai-community/gpt2", "text-generation", "Hello, I like sleeping and "),
+        ("HuggingFaceM4/tiny-random-LlamaForCausalLM", "text-generation", "Hello, I like sleeping and "),
     ],
     ids=["text2text-generation", "summarization", "text-generation"],
 )
@@ -54,9 +58,13 @@ async def test_text_completion(model_name, task, input_str):
 @pytest.mark.parametrize(
     ("model_name", "task", "input_str"),
     [
-        ("google-t5/t5-base", "text2text-generation", "translate English to Dutch: Hello, how are you?"),
         (
-            "Falconsai/text_summarization",
+            "patrickvonplaten/t5-tiny-random",
+            "text2text-generation",
+            "translate English to Dutch: Hello, how are you?",
+        ),
+        (
+            "jotamunz/billsum_tiny_summarization",
             "summarization",
             """
         Summarize: Whales are fully aquatic, open-ocean animals:
@@ -69,9 +77,9 @@ async def test_text_completion(model_name, task, input_str):
     """,
         ),
         # skipped for now, as it takes too long
-        # ("openai-community/gpt2", "text-generation", "Hello, I like sleeping and "),
+        ("HuggingFaceM4/tiny-random-LlamaForCausalLM", "text-generation", "Hello, I like sleeping and "),
     ],
-    ids=["text2text-generation", "summarization"],  # , "text-generation"],
+    ids=["text2text-generation", "summarization", "text-generation"],
 )
 async def test_text_completion_stream(model_name, task, input_str):
     kernel = Kernel()
