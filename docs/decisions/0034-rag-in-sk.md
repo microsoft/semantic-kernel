@@ -294,4 +294,6 @@ Data search and prompt concatenation will happen behind the scenes in `KernelFun
 
 ## Decision Outcome
 
-TBD.
+Temporary decision is to provide more examples how to use memory in Semantic Kernel as Plugin.
+
+The final decision will be ready based on next memory-related requirements.
