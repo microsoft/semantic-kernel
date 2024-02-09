@@ -4,75 +4,8 @@ import sys
 
 import pytest
 
-import semantic_kernel.connectors.ai.hugging_face as sk_hf
-
 if sys.version_info >= (3, 9):
     import semantic_kernel.connectors.ai.google_palm as sk_gp
-
-
-@pytest.fixture(
-    scope="module",
-    params=[
-        ("google/flan-t5-base", "text2text-generation"),
-        ("facebook/bart-large-cnn", "summarization"),
-    ],
-)
-def setup_hf_text_completion_function(create_kernel, request):
-    kernel = create_kernel
-
-    # Configure LLM service
-    kernel.add_text_completion_service(
-        request.param[0],
-        sk_hf.HuggingFaceTextCompletion(ai_model_id=request.param[0], task=request.param[1]),
-    )
-
-    # Define semantic function using SK prompt template language
-    sk_prompt = "Hello, I like {{$input}}{{$input2}}"
-
-    # Create the semantic function
-    text2text_function = kernel.create_semantic_function(sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5)
-
-    # User input
-    simple_input = "sleeping and "
-
-    yield kernel, text2text_function, simple_input
-
-
-@pytest.fixture(scope="module")
-def setup_summarize_function(create_kernel):
-    # User input (taken from https://en.wikipedia.org/wiki/Whale)
-    text_to_summarize = """
-        Whales are fully aquatic, open-ocean animals:
-        they can feed, mate, give birth, suckle and raise their young at sea.
-        Whales range in size from the 2.6 metres (8.5 ft) and 135 kilograms (298 lb)
-        dwarf sperm whale to the 29.9 metres (98 ft) and 190 tonnes (210 short tons) blue whale,
-        which is the largest known animal that has ever lived. The sperm whale is the largest
-        toothed predator on Earth. Several whale species exhibit sexual dimorphism,
-        in that the females are larger than males.
-    """
-    additional_text = """
-        The word "whale" comes from the Old English hwæl, from Proto-Germanic *hwalaz,
-        from Proto-Indo-European *(s)kwal-o-, meaning "large sea fish".[3][4]
-        The Proto-Germanic *hwalaz is also the source of Old Saxon hwal,
-        Old Norse hvalr, hvalfiskr, Swedish val, Middle Dutch wal, walvisc, Dutch walvis,
-        Old High German wal, and German Wal.[3] Other archaic English forms include wal,
-        wale, whal, whalle, whaille, wheal, etc.[5]
-    """
-
-    # Define semantic function using SK prompt template language
-    sk_prompt = "{{$input}} {{$input2}}"
-
-    kernel = create_kernel
-
-    # Configure LLM service
-    kernel.add_text_completion_service(
-        "facebook/bart-large-cnn",
-        sk_hf.HuggingFaceTextCompletion(ai_model_id="facebook/bart-large-cnn", task="summarization"),
-    )
-
-    # Create the semantic function
-    summarize_function = kernel.create_semantic_function(sk_prompt, max_tokens=80, temperature=0, top_p=0.5)
-    yield kernel, summarize_function, text_to_summarize, additional_text
 
 
 @pytest.fixture(scope="module")
