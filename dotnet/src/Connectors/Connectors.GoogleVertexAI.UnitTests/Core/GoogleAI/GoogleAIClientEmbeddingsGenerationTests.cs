@@ -9,7 +9,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Moq;
-using SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Fakes;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.GoogleAI;

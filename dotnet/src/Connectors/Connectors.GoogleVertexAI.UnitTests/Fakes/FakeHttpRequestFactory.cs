@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Fakes;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests;
 
 public sealed class FakeHttpRequestFactory : IHttpRequestFactory
 {
