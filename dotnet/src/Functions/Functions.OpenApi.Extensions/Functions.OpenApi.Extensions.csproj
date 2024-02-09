@@ -12,6 +12,7 @@
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - OpenAPI Plugin Extensions</Title>
     <Description>Semantic Kernel OpenAPI Plugin Extensions</Description>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
