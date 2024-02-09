@@ -60,7 +60,9 @@ async def test_create_collection_without_encryption_key(
 async def test_create_collection_with_encryption_key(
     azure_cognitive_search_memory_store, mock_search_index_client, mock_encryption_key, mock_get_index_client
 ):
-    mock_search_index_client.return_value = SearchIndex(name="testIndexWithEncryption", fields=[])
+    mock_search_index_client.return_value = SearchIndex(
+        name="testIndexWithEncryption", fields=[], search_resource_encryption_key=mock_encryption_key
+    )
     await azure_cognitive_search_memory_store.create_collection(
         "testIndexWithEncryption", search_resource_encryption_key=mock_encryption_key
     )
