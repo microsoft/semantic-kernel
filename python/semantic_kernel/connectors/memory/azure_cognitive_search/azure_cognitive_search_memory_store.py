@@ -93,7 +93,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
                                                                       (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
-            search_resource_encryption_key {SearchResourceEncryptionKey}            -- Optional Use the Encryption Key to create the index (default: {None}).
+            search_resource_encryption_key {SearchResourceEncryptionKey}            -- Optional Search Encryption Key
+                                                                                       (default: {None}).
 
         Returns:
             None
