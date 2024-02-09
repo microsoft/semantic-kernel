@@ -1,7 +1,5 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
-import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
@@ -14,11 +12,13 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
+import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -29,6 +29,7 @@ import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+
 import reactor.core.publisher.Mono;
 
 public class Example09_FunctionTypes {
@@ -328,8 +329,7 @@ public class Example09_FunctionTypes {
         // You can also use the kernel.Plugins collection to invoke a function
         kernel
             .invokeAsync(
-                kernel.getPlugins()
-                    .getFunction("Examples", "NoInputWithVoidResult"))
+                kernel.getFunction("Examples", "NoInputWithVoidResult"))
             .block();
     }
 

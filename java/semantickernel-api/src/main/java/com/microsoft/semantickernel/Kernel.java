@@ -1,26 +1,26 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionInvocation;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.plugin.KernelPluginCollection;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -29,18 +29,19 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 public class Kernel implements Buildable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Kernel.class);
+
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;
     private final KernelHooks globalKernelHooks;
 
     public Kernel(
         AIServiceSelector serviceSelector,
-        @Nullable KernelPluginCollection plugins,
+        @Nullable List<KernelPlugin> plugins,
         @Nullable KernelHooks globalKernelHooks) {
         this.serviceSelector = serviceSelector;
-
         if (plugins != null) {
-            this.plugins = new KernelPluginCollection(plugins.getPlugins());
+            this.plugins = new KernelPluginCollection(plugins);
         } else {
             this.plugins = new KernelPluginCollection();
         }
@@ -48,10 +49,11 @@ public class Kernel implements Buildable {
         this.globalKernelHooks = new KernelHooks(globalKernelHooks);
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public <T> FunctionInvocation<T> invokeAsync(
         String pluginName,
         String functionName) {
-        KernelFunction function = plugins.getFunction(pluginName, functionName);
+        KernelFunction function = getFunction(pluginName, functionName);
         return invokeAsync(function);
     }
 
@@ -59,22 +61,30 @@ public class Kernel implements Buildable {
         return function.invokeAsync(this);
     }
 
+    public void addPlugin(KernelPlugin plugin) {
+        plugins.add(plugin);
+    }
+
+    @Nullable
+    public KernelPlugin getPlugin(String pluginName) {
+        return plugins.getPlugin(pluginName);
+    }
+
+    public List<KernelPlugin> getPlugins() {
+        return plugins.getPlugins();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> KernelFunction<T> getFunction(String pluginName, String functionName) {
+        return (KernelFunction<T>)plugins.getFunction(pluginName, functionName);
+    }
 
     public List<KernelFunction<?>> getFunctions() {
-        return plugins.getPlugins()
-            .stream()
-            .map(KernelPlugin::getFunctions)
-            .flatMap(m -> m.values().stream())
-            .collect(Collectors.toList());
+        return plugins.getFunctions();
     }
 
     public AIServiceSelector getServiceSelector() {
         return serviceSelector;
-    }
-
-    @SuppressFBWarnings("EI_EXPOSE_REP")
-    public KernelPluginCollection getPlugins() {
-        return plugins;
     }
 
 
@@ -98,72 +108,6 @@ public class Kernel implements Buildable {
         return selector.getService();
     }
 
-    /*
-    // Add the global hooks to the invocation context hooks.
-    private KernelHooks mergeInGlobalHooks(@Nullable KernelHooks invocationContextHooks) {
-
-        KernelHooks mergedHooks = new KernelHooks();
-
-        KernelHooks kernelHooks = this.globalKernelHooks;
-        if (kernelHooks != null) {
-            mergedHooks = mergedHooks.append(kernelHooks);
-        }
-
-        if (invocationContextHooks != null) {
-            mergedHooks = mergedHooks.append(invocationContextHooks);
-        }
-
-        return mergedHooks;
-    }
-
-    // InvocationContext is immutable but it's members are not, so we need to create a new
-    // that can be modified (possibly) without affecting the original.
-    private InvocationContext updateInvocationContext(InvocationContext invocationContext) {
-        KernelFunctionArguments arguments = invocationContext.getKernelFunctionArguments();
-        if (arguments == null) {
-            arguments = new KernelFunctionArguments();
-        }
-
-        // Make a copy of the arguments in case they are modified by a hook later on. 
-        KernelFunctionArguments updatedArguments = new KernelFunctionArguments(arguments);
-        updatedArguments.putAll(arguments);
-
-        // Add the global hooks to the invocation context hooks.
-        KernelHooks updatedHooks = mergeInGlobalHooks(invocationContext.getKernelHooks());
-
-        return new InvocationContext(
-            updatedArguments,
-            invocationContext.getFunctionReturnType(),
-            updatedHooks,
-            invocationContext.getPromptExecutionSettings());
-    }
-
-    @Nullable
-    @SuppressWarnings("unchecked")
-    static <T> ContextVariableType<T> getContextVariableType(
-        KernelFunction function,
-        Class<? extends T> resultType) {
-
-        Class<?> functionReturnType = function.getMetadata().getReturnParameter().getParameterType();
-
-        try {
-            // unchecked cast   
-            return (ContextVariableType<T>) ContextVariableTypes.getDefaultVariableTypeForClass(
-                functionReturnType);
-        } catch (Exception e) {
-            if (functionReturnType.isAssignableFrom(resultType)) {
-                return new ContextVariableType<>(
-                        // unchecked cast
-                        new NoopConverter<>((Class<T>) functionReturnType),
-                        // unchecked cast
-                        (Class<T>) functionReturnType);
-            } else {
-                return null;
-            }
-        }
-    }    
- */
-
     public static Kernel.Builder builder() {
         return new Kernel.Builder();
     }
@@ -178,10 +122,6 @@ public class Kernel implements Buildable {
 
         public <T extends AIService> Builder withAIService(Class<T> clazz, T aiService) {
             services.put(clazz, aiService);
-            return this;
-        }
-
-        public Builder withPromptTemplate(PromptTemplate promptTemplate) {
             return this;
         }
 
@@ -208,7 +148,7 @@ public class Kernel implements Buildable {
 
             return new Kernel(
                 serviceSelector,
-                new KernelPluginCollection(plugins),
+                plugins,
                 null);
         }
     }

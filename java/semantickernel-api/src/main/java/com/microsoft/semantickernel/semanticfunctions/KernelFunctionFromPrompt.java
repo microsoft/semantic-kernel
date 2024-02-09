@@ -26,15 +26,19 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -343,7 +347,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 KernelFunction<T> kernelFunction;
                 try {
                     // unchecked cast
-                    kernelFunction = (KernelFunction<T>) kernel.getPlugins()
+                    kernelFunction = (KernelFunction<T>) kernel
                         .getFunction(pluginName, fnName);
                 } catch (IllegalArgumentException | ClassCastException e) {
                     return Mono.error(new SKException(e.getMessage(), e));
