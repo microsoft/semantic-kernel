@@ -10,6 +10,7 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     HnswVectorSearchAlgorithmConfiguration,
     SearchIndex,
+    SearchResourceEncryptionKey,
     VectorSearch,
 )
 from azure.search.documents.models import Vector
@@ -83,6 +84,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
+        search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -91,6 +93,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
                                                                       (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
+            search_resource_encryption_key {SearchResourceEncryptionKey}            -- Optional Search Encryption Key
+                                                                                       (default: {None}).
+
         Returns:
             None
         """
@@ -136,6 +141,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                 name=collection_name.lower(),
                 fields=get_index_schema(self._vector_size),
                 vector_search=vector_search,
+                encryption_key=search_resource_encryption_key,
             )
 
             await self._search_index_client.create_index(index)
