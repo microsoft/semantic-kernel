@@ -1000,6 +1000,11 @@ internal abstract class ClientCore
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
+        if (usage is null)
+        {
+            return;
+        }
+
         if (this.Logger.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(
