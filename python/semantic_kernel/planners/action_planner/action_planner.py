@@ -4,9 +4,14 @@ import itertools
 import json
 import logging
 import os
+import sys
 from textwrap import dedent
-from typing import Annotated, List, Optional
+from typing import List, Optional
 
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 import regex
 
 from semantic_kernel import Kernel
