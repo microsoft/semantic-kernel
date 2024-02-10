@@ -251,7 +251,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         await ExecuteHanldebarsPromptAsync(kernel, companyDescription, handlebarsTemplate3);
     }
 
-    private async Task ExecuteHanldebarsPromptAsync(Kernel kernel, string companyDescription, string handlebarsTemplate)
+    private async Task ExecuteHandlebarsPromptAsync(Kernel kernel, string companyDescription, string handlebarsTemplate)
     {
         var HandlebarsSPromptFunction = kernel.CreateFunctionFromPrompt(
             new()
