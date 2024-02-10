@@ -13,27 +13,27 @@ internal sealed class OpenAIRestContext
     private static readonly HttpClient s_defaultOpenAIClient = new();
 
     /// <summary>
-    /// $$$
+    /// The service API key.
     /// </summary>
     public string ApiKey { get; }
 
     /// <summary>
-    /// $$$
+    /// The service endpoint.
     /// </summary>
     public string Endpoint { get; }
 
     /// <summary>
-    /// $$$
+    /// Is the version defined?
     /// </summary>
     public bool HasVersion { get; }
 
     /// <summary>
-    /// $$$
+    /// The optional API version.
     /// </summary>
     public string? Version { get; }
 
     /// <summary>
-    /// $$$
+    /// Accessor for the http client.
     /// </summary>
     public HttpClient GetHttpClient() => this._clientFactory.Invoke();
 
