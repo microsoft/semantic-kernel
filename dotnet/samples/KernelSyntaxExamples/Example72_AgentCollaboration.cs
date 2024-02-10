@@ -32,7 +32,7 @@ public class Example72_AgentCollaboration : BaseTest
     /// <summary>
     /// Show how two agents are able to collaborate as agents on a single thread.
     /// </summary>
-    [Fact/*$$$(Skip = "This test take more than 5 minutes to execute")*/]
+    [Fact(Skip = "This test take more than 5 minutes to execute")]
     public async Task RunCollaborationAsync()
     {
         WriteLine($"======== Example72:Collaboration:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
