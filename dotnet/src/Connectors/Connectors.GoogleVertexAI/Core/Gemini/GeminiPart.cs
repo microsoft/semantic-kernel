@@ -68,7 +68,7 @@ public sealed class GeminiPart : IJsonOnDeserialized
         if (!this.IsValid())
         {
             throw new JsonException(
-                "GeminiPart is invalid. One and only one property among Text, InlineData, FunctionCall, and FunctionResponse should be set.");
+                "GeminiPart is invalid. One and only one property among Text, InlineData, FileData, FunctionCall, and FunctionResponse should be set.");
         }
     }
 
