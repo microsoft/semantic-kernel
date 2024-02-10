@@ -143,7 +143,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             {{/each}}
 
             {{!-- Step 4: Print all product names and compelling descriptions --}}
-            OUTPUT The folowing product descriptions as is, do not modify anything:
+            OUTPUT The following product descriptions as is, do not modify anything:
             {{json finalDescriptionsV2}}
          ";
         await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate2);
@@ -176,7 +176,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                 {{/each}}
 
                 {{!-- Step 4: Print all product names and compelling descriptions --}}
-                OUTPUT The folowing product descriptions as is, do not modify anything:
+                OUTPUT The following product descriptions as is, do not modify anything:
                 {{json finalDescriptionsV2}}
     
             {{else}} 
