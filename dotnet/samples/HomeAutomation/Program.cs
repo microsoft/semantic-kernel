@@ -11,9 +11,11 @@
  - Command-line arguments.
 */
 
+using HomeAutomation.Options;
 using HomeAutomation.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -26,14 +28,16 @@ internal static class Program
     {
         HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
         builder.Services.AddHostedService<Worker>();
-        builder.Services.AddSingleton<AppConfiguration>();
-        builder.Services.AddSingleton<Kernel>(sp =>
+        builder.Services.AddOptions<AzureOpenAiOptions>()
+                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAiOptions)))
+                        .ValidateDataAnnotations().ValidateOnStart();
+        builder.Services.AddTransient<Kernel>(sp =>
         {
-            AppConfiguration ac = sp.GetRequiredService<AppConfiguration>();
+            AzureOpenAiOptions options = sp.GetRequiredService<IOptions<AzureOpenAiOptions>>().Value;
             var builder = Kernel.CreateBuilder()
                                 // Add AI services here
                                 // Note that you can provide your custom http client when adding specific AI services
-                                .AddAzureOpenAIChatCompletion(ac.AzureOpenAiDeployment, ac.AzureOpenAiEndpoint, ac.AzureOpenAiApiKey);
+                                .AddAzureOpenAIChatCompletion(options.Deployment, options.Endpoint, options.ApiKey);
             // Add plugins to include in kernel here
             builder.Plugins.AddFromType<MyTimePlugin>();
             Kernel kernel = builder.Build();
