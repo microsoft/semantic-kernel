@@ -24,6 +24,16 @@ namespace KernelSyntaxExamples;
 // The example also shows how to create two prompt functions and a plugin to group them together.
 public class Example77_HandlebarsPromptSyntax : BaseTest
 {
+    private static readonly string s_companyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel technologies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
+            "Also it is able to self plan and execute complex tasks and use the power of AI agents which" +
+            "enables to divide-and-conquer complex problems between different entities that specialize in " +
+            "concrete tasks like for example project management, coding and creating tests as well as other" +
+            " agents can be responsible for executing the tests and assessing the code delivered and iterate" +
+            " - this means creating feedback loops until the quality levels are met. The company is thinking of using AI Agent programming on coding, writing and project planning, and anything where AI Agents" +
+            " can be applied and revolutionize a process or market niche.";
+    public KernelFunction KernelFunctionGenerateProductNames{ get; set; }
+    public KernelFunction KernelFunctionGenerateProductDescription { get; set; }
+
     [Fact]
     public async Task RunAsync()
     {
@@ -50,82 +60,10 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                 apiKey: openAIApiKey)
             .Build();
 
-        KernelFunction kernelFunctionGenerateProductNames =
-            KernelFunctionFactory.CreateFromPrompt(
-                "Given the company description, generate five different product names in name and with a function " +
-                "that match the company description. " +
-                "Ensure that they match the company and are aligned to it. " +
-                "Think of products this company would really make and also have market potential. " +
-                "Be original and do not make too long names or use more than 3-4 words for them." +
-                "Also, the product name should be catchy and easy to remember. " +
-                "Output the product names in a JSON array inside a JSON object named products. " +
-                "On them use the name and description as keys." +
-                "Ensure the JSON is well formed and is valid" +
-                "The company description: {{$input}} " +
-                "AGAIN ENSURE YOU FOLLOW THE DESCRIBED JSON FORMAT " +
-                "IF YOU FOLLOW IT WELL I WILL PRAISE YOU " +
-                "AND GIVE YOU A BONUS!!!" +
-                "The JSON format should look like this:" +
-                "---" +
-                "{\r\n\"products\": [\r\n    {\r\n        \"name\": \"SmartCode SK\",\r\n        \"description\": \"An AI solution that utilizes AI agent programming to automate code writing and assess the quality of code, reducing the need for manual review and increasing code efficiency\"\r\n    },\r\n    {\r\n        \"name\": \"ProjectMind SK\",\r\n        \"description\": \"An AI-powered project management tool that utilizes Semantic Kernel to automate project planning, task scheduling, and enable more effective communication within teams\"\r\n    },\r\n    {\r\n        \"name\": \"SK WriterPlus\",\r\n        \"description\": \"An AI-driven writing solution that uses AI Agents and Semantic Kernel technology to automate content creation, editing, and proofreading tasks\"\r\n    },\r\n    {\r\n        \"name\": \"SQA Tester SK\",\r\n        \"description\": \"A software product that utilizes AI agents to execute tests, assess the code delivered and iterate. It uses a divide-and-conquer approach to simplify complex testing problems\"\r\n    },\r\n    {\r\n        \"name\": \"SK CloudMaster\",\r\n        \"description\": \"An AI solution that intelligently manages and orchestrates cloud resources using the power of AI agents and Semantic Kernel technology, ready for enterprise and production environments\"\r\n    }\r\n]\r\n}" +
-                 "---",
-                functionName: "GenerateJSONProductNames",
-                description: "Generate a JSON with five product names to match a company.");
-
-
-        KernelFunction kernelFunctionGenerateProductDescription =
-            KernelFunctionFactory.CreateFromPrompt(
-                "Given a product name and initial description, generate a description which is compelling, " +
-                "engaging and stunning. Also add at the end how would you approach to develop, create it," +
-                "with Semantic Kernel." +
-                "Think of marketing terms and use positive words but do not lie and oversell. " +
-                "Be original and do not make a too long description or use more than 2 paragraphs for it." +
-                "Also, the product description should be catchy and easy to remember. " +
-                "Output the description followed by the development approach preceded by Development approach: " +
-                "The product name and description: {{$input}}",
-                functionName: "GenerateProductCompellingDescription",
-                description: "Generate a compelling product description for a product name and initial description.");
-
-        KernelPlugin productMagicianPlugin =
-            KernelPluginFactory.CreateFromFunctions(
-                "productMagician",
-                "Helps create a set of products for a company and descriptions for them.",
-                new[] {
-                    kernelFunctionGenerateProductNames,
-                    kernelFunctionGenerateProductDescription
-                });
-
         KernelPlugin productMagicianPlugin = GenerateProductMagicianPlugin();
         kernel.Plugins.Add(productMagicianPlugin);
 
-        string companyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel technologies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
-            "Also it is able to self plan and execute complex tasks and use the power of AI agents which" +
-            "enables to divide-and-conquer complex problems between different entities that specialize in " +
-            "concrete tasks like for example project management, coding and creating tests as well as other" +
-            " agents can be responsible for executing the tests and assessing the code delivered and iterate" +
-            " - this means creating feedback loops until the quality levels are met. The company is thinking of using AI Agent programming on coding, writing and project planning, and anything where AI Agents" +
-            " can be applied and revolutionize a process or market niche.";
-
-        // Testing a the 5 product name generation
-        var productsResult =
-            await kernel.InvokeAsync(kernelFunctionGenerateProductNames,
-            new() {
-              { "input", companyDescription }
-            });
-
-        WriteLine($"Testing Products generation prompt");
-        WriteLine($"Result: {productsResult}");
-
-        // Testing the product description generation
-        string ProductDescription = "Product name: Skynet SDK Product description:A powerful .NET SDK destined to empower developers with advanced AI orchestration capabilities, capable of handling complex task automation.";
-        var productDescriptionResult =
-            await kernel.InvokeAsync(kernelFunctionGenerateProductDescription,
-            new() {
-              { "input", ProductDescription }
-            });
-
-        WriteLine($"Testing Products Description Generation Prompt");
-        WriteLine($"Result: {productDescriptionResult}");
+        await TestProductFunctionsAsync(kernel);
 
         // Using the planner to generate a plan for the user
         string userPrompt =
@@ -134,10 +72,8 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             " {{input}}" +
             "---" +
             "I want to generate five product names and engaging descriptions for a company." +
-            "For this, I suggest the following process:" +
-            "1. Please create first the product names given the company description" +
-            "2. Then, for each of the 5 provided product names and descriptions, provided as a JSON array, " +
-            "as for example:" +
+            "Please provide your output as a JSON array of products, where each product contains a name and description." +
+            "For example:" +
             "---" +
             "{\r\n\"products\": [\r\n    {\r\n        \"name\": \"SmartCode SK\",\r\n        \"description\": \"An AI solution that utilizes AI agent programming to automate code writing and assess the quality of code, reducing the need for manual review and increasing code efficiency\"\r\n    },\r\n    {\r\n        \"name\": \"ProjectMind SK\",\r\n        \"description\": \"An AI-powered project management tool that utilizes Semantic Kernel to automate project planning, task scheduling, and enable more effective communication within teams\"\r\n    },\r\n    {\r\n        \"name\": \"SK WriterPlus\",\r\n        \"description\": \"An AI-driven writing solution that uses AI Agents and Semantic Kernel technology to automate content creation, editing, and proofreading tasks\"\r\n    },\r\n    {\r\n        \"name\": \"SQA Tester SK\",\r\n        \"description\": \"A software product that utilizes AI agents to execute tests, assess the code delivered and iterate. It uses a divide-and-conquer approach to simplify complex testing problems\"\r\n    },\r\n    {\r\n        \"name\": \"SK CloudMaster\",\r\n        \"description\": \"An AI solution that intelligently manages and orchestrates cloud resources using the power of AI agents and Semantic Kernel technology, ready for enterprise and production environments\"\r\n    }\r\n]\r\n}" +
             "---" +
@@ -180,16 +116,16 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         string handlebarsTemplate01 = @"
             {{!-- example of set with input and function calling with two syntax types --}}
             {{set ""companyDescription"" input}}
-            {{set ""productNames"" (productMagician-GenerateJSONProductNames companyDescription)}}
+            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
 
             {{set ""output"" (concat ""Company description: "" companyDescription "" product Names: "" productNames)}}
             {{json output}}";
-        await ExecuteHanldebarsPromptAsync(kernel, companyDescription, handlebarsTemplate01);
+        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate01);
 
         string handlebarsTemplate2 = @"
             {{!-- example of set with input and function calling with two syntax types --}}
             {{set ""companyDescription"" input}}
-            {{set ""productNames"" (productMagician-GenerateJSONProductNames companyDescription)}}
+            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
             {{json productNames}}
 
             {{set ""finalDescriptionsV2"" ""- PRODUCTS AND ENGAGING DESCRIPTIONS -""}}
@@ -210,12 +146,12 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             OUTPUT The folowing product descriptions as is, do not modify anything:
             {{json finalDescriptionsV2}}
          ";
-        await ExecuteHanldebarsPromptAsync(kernel, companyDescription, handlebarsTemplate2);
+        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate2);
 
         string handlebarsTemplate3 = @"
             {{!-- example of set with input and function calling with two syntax types --}}
             {{set ""companyDescription"" input}}
-            {{set ""productNames"" (productMagician-GenerateJSONProductNames companyDescription)}}
+            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
 
             {{#if generateEngagingDescriptions}} 
                 {{!-- Step 2: Create array for storing final descriptions --}}
@@ -249,7 +185,82 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                 {{json finalOutput}}
             {{/if}}";
 
-        await ExecuteHanldebarsPromptAsync(kernel, companyDescription, handlebarsTemplate3);
+        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate3);
+    }
+
+    private async Task TestProductFunctionsAsync(Kernel kernel)
+    {
+        var productsResult =
+            await kernel.InvokeAsync(KernelFunctionGenerateProductNames,
+            new() {
+              { "input", s_companyDescription }
+            });
+
+        WriteLine($"Testing Products generation prompt");
+        WriteLine($"Result: {productsResult}");
+
+        string ProductDescription = "Product name: Skynet SDK Product description:A powerful .NET SDK destined to empower developers with advanced AI orchestration capabilities, capable of handling complex task automation.";
+        var productDescriptionResult =
+            await kernel.InvokeAsync(KernelFunctionGenerateProductDescription,
+            new() {
+              { "input", ProductDescription }
+            });
+
+        WriteLine($"Testing Products Description Generation Prompt");
+        WriteLine($"Result: {productDescriptionResult}");
+    }
+
+    private KernelPlugin GenerateProductMagicianPlugin()
+    {
+        this.KernelFunctionGenerateProductNames =
+            KernelFunctionFactory.CreateFromPrompt(
+                "Given the company description, generate five different product names in name and with a function " +
+                "that match the company description. " +
+                "Ensure that they match the company and are aligned to it. " +
+                "Think of products this company would really make and also have market potential. " +
+                "Be original and do not make too long names or use more than 3-4 words for them." +
+                "Also, the product name should be catchy and easy to remember. " +
+                "Output the product names in a JSON array inside a JSON object named products. " +
+                "On them use the name and description as keys." +
+                "Ensure the JSON is well formed and is valid" +
+                "The company description: " +
+                "---" +
+                "{{$input}} " +
+                "---" +
+                "AGAIN ENSURE YOU FOLLOW THE DESCRIBED JSON FORMAT " +
+                "IF YOU FOLLOW IT WELL I WILL PRAISE YOU " +
+                "AND GIVE YOU A BONUS!!!" +
+                "The JSON format should look like this:" +
+                "---" +
+                "{\r\n\"products\": [\r\n    {\r\n        \"name\": \"SmartCode SK\",\r\n        \"description\": \"An AI solution that utilizes AI agent programming to automate code writing and assess the quality of code, reducing the need for manual review and increasing code efficiency\"\r\n    },\r\n    {\r\n        \"name\": \"ProjectMind SK\",\r\n        \"description\": \"An AI-powered project management tool that utilizes Semantic Kernel to automate project planning, task scheduling, and enable more effective communication within teams\"\r\n    },\r\n    {\r\n        \"name\": \"SK WriterPlus\",\r\n        \"description\": \"An AI-driven writing solution that uses AI Agents and Semantic Kernel technology to automate content creation, editing, and proofreading tasks\"\r\n    },\r\n    {\r\n        \"name\": \"SQA Tester SK\",\r\n        \"description\": \"A software product that utilizes AI agents to execute tests, assess the code delivered and iterate. It uses a divide-and-conquer approach to simplify complex testing problems\"\r\n    },\r\n    {\r\n        \"name\": \"SK CloudMaster\",\r\n        \"description\": \"An AI solution that intelligently manages and orchestrates cloud resources using the power of AI agents and Semantic Kernel technology, ready for enterprise and production environments\"\r\n    }\r\n]\r\n}" +
+                 "---",
+                functionName: "GenerateJSONProducts",
+                description: "Generate a JSON with five unique product objects, every object containing a unique name and short description matching company .");
+
+
+        this.KernelFunctionGenerateProductDescription =
+            KernelFunctionFactory.CreateFromPrompt(
+                "Given a product name and initial description, generate a description which is compelling, " +
+                "engaging and stunning. Also add at the end how would you approach to develop, create it," +
+                "with Semantic Kernel." +
+                "Think of marketing terms and use positive words but do not lie and oversell. " +
+                "Be original and do not make a too long description or use more than 2 paragraphs for it." +
+                "Also, the product description should be catchy and easy to remember. " +
+                "Output the description followed by the development approach preceded by Development approach: " +
+                "The product name and description: {{$input}}",
+                functionName: "GenerateProductCompellingDescription",
+                description: "Generate a compelling product description for a product name and initial description.");
+
+        KernelPlugin productMagicianPlugin =
+            KernelPluginFactory.CreateFromFunctions(
+                "productMagician",
+                "Helps create a set of products for a company and descriptions for them.",
+                new[] {
+                    this.KernelFunctionGenerateProductNames,
+                    this.KernelFunctionGenerateProductDescription
+                });
+
+        return productMagicianPlugin;
     }
 
     private async Task ExecuteHandlebarsPromptAsync(Kernel kernel, string companyDescription, string handlebarsTemplate)
