@@ -25,7 +25,6 @@ internal sealed record AssistantModel
     [JsonPropertyName("id")]
     public string Id { get; init; } = string.Empty;
 
-
     /// <summary>
     /// Unix timestamp (in seconds) for when the assistant was created
     /// </summary>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Specialized;
 using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
