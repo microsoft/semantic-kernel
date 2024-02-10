@@ -61,11 +61,11 @@ public sealed class ThreadHarness
 
         this._output.WriteLine($"# {message.Id}");
 
-        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var context = new OpenAIRestContext(AgentBuilder.OpenAIBaseUrl, TestConfig.OpenAIApiKey);
         var copy = await context.GetThreadModelAsync(thread.Id).ConfigureAwait(true);
 
         await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
 
-        await Assert.ThrowsAsync<KernelException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
+        await Assert.ThrowsAsync<HttpOperationException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
     }
 }
