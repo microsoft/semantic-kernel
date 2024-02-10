@@ -27,7 +27,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== LLMPrompts ========");
+        this.WriteLine("======== Handlebars Prompt Syntax Sample ========");
 
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
