@@ -104,17 +104,17 @@ internal static partial class OpenAIRestExtensions
         string? query = null)
     {
         var hasQuery = !string.IsNullOrWhiteSpace(query);
-        var delimeter = hasQuery ? "?" : string.Empty;
+        var delimiter = hasQuery ? "?" : string.Empty;
 
         if (!context.HasVersion)
         {
             // OpenAI
-            return $"{url}{delimeter}{query}";
+            return $"{url}{delimiter}{query}";
         }
 
         // Azure OpenAI
-        var delimeterB = hasQuery ? "&" : "?";
+        var delimiterB = hasQuery ? "&" : "?";
 
-        return $"{url}{delimeter}{query}{delimeterB}api-version={context.Version}";
+        return $"{url}{delimiter}{query}{delimiterB}api-version={context.Version}";
     }
 }
