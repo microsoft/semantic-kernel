@@ -95,6 +95,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                     kernelFunctionGenerateProductDescription
                 });
 
+        KernelPlugin productMagicianPlugin = GenerateProductMagicianPlugin();
         kernel.Plugins.Add(productMagicianPlugin);
 
         string companyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel technologies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
