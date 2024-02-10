@@ -65,6 +65,101 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
 
         await TestProductFunctionsAsync(kernel);
 
+        await RunHandlebarsPlannerSampleAsync(kernel);
+
+        await RunHandlebarsTemplateSample01Async(kernel);
+
+        await RunHandlebarsTemplateSample02Async(kernel);
+
+        await RunHandlebarsTemplateSample03Async(kernel);
+    }
+
+    private async Task RunHandlebarsTemplateSample03Async(Kernel kernel)
+    {
+        string handlebarsTemplate3 = @"
+            {{!-- example of set with input and function calling with two syntax types --}}
+            {{set ""companyDescription"" input}}
+            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
+
+            {{#if generateEngagingDescriptions}} 
+                {{!-- Step 2: Create array for storing final descriptions --}}
+                {{set ""finalDescriptions"" (array)}}
+
+                {{!-- Step 3: Iterate over each generated product name --}}
+                {{#each productNames}}
+                    {{#each this}}
+                      {{!-- Step 3.1: Concatenating productName to initial company description --}}
+                      {{set ""productDescription"" (concat ""Product Name: "" this.name "" Description: "" this.description)}}
+
+                      {{!-- Step 3.2: Generate compelling description for each productName --}}
+                      {{set ""compellingDescription"" (productMagician-GenerateProductCompellingDescription productDescription)}}
+
+                      {{!-- Step 3.3: Concatenate compelling description and product number --}}                  
+                      {{set ""outputDescription"" (concat ""PRODUCT :"" this.name "" Engaging Description: "" compellingDescription)}}
+
+                      {{!-- Step 3.4: Add output description to the list --}}
+                      {{set ""finalDescriptions"" (array finalDescriptions outputDescription)}}
+                      {{set ""finalDescriptionsV2"" (concat finalDescriptionsV2 "" -- "" outputDescription)}}
+                    {{/each}}
+                {{/each}}
+
+                {{!-- Step 4: Print all product names and compelling descriptions --}}
+                OUTPUT The following product descriptions as is, do not modify anything:
+                {{json finalDescriptionsV2}}
+    
+            {{else}} 
+                {{!-- Example of concatenating text and variables to finally output it with json --}}
+                {{set ""finalOutput"" (concat ""Description 1: "" productNames "" Description 2: "" productNames2)}}
+                {{json finalOutput}}
+            {{/if}}";
+
+        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate3);
+    }
+
+    private async Task RunHandlebarsTemplateSample02Async(Kernel kernel)
+    {
+        string handlebarsTemplate2 = @"
+            {{!-- example of set with input and function calling with two syntax types --}}
+            {{set ""companyDescription"" input}}
+            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
+            {{json productNames}}
+
+            {{set ""finalDescriptionsV2"" ""- PRODUCTS AND ENGAGING DESCRIPTIONS -""}}
+
+            {{!-- Step 3: Iterate over each generated product name --}}
+            {{#each productNames}}
+                {{#each this}}
+                    {{!-- Step 3.1: Concatenating productName to initial company description --}}
+                    {{set ""productDescription"" (concat ""Product Name: "" this.name "" Description: "" this.description)}}
+                    {{json productDescription}}
+
+                    {{!-- Step 3.4: Add output description to the list --}}
+                    {{set ""finalDescriptionsV2"" (concat finalDescriptionsV2 "" -- "" productDescription)}}
+                {{/each}}
+            {{/each}}
+
+            {{!-- Step 4: Print all product names and compelling descriptions --}}
+            OUTPUT The following product descriptions as is, do not modify anything:
+            {{json finalDescriptionsV2}}
+         ";
+        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate2);
+    }
+
+    private async Task RunHandlebarsTemplateSample01Async(Kernel kernel)
+    {
+        string handlebarsTemplate01 = @"
+            {{!-- example of set with input and function calling with two syntax types --}}
+            {{set ""companyDescription"" input}}
+            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
+
+            {{set ""output"" (concat ""Company description: "" companyDescription "" product Names: "" productNames)}}
+            {{json output}}";
+
+        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate01);
+    }
+
+    private async Task RunHandlebarsPlannerSampleAsync(Kernel kernel)
+    {
         // Using the planner to generate a plan for the user
         string userPrompt =
             "Using as input the following company description:" +
@@ -109,83 +204,6 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         // https://github.com/microsoft/semantic-kernel/issues/4895
         //var result = await plan.InvokeAsync(kernel);
         //WriteLine($"\nResult:\n{result}\n");
-
-        // We will use one of the generated HandlebarsTemplate plan by the above code, with some modifications,
-        // to highlight better the HandlebarsTemplate syntax usage.
-        // And invoke it as a Prompt Function
-        string handlebarsTemplate01 = @"
-            {{!-- example of set with input and function calling with two syntax types --}}
-            {{set ""companyDescription"" input}}
-            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
-
-            {{set ""output"" (concat ""Company description: "" companyDescription "" product Names: "" productNames)}}
-            {{json output}}";
-        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate01);
-
-        string handlebarsTemplate2 = @"
-            {{!-- example of set with input and function calling with two syntax types --}}
-            {{set ""companyDescription"" input}}
-            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
-            {{json productNames}}
-
-            {{set ""finalDescriptionsV2"" ""- PRODUCTS AND ENGAGING DESCRIPTIONS -""}}
-
-            {{!-- Step 3: Iterate over each generated product name --}}
-            {{#each productNames}}
-                {{#each this}}
-                    {{!-- Step 3.1: Concatenating productName to initial company description --}}
-                    {{set ""productDescription"" (concat ""Product Name: "" this.name "" Description: "" this.description)}}
-                    {{json productDescription}}
-
-                    {{!-- Step 3.4: Add output description to the list --}}
-                    {{set ""finalDescriptionsV2"" (concat finalDescriptionsV2 "" -- "" productDescription)}}
-                {{/each}}
-            {{/each}}
-
-            {{!-- Step 4: Print all product names and compelling descriptions --}}
-            OUTPUT The following product descriptions as is, do not modify anything:
-            {{json finalDescriptionsV2}}
-         ";
-        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate2);
-
-        string handlebarsTemplate3 = @"
-            {{!-- example of set with input and function calling with two syntax types --}}
-            {{set ""companyDescription"" input}}
-            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
-
-            {{#if generateEngagingDescriptions}} 
-                {{!-- Step 2: Create array for storing final descriptions --}}
-                {{set ""finalDescriptions"" (array)}}
-
-                {{!-- Step 3: Iterate over each generated product name --}}
-                {{#each productNames}}
-                    {{#each this}}
-                      {{!-- Step 3.1: Concatenating productName to initial company description --}}
-                      {{set ""productDescription"" (concat ""Product Name: "" this.name "" Description: "" this.description)}}
-
-                      {{!-- Step 3.2: Generate compelling description for each productName --}}
-                      {{set ""compellingDescription"" (productMagician-GenerateProductCompellingDescription productDescription)}}
-
-                      {{!-- Step 3.3: Concatenate compelling description and product number --}}                  
-                      {{set ""outputDescription"" (concat ""PRODUCT :"" this.name "" Engaging Description: "" compellingDescription)}}
-
-                      {{!-- Step 3.4: Add output description to the list --}}
-                      {{set ""finalDescriptions"" (array finalDescriptions outputDescription)}}
-                      {{set ""finalDescriptionsV2"" (concat finalDescriptionsV2 "" -- "" outputDescription)}}
-                    {{/each}}
-                {{/each}}
-
-                {{!-- Step 4: Print all product names and compelling descriptions --}}
-                OUTPUT The following product descriptions as is, do not modify anything:
-                {{json finalDescriptionsV2}}
-    
-            {{else}} 
-                {{!-- Example of concatenating text and variables to finally output it with json --}}
-                {{set ""finalOutput"" (concat ""Description 1: "" productNames "" Description 2: "" productNames2)}}
-                {{json finalOutput}}
-            {{/if}}";
-
-        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate3);
     }
 
     private async Task TestProductFunctionsAsync(Kernel kernel)
