@@ -1,25 +1,21 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.OpenApi.ApiManifest;
-using Microsoft.OpenApi;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Services;
-using System.Text.Json;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 /// <summary>
