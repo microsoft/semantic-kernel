@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -9,10 +10,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
 
+[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
 public sealed class GeminiClientChatStreamingTests : IDisposable
 {
     private readonly HttpClient _httpClient;
@@ -32,10 +35,8 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldContainRolesInRequestAsync()
     {
         // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
-        var chatHistory = CreateChatHistory();
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
 
         // Act
         await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
@@ -53,9 +54,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldReturnValidChatResponseAsync()
     {
         // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
+        var client = this.CreateChatCompletionClient();
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello");
         chatHistory.AddAssistantMessage("Hi");
@@ -85,10 +84,8 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldReturnValidGeminiMetadataAsync()
     {
         // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
-        var chatHistory = CreateChatHistory();
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
 
         // Act
         var chatMessageContents =
@@ -133,10 +130,8 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldReturnValidDictionaryMetadataAsync()
     {
         // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
-        var chatHistory = CreateChatHistory();
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
 
         // Act
         var chatMessageContents =
@@ -180,9 +175,8 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     {
         // Arrange
         string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
-        var chatHistory = CreateChatHistory();
+        var client = this.CreateChatCompletionClient(modelId: modelId);
+        var chatHistory = CreateSampleChatHistory();
 
         // Act
         var chatMessageContents =
@@ -198,10 +192,8 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldReturnResponseWithValidInnerContentAsync()
     {
         // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
-        var chatHistory = CreateChatHistory();
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
 
         // Act
         var chatMessageContents =
@@ -219,10 +211,8 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
-        var chatHistory = CreateChatHistory();
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 102,
@@ -245,9 +235,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldPassConvertedSystemMessageToUserMessageToRequestAsync()
     {
         // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
+        var client = this.CreateChatCompletionClient();
         string message = "System message";
         var chatHistory = new ChatHistory(message);
         chatHistory.AddUserMessage("Hello");
@@ -270,9 +258,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     public async Task ShouldThrowArgumentExceptionIfExecutionSettingMaxTokensIsLessThanOneAsync(int? maxTokens)
     {
         // Arrange
-        string modelId = "fake-model";
-        string apiKey = "fake-api-key";
-        var client = this.CreateChatCompletionClient(modelId, apiKey);
+        var client = this.CreateChatCompletionClient();
         GeminiPromptExecutionSettings executionSettings = new()
         {
             MaxTokens = maxTokens
@@ -280,10 +266,42 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
-            async () => await client.StreamGenerateChatMessageAsync(CreateChatHistory(), executionSettings).ToListAsync());
+            async () => await client.StreamGenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings).ToListAsync());
     }
 
-    private static ChatHistory CreateChatHistory()
+    [Fact]
+    public async Task ShouldCallGetStreamingChatEndpointAsync()
+    {
+        // Arrange
+        var endpointProviderMock = new Mock<IEndpointProvider>();
+        endpointProviderMock.Setup(x => x.GetGeminiStreamChatCompletionEndpoint(It.IsAny<string>()))
+            .Returns(new Uri("https://fake-endpoint.com/"));
+        var sut = this.CreateChatCompletionClient(endpointProvider: endpointProviderMock.Object);
+
+        // Act
+        await sut.StreamGenerateChatMessageAsync(CreateSampleChatHistory()).ToListAsync();
+
+        // Assert
+        endpointProviderMock.VerifyAll();
+    }
+
+    [Fact]
+    public async Task ShouldCallCreatePostRequestAsync()
+    {
+        // Arrange
+        var requestFactoryMock = new Mock<IHttpRequestFactory>();
+        requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
+            .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
+        var sut = this.CreateChatCompletionClient(httpRequestFactory: requestFactoryMock.Object);
+
+        // Act
+        await sut.StreamGenerateChatMessageAsync(CreateSampleChatHistory()).ToListAsync();
+
+        // Assert
+        requestFactoryMock.VerifyAll();
+    }
+
+    private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello");
@@ -292,14 +310,17 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         return chatHistory;
     }
 
-    private GeminiChatCompletionClient CreateChatCompletionClient(string modelId, string apiKey)
+    private GeminiChatCompletionClient CreateChatCompletionClient(
+        string modelId = "fake-model",
+        string apiKey = "fake-api-key",
+        IEndpointProvider? endpointProvider = null,
+        IHttpRequestFactory? httpRequestFactory = null)
     {
-        var client = new GeminiChatCompletionClient(
+        return new GeminiChatCompletionClient(
             httpClient: this._httpClient,
             modelId: modelId,
-            httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
-            endpointProvider: new GoogleAIGeminiEndpointProvider(apiKey));
-        return client;
+            httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
+            endpointProvider: endpointProvider ?? new FakeEndpointProvider());
     }
 
     public void Dispose()

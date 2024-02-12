@@ -6,11 +6,11 @@ using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
-internal sealed class VertexAIGeminiHttpRequestFactory : IHttpRequestFactory
+internal sealed class VertexAIHttpRequestFactory : IHttpRequestFactory
 {
     private readonly string _apiKey;
 
-    public VertexAIGeminiHttpRequestFactory(string apiKey)
+    public VertexAIHttpRequestFactory(string apiKey)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
 
