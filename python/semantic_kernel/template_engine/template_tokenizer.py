@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, List, Optional
+from typing import List
 
-from pydantic import PrivateAttr
+from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
@@ -25,13 +25,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
 class TemplateTokenizer(KernelBaseModel):
-    _code_tokenizer: CodeTokenizer = PrivateAttr()
-
-    def __init__(self, log: Optional[Any] = None):
-        super().__init__()
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        self._code_tokenizer = CodeTokenizer()
+    code_tokenizer: CodeTokenizer = Field(default_factory=CodeTokenizer, init_var=False)
 
     def tokenize(self, text: str) -> List[Block]:
         # An empty block consists of 4 chars: "{{}}"
@@ -50,7 +44,7 @@ class TemplateTokenizer(KernelBaseModel):
         if len(text) < MIN_CODE_BLOCK_LENGTH:
             return [TextBlock.from_text(text)]
 
-        blocks = []
+        blocks: List[Block] = []
         end_of_last_block = 0
         block_start_pos = 0
         block_start_found = False
@@ -115,7 +109,7 @@ class TemplateTokenizer(KernelBaseModel):
                             # a TextBlock
                             blocks.append(TextBlock.from_text(content_with_delimiters))
                         else:
-                            code_blocks = self._code_tokenizer.tokenize(content_without_delimiters)
+                            code_blocks = self.code_tokenizer.tokenize(content_without_delimiters)
 
                             first_block_type = code_blocks[0].type
 
@@ -141,8 +135,8 @@ class TemplateTokenizer(KernelBaseModel):
 
                                 blocks.append(
                                     CodeBlock(
-                                        content_without_delimiters,
-                                        code_blocks,
+                                        content=content_without_delimiters,
+                                        tokens=code_blocks,
                                     )
                                 )
                             else:

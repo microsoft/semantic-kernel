@@ -6,6 +6,7 @@ import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 load_dotenv()
 
@@ -25,10 +26,10 @@ async def main():
     connector = BingConnector(api_key=os.getenv("BING_API_KEY"))
     web_plugin = kernel.import_plugin(WebSearchEnginePlugin(connector), "WebSearch")
 
-    prompt = "Who is Leonardo DiCaprio's current girlfriend?"
-    search = web_plugin["searchAsync"]
-    result = await search.invoke(prompt)
-    print(result)
+    query = "Who is Leonardo DiCaprio's current girlfriend?"
+    search = web_plugin["search"]
+    result = await search.invoke(kernel, query=query)
+    print(str(result))
 
     """
     Output:
@@ -39,16 +40,14 @@ async def main():
     prompt = """
     Answer the question using only the data that is provided in the data section.
     Do not use any prior knowledge to answer the question.
-    Data: {{WebSearch.SearchAsync "What is semantic kernel?"}}
+    Data: {{WebSearch.search "What is semantic kernel?"}}
     Question: What is semantic kernel?
     Answer:
     """
 
     qna = kernel.create_semantic_function(prompt, temperature=0.2)
-    context = kernel.create_new_context()
-    context["num_results"] = "10"
-    context["offset"] = "0"
-    result = await qna.invoke(context=context)
+    arguments = KernelArguments(num_results=10, offset=0)
+    result = await qna.invoke(kernel, arguments=arguments)
     print(result)
 
     """

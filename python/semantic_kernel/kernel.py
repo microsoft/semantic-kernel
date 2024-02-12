@@ -218,8 +218,11 @@ class Kernel(KernelBaseModel):
         return function
 
     async def invoke_stream(
-        self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments
-    ) -> AsyncIterable["StreamingKernelContent"]:
+        self,
+        functions: Union[KernelFunction, List[KernelFunction]],
+        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
+    ) -> AsyncIterable[List["StreamingKernelContent"]]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
@@ -227,11 +230,14 @@ class Kernel(KernelBaseModel):
 
         Arguments:
             functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute
-            arguments (KernelArguments): The arguments to pass to the function(s)
+            arguments (KernelArguments): The arguments to pass to the function(s), optional
+            kwargs (Dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Yields:
             StreamingKernelContent: The content of the stream of the last function provided.
         """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
         if isinstance(functions, KernelFunction):
             stream_function = functions
             results = []
@@ -328,7 +334,10 @@ class Kernel(KernelBaseModel):
             break
 
     async def invoke(
-        self, functions: Union[KernelFunction, List[KernelFunction]], arguments: KernelArguments = KernelArguments()
+        self,
+        functions: Union[KernelFunction, List[KernelFunction]],
+        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """Execute one or more functions.
 
@@ -336,12 +345,15 @@ class Kernel(KernelBaseModel):
 
         Arguments:
             functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute
-            arguments (KernelArguments): The arguments to pass to the function(s)
+            arguments (KernelArguments): The arguments to pass to the function(s), optional
+            kwargs (Dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
             Optional[Union[FunctionResult, List[FunctionResult]]]: The result of the function(s)
 
         """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
         results = []
         pipeline_step = 0
         if not isinstance(functions, list):
