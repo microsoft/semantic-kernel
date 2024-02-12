@@ -33,8 +33,8 @@ public sealed class GoogleAIGeminiChatCompletionService : GeminiChatCompletionSe
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new GoogleAIGeminiHttpRequestFactory(),
-            endpointProvider: new GoogleAIGeminiEndpointProvider(apiKey),
+            httpRequestFactory: new GoogleAIHttpRequestFactory(),
+            endpointProvider: new GoogleAIEndpointProvider(apiKey),
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiChatCompletionService)));
         this.TextGenerationClient = new GeminiTextGenerationClient(this.ChatCompletionClient);
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);

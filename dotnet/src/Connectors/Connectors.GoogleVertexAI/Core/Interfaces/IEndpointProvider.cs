@@ -14,28 +14,28 @@ internal interface IEndpointProvider
     /// </summary>
     /// <param name="modelId">The ID of the model to be used for text generation.</param>
     /// <returns>The URI of the text generation endpoint.</returns>
-    Uri GetTextGenerationEndpoint(string modelId);
+    Uri GetGeminiTextGenerationEndpoint(string modelId);
 
     /// <summary>
     /// Returns the URI endpoint for streaming text generation using the specified model ID.
     /// </summary>
     /// <param name="modelId">The ID of the model to be used for text generation.</param>
     /// <returns>The URI of the stream text generation endpoint.</returns>
-    Uri GetStreamTextGenerationEndpoint(string modelId);
+    Uri GetGeminiStreamTextGenerationEndpoint(string modelId);
 
     /// <summary>
     /// Returns the URI endpoint for chat completion based on the provided model ID.
     /// </summary>
     /// <param name="modelId">The ID of the model to be used for text generation.</param>
     /// <returns>The URI endpoint for chat completion.</returns>
-    Uri GetChatCompletionEndpoint(string modelId);
+    Uri GetGeminiChatCompletionEndpoint(string modelId);
 
     /// <summary>
     /// Returns the completion URI endpoint for the Stream Chat API using the provided model ID.
     /// </summary>
     /// <param name="modelId">The ID of the model to be used for text generation.</param>
     /// <returns>The URI endpoint for streaming chat completion.</returns>
-    Uri GetStreamChatCompletionEndpoint(string modelId);
+    Uri GetGeminiStreamChatCompletionEndpoint(string modelId);
 
     /// <summary>
     /// Constructs the endpoint URL for fetching embeddings for a specific model.

@@ -4,15 +4,15 @@ using System;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.VertexAI;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.VertexAI;
 
-public sealed class VertexAIGeminiEndpointProviderTests
+public sealed class VertexAIEndpointProviderTests
 {
     [Fact]
     public void ModelsEndpointStartsWithBaseEndpoint()
     {
         // Arrange
-        var sut = new VertexAIGeminiEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
+        var sut = new VertexAIEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
 
         // Act & Assert
         Assert.StartsWith(
@@ -26,7 +26,7 @@ public sealed class VertexAIGeminiEndpointProviderTests
     {
         // Arrange
         string location = "fake-location";
-        var sut = new VertexAIGeminiEndpointProvider(new(location: location, projectId: "fake-projectId"));
+        var sut = new VertexAIEndpointProvider(new(location: location, projectId: "fake-projectId"));
 
         // Act & Assert
         Assert.Contains(location, sut.BaseEndpoint.AbsoluteUri, StringComparison.Ordinal);
@@ -37,21 +37,21 @@ public sealed class VertexAIGeminiEndpointProviderTests
     {
         // Arrange
         string projectId = "fake-projectId";
-        var sut = new VertexAIGeminiEndpointProvider(new(location: "fake-location", projectId: projectId));
+        var sut = new VertexAIEndpointProvider(new(location: "fake-location", projectId: projectId));
 
         // Act & Assert
         Assert.Contains(projectId, sut.BaseEndpoint.AbsoluteUri, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void GetTextGenerationEndpointContainsModelsBaseAndModel()
+    public void GetGeminiTextGenerationEndpointContainsModelsBaseAndModel()
     {
         // Arrange
         string modelId = "fake-modelId";
-        var sut = new VertexAIGeminiEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
+        var sut = new VertexAIEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
 
         // Act
-        Uri uri = sut.GetTextGenerationEndpoint(modelId);
+        Uri uri = sut.GetGeminiTextGenerationEndpoint(modelId);
 
         // Assert
         Assert.Contains(sut.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
@@ -59,14 +59,14 @@ public sealed class VertexAIGeminiEndpointProviderTests
     }
 
     [Fact]
-    public void GetStreamTextGenerationEndpointContainsModelsBaseAndModel()
+    public void GetGeminiStreamTextGenerationEndpointContainsModelsBaseAndModel()
     {
         // Arrange
         string modelId = "fake-modelId";
-        var sut = new VertexAIGeminiEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
+        var sut = new VertexAIEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
 
         // Act
-        Uri uri = sut.GetStreamTextGenerationEndpoint(modelId);
+        Uri uri = sut.GetGeminiStreamTextGenerationEndpoint(modelId);
 
         // Assert
         Assert.Contains(sut.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
@@ -74,14 +74,14 @@ public sealed class VertexAIGeminiEndpointProviderTests
     }
 
     [Fact]
-    public void GetChatCompletionEndpointContainsModelsBaseAndModel()
+    public void GetGeminiChatCompletionEndpointContainsModelsBaseAndModel()
     {
         // Arrange
         string modelId = "fake-modelId";
-        var sut = new VertexAIGeminiEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
+        var sut = new VertexAIEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
 
         // Act
-        Uri uri = sut.GetChatCompletionEndpoint(modelId);
+        Uri uri = sut.GetGeminiChatCompletionEndpoint(modelId);
 
         // Assert
         Assert.Contains(sut.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
@@ -89,14 +89,14 @@ public sealed class VertexAIGeminiEndpointProviderTests
     }
 
     [Fact]
-    public void GetStreamChatCompletionEndpointContainsModelsBaseAndModel()
+    public void GetGeminiStreamChatCompletionEndpointContainsModelsBaseAndModel()
     {
         // Arrange
         string modelId = "fake-modelId";
-        var sut = new VertexAIGeminiEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
+        var sut = new VertexAIEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
 
         // Act
-        Uri uri = sut.GetStreamChatCompletionEndpoint(modelId);
+        Uri uri = sut.GetGeminiStreamChatCompletionEndpoint(modelId);
 
         // Assert
         Assert.Contains(sut.ModelsEndpoint.AbsoluteUri, uri.AbsoluteUri, StringComparison.Ordinal);
@@ -108,7 +108,7 @@ public sealed class VertexAIGeminiEndpointProviderTests
     {
         // Arrange
         string modelId = "fake-modelId";
-        var sut = new VertexAIGeminiEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
+        var sut = new VertexAIEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
 
         // Act
         Uri uri = sut.GetEmbeddingsEndpoint(modelId);
@@ -123,7 +123,7 @@ public sealed class VertexAIGeminiEndpointProviderTests
     {
         // Arrange
         string modelId = "fake-modelId";
-        var sut = new VertexAIGeminiEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
+        var sut = new VertexAIEndpointProvider(new(location: "fake-location", projectId: "fake-projectId"));
 
         // Act
         Uri uri = sut.GetCountTokensEndpoint(modelId);
