@@ -37,8 +37,8 @@ public sealed class VertexAIGeminiChatCompletionService : GeminiChatCompletionSe
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new VertexAIGeminiHttpRequestFactory(apiKey),
-            endpointProvider: new VertexAIGeminiEndpointProvider(new VertexAIConfiguration(location, projectId)),
+            httpRequestFactory: new VertexAIHttpRequestFactory(apiKey),
+            endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiChatCompletionService)));
         this.TextGenerationClient = new GeminiTextGenerationClient(this.ChatCompletionClient);
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);

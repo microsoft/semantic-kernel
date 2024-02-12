@@ -58,7 +58,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     {
         ValidateAndPrepareChatHistory(ref chatHistory);
 
-        var endpoint = this.EndpointProvider.GetChatCompletionEndpoint(this._modelId);
+        var endpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
@@ -76,7 +76,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     {
         ValidateAndPrepareChatHistory(ref chatHistory);
 
-        var endpoint = this.EndpointProvider.GetStreamChatCompletionEndpoint(this._modelId);
+        var endpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
         var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 

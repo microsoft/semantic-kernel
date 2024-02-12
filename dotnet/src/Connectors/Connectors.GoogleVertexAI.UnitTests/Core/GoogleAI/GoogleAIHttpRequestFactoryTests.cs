@@ -8,33 +8,15 @@ using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.VertexAI;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.GoogleAI;
 
-public sealed class VertexAIGeminiHttpRequestFactoryTestsTests
+public sealed class GoogleAIHttpRequestFactoryTests
 {
-    [Fact]
-    public void CreatePostWhenCalledReturnsHttpRequestMessageWithAuthorizationHeader()
-    {
-        // Arrange
-        string apiKey = "fake-api-key";
-        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
-        var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
-        var endpoint = new Uri("https://example.com");
-
-        // Act
-        var result = sut.CreatePost(requestData, endpoint);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal($"Bearer {apiKey}", result.Headers.Authorization!.ToString());
-    }
-
     [Fact]
     public void CreatePostWhenCalledReturnsHttpRequestMessageWithValidMethod()
     {
         // Arrange
-        string apiKey = "fake-api-key";
-        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
+        var sut = new GoogleAIHttpRequestFactory();
         var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
         var endpoint = new Uri("https://example.com");
 
@@ -50,8 +32,7 @@ public sealed class VertexAIGeminiHttpRequestFactoryTestsTests
     public void CreatePostWhenCalledReturnsHttpRequestMessageWithValidEndpoint()
     {
         // Arrange
-        string apiKey = "fake-api-key";
-        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
+        var sut = new GoogleAIHttpRequestFactory();
         var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
         var endpoint = new Uri("https://example.com");
 
@@ -67,8 +48,7 @@ public sealed class VertexAIGeminiHttpRequestFactoryTestsTests
     public void CreatePostWhenCalledReturnsHttpRequestMessageWithValidUserAgent()
     {
         // Arrange
-        string apiKey = "fake-api-key";
-        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
+        var sut = new GoogleAIHttpRequestFactory();
         var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
         var endpoint = new Uri("https://example.com");
 
@@ -84,8 +64,7 @@ public sealed class VertexAIGeminiHttpRequestFactoryTestsTests
     public async Task CreatePostWhenCalledReturnsHttpRequestMessageWithValidContentAsync()
     {
         // Arrange
-        string apiKey = "fake-api-key";
-        var sut = new VertexAIGeminiHttpRequestFactory(apiKey);
+        var sut = new GoogleAIHttpRequestFactory();
         var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
         var endpoint = new Uri("https://example.com");
 

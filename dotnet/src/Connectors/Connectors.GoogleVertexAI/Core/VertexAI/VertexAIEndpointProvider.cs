@@ -7,13 +7,13 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Provides a collection of endpoints for the Gemini Vertex AI API.
 /// </summary>
-internal sealed class VertexAIGeminiEndpointProvider : IEndpointProvider
+internal sealed class VertexAIEndpointProvider : IEndpointProvider
 {
     /// <summary>
     /// Initializes a new instance of the GeminiEndpoints class with the specified API key.
     /// </summary>
     /// <param name="configuration">Vertex AI configuration.</param>
-    public VertexAIGeminiEndpointProvider(VertexAIConfiguration configuration)
+    public VertexAIEndpointProvider(VertexAIConfiguration configuration)
     {
         this.BaseEndpoint = new Uri($"https://{configuration.Location}-aiplatform.googleapis.com/v1/projects/" +
                                     $"{configuration.ProjectId}/locations/{configuration.Location}/publishers/google/");
@@ -31,20 +31,20 @@ internal sealed class VertexAIGeminiEndpointProvider : IEndpointProvider
     public Uri ModelsEndpoint { get; }
 
     /// <inheritdoc />
-    public Uri GetTextGenerationEndpoint(string modelId)
+    public Uri GetGeminiTextGenerationEndpoint(string modelId)
         => new($"{this.ModelsEndpoint.AbsoluteUri}{modelId}:generateContent");
 
     /// <inheritdoc />
-    public Uri GetStreamTextGenerationEndpoint(string modelId)
+    public Uri GetGeminiStreamTextGenerationEndpoint(string modelId)
         => new($"{this.ModelsEndpoint.AbsoluteUri}{modelId}:streamGenerateContent");
 
     /// <inheritdoc />
-    public Uri GetChatCompletionEndpoint(string modelId)
-        => this.GetTextGenerationEndpoint(modelId);
+    public Uri GetGeminiChatCompletionEndpoint(string modelId)
+        => this.GetGeminiTextGenerationEndpoint(modelId);
 
     /// <inheritdoc />
-    public Uri GetStreamChatCompletionEndpoint(string modelId)
-        => this.GetStreamTextGenerationEndpoint(modelId);
+    public Uri GetGeminiStreamChatCompletionEndpoint(string modelId)
+        => this.GetGeminiStreamTextGenerationEndpoint(modelId);
 
     /// <inheritdoc />
     public Uri GetEmbeddingsEndpoint(string modelId)

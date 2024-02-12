@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.GoogleVertexAI.UnitTests"/>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2"/>
   </ItemGroup>
 
 </Project>
