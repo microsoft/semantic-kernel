@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 /// <summary>
 /// Provides extension methods for the <see cref="Kernel"/> class related to OpenAPI functionality.
 /// </summary>
-public static class OpenApiKernelExtensions
+public static class ApiManifestKernelExtensions
 {
     /// <summary>
     /// Imports a plugin from an API manifest asynchronously.
@@ -74,8 +74,10 @@ public static class OpenApiKernelExtensions
             throw new FileNotFoundException($"ApiManifest file not found: {filePath}");
         }
 
+        var loggerFactory = kernel.LoggerFactory;
+        var logger = loggerFactory.CreateLogger(typeof(ApiManifestKernelExtensions)) ?? NullLogger.Instance;
         string apiManifestFileJsonContents = await DocumentLoader.LoadDocumentFromFilePathAsync(filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+            logger,
             cancellationToken).ConfigureAwait(false);
         JsonDocument jsonDocument = JsonDocument.Parse(apiManifestFileJsonContents);
 
@@ -90,7 +92,7 @@ public static class OpenApiKernelExtensions
             var apiDescriptionUrl = apiDependencyDetails.ApiDescriptionUrl;
 
             var openApiDocumentString = await DocumentLoader.LoadDocumentFromUriAsync(new Uri(apiDescriptionUrl),
-                kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+                logger,
                 httpClient,
                 authCallback: null,
                 executionParameters?.UserAgent,
@@ -123,8 +125,6 @@ public static class OpenApiKernelExtensions
 
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
             var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
-            ILoggerFactory loggerFactory = kernel.LoggerFactory;
-            var logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions));
 
             var serverUrl = filteredOpenApiDocument.Servers.FirstOrDefault()?.Url;
 
@@ -143,7 +143,7 @@ public static class OpenApiKernelExtensions
                     try
                     {
                         logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                        functions.Add(Microsoft.SemanticKernel.Plugins.OpenApi.OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory));
+                        functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory));
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
