@@ -163,7 +163,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 text=aggResult["document"]["text"],
                 description=aggResult["document"]["description"],
                 additional_metadata=aggResult["document"]["metadata"],
-                timestamp=aggResult["document"]["timestamp"],
+                timestamp= aggResult["document"].get("timestamp", None),
             )
             if aggResult["similarityScore"] < min_relevance_score:
                 continue
