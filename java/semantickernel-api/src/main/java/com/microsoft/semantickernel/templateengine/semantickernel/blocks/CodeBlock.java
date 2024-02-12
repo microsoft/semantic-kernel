@@ -12,12 +12,16 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
 
 public final class CodeBlock extends Block implements CodeRendering {
@@ -164,7 +168,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         Block firstArg = this.tokens.get(1);
 
         // Get the function metadata
-        KernelFunctionMetadata<?> functionMetadata = kernel.getPlugins()
+        KernelFunctionMetadata<?> functionMetadata = kernel
             .getFunction(fBlock.getPluginName(), fBlock.getFunctionName()).getMetadata();
 
         // Check if the function has parameters to be set

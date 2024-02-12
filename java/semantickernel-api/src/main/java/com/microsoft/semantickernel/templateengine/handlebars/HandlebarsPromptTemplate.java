@@ -14,10 +14,9 @@ import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +27,11 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 
 public class HandlebarsPromptTemplate implements PromptTemplate {
@@ -96,11 +98,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
         @Override
         public Object resolve(Object context, String name) {
-            if (context instanceof KernelPluginCollection) {
-                return context;
-            }
             if (context instanceof KernelFunction) {
-                KernelFunction function = (KernelFunction) context;
+                KernelFunction<?> function = (KernelFunction<?>) context;
                 if ("pluginname".equalsIgnoreCase(name)) {
                     return function.getSkillName();
                 } else if ("name".equalsIgnoreCase(name)) {
@@ -112,9 +111,6 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
         @Override
         public Object resolve(Object context) {
-            if (context instanceof KernelPluginCollection) {
-                return ((KernelPluginCollection) context).iterator();
-            }
             return UNRESOLVED;
         }
 
@@ -169,14 +165,12 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
     public static class HandleBarsPromptTemplateHandler {
 
-        private final Kernel kernel;
         private final String template;
         private final Handlebars handlebars;
 
 
         @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")// Think this is a false positive
         public HandleBarsPromptTemplateHandler(Kernel kernel, String template) {
-            this.kernel = kernel;
             this.template = template;
             this.handlebars = new Handlebars();
             this.handlebars
@@ -184,12 +178,12 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 .registerHelper("each", HandleBarsPromptTemplateHandler::handleEach)
                 .registerHelper("functions", (context, options) -> handleFunctions(kernel, options))
                 .registerHelper("function",
-                    (context, options) -> handleFunction((KernelFunction) context));
+                    (context, options) -> handleFunction((KernelFunction<?>) context));
             // TODO: 1.0 Add more helpers
         }
 
-        private static Handlebars.SafeString handleFunction(KernelFunction context) {
-            KernelFunction function = context;
+        private static Handlebars.SafeString handleFunction(KernelFunction<?> context) {
+            KernelFunction<?> function = context;
             String pluginName = function.getSkillName();
             String functionName = function.getName();
             String description = function.getDescription();
@@ -211,7 +205,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         private static Handlebars.SafeString handleFunctions(Kernel kernel, Options options)
             throws IOException {
             StringBuilder sb = new StringBuilder("<functions>");
-            KernelPluginCollection plugins = kernel.getPlugins();
+            List<KernelPlugin> plugins = kernel.getPlugins();
             sb.append(options.fn(plugins));
             sb.append("</functions>");
 
@@ -228,15 +222,18 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 sb.append("</messages>");
                 return new Handlebars.SafeString(sb.toString());
             }
-            if (context instanceof KernelPluginCollection) {
+            if (context instanceof List) {
                 StringBuilder sb = new StringBuilder();
-                Iterator<KernelPlugin> plugins = ((KernelPluginCollection) context).iterator();
-                while (plugins.hasNext()) {
-                    KernelPlugin plugin = plugins.next();
-                    Iterator<KernelFunction<?>> functions = plugin.iterator();
-                    while (functions.hasNext()) {
-                        KernelFunction<?> function = functions.next();
-                        sb.append(options.fn(function));
+                Iterator<?> iterator = ((List<?>)context).iterator();
+                while (iterator.hasNext()) {
+                    Object element = iterator.next();
+                    if (element instanceof KernelPlugin) {
+                        KernelPlugin plugin = (KernelPlugin) element;
+                        Iterator<KernelFunction<?>> functions = plugin.iterator();
+                        while (functions.hasNext()) {
+                            KernelFunction<?> function = functions.next();
+                            sb.append(options.fn(function));
+                        }
                     }
                 }
                 return new Handlebars.SafeString(sb.toString());

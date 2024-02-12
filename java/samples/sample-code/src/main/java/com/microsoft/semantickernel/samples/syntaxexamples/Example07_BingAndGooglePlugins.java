@@ -88,7 +88,7 @@ public class Example07_BingAndGooglePlugins {
             .withVariable("query", question)
             .build();
 
-        var function = kernel.getPlugins().getFunction(searchPluginName, "search");
+        var function = kernel.getFunction(searchPluginName, "search");
         var result = kernel.invokeAsync(function).withArguments(kernelArguments).block();
 
         System.out.println(question);

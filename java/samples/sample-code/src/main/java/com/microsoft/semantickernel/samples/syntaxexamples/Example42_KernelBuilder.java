@@ -7,11 +7,12 @@ import com.azure.core.credential.KeyCredential;
 import com.azure.core.http.HttpClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.plugin.KernelPluginCollection;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+
+import java.util.ArrayList;
 
 public class Example42_KernelBuilder {
 
@@ -67,7 +68,7 @@ public class Example42_KernelBuilder {
         // using the public constructor that's available for anyone to use directly if desired.
         Kernel kernel = new Kernel(
             new OrderedAIServiceSelector(),
-            new KernelPluginCollection(),
+            new ArrayList<>(),
             null
         );
     }

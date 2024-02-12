@@ -29,9 +29,9 @@ public class Example69_MutableKernelPlugin {
             Time.class.getMethod("date"), new Time(), "dateFunction", null, null, null));
 
         Kernel kernel = Kernel.builder().build();
-        kernel.getPlugins().add(plugin);
+        kernel.addPlugin(plugin);
 
-        var result = kernel.invokeAsync(kernel.getPlugins().getFunction("Plugin", "dateFunction"))
+        var result = kernel.invokeAsync(kernel.getFunction("Plugin", "dateFunction"))
             .block();
 
         System.out.println("Result: " + result.getResult());
