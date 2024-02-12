@@ -93,7 +93,7 @@ public static class OpenApiKernelExtensions
                 kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
                 httpClient,
                 authCallback: null,
-                HttpHeaderValues.UserAgent,
+                executionParameters?.UserAgent,
                 cancellationToken).ConfigureAwait(false);
 
             OpenApiDiagnostic diagnostic = new();
