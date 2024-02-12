@@ -227,7 +227,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
                         // If the function has a return type that has a ContextVariableType<T>, use it.
                         ContextVariableType<T> contextVariableType = getContextVariableType(
-                            invocationContext,
+                            context,
                             returnParameterType);
                         if (contextVariableType == null) {
                             // If getting the context variable type from the function fails, default to
