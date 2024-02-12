@@ -6,8 +6,8 @@
 
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
-        <artifactId>sk-v1-samples</artifactId>
-        <version>1.0.0-alpha.1-SNAPSHOT</version>
+        <artifactId>semantickernel-v1-samples</artifactId>
+        <version>1.0.0-alpha.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
