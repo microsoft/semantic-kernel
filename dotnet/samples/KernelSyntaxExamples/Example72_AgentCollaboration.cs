@@ -19,7 +19,7 @@ public class Example72_AgentCollaboration : BaseTest
     /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
+    private const string OpenAIFunctionEnabledModel = "gpt-4-turbo-preview";
 
     /// <summary>
     /// Set this to 'true' to target OpenAI instead of Azure OpenAI.
