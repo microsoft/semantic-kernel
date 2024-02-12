@@ -48,11 +48,11 @@ class CodeTokenizer(KernelBaseModel):
         # 1 char only edge case
         if len(text) == 1:
             if next_char == Symbols.VAR_PREFIX:
-                blocks.append(VarBlock(text))
+                blocks.append(VarBlock(content=text))
             elif next_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
-                blocks.append(ValBlock(text))
+                blocks.append(ValBlock(content=text))
             else:
-                blocks.append(FunctionIdBlock(text))
+                blocks.append(FunctionIdBlock(content=text))
 
             return blocks
 
@@ -92,7 +92,7 @@ class CodeTokenizer(KernelBaseModel):
 
                 # When we reach the end of the value, we add the block
                 if current_char == text_value_delimiter:
-                    blocks.append(ValBlock("".join(current_token_content)))
+                    blocks.append(ValBlock(content="".join(current_token_content)))
                     current_token_content.clear()
                     current_token_type = None
                     space_separator_found = False
@@ -103,10 +103,10 @@ class CodeTokenizer(KernelBaseModel):
             # Note: there might be multiple consecutive spaces
             if cls._is_blank_space(current_char):
                 if current_token_type == BlockTypes.VARIABLE:
-                    blocks.append(VarBlock("".join(current_token_content)))
+                    blocks.append(VarBlock(content="".join(current_token_content)))
                     current_token_content.clear()
                 elif current_token_type == BlockTypes.FUNCTION_ID:
-                    blocks.append(FunctionIdBlock("".join(current_token_content)))
+                    blocks.append(FunctionIdBlock(content="".join(current_token_content)))
                     current_token_content.clear()
 
                 space_separator_found = True
@@ -136,11 +136,11 @@ class CodeTokenizer(KernelBaseModel):
         current_token_content.append(next_char)
 
         if current_token_type == BlockTypes.VALUE:
-            blocks.append(ValBlock("".join(current_token_content)))
+            blocks.append(ValBlock(content="".join(current_token_content)))
         elif current_token_type == BlockTypes.VARIABLE:
-            blocks.append(VarBlock("".join(current_token_content)))
+            blocks.append(VarBlock(content="".join(current_token_content)))
         elif current_token_type == BlockTypes.FUNCTION_ID:
-            blocks.append(FunctionIdBlock("".join(current_token_content)))
+            blocks.append(FunctionIdBlock(content="".join(current_token_content)))
         else:
             raise ValueError("Tokens must be separated by one space least")
 

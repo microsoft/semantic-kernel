@@ -2,7 +2,7 @@
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
 
 from pydantic import Field
 
@@ -21,21 +21,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class CodeBlock(Block):
+    type: ClassVar[BlockTypes] = BlockTypes.CODE
     tokens: List[Block] = Field(default_factory=list)
-    validated: bool = False
+    validated: bool = Field(False, init=False, exclude=True)
 
-    def __init__(
-        self,
-        content: str,
-        tokens: Optional[List[Block]] = None,
-        **kwargs,
-    ):
-        super().__init__(content=content and content.strip())
-        self.tokens = tokens or CodeTokenizer.tokenize(content)
-
-    @property
-    def type(self) -> BlockTypes:
-        return BlockTypes.CODE
+    def model_post_init(self, __context: Any):
+        if not self.tokens:
+            self.tokens = CodeTokenizer.tokenize(self.content)
 
     def is_valid(self) -> Tuple[bool, str]:
         error_msg = ""
@@ -66,13 +58,15 @@ class CodeBlock(Block):
 
         return True, ""
 
-    async def render_code(self, kernel: "Kernel", arguments: "KernelArguments"):
+    async def render_code(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
         if not self.validated:
             is_valid, error = self.is_valid()
             if not is_valid:
                 raise ValueError(error)
 
         logger.debug(f"Rendering code: `{self.content}`")
+        if len(self.tokens) == 0:
+            raise ValueError("No tokens to render.")
 
         if self.tokens[0].type in (BlockTypes.VALUE, BlockTypes.VARIABLE):
             return self.tokens[0].render(kernel, arguments)
@@ -87,23 +81,27 @@ class CodeBlock(Block):
             raise ValueError("Plugin collection not set")
 
         function = self._get_function_from_plugin_collection(kernel.plugins, f_block)
-
         if not function:
             error_msg = f"Function `{f_block.content}` not found"
             logger.error(error_msg)
             raise ValueError(error_msg)
 
         arguments_clone = copy(arguments)
-
         if len(self.tokens) > 1:
             logger.debug(f"Passing variable/value: `{self.tokens[1].content}`")
-            input_value = self.tokens[1].render(kernel, arguments_clone)
-            arg_name = self.tokens[1].content
-            if arg_name and arg_name.startswith("$"):
-                arg_name = arg_name[1:]
-            arguments_clone[arg_name] = input_value
+            rendered_value = self.tokens[1].render(kernel, arguments_clone)
+            if self.tokens[1].type == BlockTypes.VALUE:
+                arguments_clone[function.parameters[0].name] = rendered_value
+            elif self.tokens[1].type == BlockTypes.VARIABLE:
+                arg_name = self.tokens[1].content[1:]
+                arguments_clone[arg_name] = rendered_value
+            else:
+                raise ValueError("Unknown block type: %s", self.tokens[0].type)
 
         result = await function.invoke(kernel, arguments_clone)
+        if exc := result.metadata.get("error", None):
+            raise ValueError("Function resulted in a error: %s", exc) from exc
+
         return str(result) if result else ""
 
     def _get_function_from_plugin_collection(

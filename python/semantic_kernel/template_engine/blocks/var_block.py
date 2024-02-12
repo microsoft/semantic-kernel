@@ -2,13 +2,14 @@
 
 import logging
 from re import match as re_match
-from typing import TYPE_CHECKING, Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
 
-import pydantic as pdt
+from pydantic import Field
 
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
+from semantic_kernel.utils.validation import FUNCTION_PARAM_NAME_REGEX
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -18,33 +19,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class VarBlock(Block):
-    _name: str = pdt.PrivateAttr()
+    type: ClassVar[BlockTypes] = BlockTypes.VARIABLE
+    name: str = Field("", init=False, exclude=True)
 
-    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
-        super().__init__(content=content and content.strip())
-
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-
+    def model_post_init(self, __context: Any):
         if len(self.content) < 2:
-            err = "The variable name is empty"
-            logger.error(err)
-            self._name = ""
-            return
-
-        self._name = self.content[1:]
-
-    @property
-    def type(self) -> BlockTypes:
-        return BlockTypes.VARIABLE
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, value: str) -> None:
-        self._name = value
+            logger.error("The variable name should not be empty, is %s", self.content)
+        else:
+            self.name = self.content[1:]
 
     def is_valid(self) -> Tuple[bool, str]:
         if not self.content:
@@ -62,17 +44,17 @@ class VarBlock(Block):
             logger.error(error_msg)
             return False, error_msg
 
-        if not re_match(r"^[a-zA-Z0-9_]*$", self.name):
+        if not re_match(FUNCTION_PARAM_NAME_REGEX, self.name):
             error_msg = (
                 f"The variable name '{self.name}' contains invalid characters. "
-                "Only alphanumeric chars and underscore are allowed."
+                "Only alphanumeric chars and underscores are allowed."
             )
             logger.error(error_msg)
             return False, error_msg
 
         return True, ""
 
-    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+    def render(self, _: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
         if arguments is None:
             return ""
 
@@ -83,6 +65,6 @@ class VarBlock(Block):
 
         value = arguments.get(self.name, None)
         if not value:
-            logger.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found")
+            logger.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found in the KernelArguments")
 
         return value or ""

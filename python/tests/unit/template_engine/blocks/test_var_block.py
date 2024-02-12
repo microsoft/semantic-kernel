@@ -42,8 +42,8 @@ def test_is_valid_invalid_characters():
     is_valid, error_msg = var_block.is_valid()
     assert not is_valid
     assert (
-        error_msg == "The variable name 'test-var' contains invalid characters. "
-        "Only alphanumeric chars and underscore are allowed."
+        error_msg
+        == "The variable name 'test-var' contains invalid characters. Only alphanumeric chars and underscores are allowed."
     )
 
 
