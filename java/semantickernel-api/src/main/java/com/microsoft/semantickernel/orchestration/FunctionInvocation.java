@@ -84,6 +84,9 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     }
 
     public FunctionInvocation<T> addKernelHook(@Nullable KernelHook hook) {
+        if (hook == null) {
+            return this;
+        }
         KernelHooks clone = new KernelHooks(this.hooks);
         clone.addHook(hook);
         this.hooks = unmodifiableClone(clone);
