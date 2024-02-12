@@ -1002,6 +1002,11 @@ internal abstract class ClientCore
     {
         if (usage is null)
         {
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Usage information is not available.");
+            }
+
             return;
         }
 
