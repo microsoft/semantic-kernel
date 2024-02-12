@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -73,18 +74,44 @@ internal sealed class GeminiRequest
         {
             Contents = chatHistory.Select(c => new GeminiContent
             {
-                Parts = new List<GeminiPart>
-                {
-                    new()
-                    {
-                        Text = (c.Items?.SingleOrDefault(content => content is TextContent)
-                            as TextContent)?.Text ?? c.Content ?? string.Empty,
-                    }
-                },
+                Parts = CreateGeminiParts(c),
                 Role = c.Role
             }).ToList()
         };
         return obj;
+    }
+
+    private static List<GeminiPart> CreateGeminiParts(ChatMessageContent content)
+    {
+        var list = content.Items?.Select(item => item switch
+        {
+            TextContent textContent => new GeminiPart { Text = textContent.Text },
+            ImageContent imageContent => new GeminiPart
+            {
+                FileData = new GeminiPart.FileDataPart
+                {
+                    MimeType = GetMimeTypeFromImageContent(imageContent),
+                    FileUri = imageContent.Uri ?? throw new InvalidOperationException("Image content URI is empty.")
+                }
+            },
+            _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
+        }).ToList() ?? new List<GeminiPart>();
+
+        if (list.Count == 0)
+        {
+            list.Add(new GeminiPart { Text = content.Content ?? string.Empty });
+        }
+
+        return list;
+    }
+
+    private static string GetMimeTypeFromImageContent(ImageContent imageContent)
+    {
+        var key = imageContent.Metadata?.Keys.SingleOrDefault(key =>
+                      key.Equals("mimeType", StringComparison.OrdinalIgnoreCase)
+                      || key.Equals("mime_type", StringComparison.OrdinalIgnoreCase))
+                  ?? throw new InvalidOperationException("Mime type is not found in the image content metadata.");
+        return imageContent.Metadata[key]!.ToString();
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest obj)
