@@ -49,7 +49,6 @@ def test_throw_without_completion_service():
 def mock_kernel(plugins_input):
     kernel = Mock(spec=Kernel)
     plugins = MagicMock(spec=KernelPluginCollection)
-    # functionsView = FunctionsView()
     functions_list = []
 
     mock_plugins = {}

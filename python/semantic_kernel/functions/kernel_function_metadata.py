@@ -1,12 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 from typing import List
-
-if sys.version_info >= (3, 9):
-    pass
-else:
-    pass
 
 from pydantic import Field
 
@@ -16,7 +10,7 @@ from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX
 
 
 class KernelFunctionMetadata(KernelBaseModel):
-    name: str = Field(pattern=FUNCTION_NAME_REGEX)
+    name: str = Field(pattern=FUNCTION_NAME_REGEX, min_length=1)
     plugin_name: str
     description: str
     parameters: List[KernelParameterMetadata] = Field(default_factory=list)
