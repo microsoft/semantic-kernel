@@ -19,13 +19,8 @@ namespace Examples;
 // This example shows how to use the ApiManifest based plugins
 public class Example79_ApiManifest : BaseTest
 {
-    private void WriteSampleHeadingToConsole(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
+    public Example79_ApiManifest(ITestOutputHelper output) : base(output)
     {
-        this.WriteLine();
-        this.WriteLine("======== [ApiManifest Plugins Sample] ========");
-        this.WriteLine($"======== Loading Plugins: {string.Join(" ", pluginsToLoad)} ========");
-        this.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
-        this.WriteLine();
     }
 
     public static readonly IEnumerable<object[]> s_parameters = new List<object[]>
@@ -45,6 +40,15 @@ public class Example79_ApiManifest : BaseTest
         this.WriteLine("--------------------");
         this.WriteLine($"\nResult:\n{result}\n");
         this.WriteLine("--------------------");
+    }
+
+    private void WriteSampleHeadingToConsole(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
+    {
+        this.WriteLine();
+        this.WriteLine("======== [ApiManifest Plugins Sample] ========");
+        this.WriteLine($"======== Loading Plugins: {string.Join(" ", pluginsToLoad)} ========");
+        this.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
+        this.WriteLine();
     }
 
     private async Task AddApiManifestPluginsAsync(Kernel kernel, params string[] pluginNames)
@@ -89,10 +93,6 @@ public class Example79_ApiManifest : BaseTest
                 throw new AggregateException($"Plugin creation failed for {pluginName}", ex);
             }
         }
-    }
-
-    public Example79_ApiManifest(ITestOutputHelper output) : base(output)
-    {
     }
 }
 
