@@ -10,7 +10,7 @@ public class Example01NativeFunctionsTest {
 
     @Test
     public void run() {
-        // Load native skill
+        // Load native plugin
         TextPlugin text = new TextPlugin();
 
         // Use function without kernel

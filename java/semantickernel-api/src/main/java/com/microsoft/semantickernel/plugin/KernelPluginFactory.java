@@ -299,7 +299,7 @@ public class KernelPluginFactory {
         } catch (IOException e) {
             LOGGER.error("Failed to read file " + promptFileName, e);
 
-            throw new SKException("No Skills found in directory " + promptFileName);
+            throw new SKException("No plugins found in directory " + promptFileName);
         }
     }
 

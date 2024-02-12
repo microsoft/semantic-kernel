@@ -48,7 +48,7 @@ public class Example03_Arguments {
     public static void main(String[] args) {
         Kernel kernel = Kernel.builder().build();
 
-        // Load native skill
+        // Load native plugin
         KernelPlugin functionCollection =
             KernelPluginFactory.createFromObject(new StaticTextPlugin(), "text");
 

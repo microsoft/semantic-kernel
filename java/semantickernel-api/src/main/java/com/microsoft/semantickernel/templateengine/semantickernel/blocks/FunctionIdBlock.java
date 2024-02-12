@@ -16,7 +16,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
         String[] functionNameParts = this.getContent().split("\\.", -1);
         if (functionNameParts.length > 2) {
             throw new RuntimeException(
-                    "A function name can contain at most one dot separating the skill name from the"
+                    "A function name can contain at most one dot separating the plugin name from the"
                             + " function name");
         }
 

@@ -265,7 +265,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                         "Something went wrong while rendering the semantic"
                             + " function or while executing the text"
                             + " completion. Function: {}.{}. Error: {}",
-                        getSkillName(),
+                        getPluginName(),
                         getName(),
                         ex.getMessage());
 

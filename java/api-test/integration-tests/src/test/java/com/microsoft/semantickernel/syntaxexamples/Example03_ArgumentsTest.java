@@ -20,7 +20,7 @@ public class Example03_ArgumentsTest {
     public void main() {
         Kernel kernel = Kernel.builder().build();
 
-        // Load native skill
+        // Load native plugin
         KernelPlugin functionCollection =
             KernelPluginFactory.createFromObject(new StaticTextPlugin(), "text");
 
