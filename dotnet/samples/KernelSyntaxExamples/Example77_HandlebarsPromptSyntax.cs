@@ -24,14 +24,14 @@ namespace KernelSyntaxExamples;
 // The example also shows how to create two prompt functions and a plugin to group them together.
 public class Example77_HandlebarsPromptSyntax : BaseTest
 {
-    private static readonly string s_companyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel technologies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
+    private const string CompanyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel technologies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
             "Also it is able to self plan and execute complex tasks and use the power of AI agents which" +
             "enables to divide-and-conquer complex problems between different entities that specialize in " +
             "concrete tasks like for example project management, coding and creating tests as well as other" +
             " agents can be responsible for executing the tests and assessing the code delivered and iterate" +
             " - this means creating feedback loops until the quality levels are met. The company is thinking of using AI Agent programming on coding, writing and project planning, and anything where AI Agents" +
             " can be applied and revolutionize a process or market niche.";
-    public KernelFunction KernelFunctionGenerateProductNames{ get; set; }
+    public KernelFunction KernelFunctionGenerateProductNames { get; set; }
     public KernelFunction KernelFunctionGenerateProductDescription { get; set; }
 
     [Fact]
@@ -113,7 +113,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                 {{json finalOutput}}
             {{/if}}";
 
-        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate3);
+        await ExecuteHandlebarsPromptAsync(kernel, CompanyDescription, handlebarsTemplate3);
     }
 
     private async Task RunHandlebarsTemplateSample02Async(Kernel kernel)
@@ -142,7 +142,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             OUTPUT The following product descriptions as is, do not modify anything:
             {{json finalDescriptionsV2}}
          ";
-        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate2);
+        await ExecuteHandlebarsPromptAsync(kernel, CompanyDescription, handlebarsTemplate2);
     }
 
     private async Task RunHandlebarsTemplateSample01Async(Kernel kernel)
@@ -155,7 +155,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
             {{set ""output"" (concat ""Company description: "" companyDescription "" product Names: "" productNames)}}
             {{json output}}";
 
-        await ExecuteHandlebarsPromptAsync(kernel, s_companyDescription, handlebarsTemplate01);
+        await ExecuteHandlebarsPromptAsync(kernel, CompanyDescription, handlebarsTemplate01);
     }
 
     private async Task RunHandlebarsPlannerSampleAsync(Kernel kernel)
@@ -211,10 +211,10 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         var productsResult =
             await kernel.InvokeAsync(KernelFunctionGenerateProductNames,
             new() {
-              { "input", s_companyDescription }
+              { "input", CompanyDescription }
             });
 
-        WriteLine($"Testing Products generation prompt");
+        WriteLine("Testing Products generation prompt");
         WriteLine($"Result: {productsResult}");
 
         string ProductDescription = "Product name: Skynet SDK Product description:A powerful .NET SDK destined to empower developers with advanced AI orchestration capabilities, capable of handling complex task automation.";
@@ -224,7 +224,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
               { "input", ProductDescription }
             });
 
-        WriteLine($"Testing Products Description Generation Prompt");
+        WriteLine("Testing Products Description Generation Prompt");
         WriteLine($"Result: {productDescriptionResult}");
     }
 
@@ -254,7 +254,6 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
                  "---",
                 functionName: "GenerateJSONProducts",
                 description: "Generate a JSON with five unique product objects, every object containing a unique name and short description matching company .");
-
 
         this.KernelFunctionGenerateProductDescription =
             KernelFunctionFactory.CreateFromPrompt(
