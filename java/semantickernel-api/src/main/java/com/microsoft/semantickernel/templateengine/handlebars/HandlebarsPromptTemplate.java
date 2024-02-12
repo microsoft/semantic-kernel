@@ -16,7 +16,7 @@ import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +27,8 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 
 public class HandlebarsPromptTemplate implements PromptTemplate {
@@ -101,7 +98,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             if (context instanceof KernelFunction) {
                 KernelFunction<?> function = (KernelFunction<?>) context;
                 if ("pluginname".equalsIgnoreCase(name)) {
-                    return function.getSkillName();
+                    return function.getPluginName();
                 } else if ("name".equalsIgnoreCase(name)) {
                     return function.getName();
                 }
@@ -184,7 +181,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
         private static Handlebars.SafeString handleFunction(KernelFunction<?> context) {
             KernelFunction<?> function = context;
-            String pluginName = function.getSkillName();
+            String pluginName = function.getPluginName();
             String functionName = function.getName();
             String description = function.getDescription();
             StringBuilder sb = new StringBuilder(

@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableT
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     protected final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
 
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public FunctionInvocation(
         Kernel kernel,
         KernelFunction<T> function) {
@@ -47,6 +49,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         this.addKernelHooks(kernel.getGlobalKernelHooks());
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public FunctionInvocation(
         Kernel kernel,
         KernelFunction<?> function,
@@ -170,7 +173,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         if (variableType == null) {
             LOGGER.debug(
                 "No variable type explicitly specified by calling 'withResultType' for function invocation: "
-                    + function.getSkillName() + "." + function.getName() + "."
+                    + function.getPluginName() + "." + function.getName() + "."
                     + " This may cause a runtime error (probably a ClassCastException) if the result type is not compatible with the expected type.");
         }
 

@@ -438,7 +438,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     private static FunctionDefinition toFunctionDefinition(KernelFunction function) {
-        String name = String.format("%s-%s", function.getSkillName(), function.getName());
+        String name = String.format("%s-%s", function.getPluginName(), function.getName());
         FunctionDefinition functionDefinition = new FunctionDefinition(name);
         functionDefinition.setDescription(function.getDescription());
         // Example JSON Schema:

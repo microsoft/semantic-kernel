@@ -212,7 +212,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                             if (!variableType.getClazz().isAssignableFrom(it.getClass())) {
                                 throw new SKException(String.format(
                                     "Return parameter type from %s.%s does not match the expected type %s",
-                                    function.getSkillName(), function.getName(),
+                                    function.getPluginName(), function.getName(),
                                     it.getClass().getName()));
                             }
                             return new FunctionResult<>(
@@ -244,7 +244,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                         // If we get here, then either the returnParameterType doesn't match T
                         throw new SKException(String.format(
                             "Return parameter type from %s.%s does not match the expected type %s",
-                            function.getSkillName(), function.getName(), it.getClass().getName()));
+                            function.getPluginName(), function.getName(), it.getClass().getName()));
 
                     })
                     .map(it -> {

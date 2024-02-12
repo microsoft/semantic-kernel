@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import java.util.Locale;
 
 /**
- * TextSkill provides a set of functions to manipulate strings.
+ * TextPlugin provides a set of functions to manipulate strings.
  */
 public class TextPlugin {
 

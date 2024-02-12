@@ -109,7 +109,7 @@ public class DefaultKernel implements Kernel {
 
     @Override
     public CompletionKernelFunction registerSemanticFunction(
-            String skillName, String functionName, SemanticFunctionConfig functionConfig) {
+            String pluginName, String functionName, SemanticFunctionConfig functionConfig) {
         // Future-proofing the name not to contain special chars
         // Verify.ValidSkillName(skillName);
         // Verify.ValidFunctionName(functionName);
@@ -117,7 +117,7 @@ public class DefaultKernel implements Kernel {
         return SKBuilders.completionFunctions()
                 .withSemanticFunctionConfig(functionConfig)
                 .withFunctionName(functionName)
-                .withSkillName(skillName)
+                .withPluginName(pluginName)
                 .withKernel(this)
                 .build();
     }

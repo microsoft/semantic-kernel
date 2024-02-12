@@ -11,49 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
-/**
- * Description: TimeSkill provides a set of functions to get the current time and date.
- *
- * <p>Usage: kernel.importSkill(new TimeSkill(), "time");
- *
- * <p>Examples:
- *
- * <p>{{time.date}} => Sunday, 12 January, 2031
- *
- * <p>{{time.today}} => Sunday, 12 January, 2031
- *
- * <p>{{time.now}} => Sunday, January 12, 2031 9:15 PM
- *
- * <p>{{time.utcNow}} => Sunday, January 13, 2031 5:15 AM
- *
- * <p>{{time.time}} => 09:15:07 PM
- *
- * <p>{{time.year}} => 2031
- *
- * <p>{{time.month}} => January
- *
- * <p>{{time.monthNumber}} => 01
- *
- * <p>{{time.day}} => 12
- *
- * <p>{{time.dayOfWeek}} => Sunday
- *
- * <p>{{time.hour}} => 9 PM
- *
- * <p>{{time.hourNumber}} => 21
- *
- * <p>{{time.days_ago $days}} => Sunday, 7 May, 2023
- *
- * <p>{{time.last_matching_day $dayName}} => Sunday, 7 May, 2023
- *
- * <p>{{time.minute}} => 15
- *
- * <p>{{time.second}} => 7
- *
- * <p>{{time.timeZoneOffset}} => -08:00
- *
- * <p>{{time.timeZoneName}} => Pacific Time
- */
 public class TimePlugin {
 
     public static final String DAY_MONTH_DAY_YEAR = "EEEE, MMMM d, yyyy";
