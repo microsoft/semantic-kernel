@@ -7,8 +7,9 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.kernel_context import KernelContext
 from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -19,54 +20,55 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 class TestCodeBlock:
     def setup_method(self):
-        self.plugins = Mock(spec=ReadOnlyPluginCollectionBase)
+        self.plugins = Mock(spec=KernelPluginCollection)
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self):
         context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            plugin_collection=self.plugins,
+            plugins=KernelPluginCollection(),
         )
-        # Make it so our self.plugins mock's `has_function` method returns False
-        self.plugins.has_function.return_value = False
+
         target = CodeBlock(
             content="functionName",
         )
 
         with raises(ValueError):
-            await target.render_code_async(context)
+            await target.render_code(context)
 
     @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self):
-        context = KernelContext.model_construct(
-            variables=ContextVariables(),
-            memory=NullMemory(),
-            plugin_collection=self.plugins,
-        )
-
         def invoke(_):
             raise Exception("error")
 
         function = KernelFunction(
             delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
-            plugin_name="",
+            plugin_name="test",
             function_name="funcName",
             description="",
             parameters=[],
             is_semantic=False,
         )
 
-        self.plugins.has_function.return_value = True
-        self.plugins.get_function.return_value = function
+        dkp = KernelPlugin(name="test", functions=[function])
+        plugins = KernelPluginCollection()
+        plugins.add(dkp)
+
+        # Create a context with the variables, memory, and plugin collection
+        context = KernelContext.model_construct(
+            variables=ContextVariables(),
+            memory=NullMemory(),
+            plugins=plugins,
+        )
 
         target = CodeBlock(
             content="functionName",
         )
 
         with raises(ValueError):
-            await target.render_code_async(context)
+            await target.render_code(context)
 
     def test_it_has_the_correct_type(self):
         assert (
@@ -148,13 +150,13 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            plugin_collection=None,
+            plugins=None,
         )
 
         code_block = CodeBlock(
             content="$varName",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         assert result == "foo"
 
@@ -166,14 +168,14 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=variables,
             memory=NullMemory(),
-            plugin_collection=None,
+            plugins=None,
         )
 
         code_block = CodeBlock(
             tokens=[VarBlock(content="$varName")],
             content="",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         assert result == "bar"
 
@@ -182,13 +184,13 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            plugin_collection=None,
+            plugins=None,
         )
 
         code_block = CodeBlock(
             content="'ciao'",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         assert result == "ciao"
 
@@ -197,14 +199,14 @@ class TestCodeBlock:
         context = KernelContext.model_construct(
             variables=ContextVariables(),
             memory=NullMemory(),
-            plugin_collection=None,
+            plugins=None,
         )
 
         code_block = CodeBlock(
             tokens=[ValBlock(content="'arrivederci'")],
             content="",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         assert result == "arrivederci"
 
@@ -215,13 +217,6 @@ class TestCodeBlock:
         variables["input"] = "zero"
         variables["var1"] = "uno"
         variables["var2"] = "due"
-
-        # Create a context with the variables, memory, and plugin collection
-        context = KernelContext.model_construct(
-            variables=variables,
-            memory=NullMemory(),
-            plugin_collection=self.plugins,
-        )
 
         # Create a FunctionIdBlock with the function name
         func_id = FunctionIdBlock(content="funcName")
@@ -245,23 +240,30 @@ class TestCodeBlock:
         function = KernelFunction(
             delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
-            plugin_name="",
+            plugin_name="test",
             function_name="funcName",
             description="",
             parameters=[],
             is_semantic=False,
         )
 
-        # Mock the plugin collection's function retrieval
-        self.plugins.has_function.return_value = True
-        self.plugins.get_function.return_value = function
+        dkp = KernelPlugin(name="test", functions=[function])
+        plugins = KernelPluginCollection()
+        plugins.add(dkp)
+
+        # Create a context with the variables, memory, and plugin collection
+        context = KernelContext.model_construct(
+            variables=variables,
+            memory=NullMemory(),
+            plugins=plugins,
+        )
 
         # Create a CodeBlock with the FunctionIdBlock and render it with the context
         code_block = CodeBlock(
             tokens=[func_id],
             content="",
         )
-        await code_block.render_code_async(context)
+        await code_block.render_code(context)
 
         # Check that the canary values match the original context variables
         assert canary["input"] == "zero"
@@ -283,13 +285,6 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables[VAR_NAME] = VAR_VALUE
 
-        # Create a context with the variables, memory, and plugin collection
-        context = KernelContext.model_construct(
-            variables=variables,
-            memory=NullMemory(),
-            plugin_collection=self.plugins,
-        )
-
         # Create a FunctionIdBlock with the function name and a
         # VarBlock with the custom variable
         func_id = FunctionIdBlock(content="funcName")
@@ -307,16 +302,23 @@ class TestCodeBlock:
         function = KernelFunction(
             delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
-            plugin_name="",
+            plugin_name="test",
             function_name="funcName",
             description="",
             parameters=[],
             is_semantic=False,
         )
 
-        # Mock the plugin collection's function retrieval
-        self.plugins.has_function.return_value = True
-        self.plugins.get_function.return_value = function
+        dkp = KernelPlugin(name="test", functions=[function])
+        plugins = KernelPluginCollection()
+        plugins.add(dkp)
+
+        # Create a context with the variables, memory, and plugin collection
+        context = KernelContext.model_construct(
+            variables=variables,
+            memory=NullMemory(),
+            plugins=plugins,
+        )
 
         # Create a CodeBlock with the FunctionIdBlock and VarBlock,
         # and render it with the context
@@ -324,7 +326,7 @@ class TestCodeBlock:
             tokens=[func_id, var_block],
             content="",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         # Check that the result matches the custom variable value
         assert result == VAR_VALUE
@@ -335,13 +337,6 @@ class TestCodeBlock:
     async def test_it_invokes_function_with_custom_value(self):
         # Define a value to be used in the test
         VALUE = "value"
-
-        # Create a context with empty variables, memory, and plugin collection
-        context = KernelContext.model_construct(
-            variables=ContextVariables(),
-            memory=NullMemory(),
-            plugin_collection=self.plugins,
-        )
 
         # Create a FunctionIdBlock with the function name and a ValBlock with the value
         func_id = FunctionIdBlock(content="funcName")
@@ -359,16 +354,23 @@ class TestCodeBlock:
         function = KernelFunction(
             delegate_type=DelegateTypes.InKernelContext,
             delegate_function=invoke,
-            plugin_name="",
+            plugin_name="test",
             function_name="funcName",
             description="",
             parameters=[],
             is_semantic=False,
         )
 
-        # Mock the plugin collection's function retrieval
-        self.plugins.has_function.return_value = True
-        self.plugins.get_function.return_value = function
+        dkp = KernelPlugin(name="test", functions=[function])
+        plugins = KernelPluginCollection()
+        plugins.add(dkp)
+
+        # Create a context with empty variables, memory, and plugin collection
+        context = KernelContext.model_construct(
+            variables=ContextVariables(),
+            memory=NullMemory(),
+            plugins=plugins,
+        )
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
@@ -376,7 +378,7 @@ class TestCodeBlock:
             tokens=[func_id, val_block],
             content="",
         )
-        result = await code_block.render_code_async(context)
+        result = await code_block.render_code(context)
 
         # Check that the result matches the value
         assert result == VALUE
