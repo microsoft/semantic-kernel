@@ -1,4 +1,4 @@
-"""Class to hold chat messages."""
+# Copyright (c) Microsoft. All rights reserved.
 from typing import TYPE_CHECKING, Dict, Optional
 
 from pydantic import Field

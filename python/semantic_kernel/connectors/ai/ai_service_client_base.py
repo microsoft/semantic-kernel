@@ -10,7 +10,7 @@ else:
 
 from pydantic import StringConstraints
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -25,13 +25,13 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 
     ai_model_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Get the request settings class."""
-        return AIRequestSettings  # pragma: no cover
+        return PromptExecutionSettings  # pragma: no cover
 
-    def instantiate_request_settings(self, **kwargs) -> "AIRequestSettings":
+    def instantiate_prompt_execution_settings(self, **kwargs) -> "PromptExecutionSettings":
         """Create a request settings object.
 
         All arguments are passed to the constructor of the request settings object.
         """
-        return self.get_request_settings_class()(**kwargs)
+        return self.get_prompt_execution_settings_class()(**kwargs)

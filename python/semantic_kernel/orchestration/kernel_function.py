@@ -4,30 +4,34 @@ import asyncio
 import logging
 import platform
 import sys
-from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
+from pydantic import Field, StringConstraints
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.models.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
 from semantic_kernel.plugin_definition.function_view import FunctionView
 from semantic_kernel.plugin_definition.parameter_view import ParameterView
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
-)
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
@@ -35,31 +39,115 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
+# TODO: is this needed anymore after sync code removal?
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class KernelFunction(KernelFunctionBase):
+def store_results(chat_prompt: ChatPromptTemplate, results: List["ChatMessageContent"]):
+    """Stores specific results in the context and chat prompt."""
+    if hasattr(results[0], "tool_message") and results[0].tool_message is not None:
+        chat_prompt.add_message(role="tool", message=results[0].tool_message)
+    chat_prompt.add_message(
+        "assistant",
+        message=results[0].content,
+        function_call=results[0].function_call if hasattr(results[0], "function_call") else None,
+        tool_calls=results[0].tool_calls if hasattr(results[0], "tool_calls") else None,
+    )
+    return chat_prompt
+
+
+class KernelFunction(KernelBaseModel):
     """
     Semantic Kernel function.
+
+    Attributes:
+        plugin_name (str): The name of the plugin that contains this function. Must be upper/lower
+            case letters and underscores with a minimum length of 1.
+        description (Optional[str]): The description of the function.
+        name (str): The name of the function. Must be upper/lower case letters and
+            underscores with a minimum length of 1.
+        is_semantic (bool): Whether the function is semantic.
+        stream_function (Optional[Callable[..., Any]]): The stream function for the function.
+        parameters (List[ParameterView]): The parameters for the function.
+        delegate_type (DelegateTypes): The delegate type for the function.
+        function (Callable[..., Any]): The function to call.
+        plugins (Optional[KernelPluginCollection]): The collection of plugins.
+        ai_service (Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]]): The AI service.
+        ai_prompt_execution_settings (PromptExecutionSettings): The AI prompt execution settings.
+        chat_prompt_template (Optional[ChatPromptTemplate]): The chat prompt template.
     """
 
-    # TODO: rebuild with proper pydantic fields
-    _parameters: List[ParameterView]
-    _delegate_type: DelegateTypes
-    _function: Callable[..., Any]
-    _plugin_collection: Optional[ReadOnlyPluginCollectionBase]
-    _ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]]
-    _ai_request_settings: AIRequestSettings
-    _chat_prompt_template: ChatPromptTemplate
+    plugin_name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
+    description: Optional[str] = Field(default=None)
+    name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
+    is_semantic: bool = Field(...)
+    stream_function: Optional[Callable[..., Any]] = Field(default=None)
+    parameters: List[ParameterView] = Field(...)
+    delegate_type: DelegateTypes = Field(...)
+    function: Callable[..., Any] = Field(...)
+    plugins: Optional["KernelPluginCollection"] = Field(default=None)
+    ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]] = Field(default=None)
+    prompt_execution_settings: PromptExecutionSettings = Field(default_factory=PromptExecutionSettings)
+    chat_prompt_template: Optional[ChatPromptTemplate] = Field(default=None)
+
+    def __init__(
+        self,
+        delegate_type: DelegateTypes,
+        delegate_function: Callable[..., Any],
+        parameters: List[ParameterView],
+        description: str,
+        plugin_name: str,
+        function_name: str,
+        is_semantic: bool,
+        delegate_stream_function: Optional[Callable[..., Any]] = None,
+        **kwargs: Dict[str, Any],
+    ) -> None:
+        """
+        Initializes a new instance of the KernelFunction class
+
+        Args:
+            delegate_type (DelegateTypes): The delegate type for the function
+            delegate_function (Callable[..., Any]): The delegate function for the function
+            parameters (List[ParameterView]): The parameters for the function
+            description (str): The description for the function
+            plugin_name (str): The name of the plugin
+            name (str): The name of the function
+            is_semantic (bool): Whether the function is semantic
+            delegate_stream_function (Optional[Callable[..., Any]]): The delegate stream function for the function
+            kwargs (Dict[str, Any]): Additional keyword arguments
+        """
+        chat_prompt_template = kwargs.pop("chat_prompt_template", None)
+
+        super().__init__(
+            delegate_type=delegate_type,
+            function=delegate_function,
+            parameters=parameters,
+            description=description,
+            plugin_name=plugin_name,
+            name=function_name,
+            is_semantic=is_semantic,
+            stream_function=delegate_stream_function,
+            chat_prompt_template=chat_prompt_template,
+            **kwargs,
+        )
 
     @staticmethod
-    def from_native_method(method, plugin_name="", log=None) -> "KernelFunction":
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+    def from_native_method(method: Callable[..., Any], plugin_name: str) -> "KernelFunction":
+        """
+        Create a KernelFunction from a native method.
+
+        Args:
+            method (Callable[..., Any]): The method to create the function from
+            plugin_name (str): The name of the plugin
+
+        Returns:
+            KernelFunction: The kernel function
+        """
         if method is None:
             raise ValueError("Method cannot be `None`")
 
@@ -114,97 +202,83 @@ class KernelFunction(KernelFunctionBase):
         plugin_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
-        log: Optional[Any] = None,
     ) -> "KernelFunction":
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+        """
+        Create a KernelFunction from a semantic configuration.
+
+        Args:
+            plugin_name (str): The name of the plugin
+            function_name (str): The name of the function
+            function_config (SemanticFunctionConfig): The function configuration
+
+        Returns:
+            KernelFunction: The kernel function
+        """
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context: "KernelContext", **kwargs):
+        async def _local_func(client, prompt_execution_settings, context: "KernelContext", **kwargs):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
-            try:
-                if not function_config.has_chat_prompt:
+            if not function_config.has_chat_prompt:
+                try:
                     prompt = await function_config.prompt_template.render(context)
-                    completion = await client.complete(prompt, request_settings)
-                    context.variables.update(completion)
+                    results = await client.complete(prompt, prompt_execution_settings)
+                    context.objects["results"] = results
+                    context.variables.update(str(results[0]))
+                except Exception as e:
+                    # TODO: "critical exceptions"
+                    context.fail(str(e), e)
+                finally:
                     return context
-            except Exception as e:
-                # TODO: "critical exceptions"
-                context.fail(str(e), e)
-                return context
 
-            as_chat_prompt = function_config.prompt_template
-            # Similar to non-chat, render prompt (which renders to a
-            # dict of <role, content, name> messages)
-            messages = await as_chat_prompt.render_messages(context)
             try:
-                result = await client.complete_chat(messages, request_settings)
-                if isinstance(result, list):
-                    # TODO: handle multiple completions
-                    result = result[0]
-                if isinstance(result, tuple):
-                    completion, tool_message, function_call = result
-                else:
-                    completion = result
-                    tool_message = None
-                    function_call = None
-                if tool_message:
-                    context.objects["tool_message"] = tool_message
-                    as_chat_prompt.add_message(role="tool", message=tool_message)
-                as_chat_prompt.add_message("assistant", message=completion, function_call=function_call)
-                if completion is not None:
-                    context.variables.update(completion)
-                if function_call is not None:
-                    context.objects["function_call"] = function_call
+                chat_prompt = function_config.prompt_template
+                # Similar to non-chat, render prompt (which renders to a
+                # dict of <role, content, name> messages)
+                messages = await chat_prompt.render_messages(context)
+                results = await client.complete_chat(messages, prompt_execution_settings)
+                context.objects["results"] = results
+                if results[0].content is not None:
+                    context.variables.update(str(results[0]))
+                # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
+                chat_prompt = store_results(chat_prompt, results)
             except Exception as exc:
                 # TODO: "critical exceptions"
                 context.fail(str(exc), exc)
             finally:
                 return context
 
-        async def _local_stream_func(client, request_settings, context):
+        async def _local_stream_func(client, prompt_execution_settings, context):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
-            try:
-                if function_config.has_chat_prompt:
-                    chat_prompt = function_config.prompt_template
-
-                    # Similar to non-chat, render prompt (which renders to a
-                    # list of <role, content> messages)
-                    completion = ""
-                    messages = await chat_prompt.render_messages(context)
-                    async for partial_content in client.complete_chat_stream(
-                        messages=messages, settings=request_settings
-                    ):
-                        if isinstance(partial_content, str):
-                            completion += partial_content
-                            yield partial_content
-                        else:
-                            tool_message = await partial_content.get_tool_message()
-                            if tool_message:
-                                chat_prompt.add_message(role="tool", message=tool_message)
-                                context.objects["tool_message"] = tool_message
-                            # Get the completion
-                            async for part in partial_content:
-                                completion += part
-                                yield part
-                    # Use the full completion to update the chat_prompt_template and context
-                    chat_prompt.add_assistant_message(completion)
-                    context.variables.update(completion)
-                else:
+            if not function_config.has_chat_prompt:
+                try:
                     prompt = await function_config.prompt_template.render(context)
+                    result = client.complete_stream(prompt, prompt_execution_settings)
+                    async for chunk in result:
+                        yield chunk
+                except Exception as e:
+                    # TODO: "critical exceptions"
+                    context.fail(str(e), e)
+                return
 
-                    completion = ""
-                    async for partial_content in client.complete_stream(prompt, request_settings):
-                        completion += partial_content
-                        yield partial_content
-                    context.variables.update(completion)
+            try:
+                chat_prompt = function_config.prompt_template
+                # Similar to non-chat, render prompt (which renders to a
+                # list of <role, content> messages)
+                messages = await chat_prompt.render_messages(context)
+                result = client.complete_chat_stream(messages=messages, settings=prompt_execution_settings)
+                # context.objects["response_object"] = result
+                # TODO: most of this will be deleted once context is gone, just AIResponse object is then returned.
+                async for chunk in result:
+                    yield chunk
+                # context, chat_prompt = store_results(context, result, chat_prompt)
             except Exception as e:
                 # TODO: "critical exceptions"
+                logger.error(f"Error occurred while invoking stream function: {str(e)}")
                 context.fail(str(e), e)
 
         return KernelFunction(
@@ -219,93 +293,36 @@ class KernelFunction(KernelFunctionBase):
             chat_prompt_template=function_config.prompt_template if function_config.has_chat_prompt else None,
         )
 
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def plugin_name(self) -> str:
-        return self._plugin_name
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-    @property
-    def parameters(self) -> List[ParameterView]:
-        return self._parameters
-
-    @property
-    def is_semantic(self) -> bool:
-        return self._is_semantic
-
-    @property
-    def is_native(self) -> bool:
-        return not self._is_semantic
-
-    @property
-    def request_settings(self) -> AIRequestSettings:
-        return self._ai_request_settings
-
-    def __init__(
-        self,
-        delegate_type: DelegateTypes,
-        delegate_function: Callable[..., Any],
-        parameters: List[ParameterView],
-        description: str,
-        plugin_name: str,
-        function_name: str,
-        is_semantic: bool,
-        log: Optional[Any] = None,
-        delegate_stream_function: Optional[Callable[..., Any]] = None,
-        **kwargs: Dict[str, Any],
-    ) -> None:
-        super().__init__()
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        self._delegate_type = delegate_type
-        self._function = delegate_function
-        self._parameters = parameters
-        self._description = description
-        self._plugin_name = plugin_name
-        self._name = function_name
-        self._is_semantic = is_semantic
-        self._stream_function = delegate_stream_function
-        self._plugin_collection = None
-        self._ai_service = None
-        self._ai_request_settings = AIRequestSettings()
-        self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
-
-    def set_default_plugin_collection(self, plugins: ReadOnlyPluginCollectionBase) -> "KernelFunction":
-        self._plugin_collection = plugins
+    def set_default_plugin_collection(self, plugins: "KernelPluginCollection") -> "KernelFunction":
+        self.plugins = plugins
         return self
 
     def set_ai_service(self, ai_service: Callable[[], TextCompletionClientBase]) -> "KernelFunction":
         if ai_service is None:
             raise ValueError("AI LLM service factory cannot be `None`")
         self._verify_is_semantic()
-        self._ai_service = ai_service()
+        self.ai_service = ai_service()
         return self
 
     def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "KernelFunction":
         if chat_service is None:
             raise ValueError("Chat LLM service factory cannot be `None`")
         self._verify_is_semantic()
-        self._ai_service = chat_service()
+        self.ai_service = chat_service()
         return self
 
-    def set_ai_configuration(self, settings: AIRequestSettings) -> "KernelFunction":
+    def set_ai_configuration(self, settings: PromptExecutionSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("AI LLM request settings cannot be `None`")
         self._verify_is_semantic()
-        self._ai_request_settings = settings
+        self.prompt_execution_settings = settings
         return self
 
-    def set_chat_configuration(self, settings: AIRequestSettings) -> "KernelFunction":
+    def set_chat_configuration(self, settings: PromptExecutionSettings) -> "KernelFunction":
         if settings is None:
             raise ValueError("Chat LLM request settings cannot be `None`")
         self._verify_is_semantic()
-        self._ai_request_settings = settings
+        self.prompt_execution_settings = settings
         return self
 
     def describe(self) -> FunctionView:
@@ -314,21 +331,39 @@ class KernelFunction(KernelFunctionBase):
             plugin_name=self.plugin_name,
             description=self.description,
             is_semantic=self.is_semantic,
-            parameters=self._parameters,
+            parameters=self.parameters,
         )
 
-    def __call__(
+    async def __call__(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         log: Optional[Any] = None,
     ) -> "KernelContext":
+        """
+        Override the call operator to allow calling the function directly
+        This operator is run asynchronously.
+
+        Arguments:
+            input {Optional[str]} -- The input to the function
+            variables {ContextVariables} -- The variables for the function
+            context {Optional[KernelContext]} -- The context for the function
+            memory {Optional[SemanticTextMemoryBase]} -- The memory for the function
+            settings {Optional[PromptExecutionSettings]} -- The settings for the function
+            log {Optional[Any]} -- A logger to use for logging. (Optional)
+
+        Returns:
+            KernelContext -- The context for the function
+
+        Raises:
+            KernelException -- If the function is not semantic
+        """
         if log:
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        return self.invoke(
+        return await self.invoke(
             input=input,
             variables=variables,
             context=context,
@@ -336,72 +371,39 @@ class KernelFunction(KernelFunctionBase):
             settings=settings,
         )
 
-    def invoke(
+    async def invoke(
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
-        log: Optional[Any] = None,
-    ) -> "KernelContext":
-        from semantic_kernel.orchestration.kernel_context import KernelContext
-
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-
-        if context is None:
-            context = KernelContext(
-                variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
-                memory=memory if memory is not None else NullMemory.instance,
-            )
-        else:
-            # If context is passed, we need to merge the variables
-            if variables is not None:
-                context.variables = variables.merge_or_overwrite(new_vars=context.variables, overwrite=False)
-            if memory is not None:
-                context.memory = memory
-
-        if input is not None:
-            context.variables.update(input)
-
-        try:
-            loop = asyncio.get_running_loop() if asyncio.get_event_loop().is_running() else None
-        except RuntimeError:
-            loop = None
-
-        if loop and loop.is_running():
-
-            def run_coroutine():
-                if self.is_semantic:
-                    return self._invoke_semantic(context, settings)
-                else:
-                    return self._invoke_native(context)
-
-            return self.run_async_in_executor(run_coroutine)
-        else:
-            if self.is_semantic:
-                return asyncio.run(self._invoke_semantic(context, settings))
-            else:
-                return asyncio.run(self._invoke_native(context))
-
-    async def invoke_async(
-        self,
-        input: Optional[str] = None,
-        variables: ContextVariables = None,
-        context: Optional["KernelContext"] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
         **kwargs: Dict[str, Any],
     ) -> "KernelContext":
+        """
+        Invoke the function asynchronously
+
+        Arguments:
+            input {Optional[str]} -- The input to the function
+            variables {ContextVariables} -- The variables for the function
+            context {Optional[KernelContext]} -- The context for the function
+            memory {Optional[SemanticTextMemoryBase]} -- The memory for the function
+            settings {Optional[PromptExecutionSettings]} -- The settings for the function
+            kwargs {Dict[str, Any]} -- Additional keyword arguments
+
+        Returns:
+            KernelContext -- The context for the function
+
+        Raises:
+            KernelException -- If there is a problem invoking the function
+        """
         from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if context is None:
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
+                plugins=self.plugins,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -422,10 +424,10 @@ class KernelFunction(KernelFunctionBase):
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic(self, context: "KernelContext", settings: AIRequestSettings, **kwargs):
+    async def _invoke_semantic(self, context: "KernelContext", settings: PromptExecutionSettings, **kwargs):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
-        new_context = await self._function(self._ai_service, settings or self._ai_request_settings, context)
+        new_context = await self.function(self.ai_service, settings or self.prompt_execution_settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
@@ -434,16 +436,16 @@ class KernelFunction(KernelFunctionBase):
 
         self._ensure_context_has_plugins(context)
 
-        delegate = DelegateHandlers.get_handler(self._delegate_type)
+        delegate = DelegateHandlers.get_handler(self.delegate_type)
         # for python3.9 compatibility (staticmethod is not callable)
         if not hasattr(delegate, "__call__"):
             delegate = delegate.__func__
-        new_context = await delegate(self._function, context)
+        new_context = await delegate(self.function, context)
 
         return new_context
 
     def _verify_is_semantic(self) -> None:
-        if self._is_semantic:
+        if self.is_semantic:
             return
 
         logger.error("The function is not semantic")
@@ -453,7 +455,7 @@ class KernelFunction(KernelFunctionBase):
         )
 
     def _verify_is_native(self) -> None:
-        if not self._is_semantic:
+        if not self.is_semantic:
             return
 
         logger.error("The function is not native")
@@ -468,15 +470,15 @@ class KernelFunction(KernelFunctionBase):
         variables: ContextVariables = None,
         context: Optional["KernelContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-        settings: Optional[AIRequestSettings] = None,
+        settings: Optional[PromptExecutionSettings] = None,
     ):
         from semantic_kernel.orchestration.kernel_context import KernelContext
 
         if context is None:
             context = KernelContext(
                 variables=ContextVariables("") if variables is None else variables,
-                plugin_collection=self._plugin_collection,
                 memory=memory if memory is not None else NullMemory.instance,
+                plugins=self.plugins,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -496,6 +498,7 @@ class KernelFunction(KernelFunctionBase):
                 async for stream_msg in self._invoke_native_stream(context):
                     yield stream_msg
         except Exception as e:
+            logger.error(f"Error occurred while invoking stream function: {str(e)}")
             context.fail(str(e), e)
             raise KernelException(
                 KernelException.ErrorCodes.FunctionInvokeError,
@@ -505,7 +508,9 @@ class KernelFunction(KernelFunctionBase):
     async def _invoke_semantic_stream(self, context, settings):
         self._verify_is_semantic()
         self._ensure_context_has_plugins(context)
-        async for stream_msg in self._stream_function(self._ai_service, settings or self._ai_request_settings, context):
+        async for stream_msg in self.stream_function(
+            self.ai_service, settings or self.prompt_execution_settings, context
+        ):
             yield stream_msg
 
     async def _invoke_native_stream(self, context):
@@ -519,7 +524,7 @@ class KernelFunction(KernelFunctionBase):
             delegate = delegate.__func__
 
         completion = ""
-        async for partial in delegate(self._function, context):
+        async for partial in delegate(self.function, context):
             completion += partial
             yield partial
 
@@ -529,34 +534,7 @@ class KernelFunction(KernelFunctionBase):
         if context.plugins is not None:
             return
 
-        context.plugins = self._plugin_collection
+        context.plugins = self.plugins
 
     def _trace_function_type_Call(self, type: Enum) -> None:
         logger.debug(f"Executing function type {type}: {type.name}")
-
-    """
-    Async code wrapper to allow running async code inside external
-    event loops such as Jupyter notebooks.
-    """
-
-    def run_async_in_executor(self, coroutine_func: Callable[[], Any]) -> Any:
-        """
-        A unified method for async execution for more efficient and safer thread management
-
-        Arguments:
-            coroutine_func {Callable[[], Any]} -- The coroutine to run
-
-        Returns:
-            Any -- The result of the coroutine
-        """
-
-        def run_async_in_thread():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            result = loop.run_until_complete(coroutine_func())
-            loop.close()
-            return result
-
-        with ThreadPoolExecutor() as executor:
-            future = executor.submit(run_async_in_thread)
-            return future.result()
