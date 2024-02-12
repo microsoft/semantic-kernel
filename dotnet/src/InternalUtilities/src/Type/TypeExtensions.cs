@@ -57,7 +57,7 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// Teturns a string with the type's name. If the type is generic, it also includes the type parameters in a readable format.
+    /// Returns a string with the type's name. If the type is generic, it also includes the type parameters in a readable format.
     /// </summary>
     /// <param name="type">Target type.</param>
     public static string GetFriendlyTypeName(this Type type)
