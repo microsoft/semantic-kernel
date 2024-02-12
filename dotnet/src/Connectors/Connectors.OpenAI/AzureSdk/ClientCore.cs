@@ -380,7 +380,7 @@ internal abstract class ClientCore
                     functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception e)
+                catch (Exception e) when (!e.IsCriticalException())
 #pragma warning restore CA1031
                 {
                     AddResponseMessage(chatOptions, chat, null, $"Error: Exception while invoking function. {e.Message}", toolCall.Id, this.Logger);
