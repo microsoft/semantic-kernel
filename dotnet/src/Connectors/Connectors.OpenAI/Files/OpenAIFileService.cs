@@ -22,13 +22,14 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0015")]
 public sealed class OpenAIFileService
 {
-    private const string OpenAIApiEndpoint = "https://api.openai.com/v1";
+    private const string OpenAIApiEndpoint = "https://api.openai.com/v1/";
     private const string OpenAIApiRouteFiles = "files";
 
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly Uri _serviceUri;
+    private readonly string? _organization;
 
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
@@ -49,11 +50,7 @@ public sealed class OpenAIFileService
         this._logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._serviceUri = new Uri(this._httpClient.BaseAddress ?? new Uri(OpenAIApiEndpoint), OpenAIApiRouteFiles);
-
-        if (!string.IsNullOrEmpty(organization))
-        {
-            this._httpClient.DefaultRequestHeaders.Add(OpenAIClientCore.OrganizationKey, organization);
-        }
+        this._organization = organization;
     }
 
     /// <summary>
@@ -200,6 +197,11 @@ public sealed class OpenAIFileService
     {
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+
+        if (!string.IsNullOrEmpty(this._organization))
+        {
+            this._httpClient.DefaultRequestHeaders.Add(OpenAIClientCore.OrganizationKey, this._organization);
+        }
     }
 
     private OpenAIFileReference ConvertFileReference(FileInfo result)
