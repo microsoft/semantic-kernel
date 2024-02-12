@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -8,8 +9,10 @@ using Azure;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
+using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
@@ -44,7 +47,7 @@ public sealed class AzureAISearchMemoryStoreTests
             new SearchIndex("index-2"),
         }, null, Mock.Of<Response>());
 
-        var pageable = AsyncPageable<SearchIndex>.FromPages([page]);
+        var pageable = AsyncPageable<SearchIndex>.FromPages(new[] { page });
 
         this._mockSearchIndexClient
             .Setup(x => x.GetIndexesAsync(It.IsAny<CancellationToken>()))
@@ -98,7 +101,7 @@ public sealed class AzureAISearchMemoryStoreTests
             new SearchIndex("index-2"),
         }, null, Mock.Of<Response>());
 
-        var pageable = AsyncPageable<SearchIndex>.FromPages([page]);
+        var pageable = AsyncPageable<SearchIndex>.FromPages(new[] { page });
 
         this._mockSearchIndexClient
             .Setup(x => x.GetIndexesAsync(It.IsAny<CancellationToken>()))
@@ -159,6 +162,27 @@ public sealed class AzureAISearchMemoryStoreTests
     }
 
     [Fact]
+    public async Task UpsertReturnsValidRecordKeyAsync()
+    {
+        // Arrange
+        var indexingResult = SearchModelFactory.IndexingResult("record-id", null, true, 200);
+        var results = SearchModelFactory.IndexDocumentsResult(new[] { indexingResult });
+
+        this._mockSearchClient
+            .Setup(x => x.IndexDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IndexDocumentsBatch<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(results, Mock.Of<Response>()));
+
+        // Act
+        var result = await this._service.UpsertAsync("test-index", this.GetTestMemoryRecord("record-id"));
+
+        // Assert
+        Assert.Equal("record-id", result);
+    }
+
+    [Fact]
     public async Task GetReturnsValidRecordAsync()
     {
         // Arrange
@@ -188,4 +212,13 @@ public sealed class AzureAISearchMemoryStoreTests
         // Assert
         Assert.Null(result);
     }
+
+    #region private
+
+    private MemoryRecord GetTestMemoryRecord(string id)
+    {
+        return MemoryRecord.LocalRecord(id, "text", "description", new ReadOnlyMemory<float>());
+    }
+
+    #endregion
 }

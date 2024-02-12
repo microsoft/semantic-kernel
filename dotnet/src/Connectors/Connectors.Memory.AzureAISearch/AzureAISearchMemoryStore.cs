@@ -225,9 +225,9 @@ public class AzureAISearchMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
+    public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        return this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
+        await this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
