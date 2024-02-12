@@ -5,8 +5,12 @@ import com.azure.core.http.rest.RequestOptions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import org.slf4j.Logger;
 
-public final class OpenAiRequestSettings {
+public final class OpenAIRequestSettings {
+
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+        OpenAIRequestSettings.class);
 
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTY_NAME = "semantic-kernel.version";
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTIES_FILE = "semantic-kernel-version.properties";
@@ -21,7 +25,7 @@ public final class OpenAiRequestSettings {
 
         String version = "Java/unknown";
 
-        try (InputStream settingsFile = OpenAiRequestSettings.class.getResourceAsStream(
+        try (InputStream settingsFile = OpenAIRequestSettings.class.getResourceAsStream(
             SEMANTIC_KERNEL_VERSION_PROPERTIES_FILE)) {
 
             Properties props = new Properties();
@@ -34,6 +38,7 @@ public final class OpenAiRequestSettings {
             }
         } catch (IOException e) {
             //Ignore
+            LOGGER.trace("Failed to load Semantic Kernel version from properties file", e);
         }
         return version;
     }

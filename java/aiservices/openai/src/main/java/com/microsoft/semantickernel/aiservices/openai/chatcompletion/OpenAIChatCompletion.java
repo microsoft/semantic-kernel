@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.OpenAiRequestSettings;
+import com.microsoft.semantickernel.aiservices.openai.OpenAIRequestSettings;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
@@ -168,7 +168,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         return client
             .getChatCompletionsWithResponse(getModelId(), options,
-                OpenAiRequestSettings.getRequestOptions())
+                OpenAIRequestSettings.getRequestOptions())
             .flatMap(completionsResult -> {
                 if (completionsResult.getStatusCode() >= 400) {
                     return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
