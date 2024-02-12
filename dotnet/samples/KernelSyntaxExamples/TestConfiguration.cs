@@ -3,8 +3,8 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
-using Reliability;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
+using Reliability;
 
 public sealed class TestConfiguration
 {
