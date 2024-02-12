@@ -17,9 +17,9 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use the ApiManifest based plugins
-public class Example79_ApiManifest : BaseTest
+public class Example80_ApiManifest : BaseTest
 {
-    public Example79_ApiManifest(ITestOutputHelper output) : base(output)
+    public Example80_ApiManifest(ITestOutputHelper output) : base(output)
     {
     }
 
