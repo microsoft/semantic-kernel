@@ -1,45 +1,45 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
-using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
-public static class Example06_TemplateLanguage
+namespace Examples;
+
+public class Example06_TemplateLanguage : BaseTest
 {
     /// <summary>
-    /// Show how to invoke a Native Function written in C#
-    /// from a Semantic Function written in natural language
+    /// Show how to invoke a Method Function written in C#
+    /// from a Prompt Function written in natural language
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== TemplateLanguage ========");
+        this.WriteLine("======== TemplateLanguage ========");
 
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromType<TimePlugin>("time");
 
-        // Semantic Function invoking time.Date and time.Time native functions
+        // Prompt Function invoking time.Date and time.Time method functions
         const string FunctionDefinition = @"
 Today is: {{time.Date}}
 Current time is: {{time.Time}}
@@ -50,18 +50,19 @@ Is it weekend time (weekend/not weekend)?
 ";
 
         // This allows to see the prompt before it's sent to OpenAI
-        Console.WriteLine("--- Rendered Prompt");
-        var promptRenderer = new BasicPromptTemplateEngine();
-        var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, kernel.CreateNewContext());
-        Console.WriteLine(renderedPrompt);
+        this.WriteLine("--- Rendered Prompt");
+        var promptTemplateFactory = new KernelPromptTemplateFactory();
+        var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel);
+        this.WriteLine(renderedPrompt);
 
-        // Run the prompt / semantic function
-        var kindOfDay = kernel.CreateSemanticFunction(FunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
+        // Run the prompt / prompt function
+        var kindOfDay = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
-        Console.WriteLine("--- Semantic Function result");
-        var result = await kernel.RunAsync(kindOfDay);
-        Console.WriteLine(result.GetValue<string>());
+        this.WriteLine("--- Prompt Function result");
+        var result = await kernel.InvokeAsync(kindOfDay);
+        this.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -74,7 +75,7 @@ Is it weekend time (weekend/not weekend)?
             Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
             Is it weekend time (weekend/not weekend)?
 
-            --- Semantic Function result
+            --- Prompt Function result
 
             {
                 "date": "Friday, April 28, 2023",
@@ -83,5 +84,9 @@ Is it weekend time (weekend/not weekend)?
                 "weekend": "weekend"
             }
          */
+    }
+
+    public Example06_TemplateLanguage(ITestOutputHelper output) : base(output)
+    {
     }
 }

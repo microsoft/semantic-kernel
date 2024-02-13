@@ -1,16 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import List
+import logging
+from typing import Any, List, Optional
 
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 # BNF parsed by CodeTokenizer:
@@ -21,9 +22,12 @@ from semantic_kernel.utils.null_logger import NullLogger
 # [value]          ::= "'" [text] "'" | '"' [text] '"'
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
-class CodeTokenizer(PydanticField):
-    def __init__(self, log: Logger = None):
-        self.log = log or NullLogger()
+class CodeTokenizer(KernelBaseModel):
+    def __init__(self, log: Optional[Any] = None):
+        super().__init__()
+
+        if log:
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     def tokenize(self, text: str) -> List[Block]:
         # Remove spaces, which are ignored anyway
@@ -49,11 +53,11 @@ class CodeTokenizer(PydanticField):
         # 1 char only edge case
         if len(text) == 1:
             if next_char == Symbols.VAR_PREFIX:
-                blocks.append(VarBlock(text, self.log))
+                blocks.append(VarBlock(text))
             elif next_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
-                blocks.append(ValBlock(text, self.log))
+                blocks.append(ValBlock(text))
             else:
-                blocks.append(FunctionIdBlock(text, self.log))
+                blocks.append(FunctionIdBlock(text))
 
             return blocks
 
@@ -84,9 +88,7 @@ class CodeTokenizer(PydanticField):
                 #  - skip the current char (escape char)
                 #  - add the next char (special char)
                 #  - jump to the one after (to handle "\\" properly)
-                if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(
-                    next_char
-                ):
+                if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(next_char):
                     current_token_content.append(next_char)
                     skip_next_char = True
                     continue
@@ -95,7 +97,7 @@ class CodeTokenizer(PydanticField):
 
                 # When we reach the end of the value, we add the block
                 if current_char == text_value_delimiter:
-                    blocks.append(ValBlock("".join(current_token_content), self.log))
+                    blocks.append(ValBlock("".join(current_token_content)))
                     current_token_content.clear()
                     current_token_type = None
                     space_separator_found = False
@@ -106,12 +108,10 @@ class CodeTokenizer(PydanticField):
             # Note: there might be multiple consecutive spaces
             if self._is_blank_space(current_char):
                 if current_token_type == BlockTypes.VARIABLE:
-                    blocks.append(VarBlock("".join(current_token_content), self.log))
+                    blocks.append(VarBlock("".join(current_token_content)))
                     current_token_content.clear()
                 elif current_token_type == BlockTypes.FUNCTION_ID:
-                    blocks.append(
-                        FunctionIdBlock("".join(current_token_content), self.log)
-                    )
+                    blocks.append(FunctionIdBlock("".join(current_token_content)))
                     current_token_content.clear()
 
                 space_separator_found = True
@@ -141,11 +141,11 @@ class CodeTokenizer(PydanticField):
         current_token_content.append(next_char)
 
         if current_token_type == BlockTypes.VALUE:
-            blocks.append(ValBlock("".join(current_token_content), self.log))
+            blocks.append(ValBlock("".join(current_token_content)))
         elif current_token_type == BlockTypes.VARIABLE:
-            blocks.append(VarBlock("".join(current_token_content), self.log))
+            blocks.append(VarBlock("".join(current_token_content)))
         elif current_token_type == BlockTypes.FUNCTION_ID:
-            blocks.append(FunctionIdBlock("".join(current_token_content), self.log))
+            blocks.append(FunctionIdBlock("".join(current_token_content)))
         else:
             raise ValueError("Tokens must be separated by one space least")
 

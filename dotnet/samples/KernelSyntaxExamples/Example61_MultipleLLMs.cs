@@ -1,69 +1,89 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using RepoUtils;
+using xRetry;
+using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
-public static class Example61_MultipleLLMs
+namespace Examples;
+
+public class Example61_MultipleLLMs : BaseTest
 {
     /// <summary>
-    /// Show how to run a semantic function and specify a specific service to use.
+    /// Show how to run a prompt function and specify a specific service to use.
     /// </summary>
-    public static async Task RunAsync()
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Example61_MultipleLLMs ========");
-
-        string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
-
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
-        {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
-            return;
-        }
-
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
-
-        if (openAIModelId == null || openAIApiKey == null)
-        {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
-            return;
-        }
-
-        IKernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                 serviceId: "AzureOpenAIChat",
-                apiKey: apiKey)
-            .WithOpenAIChatCompletionService(
-                modelId: openAIModelId,
-                serviceId: "OpenAIChat",
-                apiKey: openAIApiKey)
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
+            .AddOpenAIChatCompletion(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey,
+                serviceId: "OpenAIChat")
             .Build();
 
-        await RunSemanticFunctionAsync(kernel, "AzureOpenAIChat");
-        await RunSemanticFunctionAsync(kernel, "OpenAIChat");
+        await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
+        await RunByModelIdAsync(kernel, TestConfiguration.OpenAI.ChatModelId);
+        await RunByFirstModelIdAsync(kernel, "gpt-4-1106-preview", TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.OpenAI.ChatModelId);
     }
 
-    public static async Task RunSemanticFunctionAsync(IKernel kernel, string serviceId)
+    private async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
     {
-        Console.WriteLine($"======== {serviceId} ========");
+        WriteLine($"======== Service Id: {serviceId} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var result = await kernel.InvokeSemanticFunctionAsync(
+        KernelArguments arguments = new();
+        arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
+        {
+            { serviceId, new PromptExecutionSettings() }
+        };
+        var result = await kernel.InvokePromptAsync(prompt, arguments);
+        WriteLine(result.GetValue<string>());
+    }
+
+    private async Task RunByModelIdAsync(Kernel kernel, string modelId)
+    {
+        WriteLine($"======== Model Id: {modelId} ========");
+
+        var prompt = "Hello AI, what can you do for me?";
+
+        var result = await kernel.InvokePromptAsync(
            prompt,
-           requestSettings: new AIRequestSettings()
+           new(new PromptExecutionSettings()
            {
-               ServiceId = serviceId
-           });
-        Console.WriteLine(result.GetValue<string>());
+               ModelId = modelId
+           }));
+        WriteLine(result.GetValue<string>());
+    }
+
+    private async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
+    {
+        WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
+
+        var prompt = "Hello AI, what can you do for me?";
+
+        var modelSettings = new Dictionary<string, PromptExecutionSettings>();
+        foreach (var modelId in modelIds)
+        {
+            modelSettings.Add(modelId, new PromptExecutionSettings() { ModelId = modelId });
+        }
+        var promptConfig = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
+
+        var function = kernel.CreateFunctionFromPrompt(promptConfig);
+
+        var result = await kernel.InvokeAsync(function);
+        WriteLine(result.GetValue<string>());
+    }
+
+    public Example61_MultipleLLMs(ITestOutputHelper output) : base(output)
+    {
     }
 }

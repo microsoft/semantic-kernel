@@ -18,7 +18,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Amazon
     /// </summary>
-    [SKFunction, Description("Return URL for Amazon search query")]
+    [KernelFunction, Description("Return URL for Amazon search query")]
     public string AmazonSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -31,7 +31,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing
     /// </summary>
-    [SKFunction, Description("Return URL for Bing search query.")]
+    [KernelFunction, Description("Return URL for Bing search query.")]
     public string BingSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -41,7 +41,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing Images
     /// </summary>
-    [SKFunction, Description("Return URL for Bing Images search query.")]
+    [KernelFunction, Description("Return URL for Bing Images search query.")]
     public string BingImagesSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -51,7 +51,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing Maps
     /// </summary>
-    [SKFunction, Description("Return URL for Bing Maps search query.")]
+    [KernelFunction, Description("Return URL for Bing Maps search query.")]
     public string BingMapsSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -61,7 +61,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing Shopping
     /// </summary>
-    [SKFunction, Description("Return URL for Bing Shopping search query.")]
+    [KernelFunction, Description("Return URL for Bing Shopping search query.")]
     public string BingShoppingSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -71,7 +71,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing News
     /// </summary>
-    [SKFunction, Description("Return URL for Bing News search query.")]
+    [KernelFunction, Description("Return URL for Bing News search query.")]
     public string BingNewsSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -81,7 +81,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing Travel
     /// </summary>
-    [SKFunction, Description("Return URL for Bing Travel search query.")]
+    [KernelFunction, Description("Return URL for Bing Travel search query.")]
     public string BingTravelSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -94,7 +94,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Facebook
     /// </summary>
-    [SKFunction, Description("Return URL for Facebook search query.")]
+    [KernelFunction, Description("Return URL for Facebook search query.")]
     public string FacebookSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -107,7 +107,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for GitHub
     /// </summary>
-    [SKFunction, Description("Return URL for GitHub search query.")]
+    [KernelFunction, Description("Return URL for GitHub search query.")]
     public string GitHubSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -120,7 +120,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for LinkedIn
     /// </summary>
-    [SKFunction, Description("Return URL for LinkedIn search query.")]
+    [KernelFunction, Description("Return URL for LinkedIn search query.")]
     public string LinkedInSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -133,7 +133,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Twitter
     /// </summary>
-    [SKFunction, Description("Return URL for Twitter search query.")]
+    [KernelFunction, Description("Return URL for Twitter search query.")]
     public string TwitterSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -146,7 +146,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Wikipedia
     /// </summary>
-    [SKFunction, Description("Return URL for Wikipedia search query.")]
+    [KernelFunction, Description("Return URL for Wikipedia search query.")]
     public string WikipediaSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);

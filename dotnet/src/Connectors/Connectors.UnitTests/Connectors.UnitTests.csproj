@@ -4,13 +4,20 @@
     <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>12</LangVersion>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111</NoWarn>
+    <NoWarn>CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0010,SKEXP0011,SKEXP0012,SKEXP0013,SKEXP0014,SKEXP0020,SKEXP0021,SKEXP0022,SKEXP0023,SKEXP0024,SKEXP0025,SKEXP0026,SKEXP0027,SKEXP0028,SKEXP0029,SKEXP0030,SKEXP0031,SKEXP0032,SKEXP0052</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Use newest available compiler to permit LangVersion 12. -->
+    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -20,20 +27,24 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="System.Numerics.Tensors" />
-
-    <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
     <PackageReference Include="System.Text.Json" />
-    <PackageVersion Update="System.Text.Json" Version="7.0.3" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
-    <ProjectReference Include="..\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
+    <ProjectReference Include="..\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
+    <ProjectReference Include="..\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
@@ -43,19 +54,14 @@
     <ProjectReference Include="..\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="HuggingFace\TestData\completion_test_response.json">
+    <None Update="HuggingFace\TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="HuggingFace\TestData\embeddings_test_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\image_result_test_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenAI\TestData\image_generation_test_response.json">
+    <None Update="OpenAI\TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

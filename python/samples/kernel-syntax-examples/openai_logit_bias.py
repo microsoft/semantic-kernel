@@ -1,12 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from typing import Any, Dict
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
 )
 
 """
@@ -17,22 +21,16 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 """
 
 
-def _config_ban_tokens(settings_type, keys):
-    settings = (
-        ChatRequestSettings() if settings_type == "chat" else CompleteRequestSettings()
-    )
-
+def _config_ban_tokens(settings: PromptExecutionSettings, keys: Dict[Any, Any]):
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
         # -100 to potentially ban all tokens in the list
-        settings.token_selection_biases[k] = -100
+        settings.logit_bias[k] = -100
     return settings
 
 
 async def chat_request_example(kernel, api_key, org_id):
-    openai_chat_completion = sk_oai.OpenAIChatCompletion(
-        "gpt-3.5-turbo", api_key, org_id
-    )
+    openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
     kernel.add_chat_service("chat_service", openai_chat_completion)
 
     # Spaces and capitalization affect the token ids.
@@ -67,14 +65,11 @@ async def chat_request_example(kernel, api_key, org_id):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = _config_ban_tokens("chat", keys)
+    settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat_service")
+    settings = _config_ban_tokens(settings, keys)
 
-    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-        max_tokens=2000, temperature=0.7, top_p=0.8
-    )
-    prompt_template = sk.ChatPromptTemplate(
-        "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-    )
+    prompt_config = sk.PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
+    prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
     # Setup chat with prompt
     prompt_template.add_system_message("You are a basketball expert")
@@ -83,15 +78,18 @@ async def chat_request_example(kernel, api_key, org_id):
     function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
     kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
-    chat_messages = list()
+    chat_messages = []
+    messages = [{"role": "user", "content": user_mssg}]
+
     chat_messages.append(("user", user_mssg))
-    answer = await openai_chat_completion.complete_chat_async(chat_messages, settings)
-    chat_messages.append(("assistant", str(answer)))
+    answer = await openai_chat_completion.complete_chat(messages=messages, settings=settings)
+    chat_messages.append(("assistant", str(answer[0])))
 
     user_mssg = "What are his best all-time stats?"
+    messages = [{"role": "user", "content": user_mssg}]
     chat_messages.append(("user", user_mssg))
-    answer = await openai_chat_completion.complete_chat_async(chat_messages, settings)
-    chat_messages.append(("assistant", str(answer)))
+    answer = await openai_chat_completion.complete_chat(messages=messages, settings=settings)
+    chat_messages.append(("assistant", str(answer[0])))
 
     context_vars = sk.ContextVariables()
     context_vars["chat_history"] = ""
@@ -108,9 +106,7 @@ async def chat_request_example(kernel, api_key, org_id):
 
 
 async def text_complete_request_example(kernel, api_key, org_id):
-    openai_text_completion = sk_oai.OpenAITextCompletion(
-        "text-davinci-002", api_key, org_id
-    )
+    openai_text_completion = sk_oai.OpenAITextCompletion("gpt-3.5-turbo-instruct", api_key, org_id)
     kernel.add_text_completion_service("text_service", openai_text_completion)
 
     # Spaces and capitalization affect the token ids.
@@ -154,10 +150,11 @@ async def text_complete_request_example(kernel, api_key, org_id):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = _config_ban_tokens("complete", keys)
+    settings = kernel.get_prompt_execution_settings_from_service(TextCompletionClientBase, "text_service")
+    settings = _config_ban_tokens(settings, keys)
 
     user_mssg = "The best pie flavor to have in autumn is"
-    answer = await openai_text_completion.complete_async(user_mssg, settings)
+    answer = await openai_text_completion.complete(user_mssg, settings)
 
     context_vars = sk.ContextVariables()
     context_vars["chat_history"] = f"User:> {user_mssg}\nChatBot:> {answer}\n"

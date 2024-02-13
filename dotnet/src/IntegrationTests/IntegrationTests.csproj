@@ -6,16 +6,35 @@
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111</NoWarn>
+    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0010,SKEXP0011,SKEXP0012,SKEXP0020,SKEXP0021,SKEXP0022,SKEXP0023,SKEXP0024,SKEXP0025,SKEXP0026,SKEXP0027,SKEXP0028,SKEXP0029,SKEXP0030,SKEXP0031,SKEXP0032,SKEXP0042,SKEXP0050,SKEXP0054,SKEXP0060,SKEXP0061</NoWarn>
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Planners\SequentialPlanner\**" />
+    <Compile Remove="Planners\StepwisePlanner\**" />
+    <EmbeddedResource Remove="Planners\SequentialPlanner\**" />
+    <EmbeddedResource Remove="Planners\StepwisePlanner\**" />
+    <None Remove="Planners\SequentialPlanner\**" />
+    <None Remove="Planners\StepwisePlanner\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Planners\PlanTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="prompts\GenerateStoryHandlebars.yaml" />
+    <None Remove="skills\FunSkill\Joke\config.json" />
+    <None Remove="skills\FunSkill\Joke\skprompt.txt" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -26,27 +45,32 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
     <PackageReference Include="System.Text.Json" />
-    <PackageVersion Update="System.Text.Json" Version="7.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
-    <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
-    <ProjectReference Include="..\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
+    <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
+    <ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
-    <ProjectReference Include="..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
+    <ProjectReference Include="..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Planners\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->
+    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+  </ItemGroup>
+  
   <ItemGroup>
     <None Update="testsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -57,8 +81,23 @@
     <Content Include="Plugins\instacart-ai-plugin.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TemplateLanguage\tests.txt">
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="prompts/GenerateStory.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
+    <EmbeddedResource Include="prompts\GenerateStoryHandlebars.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="skills\FunSkill\Joke\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="skills\FunSkill\Joke\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

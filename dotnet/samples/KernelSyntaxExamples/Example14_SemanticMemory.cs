@@ -3,50 +3,49 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Plugins.Memory;
-using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 /* The files contains two examples about SK Semantic Memory.
  *
- * 1. Memory using Azure Cognitive Search.
+ * 1. Memory using Azure AI Search.
  * 2. Memory using a custom embedding generator and vector engine.
  *
  * Semantic Memory allows to store your data like traditional DBs,
  * adding the ability to query it using natural language.
  */
-
-// ReSharper disable once InconsistentNaming
-public static class Example14_SemanticMemory
+public class Example14_SemanticMemory : BaseTest
 {
     private const string MemoryCollectionName = "SKGitHub";
 
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("==============================================================");
-        Console.WriteLine("======== Semantic Memory using Azure Cognitive Search ========");
-        Console.WriteLine("==============================================================");
+        WriteLine("==============================================================");
+        WriteLine("======== Semantic Memory using Azure AI Search ========");
+        WriteLine("==============================================================");
 
-        /* This example leverages Azure Cognitive Search to provide SK with Semantic Memory.
+        /* This example leverages Azure AI Search to provide SK with Semantic Memory.
          *
-         * Azure Cognitive Search automatically indexes your data semantically, so you don't
+         * Azure AI Search automatically indexes your data semantically, so you don't
          * need to worry about embedding generation.
          */
 
         var memoryWithACS = new MemoryBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStore(new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey))
+            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+            .WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey))
             .Build();
 
         await RunExampleAsync(memoryWithACS);
 
-        Console.WriteLine("====================================================");
-        Console.WriteLine("======== Semantic Memory (volatile, in RAM) ========");
-        Console.WriteLine("====================================================");
+        WriteLine("====================================================");
+        WriteLine("======== Semantic Memory (volatile, in RAM) ========");
+        WriteLine("====================================================");
 
         /* You can build your own semantic memory combining an Embedding Generator
          * with a Memory storage that supports search by similarity (ie semantic search).
@@ -58,15 +57,14 @@ public static class Example14_SemanticMemory
          */
 
         var memoryWithCustomDb = new MemoryBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStore(new VolatileMemoryStore())
             .Build();
 
         await RunExampleAsync(memoryWithCustomDb);
     }
 
-    public static async Task RunExampleAsync(ISemanticTextMemory memory)
+    private async Task RunExampleAsync(ISemanticTextMemory memory)
     {
         await StoreMemoryAsync(memory);
 
@@ -105,36 +103,36 @@ public static class Example14_SemanticMemory
         */
     }
 
-    private static async Task SearchMemoryAsync(ISemanticTextMemory memory, string query)
+    private async Task SearchMemoryAsync(ISemanticTextMemory memory, string query)
     {
-        Console.WriteLine("\nQuery: " + query + "\n");
+        WriteLine("\nQuery: " + query + "\n");
 
         var memoryResults = memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
 
         int i = 0;
         await foreach (MemoryQueryResult memoryResult in memoryResults)
         {
-            Console.WriteLine($"Result {++i}:");
-            Console.WriteLine("  URL:     : " + memoryResult.Metadata.Id);
-            Console.WriteLine("  Title    : " + memoryResult.Metadata.Description);
-            Console.WriteLine("  Relevance: " + memoryResult.Relevance);
-            Console.WriteLine();
+            WriteLine($"Result {++i}:");
+            WriteLine("  URL:     : " + memoryResult.Metadata.Id);
+            WriteLine("  Title    : " + memoryResult.Metadata.Description);
+            WriteLine("  Relevance: " + memoryResult.Relevance);
+            WriteLine();
         }
 
-        Console.WriteLine("----------------------");
+        WriteLine("----------------------");
     }
 
-    private static async Task StoreMemoryAsync(ISemanticTextMemory memory)
+    private async Task StoreMemoryAsync(ISemanticTextMemory memory)
     {
         /* Store some data in the semantic memory.
          *
-         * When using Azure Cognitive Search the data is automatically indexed on write.
+         * When using Azure AI Search the data is automatically indexed on write.
          *
          * When using the combination of VolatileStore and Embedding generation, SK takes
          * care of creating and storing the index
          */
 
-        Console.WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
+        WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
         var githubFiles = SampleData();
         var i = 0;
         foreach (var entry in githubFiles)
@@ -149,7 +147,7 @@ public static class Example14_SemanticMemory
             Console.Write($" #{++i} saved.");
         }
 
-        Console.WriteLine("\n----------------------");
+        WriteLine("\n----------------------");
     }
 
     private static Dictionary<string, string> SampleData()
@@ -166,10 +164,10 @@ public static class Example14_SemanticMemory
                 = "Sample demonstrating how to create a chat plugin interfacing with ChatGPT",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet/KernelHttpServer/README.md"]
-                = "README: How to set up a Semantic Kernel Service API using Azure Function Runtime v4",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/chat-summary-webapp-react/README.md"]
-                = "README: README associated with a sample chat summary react-based webapp",
         };
+    }
+
+    public Example14_SemanticMemory(ITestOutputHelper output) : base(output)
+    {
     }
 }

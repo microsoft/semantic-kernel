@@ -1,34 +1,37 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
-using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
-using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.Connectors.Memory.Redis;
-using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Connectors.Chroma;
+using Microsoft.SemanticKernel.Connectors.DuckDB;
+using Microsoft.SemanticKernel.Connectors.Kusto;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
+using Microsoft.SemanticKernel.Connectors.Postgres;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Redis;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
-using Pgvector.Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
+using Xunit;
+using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
-public static class Example15_TextMemoryPlugin
+namespace Examples;
+
+public class Example15_TextMemoryPlugin : BaseTest
 {
     private const string MemoryCollectionName = "aboutMe";
 
-    public static async Task RunAsync(CancellationToken cancellationToken = default)
+    [Theory]
+    [InlineData("Volatile")]
+    [InlineData("AzureAISearch")]
+    public async Task RunAsync(string provider)
     {
         IMemoryStore store;
 
@@ -37,7 +40,11 @@ public static class Example15_TextMemoryPlugin
         ///////////////////////////////////////////////////////////////////////////////////////////
 
         // Volatile Memory Store - an in-memory store that is not persisted
-        store = new VolatileMemoryStore();
+        switch (provider)
+        {
+            case "AzureAISearch": store = CreateSampleAzureAISearchMemoryStore(); break;
+            default: store = new VolatileMemoryStore(); break;
+        }
 
         // Sqlite Memory Store - a file-based store that persists data in a Sqlite database
         // store = await CreateSampleSqliteMemoryStoreAsync();
@@ -45,8 +52,11 @@ public static class Example15_TextMemoryPlugin
         // DuckDB Memory Store - a file-based store that persists data in a DuckDB database
         // store = await CreateSampleDuckDbMemoryStoreAsync();
 
-        // Azure Cognitive Search Memory Store - a store that persists data in a hosted Azure Cognitive Search database
-        // store = CreateSampleAzureCognitiveSearchMemoryStore();
+        // MongoDB Memory Store - a store that persists data in a MongoDB database
+        // store = CreateSampleMongoDBMemoryStore();
+
+        // Azure AI Search Memory Store - a store that persists data in a hosted Azure AI Search database
+        // store = CreateSampleAzureAISearchMemoryStore();
 
         // Qdrant Memory Store - a store that persists data in a local or remote Qdrant database
         // store = CreateSampleQdrantMemoryStore();
@@ -69,52 +79,58 @@ public static class Example15_TextMemoryPlugin
         // Kusto Memory Store
         // store = CreateSampleKustoMemoryStore();
 
-        await RunWithStoreAsync(store, cancellationToken);
+        await RunWithStoreAsync(store);
     }
 
-    private static async Task<IMemoryStore> CreateSampleSqliteMemoryStoreAsync()
+    private async Task<IMemoryStore> CreateSampleSqliteMemoryStoreAsync()
     {
         IMemoryStore store = await SqliteMemoryStore.ConnectAsync("memories.sqlite");
         return store;
     }
 
-    private static async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
+    private async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
         IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb");
         return store;
     }
 
-    private static IMemoryStore CreateSampleAzureCognitiveSearchMemoryStore()
+    private IMemoryStore CreateSampleMongoDBMemoryStore()
     {
-        IMemoryStore store = new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey);
+        IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memoryPluginExample");
         return store;
     }
 
-    private static IMemoryStore CreateSampleChromaMemoryStore()
+    private IMemoryStore CreateSampleAzureAISearchMemoryStore()
+    {
+        IMemoryStore store = new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey);
+        return store;
+    }
+
+    private IMemoryStore CreateSampleChromaMemoryStore()
     {
         IMemoryStore store = new ChromaMemoryStore(TestConfiguration.Chroma.Endpoint, ConsoleLogger.LoggerFactory);
         return store;
     }
 
-    private static IMemoryStore CreateSampleQdrantMemoryStore()
+    private IMemoryStore CreateSampleQdrantMemoryStore()
     {
         IMemoryStore store = new QdrantMemoryStore(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.LoggerFactory);
         return store;
     }
 
-    private static IMemoryStore CreateSamplePineconeMemoryStore()
+    private IMemoryStore CreateSamplePineconeMemoryStore()
     {
         IMemoryStore store = new PineconeMemoryStore(TestConfiguration.Pinecone.Environment, TestConfiguration.Pinecone.ApiKey, ConsoleLogger.LoggerFactory);
         return store;
     }
 
-    private static IMemoryStore CreateSampleWeaviateMemoryStore()
+    private IMemoryStore CreateSampleWeaviateMemoryStore()
     {
         IMemoryStore store = new WeaviateMemoryStore(TestConfiguration.Weaviate.Endpoint, TestConfiguration.Weaviate.ApiKey);
         return store;
     }
 
-    private static async Task<IMemoryStore> CreateSampleRedisMemoryStoreAsync()
+    private async Task<IMemoryStore> CreateSampleRedisMemoryStoreAsync()
     {
         string configuration = TestConfiguration.Redis.Configuration;
         ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
@@ -139,16 +155,15 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
-    private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
+    private async Task RunWithStoreAsync(IMemoryStore memoryStore)
     {
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Create an embedding generator to use for semantic memory.
-        var embeddingGenerator = new OpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
+        var embeddingGenerator = new OpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
 
         // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
         // store and retrieve memories.
@@ -159,57 +174,56 @@ public static class Example15_TextMemoryPlugin
         //
         // This is a simple way to store memories from a code perspective, without using the Kernel.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        Console.WriteLine("== PART 1a: Saving Memories through the ISemanticTextMemory object ==");
+        WriteLine("== PART 1a: Saving Memories through the ISemanticTextMemory object ==");
 
-        Console.WriteLine("Saving memory with key 'info1': \"My name is Andrea\"");
-        await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info1", text: "My name is Andrea", cancellationToken: cancellationToken);
+        WriteLine("Saving memory with key 'info1': \"My name is Andrea\"");
+        await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info1", text: "My name is Andrea");
 
-        Console.WriteLine("Saving memory with key 'info2': \"I work as a tourist operator\"");
-        await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info2", text: "I work as a tourist operator", cancellationToken: cancellationToken);
+        WriteLine("Saving memory with key 'info2': \"I work as a tourist operator\"");
+        await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info2", text: "I work as a tourist operator");
 
-        Console.WriteLine("Saving memory with key 'info3': \"I've been living in Seattle since 2005\"");
-        await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info3", text: "I've been living in Seattle since 2005", cancellationToken: cancellationToken);
+        WriteLine("Saving memory with key 'info3': \"I've been living in Seattle since 2005\"");
+        await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info3", text: "I've been living in Seattle since 2005");
 
-        Console.WriteLine("Saving memory with key 'info4': \"I visited France and Italy five times since 2015\"");
-        await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info4", text: "I visited France and Italy five times since 2015", cancellationToken: cancellationToken);
+        WriteLine("Saving memory with key 'info4': \"I visited France and Italy five times since 2015\"");
+        await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info4", text: "I visited France and Italy five times since 2015");
 
         // Retrieve a memory
-        Console.WriteLine("== PART 1b: Retrieving Memories through the ISemanticTextMemory object ==");
-        MemoryQueryResult? lookup = await textMemory.GetAsync(MemoryCollectionName, "info1", cancellationToken: cancellationToken);
-        Console.WriteLine("Memory with key 'info1':" + lookup?.Metadata.Text ?? "ERROR: memory not found");
-        Console.WriteLine();
+        WriteLine("== PART 1b: Retrieving Memories through the ISemanticTextMemory object ==");
+        MemoryQueryResult? lookup = await textMemory.GetAsync(MemoryCollectionName, "info1");
+        WriteLine("Memory with key 'info1':" + lookup?.Metadata.Text ?? "ERROR: memory not found");
+        WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 2: Create TextMemoryPlugin, store and retrieve memories through the Kernel.
         //
-        // This enables semantic functions and the AI (via Planners) to access memories
+        // This enables prompt functions and the AI (via Planners) to access memories
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Console.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
+        WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
 
         // Import the TextMemoryPlugin into the Kernel for other functions
-        var memoryPlugin = new TextMemoryPlugin(textMemory);
-        var memoryFunctions = kernel.ImportFunctions(memoryPlugin);
+        var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(textMemory));
 
         // Save a memory with the Kernel
-        Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-        await kernel.RunAsync(memoryFunctions["Save"], new()
+        WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
+        await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
+            [TextMemoryPlugin.InputParam] = "My family is from New York",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5",
-            ["input"] = "My family is from New York"
-        }, cancellationToken);
+        });
 
         // Retrieve a specific memory with the Kernel
-        Console.WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
-        var result = await kernel.RunAsync(memoryFunctions["Retrieve"], new()
+        WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
+        var result = await kernel.InvokeAsync(memoryPlugin["Retrieve"], new KernelArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5"
-        }, cancellationToken);
+        });
 
-        Console.WriteLine("Memory with key 'info5':" + result.GetValue<string>() ?? "ERROR: memory not found");
-        Console.WriteLine();
+        WriteLine("Memory with key 'info5':" + result.GetValue<string>() ?? "ERROR: memory not found");
+        WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 3: Recall similar ideas with semantic search
@@ -217,35 +231,34 @@ public static class Example15_TextMemoryPlugin
         // Uses AI Embeddings for fuzzy lookup of memories based on intent, rather than a specific key.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Console.WriteLine("== PART 3: Recall (similarity search) with AI Embeddings ==");
+        WriteLine("== PART 3: Recall (similarity search) with AI Embeddings ==");
 
-        Console.WriteLine("== PART 3a: Recall (similarity search) with ISemanticTextMemory ==");
-        Console.WriteLine("Ask: where did I grow up?");
+        WriteLine("== PART 3a: Recall (similarity search) with ISemanticTextMemory ==");
+        WriteLine("Ask: where did I grow up?");
 
         await foreach (var answer in textMemory.SearchAsync(
             collection: MemoryCollectionName,
             query: "where did I grow up?",
             limit: 2,
             minRelevanceScore: 0.79,
-            withEmbeddings: true,
-            cancellationToken: cancellationToken))
+            withEmbeddings: true))
         {
-            Console.WriteLine($"Answer: {answer.Metadata.Text}");
+            WriteLine($"Answer: {answer.Metadata.Text}");
         }
 
-        Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
-        Console.WriteLine("Ask: where do I live?");
+        WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
+        WriteLine("Ask: where do I live?");
 
-        result = await kernel.RunAsync(memoryFunctions["Recall"], new()
+        result = await kernel.InvokeAsync(memoryPlugin["Recall"], new()
         {
+            [TextMemoryPlugin.InputParam] = "Ask: where do I live?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
-            ["input"] = "Ask: where do I live?"
-        }, cancellationToken);
+        });
 
-        Console.WriteLine($"Answer: {result.GetValue<string>()}");
-        Console.WriteLine();
+        WriteLine($"Answer: {result.GetValue<string>()}");
+        WriteLine();
 
         /*
         Output:
@@ -260,15 +273,15 @@ public static class Example15_TextMemoryPlugin
         */
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // PART 3: TextMemoryPlugin Recall in a Semantic Function
+        // PART 4: TextMemoryPlugin Recall in a Prompt Function
         //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
-        // the text completion model to answer a natural language query.
+        // the text generation model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Semantic Function ==");
+        WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");
 
-        // Build a semantic function that uses memory to find facts
+        // Build a prompt function that uses memory to find facts
         const string RecallFunctionDefinition = @"
 Consider only the facts below when answering questions:
 
@@ -282,17 +295,18 @@ Question: {{$input}}
 Answer:
 ";
 
-        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
+        var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
-        result = await kernel.RunAsync(aboutMeOracle, new()
+        result = await kernel.InvokeAsync(aboutMeOracle, new()
         {
+            [TextMemoryPlugin.InputParam] = "Do I live in the same town where I grew up?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
-            ["input"] = "Do I live in the same town where I grew up?"
-        }, cancellationToken);
+        });
 
-        Console.WriteLine("Ask: Do I live in the same town where I grew up?");
-        Console.WriteLine($"Answer: {result.GetValue<string>()}");
+        WriteLine("Ask: Do I live in the same town where I grew up?");
+        WriteLine($"Answer: {result.GetValue<string>()}");
 
         /*
         Approximate Output:
@@ -304,25 +318,29 @@ Answer:
         //
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Console.WriteLine("== PART 5: Cleanup, deleting database collection ==");
+        WriteLine("== PART 5: Cleanup, deleting database collection ==");
 
-        Console.WriteLine("Printing Collections in DB...");
-        var collections = memoryStore.GetCollectionsAsync(cancellationToken);
+        WriteLine("Printing Collections in DB...");
+        var collections = memoryStore.GetCollectionsAsync();
         await foreach (var collection in collections)
         {
-            Console.WriteLine(collection);
+            WriteLine(collection);
         }
-        Console.WriteLine();
+        WriteLine();
 
-        Console.WriteLine("Removing Collection {0}", MemoryCollectionName);
-        await memoryStore.DeleteCollectionAsync(MemoryCollectionName, cancellationToken);
-        Console.WriteLine();
+        WriteLine($"Removing Collection {MemoryCollectionName}");
+        await memoryStore.DeleteCollectionAsync(MemoryCollectionName);
+        WriteLine();
 
-        Console.WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
-        collections = memoryStore.GetCollectionsAsync(cancellationToken);
+        WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
+        collections = memoryStore.GetCollectionsAsync();
         await foreach (var collection in collections)
         {
-            Console.WriteLine(collection);
+            WriteLine(collection);
         }
+    }
+
+    public Example15_TextMemoryPlugin(ITestOutputHelper output) : base(output)
+    {
     }
 }

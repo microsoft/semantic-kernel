@@ -12,6 +12,9 @@ on:
   merge_group:
     branches: ["main"]
 
+env:
+  COVERAGE_THRESHOLD: 80
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -51,11 +54,7 @@ jobs:
         include:
           - { dotnet: "6.0-jammy", os: "ubuntu", configuration: Debug }
           - { dotnet: "7.0-jammy", os: "ubuntu", configuration: Release }
-          - {
-              dotnet: "8.0-preview-jammy",
-              os: "ubuntu",
-              configuration: Release,
-            }
+          - { dotnet: "8.0-jammy", os: "ubuntu", configuration: Release }
           - { dotnet: "6.0", os: "windows", configuration: Release }
           - {
               dotnet: "7.0",
@@ -63,7 +62,7 @@ jobs:
               configuration: Debug,
               integration-tests: true,
             }
-          - { dotnet: "8.0-preview", os: "windows", configuration: Release }
+          - { dotnet: "8.0", os: "windows", configuration: Release }
 
     runs-on: ubuntu-latest
     container:
@@ -84,15 +83,15 @@ jobs:
 
       - name: Run Unit Tests
         run: |
-          export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
+          export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Planners.Core.UnitTests.csproj|Experimental.Orchestration.Flow.UnitTests.csproj|Experimental.Assistants.UnitTests.csproj)" | tr '\n' ' ')
           for project in $UT_PROJECTS; do
-            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/"
           done
 
       - name: Run Integration Tests
         if: github.event_name != 'pull_request' && matrix.integration-tests
         run: |
-          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
+          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | tr '\n' ' ')
           for project in $INTEGRATION_TEST_PROJECTS; do
             dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
           done
@@ -105,8 +104,27 @@ jobs:
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Planners__AzureOpenAI__ApiKey: ${{ secrets.PLANNERS__AZUREOPENAI__APIKEY }}
+          Planners__AzureOpenAI__Endpoint: ${{ secrets.PLANNERS__AZUREOPENAI__ENDPOINT }}
+          Planners__AzureOpenAI__DeploymentName: ${{ vars.PLANNERS__AZUREOPENAI__DEPLOYMENTNAME }}
+          Planners__OpenAI__ApiKey: ${{ secrets.PLANNERS__OPENAI__APIKEY }}
+          Planners__OpenAI__ModelId: ${{ vars.PLANNERS__OPENAI__MODELID }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+
+      # Generate test reports and check coverage
+      - name: Generate test reports
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
+        with:
+          reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
+          targetdir: "./TestResults/Reports"
+          reporttypes: "JsonSummary"
+          # Report for production packages only
+          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Yaml;"
+
+      - name: Check coverage
+        shell: pwsh
+        run: .github/workflows/check-coverage.ps1 -JsonReportPath "TestResults/Reports/Summary.json" -CoverageThreshold $env:COVERAGE_THRESHOLD
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   dotnet-build-and-test-check:

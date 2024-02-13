@@ -4,9 +4,10 @@ status: accepted
 contact: dmytrostruk
 date: 2023-10-03
 deciders: dmytrostruk
-consulted:  semenshi, rbarreto, markwallace-microsoft
-informed: 
+consulted: SergeyMenshykh, RogerBarreto, markwallace-microsoft
+informed:
 ---
+
 # Kernel Service Registration
 
 ## Context and Problem Statement
@@ -82,12 +83,12 @@ Custom service collection and service provider on Kernel level to simplify depen
 Interface `IKernel` will have its own service provider `KernelServiceProvider` with minimal functionality to get required service.
 
 ```csharp
-public interface IKernelServiceProvider 
+public interface IKernelServiceProvider
 {
     T? GetService<T>(string? name = null);
-} 
+}
 
-public interface IKernel 
+public interface IKernel
 {
     IKernelServiceProvider Services { get; }
 }
@@ -174,7 +175,7 @@ Cons:
 
 - Additional dependency for Semantic Kernel package - `Microsoft.Extensions.DependencyInjection`.
 - No possibility to include specific list of services (lack of isolation from host application).
-- Possibility of `Microsoft.Extensions.DependencyInjection` version mismatch and runtime errors (e.g. users have `Microsoft.Extensions.DependencyInjection` `--version 2.0`  while Semantic Kernel uses `--version 6.0`)
+- Possibility of `Microsoft.Extensions.DependencyInjection` version mismatch and runtime errors (e.g. users have `Microsoft.Extensions.DependencyInjection` `--version 2.0` while Semantic Kernel uses `--version 6.0`)
 
 ## Decision Outcome
 

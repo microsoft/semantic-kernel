@@ -11,9 +11,7 @@ if sys.version_info >= (3, 9):
     import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 pytestmark = [
-    pytest.mark.skipif(
-        sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
-    ),
+    pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"),
     pytest.mark.skipif(
         "Python_Integration_Tests" in os.environ,
         reason="Google Palm integration tests are only set up to run locally",
@@ -27,16 +25,12 @@ async def test_gp_embedding_service(create_kernel, get_gp_config):
 
     api_key = get_gp_config
 
-    palm_text_embed = sk_gp.GooglePalmTextEmbedding(
-        "models/embedding-gecko-001", api_key
-    )
+    palm_text_embed = sk_gp.GooglePalmTextEmbedding("models/embedding-gecko-001", api_key)
     kernel.add_text_embedding_generation_service("gecko", palm_text_embed)
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
-    await kernel.memory.save_information_async(
-        "test", id="info1", text="this is a test"
-    )
-    await kernel.memory.save_reference_async(
+    await kernel.memory.save_information("test", id="info1", text="this is a test")
+    await kernel.memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",

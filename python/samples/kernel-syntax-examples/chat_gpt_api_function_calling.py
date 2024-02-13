@@ -11,9 +11,9 @@ from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_promp
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
-    get_function_calling_object,
+    get_tool_call_object,
 )
-from semantic_kernel.core_skills import MathSkill
+from semantic_kernel.core_plugins import MathPlugin
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -30,56 +30,53 @@ you will return a full answer to me as soon as possible.
 
 kernel = sk.Kernel()
 
+# Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-api_version = "2023-07-01-preview"
+api_version = "2023-12-01-preview"
 kernel.add_chat_service(
     "chat-gpt",
     sk_oai.AzureChatCompletion(
         deployment_name,
         endpoint,
-        api_key,
+        api_key=api_key,
         api_version=api_version,
     ),
 )
 
-skills_directory = os.path.join(__file__, "../../../../samples/skills")
-# adding skills to the kernel
-# the joke skill in the FunSkills is a semantic skill and has the function calling disabled.
-kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
-# the math skill is a core skill and has the function calling enabled.
-kernel.import_skill(MathSkill(), skill_name="math")
+plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
+# adding plugins to the kernel
+# the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
+kernel.import_semantic_plugin_from_directory(plugins_directory, "FunPlugin")
+# the math plugin is a core plugin and has the function calling enabled.
+kernel.import_plugin(MathPlugin(), plugin_name="math")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
-# the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
+# the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    function_call="auto",
-    chat_system_prompt=system_message,
+prompt_config = sk.PromptTemplateConfig(
+    execution_settings=sk_oai.AzureChatPromptExecutionSettings(
+        service_id="chat-gpt",
+        ai_model_id=deployment_name,
+        max_tokens=2000,
+        temperature=0.7,
+        top_p=0.8,
+        tool_choice="auto",
+        tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
+    )
 )
-prompt_template = OpenAIChatPromptTemplate(
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
+
+prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
+prompt_template.add_system_message(system_message)
 prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message(
-    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
-)
+prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
-# calling the chat, you could add a overloaded version of the settings here,
-# to enable or disable function calling or set the function calling to a specific skill.
-# see the openai_function_calling example for how to use this with a unrelated function definition
-filter = {"exclude_skill": ["ChatBot"]}
-functions = get_function_calling_object(kernel, filter)
 
-
-async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
+async def chat(context: sk.KernelContext) -> Tuple[bool, sk.KernelContext]:
     try:
         user_input = input("User:> ")
         context.variables["user_input"] = user_input
@@ -96,10 +93,9 @@ async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
 
     context = await chat_completion_with_function_call(
         kernel,
-        chat_skill_name="ChatBot",
+        chat_plugin_name="ChatBot",
         chat_function_name="Chat",
         context=context,
-        functions=functions,
     )
     print(f"Mosscap:> {context.result}")
     return True, context

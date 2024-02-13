@@ -1,30 +1,27 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from copy import deepcopy
-from logging import Logger
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from numpy import array, linalg, ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class VolatileMemoryStore(MemoryStoreBase):
     _store: Dict[str, Dict[str, MemoryRecord]]
-    _logger: Logger
 
-    def __init__(self, logger: Optional[Logger] = None) -> None:
+    def __init__(self, **kwargs) -> None:
+        """Initializes a new instance of the VolatileMemoryStore class."""
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._store = {}
-        self._logger = logger or NullLogger()
-        """Initializes a new instance of the VolatileMemoryStore class.
 
-        Arguments:
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
-        """
-
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
@@ -38,7 +35,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         else:
             self._store[collection_name] = {}
 
-    async def get_collections_async(
+    async def get_collections(
         self,
     ) -> List[str]:
         """Gets the list of collections.
@@ -48,7 +45,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         return list(self._store.keys())
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
         Arguments:
@@ -60,7 +57,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         if collection_name in self._store:
             del self._store[collection_name]
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
         Arguments:
@@ -71,7 +68,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         return collection_name in self._store
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
 
         Arguments:
@@ -88,9 +85,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         self._store[collection_name][record._key] = record
         return record._key
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -108,9 +103,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             self._store[collection_name][record._key] = record
         return [record._key for record in records]
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -135,7 +128,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             result._embedding = None
         return result
 
-    async def get_batch_async(
+    async def get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         """Gets a batch of records.
@@ -151,11 +144,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        results = [
-            self._store[collection_name][key]
-            for key in keys
-            if key in self._store[collection_name]
-        ]
+        results = [self._store[collection_name][key] for key in keys if key in self._store[collection_name]]
 
         if not with_embeddings:
             # create copy of results without embeddings
@@ -164,7 +153,7 @@ class VolatileMemoryStore(MemoryStoreBase):
                 result._embedding = None
         return results
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
         Arguments:
@@ -182,7 +171,7 @@ class VolatileMemoryStore(MemoryStoreBase):
 
         del self._store[collection_name][key]
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -199,7 +188,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             if key in self._store[collection_name]:
                 del self._store[collection_name][key]
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -217,7 +206,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        return self.get_nearest_matches_async(
+        return self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
@@ -225,7 +214,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             with_embeddings=with_embedding,
         )
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -286,9 +275,7 @@ class VolatileMemoryStore(MemoryStoreBase):
                 result[0]._embedding = None
         return top_results
 
-    def compute_similarity_scores(
-        self, embedding: ndarray, embedding_array: ndarray
-    ) -> ndarray:
+    def compute_similarity_scores(self, embedding: ndarray, embedding_array: ndarray) -> ndarray:
         """Computes the cosine similarity scores between a query embedding and a group of embeddings.
 
         Arguments:
@@ -309,11 +296,11 @@ class VolatileMemoryStore(MemoryStoreBase):
         similarity_scores = array([-1.0] * embedding_array.shape[0])
 
         if valid_indices.any():
-            similarity_scores[valid_indices] = embedding.dot(
-                embedding_array[valid_indices].T
-            ) / (query_norm * collection_norm[valid_indices])
+            similarity_scores[valid_indices] = embedding.dot(embedding_array[valid_indices].T) / (
+                query_norm * collection_norm[valid_indices]
+            )
             if not valid_indices.all():
-                self._logger.warning(
+                logger.warning(
                     "Some vectors in the embedding collection are zero vectors."
                     "Ignoring cosine similarity score computation for those vectors."
                 )
