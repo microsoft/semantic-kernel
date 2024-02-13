@@ -84,8 +84,9 @@ public class Example12SequentialPlannerTest {
                                         .build())
                         .build();
 
-        kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
-        kernel.importSkillFromDirectory("WriterSkill", "../../samples/skills", "WriterSkill");
+        kernel.importSkillFromDirectory(
+                "SummarizeSkill", "../../samples/plugins", "SummarizePlugin");
+        kernel.importSkillFromDirectory("WriterSkill", "../../samples/plugins", "WriterPlugin");
         kernel.importSkill(new TextSkill(), "TextSkill");
         return kernel;
     }

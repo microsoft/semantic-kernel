@@ -6,10 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
-
-import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import javax.annotation.Nullable;
 
 /** Represents an entry in the Semantic Kernel Memory Table. */
 public class JsonMemoryRecord {
@@ -48,7 +47,6 @@ public class JsonMemoryRecord {
         this.externalSourceName = externalSourceName;
         this.isReference = isReference;
     }
-
 
     /**
      * Record ID. The record is not filterable to save quota, also SK uses only semantic search.
@@ -169,5 +167,4 @@ public class JsonMemoryRecord {
         byte[] bytes = Base64.getUrlDecoder().decode(encodedId.getBytes(StandardCharsets.UTF_8));
         return new String(bytes, StandardCharsets.UTF_8);
     }
-
 }

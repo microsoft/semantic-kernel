@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.redis;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
@@ -5,6 +6,15 @@ import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -13,29 +23,20 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
-import javax.annotation.Nonnull;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.security.InvalidParameterException;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.*;
-
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
- * Semantic Memory implementation using Redis Vector Search. For more information about Redis
- * Vector Search {@see https://redis.com/solutions/use-cases/vector-database/}
+ * Semantic Memory implementation using Redis Vector Search. For more information about Redis Vector
+ * Search {@see https://redis.com/solutions/use-cases/vector-database/}
  */
 public class RedisMemoryStore implements MemoryStore {
 
-    private static final VectorAlgorithm DefaultIndexAlgorithm = VectorAlgorithm.HNSW; // FLAT or HNSW
-    private static final String DefaultVectorType = RedisVectorType.FLOAT32; // prefer better accuracy
+    private static final VectorAlgorithm DefaultIndexAlgorithm =
+            VectorAlgorithm.HNSW; // FLAT or HNSW
+    private static final String DefaultVectorType =
+            RedisVectorType.FLOAT32; // prefer better accuracy
     private static final String DefaultDistanceMetric = RedisVectorDistanceMetric.L2;
-    private static final Integer DefaultQueryDialect = 2; // this has to be >= 2 for vector functionality
+    private static final Integer DefaultQueryDialect =
+            2; // this has to be >= 2 for vector functionality
     private static final Integer DefaultVectorSize = 1536; // framework model dependent - ada-002
     private static final String SUFFIX = "sk";
     private static final String INDEX = "idx";
@@ -58,22 +59,29 @@ public class RedisMemoryStore implements MemoryStore {
      * Create a new instance of semantic memory using Redis.
      *
      * @param client A Redis Database client connection.
-     * @param vectorSize Embedding vector size, defaults to 1536 - framework model dependent - ada-002.
+     * @param vectorSize Embedding vector size, defaults to 1536 - framework model dependent -
+     *     ada-002.
      * @param vectorIndexAlgorithm Indexing algorithm for vectors, defaults to "HNSW"
      * @param vectorDistanceMetric Metric for measuring vector distances, defaults to "COSINE"
-     * @param queryDialect Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
+     * @param queryDialect Query dialect, must be 2 or greater for vector similarity searching,
+     *     defaults to 2
      */
     public RedisMemoryStore(
-        JedisPooled client,
-        Integer vectorSize,
-        VectorAlgorithm vectorIndexAlgorithm,
-        String vectorDistanceMetric,
-        Integer queryDialect
-        ) {
+            JedisPooled client,
+            Integer vectorSize,
+            VectorAlgorithm vectorIndexAlgorithm,
+            String vectorDistanceMetric,
+            Integer queryDialect) {
 
-        isXinRange(vectorSize, 0, 8192,
+        isXinRange(
+                vectorSize,
+                0,
+                8192,
                 "Invalid vector size: {x}. Vector size must be in the range 0-8192.");
-        isXinRange(queryDialect, 2, 4,
+        isXinRange(
+                queryDialect,
+                2,
+                4,
                 "Invalid query dialect: {x}. Query dialect must be in the range 2-4.");
 
         this.client = client;
@@ -84,25 +92,32 @@ public class RedisMemoryStore implements MemoryStore {
         this.queryDialect = queryDialect;
     }
 
-  /**
-   * Create a new instance of semantic memory using Redis.
-   *
-   * @param connectionString Provide connection URL to a Redis instance.
-   * @param vectorSize Embedding vector size, defaults to 1536.
-   * @param vectorIndexAlgorithm Indexing algorithm for vectors, defaults to "HNSW"
-   * @param vectorDistanceMetric Metric for measuring vector distances, defaults to "COSINE"
-   * @param queryDialect Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
-   */
+    /**
+     * Create a new instance of semantic memory using Redis.
+     *
+     * @param connectionString Provide connection URL to a Redis instance.
+     * @param vectorSize Embedding vector size, defaults to 1536.
+     * @param vectorIndexAlgorithm Indexing algorithm for vectors, defaults to "HNSW"
+     * @param vectorDistanceMetric Metric for measuring vector distances, defaults to "COSINE"
+     * @param queryDialect Query dialect, must be 2 or greater for vector similarity searching,
+     *     defaults to 2
+     */
     public RedisMemoryStore(
-        String connectionString,
-        Integer vectorSize,
-        VectorAlgorithm vectorIndexAlgorithm,
-        String vectorDistanceMetric,
-        Integer queryDialect) {
+            String connectionString,
+            Integer vectorSize,
+            VectorAlgorithm vectorIndexAlgorithm,
+            String vectorDistanceMetric,
+            Integer queryDialect) {
 
-        isXinRange(vectorSize, 0, 8192,
+        isXinRange(
+                vectorSize,
+                0,
+                8192,
                 "Invalid vector size: {x}. Vector size must be in the range 0-8192.");
-        isXinRange(queryDialect, 2, 4,
+        isXinRange(
+                queryDialect,
+                2,
+                4,
                 "Invalid query dialect: {x}. Query dialect must be in the range 2-4.");
 
         this.client = new JedisPooled(connectionString);
@@ -134,7 +149,7 @@ public class RedisMemoryStore implements MemoryStore {
      * @return A long timestamp or -1 in the case of an error.
      */
     private static long toTimestampLong(OffsetDateTime timestamp) {
-        if (timestamp != null)  {
+        if (timestamp != null) {
             return timestamp.toInstant().toEpochMilli();
         }
         return -1;
@@ -156,9 +171,10 @@ public class RedisMemoryStore implements MemoryStore {
 
     @Override
     public Mono<List<String>> getCollectionsAsync() {
-        return Mono.just(getIndexesAsync().block().stream()
-                .map(name -> name.substring(0, name.length() - "-sk-idx".length()))
-                .collect(Collectors.toList()));
+        return Mono.just(
+                getIndexesAsync().block().stream()
+                        .map(name -> name.substring(0, name.length() - "-sk-idx".length()))
+                        .collect(Collectors.toList()));
     }
 
     /**
@@ -167,14 +183,16 @@ public class RedisMemoryStore implements MemoryStore {
      * @return A list of names of the embedding indexes, including suffix, in the database
      */
     private Mono<List<String>> getIndexesAsync() {
-        return Mono.just(this.client.ftList().stream()
-                .filter(name -> name.endsWith("-sk-idx"))
-                .collect(Collectors.toList()));
+        return Mono.just(
+                this.client.ftList().stream()
+                        .filter(name -> name.endsWith("-sk-idx"))
+                        .collect(Collectors.toList()));
     }
 
     @Override
     public Mono<Void> createCollectionAsync(@Nonnull String collectionName) {
-        // Indexes are created when sending a record; creation requires the size of the embedding vector
+        // Indexes are created when sending a record; creation requires the size of the embedding
+        // vector
         return Mono.empty();
     }
 
@@ -182,8 +200,8 @@ public class RedisMemoryStore implements MemoryStore {
 
         try {
             Map<String, Object> info = this.client.ftInfo(collectionName);
-            return Mono.just(info != null && ! info.isEmpty());
-        } catch(Exception e) {
+            return Mono.just(info != null && !info.isEmpty());
+        } catch (Exception e) {
             if (!(e instanceof JedisDataException)) {
                 throw e;
             }
@@ -205,7 +223,7 @@ public class RedisMemoryStore implements MemoryStore {
                                                 name ->
                                                         name.equalsIgnoreCase(collectionName)
                                                                 || name.equalsIgnoreCase(
-                                                                normalizedIndexName)));
+                                                                        normalizedIndexName)));
     }
 
     @Override
@@ -220,11 +238,12 @@ public class RedisMemoryStore implements MemoryStore {
     }
 
     @Override
-    public Mono<MemoryRecord> getAsync(@Nonnull String collectionName, @Nonnull String key,
-        boolean withEmbedding) {
+    public Mono<MemoryRecord> getAsync(
+            @Nonnull String collectionName, @Nonnull String key, boolean withEmbedding) {
 
-        Map<String, String> map = this.client.hgetAll(String.format("%s:%s",
-                collectionName, key).toLowerCase(Locale.ROOT));
+        Map<String, String> map =
+                this.client.hgetAll(
+                        String.format("%s:%s", collectionName, key).toLowerCase(Locale.ROOT));
         if (map == null || map.isEmpty()) {
             return Mono.empty();
         }
@@ -232,16 +251,16 @@ public class RedisMemoryStore implements MemoryStore {
         return Mono.just(record);
     }
 
-    public Mono<MemoryRecord> getInternalAsync(@Nonnull String collectionName, @Nonnull String key,
-        boolean withEmbedding) {
+    public Mono<MemoryRecord> getInternalAsync(
+            @Nonnull String collectionName, @Nonnull String key, boolean withEmbedding) {
 
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(key);
 
-        Map<String, String> entry = this.client.hgetAll(String.format("%s:%s", collectionName, key));
+        Map<String, String> entry =
+                this.client.hgetAll(String.format("%s:%s", collectionName, key));
 
-        if (entry == null)
-            return Mono.empty();
+        if (entry == null) return Mono.empty();
 
         return Mono.just(RedisMemoryRecord.mapToRecord(entry, withEmbedding));
     }
@@ -250,7 +269,6 @@ public class RedisMemoryStore implements MemoryStore {
      * Converts a RedisSearch Document to a HashMap.
      *
      * @param document A Redis Search Document
-     *
      * @return A HashMap containing the iterator's entries
      */
     protected Map<String, String> documentToMap(Document document) {
@@ -262,7 +280,6 @@ public class RedisMemoryStore implements MemoryStore {
      * Converts an Iterable<Map.Entry<String, Object>> to a HashMap.
      *
      * @param entryIterator An Iterable<Map.Entry<String, Object>>
-     *
      * @return A HashMap containing the iterator's entries
      */
     protected Map<String, String> iterableToMap(Iterable<Map.Entry<String, Object>> entryIterator) {
@@ -280,12 +297,17 @@ public class RedisMemoryStore implements MemoryStore {
     }
 
     @Override
-    public Mono<Collection<MemoryRecord>> getBatchAsync(@Nonnull String collectionName,
-        @Nonnull Collection<String> keys, boolean withEmbeddings) {
+    public Mono<Collection<MemoryRecord>> getBatchAsync(
+            @Nonnull String collectionName,
+            @Nonnull Collection<String> keys,
+            boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
-        // ACS issues one query per key; redis has several possible calls, fastest will be hkeys followed by hvals
-        Collection<MemoryRecord> records = keys.stream().map(key -> getAsync(collectionName, key, withEmbeddings).block())
-                .collect(Collectors.toList());
+        // ACS issues one query per key; redis has several possible calls, fastest will be hkeys
+        // followed by hvals
+        Collection<MemoryRecord> records =
+                keys.stream()
+                        .map(key -> getAsync(collectionName, key, withEmbeddings).block())
+                        .collect(Collectors.toList());
 
         return Mono.just(records);
     }
@@ -296,21 +318,23 @@ public class RedisMemoryStore implements MemoryStore {
     }
 
     /**
-     * Returns the key of the upserted object (wraps the record in a list and calls the batch function).
+     * Returns the key of the upserted object (wraps the record in a list and calls the batch
+     * function).
      *
      * @param collectionName The name associated with a collection of embeddings.
      * @param record The memory record to upsert.
      * @return The key of the newly created record.
      */
-    public Mono<String> upsertRecordAsync(@Nonnull String collectionName, @Nonnull MemoryRecord record) {
+    public Mono<String> upsertRecordAsync(
+            @Nonnull String collectionName, @Nonnull MemoryRecord record) {
         return upsertBatchAsync(collectionName, Collections.singletonList(record))
                 .map(Collection::iterator)
                 .map(Iterator::next);
     }
 
     @Override
-    public Mono<Collection<String>> upsertBatchAsync(@Nonnull String collectionName,
-        @Nonnull Collection<MemoryRecord> records) {
+    public Mono<Collection<String>> upsertBatchAsync(
+            @Nonnull String collectionName, @Nonnull Collection<MemoryRecord> records) {
 
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(records);
@@ -322,79 +346,103 @@ public class RedisMemoryStore implements MemoryStore {
         doesCollectionExistAsync(collectionName)
                 .map(
                         exists -> {
-                            if (! exists) {
-                                int embeddingSize = records.stream()
-                                        .map(record -> record.getEmbedding().getVector())
-                                        .map(List::size)
-                                        .max(Integer::compareTo)
-                                        .orElse(0);
+                            if (!exists) {
+                                int embeddingSize =
+                                        records.stream()
+                                                .map(record -> record.getEmbedding().getVector())
+                                                .map(List::size)
+                                                .max(Integer::compareTo)
+                                                .orElse(0);
                                 createIndexAsync(collectionName, embeddingSize);
                             }
                             return true;
-                        }
-                );
+                        });
 
-        return Mono.just(records.stream().map(record -> {
-            Map<String, Object> map = RedisMemoryRecord.recordToMap(record);
-            // we have to change the embeddings to bytes - it's easiest to modify the map
-            List<Float> embedding = record.getEmbedding().getVector();
-            map.replace(RedisMemoryRecord.EMBEDDING, embedding, embeddingToBytes(embedding));
-            String key = getRedisKey(collectionName, record.getMetadata().getId());
-            this.client.hsetObject(key, map);
-            return key;
-        }).collect(Collectors.toList()));
+        return Mono.just(
+                records.stream()
+                        .map(
+                                record -> {
+                                    Map<String, Object> map = RedisMemoryRecord.recordToMap(record);
+                                    // we have to change the embeddings to bytes - it's easiest to
+                                    // modify the map
+                                    List<Float> embedding = record.getEmbedding().getVector();
+                                    map.replace(
+                                            RedisMemoryRecord.EMBEDDING,
+                                            embedding,
+                                            embeddingToBytes(embedding));
+                                    String key =
+                                            getRedisKey(
+                                                    collectionName, record.getMetadata().getId());
+                                    this.client.hsetObject(key, map);
+                                    return key;
+                                })
+                        .collect(Collectors.toList()));
     }
 
     @Override
     public Mono<Void> removeAsync(@Nonnull String collectionName, @Nonnull String key) {
         return Mono.fromRunnable(
-            () -> this.client.hdel(String.format("%s:%s", collectionName, key)));
-      }
+                () -> this.client.hdel(String.format("%s:%s", collectionName, key)));
+    }
 
     @Override
-    public Mono<Void> removeBatchAsync(@Nonnull String collectionName,
-        @Nonnull Collection<String> keys) {
+    public Mono<Void> removeBatchAsync(
+            @Nonnull String collectionName, @Nonnull Collection<String> keys) {
         return Mono.fromRunnable(
-            () -> {
-                // ScanResult<String> results = this.client.scan(collectionName);
-                // results.getResult().forEach(key -> this.client.hdel(key));
-                keys.forEach(key -> this.client.hdel(String.format("%s:%s", collectionName, key)));
-            });
+                () -> {
+                    // ScanResult<String> results = this.client.scan(collectionName);
+                    // results.getResult().forEach(key -> this.client.hdel(key));
+                    keys.forEach(
+                            key -> this.client.hdel(String.format("%s:%s", collectionName, key)));
+                });
     }
 
     /**
      * Create a new search index.
      *
      * @param collectionName Index name
-     * @param embeddingSize  Size of the embedding vector
+     * @param embeddingSize Size of the embedding vector
      * @return A Mono that completes when the index is created
      */
-    private Mono<Boolean> createIndexAsync(
-        @Nonnull String collectionName, int embeddingSize) {
+    private Mono<Boolean> createIndexAsync(@Nonnull String collectionName, int embeddingSize) {
         if (embeddingSize < 1) {
             throw new RedisException(
-                RedisException.ErrorCodes.INVALID_EMBEDDING_SIZE, "the value must be greater than zero");
+                    RedisException.ErrorCodes.INVALID_EMBEDDING_SIZE,
+                    "the value must be greater than zero");
         }
 
-        Map<String, Object> attributes = Map.ofEntries(
-                new AbstractMap.SimpleEntry<String, Object>(RedisIndexSchemaParams.TYPE, vectorType),
-                new AbstractMap.SimpleEntry<String, Object>(RedisIndexSchemaParams.DIM, embeddingSize),
-                new AbstractMap.SimpleEntry<String, Object>(RedisIndexSchemaParams.DIST, vectorDistanceMetric));
+        Map<String, Object> attributes = new HashMap<>();
 
-        Schema schema = new Schema()
-                .addVectorField("Embedding", Schema.VectorField.VectorAlgo.FLAT, attributes).as("Embedding")
-                .addTextField("Id", 1.0).as("Id")
-                .addTextField("Text", 1.0).as("Text")
-                .addTextField("Description", 1.0).as("Description")
-                .addTextField("AdditionalMetadata", 1.0).as("AdditionalMetadata")
-                .addTextField("ExternalSourceName", 1.0).as("ExternalSourceName");
+        attributes.put(RedisIndexSchemaParams.TYPE, vectorType);
+        attributes.put(RedisIndexSchemaParams.DIM, embeddingSize);
+        attributes.put(RedisIndexSchemaParams.DIST, vectorDistanceMetric);
 
-        IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.HASH)
-                .setPrefixes(collectionName.toLowerCase() + ":");
-        // customarily redis indexes are named <collection>-idx; we're going to suffix them (-sk-idx) so we can find them
+        Schema schema =
+                new Schema()
+                        .addVectorField("Embedding", Schema.VectorField.VectorAlgo.FLAT, attributes)
+                        .as("Embedding")
+                        .addTextField("Id", 1.0)
+                        .as("Id")
+                        .addTextField("Text", 1.0)
+                        .as("Text")
+                        .addTextField("Description", 1.0)
+                        .as("Description")
+                        .addTextField("AdditionalMetadata", 1.0)
+                        .as("AdditionalMetadata")
+                        .addTextField("ExternalSourceName", 1.0)
+                        .as("ExternalSourceName");
+
+        IndexDefinition rule =
+                new IndexDefinition(IndexDefinition.Type.HASH)
+                        .setPrefixes(collectionName.toLowerCase() + ":");
+        // customarily redis indexes are named <collection>-idx; we're going to suffix them
+        // (-sk-idx) so we can find them
         String normalizedIndexName = createIndexName(collectionName);
-        String result = this.client.ftCreate(normalizedIndexName,
-                IndexOptions.defaultOptions().setDefinition(rule), schema);
+        String result =
+                this.client.ftCreate(
+                        normalizedIndexName,
+                        IndexOptions.defaultOptions().setDefinition(rule),
+                        schema);
 
         if (result.equals(OK)) {
             return Mono.just(true);
@@ -416,38 +464,46 @@ public class RedisMemoryStore implements MemoryStore {
         if (limit <= 0) {
             return Mono.just(Collections.emptyList());
         }
-        Query query = new Query("*=>[KNN $k @Embedding $vec AS vector_score]")
-                .returnFields("Id", "Text", "Description", "vector_score")
-                .setSortBy("vector_score", true)
-                .addParam("k", limit)
-                .addParam("vec", embeddingToBytes(embedding.getVector()))
-                .limit(0, limit)
-                .dialect(queryDialect);
+        Query query =
+                new Query("*=>[KNN $k @Embedding $vec AS vector_score]")
+                        .returnFields("Id", "Text", "Description", "vector_score")
+                        .setSortBy("vector_score", true)
+                        .addParam("k", limit)
+                        .addParam("vec", embeddingToBytes(embedding.getVector()))
+                        .limit(0, limit)
+                        .dialect(queryDialect);
         String indexName = createIndexName(collectionName);
         SearchResult results = this.client.ftSearch(indexName, query);
 
         // TODO convert to Collection<Tuple2<MemoryRecord, Float>>
         Collection<Tuple2<MemoryRecord, Float>> searchTuples =
-            results.getDocuments().stream()
-                .map(document -> {
-                    MemoryRecord memoryRecord = documentToMemoryRecord(document, withEmbedding);
-                    return Tuples.of(memoryRecord, document.getScore().floatValue());
-                    })
-                    .collect(Collectors.toList());
+                results.getDocuments().stream()
+                        .map(
+                                document -> {
+                                    MemoryRecord memoryRecord =
+                                            documentToMemoryRecord(document, withEmbedding);
+                                    return Tuples.of(
+                                            memoryRecord, document.getScore().floatValue());
+                                })
+                        .collect(Collectors.toList());
         return Mono.just(searchTuples);
     }
 
     @Override
-    public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(@Nonnull String collectionName,
-        @Nonnull Embedding embedding, float minRelevanceScore, boolean withEmbedding) {
-        return getNearestMatchesAsync(collectionName, embedding, 1, minRelevanceScore, withEmbedding)
-            .flatMap(
-                nearestMatches -> {
-                    if (nearestMatches.isEmpty()) {
-                        return Mono.empty();
-                    }
-                    return Mono.just(nearestMatches.iterator().next());
-                });
+    public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
+            @Nonnull String collectionName,
+            @Nonnull Embedding embedding,
+            float minRelevanceScore,
+            boolean withEmbedding) {
+        return getNearestMatchesAsync(
+                        collectionName, embedding, 1, minRelevanceScore, withEmbedding)
+                .flatMap(
+                        nearestMatches -> {
+                            if (nearestMatches.isEmpty()) {
+                                return Mono.empty();
+                            }
+                            return Mono.just(nearestMatches.iterator().next());
+                        });
     }
 
     /**
@@ -488,22 +544,30 @@ public class RedisMemoryStore implements MemoryStore {
         if (collectionName.length() > 128) {
             throw new IllegalArgumentException("The indexName name cannot exceed 128 chars");
         }
-        return String.format("%s-%s-%s", normalizeCollectionName(collectionName), RedisMemoryStore.SUFFIX, INDEX);
+        return String.format(
+                "%s-%s-%s",
+                normalizeCollectionName(collectionName), RedisMemoryStore.SUFFIX, INDEX);
     }
 
     protected Map<String, MemoryRecord> getCollection(@Nonnull String collectionName) {
         Objects.requireNonNull(collectionName);
         ScanResult<String> results = this.client.scan(collectionName);
 
-        if (results == null) throw new MemoryException(
-                ErrorCodes.ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION,
-                collectionName);
+        if (results == null)
+            throw new MemoryException(
+                    ErrorCodes.ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION, collectionName);
 
-        return Collections.unmodifiableMap((Map<String, MemoryRecord>) results.getResult().stream()
-                .map(
-                        key -> RedisMemoryRecord.mapToRecord(
-                                this.client.hgetAll(String.format("%s:%s", collectionName, key)), false)
-                ));
+        return Collections.unmodifiableMap(
+                (Map<String, MemoryRecord>)
+                        results.getResult().stream()
+                                .map(
+                                        key ->
+                                                RedisMemoryRecord.mapToRecord(
+                                                        this.client.hgetAll(
+                                                                String.format(
+                                                                        "%s:%s",
+                                                                        collectionName, key)),
+                                                        false)));
     }
 
     public static class Builder implements MemoryStore.Builder<RedisMemoryStore> {
@@ -517,14 +581,17 @@ public class RedisMemoryStore implements MemoryStore {
             this.connectionString = connectionString;
             return this;
         }
+
         public Builder vectorSize(int vectorSize) {
             this.vectorSize = vectorSize;
             return this;
         }
+
         public Builder vectorIndexAlgorithm(VectorAlgorithm vectorIndexAlgorithm) {
             this.vectorIndexAlgorithm = vectorIndexAlgorithm;
             return this;
         }
+
         public Builder vectorDistanceMetric(String vectorDistanceMetric) {
             this.vectorDistanceMetric = vectorDistanceMetric;
             return this;
@@ -545,28 +612,26 @@ public class RedisMemoryStore implements MemoryStore {
 
             // make sure everything we need has been set
             return new RedisMemoryStore(
-                connectionString,
-                vectorSize,
-                vectorIndexAlgorithm,
-                vectorDistanceMetric,
-                queryDialect
-            );
+                    connectionString,
+                    vectorSize,
+                    vectorIndexAlgorithm,
+                    vectorDistanceMetric,
+                    queryDialect);
         }
 
         /**
-         * Create a RedisMemoryStore object using default settings; requires a valid connection string.
+         * Create a RedisMemoryStore object using default settings; requires a valid connection
+         * string.
          *
          * @return A RedisMemoryStore object configured with default values
          */
         public RedisMemoryStore buildDefault() {
             return new RedisMemoryStore(
-                connectionString,
-                DefaultVectorSize,
-                RedisMemoryStore.DefaultIndexAlgorithm,
-                RedisMemoryStore.DefaultDistanceMetric,
-                RedisMemoryStore.DefaultQueryDialect
-            );
+                    connectionString,
+                    DefaultVectorSize,
+                    RedisMemoryStore.DefaultIndexAlgorithm,
+                    RedisMemoryStore.DefaultDistanceMetric,
+                    RedisMemoryStore.DefaultQueryDialect);
         }
     }
 }
-

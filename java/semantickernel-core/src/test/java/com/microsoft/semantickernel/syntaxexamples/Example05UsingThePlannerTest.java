@@ -14,8 +14,9 @@ import reactor.util.function.Tuples;
 public class Example05UsingThePlannerTest {
 
     public static SequentialPlanner getPlanner(Kernel kernel) {
-        kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
-        kernel.importSkillFromDirectory("WriterSkill", "../../samples/skills", "WriterSkill");
+        kernel.importSkillFromDirectory(
+                "SummarizeSkill", "../../samples/plugins", "SummarizePlugin");
+        kernel.importSkillFromDirectory("WriterSkill", "../../samples/plugins", "WriterPlugin");
 
         return new SequentialPlanner(kernel, null, null);
     }

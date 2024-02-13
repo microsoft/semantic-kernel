@@ -40,7 +40,8 @@ public class Example04CombineLLMPromptsAndNativeCodeTest {
                         .build();
 
         kernel.importSkill(new SearchEngineSkill(), null);
-        kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
+        kernel.importSkillFromDirectory(
+                "SummarizeSkill", "../../samples/plugins", "SummarizePlugin");
 
         // Run
         String ask = "What's the tallest building in South America?";

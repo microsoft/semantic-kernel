@@ -128,8 +128,9 @@ public class Example28ActionPlannerTest {
                                         .build())
                         .build();
 
-        kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
-        kernel.importSkillFromDirectory("WriterSkill", "../../samples/skills", "WriterSkill");
+        kernel.importSkillFromDirectory(
+                "SummarizeSkill", "../../samples/plugins", "SummarizePlugin");
+        kernel.importSkillFromDirectory("WriterSkill", "../../samples/plugins", "WriterPlugin");
 
         // Create an instance of ActionPlanner.
         // The ActionPlanner takes one goal and returns a single function to execute.

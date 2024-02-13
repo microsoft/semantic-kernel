@@ -95,7 +95,7 @@ public class DefaultKernelTest {
         Kernel kernel = buildKernel(model, client);
 
         CompletionSKFunction function =
-                kernel.importSkillFromDirectory("FunSkill", "../../samples/skills")
+                kernel.importSkillFromDirectory("FunPlugin", "../../samples/plugins")
                         .getFunction("joke", CompletionSKFunction.class);
 
         Mono<SKContext> mono = function.invokeAsync("time travel to dinosaur age");

@@ -1,9 +1,10 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.redis;
 
 /* <summary>
-  Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
-  <see href="https://redis.io/docs/interact/search-and-query/search/vectors/"/>
- </summary> */
+ Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
+ <see href="https://redis.io/docs/interact/search-and-query/search/vectors/"/>
+</summary> */
 public class RedisVectorDistanceMetric {
 
     /* <summary> Euclidean distance between two vectors </summary> */
