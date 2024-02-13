@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import javax.annotation.Nullable;
 
 /** Represents an entry in the Semantic Kernel Memory Table. */
 public class JsonMemoryRecord {
@@ -92,7 +91,7 @@ public class JsonMemoryRecord {
      * @return Embedding vector.
      */
     public List<Float> getEmbedding() {
-        return embedding;
+        return Collections.unmodifiableList(embedding);
     }
 
     /**
@@ -152,18 +151,12 @@ public class JsonMemoryRecord {
     // to encode values with a URL-safe algorithm.
     // <param name="realId">Original Id</param>
     // <returns>Encoded id</returns>
-    static String encodeId(@Nullable String realId) {
-        if (realId == null) {
-            return "";
-        }
+    static String encodeId(String realId) {
         byte[] bytes = Base64.getUrlEncoder().encode(realId.getBytes(StandardCharsets.UTF_8));
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    static String decodeId(@Nullable String encodedId) {
-        if (encodedId == null) {
-            return "";
-        }
+    static String decodeId(String encodedId) {
         byte[] bytes = Base64.getUrlDecoder().decode(encodedId.getBytes(StandardCharsets.UTF_8));
         return new String(bytes, StandardCharsets.UTF_8);
     }
