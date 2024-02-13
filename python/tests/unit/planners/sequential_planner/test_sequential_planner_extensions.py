@@ -68,7 +68,7 @@ async def test_can_call_get_available_functions_with_functions():
         plugin_name="pluginName",
         description="description",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=False,
     )
     native_kernel_function_metadata = KernelFunctionMetadata(
@@ -76,7 +76,7 @@ async def test_can_call_get_available_functions_with_functions():
         plugin_name="pluginName",
         description="description",
         parameters=[],
-        is_semantic=False,
+        is_prompt=False,
         is_asynchronous=False,
     )
     functions_view.add_function(kernel_function_metadata)
@@ -136,7 +136,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
         plugin_name="pluginName",
         description="description",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=False,
     )
     native_kernel_function_metadata = KernelFunctionMetadata(
@@ -144,7 +144,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
         plugin_name="pluginName",
         description="description",
         parameters=[],
-        is_semantic=False,
+        is_prompt=False,
         is_asynchronous=False,
     )
     functions_view.add_function(kernel_function_metadata)

@@ -7,6 +7,8 @@ if sys.version_info > (3, 8):
 else:
     from typing_extensions import Annotated
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
 if TYPE_CHECKING:
     # from semantic_kernel.functions.old.kernel_context import KernelContext
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -35,13 +37,15 @@ class ConversationSummaryPlugin:
 
     def __init__(self, kernel: "Kernel", return_key: str = "summary"):
         self.return_key = return_key
-        self._summarizeConversationFunction = kernel.create_semantic_function(
+        execution_settings = PromptExecutionSettings(
+            max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
+        )
+        self._summarizeConversationFunction = kernel.create_function_from_prompt(
             ConversationSummaryPlugin._summarize_conversation_prompt_template,
             plugin_name=ConversationSummaryPlugin.__name__,
+            function_name="SummarizeConversation",
             description=("Given a section of a conversation transcript, summarize the part of" " the conversation."),
-            max_tokens=ConversationSummaryPlugin._max_tokens,
-            temperature=0.1,
-            top_p=0.5,
+            execution_settings=execution_settings,
         )
 
     @kernel_function(

@@ -15,7 +15,7 @@ def test_create_empty_plan():
     assert plan.description == ""
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
-    assert plan.is_semantic is None
+    assert plan.is_prompt is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
@@ -32,7 +32,7 @@ def test_create_plan_with_name():
     assert plan.description == ""
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
-    assert plan.is_semantic is None
+    assert plan.is_prompt is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
@@ -49,7 +49,7 @@ def test_create_plan_with_name_and_description():
     assert plan.description == "test description"
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
-    assert plan.is_semantic is None
+    assert plan.is_prompt is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
@@ -66,7 +66,7 @@ def test_create_plan_with_state_and_parameters():
     assert plan.description == ""
     assert plan.function is None
     assert plan.parameters["test_param"] == "test_param_val"
-    assert plan.is_semantic is None
+    assert plan.is_prompt is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
@@ -86,14 +86,14 @@ def test_create_plan_with_name_and_function():
 
     plan = Plan(name="test", function=test_function)
     assert plan is not None
-    assert plan.name == "Add"
+    assert plan.name == "add"
     assert type(plan.state) is KernelArguments
     assert plan.plugin_name == "math"
     assert plan.description == test_function.description
     assert plan.function is test_function
     assert type(plan.parameters) is KernelArguments
-    assert plan.is_semantic is test_function.is_semantic
-    assert plan.is_native is not test_function.is_semantic
+    assert plan.is_prompt is test_function.is_prompt
+    assert plan.is_native is not test_function.is_prompt
     assert plan.prompt_execution_settings == test_function.prompt_execution_settings
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
@@ -121,7 +121,7 @@ def test_create_multistep_plan_with_functions():
     assert plan.description == ""
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
-    assert plan.is_semantic is None
+    assert plan.is_prompt is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
     assert plan.has_next_step is True
@@ -152,7 +152,7 @@ def test_create_multistep_plan_with_plans():
     assert plan.description == ""
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
-    assert plan.is_semantic is None
+    assert plan.is_prompt is None
     assert plan.is_native is None
     assert plan.prompt_execution_settings is None
     assert plan.has_next_step is True
@@ -174,14 +174,14 @@ def test_add_step_to_plan():
     plan = Plan(name="multistep_test", function=test_function1)
     plan.add_steps([test_function2])
     assert plan is not None
-    assert plan.name == "Add"
+    assert plan.name == "add"
     assert type(plan.state) is KernelArguments
     assert plan.plugin_name == "math"
     assert plan.description == test_function1.description
     assert plan.function is test_function1
     assert type(plan.parameters) is KernelArguments
-    assert plan.is_semantic is test_function1.is_semantic
-    assert plan.is_native is not test_function1.is_semantic
+    assert plan.is_prompt is test_function1.is_prompt
+    assert plan.is_native is not test_function1.is_prompt
     assert plan.prompt_execution_settings == test_function1.prompt_execution_settings
     assert plan.has_next_step is True
     assert plan.next_step_index == 0

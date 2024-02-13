@@ -40,7 +40,7 @@ class TestCodeBlock:
             function=invoke,
             parameters=[],
             return_parameter=None,
-            is_semantic=False,
+            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -199,7 +199,7 @@ class TestCodeBlock:
             function=invoke,
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
             return_parameter=None,
-            is_semantic=False,
+            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -255,7 +255,7 @@ class TestCodeBlock:
             description="",
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
             return_parameter=None,
-            is_semantic=False,
+            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -301,7 +301,7 @@ class TestCodeBlock:
             description="",
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
             return_parameter=None,
-            is_semantic=False,
+            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])

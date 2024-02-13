@@ -13,7 +13,7 @@ def test_add_semantic_function():
         plugin_name="plugin1",
         description="Semantic function",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=True,
     )
     functions_view = FunctionsView()
@@ -29,7 +29,7 @@ def test_add_native_function():
         plugin_name="plugin2",
         description="Native function",
         parameters=[],
-        is_semantic=False,
+        is_prompt=False,
         is_asynchronous=True,
     )
     functions_view = FunctionsView()
@@ -45,7 +45,7 @@ def test_add_multiple_functions():
         plugin_name="plugin1",
         description="Semantic function",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=True,
     )
     native_function = KernelFunctionMetadata(
@@ -53,7 +53,7 @@ def test_add_multiple_functions():
         plugin_name="plugin2",
         description="Native function",
         parameters=[],
-        is_semantic=False,
+        is_prompt=False,
         is_asynchronous=True,
     )
     functions_view = FunctionsView()
@@ -67,13 +67,13 @@ def test_add_multiple_functions():
     assert native_functions[0] == native_function
 
 
-def test_is_semantic():
+def test_is_prompt():
     semantic_function = KernelFunctionMetadata(
         name="function1",
         plugin_name="plugin1",
         description="Semantic function",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=True,
     )
     native_function = KernelFunctionMetadata(
@@ -81,15 +81,15 @@ def test_is_semantic():
         plugin_name="plugin2",
         description="Native function",
         parameters=[],
-        is_semantic=False,
+        is_prompt=False,
         is_asynchronous=True,
     )
     functions_view = FunctionsView()
     functions_view.add_function(semantic_function)
     functions_view.add_function(native_function)
-    assert functions_view.is_semantic("plugin1", "function1") is True
-    assert functions_view.is_semantic("plugin2", "function2") is False
-    assert functions_view.is_semantic("plugin1", "unregistered_function") is False
+    assert functions_view.is_prompt("plugin1", "function1") is True
+    assert functions_view.is_prompt("plugin2", "function2") is False
+    assert functions_view.is_prompt("plugin1", "unregistered_function") is False
 
 
 def test_is_native():
@@ -98,7 +98,7 @@ def test_is_native():
         plugin_name="plugin1",
         description="Semantic function",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=True,
     )
     native_function = KernelFunctionMetadata(
@@ -106,7 +106,7 @@ def test_is_native():
         plugin_name="plugin2",
         description="Native function",
         parameters=[],
-        is_semantic=False,
+        is_prompt=False,
         is_asynchronous=True,
     )
     functions_view = FunctionsView()
@@ -123,7 +123,7 @@ def test_ambiguous_implementation():
         plugin_name="plugin1",
         description="Semantic function",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=True,
     )
     native_function = KernelFunctionMetadata(
@@ -131,7 +131,7 @@ def test_ambiguous_implementation():
         plugin_name="plugin1",
         description="Native function",
         parameters=[],
-        is_semantic=False,
+        is_prompt=False,
         is_asynchronous=True,
     )
     functions_view = FunctionsView()
@@ -139,7 +139,7 @@ def test_ambiguous_implementation():
     functions_view.add_function(native_function)
 
     with pytest.raises(KernelException) as exc_info:
-        functions_view.is_semantic("plugin1", "function1")
+        functions_view.is_prompt("plugin1", "function1")
 
     assert exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation
 

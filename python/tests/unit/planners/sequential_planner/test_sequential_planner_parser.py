@@ -23,7 +23,7 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
     mock_function.name = kernel_function_metadata.name
     mock_function.plugin_name = kernel_function_metadata.plugin_name
     mock_function.description = kernel_function_metadata.description
-    mock_function.is_semantic = kernel_function_metadata.is_semantic
+    mock_function.is_prompt = kernel_function_metadata.is_prompt
     mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
@@ -31,13 +31,13 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
 def create_kernel_and_functions_mock(functions) -> Kernel:
     kernel = Kernel()
     functions_view = FunctionsView()
-    for name, plugin_name, description, is_semantic, result_string in functions:
+    for name, plugin_name, description, is_prompt, result_string in functions:
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name=plugin_name,
             description=description,
             parameters=[],
-            is_semantic=is_semantic,
+            is_prompt=is_prompt,
             is_asynchronous=True,
         )
         functions_view.add_function(kernel_function_metadata)

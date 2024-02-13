@@ -1,83 +1,51 @@
 # Copyright (c) Microsoft. All rights reserved.
+import logging
 import json
-from typing import Generic, List, TypeVar
+from typing import Dict, Generic, List, Optional, TypeVar
 
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.prompt_template.input_variable import InputVariable
 
 PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
-    schema_: int = Field(default=1, alias="schema")
-    type: str = "completion"
-    description: str = ""
-    execution_settings: PromptExecutionSettingsT = Field(
-        default_factory=PromptExecutionSettings
-    )  # todo: this should be a dict
-    default_services: List[str] = Field(default_factory=list)
-    parameters: List[KernelParameterMetadata] = Field(default_factory=list)
+    name: Optional[str] = Field(default="", alias="name")
+    description: Optional[str] = Field(default="", alias="description")
+    template: Optional[str] = Field(None, alias="template")
+    template_format: Optional[str] = Field(default="semantic-kernel", alias="template_format")
+    input_variables: Optional[List[InputVariable]] = Field(default_factory=list, alias="input_variables")
+    execution_settings: Optional[Dict[str, PromptExecutionSettings]] = Field(default_factory=dict, alias="execution_settings")
 
-    @classmethod
-    def from_dict(cls, data: dict) -> "PromptTemplateConfig":
-        config = {
-            key: value for key, value in data.items() if key in ["schema", "type", "description", "default_services"]
-        }
-        config["parameters"] = []
+    def __init__(self, **data) -> None:
+        super().__init__(**data)
 
-        config = cls._process_execution_settings(config, data)
+    def add_execution_settings(self, settings: PromptExecutionSettings) -> None:
+        self.execution_settings = settings
 
-        if "input_variables" in data:
-            for parameter in data["input_variables"]:
-                name = parameter.get("name", "")
-                description = parameter.get("description", "")
-                defaultValue = parameter.get("default", "")
-                type_ = parameter.get("type")
-                required = parameter.get("required", False)
-
-                config["parameters"].append(
-                    KernelParameterMetadata(
-                        name=name,
-                        description=description,
-                        default_value=defaultValue,
-                        type_=type_,
-                        required=required,
-                    )
-                )
-
-        return cls(**config)
+    def get_kernel_parameter_metadata(self) -> List[KernelParameterMetadata]:
+        return [
+            KernelParameterMetadata(
+                name=variable.name,
+                description=variable.description,
+                default_value=variable.default,
+                type_=variable.json_schema,  # TODO: update to handle complex JSON schemas
+                required=variable.is_required,
+            )
+            for variable in self.input_variables
+        ]
 
     @classmethod
     def from_json(cls, json_str: str) -> "PromptTemplateConfig":
-        return cls.from_dict(json.loads(json_str))
+        if not json_str:
+            raise ValueError("json_str is empty")
+        
+        parsed_json = json.loads(json_str)
 
-    @classmethod
-    def from_execution_settings(cls, **kwargs) -> "PromptTemplateConfig":
-        concrete_class = cls.model_fields["execution_settings"].annotation
-        if isinstance(concrete_class, TypeVar):
-            concrete_class = PromptExecutionSettings
-        return PromptTemplateConfig(execution_settings=concrete_class(extension_data=kwargs))
-
-    @classmethod
-    def _process_execution_settings(cls, config: dict, data: dict) -> dict:
-        exec_settings = data.get("execution_settings", {})
-
-        for service_id, settings in exec_settings.items():
-            # Copy settings to avoid modifying the original data
-            settings = settings.copy()
-
-            # Extract and remove 'service_id' if it exists
-            # service_id = settings.pop("service_id", service_id)
-
-            # Determine the concrete type
-            concrete_type = cls.model_fields["execution_settings"].annotation
-            if isinstance(concrete_type, TypeVar):
-                concrete_type = PromptExecutionSettings
-
-            # Initialize the concrete type with the service_id and remaining settings
-            config["execution_settings"] = concrete_type(service_id=service_id, extension_data=settings)
-
-        return config
+        return PromptTemplateConfig(**parsed_json)

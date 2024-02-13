@@ -20,6 +20,7 @@ from semantic_kernel.planners.action_planner.action_planner_config import (
 )
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -64,11 +65,12 @@ class ActionPlanner:
 
         self._prompt_template = prompt if prompt else open(__prompt_file, "r").read()
 
-        self._planner_function = kernel.create_semantic_function(
+        execute_settings = PromptExecutionSettings(extension_data = { "max_tokens": self.config.max_tokens, "stop_sequences": self._stop_sequence} )
+
+        self._planner_function = kernel.create_function_from_prompt(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
-            prompt_template=self._prompt_template,
-            max_tokens=self.config.max_tokens,
-            stop_sequences=[self._stop_sequence],
+            template=self._prompt_template,
+            execution_settings={"default": execute_settings},
         )
         kernel.import_plugin(self, self.RESTRICTED_PLUGIN_NAME)
 

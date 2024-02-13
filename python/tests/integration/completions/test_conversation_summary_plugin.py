@@ -10,7 +10,9 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
-
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 @pytest.mark.asyncio
 async def test_azure_summarize_conversation_using_plugin(setup_summarize_conversation_using_plugin, get_aoai_config):
@@ -32,9 +34,26 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
 
     conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
 
-    summary = await retry(
-        lambda: kernel.run(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
+    exec_settings = PromptExecutionSettings(
+        extension_data = { "max_tokens": 200, "temperature": 0, "top_p": 0.5}
     )
+
+    prompt_template_config = PromptTemplateConfig(
+        template=prompt,
+        description="Write a short story.",
+        execution_settings={'default': exec_settings}
+    )
+
+    # Create the semantic function
+    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+
+    arguments = KernelArguments(input=chatTranscript)
+
+    summary = await retry(lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments))
+
+    # summary = await retry(
+    #     lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
+    # )
 
     output = str(summary).strip().lower()
     print(output)

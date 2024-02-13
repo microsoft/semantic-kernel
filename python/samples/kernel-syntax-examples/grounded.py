@@ -78,7 +78,7 @@ def setup(use_azure: bool = False):
     # note: using plugins from the samples folder
     plugins_directory = "../samples/plugins/"
 
-    grounding_semantic_functions = kernel.import_semantic_plugin_from_directory(plugins_directory, "GroundingPlugin")
+    grounding_semantic_functions = kernel.import_plugin_from_prompt_directory(plugins_directory, "GroundingPlugin")
 
     # entity_extraction = grounding_semantic_functions["ExtractEntities"]
     # reference_check = grounding_semantic_functions["ReferenceCheckEntities"]

@@ -6,7 +6,7 @@ from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
@@ -46,7 +46,7 @@ kernel.add_chat_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-kernel.import_semantic_plugin_from_directory(plugins_directory, "FunPlugin")
+kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin(MathPlugin(), plugin_name="math")
 

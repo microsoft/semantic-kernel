@@ -16,7 +16,7 @@ class FunctionsView(KernelBaseModel):
     native_functions: Dict[str, List[KernelFunctionMetadata]] = Field(default_factory=dict)
 
     def add_function(self, view: KernelFunctionMetadata) -> "FunctionsView":
-        if view.is_semantic:
+        if view.is_prompt:
             if view.plugin_name not in self.semantic_functions:
                 self.semantic_functions[view.plugin_name] = []
             self.semantic_functions[view.plugin_name].append(view)
@@ -27,7 +27,7 @@ class FunctionsView(KernelBaseModel):
 
         return self
 
-    def is_semantic(self, plugin_name: str, function_name: str) -> bool:
+    def is_prompt(self, plugin_name: str, function_name: str) -> bool:
         as_sf = self.semantic_functions.get(plugin_name, [])
         as_sf = any(f.name == function_name for f in as_sf)
 

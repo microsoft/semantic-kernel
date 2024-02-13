@@ -20,7 +20,7 @@ def create_mock_function(name) -> KernelFunction:
         plugin_name="SummarizePlugin",
         description="Summarize an input",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=True,
     )
     mock_function = Mock(spec=KernelFunction)

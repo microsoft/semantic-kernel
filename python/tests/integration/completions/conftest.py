@@ -82,7 +82,6 @@ def setup_tldr_function_for_oai_models(create_kernel):
     # Define semantic function using SK prompt template language
     sk_prompt = """
     {{$input}}
-    {{$input2}}
 
     (hyphenated words count as 1 word)
     Give me the TLDR in exactly 5 words:

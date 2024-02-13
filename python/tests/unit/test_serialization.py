@@ -71,7 +71,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
                 plugin_name="plugin1",
                 description="Native function",
                 parameters=[],
-                is_semantic=False,
+                is_prompt=False,
                 is_asynchronous=True,
             )
         )
@@ -81,7 +81,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
                 plugin_name="plugin1",
                 description="Semantic function",
                 parameters=[],
-                is_semantic=True,
+                is_prompt=True,
                 is_asynchronous=True,
             )
         )
@@ -123,7 +123,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             plugin_name="bar",
             description="baz",
             parameters=[KernelParameterMetadata(name="qux", description="bar", default_value="baz")],
-            is_semantic=True,
+            is_prompt=True,
             is_asynchronous=False,
         ),
         FunctionsView: create_functions_view(),

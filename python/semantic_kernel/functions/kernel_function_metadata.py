@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
-from typing import List
+from typing import List, Optional
 
 if sys.version_info >= (3, 9):
     pass
@@ -18,10 +18,11 @@ from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX
 class KernelFunctionMetadata(KernelBaseModel):
     name: str = Field(pattern=FUNCTION_NAME_REGEX)
     plugin_name: str
-    description: str
+    description: Optional[str] = Field(default=None)
     parameters: List[KernelParameterMetadata] = Field(default_factory=list)
-    is_semantic: bool
-    is_asynchronous: bool = True
+    is_prompt: bool
+    is_asynchronous: Optional[bool] = Field(default=True)
+    return_parameter: Optional[KernelParameterMetadata] = None
 
     def __eq__(self, other: "KernelFunctionMetadata") -> bool:
         """
@@ -41,6 +42,7 @@ class KernelFunctionMetadata(KernelBaseModel):
             and self.plugin_name == other.plugin_name
             and self.description == other.description
             and self.parameters == other.parameters
-            and self.is_semantic == other.is_semantic
+            and self.is_prompt == other.is_prompt
             and self.is_asynchronous == other.is_asynchronous
+            and self.return_parameter == other.return_parameter
         )

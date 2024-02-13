@@ -2,9 +2,7 @@
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar
-
-from pydantic import Field
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, TypeVar
 
 from semantic_kernel.models.ai.chat_completion.chat_message import ChatMessage
 from semantic_kernel.prompt_template.prompt_template import PromptTemplate
@@ -25,7 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
-    messages: List[ChatMessageT] = Field(default_factory=list)
+    # messages: List[ChatMessageT] = Field(default_factory=list)
 
     def __init__(
         self,
@@ -34,7 +32,6 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
         prompt_config: PromptTemplateConfig,
         parse_chat_system_prompt: bool = False,
         parse_messages: bool = False,
-        **kwargs: Any,
     ) -> None:
         """Initialize a chat prompt template.
 
@@ -56,70 +53,28 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
 
         """
         super().__init__(template, template_engine, prompt_config)
-        if "log" in kwargs:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-
-        if parse_chat_system_prompt and "chat_system_prompt" in self.prompt_config.execution_settings.extension_data:
-            self.add_system_message(self.prompt_config.execution_settings.extension_data["chat_system_prompt"])
-
-        if (
-            parse_messages
-            and hasattr(self.prompt_config.execution_settings, "messages")
-            and self.prompt_config.execution_settings.messages
-        ):
-            for message in self.prompt_config.execution_settings.messages:
-                self.add_message(**message)
 
     async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
         raise NotImplementedError("Can't call render on a ChatPromptTemplate.\n" "Use render_messages instead.")
 
-    def add_system_message(self, message: str) -> None:
-        """Add a system message to the chat template."""
-        self.add_message("system", message)
-
-    def add_user_message(self, message: str) -> None:
-        """Add a user message to the chat template."""
-        self.add_message("user", message)
-
-    def add_assistant_message(self, message: str) -> None:
-        """Add an assistant message to the chat template."""
-        self.add_message("assistant", message)
-
-    def add_message(self, role: str, message: Optional[str] = None, **kwargs: Any) -> None:
-        """Add a message to the chat template.
-
-        Arguments:
-            role: The role of the message, one of "user", "assistant", "system".
-            message: The message to add, can include templating components.
-            kwargs: can be used by inherited classes.
-        """
-        concrete_message = self.model_fields["messages"].annotation.__args__[0]
-        # When the type is not explicitly set, it is still the typevar, replace with generic ChatMessage
-        if isinstance(concrete_message, TypeVar):
-            concrete_message = ChatMessage
-        assert issubclass(concrete_message, ChatMessage)
-        if not message and "content" in kwargs:
-            message = kwargs["content"]
-        self.messages.append(
-            concrete_message(
-                role=role,
-                content_template=PromptTemplate(message, self.template_engine, self.prompt_config) if message else None,
-                **kwargs,
-            )
-        )
-
     async def render_messages(self, kernel: "Kernel", arguments: "KernelArguments") -> List[Dict[str, str]]:
-        """Render the content of the message in the chat template, based on the context."""
-        if len(self.messages) == 0 or self.messages[-1].role in [
-            "assistant",
-            "system",
-        ]:
+        messages = arguments.get("history", None)
+        """Render the content of the message in the chat template, based on the arguments."""
+        if (
+            messages is None
+            or len(messages) == 0
+            or messages[-1].role
+            in [
+                "assistant",
+                "system",
+            ]
+        ):
             self.add_user_message(message=self.template)
-        await asyncio.gather(*[message.render_message(kernel, arguments) for message in self.messages])
+        await asyncio.gather(*[message.render_message(kernel, arguments) for message in messages])
         # Don't resend the assistant + tool_calls message as it will error
         return [
             message.as_dict()
-            for message in self.messages
+            for message in messages
             if not (message.role == "assistant" and hasattr(message, "tool_calls"))
         ]
 

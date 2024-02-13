@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from pydantic import Field
 
-from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -15,6 +14,7 @@ from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -96,19 +96,55 @@ class CodeBlock(Block):
         arguments_clone = copy(arguments)
 
         if len(self.tokens) > 1:
-            logger.debug(f"Passing variable/value: `{self.tokens[1].content}`")
-            input_value = self.tokens[1].render(kernel, arguments_clone)
-            arg_name = self.tokens[1].content
-            if arg_name and arg_name.startswith("$"):
-                arg_name = arg_name[1:]
-            arguments_clone[arg_name] = input_value
+            arguments_clone = self._enrich_function_arguments(kernel, f_block, arguments_clone)
 
         result = await function.invoke(kernel, arguments_clone)
         return str(result) if result else ""
 
+    def _enrich_function_arguments(
+        self, kernel: "Kernel", f_block: FunctionIdBlock, arguments: "KernelArguments"
+    ) -> "KernelArguments":
+        first_arg = self.tokens[1]
+
+        function_metadata = self._get_function_from_plugin_collection(kernel.plugins, f_block).metadata
+
+        if not function_metadata.parameters:
+            raise ValueError(
+                f"Function {f_block.plugin_name}.{f_block.function_name} does not take any arguments "
+                f"but it is being called in the template with {len(self.tokens) - 1} arguments."
+            )
+
+        first_positional_parameter_name = None
+        first_positional_input_value = None
+        named_args_start_index = 1
+
+        if first_arg.type != BlockTypes.NAMED_ARG:
+            first_positional_parameter_name = function_metadata.parameters[0].name
+            first_positional_input_value = first_arg.render(kernel, arguments)
+            arguments[first_positional_parameter_name] = first_positional_input_value
+            named_args_start_index += 1
+
+        for i in range(named_args_start_index, len(self.tokens)):
+            arg = self.tokens[i]
+            if arg.type != BlockTypes.NAMED_ARG:
+                error_msg = "Functions support up to one positional argument"
+                logger.error(error_msg)
+                raise Exception(f"Unexpected first token type: {arg.type}")
+
+            if first_positional_parameter_name and first_positional_parameter_name.lower() == arg.name.lower():
+                raise ValueError(
+                    f"Ambiguity found as a named parameter '{arg.name}' cannot be set for the first parameter "
+                    f"when there is also a positional value: '{first_positional_input_value}' provided. "
+                    f"Function: {f_block.plugin_name}.{f_block.function_name}"
+                )
+
+            arguments[arg.name] = arg.get_value(arguments)
+
+        return arguments
+
     def _get_function_from_plugin_collection(
         self, plugins: KernelPluginCollection, f_block: FunctionIdBlock
-    ) -> Optional[KernelFunction]:
+    ) -> Optional["KernelFunction"]:
         """
         Get the function from the plugin collection
 

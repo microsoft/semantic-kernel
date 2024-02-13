@@ -12,7 +12,10 @@ from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls imp
 from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
+from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -156,18 +159,18 @@ def get_function_calling_object(
     return result
 
 
-async def execute(kernel: Kernel, func: KernelFunction, input_vars: ContextVariables) -> str:
+async def execute(kernel: Kernel, func: KernelFunction, arguments: KernelArguments) -> str:
     """Execute a function and return the result.
 
     Args:
-        kernel (Kernel): the kernel to use.
-        func (KernelFunction): the function to execute.
-        input_vars (ContextVariables): the input variables.
+        kernel: the kernel to use.
+        func: the function to execute.
+        arguments: the arguments to pass to the function.
 
     Returns:
         str: the result of the execution.
     """
-    result = await kernel.run(func, input_vars=input_vars)
+    result = await kernel.invoke(functions=func, arguments=arguments)
     logger.info(f"Execution result: {result}")
     return str(result)
 
@@ -175,25 +178,25 @@ async def execute(kernel: Kernel, func: KernelFunction, input_vars: ContextVaria
 async def execute_function_call(kernel: Kernel, function_call: FunctionCall) -> str:
     """Execute a function call and return the result."""
     func = kernel.func(**function_call.split_name_dict())
-    input_vars = function_call.to_context_variables()
-    return await execute(kernel, func, input_vars)
+    args = function_call.to_kernel_arguments()
+    return await execute(kernel, func, args)
 
 
 async def execute_tool_call(kernel: Kernel, tool_call: ToolCall) -> str:
     """Execute a tool call and return the result."""
     func = kernel.func(**tool_call.function.split_name_dict())
-    input_vars = tool_call.function.to_context_variables()
-    return await execute(kernel, func, input_vars)
+    args = tool_call.function.to_kernel_arguments()
+    return await execute(kernel, func, args)
 
 
 async def chat_completion_with_function_call(
     kernel: Kernel,
-    context: KernelContext,
+    arguments: Optional[KernelArguments] = None,
     chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[KernelFunction] = None,
     **kwargs: Dict[str, Any],
-) -> KernelContext:
+) -> FunctionResult:
     """Perform a chat completion with auto-executing function calling.
 
     This is a recursive function that will execute the chat function multiple times,
@@ -233,13 +236,13 @@ async def chat_completion_with_function_call(
     settings = chat_function.chat_prompt_template.prompt_config.execution_settings
     if current_call_count >= max_function_calls:
         settings.functions = []
-    context = await chat_function.invoke(
-        context=context,
+    result = await chat_function.invoke(
+        kernel=kernel,
+        arguments=KernelArguments(settings=settings),
         # when the maximum number of function calls is reached, execute the chat function without Functions.
-        settings=settings,
     )
-    if not (results := context.objects.pop("results", None)):
-        return context
+    if not (results := result.objects.pop("results", None)):
+        return result
     function_call = next(
         (
             fc
@@ -253,7 +256,7 @@ async def chat_completion_with_function_call(
         result = await execute_call(kernel, function_call)
         tool_call_id = function_call.id
     else:
-        return context
+        return result
     # add the result to the chat prompt template
     chat_function.chat_prompt_template.add_function_response_message(
         name=function_call.function.name, content=str(result), tool_call_id=tool_call_id
@@ -261,8 +264,8 @@ async def chat_completion_with_function_call(
     # request another completion
     return await chat_completion_with_function_call(
         kernel,
+        arguments=arguments,
         chat_function=chat_function,
-        context=context,
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,
     )
@@ -312,3 +315,10 @@ def _parse_choices(choice) -> Tuple[str, int]:
         message += choice.delta.content
 
     return message, choice.index
+
+
+def _prepare_chat_history_for_request(
+    chat_history: ChatHistory,
+) -> List[Dict[str, str]]:
+    """Prepare the chat history for a request."""
+    return [{"role": message.role, "content": message.content} for message in chat_history.messages]
