@@ -17,11 +17,16 @@ public sealed class ToolFilterTests : IDisposable
 {
     private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
+    private readonly OpenAIChatCompletionService _service;
+    private readonly OpenAIPromptExecutionSettings _settings;
 
     public ToolFilterTests()
     {
         this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+
+        this._service = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
     }
 
     [Fact]
@@ -34,9 +39,8 @@ public sealed class ToolFilterTests : IDisposable
         var kernel = new Kernel();
         kernel.ImportPluginFromObject(new FakePlugin(() => toolInvocations++));
 
-        var service = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        settings.ToolCallBehavior.Filters.Add(
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(
             new FakeToolFilter(onToolInvoking: (context) =>
             {
                 filterInvocations++;
@@ -47,7 +51,7 @@ public sealed class ToolFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await service.GetChatMessageContentsAsync(new ChatHistory(), settings, kernel);
+        var result = await this._service.GetChatMessageContentsAsync(new ChatHistory(), this._settings, kernel);
 
         // Assert
         Assert.Equal(1, toolInvocations);
@@ -63,9 +67,8 @@ public sealed class ToolFilterTests : IDisposable
         var kernel = new Kernel();
         kernel.ImportPluginFromObject(new FakePluginWithArg((string originalInput) => originalInput));
 
-        var service = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        settings.ToolCallBehavior.Filters.Add(
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(
             new FakeToolFilter(onToolInvoking: (context) =>
             {
                 context.ToolCall.Arguments!["input"] = NewInput;
@@ -75,9 +78,10 @@ public sealed class ToolFilterTests : IDisposable
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
-        // Act
         var chatHistory = new ChatHistory();
-        var result = await service.GetChatMessageContentsAsync(chatHistory, settings, kernel);
+
+        // Act
+        var result = await this._service.GetChatMessageContentsAsync(chatHistory, this._settings, kernel);
 
         // Assert
         Assert.Equal(NewInput, chatHistory.Where(m => m.Role == AuthorRole.Tool).First().Content);
@@ -94,11 +98,8 @@ public sealed class ToolFilterTests : IDisposable
         var kernel = new Kernel();
         kernel.ImportPluginFromObject(new FakePlugin(() => functionInvocations++));
 
-        var chatHistory = new ChatHistory();
-        var service = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
-        settings.ToolCallBehavior.Filters.Add(
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(
             new FakeToolFilter(
                 onToolInvoking: (context) =>
                 {
@@ -114,8 +115,10 @@ public sealed class ToolFilterTests : IDisposable
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
+        var chatHistory = new ChatHistory();
+
         // Act
-        var result = await service.GetChatMessageContentAsync(chatHistory, settings, kernel);
+        var result = await this._service.GetChatMessageContentAsync(chatHistory, this._settings, kernel);
 
         // Assert
         Assert.Equal(1, preFilterInvocations);
@@ -134,10 +137,8 @@ public sealed class ToolFilterTests : IDisposable
         var kernel = new Kernel();
         kernel.ImportPluginFromObject(new FakePlugin(() => functionInvocations++));
 
-        var service = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
-        settings.ToolCallBehavior.Filters.Add(
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(
             new FakeToolFilter(onToolInvoked: (context) =>
             {
                 filterInvocations++;
@@ -148,7 +149,7 @@ public sealed class ToolFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await service.GetChatMessageContentAsync(new ChatHistory(), settings, kernel);
+        var result = await this._service.GetChatMessageContentAsync(new ChatHistory(), this._settings, kernel);
 
         // Assert
         Assert.Equal(1, functionInvocations);
@@ -164,10 +165,9 @@ public sealed class ToolFilterTests : IDisposable
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Hello, world!");
-        var service = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
-        settings.ToolCallBehavior.Filters.Add(
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(
             new FakeToolFilter(onToolInvoked: (context) =>
         {
             context.ChatHistory.AddAssistantMessage("Tool filter was invoked.");
@@ -179,7 +179,7 @@ public sealed class ToolFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await service.GetChatMessageContentAsync(chatHistory, settings, kernel);
+        var result = await this._service.GetChatMessageContentAsync(chatHistory, this._settings, kernel);
 
         // Assert
         Assert.Equal(4, chatHistory.Count); // includes tool call and tool result messages
@@ -210,17 +210,16 @@ public sealed class ToolFilterTests : IDisposable
             context.StopBehavior = ToolFilterStopBehavior.None;
         });
 
-        var service = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        settings.ToolCallBehavior.Filters.Add(toolFilter1);
-        settings.ToolCallBehavior.Filters.Add(toolFilter2);
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(toolFilter1);
+        this._settings.ToolCallBehavior.Filters.Add(toolFilter2);
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ToolResponseNoArgs) };
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await service.GetChatMessageContentsAsync(new ChatHistory(), settings, kernel);
+        var result = await this._service.GetChatMessageContentsAsync(new ChatHistory(), this._settings, kernel);
 
         // Assert
         Assert.Equal(1, functionInvocations);
@@ -234,34 +233,31 @@ public sealed class ToolFilterTests : IDisposable
         var executionOrder = new List<string>();
 
         var toolFilter1 = new FakeToolFilter(
-            (context) => executionOrder.Add("ToolFilter1-Invoking"),
-            (context) => executionOrder.Add("ToolFilter1-Invoked"));
+            onToolInvoking: (context) => executionOrder.Add("ToolFilter1-Invoking"),
+            onToolInvoked: (context) => executionOrder.Add("ToolFilter1-Invoked"));
 
         var toolFilter2 = new FakeToolFilter(
-            (context) => executionOrder.Add("ToolFilter2-Invoking"),
-            (context) => executionOrder.Add("ToolFilter2-Invoked"));
+            onToolInvoking: (context) => executionOrder.Add("ToolFilter2-Invoking"),
+            onToolInvoked: (context) => executionOrder.Add("ToolFilter2-Invoked"));
 
         var toolFilter3 = new FakeToolFilter(
-            (context) => executionOrder.Add("ToolFilter3-Invoking"),
-            (context) => executionOrder.Add("ToolFilter3-Invoked"));
+            onToolInvoking: (context) => executionOrder.Add("ToolFilter3-Invoking"),
+            onToolInvoked: (context) => executionOrder.Add("ToolFilter3-Invoked"));
 
         var kernel = new Kernel();
         kernel.ImportPluginFromObject(new FakePlugin(() => { }));
 
-        var service = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
-        settings.ToolCallBehavior.Filters.Add(toolFilter1);
-        settings.ToolCallBehavior.Filters.Add(toolFilter2);
-        settings.ToolCallBehavior.Filters.Insert(1, toolFilter3);
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(toolFilter1);
+        this._settings.ToolCallBehavior.Filters.Add(toolFilter2);
+        this._settings.ToolCallBehavior.Filters.Insert(1, toolFilter3);
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ToolResponseNoArgs) };
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
-
         // Act
-        var result = await service.GetChatMessageContentAsync(new ChatHistory(), settings, kernel);
+        var result = await this._service.GetChatMessageContentAsync(new ChatHistory(), this._settings, kernel);
 
         // Assert
         Assert.Equal("ToolFilter1-Invoking", executionOrder[0]);
@@ -376,5 +372,4 @@ public sealed class ToolFilterTests : IDisposable
     ""total_tokens"": 99
   }
 }";
-
 }

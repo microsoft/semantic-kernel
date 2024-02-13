@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// 
+/// Enum describing the different ways tool calling can be stopped.
 /// </summary>
 public enum ToolFilterStopBehavior
 {
@@ -32,9 +31,9 @@ public enum ToolFilterStopBehavior
 };
 
 /// <summary>
-/// 
+/// Base class with data related to tool invocation.
 /// </summary>
-public abstract class ToolFilterContext // TODO: make experimental?
+public abstract class ToolFilterContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ToolFilterContext"/> class.
@@ -67,21 +66,13 @@ public abstract class ToolFilterContext // TODO: make experimental?
     public int ModelIterations { get; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the operation associated with
-    /// the filter should be canceled.
+    /// Gets or sets a value indicating whether subsequent tool calls should be stopped,
+    /// and if so, which stop behavior should be followed.
     /// </summary>
     /// <remarks>
-    /// The filter may set <see cref="Cancel"/> to true to indicate that the operation should
-    /// be canceled. If there are multiple filters registered, subsequent filters
+    /// If there are multiple filters registered, subsequent filters
     /// may see and change a value set by a previous filter. The final result is what will
     /// be considered by the component that triggers filter.
     /// </remarks>
-    //public bool Cancel { get; set; }
-
-    //public int ToolInvocations { get; } // ?
-
-    /// <summary>
-    /// 
-    /// </summary>
     public ToolFilterStopBehavior StopBehavior { get; set; } = ToolFilterStopBehavior.None;
 }
