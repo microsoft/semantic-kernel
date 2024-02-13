@@ -63,7 +63,34 @@ internal abstract class OllamaClient : IOllamaClient
         return response;
     }
 
-    public Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings executionSettings, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings executionSettings, CancellationToken cancellationToken)
+    {
+        var endpoint = this.EndpointProvider.TextGenerationEndpoint;
+        var request = CreateTextRequest(prompt, executionSettings);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = JsonSerializer.Deserialize<OllamaTextResponse>(body);
+
+
+    }
+
+    private List<ChatMessageContent> GetChatMessageContentsFromResponse(OllamaChatResponse response)
+    {
+        return new List<ChatMessageContent>
+        {
+            new(
+                role: response.Message?.Role ?? AuthorRole.Assistant,
+                content: response.Message?.Content ?? string.Empty,
+                modelId: this._modelId,
+                innerContent: response,
+                metadata: GetResponseMetadata(response))
+        };
+    }
+
+    private IReadOnlyDictionary<string, object?>? GetResponseMetadata(OllamaChatResponse response)
     {
         throw new NotImplementedException();
     }
@@ -96,8 +123,8 @@ internal abstract class OllamaClient : IOllamaClient
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var endpoint = this.EndpointProvider.StreamChatCompletionEndpoint(this._modelId);
-        var request = CreateRequest(chatHistory, executionSettings);
+        var endpoint = this.EndpointProvider.StreamChatCompletionEndpoint;
+        var request = CreateChatRequest(chatHistory, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
@@ -111,32 +138,23 @@ internal abstract class OllamaClient : IOllamaClient
         }
     }
 
-    protected static OllamaRequest CreateChatRequest(
+    protected static OllamaChatRequest CreateChatRequest(
         ChatHistory chatHistory,
         PromptExecutionSettings? promptExecutionSettings)
     {
-        var ollamaExecutionSettings = OllamaExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
         ValidateMaxTokens(ollamaExecutionSettings.MaxTokens);
-        var request = OllamaRequest.FromPromptAndExecutionSettings(chatHistory, ollamaExecutionSettings);
+        var request = OllamaChatRequest.FromPromptAndExecutionSettings(chatHistory, ollamaExecutionSettings);
         return request;
     }
 
-    private OllamaChatRequest CreateChatRequest(ChatHistory chatHistory, bool stream = false)
+    protected static OllamaTextRequest CreateTextRequest(
+        string prompt,
+        PromptExecutionSettings? promptExecutionSettings)
     {
-        return new OllamaChatRequest()
-        {
-            Model = this._modelId,
-            Stream = stream,
-            Messages = chatHistory,
-        };
-    }
-    private OllamaRequest CreateRequest(string prompt, bool stream = false)
-    {
-        return new OllamaRequest()
-        {
-            Model = this._modelId,
-            Stream = stream,
-            Prompt = prompt
-        };
+        var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        ValidateMaxTokens(ollamaExecutionSettings.MaxTokens);
+        var request = OllamaTextRequest.FromPromptAndExecutionSettings(prompt, ollamaExecutionSettings);
+        return request;
     }
 }

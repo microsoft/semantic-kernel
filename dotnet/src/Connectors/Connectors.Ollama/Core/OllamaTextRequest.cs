@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 /// <summary>
 /// Ollama Response object model.
 /// </summary>
-public sealed class OllamaRequest
+public sealed class OllamaTextRequest
 {
     /// <summary>
     /// Candidate responses from the model.
@@ -28,8 +28,19 @@ public sealed class OllamaRequest
     [JsonPropertyName("stream")]
     public bool Stream { get; set; }
 
-    public static OllamaRequest FromPromptAndExecutionSettings(ChatHistory chatHistory, OllamaExecutionSettings ollamaExecutionSettings)
+    /// <summary>
+    /// Converts a <see cref="PromptExecutionSettings" /> object to a <see cref="OllamaTextRequest" /> object.
+    /// </summary>
+    /// <param name="prompt">Prompt to be used for the request.</param>
+    /// <param name="ollamaPromptExecutionSettings">Execution settings to be used for the request.</param>
+    /// <returns>OllamaTextRequest object.</returns>
+    public static OllamaTextRequest FromPromptAndExecutionSettings(string prompt, OllamaPromptExecutionSettings ollamaPromptExecutionSettings)
     {
-        throw new System.NotImplementedException();
+        return new OllamaTextRequest
+        {
+            Model = ollamaPromptExecutionSettings.ModelId,
+            Stream = false,
+            Prompt = prompt
+        };
     }
 }

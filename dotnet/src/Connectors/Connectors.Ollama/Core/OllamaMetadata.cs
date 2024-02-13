@@ -1,0 +1,74 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
+
+namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
+
+/// <summary>
+/// Represents the metadata of the Ollama response.
+/// </summary>
+public sealed class OllamaMetadata : ReadOnlyDictionary<string ,object?>
+{
+    internal OllamaMetadata(OllamaResponseBase ollamaResponse) : base(new Dictionary<string, object?>())
+    {
+        this.TotalDuration = ollamaResponse.TotalDuration;
+        this.EvalCount = ollamaResponse.EvalCount;
+        this.EvalDuration = ollamaResponse.EvalDuration;
+        this.CreatedAt = ollamaResponse.CreatedAt;
+        this.LoadDuration = ollamaResponse.LoadDuration;
+        this.PromptEvalCount = ollamaResponse.PromptEvalCount;
+        this.PromptEvalDuration = ollamaResponse.PromptEvalDuration;
+    }
+
+    public long PromptEvalDuration
+    {
+        get => (this.GetValueFromDictionary() as long?) ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    public int PromptEvalCount
+    {
+        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    public long LoadDuration
+    {
+        get => (this.GetValueFromDictionary() as long?) ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    public DateTime? CreatedAt
+    {
+        get => (this.GetValueFromDictionary() as DateTime?) ?? DateTime.MinValue;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+
+    public long EvalDuration
+    {
+        get => (this.GetValueFromDictionary() as long?) ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    public int EvalCount
+    {
+        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    public long TotalDuration
+    {
+        get => (this.GetValueFromDictionary() as long?) ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    private void SetValueInDictionary(object? value, [CallerMemberName] string propertyName = "")
+        => this.Dictionary[propertyName] = value;
+
+    private object? GetValueFromDictionary([CallerMemberName] string propertyName = "")
+        => this.Dictionary.TryGetValue(propertyName, out var value) ? value : null;
+}
