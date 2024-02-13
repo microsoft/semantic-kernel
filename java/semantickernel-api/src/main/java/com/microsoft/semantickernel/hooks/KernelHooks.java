@@ -70,11 +70,7 @@ public class KernelHooks {
 
     @SuppressWarnings("unchecked")
     public <T extends KernelHookEvent> T executeHooks(T event) {
-
-        Comparator<KernelHook<?>> comparator = Comparator.comparingInt(KernelHook::getPriority);
-        comparator = comparator.reversed();
-
-        SortedSet<KernelHook<?>> hooks = new TreeSet<>(comparator);
+        SortedSet<KernelHook<?>> hooks = new TreeSet<>(Comparator.comparingInt(KernelHook::getPriority));
 
         hooks.addAll(this.hooks.values());
 
