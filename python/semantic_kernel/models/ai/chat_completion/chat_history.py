@@ -13,6 +13,10 @@ class ChatHistory(KernelBaseModel):
     """
     This class holds the history of chat messages from a chat conversation.
 
+    Note: the constructor takes a system_message parameter, which is not part 
+    of the class definition. This is to allow the system_message to be passed in 
+    as a keyword argument, but not be part of the class definition.
+
     Attributes:
         messages (List[ChatMessageContent]): The list of chat messages in the history.
     """

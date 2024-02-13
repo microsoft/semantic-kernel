@@ -86,7 +86,7 @@ def test_create_plan_with_name_and_function():
 
     plan = Plan(name="test", function=test_function)
     assert plan is not None
-    assert plan.name == "add"
+    assert plan.name == "Add"
     assert type(plan.state) is KernelArguments
     assert plan.plugin_name == "math"
     assert plan.description == test_function.description
@@ -174,7 +174,7 @@ def test_add_step_to_plan():
     plan = Plan(name="multistep_test", function=test_function1)
     plan.add_steps([test_function2])
     assert plan is not None
-    assert plan.name == "add"
+    assert plan.name == "Add"
     assert type(plan.state) is KernelArguments
     assert plan.plugin_name == "math"
     assert plan.description == test_function1.description

@@ -26,7 +26,7 @@ def test_plugin_can_be_imported():
 
     assert plugin is not None
     assert len(plugin.functions) == 1
-    func = plugin.functions["testfunction"]
+    func = plugin.functions["TestFunction"]
     assert func is not None
 
 
@@ -41,9 +41,9 @@ def test_native_plugin_can_be_imported():
 
     assert plugin is not None
     assert len(plugin.functions) == 1
-    assert plugin.functions.get("echoasync") is not None
-    plugin_config = plugin.functions["echoasync"]
-    assert plugin_config.name == "echoasync"
+    assert plugin.functions.get("echoAsync") is not None
+    plugin_config = plugin.functions["echoAsync"]
+    assert plugin_config.name == "echoAsync"
     assert plugin_config.description == "Echo for input text"
 
 

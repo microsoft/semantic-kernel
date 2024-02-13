@@ -108,7 +108,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=int_to_role[int(candidate.get("author"))],
+            role=int_to_role[int(candidate.get("author"))], #TODO: why is author coming back as '1'?
             content=candidate.get("content"),
         )
 

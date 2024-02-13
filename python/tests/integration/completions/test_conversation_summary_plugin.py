@@ -45,15 +45,9 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
-
     arguments = KernelArguments(input=chatTranscript)
 
     summary = await retry(lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments))
-
-    # summary = await retry(
-    #     lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
-    # )
 
     output = str(summary).strip().lower()
     print(output)

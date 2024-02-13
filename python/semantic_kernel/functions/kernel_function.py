@@ -216,7 +216,7 @@ class KernelFunction(KernelBaseModel):
 
         return KernelFunction(
             function=method,
-            function_name=function_name.lower(), # normalize name to lower
+            function_name=function_name,
             plugin_name=plugin_name,
             description=description,
             parameters=parameters,

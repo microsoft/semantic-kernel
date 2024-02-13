@@ -4,9 +4,14 @@ import itertools
 import json
 import logging
 import os
+import sys
 from textwrap import dedent
 from typing import Annotated, List, Optional
 
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 import regex
 
 from semantic_kernel import Kernel
@@ -207,9 +212,6 @@ class ActionPlanner:
             // Makes a POST request to a uri.
             HttpPlugin.PostAsync
             Parameter ""body"": The body of the request.
-            // Read a file.
-            FileIOPlugin.ReadAsync
-            Parameter ""path"": Source file.
             - End list of functions.
             Goal: tell me a joke.
             {""plan"":{

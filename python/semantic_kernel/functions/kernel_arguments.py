@@ -19,13 +19,13 @@ class KernelArguments(dict):
         just adds the execution_settings as a dict, with service_id and the settings.
 
         Arguments:
-            settings {Optional[Union[PromptExecutionSettings, List[PromptExecutionSettings]]]} -- The settings
-                for the execution. If a list is given, make sure all items in the list have a unique service_id
+            settings {Optional[Union[PromptExecutionSettings, List[PromptExecutionSettings]]]} -- The settings for the execution.
+                If a list is given, make sure all items in the list have a unique service_id
                 as that is used as the key for the dict.
             **kwargs {Dict[str, Any]} -- The arguments for the function invocation, works similar to a regular dict.
         """
         super().__init__(**kwargs)
-        settings_dict = None
+        settings_dict = {}
         if settings:
             if isinstance(settings, list):
                 settings_dict = {s.service_id: s for s in settings}

@@ -1,14 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-
-# def prepare_chat_history_for_request_for_request(
-#     chat_history: ChatHistory,
-# ) -> List[Dict[str, str]]:
-#     """Prepare the chat history for a request."""
-#     return [{"role": message.role, "content": message.content} for message in chat_history.messages]
 
 def prepare_chat_history_for_request(
     chat_history: ChatHistory,

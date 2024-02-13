@@ -11,7 +11,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
 
 
-class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
+class PromptTemplateConfigOld(KernelBaseModel, Generic[PromptExecutionSettingsT]):
     schema_: int = Field(default=1, alias="schema")
     type: str = "completion"
     description: str = ""
@@ -22,7 +22,7 @@ class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
     parameters: List[KernelParameterMetadata] = Field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, data: dict) -> "PromptTemplateConfig":
+    def from_dict(cls, data: dict) -> "PromptTemplateConfigOld":
         config = {
             key: value for key, value in data.items() if key in ["schema", "type", "description", "default_services"]
         }
@@ -51,15 +51,15 @@ class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
         return cls(**config)
 
     @classmethod
-    def from_json(cls, json_str: str) -> "PromptTemplateConfig":
+    def from_json(cls, json_str: str) -> "PromptTemplateConfigOld":
         return cls.from_dict(json.loads(json_str))
 
     @classmethod
-    def from_execution_settings(cls, **kwargs) -> "PromptTemplateConfig":
+    def from_execution_settings(cls, **kwargs) -> "PromptTemplateConfigOld":
         concrete_class = cls.model_fields["execution_settings"].annotation
         if isinstance(concrete_class, TypeVar):
             concrete_class = PromptExecutionSettings
-        return PromptTemplateConfig(execution_settings=concrete_class(extension_data=kwargs))
+        return PromptTemplateConfigOld(execution_settings=concrete_class(extension_data=kwargs))
 
     @classmethod
     def _process_execution_settings(cls, config: dict, data: dict) -> dict:

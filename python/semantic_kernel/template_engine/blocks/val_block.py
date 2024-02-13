@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
 
-import pydantic as pdt
+from pydantic import Field
 
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -17,52 +17,34 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class ValBlock(Block):
-    _first: str = pdt.PrivateAttr()
-    _last: str = pdt.PrivateAttr()
-    _value: str = pdt.PrivateAttr()
+    type: ClassVar[BlockTypes] = BlockTypes.VALUE
+    first: str = Field("\0", init=False, exclude=True)
+    last: str = Field("\0", init=False, exclude=True)
+    value: str = Field("", init=False, exclude=True)
 
-    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
-        super().__init__(content=content and content.strip())
-
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-
+    def model_post_init(self, __context: Any):
         if len(self.content) < 2:
-            err = "A value must have single quotes or double quotes on both sides"
-            logger.error(err)
-            self._value = ""
-            self._first = "\0"
-            self._last = "\0"
+            logger.error("A value must have single quotes or double quotes on both sides")
             return
-
-        self._first = self.content[0]
-        self._last = self.content[-1]
-        self._value = self.content[1:-1]
-
-    @property
-    def type(self) -> BlockTypes:
-        return BlockTypes.VALUE
+        self.first = self.content[0]
+        self.last = self.content[-1]
+        self.value = self.content[1:-1]
 
     def is_valid(self) -> Tuple[bool, str]:
-        if len(self.content) < 2:
-            error_msg = "A value must have single quotes or double quotes on both sides"
-            logger.error(error_msg)
-            return False, error_msg
-
-        if self._first != Symbols.DBL_QUOTE and self._first != Symbols.SGL_QUOTE:
+        if self.first not in [Symbols.DBL_QUOTE, Symbols.SGL_QUOTE]:
             error_msg = "A value must be wrapped in either single quotes or double quotes"
             logger.error(error_msg)
             return False, error_msg
 
-        if self._first != self._last:
+        if self.first != self.last:
             error_msg = "A value must be defined using either single quotes or " "double quotes, not both"
             logger.error(error_msg)
             return False, error_msg
 
         return True, ""
 
-    def render(self, kernel: "Kernel", _: Optional["KernelArguments"] = None) -> str:
-        return self._value
+    def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
+        return self.value
 
     @staticmethod
     def has_val_prefix(text: Optional[str]) -> bool:

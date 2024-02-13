@@ -11,10 +11,6 @@ if TYPE_CHECKING:
 
 
 class PromptTemplateBase(KernelBaseModel, ABC):
-    # @abstractmethod
-    # def get_parameters(self) -> List["KernelParameterMetadata"]:
-    #     pass
-
     @abstractmethod
     async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
         pass

@@ -52,7 +52,7 @@ class KernelPlugin(KernelBaseModel):
             for function in functions:
                 if function.name in functions_dict:
                     raise ValueError(f"Duplicate function name detected: {function.name}")
-                functions_dict[function.name.lower()] = function
+                functions_dict[function.name] = function
         super().__init__(name=name, description=description, functions=functions_dict)
 
     def __len__(self) -> int:
@@ -89,10 +89,9 @@ class KernelPlugin(KernelBaseModel):
         Raises:
             KeyError: If the function does not exist.
         """
-        name_lower = name.lower()
-        if name_lower not in self.functions:
+        if name not in self.functions:
             raise KeyError(f"Function {name} not found.")
-        return self.functions[name_lower]
+        return self.functions[name]
 
     @classmethod
     def from_functions(

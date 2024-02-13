@@ -39,7 +39,7 @@ class Plan:
 
     @property
     def name(self) -> str:
-        return self._name.lower()
+        return self._name
 
     @property
     def state(self) -> KernelArguments:

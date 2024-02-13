@@ -118,9 +118,9 @@ class KernelPluginCollection(KernelBaseModel):
 
         plugin = self.plugins[plugin_name]
         for func in functions:
-            if func.name.lower() in plugin.functions:
+            if func.name in plugin.functions:
                 raise ValueError(f"Function with name '{func.name}' already exists in plugin '{plugin_name}'")
-            plugin.functions[func.name.lower()] = func
+            plugin.functions[func.name] = func
 
     def add_list_of_plugins(self, plugins: List[KernelPlugin]) -> None:
         """
