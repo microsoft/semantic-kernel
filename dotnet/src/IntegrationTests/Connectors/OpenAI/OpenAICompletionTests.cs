@@ -455,6 +455,25 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task ChatSystemPromptIsNotIgnoredAsync()
+    {
+        // Arrange
+        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        Kernel target = builder.Build();
+
+        // Act
+        var result = await target.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?", new(settings));
+
+        // Assert
+        Assert.Contains("I don't know", result.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;
