@@ -101,7 +101,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             text=result["text"],
             description=result["description"],
             additional_metadata=result["metadata"],
-            timestamp=result["timestamp"],
+            timestamp=result.get("timestamp", None),
         )
 
     async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
@@ -117,7 +117,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 text=result["text"],
                 description=result["description"],
                 additional_metadata=result["metadata"],
-                timestamp=result["timestamp"],
+                timestamp=result.get("timestamp", None),
             )
             for result in results
         ]
