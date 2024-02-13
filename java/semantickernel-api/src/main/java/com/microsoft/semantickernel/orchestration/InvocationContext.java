@@ -14,7 +14,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Context passed to a Kernel or KernelFunction invoke. This class is primarily for
- * internal use. The preferred way to supply the context is to use {@link FunctionInvocation}.  
+ * internal use. The preferred way to supply a context is to use the discrete "with" 
+ * methods in {@link FunctionInvocation}.  
  */
 public class InvocationContext implements Buildable {
 

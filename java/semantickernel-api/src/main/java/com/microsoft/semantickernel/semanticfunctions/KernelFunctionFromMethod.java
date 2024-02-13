@@ -1,5 +1,27 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
+import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -15,32 +37,16 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.exceptions.AIException;
-import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
-import com.microsoft.semantickernel.exceptions.SKException;
-import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
-import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
-import com.microsoft.semantickernel.hooks.KernelHooks;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
-import com.microsoft.semantickernel.orchestration.MethodDetails;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
-
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+/**
+ * A {@link KernelFunction} that is created from a method. This class is used to create a
+ * {@link KernelFunction} from a method that is annotated with {@link DefineKernelFunction}
+ * and {@link KernelFunctionParameter}.
+ *
+ * @param <T> the return type of the function
+ */
 public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(KernelFunctionFromMethod.class);
@@ -79,6 +85,9 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         return function.invoke(kernel, this, arguments, variableType, invocationContext);
     }
 
+    /**
+     * Concrete implementation of the abstract method in KernelFunction. {@inheritDoc}
+     */
     public interface ImplementationFunc<T> {
         Mono<FunctionResult<T>> invoke(
             Kernel kernel,
@@ -89,6 +98,18 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     }
 
 
+    /**
+     * Creates a new instance of {@link KernelFunctionFromMethod} from a method.
+     *
+     * @param method the method to create the function from
+     * @param target the instance of the class that the method is a member of
+     * @param functionName the name of the function
+     * @param description the description of the function
+     * @param parameters the parameters of the function
+     * @param returnParameter the return parameter of the function
+     * @param <T> the return type of the function
+     * @return a new instance of {@link KernelFunctionFromMethod}
+     */
     @SuppressWarnings("unchecked")
     public static <T> KernelFunction<T> create(
         Method method,

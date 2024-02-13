@@ -42,19 +42,31 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * A {@link KernelFunction} implementation that is created from a prompt template.
+ *
+ * @param <T> the type of the return value of the function
+ */
 public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelFunctionFromPrompt.class);
 
     private final PromptTemplate template;
 
+    /**
+     * Creates a new instance of {@link KernelFunctionFromPrompt}.
+     *
+     * @param template the prompt template to use for the function
+     * @param promptConfig the configuration for the prompt
+     * @param executionSettings the execution settings to use when invoking the function
+     */
     public KernelFunctionFromPrompt(
         PromptTemplate template,
         PromptTemplateConfig promptConfig,
         @Nullable
         Map<String, PromptExecutionSettings> executionSettings) {
         super(
-            new KernelFunctionMetadata(
+            new KernelFunctionMetadata<>(
                 getName(promptConfig),
                 promptConfig.getDescription(),
                 promptConfig.getKernelParametersMetadata(),
@@ -73,20 +85,37 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         }
     }
 
+    /**
+     * Creates a new instance of {@link KernelFunctionFromPrompt} from a 
+     * {@code PromptTemplateConfig}.
+     *
+     * @param promptConfig the configuration for the prompt
+     * @param <T> the type of the return value of the function
+     * @return a new instance of {@link KernelFunction}
+     */
     public static <T> KernelFunction<T> create(
-        PromptTemplateConfig promptConfig
-    ) {
+        PromptTemplateConfig promptConfig) {
         return create(
             promptConfig,
             null
         );
     }
 
+    /**
+     * Creates a new instance of {@link KernelFunctionFromPrompt} from a
+     * {@code PromptTemplateConfig}, using the {@code PropmptTemplateFactory}
+     * to create the prompt template. If {@code promptTemplateFactory} is null,
+     * a default factory will be used.
+     *
+     * @param promptConfig the configuration for the prompt
+     * @param promptTemplateFactory the prompt template factory to use for creating the prompt template
+     * @param <T> the type of the return value of the function
+     * @return a new instance of {@link KernelFunction}
+     */
     public static <T> KernelFunction<T> create(
         PromptTemplateConfig promptConfig,
         @Nullable
-        PromptTemplateFactory promptTemplateFactory
-    ) {
+        PromptTemplateFactory promptTemplateFactory) {
         if (promptTemplateFactory == null) {
             promptTemplateFactory = new KernelPromptTemplateFactory();
         }
@@ -94,7 +123,15 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         return create(promptTemplateFactory.tryCreate(promptConfig), promptConfig);
     }
 
-
+    /**
+     * Creates a new instance of {@link KernelFunctionFromPrompt} from a
+     * {@code PromptTemplateConfig}, using the provided prompt template.
+     *
+     * @param promptTemplate the prompt template to use for the function
+     * @param promptConfig the configuration for the prompt
+     * @param <T> the type of the return value of the function
+     * @return a new instance of {@link KernelFunction}
+     */
     public static <T> KernelFunction<T> create(
         PromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig) {
@@ -391,22 +428,29 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         return Mono.empty();
     }
 
+    /**
+     * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template.
+     * @param <T> the type of the return value of the function
+     * @param promptTemplate the prompt template for the function
+     * @return a new instance of {@link KernelFunction}
+     */
     public static <T> KernelFunction<T> create(
         String promptTemplate) {
         return create(promptTemplate, null, null, null, null, null);
     }
 
-    /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
-    /// </summary>
-    /// <param name="promptTemplate">Prompt template for the function, defined using the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.</param>
-    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="description">The description to use for the function.</param>
-    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
-    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
-    /// <param name="loggerFactory">Logger factory</param>
-    /// <returns>A function ready to use</returns>
+    /**
+     * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template.
+     * If any of the optional parameters are null, default values will be used.
+     * @param promptTemplate the prompt template for the function
+     * @param executionSettings the default execution settings to use when invoking this prompt function
+     * @param functionName the name of the function
+     * @param description the description of the function
+     * @param templateFormat the format of the template
+     * @param promptTemplateFactory the prompt template factory to use for creating the prompt template
+     * @param <T> the type of the return value of the function
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public static <T> KernelFunction<T> create(
         String promptTemplate,
@@ -434,10 +478,19 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             .build();
     }
 
+    /**
+     * Creates a new instance of {@link Builder}.
+     * @param <T> The type of the return value of the function
+     * @return a new instance of {@link Builder}
+     */
     public static <T> Builder<T> builder() {
         return new Builder<>();
     }
 
+    /**
+     * A builder for creating a {@link KernelFunction} from a prompt template.
+     * @param <T> the type of the return value of the function
+     */
     public static final class Builder<T> implements FromPromptBuilder<T> {
 
         @Nullable
@@ -457,6 +510,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         private OutputVariable outputVariable;
         @Nullable
         private PromptTemplateFactory promptTemplateFactory;
+        @Nullable
+        private PromptTemplateConfig functionModel;
 
 
         @Override
@@ -555,7 +610,25 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         }
 
         @Override
+        public FromPromptBuilder<T> withPromptTemplateConfig(
+            @Nullable
+            PromptTemplateConfig functionModel) {
+            this.functionModel = functionModel;
+            return this;
+        }
+
+        @Override
         public KernelFunction<T> build() {
+
+            if (functionModel != null) {
+                if (promptTemplate == null) {
+                    throw new IllegalStateException("A PromptTemplate must be provided when building with a PromptTemplateConfig");
+                }
+                return new KernelFunctionFromPrompt<>(
+                    promptTemplate, 
+                    functionModel, 
+                    executionSettings);
+            }
 
             if (template == null) {
                 throw new IllegalStateException("Template must be provided");
@@ -584,17 +657,5 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         }
 
-        public KernelFunction<T> build(PromptTemplateConfig functionModel) {
-
-            if (promptTemplate == null) {
-                throw new IllegalStateException("Template must be provided");
-            }
-
-            return new KernelFunctionFromPrompt<>(
-                promptTemplate,
-                functionModel,
-                executionSettings
-            );
-        }
     }
 }
