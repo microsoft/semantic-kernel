@@ -45,7 +45,7 @@ public class SequentialPlanner_AnswerQuestion {
         OpenAIAsyncClient client = SamplesConfig.getClient();
         var kernel = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.textCompletion()
-                        .withModelId("text-davinci-003")
+                        .withModelId("davinci-002")
                         .withOpenAIClient(client)
                         .build())
                 .build();

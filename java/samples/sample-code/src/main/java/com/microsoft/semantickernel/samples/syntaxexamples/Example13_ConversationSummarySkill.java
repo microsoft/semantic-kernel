@@ -186,11 +186,11 @@ public class Example13_ConversationSummarySkill {
 
     private static Kernel initializeKernel(OpenAIAsyncClient client) {
         TextCompletion textCompletion = SKBuilders.textCompletion()
-                .withModelId("text-davinci-003")
+                .withModelId("davinci-002")
                 .withOpenAIClient(client)
                 .build();
 
         return SKBuilders.kernel()
-                .withAIService("text-davinci-003", textCompletion, true, TextCompletion.class).build();
+                .withAIService("davinci-002", textCompletion, true, TextCompletion.class).build();
     }
 }

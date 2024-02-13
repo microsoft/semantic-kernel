@@ -11,8 +11,8 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
 /**
- * Show how to invoke a Native Function written in Java from a Semantic Function written in natural
- * language
+ * Show how to invoke a Native Function written in Java
+ * from a Semantic Function written in natural language
  * <p>
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
@@ -20,89 +20,89 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
  */
 public class Example06_TemplateLanguage {
 
-  public static void main(String[] args) throws ConfigurationException {
-    System.out.println("======== TemplateLanguage ========");
+    public static void main(String[] args) throws ConfigurationException {
+        System.out.println("======== TemplateLanguage ========");
 
-    OpenAIAsyncClient client = SamplesConfig.getClient();
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
-    Kernel kernel = SKBuilders.kernel()
-        .withDefaultAIService(SKBuilders.textCompletion()
-            .withModelId("text-davinci-003")
-            .withOpenAIClient(client)
-            .build())
-        .build();
-
-    // Load native skill into the kernel skill collection, sharing its functions
-    // with prompt templates
-    // Functions loaded here are available as "time.*"
-    kernel.importSkill(new TimeSkill(), "time");
-
-    // Semantic Function invoking time.Date and time.Time native functions
-    String functionDefinition = """
-        Today is: {{time.Date}}
-        Current time is: {{time.Time}}
-
-        Answer to the following questions using JSON syntax, including the data used.
-        Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
-        Is it weekend time (weekend/not weekend)?
-        """;
-
-    // This allows to see the prompt before it's sent to OpenAI
-    System.out.println("--- Rendered Prompt");
-
-    var promptRenderer = SKBuilders.promptTemplate()
-        .withPromptTemplateConfig(new PromptTemplateConfig())
-        .withPromptTemplate(functionDefinition)
-        .withPromptTemplateEngine(kernel.getPromptTemplateEngine())
-        .build();
-
-    SKContext skContext = SKBuilders
-        .context()
-        .withSkills(kernel.getSkills())
-        .build();
-
-    var renderedPrompt = promptRenderer.renderAsync(skContext);
-    System.out.println(renderedPrompt.block());
-
-    // Run the prompt / semantic function
-    var kindOfDay = kernel
-        .getSemanticFunctionBuilder()
-        .withPromptTemplate(functionDefinition)
-        .withRequestSettings(
-            SKBuilders.completionRequestSettings()
-                .temperature(0)
-                .topP(0)
-                .maxTokens(256)
-                .frequencyPenalty(0)
-                .presencePenalty(0)
+        Kernel kernel = SKBuilders.kernel()
+            .withDefaultAIService(SKBuilders.textCompletion()
+                .withModelId("davinci-002")
+                .withOpenAIClient(client)
                 .build())
-        .build();
+            .build();
 
-    // Show the result
-    System.out.println("--- Semantic Function result");
-    var result = kindOfDay.invokeAsync("").block().getResult();
-    System.out.println(result);
-    /*
-     * OUTPUT:
-     *
-     * --- Rendered Prompt
-     *
-     * Today is: Friday, April 28, 2023
-     * Current time is: 11:04:30 PM
-     *
-     * Answer to the following questions using JSON syntax, including the data used.
-     * Is it morning, afternoon, evening, or night
-     * (morning/afternoon/evening/night)?
-     * Is it weekend time (weekend/not weekend)?
-     *
-     * --- Semantic Function result
-     *
-     * {
-     * "date": "Friday, April 28, 2023",
-     * "time": "11:04:30 PM",
-     * "period": "night",
-     * "weekend": "weekend"
-     * }
-     */
-  }
+        // Load native skill into the kernel skill collection, sharing its functions
+        // with prompt templates
+        // Functions loaded here are available as "time.*"
+        kernel.importSkill(new TimeSkill(), "time");
+
+        // Semantic Function invoking time.Date and time.Time native functions
+        String functionDefinition = """
+                Today is: {{time.Date}}
+                Current time is: {{time.Time}}
+
+                Answer to the following questions using JSON syntax, including the data used.
+                Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
+                Is it weekend time (weekend/not weekend)?
+                """;
+
+        // This allows to see the prompt before it's sent to OpenAI
+        System.out.println("--- Rendered Prompt");
+
+        var promptRenderer = SKBuilders.promptTemplate()
+            .withPromptTemplateConfig(new PromptTemplateConfig())
+            .withPromptTemplate(functionDefinition)
+            .withPromptTemplateEngine(kernel.getPromptTemplateEngine())
+            .build();
+
+        SKContext skContext = SKBuilders
+            .context()
+            .withSkills(kernel.getSkills())
+            .build();
+
+        var renderedPrompt = promptRenderer.renderAsync(skContext);
+        System.out.println(renderedPrompt.block());
+
+        // Run the prompt / semantic function
+        var kindOfDay = kernel
+            .getSemanticFunctionBuilder()
+            .withPromptTemplate(functionDefinition)
+            .withRequestSettings(
+                SKBuilders.completionRequestSettings()
+                    .temperature(0)
+                    .topP(0)
+                    .maxTokens(256)
+                    .frequencyPenalty(0)
+                    .presencePenalty(0)
+                    .build())
+            .build();
+
+        // Show the result
+        System.out.println("--- Semantic Function result");
+        var result = kindOfDay.invokeAsync("").block().getResult();
+        System.out.println(result);
+        /*
+         * OUTPUT:
+         *
+         * --- Rendered Prompt
+         *
+         * Today is: Friday, April 28, 2023
+         * Current time is: 11:04:30 PM
+         *
+         * Answer to the following questions using JSON syntax, including the data used.
+         * Is it morning, afternoon, evening, or night
+         * (morning/afternoon/evening/night)?
+         * Is it weekend time (weekend/not weekend)?
+         *
+         * --- Semantic Function result
+         *
+         * {
+         * "date": "Friday, April 28, 2023",
+         * "time": "11:04:30 PM",
+         * "period": "night",
+         * "weekend": "weekend"
+         * }
+         */
+    }
 }

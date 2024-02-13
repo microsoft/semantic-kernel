@@ -21,38 +21,42 @@ import reactor.core.publisher.Mono;
  */
 public class Example04_CombineLLMPromptsAndNativeCode {
 
-  public static class SearchEngineSkill {
+    public static class SearchEngineSkill {
 
-    @DefineSKFunction(description = "Search for answer", name = "search")
-    public Mono<String> search(
-        @SKFunctionInputAttribute(description = "Text to search")
-        String input) {
-      return Mono.just("Gran Torre Santiago is the tallest building in South America");
+        @DefineSKFunction(description = "Search for answer", name = "search")
+        public Mono<String> search(
+            @SKFunctionInputAttribute(description = "Text to search")
+            String input) {
+            return Mono.just("Gran Torre Santiago is the tallest building in South America");
+        }
     }
-  }
 
-  public static void main(String[] args) throws ConfigurationException {
-    OpenAIAsyncClient client = SamplesConfig.getClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
-    TextCompletion textCompletion = SKBuilders.chatCompletion()
-        .withModelId("gpt-35-turbo-2")
-        .withOpenAIClient(client)
-        .build();
+        TextCompletion textCompletion = SKBuilders.textCompletion()
+            .withModelId("davinci-002")
+            .withOpenAIClient(client)
+            .build();
 
-    Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
-    kernel.importSkill(new SearchEngineSkill(), null);
-    kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(),
-        "SummarizeSkill");
+        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
+        kernel.importSkill(new SearchEngineSkill(), null);
+        kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(),
+            "SummarizeSkill");
 
-    // Run
-    String ask = "What's the tallest building in South America?";
 
-    Mono<SKContext> result =
-        kernel.runAsync(
-            ask,
-            kernel.getSkills().getFunction("Search", null),
-            kernel.getSkill("SummarizeSkill").getFunction("Summarize", null));
+        // Run
+        String ask = "What's the tallest building in South America?";
 
-    System.out.println(result.block().getResult());
-  }
+        Mono<SKContext> result =
+            kernel.runAsync(ask, kernel.getSkills().getFunction("Search", null));
+
+        result =
+            kernel.runAsync(
+                ask,
+                kernel.getSkills().getFunction("Search", null),
+                kernel.getSkill("SummarizeSkill").getFunction("Summarize", null));
+
+        System.out.println(result.block().getResult());
+    }
 }

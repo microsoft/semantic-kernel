@@ -25,7 +25,7 @@ public class Example09_FunctionTypes {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
         TextCompletion textCompletion = SKBuilders.textCompletion()
-                .withModelId("text-davinci-003")
+                .withModelId("davinci-002")
                 .withOpenAIClient(client)
                 .build();
 
