@@ -129,19 +129,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         return this;
     }
 
-    public FunctionInvocation<T> withInvocationContext(
-        @Nullable InvocationContext invocationContext) {
-        if (invocationContext == null) {
-            return this;
-        }
-        withTypes(invocationContext.getContextVariableTypes());
-        withToolCallBehavior(invocationContext.getToolCallBehavior());
-        withPromptExecutionSettings(invocationContext.getPromptExecutionSettings());
-        addKernelHooks(invocationContext.getKernelHooks());
-        return this;
-    }
-
-
     @Override
     public void subscribe(CoreSubscriber<? super FunctionResult<T>> coreSubscriber) {
         performSubscribe(
