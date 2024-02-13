@@ -612,6 +612,61 @@ public class KernelFunctionFromPromptTests
         // Assert
         mockTextCompletion.Verify(m => m.GetTextContentsAsync("Prompt USE SHORT, CLEAR, COMPLETE SENTENCES.", It.IsAny<OpenAIPromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
+
+    [Theory]
+    [InlineData(KernelInvocationType.InvokePrompt)]
+    [InlineData(KernelInvocationType.InvokePromptStreaming)]
+    [InlineData(KernelInvocationType.InvokeFunction)]
+    [InlineData(KernelInvocationType.InvokeFunctionStreaming)]
+    public async Task ItUsesPromptAsUserMessageAsync(KernelInvocationType invocationType)
+    {
+        // Arrange
+        const string Prompt = "Test prompt as user message";
+
+        var fakeService = new FakeChatAsTextService();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        var function = KernelFunctionFactory.CreateFromPrompt(Prompt);
+
+        // Act
+        switch (invocationType)
+        {
+            case KernelInvocationType.InvokePrompt:
+                await kernel.InvokePromptAsync(Prompt);
+                break;
+            case KernelInvocationType.InvokePromptStreaming:
+                await foreach (var result in kernel.InvokePromptStreamingAsync(Prompt)) { }
+                break;
+            case KernelInvocationType.InvokeFunction:
+                await kernel.InvokeAsync(function);
+                break;
+            case KernelInvocationType.InvokeFunctionStreaming:
+                await foreach (var result in kernel.InvokeStreamingAsync(function)) { }
+                break;
+        }
+
+        // Assert
+        Assert.NotNull(fakeService.ChatHistory);
+        Assert.Single(fakeService.ChatHistory);
+
+        var messageContent = fakeService.ChatHistory[0];
+
+        Assert.Equal(AuthorRole.User, messageContent.Role);
+        Assert.Equal("Test prompt as user message", messageContent.Content);
+    }
+
+    public enum KernelInvocationType
+    {
+        InvokePrompt,
+        InvokePromptStreaming,
+        InvokeFunction,
+        InvokeFunctionStreaming
+    }
+
+    #region private
+
     private sealed class FakeChatAsTextService : ITextGenerationService, IChatCompletionService
     {
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
@@ -644,4 +699,6 @@ public class KernelFunctionFromPromptTests
             throw new NotImplementedException();
         }
     }
+
+    #endregion
 }
