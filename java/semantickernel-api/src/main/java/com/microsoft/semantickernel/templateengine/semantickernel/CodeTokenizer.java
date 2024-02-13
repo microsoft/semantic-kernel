@@ -9,36 +9,37 @@ import com.microsoft.semantickernel.templateengine.semantickernel.blocks.NamedAr
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.Symbols;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.ValBlock;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.VarBlock;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.annotation.Nullable;
 
-/// <summary>
-/// Simple tokenizer used for default SK template code language.
-///
-/// BNF parsed by TemplateTokenizer:
-/// [template]       ::= "" | [block] | [block] [template]
-/// [block]          ::= [sk-block] | [text-block]
-/// [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" | "{{" [function-call] "}}"
-/// [text-block]     ::= [any-char] | [any-char] [text-block]
-/// [any-char]       ::= any char
-///
-/// BNF parsed by CodeTokenizer:
-/// [template]       ::= "" | [variable] " " [template] | [value] " " [template] | [function-call] "
-// " [template]
-/// [variable]       ::= "$" [valid-name]
-/// [value]          ::= "'" [text] "'" | '"' [text] '"'
-/// [function-call]  ::= [function-id] | [function-id] [parameter]
-/// [parameter]      ::= [variable] | [value]
-///
-/// BNF parsed by dedicated blocks
-/// [function-id]    ::= [valid-name] | [valid-name] "." [valid-name]
-/// [valid-name]     ::= [valid-symbol] | [valid-symbol] [valid-name]
-/// [valid-symbol]   ::= [letter] | [digit] | "_"
-/// [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
-/// [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-/// </summary>
+/**
+ * Simple tokenizer used for default SK template code language.
+ *
+ * BNF parsed by TemplateTokenizer:
+ * [template]       ::= "" | [block] | [block] [template]
+ * [block]          ::= [sk-block] | [text-block]
+ * [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" | "{{" [function-call] "}}"
+ * [text-block]     ::= [any-char] | [any-char] [text-block]
+ * [any-char]       ::= any char
+ *
+ * BNF parsed by CodeTokenizer:
+ * [template]       ::= "" | [variable] " " [template] | [value] " " [template] | [function-call] "
+ * [variable]       ::= "$" [valid-name]
+ * [value]          ::= "'" [text] "'" | '"' [text] '"'
+ * [function-call]  ::= [function-id] | [function-id] [parameter]
+ * [parameter]      ::= [variable] | [value]
+ *
+ * BNF parsed by dedicated blocks
+ * [function-id]    ::= [valid-name] | [valid-name] "." [valid-name]
+ * [valid-name]     ::= [valid-symbol] | [valid-symbol] [valid-name]
+ * [valid-symbol]   ::= [letter] | [digit] | "_"
+ * [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
+ * [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+ */
 public class CodeTokenizer {
 
     private enum TokenTypes {
@@ -52,14 +53,17 @@ public class CodeTokenizer {
         }
     }
 
+    /**
+     * Initializes a new instance of the {@link CodeTokenizer} class.
+     */
     public CodeTokenizer() {
     }
 
-    /// <summary>
-    /// Tokenize a code block, without checking for syntax errors
-    /// </summary>
-    /// <param name="text">Text to parse</param>
-    /// <returns>A list of blocks</returns>
+    /**
+     * Tokenize a code block, without checking for syntax errors
+     * @param text Text to parse
+     * @return A list of blocks
+     */
     public List<Block> tokenize(String text) {
         if (text == null) {
             return new ArrayList<>();

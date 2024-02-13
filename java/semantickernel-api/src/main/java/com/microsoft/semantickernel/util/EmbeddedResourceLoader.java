@@ -14,6 +14,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class for loading resources from the classpath or filesystem.
+ */
 public class EmbeddedResourceLoader {
 
     public enum ResourceLocation {

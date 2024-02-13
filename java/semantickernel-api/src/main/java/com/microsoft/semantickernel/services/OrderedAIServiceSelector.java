@@ -1,5 +1,13 @@
 package com.microsoft.semantickernel.services;
 
+import com.microsoft.semantickernel.AIService;
+import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,22 +19,31 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.microsoft.semantickernel.AIService;
-import com.microsoft.semantickernel.Verify;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-
+/// <summary>
+/// </summary>
+/**
+ * Implementation of {@link ServiceSelector} that selects the AI service based on the order of the execution settings.
+ * Uses the service id or model id to select the preferred service provider and then returns the service 
+ * and associated execution settings.
+ */
 public class OrderedAIServiceSelector extends BaseAIServiceSelector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderedAIServiceSelector.class);
 
+    /**
+     * Initializes a new instance of the {@link OrderedAIServiceSelector} 
+     * class with an empty collection of services.
+     */
     public OrderedAIServiceSelector() {
         super(new HashMap<>());
     }
 
+    /**
+     * Initializes a new instance of the {@link OrderedAIServiceSelector} 
+     * class with the specified services.
+     *
+     * @param services The services to select from.
+     */
     public OrderedAIServiceSelector(Map<Class<? extends AIService>, AIService> services) {
         super(services);
     }
@@ -35,10 +52,8 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
-
         @Nullable
         KernelFunction<?> function,
-
         @Nullable
         KernelFunctionArguments arguments,
         Map<Class<? extends AIService>, AIService> services) {
@@ -159,6 +174,13 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     }
 
 
+    /**
+     * Gets the service with the specified service id.
+     *
+     * @param serviceId The service id.
+     * @return The service with the specified service id, or {@code null} if no such service exists.
+     * @see AIService#getServiceId()
+     */
     @Nullable
     public AIService getService(String serviceId) {
         return services
@@ -169,8 +191,17 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
             .orElseGet(() -> null);
     }
 
+    /**
+     * Gets the service of the specified type.
+     *
+     * @param clazz The type of service to get.
+     * @param <T> The type of service to get.
+     * @return The service of the specified type, or {@code null} if no such service exists.
+     * @see AIService#getClass()
+     */
     @Nullable
-    public <T> T getService(Class<T> clazz) {
+    @SuppressWarnings("unchecked")
+    public <T extends AIService> T getService(Class<T> clazz) {
         T service = (T) services.get(clazz);
 
         if (service == null) {
@@ -194,13 +225,19 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         return service;
     }
 
+    /**
+     * Gets the first service of the specified type, or that is an instance of the specified type.
+     *
+     * @param serviceType The type of service to get.
+     * @return The first service of the specified type, or {@code null} if no such service exists.
+     */
     @Nullable
     AIService getAnyService(Class<? extends AIService> serviceType) {
-        List<AIService> services = getServices(serviceType);
-        if (services.isEmpty()) {
+        List<AIService> matchingServices = getServices(serviceType);
+        if (matchingServices.isEmpty()) {
             return null;
         }
-        return services.get(0);
+        return matchingServices.get(0);
     }
 
     private List<AIService> getServices(Class<? extends AIService> serviceType) {

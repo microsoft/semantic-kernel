@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services;
 
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+
+import javax.annotation.Nullable;
 
 /**
  * Represents a selector which will return an {@link AIServiceSelection} containing instances of
@@ -23,6 +23,7 @@ public interface AIServiceSelector {
      *                    service was registered in the {@link AIServiceSelection}
      * @param function The KernelFunction to use to select the service, or {@code null}.
      * @param arguments The KernelFunctionArguments to use to select the service, or {@code null}.
+     * @param <T> The type of service to select.
      * @return
      */
     @Nullable

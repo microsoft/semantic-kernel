@@ -9,48 +9,38 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/// <summary>
-/// Simple tokenizer used for default SK template language.
-///
-/// BNF parsed by TemplateTokenizer:
-/// [template]       ::= "" | [block] | [block] [template]
-/// [block]          ::= [sk-block] | [text-block]
-/// [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" | "{{" [function-call] "}}"
-/// [text-block]     ::= [any-char] | [any-char] [text-block]
-/// [any-char]       ::= any char
-///
-/// BNF parsed by CodeTokenizer:
-/// [template]       ::= "" | [variable] " " [template] | [value] " " [template] | [function-call] "
-// " [template]
-/// [variable]       ::= "$" [valid-name]
-/// [value]          ::= "'" [text] "'" | '"' [text] '"'
-/// [function-call]  ::= [function-id] | [function-id] [parameter]
-/// [parameter]      ::= [variable] | [value]
-///
-/// BNF parsed by dedicated blocks
-/// [function-id]    ::= [valid-name] | [valid-name] "." [valid-name]
-/// [valid-name]     ::= [valid-symbol] | [valid-symbol] [valid-name]
-/// [valid-symbol]   ::= [letter] | [digit] | "_"
-/// [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
-/// [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-/// </summary>
+/**
+ *  Simple tokenizer used for default SK template language.
+ * 
+ *  BNF parsed by TemplateTokenizer:
+ *  [template]       ::= "" | [block] | [block] [template]
+ *  [block]          ::= [sk-block] | [text-block]
+ *  [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" | "{{" [function-call] "}}"
+ *  [text-block]     ::= [any-char] | [any-char] [text-block]
+ *  [any-char]       ::= any char
+ * 
+ *  BNF parsed by CodeTokenizer:
+ *  [template]       ::= "" | [variable] " " [template] | [value] " " [template] | [function-call] "
+ * 
+ *  [variable]       ::= "$" [valid-name]
+ *  [value]          ::= "'" [text] "'" | '"' [text] '"'
+ *  [function-call]  ::= [function-id] | [function-id] [parameter]
+ *  [parameter]      ::= [variable] | [value]
+ * 
+ *  BNF parsed by dedicated blocks
+ *  [function-id]    ::= [valid-name] | [valid-name] "." [valid-name]
+ *  [valid-name]     ::= [valid-symbol] | [valid-symbol] [valid-name]
+ *  [valid-symbol]   ::= [letter] | [digit] | "_"
+ *  [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
+ *  [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+ */
 public class TemplateTokenizer {
-    /*
-        /// <summary>
-        /// Create a new instance of SK tokenizer
-        /// </summary>
-        /// <param name="log"></param>
-        public TemplateTokenizer(ILogger? log = null)
-        {
-            this._log = log ?? NullLogger.Instance;
-            this._codeTokenizer = new CodeTokenizer(this._log);
-        }
-    */
-    /// <summary>
-    /// Extract blocks from the given text
-    /// </summary>
-    /// <param name="text">Text to parse</param>
-    /// <returns>List of blocks found in the text</returns>
+
+    /**
+     *  Extract blocks from the given text
+     * @param text Text to parse
+     * @return List of blocks found in the text
+     */
     public List<Block> tokenize(String text) {
         // An empty block consists of 4 chars: "{{}}"
         int EMPTY_CODE_BLOCK_LENGTH = 4;
