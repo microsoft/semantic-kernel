@@ -7,8 +7,9 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>1.0.0-alpha.1-SNAPSHOT</version>
+    <version>1.0.0-alpha.2-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <url>https://www.github.com/microsoft/semantic-kernel</url>
     <name>Semantic Kernel Parent</name>
     <description>Parent pom for the Semantic Kernel Project</description>
@@ -65,25 +66,14 @@
     </properties>
 
     <modules>
-        <module>connectors/semantickernel-connectors-web-bing</module>
-        <!--        <module>connectors/semantickernel-connectors-ai-openai</module>-->
-        <!--        <module>connectors/semantickernel-connectors-memory-sqlite</module>-->
-        <!--        <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>-->
-        <!--        <module>connectors/semantickernel-connectors-memory-jdbc</module>-->
-        <!--        <module>connectors/semantickernel-connectors-memory-postgresql</module>-->
-        <!--        <module>connectors/semantickernel-connectors-memory-mysql</module>-->
+        <module>semantickernel-bom</module>
 
-        <!--        <module>aiservices/huggingface</module>-->
-        <!--        <module>aiservices/ollama</module>-->
+        <module>connectors/semantickernel-connectors-web-bing</module>
+
         <module>aiservices/openai</module>
 
-        <!--        <module>misc/semantickernel-gpt3-tokenizer</module>-->
-        <!--        <module>misc/semantickernel-settings-loader</module>-->
-
-        <!--        <module>plugins/semantickernel-planners</module>-->
         <module>plugins/semantickernel-plugin-core</module>
 
-        <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
     </modules>
 
@@ -404,17 +394,6 @@
                     </executions>
                     <configuration>
                         <!-- 
-                            LATEST: Android API level 32 (Android 12)
-                            See https://developer.android.com/studio/releases/platforms
-                        -->
-                        <!--
-                        <signature>
-                            <groupId>net.sf.androidscents.signature</groupId>
-                            <artifactId>android-api-level-32</artifactId>
-                            <version>12_r1</version>
-                        </signature>
-                        -->
-                        <!-- 
                             COMPATIBLE: Android API level 26 (Android 8.0)
                             See https://developer.android.com/studio/releases/platforms
 
@@ -425,17 +404,6 @@
                             <artifactId>android-api-level-26</artifactId>
                             <version>8.0.0_r2</version>
                         </signature>
-                        <!-- 
-                            Android API level 21 (Android 5.0)
-                            See https://developer.android.com/studio/releases/platforms
-                        -->
-                        <!--
-                        <signature>
-                            <groupId>net.sf.androidscents.signature</groupId>
-                            <artifactId>android-api-level-21</artifactId>
-                            <version>5.0.1_r2</version>
-                        </signature>
-                        -->
                     </configuration>
                 </plugin>
             </plugins>
@@ -619,9 +587,6 @@
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
             </properties>
-            <!-- <modules>
-                <module>samples</module>
-            </modules> -->
         </profile>
         <profile>
             <id>bug-check</id>
@@ -819,6 +784,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.11-alpha</tag>
+        <tag>HEAD</tag>
     </scm>
 </project>
