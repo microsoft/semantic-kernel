@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, ClassVar, Optional, Tuple
+
+from pydantic import field_validator
 
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -14,6 +16,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TextBlock(Block):
+    type: ClassVar[BlockTypes] = BlockTypes.TEXT
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def content_strip(cls, content: str):
+        return content
+
     @classmethod
     def from_text(
         cls,
@@ -38,12 +47,8 @@ class TextBlock(Block):
 
         return cls(content=text)
 
-    @property
-    def type(self) -> BlockTypes:
-        return BlockTypes.TEXT
-
     def is_valid(self) -> Tuple[bool, str]:
         return True, ""
 
-    def render(self, kernel: Optional["Kernel"] = None, arguments: Optional["KernelArguments"] = None) -> str:
+    def render(self, *_: Tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
         return self.content

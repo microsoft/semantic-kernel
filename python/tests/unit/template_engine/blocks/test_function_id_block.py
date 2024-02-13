@@ -30,12 +30,11 @@ def test_is_valid_empty_identifier():
     function_id_block = FunctionIdBlock(content="")
     is_valid, error_msg = function_id_block.is_valid()
     assert not is_valid
-    assert error_msg == "The function identifier is empty"
+    assert error_msg == "Not a valid plugin and function name, should be one dot surrounded by the names."
 
 
 def test_render():
     kernel = Kernel()
-
     function_id_block = FunctionIdBlock(content="plugin.function")
     rendered_value = function_id_block.render(kernel, KernelArguments())
     assert rendered_value == "plugin.function"
@@ -63,7 +62,7 @@ def test_it_trims_spaces():
         ("_0", True),
         ("a01_", True),
         ("_a01", True),
-        (".", True),
+        (".", False),
         ("a.b", True),
         ("-", False),
         ("a b", False),

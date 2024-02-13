@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 import sys
-from typing import TYPE_CHECKING
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -8,9 +7,6 @@ else:
     from typing_extensions import Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-
-if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 class MathPlugin:
@@ -21,12 +17,9 @@ class MathPlugin:
         kernel.import_plugin(MathPlugin(), plugin_name="math")
 
     Examples:
-        {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the KernelContext)
+        {{math.Add}} => Returns the sum of input and amount (provided in the KernelArguments)
+        {{math.Subtract}} => Returns the difference of input and amount (provided in the KernelArguments)
     """
-
-    @kernel_function()
-    def test(self, arguments: "KernelArguments") -> str:
-        return "test"
 
     @kernel_function(name="Add")
     def add(

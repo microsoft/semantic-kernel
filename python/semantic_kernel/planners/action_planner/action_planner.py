@@ -6,7 +6,7 @@ import logging
 import os
 import sys
 from textwrap import dedent
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -91,7 +91,7 @@ class ActionPlanner:
 
         logger.info(f"Finding the best function for achieving the goal: {goal}")
 
-        self._arguments["input"] = goal
+        self._arguments["goal"] = goal
 
         generated_plan_raw = await self._planner_function.invoke(self._kernel, self._arguments)
         generated_plan_raw_str = str(generated_plan_raw)
@@ -210,9 +210,6 @@ class ActionPlanner:
             // Makes a POST request to a uri.
             HttpPlugin.PostAsync
             Parameter ""body"": The body of the request.
-            // Read a file.
-            FileIOPlugin.ReadAsync
-            Parameter ""path"": Source file.
             - End list of functions.
             Goal: tell me a joke.
             {""plan"":{
