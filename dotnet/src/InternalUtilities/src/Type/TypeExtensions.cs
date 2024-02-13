@@ -57,7 +57,7 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// Teturns a string with the type's name. If the type is generic, it also includes the type parameters in a readable format.
+    /// Returns a string with the type's name. If the type is generic, it also includes the type parameters in a readable format.
     /// </summary>
     /// <param name="type">Target type.</param>
     public static string GetFriendlyTypeName(this Type type)
@@ -66,7 +66,7 @@ internal static class TypeExtensions
         {
             string typeName = type.GetGenericTypeDefinition().Name;
             // Remove the `1, `2 etc from the type name which indicates the number of generic arguments  
-            typeName = typeName.Substring(0, typeName.IndexOf("`", StringComparison.CurrentCultureIgnoreCase));
+            typeName = typeName.Substring(0, typeName.IndexOf('`', (int)StringComparison.CurrentCulture));
             string genericArgs = string.Join(", ", type.GetGenericArguments().Select(t => GetFriendlyTypeName(t)));
             return $"{typeName}<{genericArgs}>";
         }

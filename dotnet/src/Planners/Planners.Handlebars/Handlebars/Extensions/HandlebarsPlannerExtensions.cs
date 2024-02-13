@@ -51,7 +51,7 @@ internal static class HandlebarsPlannerExtensions
     /// </summary>
     /// <param name="planner">The handlebars planner.</param>
     /// <param name="promptName">The name of the file to read.</param>
-    /// <param name="promptOverride">The name of the additional namespace.</param>
+    /// <param name="additionalNamespace">The name of the additional namespace.</param>
     /// <param name="promptOverride">Override for Create Plan prompt.</param>
     /// <returns>The constructed prompt.</returns>
     public static string ConstructHandlebarsPrompt(
