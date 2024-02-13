@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -80,29 +83,27 @@ public sealed class Example75_AgentTools : BaseTest
             return;
         }
 
-        // REQUIRED:
-        //
-        // Use `curl` to upload document prior to running example and assign the
-        // identifier to `fileId`.
-        //
-        // Powershell:
-        // curl https://api.openai.com/v1/files `
-        // -H "Authorization: Bearer $Env:OPENAI_APIKEY" `
-        // -F purpose="assistants" `
-        // -F file="@Resources/travelinfo.txt"
+        var kernel = Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build();
+        var fileService = kernel.GetRequiredService<OpenAIFileService>();
+        var result =
+            await fileService.UploadContentAsync(
+                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
-        var fileId = "<see comment>";
+        var fileId = result.Id;
 
         var defaultAgent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .BuildAsync();
+            Track(
+                await new AgentBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .BuildAsync());
 
         var retrievalAgent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .WithRetrieval(fileId)
-                .BuildAsync();
+            Track(
+                await new AgentBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .WithRetrieval(fileId)
+                    .BuildAsync());
 
         try
         {
@@ -115,7 +116,7 @@ public sealed class Example75_AgentTools : BaseTest
         }
         finally
         {
-            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).Append(fileService.DeleteFileAsync(fileId)));
         }
     }
 
