@@ -31,7 +31,7 @@
     <!-- Tokenizers -->
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.21.0" />
     <PackageVersion Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.3" />
-    <PackageVersion Include="SharpToken" Version="1.2.14" />
+    <PackageVersion Include="SharpToken" Version="1.2.15" />
     <!-- Microsoft.Extensions.* -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
