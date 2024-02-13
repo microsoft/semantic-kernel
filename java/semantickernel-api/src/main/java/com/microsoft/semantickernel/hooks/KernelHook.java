@@ -6,7 +6,19 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelHookEvent>, Function<T, T> {
+public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelHookEvent>,
+    Function<T, T> {
+
+    /**
+     * The priority of the hook. The default priority is 1000. The priority is used to determine the
+     * order in which hooks are executed, higher priorities are executed first. No ordering is
+     * guaranteed for hooks with the same priority.
+     *
+     * @return the priority of the hook
+     */
+    default int getPriority() {
+        return 1000;
+    }
 
     interface FunctionInvokingHook extends KernelHook<FunctionInvokingEvent> {
 
