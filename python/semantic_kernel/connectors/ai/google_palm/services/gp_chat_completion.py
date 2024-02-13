@@ -29,9 +29,13 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.utils.chat import prepare_chat_history_for_request
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+int_to_role = {1: ChatRole.USER, 2: ChatRole.SYSTEM, 3: ChatRole.ASSISTANT, 4: ChatRole.TOOL}
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -65,7 +69,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def complete_chat(
         self,
-        messages: List[Dict[str, str]],
+        messages: ChatHistory,
         settings: GooglePalmPromptExecutionSettings,
     ) -> List[ChatMessageContent]:
         """
@@ -79,7 +83,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
-        settings.messages = [{"author": message["role"], "content": message["content"]} for message in messages]
+        settings.messages = prepare_chat_history_for_request(messages, output_role_key="author", override_role="user")
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
@@ -99,13 +103,12 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             ChatMessageContent -- The created chat message content.
         """
-        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.filters}
+        metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.filters, "choice_index": index}
         return ChatMessageContent(
-            choice_index=index,
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=candidate.get("author"),
+            role=int_to_role[int(candidate.get("author"))],
             content=candidate.get("content"),
         )
 

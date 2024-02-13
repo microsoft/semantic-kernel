@@ -315,10 +315,3 @@ def _parse_choices(choice) -> Tuple[str, int]:
         message += choice.delta.content
 
     return message, choice.index
-
-
-def _prepare_chat_history_for_request(
-    chat_history: ChatHistory,
-) -> List[Dict[str, str]]:
-    """Prepare the chat history for a request."""
-    return [{"role": message.role, "content": message.content} for message in chat_history.messages]

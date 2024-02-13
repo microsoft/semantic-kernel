@@ -31,7 +31,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     ExtraBody,
 )
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-from semantic_kernel.connectors.ai.open_ai.utils import _prepare_chat_history_for_request
+from semantic_kernel.utils.chat import prepare_chat_history_for_request
 
 
 def test_azure_chat_completion_init() -> None:
@@ -183,7 +183,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         stream=False,
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
-        messages=_prepare_chat_history_for_request(messages),
+        messages=prepare_chat_history_for_request(messages),
     )
 
 
@@ -216,7 +216,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=_prepare_chat_history_for_request(messages),
+        messages=prepare_chat_history_for_request(messages),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
         n=complete_prompt_execution_settings.number_of_responses,
@@ -257,7 +257,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=_prepare_chat_history_for_request(messages),
+        messages=prepare_chat_history_for_request(messages),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
         n=complete_prompt_execution_settings.number_of_responses,
@@ -344,7 +344,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=_prepare_chat_history_for_request(messages_out),
+        messages=prepare_chat_history_for_request(messages_out),
         temperature=complete_prompt_execution_settings.temperature,
         frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         presence_penalty=complete_prompt_execution_settings.presence_penalty,
@@ -397,7 +397,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=_prepare_chat_history_for_request(messages),
+        messages=prepare_chat_history_for_request(messages),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
         n=complete_prompt_execution_settings.number_of_responses,
@@ -447,7 +447,7 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=_prepare_chat_history_for_request(messages),
+        messages=prepare_chat_history_for_request(messages),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
         n=complete_prompt_execution_settings.number_of_responses,

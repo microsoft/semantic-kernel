@@ -25,7 +25,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
-from semantic_kernel.connectors.ai.open_ai.utils import _prepare_chat_history_for_request
+from semantic_kernel.utils.chat import prepare_chat_history_for_request
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
@@ -57,7 +57,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             List[OpenAIChatMessageContent | AzureChatMessageContent] -- The completion result(s).
         """
-        settings.messages = _prepare_chat_history_for_request(messages)
+        settings.messages = prepare_chat_history_for_request(messages)
         settings.stream = False
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -82,7 +82,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[OpenAIStreamingChatMessageContent | AzureStreamingChatMessageContent] -- A stream of
                 OpenAIStreamingChatMessages or AzureStreamingChatMessageContent when using Azure.
         """
-        settings.messages = _prepare_chat_history_for_request(messages)
+        settings.messages = prepare_chat_history_for_request(messages)
         settings.stream = True
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id

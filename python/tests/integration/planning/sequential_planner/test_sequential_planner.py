@@ -14,7 +14,7 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_config impor
 from tests.integration.fakes.email_plugin_fake import EmailPluginFake
 from tests.integration.fakes.fun_plugin_fake import FunPluginFake
 from tests.integration.fakes.writer_plugin_fake import WriterPluginFake
-
+from semantic_kernel.planners.planning_exception import PlanningException
 
 async def retry(func, retries=3):
     min_delay = 2
@@ -110,7 +110,7 @@ async def test_create_plan_function_flow(get_aoai_config, use_chat_model, prompt
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=semantic_kernel.planning.planning_exception.PlanningException,
+    raises=PlanningException,
     reason="Test is known to occasionally produce unexpected results.",
 )
 async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_function, expected_plugin, expected_default):
@@ -145,7 +145,7 @@ async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_funct
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=semantic_kernel.planning.planning_exception.PlanningException,
+    raises=PlanningException,
     reason="Test is known to occasionally produce unexpected results.",
 )
 async def test_create_plan_goal_relevant(get_aoai_config, prompt, expected_function, expected_plugin):
