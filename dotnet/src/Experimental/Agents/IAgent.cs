@@ -18,15 +18,6 @@ public interface IAgent
     string Id { get; }
 
     /// <summary>
-    /// Always "agent"
-    /// </summary>
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-#pragma warning disable CA1716 // Identifiers should not match keywords
-    string Object { get; }
-#pragma warning restore CA1716 // Identifiers should not match keywords
-#pragma warning restore CA1720 // Identifier contains type name
-
-    /// <summary>
     /// Identifies additional agent capabilities.
     /// </summary>
     AgentCapability Capabilities { get; }

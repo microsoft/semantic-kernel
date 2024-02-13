@@ -18,11 +18,15 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// </summary>
 public partial class AgentBuilder
 {
+    internal const string OpenAIBaseUrl = "https://api.openai.com/v1";
+
     private readonly AssistantModel _model;
     private readonly KernelPluginCollection _plugins;
     private readonly HashSet<string> _tools;
     private readonly List<string> _fileIds;
     private string? _apiKey;
+    private string? _endpoint;
+    private string? _version;
     private Func<HttpClient>? _httpClientProvider;
     private PromptTemplateConfig? _config;
 
@@ -54,16 +58,67 @@ public partial class AgentBuilder
             throw new AgentException("ApiKey must be provided for agent.");
         }
 
+        if (string.IsNullOrWhiteSpace(this._endpoint))
+        {
+            throw new AgentException("Endpoint must be provided for agent.");
+        }
+
         this._model.Tools.AddRange(this._tools.Select(t => new ToolModel { Type = t }));
         this._model.FileIds.AddRange(this._fileIds.Distinct(StringComparer.OrdinalIgnoreCase));
 
         return
             await Agent.CreateAsync(
-                new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
+                new OpenAIRestContext(this._endpoint!, this._apiKey!, this._version, this._httpClientProvider),
                 this._model,
                 this._config,
                 this._plugins,
                 cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create a <see cref="IAgent"/> instance.
+    /// </summary>
+    /// <param name="agentId">The agent id to retrieve</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>A new <see cref="IAgent"/> instance.</returns>
+    public async Task<IAgent> GetAsync(string agentId, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(agentId, nameof(agentId));
+
+        if (string.IsNullOrWhiteSpace(this._apiKey))
+        {
+            throw new AgentException("ApiKey must be provided for agent.");
+        }
+
+        if (string.IsNullOrWhiteSpace(this._endpoint))
+        {
+            throw new AgentException("Endpoint must be provided for agent.");
+        }
+
+        var restContext = new OpenAIRestContext(this._endpoint!, this._apiKey!, this._version, this._httpClientProvider);
+        var model = await restContext.GetAssistantModelAsync(agentId, cancellationToken).ConfigureAwait(false);
+
+        return
+            await Agent.CreateAsync(
+                restContext,
+                model,
+                this._config,
+                this._plugins,
+                cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Define the OpenAI chat completion service (required).
+    /// </summary>
+    /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
+    public AgentBuilder WithAzureOpenAIChatCompletion(string endpoint, string model, string apiKey, string? version = null)
+    {
+        this._apiKey = apiKey;
+        this._model.Model = model;
+        this._endpoint = $"{endpoint}/openai";
+        this._version = version ?? "2024-02-15-preview";
+
+        return this;
     }
 
     /// <summary>
@@ -74,6 +129,7 @@ public partial class AgentBuilder
     {
         this._apiKey = apiKey;
         this._model.Model = model;
+        this._endpoint = OpenAIBaseUrl;
 
         return this;
     }

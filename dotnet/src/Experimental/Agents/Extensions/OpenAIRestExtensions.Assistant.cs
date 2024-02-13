@@ -15,8 +15,6 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
-    internal const string BaseAssistantUrl = $"{BaseUrl}/assistants";
-
     /// <summary>
     /// Create a new assistant.
     /// </summary>
@@ -43,7 +41,7 @@ internal static partial class OpenAIRestExtensions
 
         return
             context.ExecutePostAsync<AssistantModel>(
-                BaseAssistantUrl,
+                context.GetAssistantsUrl(),
                 payload,
                 cancellationToken);
     }
@@ -62,7 +60,7 @@ internal static partial class OpenAIRestExtensions
     {
         return
             context.ExecuteGetAsync<AssistantModel>(
-                GetAssistantUrl(assistantId),
+                context.GetAssistantUrl(assistantId),
                 cancellationToken);
     }
 
@@ -105,11 +103,10 @@ internal static partial class OpenAIRestExtensions
             query["before"] = before;
         }
 
-        string requestUrl = string.Join("?", BaseAssistantUrl, query.ToString());
-
         var result =
             await context.ExecuteGetAsync<AssistantListModel>(
-                requestUrl,
+                context.GetAssistantsUrl(),
+                query.ToString(),
                 cancellationToken).ConfigureAwait(false);
 
         return result.Data;
@@ -126,11 +123,10 @@ internal static partial class OpenAIRestExtensions
         string id,
         CancellationToken cancellationToken = default)
     {
-        return context.ExecuteDeleteAsync(GetAssistantUrl(id), cancellationToken);
+        return context.ExecuteDeleteAsync(context.GetAssistantUrl(id), cancellationToken);
     }
 
-    internal static string GetAssistantUrl(string assistantId)
-    {
-        return $"{BaseAssistantUrl}/{assistantId}";
-    }
+    internal static string GetAssistantsUrl(this OpenAIRestContext context) => $"{context.Endpoint}/assistants";
+
+    internal static string GetAssistantUrl(this OpenAIRestContext context, string assistantId) => $"{context.Endpoint}/assistants/{assistantId}";
 }

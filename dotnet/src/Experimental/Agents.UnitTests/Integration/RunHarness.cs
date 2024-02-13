@@ -48,12 +48,12 @@ public sealed class RunHarness
     public async Task VerifyRunLifecycleAsync()
     {
         var agent =
-            await AgentBuilder.NewAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                instructions: "say something funny",
-                name: "Fred",
-                description: "funny agent").ConfigureAwait(true);
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithInstructions("say something funny")
+                .WithName("Fred")
+                .WithDescription("funny agent")
+                .BuildAsync().ConfigureAwait(true);
 
         var thread = await agent.NewThreadAsync().ConfigureAwait(true);
 

@@ -16,6 +16,7 @@ namespace SemanticKernel.Experimental.Agents.UnitTests;
 [Trait("Feature", "Agent")]
 public sealed class OpenAIRestExtensionsThreadTests
 {
+    private const string BogusEndpoint = "http://localhost";
     private const string BogusApiKey = "bogus";
     private const string TestThreadId = "threadId";
 
@@ -28,7 +29,7 @@ public sealed class OpenAIRestExtensionsThreadTests
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
-        this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
+        this._restContext = new(BogusEndpoint, BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
     [Fact]
@@ -36,7 +37,7 @@ public sealed class OpenAIRestExtensionsThreadTests
     {
         await this._restContext.CreateThreadModelAsync().ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.BaseThreadUrl);
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, this._restContext.GetThreadsUrl());
     }
 
     [Fact]
@@ -44,7 +45,7 @@ public sealed class OpenAIRestExtensionsThreadTests
     {
         await this._restContext.GetThreadModelAsync(TestThreadId).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetThreadUrl(TestThreadId));
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, this._restContext.GetThreadUrl(TestThreadId));
     }
 
     [Fact]
@@ -52,6 +53,6 @@ public sealed class OpenAIRestExtensionsThreadTests
     {
         await this._restContext.DeleteThreadModelAsync(TestThreadId).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Delete, 1, OpenAIRestExtensions.GetThreadUrl(TestThreadId));
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Delete, 1, this._restContext.GetThreadUrl(TestThreadId));
     }
 }

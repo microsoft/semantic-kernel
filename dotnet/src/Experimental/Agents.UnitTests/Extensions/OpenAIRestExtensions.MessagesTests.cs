@@ -16,6 +16,7 @@ namespace SemanticKernel.Experimental.Agents.UnitTests;
 [Trait("Feature", "Agent")]
 public sealed class OpenAIRestExtensionsMessagesTests
 {
+    private const string BogusEndpoint = "http://localhost";
     private const string BogusApiKey = "bogus";
     private const string TestThreadId = "threadId";
     private const string TestMessageId = "msgId";
@@ -30,7 +31,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
-        this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
+        this._restContext = new(BogusEndpoint, BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
     [Fact]
@@ -38,7 +39,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
     {
         await this._restContext.CreateUserTextMessageAsync(TestThreadId, TestContent).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.GetMessagesUrl(TestThreadId));
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, this._restContext.GetMessagesUrl(TestThreadId));
     }
 
     [Fact]
@@ -46,7 +47,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
     {
         await this._restContext.GetMessageAsync(TestThreadId, TestMessageId).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetMessagesUrl(TestThreadId, TestMessageId));
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, this._restContext.GetMessagesUrl(TestThreadId, TestMessageId));
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
     {
         await this._restContext.GetMessagesAsync(TestThreadId).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetMessagesUrl(TestThreadId));
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, this._restContext.GetMessagesUrl(TestThreadId));
     }
 
     [Fact]

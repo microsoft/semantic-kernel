@@ -12,8 +12,6 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
-    internal const string BaseThreadUrl = $"{BaseUrl}/threads";
-
     /// <summary>
     /// Create a new thread.
     /// </summary>
@@ -26,7 +24,7 @@ internal static partial class OpenAIRestExtensions
     {
         return
             context.ExecutePostAsync<ThreadModel>(
-                BaseThreadUrl,
+                context.GetThreadsUrl(),
                 cancellationToken);
     }
 
@@ -44,7 +42,7 @@ internal static partial class OpenAIRestExtensions
     {
         return
             context.ExecuteGetAsync<ThreadModel>(
-                GetThreadUrl(threadId),
+                context.GetThreadUrl(threadId),
                 cancellationToken);
     }
 
@@ -59,11 +57,10 @@ internal static partial class OpenAIRestExtensions
         string id,
         CancellationToken cancellationToken = default)
     {
-        return context.ExecuteDeleteAsync(GetThreadUrl(id), cancellationToken);
+        return context.ExecuteDeleteAsync(context.GetThreadUrl(id), cancellationToken);
     }
 
-    internal static string GetThreadUrl(string threadId)
-    {
-        return $"{BaseThreadUrl}/{threadId}";
-    }
+    internal static string GetThreadsUrl(this OpenAIRestContext context) => $"{context.Endpoint}/threads";
+
+    internal static string GetThreadUrl(this OpenAIRestContext context, string threadId) => $"{context.Endpoint}/threads/{threadId}";
 }

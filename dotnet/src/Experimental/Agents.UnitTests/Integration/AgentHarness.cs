@@ -46,19 +46,19 @@ public sealed class AgentHarness
     public async Task VerifyAgentLifecycleAsync()
     {
         var agent =
-            await AgentBuilder.NewAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                instructions: "say something funny",
-                name: "Fred",
-                description: "test agent").ConfigureAwait(true);
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithInstructions("say something funny")
+                .WithName("Fred")
+                .WithDescription("test agent")
+                .BuildAsync().ConfigureAwait(true);
 
         this.DumpAgent(agent);
 
         var copy =
-            await AgentBuilder.GetAgentAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                agentId: agent.Id).ConfigureAwait(true);
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .GetAsync(agentId: agent.Id).ConfigureAwait(true);
 
         this.DumpAgent(copy);
     }
@@ -79,9 +79,9 @@ public sealed class AgentHarness
         this.DumpAgent(agent);
 
         var copy =
-            await AgentBuilder.GetAgentAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                agentId: agent.Id).ConfigureAwait(true);
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .GetAsync(agentId: agent.Id).ConfigureAwait(true);
 
         this.DumpAgent(copy);
     }
@@ -92,7 +92,7 @@ public sealed class AgentHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyAgentListAsync()
     {
-        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var context = new OpenAIRestContext(AgentBuilder.OpenAIBaseUrl, TestConfig.OpenAIApiKey);
         var agents = await context.ListAssistantModelsAsync().ConfigureAwait(true);
         foreach (var agent in agents)
         {
@@ -116,7 +116,7 @@ public sealed class AgentHarness
                 "Math Tutor",
             };
 
-        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var context = new OpenAIRestContext(AgentBuilder.OpenAIBaseUrl, TestConfig.OpenAIApiKey);
         var agents = await context.ListAssistantModelsAsync().ConfigureAwait(true);
         foreach (var agent in agents)
         {
