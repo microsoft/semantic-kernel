@@ -18,7 +18,7 @@ public class SKException extends RuntimeException {
      *
      * @param message A string that describes the error.
      */
-    protected SKException(@Nullable String message) {
+    public SKException(@Nullable String message) {
         super(message);
     }
 

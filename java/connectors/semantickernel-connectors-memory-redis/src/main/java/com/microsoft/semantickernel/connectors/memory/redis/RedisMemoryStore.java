@@ -1,27 +1,42 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.redis;
 
+import com.microsoft.semantickernel.SKException;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.search.*;
+import redis.clients.jedis.search.Document;
+import redis.clients.jedis.search.IndexDefinition;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 
 /**
@@ -43,11 +58,12 @@ public class RedisMemoryStore implements MemoryStore {
     private static final String OK = "OK";
 
     private final JedisPooled client;
-    private Integer vectorSize = DefaultVectorSize;
-    private VectorAlgorithm vectorIndexAlgorithm = DefaultIndexAlgorithm;
-    private String vectorDistanceMetric = DefaultDistanceMetric;
-    private String vectorType = DefaultVectorType;
-    private Integer queryDialect;
+    private final String vectorDistanceMetric;
+
+    @SuppressFBWarnings("SS_SHOULD_BE_STATIC")
+    private final String vectorType = DefaultVectorType;
+
+    private final Integer queryDialect;
 
     public static void isXinRange(Integer x, Integer lower, Integer upper, String message) {
         if (lower > x || x > upper) {
@@ -61,15 +77,14 @@ public class RedisMemoryStore implements MemoryStore {
      * @param client A Redis Database client connection.
      * @param vectorSize Embedding vector size, defaults to 1536 - framework model dependent -
      *     ada-002.
-     * @param vectorIndexAlgorithm Indexing algorithm for vectors, defaults to "HNSW"
      * @param vectorDistanceMetric Metric for measuring vector distances, defaults to "COSINE"
      * @param queryDialect Query dialect, must be 2 or greater for vector similarity searching,
      *     defaults to 2
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public RedisMemoryStore(
             JedisPooled client,
             Integer vectorSize,
-            VectorAlgorithm vectorIndexAlgorithm,
             String vectorDistanceMetric,
             Integer queryDialect) {
 
@@ -85,9 +100,6 @@ public class RedisMemoryStore implements MemoryStore {
                 "Invalid query dialect: {x}. Query dialect must be in the range 2-4.");
 
         this.client = client;
-
-        this.vectorSize = vectorSize;
-        this.vectorIndexAlgorithm = vectorIndexAlgorithm;
         this.vectorDistanceMetric = vectorDistanceMetric;
         this.queryDialect = queryDialect;
     }
@@ -121,9 +133,6 @@ public class RedisMemoryStore implements MemoryStore {
                 "Invalid query dialect: {x}. Query dialect must be in the range 2-4.");
 
         this.client = new JedisPooled(connectionString);
-
-        this.vectorSize = vectorSize;
-        this.vectorIndexAlgorithm = vectorIndexAlgorithm;
         this.vectorDistanceMetric = vectorDistanceMetric;
         this.queryDialect = queryDialect;
     }
@@ -136,6 +145,13 @@ public class RedisMemoryStore implements MemoryStore {
      * @return A Redis key that identifies a particular Hash of Json object.
      */
     private static String getRedisKey(String collectionName, String key) {
+        if (key == null) {
+            throw new SKException("cannot create a key with a null value");
+        }
+
+        if (collectionName == null) {
+            throw new SKException("cannot form a redis key with a null collection name");
+        }
 
         String name = collectionName.toLowerCase(Locale.ROOT);
         String id = JsonMemoryRecord.encodeId(key);
@@ -171,10 +187,16 @@ public class RedisMemoryStore implements MemoryStore {
 
     @Override
     public Mono<List<String>> getCollectionsAsync() {
-        return Mono.just(
-                getIndexesAsync().block().stream()
-                        .map(name -> name.substring(0, name.length() - "-sk-idx".length()))
-                        .collect(Collectors.toList()));
+        return getIndexesAsync()
+                .map(
+                        names ->
+                                names.stream()
+                                        .map(
+                                                name ->
+                                                        name.substring(
+                                                                0,
+                                                                name.length() - "-sk-idx".length()))
+                                        .collect(Collectors.toList()));
     }
 
     /**
@@ -304,12 +326,11 @@ public class RedisMemoryStore implements MemoryStore {
         Objects.requireNonNull(collectionName);
         // ACS issues one query per key; redis has several possible calls, fastest will be hkeys
         // followed by hvals
-        Collection<MemoryRecord> records =
-                keys.stream()
-                        .map(key -> getAsync(collectionName, key, withEmbeddings).block())
-                        .collect(Collectors.toList());
 
-        return Mono.just(records);
+        return Flux.fromIterable(keys)
+                .flatMap(key -> getAsync(collectionName, key, withEmbeddings))
+                .collectList()
+                .map(records -> records);
     }
 
     @Override
