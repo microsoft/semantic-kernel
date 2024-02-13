@@ -76,7 +76,7 @@ public abstract class ToolFilterContext // TODO: make experimental?
     /// may see and change a value set by a previous filter. The final result is what will
     /// be considered by the component that triggers filter.
     /// </remarks>
-    public bool Cancel { get; set; }
+    //public bool Cancel { get; set; }
 
     //public int ToolInvocations { get; } // ?
 
