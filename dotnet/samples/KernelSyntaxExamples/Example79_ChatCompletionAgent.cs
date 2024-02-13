@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using HandlebarsDotNet;
 using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
