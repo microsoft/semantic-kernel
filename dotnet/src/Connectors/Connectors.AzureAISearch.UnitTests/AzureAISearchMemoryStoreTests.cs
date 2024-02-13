@@ -131,7 +131,7 @@ public sealed class AzureAISearchMemoryStoreTests
     }
 
     [Fact]
-    public async Task DeleteCollectionWorksCorrectlyAsync()
+    public async Task DeleteCollectionCallsDeleteIndexMethodAsync()
     {
         // Arrange
         this._mockSearchIndexClient
@@ -183,6 +183,53 @@ public sealed class AzureAISearchMemoryStoreTests
     }
 
     [Fact]
+    public async Task UpsertOnInternalServerErrorThrowsHttpOperationExceptionAsync()
+    {
+        // Arrange
+        this._mockSearchClient
+            .Setup(x => x.IndexDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IndexDocumentsBatch<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(new RequestFailedException((int)HttpStatusCode.InternalServerError, "test error response"));
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => this._service.UpsertAsync("test-index", this.GetTestMemoryRecord("record-id")));
+
+        // Assert
+        Assert.Equal("test error response", exception.Message);
+        Assert.Equal(HttpStatusCode.InternalServerError, exception.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpsertOnNotFoundErrorCreatesIndexAsync()
+    {
+        // Arrange
+        var indexingResult = SearchModelFactory.IndexingResult("record-id", null, true, 200);
+        var results = SearchModelFactory.IndexDocumentsResult(new[] { indexingResult });
+
+        this._mockSearchClient
+            .SetupSequence(x => x.IndexDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IndexDocumentsBatch<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(new RequestFailedException((int)HttpStatusCode.NotFound, "not found"))
+            .ReturnsAsync(Response.FromValue(results, Mock.Of<Response>()));
+
+        this._mockSearchIndexClient
+            .Setup(x => x.CreateIndexAsync(It.IsAny<SearchIndex>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(new SearchIndex("test-index"), Mock.Of<Response>()));
+
+        // Act
+        var result = await this._service.UpsertAsync("test-index", this.GetTestMemoryRecord("record-id"));
+
+        // Assert
+        Assert.Equal("record-id", result);
+        this._mockSearchIndexClient
+            .Verify(x => x.CreateIndexAsync(It.IsAny<SearchIndex>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
     public async Task GetReturnsValidRecordAsync()
     {
         // Arrange
@@ -213,11 +260,159 @@ public sealed class AzureAISearchMemoryStoreTests
         Assert.Null(result);
     }
 
+    [Fact]
+    public async Task GetNearestMatchesReturnsValidRecordAsync()
+    {
+        // Arrange
+        var searchMemoryRecord = new AzureAISearchMemoryRecord("record-id");
+        var searchResult = SearchModelFactory.SearchResult<AzureAISearchMemoryRecord>(searchMemoryRecord, 0.8, null);
+        var results = SearchModelFactory.SearchResults<AzureAISearchMemoryRecord>([searchResult], 1, null, 0.9, Mock.Of<Response>());
+
+        this._mockSearchClient
+            .Setup(x => x.SearchAsync<AzureAISearchMemoryRecord>(It.IsAny<string>(), It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(results, Mock.Of<Response>()));
+
+        ReadOnlyMemory<float> embedding = new[] { 1f, 3f, 5f };
+
+        // Act
+        var recordKeys = new List<string>();
+
+        await foreach (var (record, score) in this._service.GetNearestMatchesAsync("test-index", embedding, 1))
+        {
+            recordKeys.Add(record.Key);
+        }
+
+        // Assert
+        Assert.Equal(AzureAISearchMemoryRecord.EncodeId("record-id"), recordKeys[0]);
+    }
+
+    [Fact]
+    public async Task GetNearestMatchesOnInternalServerErrorThrowsHttpOperationExceptionAsync()
+    {
+        // Arrange
+        this._mockSearchClient
+            .Setup(x => x.SearchAsync<AzureAISearchMemoryRecord>(It.IsAny<string>(), It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .Throws(new RequestFailedException((int)HttpStatusCode.InternalServerError, "test error response"));
+
+        ReadOnlyMemory<float> embedding = new[] { 1f, 3f, 5f };
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(async () =>
+        {
+            await foreach (var (record, score) in this._service.GetNearestMatchesAsync("test-index", embedding, 1))
+            {
+            }
+        });
+
+        // Assert
+        Assert.Equal("test error response", exception.Message);
+        Assert.Equal(HttpStatusCode.InternalServerError, exception.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetNearestMatchesOnNotFoundErrorReturnsEmptyAsync()
+    {
+        // Arrange
+        this._mockSearchClient
+            .Setup(x => x.SearchAsync<AzureAISearchMemoryRecord>(It.IsAny<string>(), It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .Throws(new RequestFailedException((int)HttpStatusCode.NotFound, "not found"));
+
+        ReadOnlyMemory<float> embedding = new[] { 1f, 3f, 5f };
+
+        // Act
+        var recordKeys = new List<string>();
+
+        await foreach (var (record, score) in this._service.GetNearestMatchesAsync("test-index", embedding, 1))
+        {
+            recordKeys.Add(record.Key);
+        }
+
+        // Assert
+        Assert.Empty(recordKeys);
+    }
+
+    [Fact]
+    public async Task RemoveBatchCallsDeleteDocumentsMethodAsync()
+    {
+        // Arrange
+        var indexingResult = SearchModelFactory.IndexingResult("record-id", null, true, 200);
+        var results = SearchModelFactory.IndexDocumentsResult(new[] { indexingResult });
+
+        this._mockSearchClient
+            .Setup(x => x.DeleteDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IEnumerable<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(results, Mock.Of<Response>()));
+
+        // Act
+        var exception = await Record.ExceptionAsync(() => this._service.RemoveBatchAsync("text-index", ["record-id"]));
+
+        // Assert
+        Assert.Null(exception);
+
+        this._mockSearchClient
+            .Verify(x => x.DeleteDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IEnumerable<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task RemoveBatchOnNotFoundErrorDoesNotThrowExceptionAsync()
+    {
+        // Arrange
+        this._mockSearchClient
+            .Setup(x => x.DeleteDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IEnumerable<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(new RequestFailedException((int)HttpStatusCode.NotFound, "not found"));
+
+        // Act
+        var exception = await Record.ExceptionAsync(() => this._service.RemoveBatchAsync("text-index", ["record-id"]));
+
+        // Assert
+        Assert.Null(exception);
+
+        this._mockSearchClient
+            .Verify(x => x.DeleteDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IEnumerable<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task RemoveBatchOnInternalServerErrorThrowsHttpOperationExceptionAsync()
+    {
+        // Arrange
+        this._mockSearchClient
+            .Setup(x => x.DeleteDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IEnumerable<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(new RequestFailedException((int)HttpStatusCode.InternalServerError, "test error response"));
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => this._service.RemoveBatchAsync("text-index", ["record-id"]));
+
+        // Assert
+        Assert.Equal("test error response", exception.Message);
+        Assert.Equal(HttpStatusCode.InternalServerError, exception.StatusCode);
+
+        this._mockSearchClient
+            .Verify(x => x.DeleteDocumentsAsync<AzureAISearchMemoryRecord>(
+                It.IsAny<IEnumerable<AzureAISearchMemoryRecord>>(),
+                It.IsAny<IndexDocumentsOptions>(),
+                It.IsAny<CancellationToken>()), Times.Once());
+    }
+
     #region private
 
     private MemoryRecord GetTestMemoryRecord(string id)
     {
-        return MemoryRecord.LocalRecord(id, "text", "description", new ReadOnlyMemory<float>());
+        ReadOnlyMemory<float> embedding = new[] { 1f, 3f, 5f };
+        return MemoryRecord.LocalRecord(id, "text", "description", embedding);
     }
 
     #endregion
