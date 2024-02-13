@@ -407,8 +407,7 @@ internal abstract class ClientCore
                 }
                 catch (OperationCanceledException)
                 {
-                    // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
-                    //AddResponseMessage(chatOptions, chat, null, $"A tool filter requested cancellation after tool invocation. Result: {functionResult as string ?? JsonSerializer.Serialize(functionResult)}", toolCall.Id, this.Logger);
+                    // The tool call already happened so we can't cancel it, but turn off tools and bail out of any remaining tool calls
                     chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                     break;
                 }
@@ -594,6 +593,27 @@ internal abstract class ClientCore
                     continue;
                 }
 
+                try
+                {
+                    // Invoke the pre-invocation filter.
+                    var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(openAIFunctionToolCall, chat, iteration);
+                    if (invokingContext is not null)
+                    {
+                        // Need to update the chat options in case chat history has changed
+                        this.UpdateChatHistory(chat, chatOptions, chatExecutionSettings);
+
+                        // Check if filter has requested a stop
+                        this.HandleStopBehavior(invokingContext, chatOptions, ref autoInvoke);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, null, "A tool filter requested cancellation before tool invocation.", this.Logger);
+                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                    break;
+                }
+
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
@@ -622,7 +642,7 @@ internal abstract class ClientCore
                     functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception e)
+                catch (Exception e) when (!e.IsCriticalException())
 #pragma warning restore CA1031
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
@@ -633,6 +653,26 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
+
+                try
+                {
+                    // Invoke the post-invocation filter.
+                    var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(openAIFunctionToolCall, functionResult, chat, iteration);
+                    if (invokedContext is not null)
+                    {
+                        // Need to update the chat options in case chat history has changed
+                        this.UpdateChatHistory(chat, chatOptions, chatExecutionSettings);
+
+                        // Check if filter has requested a stop
+                        this.HandleStopBehavior(invokedContext, chatOptions, ref autoInvoke);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // This tool call already happened so we can't cancel it, but turn off tools and bail out of any remaining tool calls
+                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                    break;
+                }
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,

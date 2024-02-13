@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -7,6 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Enum describing the different ways tool calling can be stopped.
 /// </summary>
+[Experimental("SKEXP0016")]
 public enum ToolFilterStopBehavior
 {
     /// <summary>
@@ -20,7 +22,7 @@ public enum ToolFilterStopBehavior
     Cancel,
 
     /// <summary>
-    /// Invoke the curent tool call(s) but don't request any more tools
+    /// Invoke the current tool call(s) but don't request any more tools
     /// </summary>
     StopTools,
 

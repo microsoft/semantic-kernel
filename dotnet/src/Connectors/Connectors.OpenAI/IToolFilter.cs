@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Interface for tool filters.
 /// </summary>
+[Experimental("SKEXP0016")]
 public interface IToolFilter
 {
     /// <summary>

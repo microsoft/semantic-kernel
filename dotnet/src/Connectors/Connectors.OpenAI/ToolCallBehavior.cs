@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -39,6 +40,7 @@ public abstract class ToolCallBehavior
     /// <summary>
     /// Gets the collection of filters that will be applied to tool calls.
     /// </summary>
+    [Experimental("SKEXP0016")]
     public IList<IToolFilter> Filters { get; } = new List<IToolFilter>();
 
     /// <summary>
