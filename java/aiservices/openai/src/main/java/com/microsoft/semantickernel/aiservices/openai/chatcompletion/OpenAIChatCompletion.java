@@ -21,12 +21,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.OpenAIRequestSettings;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
@@ -165,7 +167,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .getOptions();
 
         return client
-            .getChatCompletions(getModelId(), options)
+            .getChatCompletionsWithResponse(getModelId(), options,
+                OpenAIRequestSettings.getRequestOptions())
+            .flatMap(completionsResult -> {
+                if (completionsResult.getStatusCode() >= 400) {
+                    return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
+                        "Request failed: " + completionsResult.getStatusCode()));
+                }
+                return Mono.just(completionsResult.getValue());
+            })
             .filter(choices -> choices.getChoices() != null && !choices.getChoices().isEmpty())
             .map(this::accumulateResponses)
             .map(responses ->

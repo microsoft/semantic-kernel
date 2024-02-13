@@ -4,7 +4,9 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.OpenAIRequestSettings;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
@@ -90,9 +92,16 @@ public class OpenAITextGenerationService implements TextGenerationService {
         CompletionsOptions completionsOptions = getCompletionsOptions(text, requestSettings);
 
         return client
-            .getCompletions(getModelId(), completionsOptions)
+            .getCompletionsWithResponse(getModelId(), completionsOptions,
+                OpenAIRequestSettings.getRequestOptions())
+            .flatMap(completionsResult -> {
+                if (completionsResult.getStatusCode() >= 400) {
+                    return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
+                        "Request failed: " + completionsResult.getStatusCode()));
+                }
+                return Mono.just(completionsResult.getValue());
+            })
             .map(completions -> {
-
                 FunctionResultMetadata metadata = FunctionResultMetadata.build(
                     completions.getId(),
                     completions.getUsage(),
