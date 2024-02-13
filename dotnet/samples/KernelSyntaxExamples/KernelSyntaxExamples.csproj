@@ -10,7 +10,7 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait", "Experimental" -->
-    <NoWarn>CS8618,IDE0009,CA1051,CA1050,CA1707,CA2007,VSTHRD111,CS1591,RCS1110,CA5394,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0010,SKEXP0011,,SKEXP0012,SKEXP0020,SKEXP0021,SKEXP0022,SKEXP0023,SKEXP0024,SKEXP0025,SKEXP0026,SKEXP0027,SKEXP0028,SKEXP0029,SKEXP0030,SKEXP0031,SKEXP0032,SKEXP0040,SKEXP0041,SKEXP0042,SKEXP0050,SKEXP0051,SKEXP0052,SKEXP0053,SKEXP0054,SKEXP0055,SKEXP0060,SKEXP0061,SKEXP0101,SKEXP0102</NoWarn>
+    <NoWarn>CS8618,IDE0009,CA1051,CA1050,CA1707,CA2007,VSTHRD111,CS1591,RCS1110,CA5394,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0010,SKEXP0011,,SKEXP0012,SKEXP0015,SKEXP0020,SKEXP0021,SKEXP0022,SKEXP0023,SKEXP0024,SKEXP0025,SKEXP0026,SKEXP0027,SKEXP0028,SKEXP0029,SKEXP0030,SKEXP0031,SKEXP0032,SKEXP0040,SKEXP0041,SKEXP0042,SKEXP0050,SKEXP0051,SKEXP0052,SKEXP0053,SKEXP0054,SKEXP0055,SKEXP0060,SKEXP0061,SKEXP0101,SKEXP0102</NoWarn>
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
@@ -81,22 +81,8 @@
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\22-ai-plugin.json" />
-    <EmbeddedResource Include="Resources\22-openapi.json" />
-    <EmbeddedResource Include="Resources\30-user-prompt.txt" />
-    <EmbeddedResource Include="Resources\30-system-prompt.txt" />
-    <EmbeddedResource Include="Resources\30-user-context.txt" />
-    <EmbeddedResource Include="Resources\Agents\ParrotAgent.yaml" />
-    <EmbeddedResource Include="Resources\Agents\ToolAgent.yaml" />
-    <EmbeddedResource Include="Resources\EnglishRoberta\dict.txt" />
-    <EmbeddedResource Include="Resources\EnglishRoberta\encoder.json" />
-    <EmbeddedResource Include="Resources\EnglishRoberta\vocab.bpe" />
-    <EmbeddedResource Include="Resources\GenerateStory.yaml">
+    <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\GenerateStoryHandlebars.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\travelinfo.txt" />
   </ItemGroup>
 </Project>
