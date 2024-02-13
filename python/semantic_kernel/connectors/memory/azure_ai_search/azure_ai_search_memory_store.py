@@ -49,11 +49,11 @@ class AzureAiSearchMemoryStore(MemoryStoreBase):
 
         Arguments:
             vector_size {int}                                -- Embedding vector size.
-            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Ai Search service
+            search_endpoint {Optional[str]}                  -- The endpoint of the Azure AI Search service
                                                                 (default: {None}).
-            admin_key {Optional[str]}                        -- Azure Ai Search API key (default: {None}).
-            azure_credentials {Optional[AzureKeyCredential]} -- Azure Ai Search credentials (default: {None}).
-            token_credentials {Optional[TokenCredential]}    -- Azure Ai Search token credentials
+            admin_key {Optional[str]}                        -- Azure AI Search API key (default: {None}).
+            azure_credentials {Optional[AzureKeyCredential]} -- Azure AI Search credentials (default: {None}).
+            token_credentials {Optional[TokenCredential]}    -- Azure AI Search token credentials
                                                                 (default: {None}).
 
         Instantiate using Async Context Manager:
@@ -66,7 +66,7 @@ class AzureAiSearchMemoryStore(MemoryStoreBase):
             pass
         except ImportError:
             raise ValueError(
-                "Error: Unable to import Azure Ai Search client python package." "Please install Azure Ai Search client"
+                "Error: Unable to import Azure AI Search client python package." "Please install Azure AI Search client"
             )
 
         self._vector_size = vector_size

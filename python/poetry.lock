@@ -353,7 +353,7 @@ msal-extensions = ">=0.3.0,<2.0.0"
 [[package]]
 name = "azure-search-documents"
 version = "11.4.0b9"
-description = "Microsoft Azure Ai Search Client Library for Python"
+description = "Microsoft Azure AI Search Client Library for Python"
 optional = false
 python-versions = ">=3.7"
 files = [

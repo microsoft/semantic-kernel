@@ -292,7 +292,7 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     Reads the Azure AI Search environment variables including index name from the .env file.
 
     Returns:
-        Dict[str, str]: the Azure AI search environment variables
+        Dict[str, str]: the Azure AI Search environment variables
     """
     api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
     return {"key": api_key, "endpoint": url, "indexName": index_name}

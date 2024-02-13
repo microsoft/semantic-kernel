@@ -18,7 +18,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not azure_ai_search_installed,
-    reason="Azure Ai Search is not installed",
+    reason="Azure AI Search is not installed",
 )
 
 
