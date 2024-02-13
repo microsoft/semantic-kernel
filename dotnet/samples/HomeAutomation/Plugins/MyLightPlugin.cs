@@ -18,19 +18,19 @@ public class MyLightPlugin
         _turnedOn = turnedOn;
     }
 
-    [KernelFunction, Description("Get whether the light is on")]
+    [KernelFunction, Description("Returns whether this light is on")]
     public bool IsTurnedOn()
     {
         return _turnedOn;
     }
 
-    [KernelFunction, Description("Turn on the light")]
+    [KernelFunction, Description("Turn on this light")]
     public void TurnOn()
     {
         _turnedOn = true;
     }
 
-    [KernelFunction, Description("Turn off the light")]
+    [KernelFunction, Description("Turn off this light")]
     public void TurnOff()
     {
         _turnedOn = false;

@@ -27,71 +27,41 @@ internal static class Program
     internal static async Task Main(string[] args)
     {
         HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+
+        // Actual code to execute is found in Worker class
         builder.Services.AddHostedService<Worker>();
+
+        // Get configuration
         builder.Services.AddOptions<AzureOpenAiOptions>()
                         .Bind(builder.Configuration.GetSection(nameof(AzureOpenAiOptions)))
-                        .ValidateDataAnnotations().ValidateOnStart();
-        builder.Services.AddTransient<Kernel>(sp =>
+                        .ValidateDataAnnotations()
+                        .ValidateOnStart();
+
+        // Add plugins to include in all kernel instances here
+        builder.Services.AddSingleton<IEnumerable<KernelPlugin>>(sp =>
+        {
+            return new KernelPlugin[]
+            {
+                KernelPluginFactory.CreateFromType<MyTimePlugin>(),
+                KernelPluginFactory.CreateFromObject(new MyLightPlugin(turnedOn: false), "OfficeLight"),
+                KernelPluginFactory.CreateFromObject(new MyLightPlugin(turnedOn: false), "PorchLight"),
+            };
+        });
+        builder.Services.AddSingleton<KernelPluginCollection>();
+
+        // Instantiate chat completion service that kernels will use
+        builder.Services.AddSingleton<IChatCompletionService>(sp =>
         {
             AzureOpenAiOptions options = sp.GetRequiredService<IOptions<AzureOpenAiOptions>>().Value;
-            var builder = Kernel.CreateBuilder()
-                                // Add AI services here
-                                // Note that you can provide your custom http client when adding specific AI services
-                                .AddAzureOpenAIChatCompletion(options.Deployment, options.Endpoint, options.ApiKey);
-            // Add plugins to include in kernel here
-            builder.Plugins.AddFromType<MyTimePlugin>();
-            Kernel kernel = builder.Build();
 
-            return kernel;
+            return new AzureOpenAIChatCompletionService(options.Deployment, options.Endpoint, options.ApiKey);
         });
+
+        // When created by the dependency injection container, Semantic Kernel logging is included by default
+        builder.Services.AddTransient<Kernel>();
 
         using IHost host = builder.Build();
 
         await host.RunAsync();
-    }
-}
-
-/// <summary>
-/// Actual code to run.
-/// </summary>
-internal sealed class Worker : BackgroundService
-{
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
-    private readonly Kernel _kernel;
-
-    public Worker(IHostApplicationLifetime hostApplicationLifetime, Kernel kernel)
-    {
-        _hostApplicationLifetime = hostApplicationLifetime;
-        _kernel = kernel;
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        const string TimePrompt = "What time is it?";
-
-        Console.WriteLine($"Worker running at: {DateTimeOffset.Now}");
-
-        // Get chat completion service
-        var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
-
-        // Enable auto function calling
-        OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
-        // Get the response from the AI
-        ChatMessageContent chatResult = await chatCompletionService.GetChatMessageContentAsync(TimePrompt, openAIPromptExecutionSettings, _kernel, stoppingToken);
-        Console.WriteLine($"Result is: {chatResult}");
-
-        MyLightPlugin kitchenLight = new();
-        MyLightPlugin bedroomLight = new();
-        _kernel.ImportPluginFromObject(kitchenLight, "Kitchen");
-        _kernel.ImportPluginFromObject(bedroomLight, "Bedroom");
-
-        chatResult = await chatCompletionService.GetChatMessageContentAsync("Turn on the kitchen light", openAIPromptExecutionSettings, _kernel, stoppingToken);
-        Console.WriteLine($"Result to request to turn light on: {chatResult}");
-
-        chatResult = await chatCompletionService.GetChatMessageContentAsync("Is the bedroom light on?", openAIPromptExecutionSettings, _kernel, stoppingToken);
-        Console.WriteLine($"Result to request to light status: {chatResult}");
-
-        _hostApplicationLifetime.StopApplication();
     }
 }
