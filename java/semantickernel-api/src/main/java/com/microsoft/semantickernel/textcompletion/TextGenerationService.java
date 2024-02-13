@@ -58,8 +58,11 @@ public interface TextGenerationService extends Buildable, TextAIService {
      */
     abstract class Builder implements SemanticKernelBuilder<TextGenerationService> {
 
+        @Nullable
         protected String modelId;
+        @Nullable
         protected OpenAIAsyncClient client;
+        @Nullable
         protected String serviceId;
 
         public Builder withModelId(String modelId) {
@@ -77,6 +80,7 @@ public interface TextGenerationService extends Buildable, TextAIService {
             return this;
         }
 
+        @Override
         public abstract TextGenerationService build();
 
     }

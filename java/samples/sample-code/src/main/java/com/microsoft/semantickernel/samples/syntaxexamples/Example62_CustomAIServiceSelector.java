@@ -8,8 +8,8 @@ import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.BaseAIServiceSelector;
@@ -19,12 +19,10 @@ import javax.annotation.Nullable;
 
 public class Example62_CustomAIServiceSelector {
 
-
-    private static final boolean USE_AZURE_CLIENT = Boolean.parseBoolean(
-        System.getenv("USE_AZURE_CLIENT"));
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-    // Only required if USE_AZURE_CLIENT is true
+    // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
 
     public static void main(String[] args) {
@@ -32,11 +30,12 @@ public class Example62_CustomAIServiceSelector {
 
         OpenAIAsyncClient client;
 
-        if (USE_AZURE_CLIENT) {
+        if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(CLIENT_KEY))
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
                 .endpoint(CLIENT_ENDPOINT)
                 .buildAsyncClient();
+
         } else {
             client = new OpenAIClientBuilder()
                 .credential(new KeyCredential(CLIENT_KEY))
@@ -65,9 +64,9 @@ public class Example62_CustomAIServiceSelector {
 
         var prompt = "Hello AI, what can you do for me?";
 
-        KernelArguments arguments = KernelArguments.builder().build();
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
 
-        KernelFunction func = KernelFunctionFromPrompt
+        KernelFunction<?> func = KernelFunctionFromPrompt
             .builder()
             .withTemplate(prompt)
             .withDefaultExecutionSettings(
@@ -75,10 +74,11 @@ public class Example62_CustomAIServiceSelector {
                     .withTopP(1.0)
                     .build()
             )
+            .withOutputVariable("result", "java.lang.String")
             .build();
 
-        var result = kernel.invokeAsync(func, arguments, String.class).block();
-        System.out.println(result.getResultVariable());
+        var result = kernel.invokeAsync(func).withArguments(arguments).block();
+        System.out.println(result.getResult());
     }
 
     // A dumb AIServiceSelector that just returns the first service and execution settings it finds
@@ -90,25 +90,28 @@ public class Example62_CustomAIServiceSelector {
 
         @Nullable
         @Override
-        public AIServiceSelection trySelectAIService(
-            Class<? extends AIService> serviceType,
+        @SuppressWarnings("unchecked")
+        public <T extends AIService> AIServiceSelection<T> trySelectAIService(
+            Class<T> serviceType,
+    
+            @Nullable
+            KernelFunction<?> function,
 
             @Nullable
-            KernelFunction function,
-
-            @Nullable
-            KernelArguments arguments,
+            KernelFunctionArguments arguments,
             Map<Class<? extends AIService>, AIService> services) {
 
             // Just get the first one
             PromptExecutionSettings executionSettings = function.getExecutionSettings()
                 .values().stream().findFirst().get();
-            AIService service = services.values().stream().findFirst().get();
+            // unchecked cast
+            T service = (T) services.values().stream().findFirst().get();
 
-            return new AIServiceSelection(
+            return new AIServiceSelection<>(
                 service,
                 executionSettings
             );
         }
+
     }
 }

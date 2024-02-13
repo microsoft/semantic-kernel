@@ -3,16 +3,17 @@ package com.microsoft.semantickernel.chatcompletion;
 
 import com.microsoft.semantickernel.KernelContent;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 public class ChatMessageContent extends KernelContent<ChatMessageContent> {
 
     private AuthorRole authorRole;
+    @Nullable
     private String content;
     @Nullable
     private List<KernelContent> items;
@@ -52,16 +53,17 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
 
     public ChatMessageContent(
         AuthorRole authorRole,
-        List<KernelContent> items,
+        List<KernelContent<?>> items,
         String modelId,
         String innerContent,
         Charset encoding,
         FunctionResultMetadata metadata
     ) {
         super(innerContent, modelId, metadata);
+        this.content = null;
         this.authorRole = authorRole;
         this.encoding = encoding != null ? encoding : StandardCharsets.UTF_8;
-        this.items = items;
+        this.items = new ArrayList<>(items);
     }
 
     public AuthorRole getAuthorRole() {
@@ -72,20 +74,22 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
         this.authorRole = authorRole;
     }
 
+    @Nullable
+    @Override
     public String getContent() {
         return content;
     }
 
-    public void setContent(String content) {
+    public void setContent(@Nullable String content) {
         this.content = content;
     }
 
     public List<KernelContent> getItems() {
-        return items;
+        return Collections.unmodifiableList(items);
     }
 
     public void setItems(List<KernelContent> items) {
-        this.items = items;
+        this.items = new ArrayList<>(items);
     }
 
     @Nullable

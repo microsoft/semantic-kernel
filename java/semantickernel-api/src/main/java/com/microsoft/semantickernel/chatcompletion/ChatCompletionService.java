@@ -8,22 +8,23 @@ import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.builders.ServiceLoadUtil;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import java.util.List;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
 public interface ChatCompletionService extends Buildable, TextAIService {
 
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         ChatHistory chatHistory,
-        PromptExecutionSettings promptExecutionSettings,
-        Kernel kernel
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext
     );
 
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         String prompt,
-        PromptExecutionSettings promptExecutionSettings,
-        Kernel kernel
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext
     );
 
     static Builder builder() {
@@ -34,8 +35,13 @@ public interface ChatCompletionService extends Buildable, TextAIService {
 
     abstract class Builder implements SemanticKernelBuilder<ChatCompletionService> {
 
+        @Nullable
         protected OpenAIAsyncClient client;
+
+        @Nullable
         protected String modelId;
+
+        @Nullable
         protected String serviceId;
 
 

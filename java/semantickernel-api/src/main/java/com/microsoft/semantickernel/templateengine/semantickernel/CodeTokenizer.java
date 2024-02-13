@@ -116,7 +116,7 @@ public class CodeTokenizer {
         for (int nextCharCursor = 1; nextCharCursor < text.length(); nextCharCursor++) {
             char currentChar = nextChar;
             nextChar = text.charAt(nextCharCursor);
-            
+
             if (skipNextChar) {
                 skipNextChar = false;
                 continue;
@@ -161,7 +161,7 @@ public class CodeTokenizer {
                     spaceSeparatorFound = false;
                 } else if (currentChar == namedArgValuePrefix
                     && currentTokenType == TokenTypes.NamedArg) {
-                    blocks.add(new NamedArgBlock(currentTokenContent.toString()));
+                    blocks.add(NamedArgBlock.from(currentTokenContent.toString()));
                     currentTokenContent = new StringBuilder();
                     currentTokenType = TokenTypes.None;
                     spaceSeparatorFound = false;
@@ -195,7 +195,7 @@ public class CodeTokenizer {
                 } else if (currentTokenType == TokenTypes.NamedArg && namedArgSeparatorFound
                     && namedArgValuePrefix != 0) {
                     blocks.add(
-                        new NamedArgBlock(currentTokenContent.toString()));
+                        NamedArgBlock.from(currentTokenContent.toString()));
                     currentTokenContent = new StringBuilder();
                     namedArgSeparatorFound = false;
                     namedArgValuePrefix = '\0';
@@ -277,7 +277,7 @@ public class CodeTokenizer {
 
                 break;
             case NamedArg:
-                blocks.add(new NamedArgBlock(currentTokenContent.toString()));
+                blocks.add(NamedArgBlock.from(currentTokenContent.toString()));
                 break;
 
             case None:
@@ -305,6 +305,7 @@ public class CodeTokenizer {
         return c == Symbols.DblQuote || c == Symbols.SglQuote || c == Symbols.EscapeChar;
     }
 
+    @SuppressWarnings("NullAway")
     @Nullable
     private static NamedArgBlock getNamedArg(String tokenContent) {
 
@@ -314,7 +315,6 @@ public class CodeTokenizer {
         if (Verify.isNullOrEmpty(name) || Verify.isNullOrEmpty(value)) {
             return null;
         }
-
         NamedArgBlock block = new NamedArgBlock(tokenContent, name, value);
         if (block.isValid()) {
             return block;

@@ -2,8 +2,6 @@ package com.microsoft.semantickernel.textcompletion;
 
 import com.microsoft.semantickernel.KernelContent;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import java.util.Map;
 
 public class TextContent extends KernelContent<TextContent> {
 
@@ -21,6 +19,7 @@ public class TextContent extends KernelContent<TextContent> {
         return content;
     }
 
+    @Override
     public String getContent() {
         return content;
     }

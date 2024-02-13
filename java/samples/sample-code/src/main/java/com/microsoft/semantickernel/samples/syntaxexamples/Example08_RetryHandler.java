@@ -13,8 +13,10 @@ import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.time.Duration;
 
 public class Example08_RetryHandler {
+
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "text-davinci-003");
+
     public static void main(String[] args) throws ConfigurationException {
         // Create a Kernel with the HttpClient
         RetryOptions retryOptions = new RetryOptions(new ExponentialBackoffOptions()
@@ -39,11 +41,11 @@ public class Example08_RetryHandler {
 
         String question = "How popular is the Polly library?";
 
-        KernelFunction fuction = KernelFunctionFromPrompt.create(question);
+        KernelFunction<String> fuction = KernelFunctionFromPrompt.create(question);
 
         try {
             // Will retry 3 times with exponential backoff
-            kernel.invokeAsync(fuction, null, String.class).block();
+            kernel.invokeAsync(fuction).block();
         } catch (Exception e) {
             System.out.println("Hit max retries");
         }

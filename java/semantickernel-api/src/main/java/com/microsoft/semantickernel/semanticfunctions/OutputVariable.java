@@ -3,15 +3,18 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.exceptions.SKException;
+import javax.annotation.Nullable;
 
 public class OutputVariable {
 
+    @Nullable
     private final String description;
 
     private final String type;
 
     @JsonCreator
     public OutputVariable(
+        @Nullable
         @JsonProperty("description")
         String description,
 
@@ -21,6 +24,7 @@ public class OutputVariable {
         this.type = type;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }

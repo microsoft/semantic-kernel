@@ -40,7 +40,7 @@ public class Example26_AADAuth {
         chatHistory.addUserMessage("Tell me a joke about hourglasses");
 
         // Bot reply
-        var reply = chatService.getChatMessageContentsAsync(chatHistory, null, kernel).block();
+        var reply = chatService.getChatMessageContentsAsync(chatHistory, kernel, null).block();
         System.out.println(reply);
     }
 }

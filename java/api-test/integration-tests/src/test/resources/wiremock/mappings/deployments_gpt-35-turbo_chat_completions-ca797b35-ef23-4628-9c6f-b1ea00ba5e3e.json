@@ -1,0 +1,23 @@
+{
+   "id" : "ca797b35-ef23-4628-9c6f-b1ea00ba5e3e",
+   "insertionIndex" : 15,
+   "name" : "deployments_gpt-35-turbo_chat_completions",
+   "persistent" : true,
+   "request" : {
+      "bodyPatterns" : [
+         {
+            "equalToJson" : "{\"messages\":[{\"role\":\"user\",\"content\":\"Write a paragraph about Handlers.\"}],\"model\":\"gpt-35-turbo\"}",
+            "ignoreArrayOrder" : true,
+            "ignoreExtraElements" : true
+         }
+      ],
+      "method" : "POST",
+      "url" : "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
+   },
+   "response" : {
+      "body" : "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707253032,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"49c63368-9fe4-42ca-bd0c-ff1064c44eb6\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":13,\"completion_tokens\":149,\"total_tokens\":162}}",
+      "headers" : {},
+      "status" : 200
+   },
+   "uuid" : "ca797b35-ef23-4628-9c6f-b1ea00ba5e3e"
+}

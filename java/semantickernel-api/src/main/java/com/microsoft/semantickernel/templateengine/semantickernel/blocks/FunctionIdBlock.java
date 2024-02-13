@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 
 public final class FunctionIdBlock extends Block implements TextRendering {
     private final String skillName;
@@ -15,7 +16,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
         String[] functionNameParts = this.getContent().split("\\.", -1);
         if (functionNameParts.length > 2) {
             throw new RuntimeException(
-                    "A function name can contain at most one dot separating the skill name from the"
+                    "A function name can contain at most one dot separating the plugin name from the"
                             + " function name");
         }
 
@@ -31,7 +32,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(KernelArguments variables) {
+    public String render(@Nullable KernelFunctionArguments variables) {
         return this.getContent();
     }
 

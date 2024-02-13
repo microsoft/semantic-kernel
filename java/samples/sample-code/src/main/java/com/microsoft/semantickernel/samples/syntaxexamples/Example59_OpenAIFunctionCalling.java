@@ -7,8 +7,10 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
@@ -80,23 +82,26 @@ public class Example59_OpenAIFunctionCalling {
             .withAIService(ChatCompletionService.class, chat)
             .build();
 
-        kernel.getPlugins().add(plugin);
+        kernel.addPlugin(plugin);
 
         var function = KernelFunctionFromPrompt.builder()
             .withTemplate(
-                "What is the current color of the sky in Thrapston?")
+                "What is the probable current color of the sky in Thrapston?")
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
                     .withTemperature(0.4)
                     .withTopP(1)
                     .withMaxTokens(100)
-                    .withToolCallBehavior(
-                        new ToolCallBehavior().autoInvoke(true))
                     .build()
             )
             .build();
 
-        var result = kernel.invokeAsync(function, null, String.class).block();
+        var result = kernel
+                .invokeAsync(function)
+                .withToolCallBehavior(new ToolCallBehavior().autoInvoke(true))
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+                .block();
+
         System.out.print(result.getResult());
     }
 

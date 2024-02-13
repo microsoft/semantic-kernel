@@ -3,26 +3,26 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.orchestration.FunctionInvocation;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.plugin.KernelPluginCollection;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
 import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Interface for the semantic kernel.
@@ -33,94 +33,95 @@ public class Kernel implements Buildable {
 
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;
+    private final KernelHooks globalKernelHooks;
 
     public Kernel(
         AIServiceSelector serviceSelector,
-        @Nullable KernelPluginCollection plugins) {
+        @Nullable List<KernelPlugin> plugins,
+        @Nullable KernelHooks globalKernelHooks) {
         this.serviceSelector = serviceSelector;
         if (plugins != null) {
-            this.plugins = plugins;
+            this.plugins = new KernelPluginCollection(plugins);
         } else {
             this.plugins = new KernelPluginCollection();
         }
+
+        this.globalKernelHooks = new KernelHooks(globalKernelHooks);
     }
 
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        KernelFunction function,
-        @Nullable KernelArguments arguments,
-        ContextVariableType<T> resultType) {
-        return function.invokeAsync(this, arguments, resultType);
-    }
-
-
-    public <T> Mono<FunctionResult<T>> invokeAsync(
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public <T> FunctionInvocation<T> invokeAsync(
         String pluginName,
-        String functionName,
-        @Nullable KernelArguments arguments,
-        ContextVariableType<T> resultType) {
-        return plugins.getFunction(pluginName, functionName)
-            .invokeAsync(this, arguments, resultType);
+        String functionName) {
+        KernelFunction function = getFunction(pluginName, functionName);
+        return invokeAsync(function);
     }
 
-    public <T> Mono<FunctionResult<T>> invokeAsync(
-        KernelFunction function,
-        @Nullable KernelArguments arguments,
-        Class<T> resultType) {
-
-        ContextVariableType<T> contextVariable;
-
-        try {
-            contextVariable = ContextVariableTypes.getDefaultVariableTypeForClass(resultType);
-        } catch (Exception e) {
-            if (resultType.isAssignableFrom(
-                function.getMetadata().getReturnParameter().getParameterType())) {
-                contextVariable = new ContextVariableType<>(new NoopConverter<>(resultType),
-                    resultType);
-            } else {
-                throw e;
-            }
-        }
-        return function.invokeAsync(this, arguments, contextVariable);
+    public <T> FunctionInvocation<T> invokeAsync(KernelFunction<T> function) {
+        return function.invokeAsync(this);
     }
 
-    public List<KernelFunction> getFunctions() {
-        return null;
+    public void addPlugin(KernelPlugin plugin) {
+        plugins.add(plugin);
+    }
+
+    @Nullable
+    public KernelPlugin getPlugin(String pluginName) {
+        return plugins.getPlugin(pluginName);
+    }
+
+    public List<KernelPlugin> getPlugins() {
+        return plugins.getPlugins();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> KernelFunction<T> getFunction(String pluginName, String functionName) {
+        return (KernelFunction<T>)plugins.getFunction(pluginName, functionName);
+    }
+
+    public List<KernelFunction<?>> getFunctions() {
+        return plugins.getFunctions();
     }
 
     public AIServiceSelector getServiceSelector() {
         return serviceSelector;
     }
 
-    public KernelPluginCollection getPlugins() {
-        return plugins;
+
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public KernelHooks getGlobalKernelHooks() {
+        return globalKernelHooks;
     }
 
-    public <T extends AIService> T getService(Class<T> clazz) {
-        return (T) serviceSelector
+    public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
+        AIServiceSelection<T> selector = serviceSelector
             .trySelectAIService(
                 clazz,
                 null,
                 null
-            )
-            .getService();
+            );
+
+        if (selector == null) {
+            throw new ServiceNotFoundException("Unable to find service of type " + clazz.getName());
+        }
+
+        return selector.getService();
     }
 
     public static Kernel.Builder builder() {
         return new Kernel.Builder();
     }
 
+
     public static class Builder implements SemanticKernelBuilder<Kernel> {
 
         private final Map<Class<? extends AIService>, AIService> services = new HashMap<>();
         private final List<KernelPlugin> plugins = new ArrayList<>();
+        @Nullable
         private Function<Map<Class<? extends AIService>, AIService>, AIServiceSelector> serviceSelectorProvider;
 
         public <T extends AIService> Builder withAIService(Class<T> clazz, T aiService) {
             services.put(clazz, aiService);
-            return this;
-        }
-
-        public Builder withPromptTemplate(PromptTemplate promptTemplate) {
             return this;
         }
 
@@ -147,7 +148,8 @@ public class Kernel implements Buildable {
 
             return new Kernel(
                 serviceSelector,
-                new KernelPluginCollection(plugins));
+                plugins,
+                null);
         }
     }
 

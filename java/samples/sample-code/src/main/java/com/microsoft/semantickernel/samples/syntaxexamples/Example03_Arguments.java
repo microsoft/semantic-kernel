@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
+import java.util.Locale;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import java.util.Locale;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -17,10 +19,12 @@ import reactor.core.publisher.Mono;
  */
 public class Example03_Arguments {
 
-    public static class StaticTextSkill {
+    public static class StaticTextPlugin {
+
         @DefineKernelFunction(
             description = "Change all string chars to uppercase.",
-            name = "Uppercase")
+            name = "Uppercase",
+            returnType = "java.lang.String")
         public static Mono<String> uppercase(
             @KernelFunctionParameter(
                 description = "Text to uppercase",
@@ -29,7 +33,10 @@ public class Example03_Arguments {
             return Mono.just(text.toUpperCase(Locale.ROOT));
         }
 
-        @DefineKernelFunction(description = "Append the day variable", name = "appendDay")
+        @DefineKernelFunction(
+            description = "Append the day variable",
+            name = "appendDay",
+            returnType = "java.lang.String")
         public Mono<String> appendDay(
             @KernelFunctionParameter(description = "Text to append to", name = "input")
             String input,
@@ -41,22 +48,19 @@ public class Example03_Arguments {
     public static void main(String[] args) {
         Kernel kernel = Kernel.builder().build();
 
-        // Load native skill
+        // Load native plugin
         KernelPlugin functionCollection =
-            KernelPluginFactory.createFromObject(new StaticTextSkill(), "text");
+            KernelPluginFactory.createFromObject(new StaticTextPlugin(), "text");
 
-        KernelArguments arguments = KernelArguments.builder()
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
             .withInput("Today is: ")
-            .build()
-            .writableClone()
-            .setVariable("day", "Monday");
+            .withVariable("day", "Monday")
+            .build();
 
-        FunctionResult<String> resultValue = kernel.invokeAsync(
-                functionCollection.get("AppendDay"),
-                arguments,
-                String.class)
+        FunctionResult<?> resultValue = kernel.invokeAsync(functionCollection.get("AppendDay"))
+            .withArguments(arguments)
             .block();
 
-        System.out.println(resultValue.getResultVariable());
+        System.out.println(resultValue.getResult());
     }
 }

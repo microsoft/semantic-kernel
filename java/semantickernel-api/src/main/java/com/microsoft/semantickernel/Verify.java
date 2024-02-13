@@ -13,14 +13,6 @@ public class Verify {
         return s == null || s.isEmpty();
     }
 
-    /*
-        public static boolean isNullOrEmpty(@Nullable ContextVariable<?> s) {
-            return s == null
-                || s.getValue() == null
-                || s.getType().equals(String.class) && ((ContextVariable<String>) s).getValue()
-                .isEmpty();
-        }
-    */
     public static boolean isNullOrWhiteSpace(String s) {
         return s == null || s.matches("^\\w+$");
     }

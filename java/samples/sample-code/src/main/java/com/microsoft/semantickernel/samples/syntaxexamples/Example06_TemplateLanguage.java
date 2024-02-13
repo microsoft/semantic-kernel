@@ -70,7 +70,7 @@ public class Example06_TemplateLanguage {
         KernelPlugin time = KernelPluginFactory.createFromObject(
             new Time(), "time");
 
-        kernel.getPlugins().add(time);
+        kernel.addPlugin(time);
 
         // Prompt Function invoking time.Date and time.Time method functions
         String functionDefinition = """
@@ -88,11 +88,11 @@ public class Example06_TemplateLanguage {
         var promptTemplate = new KernelPromptTemplateFactory()
             .tryCreate(new PromptTemplateConfig(functionDefinition));
 
-        var renderedPrompt = promptTemplate.renderAsync(kernel, null).block();
+        var renderedPrompt = promptTemplate.renderAsync(kernel, null, null).block();
         System.out.println(renderedPrompt);
 
         var kindOfDay = KernelFunctionFactory
-            .createFromPrompt(
+            .<String>createFromPrompt(
                 functionDefinition,
                 new Builder()
                     .withMaxTokens(100)
@@ -104,7 +104,7 @@ public class Example06_TemplateLanguage {
 
         // Show the result
         System.out.println("--- Prompt Function result");
-        var result = kernel.invokeAsync(kindOfDay, null, String.class).block();
-        System.out.println(result.getResultVariable());
+        var result = kernel.invokeAsync(kindOfDay).block();
+        System.out.println(result.getResult());
     }
 }

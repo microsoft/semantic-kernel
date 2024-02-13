@@ -3,10 +3,10 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.samples.syntaxexamples.Example03_Arguments.StaticTextSkill;
+import com.microsoft.semantickernel.samples.syntaxexamples.Example03_Arguments.StaticTextPlugin;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,20 +20,18 @@ public class Example03_ArgumentsTest {
     public void main() {
         Kernel kernel = Kernel.builder().build();
 
-        // Load native skill
+        // Load native plugin
         KernelPlugin functionCollection =
-            KernelPluginFactory.createFromObject(new StaticTextSkill(), "text");
+            KernelPluginFactory.createFromObject(new StaticTextPlugin(), "text");
 
-        KernelArguments arguments = KernelArguments.builder()
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
             .withInput("Today is: ")
-            .build()
-            .writableClone()
-            .setVariable("day", "Monday");
+            .withVariable("day", "Monday")
+            .build();
 
         FunctionResult<String> resultValue = kernel.invokeAsync(
-                functionCollection.get("AppendDay"),
-                arguments,
-                String.class)
+                functionCollection.<String>get("AppendDay"))
+            .withArguments(arguments)
             .block();
 
         Assertions.assertEquals("Today is: Monday", resultValue.getResult());

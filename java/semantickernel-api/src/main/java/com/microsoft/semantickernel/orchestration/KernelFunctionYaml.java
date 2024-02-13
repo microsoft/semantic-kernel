@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTe
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
 
@@ -22,28 +23,29 @@ public class KernelFunctionYaml {
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
-    public static KernelFunction fromPromptYaml(
+    public static <T> KernelFunction<T> fromPromptYaml(
         String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory
     ) throws IOException {
-        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes());
+        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
         return fromYaml(targetStream, promptTemplateFactory);
     }
 
-    public static KernelFunction fromPromptYaml(
+    public static <T> KernelFunction<T> fromPromptYaml(
         String yaml
     ) throws IOException {
-        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes());
+        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
         return fromYaml(targetStream, null);
     }
 
-    public static KernelFunction fromYaml(Path filePath) throws IOException {
+    public static <T> KernelFunction<T> fromYaml(Path filePath) throws IOException {
         InputStream inputStream = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(filePath.toString());
         return fromYaml(inputStream, null);
     }
 
-    private static KernelFunction fromYaml(
+    @SuppressWarnings("unchecked")
+    private static <T> KernelFunction<T> fromYaml(
         InputStream inputStream,
         @Nullable PromptTemplateFactory promptTemplateFactory
     ) throws IOException {
@@ -58,11 +60,10 @@ public class KernelFunctionYaml {
             promptTemplate = promptTemplateFactory.tryCreate(functionModel);
         }
 
-        return new KernelFunctionFromPrompt.Builder()
+        return (KernelFunction<T>)new KernelFunctionFromPrompt.Builder()
             .withName(functionModel.getName())
             .withInputParameters(functionModel.getInputVariables())
             .withPromptTemplate(promptTemplate)
-            .withPluginName(functionModel.getName()) // TODO: 1.0 add plugin name
             .withExecutionSettings(functionModel.getExecutionSettings())
             .withDescription(functionModel.getDescription())
             .withOutputVariable(functionModel.getOutputVariable())

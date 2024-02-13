@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Defines the behavior of a tool call. Currently, the only tool available is function calling. 
+ * Defines the behavior of a tool call. Currently, the only tool available is function calling.
  */
 public class ToolCallBehavior {
 
@@ -19,12 +19,10 @@ public class ToolCallBehavior {
 
     private static class FunctionCallBehavior {
 
-        private final String key;
         private final boolean required;
         private final boolean enabled;
 
         FunctionCallBehavior(KernelFunction function, boolean required, boolean enabled) {
-            this.key = getKey(function);
             this.required = required;
             this.enabled = enabled;
         }
@@ -38,19 +36,38 @@ public class ToolCallBehavior {
         }
 
         static String getKey(KernelFunction function) {
-            return getKey(function.getSkillName(), function.getName());
+            return getKey(function.getPluginName(), function.getName());
         }
 
         static String getKey(String skillName, String functionName) {
             return String.format("%s-%s", skillName, functionName);
         }
     }
+
+    private final Map<String, Boolean> flags = new HashMap<>();
     private final Map<String, FunctionCallBehavior> functionSettings = new HashMap<>();
+    private final Map<String, Integer> settings = new HashMap<>();
 
     private int maximumAutoInvokeAttempts;
 
     public ToolCallBehavior() {
         this.maximumAutoInvokeAttempts = 0;
+    }
+
+    public ToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+        flags.putAll(toolCallBehavior.flags);
+        functionSettings.putAll(toolCallBehavior.functionSettings);
+        settings.putAll(toolCallBehavior.settings);
+        maximumAutoInvokeAttempts = toolCallBehavior.maximumAutoInvokeAttempts;
+    }
+
+    public UnmodifiableToolCallBehavior unmodifiableClone() {
+        return new UnmodifiableToolCallBehavior(this);
+    }
+
+    public ToolCallBehavior kernelFunctions(boolean enable) {
+        setFlag("kernelFunctions", enable);
+        return this;
     }
 
     public ToolCallBehavior autoInvoke(boolean enable) {
@@ -63,7 +80,7 @@ public class ToolCallBehavior {
             String key = FunctionCallBehavior.getKey(function);
             functionSettings.compute(
                 key,
-                (k,v) -> {
+                (k, v) -> {
                     if (v == null) {
                         return new FunctionCallBehavior(function, require, false);
                     } else {
@@ -80,7 +97,7 @@ public class ToolCallBehavior {
             String key = FunctionCallBehavior.getKey(function);
             functionSettings.compute(
                 key,
-                (k,v) -> {
+                (k, v) -> {
                     if (v == null) {
                         return new FunctionCallBehavior(function, false, enable);
                     } else {
@@ -97,9 +114,13 @@ public class ToolCallBehavior {
         return this;
     }
 
+    public boolean kernelFunctionsEnabled() {
+        return getFlag("kernelFunctions");
+    }
+
     public boolean functionRequired(KernelFunction function) {
         if (function != null) {
-            return functionRequired(function.getSkillName(), function.getName());
+            return functionRequired(function.getPluginName(), function.getName());
         }
         return false;
     }
@@ -114,13 +135,13 @@ public class ToolCallBehavior {
 
     public boolean functionEnabled(KernelFunction function) {
         if (function != null) {
-            return functionEnabled(function.getSkillName(), function.getName());
+            return functionEnabled(function.getPluginName(), function.getName());
         }
         return functionSettings.isEmpty();
     }
 
     public boolean functionEnabled(String pluginName, String functionName) {
- 
+
         String key = FunctionCallBehavior.getKey(pluginName, functionName);
         if (functionSettings.containsKey(key)) {
             return functionSettings.get(key).enabled();
@@ -131,6 +152,23 @@ public class ToolCallBehavior {
     public int getMaximumAutoInvokeAttempts() {
         return this.maximumAutoInvokeAttempts;
     }
+
+    protected void setFlag(String key, boolean value) {
+        flags.put(key, value);
+    }
+
+    protected void setSetting(String key, int value) {
+        settings.put(key, value);
+    }
+
+    protected boolean getFlag(String key) {
+        return flags.getOrDefault(key, false);
+    }
+
+    protected int getSetting(String key, int defaultValue) {
+        return settings.getOrDefault(key, defaultValue);
+    }
+
     public void configureOptions(
             ChatCompletionsOptions options,
             List<FunctionDefinition> functions) {
@@ -150,4 +188,43 @@ public class ToolCallBehavior {
 
         options.setToolChoice(BinaryData.fromString("auto"));
     }
+
+    public static class UnmodifiableToolCallBehavior extends ToolCallBehavior {
+
+        protected UnmodifiableToolCallBehavior(ToolCallBehavior toolCallBehavior) {
+            super(toolCallBehavior);
+        }
+
+        @Override
+        public final ToolCallBehavior kernelFunctions(boolean enable) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        public final ToolCallBehavior autoInvoke(boolean enable) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        public final ToolCallBehavior requireFunction(KernelFunction function, boolean require) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        public final ToolCallBehavior enableFunction(KernelFunction function, boolean enable) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        protected final void setFlag(String key, boolean value) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+        @Override
+        protected final void setSetting(String key, int value) {
+            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        }
+
+    }
+
 }

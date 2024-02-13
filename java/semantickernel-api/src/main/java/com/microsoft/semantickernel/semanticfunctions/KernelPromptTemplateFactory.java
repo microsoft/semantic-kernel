@@ -6,14 +6,12 @@ import static com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfi
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import com.microsoft.semantickernel.templateengine.semantickernel.DefaultPromptTemplate;
 import java.util.Locale;
+import javax.annotation.Nonnull;
 
 public class KernelPromptTemplateFactory implements PromptTemplateFactory {
 
-    public PromptTemplate tryCreate(PromptTemplateConfig templateConfig) {
-        if (templateConfig == null || templateConfig.getTemplateFormat() == null) {
-            return new DefaultPromptTemplate(templateConfig);
-        }
-
+    @Override
+    public PromptTemplate tryCreate(@Nonnull PromptTemplateConfig templateConfig) {
         switch (templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT)) {
             case SEMANTIC_KERNEL_TEMPLATE_FORMAT:
                 return new DefaultPromptTemplate(templateConfig);

@@ -9,18 +9,23 @@ import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextG
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import com.microsoft.semantickernel.samples.plugins.text.TextPlugin;
+import com.microsoft.semantickernel.plugins.text.TextPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 
 public class Example10_DescribeAllPluginsAndFunctions {
 
 
+    private static final String PLUGIN_DIR =
+        System.getenv("PLUGIN_DIR") == null ? "." : System.getenv("PLUGIN_DIR");
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -108,7 +113,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
         kernel.getPlugins().add(
             KernelPluginFactory
                 .importPluginFromDirectory(
-                    Path.of("java/samples/sample-code/src/main/resources/Plugins"),
+                    Path.of(PLUGIN_DIR, "java/samples/sample-code/src/main/resources/Plugins"),
                     "SummarizePlugin",
                     null)
         );
@@ -152,10 +157,10 @@ public class Example10_DescribeAllPluginsAndFunctions {
             });
     }
 
-    private static void printFunction(KernelFunctionMetadata func) {
+    private static void printFunction(KernelFunctionMetadata<?> func) {
         System.out.println("   " + func.getName() + ": " + func.getDescription());
 
-        if (func.getParameters().size() > 0) {
+        if (!func.getParameters().isEmpty()) {
             System.out.println("      Params:");
 
             func.getParameters()

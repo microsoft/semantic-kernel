@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+
 import reactor.util.annotation.Nullable;
 
 public final class ValBlock extends Block implements TextRendering {
@@ -32,7 +34,7 @@ public final class ValBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(KernelArguments variables) {
+    public String render(@Nullable KernelFunctionArguments variables) {
         return value;
     }
 

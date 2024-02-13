@@ -1,8 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-/** Base class for blocks parsed from a prompt template */
+import javax.annotation.Nullable;
+
+/**
+ * Base class for blocks parsed from a prompt template
+ */
 public abstract class Block {
+
     private final String content;
     private final BlockTypes type;
 
@@ -10,9 +15,11 @@ public abstract class Block {
      * Base constructor
      *
      * @param content Block content
-     * @param type Block type
+     * @param type    Block type
      */
-    public Block(String content, BlockTypes type) {
+    public Block(
+        @Nullable String content,
+        BlockTypes type) {
         if (content == null) {
             content = "";
         }

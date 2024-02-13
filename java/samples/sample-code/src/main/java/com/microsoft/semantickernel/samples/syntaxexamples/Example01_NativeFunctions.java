@@ -1,9 +1,9 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
-import com.microsoft.semantickernel.samples.plugins.text.TextPlugin;
+import com.microsoft.semantickernel.plugins.text.TextPlugin;
 
 /**
- * Demonstrates a native function from the {@code com.microsoft.semantickernel.coreskills} package.
+ * Demonstrates a native function.
  */
 public class Example01_NativeFunctions {
 

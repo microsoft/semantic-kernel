@@ -5,9 +5,10 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.ServiceNotFoundException;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.TimePlugin;
@@ -30,7 +31,7 @@ public class Example30_ChatWithPrompts {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException, ServiceNotFoundException {
         OpenAIAsyncClient client;
 
         if (AZURE_CLIENT_KEY != null) {
@@ -77,11 +78,11 @@ public class Example30_ChatWithPrompts {
 
         // Adding required arguments referenced by the prompt templates.
 
-        var arguments = KernelArguments
+        var arguments = KernelFunctionArguments
             .builder()
             .withVariable("selectedText", selectedText)
             .withVariable("startTime", DateTimeFormatter.ofPattern("hh:mm:ss a zz").format(
-                ZonedDateTime.now(ZoneId.systemDefault())))
+                ZonedDateTime.of(2000, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault())))
             .withVariable("userMessage", "extract locations as a bullet point list")
             .build();
 
@@ -89,7 +90,7 @@ public class Example30_ChatWithPrompts {
         // This contains the context, ie a piece of a wikipedia page selected by the user.
         String systemMessage = PromptTemplateFactory
             .build(new PromptTemplateConfig(systemPromptTemplate))
-            .renderAsync(kernel, arguments)
+            .renderAsync(kernel, arguments, null)
             .block();
 
         System.out.println("------------------------------------\n" + systemMessage);
@@ -98,7 +99,7 @@ public class Example30_ChatWithPrompts {
         // This contains the user request, ie "extract locations as a bullet point list"
         String userMessage = PromptTemplateFactory
             .build(new PromptTemplateConfig(userPromptTemplate))
-            .renderAsync(kernel, arguments)
+            .renderAsync(kernel, arguments, null)
             .block();
 
         System.out.println("------------------------------------\n" + userMessage);
@@ -116,11 +117,10 @@ public class Example30_ChatWithPrompts {
 
         // Finally, get the response from AI
         var answer = chatCompletion
-            .getChatMessageContentsAsync(chatHistory, null, kernel)
-            .block()
-            .stream()
-            .findFirst()
-            .get();
-        System.out.println("------------------------------------\n" + answer);
+            .getChatMessageContentsAsync(chatHistory, kernel, null)
+            .block();
+        System.out.println(
+            "------------------------------------\n" + answer.stream().findFirst().get()
+                .getContent());
     }
 }

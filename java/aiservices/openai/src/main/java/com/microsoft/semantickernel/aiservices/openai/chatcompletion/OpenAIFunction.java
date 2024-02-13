@@ -40,7 +40,7 @@ class OpenAIFunction {
      *
      * @return A FunctionDefinition containing all the function information.
      */
-    public static FunctionDefinition toFunctionDefinition(KernelFunctionMetadata metadata, String pluginName) {
+    public static FunctionDefinition toFunctionDefinition(KernelFunctionMetadata<?> metadata, String pluginName) {
         BinaryData resultParameters;
 
         Map<String, JsonNode> properties = new HashMap<>();
@@ -48,7 +48,7 @@ class OpenAIFunction {
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            for (KernelParameterMetadata parameter : metadata.getParameters()) {
+            for (KernelParameterMetadata<?> parameter : metadata.getParameters()) {
                 String parameterJsonSchema = getDefaultSchemaForParameter(parameter.getDescription());
                 properties.put(parameter.getName(), objectMapper.readTree(parameterJsonSchema));
 

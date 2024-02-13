@@ -1,27 +1,36 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
+import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 
 public class NumberVariableContextVariableTypeConverter<T extends Number> extends
     ContextVariableTypeConverter<T> {
 
-    public NumberVariableContextVariableTypeConverter(Class<T> clazz,
-        Function<String, T> fromPromptString) {
+    private final Function<Number, T> fromNumber;
+
+    public NumberVariableContextVariableTypeConverter(
+        Class<T> clazz,
+        Function<String, T> fromPromptString,
+        Function<Number, T> fromNumber
+    ) {
         super(
             clazz,
             s -> convert(s, clazz),
             Number::toString,
             fromPromptString);
+        this.fromNumber = fromNumber;
     }
 
     @Override
     @Nullable
-    public <U> U toObject(Object t, Class<U> clazz) {
+    public <U> U toObject(@Nullable Object t, Class<U> clazz) {
+        if (t == null) {
+            return null;
+        }
+
         // Let the parent class have a crack at it first
         // since someone may have installed a special converter. 
         U obj = super.toObject(t, clazz);
@@ -35,13 +44,19 @@ public class NumberVariableContextVariableTypeConverter<T extends Number> extend
         }
         return null;
     }
- 
+
     @Override
-    public T fromObject(Object s) {
+    @Nullable
+    public T fromObject(@Nullable Object s) {
         T obj = super.fromObject(s);
         if (obj != null) {
-            return obj; 
+            return obj;
         }
+
+        if (s instanceof Number) {
+            return fromNumber.apply((Number) s);
+        }
+
         if (s instanceof String) {
             return fromPromptString((String) s);
         }
@@ -49,11 +64,12 @@ public class NumberVariableContextVariableTypeConverter<T extends Number> extend
     }
 
     @Override
-    public T fromPromptString(String s) {
+    @Nullable
+    public T fromPromptString(@Nullable String s) {
         if (s != null && !s.isEmpty()) {
             return super.fromPromptString(s);
         }
-        return null; 
+        return null;
     }
 
 }

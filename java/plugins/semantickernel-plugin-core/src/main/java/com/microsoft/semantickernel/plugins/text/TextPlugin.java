@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.samples.plugins.text;
+package com.microsoft.semantickernel.plugins.text;
 
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import java.util.Locale;
 
 /**
- * TextSkill provides a set of functions to manipulate strings.
+ * TextPlugin provides a set of functions to manipulate strings.
  */
 public class TextPlugin {
 

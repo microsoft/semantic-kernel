@@ -1,0 +1,23 @@
+{
+   "id" : "fb3fd96e-de60-4e75-b551-493819766937",
+   "insertionIndex" : 33,
+   "name" : "deployments_text-davinci-003_completions",
+   "persistent" : true,
+   "request" : {
+      "bodyPatterns" : [
+         {
+            "equalToJson" : "{\"prompt\":[\"BEGIN CONTENT TO SUMMARIZE:\\nJohn: Hello, how are you?\\nJane: I'm fine, thanks. How are you?\\nJohn: I'm doing well, writing some example code.\\nJane: That's great! I'm writing some example code too.\\nJohn: What are you writing?\\nJane: I'm writing a chatbot.\\nJohn: That's cool. I'm writing a chatbot too.\\nJane: What language are you writing it in?\\nJohn: I'm writing it in C#.\\nJane: I'm writing it in Python.\\nJohn: That's cool. I need to learn Python.\\nJane: I need to learn C#.\\nJohn: Can I try out your chatbot?\\nJane: Sure, here's the link.\\nJohn: Thanks!\\nJane: You're welcome.\\nJane: Look at this poem my chatbot wrote:\\nJane: Roses are red\\nJane: Violets are blue\\nJane: I'm writing a chatbot\\nJane: What about you?\\nJohn: That's cool. Let me see if mine will write a poem, too.\\nJohn: Here's a poem my chatbot wrote:\\nJohn: The singularity of the universe is a mystery.\\nJohn: The universe is a mystery.\\nJohn: The universe is a mystery.\\nJohn: The universe is a mystery.\\nJohn: Looks like I need to improve mine, oh well.\\nJane: You might want to try using a different model.\\nJane: I'm using the GPT-3 model.\\nJohn: I'm using the GPT-2 model. That makes sense.\\nJohn: Here is a new poem after updating the model.\\nJohn: The universe is a mystery.\\nJohn: The universe is a mystery.\\nJohn: The universe is a mystery.\\nJohn: Yikes, it's really stuck isn't it. Would you help me debug my code?\\nJane: Sure, what's the problem?\\nJohn: I'm not sure. I think it's a bug in the code.\\nJane: I'll take a look.\\nJane: I think I found the problem.\\nJane: It looks like you're not passing the right parameters to the model.\\nJohn: Thanks for the help!\\nJane: I'm now writing a bot to summarize conversations. I want to make sure it works when the conversation is long.\\nJohn: So you need to keep talking with me to generate a long conversation?\\nJane: Yes, that's right.\\nJohn: Ok, I'll keep talking. What should we talk about?\\nJane: I don't know, what do you want to talk about?\\nJohn: I don't know, it's nice how CoPilot is doing most of the talking for us. But it definitely gets stuck sometimes.\\nJane: I agree, it's nice that CoPilot is doing most of the talking for us.\\nJane: But it definitely gets stuck sometimes.\\nJohn: Do you know how long it needs to be?\\nJane: I think the max length is 1024 tokens. Which is approximately 1024*4= 4096 characters.\\nJohn: That's a lot of characters.\\nJane: Yes, it is.\\nJohn: I'm not sure how much longer I can keep talking.\\n\\nEND CONTENT TO SUMMARIZE.\\n\\nSummarize the conversation in 'CONTENT TO SUMMARIZE', identifying main points of discussion and any conclusions that were reached.\\nDo not incorporate other general knowledge.\\nSummary is in plain text, in complete sentences, with no markup or tags.\\n\\nBEGIN SUMMARY:\\n\"],\"max_tokens\":1024,\"temperature\":0.1,\"top_p\":0.5,\"logit_bias\":{},\"user\":\"\",\"n\":1,\"presence_penalty\":0.0,\"frequency_penalty\":0.0,\"best_of\":1,\"model\":\"text-davinci-003\"}",
+            "ignoreArrayOrder" : true,
+            "ignoreExtraElements" : true
+         }
+      ],
+      "method" : "POST",
+      "url" : "//openai/deployments/text-davinci-003/completions?api-version=2023-12-01-preview"
+   },
+   "response" : {
+      "body" : "{\"id\":\"cmpl-xxx\",\"object\":\"text_completion\",\"created\":1707252979,\"model\":\"text-davinci-003\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"text\":\"daed202a-7933-40ce-941a-4f17954f3e8d\",\"index\":0,\"finish_reason\":\"stop\",\"logprobs\":null,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":771,\"completion_tokens\":91,\"total_tokens\":862}}",
+      "headers" : {},
+      "status" : 200
+   },
+   "uuid" : "fb3fd96e-de60-4e75-b551-493819766937"
+}

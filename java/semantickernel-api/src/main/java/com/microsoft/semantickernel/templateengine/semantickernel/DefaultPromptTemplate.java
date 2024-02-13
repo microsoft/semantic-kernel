@@ -3,7 +3,8 @@ package com.microsoft.semantickernel.templateengine.semantickernel;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.Verify;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,16 +30,11 @@ import reactor.core.publisher.Mono;
 /// </summary>
 public class DefaultPromptTemplate implements PromptTemplate {
 
-    @Nullable
-    private PromptTemplateConfig promptTemplate;
-
-    public DefaultPromptTemplate() {
-        this(null);
-    }
+    private final PromptTemplateConfig promptTemplate;
 
     public DefaultPromptTemplate(
-        @Nullable PromptTemplateConfig promptTemplate) {
-        this.promptTemplate = promptTemplate;
+        @Nonnull PromptTemplateConfig promptTemplate) {
+        this.promptTemplate = new PromptTemplateConfig(promptTemplate);
     }
 
     /// <summary>
@@ -67,10 +64,8 @@ public class DefaultPromptTemplate implements PromptTemplate {
     /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
     /// not already contained there but that are referenced in the prompt template.
     /// </summary>
+    @SuppressWarnings("NullAway")
     private void addMissingInputVariables(List<Block> blocks) {
-        if (promptTemplate == null) {
-            return;
-        }
         // Add all of the existing input variables to our known set. We'll avoid adding any
         // dynamically discovered input variables with the same name.
         Set<String> seen = new HashSet<>();
@@ -88,7 +83,8 @@ public class DefaultPromptTemplate implements PromptTemplate {
             if (block.getType() == BlockTypes.Variable) {
                 name = ((VarBlock) block).getName();
             } else if (block.getType() == BlockTypes.NamedArg) {
-                name = ((NamedArgBlock) block).getVarBlock().getName();
+                VarBlock blockName = ((NamedArgBlock) block).getVarBlock();
+                name = blockName == null ? null : blockName.getName();
             }
 
             if (!Verify.isNullOrEmpty(name) && !seen.contains(name)) {
@@ -101,7 +97,8 @@ public class DefaultPromptTemplate implements PromptTemplate {
     @Override
     public Mono<String> renderAsync(
         Kernel kernel,
-        @Nullable KernelArguments arguments) {
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable InvocationContext context) {
 
         List<Block> blocks = this.extractBlocks();
         addMissingInputVariables(blocks);
@@ -114,7 +111,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
                         ((TextRendering) block).render(arguments)
                     );
                 } else if (block instanceof CodeRendering) {
-                    return ((CodeRendering) block).renderCodeAsync(kernel, arguments);
+                    return ((CodeRendering) block).renderCodeAsync(kernel, arguments, context);
                 } else {
                     return Mono.error(new TemplateException(ErrorCodes.UNEXPECTED_BLOCK_TYPE));
                 }

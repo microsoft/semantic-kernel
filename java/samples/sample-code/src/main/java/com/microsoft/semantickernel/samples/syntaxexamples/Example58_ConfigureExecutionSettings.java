@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
 public class Example58_ConfigureExecutionSettings {
@@ -53,19 +54,19 @@ public class Example58_ConfigureExecutionSettings {
         // Option 1:
         // Invoke the prompt function and pass an OpenAI specific instance containing the execution settings
         var result = kernel.invokeAsync(
-            KernelFunctionFromPrompt.builder()
-                .withTemplate(prompt)
-                .withDefaultExecutionSettings(
-                    PromptExecutionSettings.builder()
-                        .withMaxTokens(60)
-                        .withTemperature(0.7)
-                        .build()
-                ).build(),
-            null,
-            String.class
-        ).block();
+                KernelFunctionFromPrompt.builder()
+                    .withTemplate(prompt)
+                    .withDefaultExecutionSettings(
+                        PromptExecutionSettings.builder()
+                            .withMaxTokens(60)
+                            .withTemperature(0.7)
+                            .build()
+                    )
+                    .withOutputVariable(new OutputVariable("result", "java.lang.String"))
+                    .build())
+            .block();
 
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
 
         // Option 2:
         // Load prompt template configuration including the execution settings from a JSON payload
@@ -91,7 +92,7 @@ public class Example58_ConfigureExecutionSettings {
 
         var func = KernelFunctionFactory.createFromPrompt(promptConfig, null);
 
-        result = kernel.invokeAsync(func, null, String.class).block();
-        System.out.println(result.getResultVariable());
+        result = kernel.invokeAsync(func).block();
+        System.out.println(result.getResult());
     }
 }

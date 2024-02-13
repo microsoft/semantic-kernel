@@ -6,8 +6,8 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 
 public class Example27_PromptFunctionsUsingChatGPT {
@@ -47,18 +47,17 @@ public class Example27_PromptFunctionsUsingChatGPT {
             .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
-        var func = KernelFunctionFactory.createFromPrompt(
+        var func = KernelFunctionFactory.<String>createFromPrompt(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
-        var result = func.invokeAsync(
-                kernel,
-                KernelArguments.builder()
+        var result = func.invokeAsync(kernel)
+            .withArguments(
+                KernelFunctionArguments.builder()
                     .withVariable("input", "Jupiter")
-                    .build(),
-                ContextVariableTypes.getDefaultVariableTypeForClass(String.class)
-            )
+                    .build())
+            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
             .block();
-        System.out.println(result.getResultVariable());
+        System.out.println(result.getResult());
 
     }
 }

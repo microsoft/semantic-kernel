@@ -1,0 +1,25 @@
+{
+   "id" : "1296bcee-1e54-43b1-b4b3-4642dd8bd0a0",
+   "insertionIndex" : 5,
+   "name" : "deployments_text-davinci-003_completions",
+   "persistent" : true,
+   "request" : {
+      "bodyPatterns" : [
+         {
+            "equalToJson" : "{\"prompt\":[\"Hello AI, what can you do for me?\"],\"max_tokens\":256,\"temperature\":1.0,\"top_p\":1.0,\"logit_bias\":{},\"user\":\"\",\"n\":1,\"presence_penalty\":0.0,\"frequency_penalty\":0.0,\"best_of\":1,\"model\":\"text-davinci-003\"}",
+            "ignoreArrayOrder" : true,
+            "ignoreExtraElements" : true
+         }
+      ],
+      "method" : "POST",
+      "url" : "//openai/deployments/text-davinci-003/completions?api-version=2023-12-01-preview"
+   },
+   "requiredScenarioState" : "scenario-3-deployments-text-davinci-003-completions-3",
+   "response" : {
+      "body" : "{\"id\":\"cmpl-xxx\",\"object\":\"text_completion\",\"created\":1707253064,\"model\":\"text-davinci-003\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"text\":\"f3d22bfb-13ae-41f1-ba1c-e162da7cf3ec\",\"index\":0,\"finish_reason\":\"stop\",\"logprobs\":null,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":34,\"total_tokens\":44}}",
+      "headers" : {},
+      "status" : 200
+   },
+   "scenarioName" : "scenario-3-deployments-text-davinci-003-completions",
+   "uuid" : "1296bcee-1e54-43b1-b4b3-4642dd8bd0a0"
+}

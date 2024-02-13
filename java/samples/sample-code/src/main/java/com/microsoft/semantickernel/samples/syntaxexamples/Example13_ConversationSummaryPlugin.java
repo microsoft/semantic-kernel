@@ -8,16 +8,18 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.contextvariables.DefaultKernelArguments.Builder;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments.Builder;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import com.sun.jna.StringArray;
+
 import reactor.core.publisher.Mono;
 
 /**
- * Demonstrate the {@code com.microsoft.semantickernel.coreskills.ConversationSummarySkill}
+ * Demonstrate the {@see com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin} plugin.
  * <p>
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
@@ -34,7 +36,7 @@ public class Example13_ConversationSummaryPlugin {
         .getOrDefault("MODEL_ID", "text-davinci-003");
 
 
-    private static final String ChatTranscript =
+    private static final String chatTranscript =
         """
             John: Hello, how are you?
             Jane: I'm fine, thanks. How are you?
@@ -161,16 +163,15 @@ public class Example13_ConversationSummaryPlugin {
         Mono<FunctionResult<String>> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
-                    .getFunctions()
-                    .get("GetConversationActionItems"),
+                    .<String>get("GetConversationActionItems"))
+            .withArguments(
                 new Builder()
-                    .withInput(ChatTranscript)
-                    .build(),
-                String.class
+                    .withInput(chatTranscript)
+                    .build()
             );
 
         System.out.println("Generated Action Items:");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.block().getResult());
     }
 
     private static void getConversationTopicsAsync() {
@@ -180,18 +181,15 @@ public class Example13_ConversationSummaryPlugin {
             new ConversationSummaryPlugin(), null);
 
         Mono<FunctionResult<String>> summary = kernel
-            .invokeAsync(
-                conversationSummaryPlugin
-                    .getFunctions()
-                    .get("GetConversationTopics"),
+            .invokeAsync(conversationSummaryPlugin.<String>get("GetConversationTopics"))
+            .withArguments(
                 new Builder()
-                    .withInput(ChatTranscript)
-                    .build(),
-                String.class
+                    .withInput(chatTranscript)
+                    .build()
             );
 
         System.out.println("Generated Topics:");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.block().getResult());
     }
 
 
@@ -203,19 +201,19 @@ public class Example13_ConversationSummaryPlugin {
         KernelPlugin conversationSummaryPlugin = KernelPluginFactory.createFromObject(
             new ConversationSummaryPlugin(), null);
 
-        Mono<FunctionResult<String>> summary = kernel
+        FunctionResult<?> summary = kernel
             .invokeAsync(
                 conversationSummaryPlugin
                     .getFunctions()
-                    .get("SummarizeConversation"),
+                    .get("SummarizeConversation"))
+            .withArguments(
                 new Builder()
-                    .withInput(ChatTranscript)
-                    .build(),
-                String.class
-            );
+                    .withInput(chatTranscript)
+                    .build()
+            ).block();
 
         System.out.println("Generated Summary (This may take some time):");
-        System.out.println(summary.block().getResultVariable());
+        System.out.println(summary.getResult());
     }
 
     private static Kernel initializeKernel() {

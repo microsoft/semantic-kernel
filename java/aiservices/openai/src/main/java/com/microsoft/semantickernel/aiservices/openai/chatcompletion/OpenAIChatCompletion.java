@@ -22,14 +22,19 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.orchestration.contextvariables.KernelArguments;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,82 +51,107 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAIChatCompletion.class);
     private final OpenAIAsyncClient client;
     private final Map<String, ContextVariable<?>> attributes;
+
+    @Nullable
     private final String serviceId;
 
-    public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId, String serviceId) {
+    public OpenAIChatCompletion(
+        OpenAIAsyncClient client,
+        String modelId,
+        @Nullable
+        String serviceId) {
         this.serviceId = serviceId;
         this.client = client;
         this.attributes = new HashMap<>();
         attributes.put(MODEL_ID_KEY, ContextVariable.of(modelId));
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static OpenAIChatCompletion.Builder builder() {
+        return new OpenAIChatCompletion.Builder();
     }
 
     @Override
     public Map<String, ContextVariable<?>> getAttributes() {
-        return attributes;
+        return Collections.unmodifiableMap(attributes);
     }
 
     @Override
+    @Nullable
     public String getServiceId() {
         return serviceId;
     }
 
     @Override
-    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(ChatHistory chatHistory,
-        @Nullable PromptExecutionSettings promptExecutionSettings, @Nullable Kernel kernel) {
+    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        return internalChatMessageContentsAsync(chatRequestMessages, promptExecutionSettings,
-            kernel);
+        return internalChatMessageContentsAsync(
+            chatRequestMessages,
+            kernel,
+            invocationContext);
     }
 
     @Override
-    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(String prompt,
-        PromptExecutionSettings promptExecutionSettings, Kernel kernel) {
+    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+        String prompt,
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
         ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
 
         return internalChatMessageContentsAsync(
             parsedPrompt.getChatRequestMessages(),
-            promptExecutionSettings,
-            kernel);
+            kernel,
+            invocationContext);
     }
+
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> messages,
-        PromptExecutionSettings settings,
-        Kernel kernel) {
+        Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
 
         List<FunctionDefinition> functions = new ArrayList<>();
         if (kernel != null) {
             kernel.getPlugins().forEach(plugin ->
-                plugin.getFunctions().forEach((name, function) ->
-                    functions.add(OpenAIFunction.toFunctionDefinition(function.getMetadata(),
-                        plugin.getName()))
-                )
+                    plugin.getFunctions().forEach((name, function) ->
+                            functions.add(OpenAIFunction.toFunctionDefinition(function.getMetadata(),
+                                    plugin.getName()))
+                    )
             );
         }
 
         // Create copy to avoid reactor exceptions when updating the chat options messages internally
         ChatCompletionsOptions options = getCompletionsOptions(this, new ArrayList<>(messages),
-            functions, settings);
+                functions, invocationContext);
 
         return internalChatMessageContentsAsync(
-            kernel,
-            options,
-            Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
-                settings != null && settings.getToolCallBehavior() != null
-                    ? settings.getToolCallBehavior().getMaximumAutoInvokeAttempts() : 0)
+                kernel,
+                options,
+                invocationContext,
+                Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
+                        invocationContext != null && invocationContext.getToolCallBehavior() != null
+                                ? invocationContext.getToolCallBehavior().getMaximumAutoInvokeAttempts() : 0)
         );
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         Kernel kernel,
-        ChatCompletionsOptions options,
+        ChatCompletionsOptions completionsOptions,
+        InvocationContext invocationContext,
         int autoInvokeAttempts) {
-//        AtomicReference<ChatCompletionsOptions> options = new AtomicReference<>(chatCompletionsOptions);
+
+        KernelHooks kernelHooks =
+                invocationContext != null && invocationContext.getKernelHooks() != null
+                        ? invocationContext.getKernelHooks()
+                        : new KernelHooks();
+
+        ChatCompletionsOptions options = kernelHooks
+                .executeHooks(new PreChatCompletionEvent(completionsOptions))
+                .getOptions();
+
         Mono<ChatCompletions> result = client.getChatCompletions(getModelId(), options);
 
         return result.flatMap(completions -> {
@@ -178,8 +208,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     })
                 .flatMap(op -> op)
                 .flatMap(
-                    op -> internalChatMessageContentsAsync(kernel, op, autoInvokeAttempts - 1));
-
+                    op -> internalChatMessageContentsAsync(kernel, op, invocationContext, autoInvokeAttempts - 1));
         });
     }
 
@@ -191,8 +220,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         String pluginName = parts.length > 1 ? parts[0] : "";
         String fnName = parts.length > 1 ? parts[1] : parts[0];
 
-        KernelFunction function = kernel.getPlugins().getFunction(pluginName, fnName);
-        KernelArguments arguments = KernelArguments.builder().build();
+        KernelFunction<?> function = kernel.getFunction(pluginName, fnName);
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
 
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -206,8 +235,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             return Mono.empty();
         }
 
-        return function.invokeAsync(kernel, arguments,
-            ContextVariableTypes.getDefaultVariableTypeForClass(String.class));
+        return function
+                .invokeAsync(kernel)
+                .withArguments(arguments)
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
+                        String.class));
     }
 
     private Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
@@ -237,11 +269,21 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private static ChatCompletionsOptions getCompletionsOptions(
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
+        @Nullable
         List<FunctionDefinition> functions,
-        PromptExecutionSettings promptExecutionSettings) {
+        @Nullable
+        InvocationContext invocationContext) {
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
+
+        if (invocationContext != null && invocationContext.getToolCallBehavior() != null) {
+            invocationContext.getToolCallBehavior().configureOptions(options, functions);
+        }
+
+        PromptExecutionSettings promptExecutionSettings = invocationContext != null
+            ? invocationContext.getPromptExecutionSettings()
+            : null;
 
         if (promptExecutionSettings == null) {
             return options;
@@ -252,10 +294,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
                 String.format("Results per prompt must be in range between 1 and %d, inclusive.",
                     MAX_RESULTS_PER_PROMPT));
-        }
-
-        if (promptExecutionSettings.getToolCallBehavior() != null) {
-            promptExecutionSettings.getToolCallBehavior().configureOptions(options, functions);
         }
 
         Map<String, Integer> logit = null;
@@ -319,7 +357,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 return new ChatRequestToolMessage(content, null);
             default:
                 LOGGER.debug("Unexpected author role: " + authorRole);
-                return null;
+                throw new SKException("Unexpected author role: " + authorRole);
         }
 
     }
@@ -328,6 +366,17 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         @Override
         public OpenAIChatCompletion build() {
+
+            if (this.client == null) {
+                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "OpenAI client must be provided");
+            }
+
+            if (this.modelId == null || modelId.isEmpty()) {
+                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "OpenAI model id must be provided");
+            }
+
             return new OpenAIChatCompletion(client, modelId, serviceId);
         }
     }
