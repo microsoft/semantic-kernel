@@ -196,7 +196,7 @@ def test_create_options():
 
 def test_create_options_azure_data():
     az_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
-    az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
+    az_data = AzureDataSources(type="AzureAiSearch", parameters=az_source)
     extra = ExtraBody(dataSources=[az_data])
     settings = AzureChatPromptExecutionSettings(extra_body=extra)
     options = settings.prepare_settings_dict()
@@ -238,7 +238,7 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
         "extra_body": {
             "dataSources": [
                 {
-                    "type": "AzureCognitiveSearch",
+                    "type": "AzureAiSearch",
                     "parameters": {
                         "authentication": {
                             "type": "APIKey",
@@ -258,4 +258,4 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
         },
     }
     settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
-    assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
+    assert settings.extra_body["dataSources"][0]["type"] == "AzureAiSearch"

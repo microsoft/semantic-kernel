@@ -9,8 +9,8 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureTextCompletion,
     AzureTextEmbedding,
 )
-from semantic_kernel.connectors.memory.azure_cognitive_search import (
-    AzureCognitiveSearchMemoryStore,
+from semantic_kernel.connectors.memory.azure_ai_search import (
+    AzureAiSearchMemoryStore,
 )
 
 COLLECTION_NAME = "acs-index-sample"
@@ -49,8 +49,8 @@ async def main() -> None:
 
     config = dotenv_values(".env")
 
-    AZURE_COGNITIVE_SEARCH_ENDPOINT = config["AZURE_COGNITIVE_SEARCH_ENDPOINT"]
-    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = config["AZURE_COGNITIVE_SEARCH_ADMIN_KEY"]
+    AZURE_AI_SEARCH_ENDPOINT = config["AZURE_AI_SEARCH_ENDPOINT"]
+    AZURE_AI_SEARCH_ADMIN_KEY = config["AZURE_AI_SEARCH_ADMIN_KEY"]
     AZURE_OPENAI_API_KEY = config["AZURE_OPENAI_API_KEY"]
     AZURE_OPENAI_ENDPOINT = config["AZURE_OPENAI_ENDPOINT"]
     vector_size = 1536
@@ -73,9 +73,7 @@ async def main() -> None:
         ),
     )
 
-    connector = AzureCognitiveSearchMemoryStore(
-        vector_size, AZURE_COGNITIVE_SEARCH_ENDPOINT, AZURE_COGNITIVE_SEARCH_ADMIN_KEY
-    )
+    connector = AzureAiSearchMemoryStore(vector_size, AZURE_AI_SEARCH_ENDPOINT, AZURE_AI_SEARCH_ADMIN_KEY)
 
     # Register the memory store with the kernel
     kernel.register_memory_store(memory_store=connector)

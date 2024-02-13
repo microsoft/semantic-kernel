@@ -40,7 +40,7 @@ azure_ai_search_settings["queryType"] = "vector"
 
 # Create the data source settings
 az_source = AzureAISearchDataSources(**azure_ai_search_settings)
-az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
+az_data = AzureDataSources(type="AzureAiSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
 req_settings = AzureChatPromptExecutionSettings(extra_body=extra)
 prompt_config = sk.PromptTemplateConfig(execution_settings=req_settings)

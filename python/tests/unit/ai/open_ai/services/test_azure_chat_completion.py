@@ -313,7 +313,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
     expected_data_settings = {
         "dataSources": [
             {
-                "type": "AzureCognitiveSearch",
+                "type": "AzureAiSearch",
                 "parameters": {
                     "indexName": "test_index",
                     "endpoint": "https://test-endpoint-search.com",
@@ -363,7 +363,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     messages = [{"role": "user", "content": prompt}]
 
     ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
-    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
+    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureAiSearch", parameters=ai_source)])
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -420,7 +420,7 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     complete_prompt_execution_settings.stop = stop
 
     ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
-    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
+    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureAiSearch", parameters=ai_source)])
 
     complete_prompt_execution_settings.extra_body = extra
 

@@ -5,13 +5,13 @@ from azure.core.credentials import AzureKeyCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.models import SearchIndex, SearchResourceEncryptionKey
 
-from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore
+from semantic_kernel.connectors.memory.azure_ai_search import AzureAiSearchMemoryStore
 
 
 @pytest.fixture
-def azure_cognitive_search_memory_store():
-    """Fixture to instantiate AzureCognitiveSearchMemoryStore with basic configuration."""
-    store = AzureCognitiveSearchMemoryStore(
+def azure_ai_search_memory_store():
+    """Fixture to instantiate AzureAiSearchMemoryStore with basic configuration."""
+    store = AzureAiSearchMemoryStore(
         1536, "https://test.search.windows.net", azure_credentials=AzureKeyCredential("test_key")
     )
     return store
@@ -44,10 +44,10 @@ def mock_get_index_client():
 
 @pytest.mark.asyncio
 async def test_create_collection_without_encryption_key(
-    azure_cognitive_search_memory_store, mock_search_index_client, mock_get_index_client
+    azure_ai_search_memory_store, mock_search_index_client, mock_get_index_client
 ):
     mock_search_index_client.return_value = SearchIndex(name="testIndex", fields=[])
-    await azure_cognitive_search_memory_store.create_collection("testIndex")
+    await azure_ai_search_memory_store.create_collection("testIndex")
 
     mock_search_index_client.assert_called_once()
     args, kwargs = mock_search_index_client.call_args
@@ -58,12 +58,12 @@ async def test_create_collection_without_encryption_key(
 
 @pytest.mark.asyncio
 async def test_create_collection_with_encryption_key(
-    azure_cognitive_search_memory_store, mock_search_index_client, mock_encryption_key, mock_get_index_client
+    azure_ai_search_memory_store, mock_search_index_client, mock_encryption_key, mock_get_index_client
 ):
     mock_search_index_client.return_value = SearchIndex(
         name="testIndexWithEncryption", fields=[], search_resource_encryption_key=mock_encryption_key
     )
-    await azure_cognitive_search_memory_store.create_collection(
+    await azure_ai_search_memory_store.create_collection(
         "testIndexWithEncryption", search_resource_encryption_key=mock_encryption_key
     )
 

@@ -18,20 +18,20 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
-        AzureCognitiveSearchMemoryStore,
+    from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_memory_store import (
+        AzureAiSearchMemoryStore,
     )
 
-    if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_COGNITIVE_SEARCH_ADMIN_KEY"):
-        azure_cognitive_search_installed = True
+    if os.environ.get("AZURE_AI_SEARCH_ENDPOINT") and os.environ.get("AZURE_AI_SEARCH_ADMIN_KEY"):
+        azure_ai_search_installed = True
     else:
-        azure_cognitive_search_installed = False
+        azure_ai_search_installed = False
 except ImportError:
-    azure_cognitive_search_installed = False
+    azure_ai_search_installed = False
 
 pytestmark = pytest.mark.skipif(
-    not azure_cognitive_search_installed,
-    reason="Azure Cognitive Search is not installed",
+    not azure_ai_search_installed,
+    reason="Azure Ai Search is not installed",
 )
 
 
@@ -40,7 +40,7 @@ pytestmark = pytest.mark.skipif(
 async def create_memory_store():
     # Create an index and populate it with some data
     collection = f"int-tests-chat-extensions-{randint(1000, 9999)}"
-    memory_store = AzureCognitiveSearchMemoryStore(vector_size=4)
+    memory_store = AzureAiSearchMemoryStore(vector_size=4)
     await memory_store.create_collection(collection)
     time.sleep(1)
     try:
@@ -84,13 +84,13 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         kernel = create_kernel
 
         # Load Azure OpenAI with data settings
-        search_endpoint = os.getenv("AZURE_COGNITIVE_SEARCH_ENDPOINT")
-        search_api_key = os.getenv("AZURE_COGNITIVE_SEARCH_ADMIN_KEY")
+        search_endpoint = os.getenv("AZURE_AI_SEARCH_ENDPOINT")
+        search_api_key = os.getenv("AZURE_AI_SEARCH_ADMIN_KEY")
 
         extra = ExtraBody(
             data_sources=[
                 AzureDataSources(
-                    type="AzureCognitiveSearch",
+                    type="AzureAiSearch",
                     parameters=AzureAISearchDataSources(
                         indexName=collection,
                         endpoint=search_endpoint,

@@ -16,7 +16,7 @@ from azure.search.documents.indexes.models import (
 from azure.search.documents.models import Vector
 from numpy import ndarray
 
-from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
+from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     SEARCH_FIELD_EMBEDDING,
     SEARCH_FIELD_ID,
     dict_to_memory_record,
@@ -32,7 +32,7 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
+class AzureAiSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
     _vector_size: int = None
 
@@ -45,19 +45,19 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         token_credentials: Optional[TokenCredential] = None,
         **kwargs,
     ) -> None:
-        """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
+        """Initializes a new instance of the AzureAiSearchMemoryStore class.
 
         Arguments:
             vector_size {int}                                -- Embedding vector size.
-            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Cognitive Search service
+            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Ai Search service
                                                                 (default: {None}).
-            admin_key {Optional[str]}                        -- Azure Cognitive Search API key (default: {None}).
-            azure_credentials {Optional[AzureKeyCredential]} -- Azure Cognitive Search credentials (default: {None}).
-            token_credentials {Optional[TokenCredential]}    -- Azure Cognitive Search token credentials
+            admin_key {Optional[str]}                        -- Azure Ai Search API key (default: {None}).
+            azure_credentials {Optional[AzureKeyCredential]} -- Azure Ai Search credentials (default: {None}).
+            token_credentials {Optional[TokenCredential]}    -- Azure Ai Search token credentials
                                                                 (default: {None}).
 
         Instantiate using Async Context Manager:
-            async with AzureCognitiveSearchMemoryStore(<...>) as memory:
+            async with AzureAiSearchMemoryStore(<...>) as memory:
                 await memory.<...>
         """
         if kwargs.get("logger"):
@@ -66,8 +66,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             pass
         except ImportError:
             raise ValueError(
-                "Error: Unable to import Azure Cognitive Search client python package."
-                "Please install Azure Cognitive Search client"
+                "Error: Unable to import Azure Ai Search client python package." "Please install Azure Ai Search client"
             )
 
         self._vector_size = vector_size

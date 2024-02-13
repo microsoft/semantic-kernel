@@ -88,8 +88,8 @@ jobs:
           Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
           Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
           Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
-          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          AZURE_AI_SEARCH_ADMIN_KEY: ${{secrets.AZURE_AI_SEARCH_ADMIN_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
@@ -151,8 +151,8 @@ jobs:
           Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
           Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
           Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
-          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          AZURE_AI_SEARCH_ADMIN_KEY: ${{secrets.AZURE_AI_SEARCH_ADMIN_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then

@@ -6,26 +6,26 @@ from random import randint
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
-    AzureCognitiveSearchMemoryStore,
+from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_memory_store import (
+    AzureAiSearchMemoryStore,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    azure_cognitive_search_installed = True
+    azure_ai_search_installed = True
 except ImportError:
-    azure_cognitive_search_installed = False
+    azure_ai_search_installed = False
 
 pytestmark = pytest.mark.skipif(
-    not azure_cognitive_search_installed,
-    reason="Azure Cognitive Search is not installed",
+    not azure_ai_search_installed,
+    reason="Azure Ai Search is not installed",
 )
 
 
 @pytest.mark.asyncio
 async def test_constructor():
     test_endpoint = "https://test-endpoint.search.windows.net"
-    async with AzureCognitiveSearchMemoryStore(vector_size=4, search_endpoint=test_endpoint) as memory_store:
+    async with AzureAiSearchMemoryStore(vector_size=4, search_endpoint=test_endpoint) as memory_store:
         assert memory_store is not None
         assert memory_store._search_index_client is not None
 
@@ -33,7 +33,7 @@ async def test_constructor():
 @pytest.mark.asyncio
 async def test_collections():
     collection = f"int-tests-{randint(1000, 9999)}"
-    async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
+    async with AzureAiSearchMemoryStore(vector_size=4) as memory_store:
         await memory_store.create_collection(collection)
         time.sleep(1)
         try:
@@ -53,7 +53,7 @@ async def test_collections():
 @pytest.mark.asyncio
 async def test_upsert():
     collection = f"int-tests-{randint(1000, 9999)}"
-    async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
+    async with AzureAiSearchMemoryStore(vector_size=4) as memory_store:
         await memory_store.create_collection(collection)
         time.sleep(1)
         try:
@@ -86,7 +86,7 @@ async def test_upsert():
 @pytest.mark.asyncio
 async def test_record_not_found():
     collection = f"int-tests-{randint(1000, 9999)}"
-    async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
+    async with AzureAiSearchMemoryStore(vector_size=4) as memory_store:
         await memory_store.create_collection(collection)
         time.sleep(1)
         try:
@@ -124,7 +124,7 @@ async def test_record_not_found():
 @pytest.mark.asyncio
 async def test_search():
     collection = f"int-tests-{randint(1000, 9999)}"
-    async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
+    async with AzureAiSearchMemoryStore(vector_size=4) as memory_store:
         await memory_store.create_collection(collection)
         time.sleep(1)
         try:

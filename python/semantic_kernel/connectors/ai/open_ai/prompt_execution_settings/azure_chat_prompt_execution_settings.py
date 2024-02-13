@@ -67,7 +67,7 @@ class AzureAISearchDataSources(AzureDataSourceParameters):
 class AzureDataSources:
     """Class to hold Azure AI data source parameters."""
 
-    type: Literal["AzureCognitiveSearch", "AzureCosmosDB"] = "AzureCognitiveSearch"
+    type: Literal["AzureAiSearch", "AzureCosmosDB"] = "AzureAiSearch"
     parameters: Optional[SerializeAsAny[AzureDataSourceParameters]] = None
 
 

@@ -29,7 +29,7 @@ deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 # Create the data source settings
 azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
 az_source = AzureAISearchDataSources(**azure_ai_search_settings)
-az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
+az_data = AzureDataSources(type="AzureAiSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
 req_settings = AzureChatPromptExecutionSettings(extra_body=extra)
 
