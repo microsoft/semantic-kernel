@@ -101,13 +101,13 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         {
             if (chatHistory.Count == systemMessages.Count)
             {
-                throw new KernelException("Chat history can't contain only system messages.");
+                throw new InvalidOperationException("Chat history can't contain only system messages.");
             }
 
             if (systemMessages.Count > 1)
             {
-                throw new KernelException("Chat history can't contain more than one system message. " +
-                                          "Only the first system message will be processed but will be converted to the user message before sending to the Gemini api.");
+                throw new InvalidOperationException("Chat history can't contain more than one system message. " +
+                                                    "Only the first system message will be processed but will be converted to the user message before sending to the Gemini api.");
             }
 
             ConvertSystemMessageToUserMessageInChatHistory(chatHistory, systemMessages[0]);
