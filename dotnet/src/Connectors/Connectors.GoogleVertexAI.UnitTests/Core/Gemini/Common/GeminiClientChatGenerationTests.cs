@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Moq;
@@ -217,19 +216,19 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldThrowKernelExceptionIfChatHistoryContainsOnlySystemMessageAsync()
+    public async Task ShouldThrowInvalidOperationExceptionIfChatHistoryContainsOnlySystemMessageAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
         var chatHistory = new ChatHistory("System message");
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(
+        await Assert.ThrowsAsync<InvalidOperationException>(
             () => client.GenerateChatMessageAsync(chatHistory));
     }
 
     [Fact]
-    public async Task ShouldThrowKernelExceptionIfChatHistoryContainsOnlyManySystemMessagesAsync()
+    public async Task ShouldThrowInvalidOperationExceptionIfChatHistoryContainsOnlyManySystemMessagesAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
@@ -238,12 +237,12 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         chatHistory.AddSystemMessage("System message 3");
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(
+        await Assert.ThrowsAsync<InvalidOperationException>(
             () => client.GenerateChatMessageAsync(chatHistory));
     }
 
     [Fact]
-    public async Task ShouldThrowKernelExceptionIfChatHistoryContainsMoreThanOneSystemMessageAsync()
+    public async Task ShouldThrowInvalidOperationExceptionIfChatHistoryContainsMoreThanOneSystemMessageAsync()
     {
         var client = this.CreateChatCompletionClient();
         var chatHistory = new ChatHistory("System message");
@@ -252,7 +251,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         chatHistory.AddUserMessage("hello");
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(
+        await Assert.ThrowsAsync<InvalidOperationException>(
             () => client.GenerateChatMessageAsync(chatHistory));
     }
 
