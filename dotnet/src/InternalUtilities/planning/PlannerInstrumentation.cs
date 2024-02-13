@@ -33,8 +33,8 @@ internal static partial class PlannerInstrumentation
 
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
-        Func<TPlanner, Kernel, string, CancellationToken, Task<TPlan>> createPlanAsync,
-        TPlanner planner, Kernel kernel, string goal, ILogger logger, CancellationToken cancellationToken)
+        Func<TPlanner, Kernel, string, KernelArguments?, CancellationToken, Task<TPlan>> createPlanAsync,
+        TPlanner planner, Kernel kernel, string goal, KernelArguments? arguments, ILogger logger, CancellationToken cancellationToken)
         where TPlanner : class
         where TPlan : class
     {
@@ -49,7 +49,7 @@ internal static partial class PlannerInstrumentation
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            var plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
+            var plan = await createPlanAsync(planner, kernel, goal, arguments, cancellationToken).ConfigureAwait(false);
             logger.LogPlanCreated();
             logger.LogPlan(plan);
 

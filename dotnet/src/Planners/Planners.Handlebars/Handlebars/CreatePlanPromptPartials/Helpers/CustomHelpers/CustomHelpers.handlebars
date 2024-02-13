@@ -1,0 +1,33 @@
+{{! Kernel functions as helpers}}
+{{#*inline "CustomHelpers"}}
+{{#if (or complexTypeDefinitions complexSchemaDefinitions)}}
+{{> ComplexTypes }}
+{{/if}}
+## Custom helpers
+Lastly, you have the following custom helpers to use.
+
+{{#each functions}}
+### `{{doubleOpen}}{{PluginName}}{{../nameDelimiter}}{{Name}}{{doubleClose}}`
+Description: {{Description}}
+Inputs:
+  {{#each Parameters}}
+    - {{Name}}:
+    {{~#if ParameterType}} {{ParameterType.Name}} -
+    {{~else}}
+        {{~#if Schema}} {{getSchemaTypeName this}} -{{/if}}
+    {{~/if}}
+    {{~#if Description}} {{Description}}{{/if}}
+    {{~#if IsRequired}} (required){{else}} (optional){{/if}}
+  {{/each}}
+Output:
+{{~#if ReturnParameter}}
+  {{~#if ReturnParameter.ParameterType}} {{ReturnParameter.ParameterType.Name}}
+  {{~else}}
+    {{~#if ReturnParameter.Schema}} {{getSchemaReturnTypeName ReturnParameter Name}}
+    {{else}} string{{/if}}
+  {{~/if}}
+  {{~#if ReturnParameter.Description}} - {{ReturnParameter.Description}}{{/if}}
+{{/if}}
+
+{{/each}}
+{{/inline}}
