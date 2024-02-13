@@ -18,14 +18,6 @@ internal sealed class ThreadRunModel
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Always "thread.run"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "thread.run";
-#pragma warning restore CA1720 // Identifier contains type name
-
-    /// <summary>
     /// Unix timestamp (in seconds) for when the run was created.
     /// </summary>
     [JsonPropertyName("created_at")]

@@ -38,7 +38,7 @@ internal static partial class OpenAIRestExtensions
 
         return
             context.ExecutePostAsync<ThreadMessageModel>(
-                GetMessagesUrl(threadId),
+                context.GetMessagesUrl(threadId),
                 payload,
                 cancellationToken);
     }
@@ -59,7 +59,7 @@ internal static partial class OpenAIRestExtensions
     {
         return
             context.ExecuteGetAsync<ThreadMessageModel>(
-                GetMessagesUrl(threadId, messageId),
+                context.GetMessagesUrl(threadId, messageId),
                 cancellationToken);
     }
 
@@ -77,7 +77,7 @@ internal static partial class OpenAIRestExtensions
     {
         return
             context.ExecuteGetAsync<ThreadMessageListModel>(
-                GetMessagesUrl(threadId),
+                context.GetMessagesUrl(threadId),
                 cancellationToken);
     }
 
@@ -99,7 +99,7 @@ internal static partial class OpenAIRestExtensions
             messageIds.Select(
                 id =>
                     context.ExecuteGetAsync<ThreadMessageModel>(
-                        GetMessagesUrl(threadId, id),
+                        context.GetMessagesUrl(threadId, id),
                         cancellationToken)).ToArray();
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -107,13 +107,13 @@ internal static partial class OpenAIRestExtensions
         return tasks.Select(t => t.Result).ToArray();
     }
 
-    internal static string GetMessagesUrl(string threadId)
+    internal static string GetMessagesUrl(this OpenAIRestContext context, string threadId)
     {
-        return $"{BaseThreadUrl}/{threadId}/messages";
+        return $"{context.GetThreadUrl(threadId)}/messages";
     }
 
-    internal static string GetMessagesUrl(string threadId, string messageId)
+    internal static string GetMessagesUrl(this OpenAIRestContext context, string threadId, string messageId)
     {
-        return $"{BaseThreadUrl}/{threadId}/messages/{messageId}";
+        return $"{context.GetThreadUrl(threadId)}/messages/{messageId}";
     }
 }
