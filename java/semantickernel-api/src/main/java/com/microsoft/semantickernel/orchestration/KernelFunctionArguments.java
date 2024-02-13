@@ -8,16 +8,18 @@ import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensiti
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.Nullable;
+
 import reactor.util.annotation.NonNull;
 
 /**
- * Context Variables is a data structure that holds temporary data while a task is being performed.
- * It is accessed by functions in the pipeline.
+ * Arguments to a kernel function. 
  */
 public class KernelFunctionArguments implements Buildable, Map<String, ContextVariable<?>> {
 
@@ -28,6 +30,11 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
 
     private final CaseInsensitiveMap<ContextVariable<?>> variables;
 
+    /**
+     * Create a new instance of KernelFunctionArguments.
+     *
+     * @param variables The variables to use for the function invocation.
+     */
     public KernelFunctionArguments(
         @Nullable
         Map<String, ContextVariable<?>> variables) {
@@ -38,12 +45,19 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
         }
     }
 
+    /**
+     * Create a new instance of KernelFunctionArguments.
+     *
+     * @param content The content to use for the function invocation.
+     */
     public KernelFunctionArguments(@NonNull ContextVariable<?> content) {
         this.variables = new CaseInsensitiveMap<>();
         this.variables.put(MAIN_KEY, content);
     }
 
-
+    /**
+     * Create a new instance of KernelFunctionArguments.
+     */
     public KernelFunctionArguments() {
         this.variables = new CaseInsensitiveMap<>();
     }
@@ -109,6 +123,11 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
                 key, value.getType().getClazz(), clazz));
     }
 
+    /**
+     * Return whether the variable with the given name is null or empty.
+     * @param key the key for the variable
+     * @return {@code true} if the variable is null or empty, {@code false} otherwise
+     */
     public boolean isNullOrEmpty(String key) {
         return get(key) == null || get(key).isEmpty();
     }

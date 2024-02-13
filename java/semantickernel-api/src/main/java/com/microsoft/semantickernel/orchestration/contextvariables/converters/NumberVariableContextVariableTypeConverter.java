@@ -1,16 +1,26 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import java.util.function.Function;
+
 import javax.annotation.Nullable;
 
+/**
+ * A {@link ContextVariableTypeConverter} for {@link Number}.
+ */
 public class NumberVariableContextVariableTypeConverter<T extends Number> extends
     ContextVariableTypeConverter<T> {
 
     private final Function<Number, T> fromNumber;
 
+    /**
+     * Creates a new instance of the {@link NumberVariableContextVariableTypeConverter} class.
+     * @param clazz the class
+     * @param fromPromptString the function to convert from a prompt string
+     * @param fromNumber the function to convert from a number
+     */
     public NumberVariableContextVariableTypeConverter(
         Class<T> clazz,
         Function<String, T> fromPromptString,

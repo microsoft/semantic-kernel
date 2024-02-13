@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.exceptions.SKCheckedException;
 

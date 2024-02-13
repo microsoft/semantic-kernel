@@ -1,12 +1,5 @@
 package com.microsoft.semantickernel.orchestration.contextvariables;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.BooleanVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.CharacterVariableContextVariableTypeConverter;
@@ -18,6 +11,16 @@ import com.microsoft.semantickernel.orchestration.contextvariables.converters.Nu
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.StringVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.converters.VoidVariableContextVariableTypeConverter;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+/**
+ * A collection of context variable types, with converters to convert objects to the types.
+ */
 public class ContextVariableTypes {
 
     private static final ContextVariableTypes DEFAULT_TYPES;
@@ -69,28 +72,58 @@ public class ContextVariableTypes {
 
     private final Map<Class<?>, ContextVariableType<?>> variableTypes;
 
+    /**
+     * Create a new collection of context variable types.
+     *
+     * @param converters The converters to use to convert objects to the types.
+     */
     public ContextVariableTypes(List<ContextVariableTypeConverter<?>> converters) {
         variableTypes = new HashMap<>();
         converters.forEach(this::putConverter);
     }
 
+    /**
+     * Create a new collection of context variable types.
+     */
     public ContextVariableTypes() {
         variableTypes = new HashMap<>();
     }
 
+    /**
+     * Create a new collection of context variable types.
+     *
+     * @param contextVariableTypes The collection of context variable types to copy.
+     */
     public ContextVariableTypes(ContextVariableTypes contextVariableTypes) {
         this.variableTypes = new HashMap<>(contextVariableTypes.variableTypes);
     }
 
+    /**
+     * Add a converter to the global collection of context variable type converters.
+     * @param conveter The converter to add.
+     * @see #getGlobalVariableTypeForClass(Class)
+     */
     public static void addGlobalConverter(
-        ContextVariableTypeConverter<?> type) {
-        DEFAULT_TYPES.putConverter(type);
+        ContextVariableTypeConverter<?> conveter) {
+        DEFAULT_TYPES.putConverter(conveter);
     }
 
+    /**
+     * Get the global context variable type for the given class.
+     * @param aClass The class to get the context variable type for.
+     * @param <T> The type of the context variable.
+     * @return The context variable type for the given class.
+     * @see #addGlobalConverter(ContextVariableTypeConverter)
+     */
     public static <T> ContextVariableType<T> getGlobalVariableTypeForClass(Class<T> aClass) {
         return DEFAULT_TYPES.getVariableTypeForClass(aClass);
     }
 
+    /**
+     * Add a converter to this {@code ContextVariableTypes} instance.
+     * @param <T> The type of the context variable.
+     * @param contextVariableTypeConverter the converter to add.
+     */
     public <T> void putConverter(
         ContextVariableTypeConverter<T> contextVariableTypeConverter) {
         variableTypes.put(contextVariableTypeConverter.getType(),
@@ -98,6 +131,13 @@ public class ContextVariableTypes {
                 contextVariableTypeConverter.getType()));
     }
 
+    /**
+     * Convert the given object to the given class, if possible.
+     * @param <T> the type to convert to
+     * @param s the object to convert
+     * @param clazz the class of the type to convert to
+     * @return the converted object, or {@code null} if the object cannot be converted
+     */
     @Nullable
     @SuppressWarnings("unchecked")
     public static <T> T convert(@Nullable Object s, Class<T> clazz) {
@@ -113,6 +153,13 @@ public class ContextVariableTypes {
     }
 
 
+    /**
+     * Get the context variable type for the given class.
+     * @param aClass The class to get the context variable type for.
+     * @param <T> The type of the context variable.
+     * @return The context variable type for the given class
+     * @throws SKException if the type cannot be found.
+     */
     @SuppressWarnings("unchecked")
     public <T> ContextVariableType<T> getVariableTypeForClass(Class<T> aClass) {
         try {
@@ -122,6 +169,14 @@ public class ContextVariableTypes {
         }
     }
 
+    /**
+     * Get the context variable type for the given class or for a type that is assignable 
+     * from the given class. its super class.
+     * @param aClass The class to get the context variable type for.
+     * @param <T> The type of the context variable.
+     * @return The context variable type for the given class.
+     * @throws SKException if the type cannot be found.
+     */
     @SuppressWarnings("unchecked")
     public <T> ContextVariableType<T> getVariableTypeForSuperClass(Class<T> aClass) {
         try {
@@ -130,7 +185,6 @@ public class ContextVariableTypes {
             return DEFAULT_TYPES.getVariableTypeForSuperClassInternal(aClass);
         }
     }
-
 
     @SuppressWarnings("unchecked")
     private <T> ContextVariableType<T> getVariableTypeForClassInternal(Class<T> aClass) {

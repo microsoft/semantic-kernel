@@ -11,6 +11,11 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A converter for a context variable type. This class is used to convert objects to and from a
+ * prompt string, and to convert objects to the type of the context variable.
+ * @param <T> the type of the context variable
+ */
 public class ContextVariableTypeConverter<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -22,6 +27,11 @@ public class ContextVariableTypeConverter<T> {
     private final Function<String, T> fromPromptString;
     private final List<Converter<T, ?>> toObjects;
 
+    /**
+     * A converter from one type to another.
+     * @param <T> the source type
+     * @param <U> the target type
+     */
     public interface Converter<T, U> {
 
         U toObject(T t);
@@ -29,6 +39,11 @@ public class ContextVariableTypeConverter<T> {
         Class<U> getTargetType();
     }
 
+    /**
+     * A converter that does no conversion. This converter is often used as a default when no
+     * other conveter can be found for the type. 
+     * @param <T> the type of the context variable
+     */
     public static class NoopConverter<T> extends ContextVariableTypeConverter<T> {
 
         public NoopConverter(Class<T> clazz) {
@@ -46,6 +61,11 @@ public class ContextVariableTypeConverter<T> {
         }
     }
 
+    /**
+     * A base class for concrete implementations of {@link ContextVariableTypeConverter.Converter}.
+     * @param <T> the source type
+     * @param <U> the target type
+     */
     public static abstract class DefaultConverter<T, U> implements Converter<T, U> {
 
         private final Class<U> targetType;
@@ -60,6 +80,13 @@ public class ContextVariableTypeConverter<T> {
         }
     }
 
+    /**
+     * Create a new context variable type converter.
+     * @param clazz the class of the type
+     * @param fromObject a function to convert an object to the type
+     * @param toPromptString a function to convert the type to a prompt string
+     * @param fromPromptString a function to convert a prompt string to the type
+     */
     public ContextVariableTypeConverter(
         Class<T> clazz,
         Function<Object, T> fromObject,
@@ -68,6 +95,14 @@ public class ContextVariableTypeConverter<T> {
         this(clazz, fromObject, toPromptString, fromPromptString, Collections.emptyList());
     }
 
+    /**
+     * Create a new context variable type converter.
+     * @param clazz the class of the type
+     * @param fromObject a function to convert an object to the type
+     * @param toPromptString a function to convert the type to a prompt string
+     * @param fromPromptString a function to convert a prompt string to the type
+     * @param toObjects a list of converters to convert the type to other types
+     */
     public ContextVariableTypeConverter(
         Class<T> clazz,
         Function<Object, T> fromObject,
@@ -82,6 +117,13 @@ public class ContextVariableTypeConverter<T> {
     }
 
 
+    /**
+     * Use this converter to convert the object to the type of the context variable.
+     * @param <U> the type to convert to
+     * @param t the object to convert
+     * @param clazz the class of the type to convert to
+     * @return the converted object
+     */
     @Nullable
     @SuppressWarnings("unchecked")
     public <U> U toObject(@Nullable Object t, Class<U> clazz) {
@@ -111,6 +153,12 @@ public class ContextVariableTypeConverter<T> {
         return null;
     }
 
+    /**
+     * Convert the object to the type of the context variable using the {@code fromObject} function
+     * provided to the constructor.
+     * @param s the object to convert
+     * @return the converted object
+     */
     @Nullable
     public T fromObject(@Nullable Object s) {
         if (s == null) {
@@ -119,6 +167,12 @@ public class ContextVariableTypeConverter<T> {
         return fromObject.apply(s);
     }
 
+    /**
+     * Convert the type to a prompt string using the {@code toPromptString} function provided to the
+     * constructor.
+     * @param t the type to convert
+     * @return the prompt string
+     */
     public String toPromptString(@Nullable T t) {
         if (t == null) {
             return "";
@@ -126,6 +180,12 @@ public class ContextVariableTypeConverter<T> {
         return toPromptString.apply(t);
     }
 
+    /**
+     * Convert the prompt string to the type using the {@code fromPromptString} function provided to
+     * the constructor.
+     * @param t the prompt string to convert
+     * @return the type
+     */
     @Nullable
     public T fromPromptString(@Nullable String t) {
         if (t == null) {
@@ -134,6 +194,10 @@ public class ContextVariableTypeConverter<T> {
         return fromPromptString.apply(t);
     }
 
+    /**
+     * Get the class of the type.
+     * @return the class of the type
+     */
     public Class<T> getType() {
         return clazz;
     }

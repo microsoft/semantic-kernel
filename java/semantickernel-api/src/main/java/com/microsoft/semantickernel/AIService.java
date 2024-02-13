@@ -1,15 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import java.util.Map;
+
 import javax.annotation.Nullable;
 
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+
 /**
- * Marker interface for AI services
+ * Marker interface for AI services. {@code AIService}s are registered with the {@code Kernel} 
+ * and are used to provide access to AI services.
+ * @see Kernel.Builder#withService(AIService)
  */
 public interface AIService {
 
+    /**
+     * Gets the attributes of the service.
+     * @return The attributes of the service.
+     */
     Map<String, ContextVariable<?>> getAttributes();
 
     /**
@@ -59,12 +67,19 @@ public interface AIService {
         return getAttribute(this, API_VERSION_KEY);
     }
 
+    /**
+     * Gets the service identifier.
+     * @return The service identifier.
+     */
     @Nullable
     String getServiceId();
 
-    /// <summary>
-    /// Gets the specified attribute.
-    /// </summary>
+    /**
+     * Get the named attribute from the service's attributes.
+     * @param service The service to get the attribute from.
+     * @param key The key of the attribute to get.
+     * @return The value of the attribute if it exists; otherwise, {@code null}.
+     */
     @Nullable
     static String getAttribute(AIService service, String key) {
         if (service.getAttributes() != null) {

@@ -222,7 +222,7 @@ public class Example57_KernelHooks {
             String result = (String) event.getResult().getResult();
             result = result.replaceAll("[aeiouAEIOU0-9]", "*");
 
-            return new FunctionInvokedEvent<>(
+            return new FunctionInvokedEvent(
                 event.getFunction(),
                 event.getArguments(),
                 new FunctionResult<>(

@@ -1,5 +1,11 @@
 package com.microsoft.semantickernel.hooks;
 
+import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
+import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,20 +14,24 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
-import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
-import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
-import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
-import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
-
+/**
+ * Represents a collection of hooks that can be used to intercept and modify events in the kernel.
+ */
 public class KernelHooks {
 
     private final Map<String, KernelHook<?>> hooks;
 
+    /**
+     * Creates a new instance of the {@link KernelHooks} class.
+     */
     public KernelHooks() {
         this.hooks = new HashMap<>();
     }
 
+    /**
+     * Creates a copy of the {@link KernelHooks}.
+     * @param kernelHooks the hooks to copy
+     */
     public KernelHooks(@Nullable KernelHooks kernelHooks) {
         this();
         if (kernelHooks != null) {
@@ -29,44 +39,87 @@ public class KernelHooks {
         }
     }
 
+    /**
+     * Creates a new instance of the {@link KernelHooks} class 
+     * from the given hooks.
+     * @param hooks the hooks to add
+     */
     public KernelHooks(Map<String, KernelHook<?>> hooks) {
         this();
         this.hooks.putAll(hooks);
     }
 
+    /**
+     * Creates an unmodifiable copy of this {@link KernelHooks}.
+     * @return an unmodifiable copy of this {@link KernelHooks}
+     */
     public UnmodifiableKernelHooks unmodifiableClone() {
         return new UnmodifiableKernelHooks(this);
     }
     
+
+    /**
+     * Gets the hooks in this collection.
+     * @return an unmodifiable map of the hooks
+     */
     private Map<String, KernelHook<?>> getHooks() {
         return Collections.unmodifiableMap(hooks);
     }
 
+    /*
+     * Add a {@link FunctionInvokingHook} to the collection of hooks.
+     * @param the key of the hook in the collection
+     */
     public String addFunctionInvokingHook(
-        Function<FunctionInvokingEvent, FunctionInvokingEvent> function) {
+        Function<FunctionInvokingEvent<?>, FunctionInvokingEvent<?>> function) {
         return addHook((FunctionInvokingHook) function::apply);
     }
 
+    /**
+     * Add a {@link FunctionInvokedHook} to the collection of hooks.
+     * @param function the function to add
+     * @return the key of the hook in the collection
+     */
     public String addFunctionInvokedHook(
         Function<FunctionInvokedEvent<?>, FunctionInvokedEvent<?>> function) {
         return addHook((FunctionInvokedHook) function::apply);
     }
 
+    /**
+     * Add a {@link PreChatCompletionHook} to the collection of hooks.
+     * @param function the function to add
+     * @return the key of the hook in the collection
+     */
     public String addPreChatCompletionHook(
         Function<PreChatCompletionEvent, PreChatCompletionEvent> function) {
         return addHook((PreChatCompletionHook) function::apply);
     }
 
+    /**
+     * Add a {@link PromptRenderedHook} to the collection of hooks.
+     * @param function the function to add
+     * @return the key of the hook in the collection
+     */
     public String addPromptRenderedHook(
         Function<PromptRenderedEvent, PromptRenderedEvent> function) {
         return addHook((PromptRenderedHook) function::apply);
     }
 
+    /**
+     * Add a {@link PromptRenderingHook} to the collection of hooks.
+     * @param function the function to add
+     * @return the key of the hook in the collection
+     */
     public String addPromptRenderingHook(
         Function<PromptRenderingEvent, PromptRenderingEvent> function) {
         return addHook((PromptRenderingHook) function::apply);
     }
 
+    /**
+     * Executes the hooks in this collection that accept the event.
+     * @param event the event to execute the hooks on
+     * @return the event after the hooks have been executed
+     */
     @SuppressWarnings("unchecked")
     public <T extends KernelHookEvent> T executeHooks(T event) {
         for (KernelHook<?> hook : hooks.values()) {
@@ -78,20 +131,41 @@ public class KernelHooks {
         return event;
     }
 
+    /**
+     * Add a {@link KernelHook} to the collection of hooks.
+     * @param hook the hook to add
+     * @return the key of the hook in the collection
+     */
     public String addHook(KernelHook<?> hook) {
         return addHook(UUID.randomUUID().toString(), hook);
     }
 
+    /**
+     * Add a {@link KernelHook} to the collection of hooks.
+     * @param hookName the key of the hook in the collection
+     * @param hook the hook to add
+     * @return the key of the hook in the collection
+     */
     public String addHook(String hookName, KernelHook<?> hook) {
         hooks.put(hookName, hook);
         return hookName;
     }
 
+    /**
+     * Remove a hook from the collection of hooks.
+     * @param hookName the key of the hook in the collection
+     * @return the removed hook, or {@code null} if the hook was not found
+     */
     public KernelHook<?> removeHook(String hookName) {
         return hooks.remove(hookName);
     }
 
-    public KernelHooks append(@Nullable KernelHooks kernelHooks) {
+    /**
+     * Appends the given hooks to this collection.
+     * @param kernelHooks the hooks to append
+     * @return this instance of the {@link KernelHooks} class
+     */
+    public KernelHooks addHooks(@Nullable KernelHooks kernelHooks) {
         if (kernelHooks == null) {
             return this;
         }
@@ -100,15 +174,17 @@ public class KernelHooks {
         return this;
     }
 
+    /**
+     * Determines if this collection of hooks is empty.
+     * @return {@code true} if the collection is empty, otherwise {@code false}
+     */
     public boolean isEmpty() {
         return hooks.isEmpty();
     }
 
-    public KernelHooks addHooks(KernelHooks hooks) {
-        this.hooks.putAll(hooks.getHooks());
-        return this;
-    }
-
+    /**
+     * A wrapper for KernelHooks that disables mutating methods.
+     */
     public static class UnmodifiableKernelHooks extends KernelHooks {
             
         private UnmodifiableKernelHooks(KernelHooks kernelHooks) {
@@ -116,7 +192,7 @@ public class KernelHooks {
         }
 
         @Override
-        public String addFunctionInvokingHook(Function<FunctionInvokingEvent, FunctionInvokingEvent> function) {
+        public String addFunctionInvokingHook(Function<FunctionInvokingEvent<?>, FunctionInvokingEvent<?>> function) {
             throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
         }
 
@@ -151,7 +227,7 @@ public class KernelHooks {
         }
 
         @Override
-        public KernelHooks append(@Nullable KernelHooks kernelHooks) {
+        public KernelHooks addHooks(@Nullable KernelHooks kernelHooks) {
             throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
         }
 
