@@ -84,8 +84,8 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         var result = await service.GetAudioContentAsync("Some text", new OpenAITextToAudioExecutionSettings("voice"));
 
         // Assert
-        Assert.NotNull(result?.AudioData);
-        Assert.True(result.AudioData.ToArray().SequenceEqual(expectedByteArray));
+        Assert.NotNull(result?.Data);
+        Assert.True(result.Data.ToArray().SequenceEqual(expectedByteArray));
     }
 
     [Theory]
