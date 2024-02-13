@@ -2,11 +2,10 @@
 
 import asyncio
 import os
-from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
     OpenAIChatPromptTemplate,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
@@ -14,6 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.utils import (
     get_tool_call_object,
 )
 from semantic_kernel.core_plugins import MathPlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -76,41 +76,39 @@ function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
 
-async def chat(context: sk.KernelContext) -> Tuple[bool, sk.KernelContext]:
+async def chat() -> bool:
     try:
         user_input = input("User:> ")
-        context.variables["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
-        return False, None
+        return False
     except EOFError:
         print("\n\nExiting chat...")
-        return False, None
+        return False
 
     if user_input == "exit":
         print("\n\nExiting chat...")
-        return False, None
-
-    context = await chat_completion_with_tool_call(
-        kernel,
+        return False
+    arguments = KernelArguments(user_input=user_input, execution_settings=prompt_config.execution_settings)
+    result = await chat_completion_with_tool_call(
+        kernel=kernel,
+        arguments=arguments,
         chat_plugin_name="ChatBot",
         chat_function_name="Chat",
-        context=context,
     )
-    print(f"Mosscap:> {context.result}")
-    return True, context
+    print(f"Mosscap:> {result}")
+    return True
 
 
 async def main() -> None:
     chatting = True
-    context = kernel.create_new_context()
     print(
         "Welcome to the chat bot!\
 \n  Type 'exit' to exit.\
 \n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
     )
     while chatting:
-        chatting, context = await chat(context)
+        chatting = await chat()
 
 
 if __name__ == "__main__":
