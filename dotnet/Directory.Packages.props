@@ -29,7 +29,7 @@
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
     <!-- Tokenizers -->
-    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.21.0" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.21.1" />
     <PackageVersion Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.3" />
     <PackageVersion Include="SharpToken" Version="1.2.15" />
     <!-- Microsoft.Extensions.* -->
