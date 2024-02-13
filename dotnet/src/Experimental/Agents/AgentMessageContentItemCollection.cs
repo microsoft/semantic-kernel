@@ -4,29 +4,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
+namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 
 /// <summary>
-/// Contains collection of chat message content items of type <see cref="KernelContent"/>.
+/// Contains collection of agent message content items of type <see cref="KernelContent"/>.
 /// </summary>
-public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyList<KernelContent>
+public class AgentMessageContentItemCollection : IList<KernelContent>, IReadOnlyList<KernelContent>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
+    /// Initializes a new instance of the <see cref="AgentMessageContentItemCollection"/> class.
     /// </summary>
-    public ChatMessageContentItemCollection()
+    public AgentMessageContentItemCollection()
     {
         this._items = new();
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
-    /// </summary>
-    public ChatMessageContentItemCollection(IReadOnlyList<KernelContent> items)
-    {
-        this._items = new(items);
     }
 
     /// <summary>
