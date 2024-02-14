@@ -175,7 +175,7 @@ public sealed class HandlebarsPlannerTests
         var planner = new HandlebarsPlanner(
             new HandlebarsPlannerOptions()
             {
-                GetCreatePlanPrompt = () => $"{mockPromptOverride} {{{{> UserGoal }}}}"
+                CreatePlanPromptHandler = () => $"{mockPromptOverride} {{{{> UserGoal }}}}"
             });
 
         // Act
