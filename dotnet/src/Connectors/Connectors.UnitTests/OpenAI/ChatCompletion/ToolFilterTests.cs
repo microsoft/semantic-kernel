@@ -159,6 +159,45 @@ public sealed class ToolFilterTests : IDisposable
     }
 
     [Fact]
+    public async Task PostInvocationToolFilterCancellationWorksCorrectlyAsync()
+    {
+        // Arrange
+        var functionInvocations = 0;
+        var preFilterInvocations = 0;
+        var postFilterInvocations = 0;
+
+        var kernel = new Kernel();
+        kernel.ImportPluginFromObject(new FakePlugin(() => functionInvocations++));
+
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(
+            new FakeToolFilter(
+                onToolInvoking: (context) =>
+                {
+                    preFilterInvocations++;
+                },
+                onToolInvoked: (context) =>
+                {
+                    postFilterInvocations++;
+                    context.StopBehavior = ToolFilterStopBehavior.Cancel;
+                }));
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ToolResponseMultipleToolCalls) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        var chatHistory = new ChatHistory();
+
+        // Act
+        var result = await this._service.GetChatMessageContentsAsync(chatHistory, this._settings, kernel);
+
+        // Assert
+        Assert.Equal(1, preFilterInvocations);
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(1, postFilterInvocations);
+    }
+
+    [Fact]
     public async Task PostInvocationToolFilterChangesChatHistoryAsync()
     {
         // Arrange
@@ -436,4 +475,47 @@ public sealed class ToolFilterTests : IDisposable
     ""total_tokens"": 99
   }
 }";
+
+
+    private const string ToolResponseMultipleToolCalls = @"{
+  ""id"": ""response-id"",
+  ""object"": ""chat.completion"",
+  ""created"": 1699896916,
+  ""model"": ""gpt-3.5-turbo-0613"",
+  ""choices"": [
+    {
+      ""index"": 0,
+      ""message"": {
+        ""role"": ""assistant"",
+        ""content"": null,
+        ""tool_calls"": [
+          {
+            ""id"": ""1"",
+            ""type"": ""function"",
+            ""function"": {
+              ""name"": ""FakePlugin-Foo"",
+              ""arguments"": ""{}""
+            }
+          },
+          {
+            ""id"": ""2"",
+            ""type"": ""function"",
+            ""function"": {
+              ""name"": ""FakePlugin-Foo"",
+              ""arguments"": ""{}""
+            }
+          }
+        ]
+      },
+      ""logprobs"": null,
+      ""finish_reason"": ""tool_calls""
+    }
+  ],
+  ""usage"": {
+    ""prompt_tokens"": 82,
+    ""completion_tokens"": 17,
+    ""total_tokens"": 99
+  }
+}
+";
 }
