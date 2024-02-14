@@ -651,8 +651,12 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <!--
                             <java>
+                                <eclipse>
+                                    <version>4.30</version>
+                                    <file>eclipse-formatter.xml</file>
+                                </eclipse>
+                                <!--
                                 <googleJavaFormat>
                                     <version>${google.java.format.version}</version>
                                     <style>AOSP</style>
@@ -662,8 +666,8 @@
                                     <content>// Copyright (c) Microsoft. All rights reserved.</content>
                                 </licenseHeader>
                                 <toggleOffOn />
+                                -->
                             </java>
-                            -->
                         </configuration>
                     </plugin>
                     <plugin>
