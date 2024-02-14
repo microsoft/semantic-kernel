@@ -3,9 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.microsoft.semantic-kernel</groupId>
-    <artifactId>sk-v1-samples</artifactId>
-    <version>1.0.0-alpha.1-SNAPSHOT</version>
+    <parent>
+        <groupId>com.microsoft.semantic-kernel</groupId>
+        <artifactId>semantickernel-samples-parent</artifactId>
+        <version>1.0.0-alpha.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>semantickernel-v1-samples</artifactId>
 
     <name>Semantic Kernel version 1 Samples</name>
     <description>Sample code for using the Semantic Kernel version 1 API</description>
@@ -47,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>aiservices-openai</artifactId>
+            <artifactId>semantickernel-aiservices-openai</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
@@ -59,7 +64,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>aiservices-openai</artifactId>
+            <artifactId>semantickernel-aiservices-openai</artifactId>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>

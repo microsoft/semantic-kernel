@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
@@ -50,6 +51,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @param kernel The kernel to invoke the function on.
      * @param function The function to invoke.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public FunctionInvocation(
         Kernel kernel,
         KernelFunction<T> function) {
@@ -65,6 +67,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @param function The function to invoke.
      * @param resultType The type of the result of the function invocation.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public FunctionInvocation(
         Kernel kernel,
         KernelFunction<?> function,
@@ -238,7 +241,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         if (variableType == null) {
             LOGGER.debug(
                 "No variable type explicitly specified by calling 'withResultType' for function invocation: "
-                    + function.getSkillName() + "." + function.getName() + "."
+                    + function.getPluginName() + "." + function.getName() + "."
                     + " This may cause a runtime error (probably a ClassCastException) if the result type is not compatible with the expected type.");
         }
 

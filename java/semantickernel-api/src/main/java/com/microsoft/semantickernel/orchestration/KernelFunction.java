@@ -58,9 +58,9 @@ public abstract class KernelFunction<T> implements Buildable {
     }
 
     /**
-     * @return The name of the skill that this function is within
+     * @return The name of the plugin that this function is within
      */
-    public String getSkillName() {
+    public String getPluginName() {
         return metadata.getName();
     }
 

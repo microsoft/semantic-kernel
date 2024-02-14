@@ -29,7 +29,7 @@ public class ToolCallBehavior {
         }
 
         static String getKey(KernelFunction<?> function) {
-            return getKey(function.getSkillName(), function.getName());
+            return getKey(function.getPluginName(), function.getName());
         }
 
         static String getKey(String skillName, String functionName) {
@@ -187,7 +187,7 @@ public class ToolCallBehavior {
      */
     public boolean functionRequired(KernelFunction<?> function) {
         if (function != null) {
-            return functionRequired(function.getSkillName(), function.getName());
+            return functionRequired(function.getPluginName(), function.getName());
         }
         return false;
     }
@@ -214,7 +214,7 @@ public class ToolCallBehavior {
     public boolean functionEnabled(KernelFunction<?> function) {
 
         if (function != null) {
-            return functionEnabled(function.getSkillName(), function.getName());
+            return functionEnabled(function.getPluginName(), function.getName());
         }
         return functionSettings.isEmpty();
     }

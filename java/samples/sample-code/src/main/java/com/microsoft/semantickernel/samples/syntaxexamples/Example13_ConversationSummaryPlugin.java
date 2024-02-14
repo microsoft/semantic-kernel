@@ -19,7 +19,7 @@ import com.sun.jna.StringArray;
 import reactor.core.publisher.Mono;
 
 /**
- * Demonstrate the {@code com.microsoft.semantickernel.coreskills.ConversationSummarySkill}
+ * Demonstrate the {@see com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin} plugin.
  * <p>
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
