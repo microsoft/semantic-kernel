@@ -15,13 +15,13 @@ namespace Microsoft.SemanticKernel.AudioToText;
 public interface IAudioToTextService : IAIService
 {
     /// <summary>
-    /// Get text content from audio binary data.
+    /// Get text content from audio content.
     /// </summary>
     /// <param name="content">Audio content.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Text content from audio binary data.</returns>
+    /// <returns>Text content from audio content.</returns>
     Task<TextContent> GetTextContentAsync(
         AudioContent content,
         PromptExecutionSettings? executionSettings = null,
