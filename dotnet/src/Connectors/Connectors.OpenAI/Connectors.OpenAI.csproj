@@ -6,7 +6,7 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);NU5104;SKEXP0013,SKEXP0014</NoWarn>
+    <NoWarn>$(NoWarn);NU5104;SKEXP0005,SKEXP0013,SKEXP0014</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 

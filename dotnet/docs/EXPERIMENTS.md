@@ -16,6 +16,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0002: Image services
 - SKEXP0003: Memory connectors
 - SKEXP0004: Kernel Filters
+- SKEXP0005: Audio services
 
 ## OpenAI and Azure OpenAI services
 

@@ -3,12 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.TextToAudio;
 
 namespace Microsoft.SemanticKernel.Contents;
 
 /// <summary>
-/// Represents audio content return from a <see cref="ITextToAudioService" /> service.
+/// Represents audio content.
 /// </summary>
 [Experimental("SKEXP0005")]
 public class AudioContent : KernelContent
