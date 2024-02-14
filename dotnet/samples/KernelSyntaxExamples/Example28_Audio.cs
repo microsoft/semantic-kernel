@@ -55,7 +55,7 @@ public sealed class Example28_Audio : BaseTest
         var audioToTextService = kernel.GetRequiredService<IAudioToTextService>();
 
         // Read audio content from a file
-        byte[] audioData = await File.ReadAllBytesAsync(AudioFilePath);
+        ReadOnlyMemory<byte> audioData = await File.ReadAllBytesAsync(AudioFilePath);
         AudioContent audioContent = new(new BinaryData(audioData));
 
         // Convert audio to text
