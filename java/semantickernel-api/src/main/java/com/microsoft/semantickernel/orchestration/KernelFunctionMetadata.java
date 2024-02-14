@@ -32,10 +32,8 @@ public class KernelFunctionMetadata<T> {
      */
     public KernelFunctionMetadata(
         String name,
-        @Nullable
-        String description,
-        @Nullable
-        List<KernelParameterMetadata<?>> parameters,
+        @Nullable String description,
+        @Nullable List<KernelParameterMetadata<?>> parameters,
         KernelReturnParameterMetadata<T> returnParameter) {
         this.name = name;
         this.description = description;

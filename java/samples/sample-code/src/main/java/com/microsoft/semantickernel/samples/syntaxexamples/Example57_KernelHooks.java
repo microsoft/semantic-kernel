@@ -73,7 +73,6 @@ public class Example57_KernelHooks {
         invocationHook(kernelBuilder.build());
     }
 
-
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to monitor usage:
     /// <see cref="Kernel.FunctionInvoking"/>
@@ -139,7 +138,6 @@ public class Example57_KernelHooks {
         System.out.println("Function Result: " + result.getResult());
     }
 
-
     /// <summary>
     /// Demonstrate using kernel-hooks to around prompt rendering:
     /// <see cref="Kernel.PromptRendering"/>
@@ -178,8 +176,7 @@ public class Example57_KernelHooks {
             return new PromptRenderedEvent(
                 event.getFunction(),
                 event.getArguments(),
-                prompt
-            );
+                prompt);
         };
         kernel.getGlobalKernelHooks().addHook(myRenderingHandler);
         kernel.getGlobalKernelHooks().addHook(myRenderedHandler);
@@ -195,7 +192,6 @@ public class Example57_KernelHooks {
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
-
 
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to post process result:
@@ -227,9 +223,7 @@ public class Example57_KernelHooks {
                 event.getArguments(),
                 new FunctionResult<>(
                     ContextVariable.of(result),
-                    event.getResult().getMetadata()
-                )
-            );
+                    event.getResult().getMetadata()));
         };
         kernel.getGlobalKernelHooks().addHook(hook);
 
@@ -240,7 +234,6 @@ public class Example57_KernelHooks {
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
-
 
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to cancel prior to execution:
@@ -284,7 +277,6 @@ public class Example57_KernelHooks {
             System.out.println("Exception: " + e.getMessage());
         }
     }
-
 
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to cancel post after execution:
@@ -347,8 +339,7 @@ public class Example57_KernelHooks {
                 new ChatRequestSystemMessage("Use upper case text when responding to the prompt."));
 
             return new PreChatCompletionEvent(
-                PreChatCompletionHook.cloneOptionsWithMessages(options, messages)
-            );
+                PreChatCompletionHook.cloneOptionsWithMessages(options, messages));
         });
 
         try {
@@ -393,8 +384,7 @@ public class Example57_KernelHooks {
                 new ChatRequestSystemMessage("Use upper case text when responding to the prompt."));
 
             return new PreChatCompletionEvent(
-                PreChatCompletionHook.cloneOptionsWithMessages(options, messages)
-            );
+                PreChatCompletionHook.cloneOptionsWithMessages(options, messages));
         });
 
         try {

@@ -34,8 +34,8 @@ import reactor.core.publisher.Mono;
 
 public class Example09_FunctionTypes {
 
-    private static final String PLUGIN_DIR =
-        System.getenv("PLUGIN_DIR") == null ? "." : System.getenv("PLUGIN_DIR");
+    private static final String PLUGIN_DIR = System.getenv("PLUGIN_DIR") == null ? "."
+        : System.getenv("PLUGIN_DIR");
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -43,7 +43,6 @@ public class Example09_FunctionTypes {
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "text-davinci-003");
-
 
     private static class DateTimeContextVariableTypeConverter extends
         ContextVariableTypeConverter<ZonedDateTime> {
@@ -60,8 +59,7 @@ public class Example09_FunctionTypes {
                 public String toObject(ZonedDateTime zonedDateTime) {
                     return zonedDateTime.format(DateTimeFormatter.ISO_DATE_TIME);
                 }
-            }
-        );
+            });
 
         public DateTimeContextVariableTypeConverter() {
             super(
@@ -74,8 +72,7 @@ public class Example09_FunctionTypes {
                 },
                 zonedDateTime -> zonedDateTime.format(DateTimeFormatter.ISO_DATE_TIME),
                 promptString -> ZonedDateTime.parse(promptString, DateTimeFormatter.ISO_DATE_TIME),
-                converters
-            );
+                converters);
         }
     }
 
@@ -117,8 +114,7 @@ public class Example09_FunctionTypes {
                 "ExamplePlugins",
                 "ExampleFunction",
                 null,
-                Example09_FunctionTypes.class
-            );
+                Example09_FunctionTypes.class);
 
         Kernel kernel = Kernel.builder()
             .withAIService(TextGenerationService.class, textGenerationService)
@@ -157,11 +153,9 @@ public class Example09_FunctionTypes {
                     .withVariable("currentDate",
                         ContextVariable.of(
                             ZonedDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC),
-                            new DateTimeContextVariableTypeConverter()
-                        )
-                    )
-                    .build()
-            ).block();
+                            new DateTimeContextVariableTypeConverter()))
+                    .build())
+            .block();
         System.out.println(result.getResult());
 
         result = kernel.invokeAsync(plugin.<String>get("NoInputTaskWithStringResult"))
@@ -193,9 +187,7 @@ public class Example09_FunctionTypes {
                                     return "A complex object";
                                 }
                             },
-                            new NoopConverter<>(Object.class)
-                        )
-                    )
+                            new NoopConverter<>(Object.class)))
                     .build())
             .block();
         System.out.println(result.getResult());
@@ -216,8 +208,7 @@ public class Example09_FunctionTypes {
                 KernelFunctionArguments
                     .builder()
                     .withVariable("x", "x input")
-                    .build()
-            )
+                    .build())
             .block();
         assert result == null;
         System.out.println(result != null ? result.getResult() : "null");
@@ -282,8 +273,7 @@ public class Example09_FunctionTypes {
             .withResultType(
                 new ContextVariableType<>(
                     new DateTimeContextVariableTypeConverter(),
-                    ZonedDateTime.class)
-            )
+                    ZonedDateTime.class))
             .block();
         System.out.println(result8.getResult());
 
@@ -292,38 +282,45 @@ public class Example09_FunctionTypes {
             .withResultType(
                 new ContextVariableType<>(
                     new DateTimeContextVariableTypeConverter(),
-                    ZonedDateTime.class)
-            )
+                    ZonedDateTime.class))
             .block();
         System.out.println(result9.getResult());
 
         /*
-        TODO: support FunctionResult
-        kernel
-            .invokeAsync(plugin.get("NoInputWithFunctionResult"),
-                null,
-                Void.class)
-            .block();
-
+         * TODO: support FunctionResult
+         * kernel
+         * .invokeAsync(plugin.get("NoInputWithFunctionResult"),
+         * null,
+         * Void.class)
+         * .block();
+         * 
          */
 
         /*
-        TODO: support injection
-        // Injecting Parameters Examples
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelFunctionWithStringResult)]);
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerWithNoResult)]);
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerFactoryWithNoResult)]);
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)]);
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingCancellationTokenWithStringResult)]);
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingServiceSelectorWithStringResult)]);
-        await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelWithInputTextAndStringResult)],
-            new()
-        {
-                ["textToSummarize"] = @"C# is a modern, versatile language by Microsoft, blending the efficiency of C++
-            with Visual Basic's simplicity. It's ideal for a wide range of applications,
-            emphasizing type safety, modularity, and modern programming paradigms."
-        });
-
+         * TODO: support injection
+         * // Injecting Parameters Examples
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingKernelFunctionWithStringResult)]);
+         * await
+         * kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerWithNoResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingLoggerFactoryWithNoResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingCultureInfoOrIFormatProviderWithStringResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingCancellationTokenWithStringResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingServiceSelectorWithStringResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingKernelWithInputTextAndStringResult)],
+         * new()
+         * {
+         * ["textToSummarize"] = @"C# is a modern, versatile language by Microsoft, blending the
+         * efficiency of C++
+         * with Visual Basic's simplicity. It's ideal for a wide range of applications,
+         * emphasizing type safety, modularity, and modern programming paradigms."
+         * });
+         * 
          */
 
         // You can also use the kernel.Plugins collection to invoke a function
@@ -332,7 +329,6 @@ public class Example09_FunctionTypes {
                 kernel.getFunction("Examples", "NoInputWithVoidResult"))
             .block();
     }
-
 
     public static class LocalExamplePlugin {
 
@@ -347,10 +343,7 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example of using a void task function with no input
         /// </summary>
-        @DefineKernelFunction(
-            name = "NoInputTaskWithVoidResult",
-            returnType = "java.lang.Void"
-        )
+        @DefineKernelFunction(name = "NoInputTaskWithVoidResult", returnType = "java.lang.Void")
         public Mono<Void> NoInputTaskWithVoidResult() {
             return Mono.fromRunnable(
                 () -> System.out.println("Running this.NoInputTaskWithVoidResult) -> No input"));
@@ -359,16 +352,9 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example of using a function with a DateTime input and a string result
         /// </summary>
-        @DefineKernelFunction(
-            name = "InputDateTimeWithStringResult",
-            returnType = "java.lang.String")
+        @DefineKernelFunction(name = "InputDateTimeWithStringResult", returnType = "java.lang.String")
         public String InputDateTimeWithStringResult(
-            @KernelFunctionParameter(
-                name = "currentDate",
-                description = "Current date time",
-                type = ZonedDateTime.class
-            )
-            ZonedDateTime currentDate) {
+            @KernelFunctionParameter(name = "currentDate", description = "Current date time", type = ZonedDateTime.class) ZonedDateTime currentDate) {
             var result = currentDate.format(DateTimeFormatter.ISO_DATE_TIME);
             System.out.println(
                 "Running {nameof(this.InputDateTimeWithStringResult)} -> [currentDate = {"
@@ -379,9 +365,7 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example of using a Task function with no input and a string result
         /// </summary>
-        @DefineKernelFunction(
-            name = "NoInputTaskWithStringResult",
-            returnType = "java.lang.String")
+        @DefineKernelFunction(name = "NoInputTaskWithStringResult", returnType = "java.lang.String")
         public Mono<String> NoInputTaskWithStringResult() {
             return Mono.fromCallable(() -> {
                 var result = "string result";
@@ -397,22 +381,11 @@ public class Example09_FunctionTypes {
         /// </summary>
         @DefineKernelFunction(name = "MultipleInputsWithVoidResult")
         public void MultipleInputsWithVoidResult(
-            @KernelFunctionParameter(
-                name = "x"
-            )
-            String x,
+            @KernelFunctionParameter(name = "x") String x,
 
-            @KernelFunctionParameter(
-                name = "y",
-                type = int.class
-            )
-            int y,
+            @KernelFunctionParameter(name = "y", type = int.class) int y,
 
-            @KernelFunctionParameter(
-                name = "z",
-                type = double.class
-            )
-            double z) {
+            @KernelFunctionParameter(name = "z", type = double.class) double z) {
             System.out.println(
                 "Running {nameof(this.MultipleInputsWithVoidResult)} -> input: [x = {" + x
                     + "}, y = {" + y + "}, z = {" + z + "}]");
@@ -423,12 +396,7 @@ public class Example09_FunctionTypes {
         /// </summary>
         @DefineKernelFunction(name = "ComplexInputWithStringResult")
         public String ComplexInputWithStringResult(
-            @KernelFunctionParameter(
-                name = "complexObject",
-                type = Object.class
-            )
-            Object complexObject
-        ) {
+            @KernelFunctionParameter(name = "complexObject", type = Object.class) Object complexObject) {
             String result = complexObject.toString();
             System.out.println(
                 "Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = "
@@ -437,20 +405,13 @@ public class Example09_FunctionTypes {
             return result;
         }
 
-
         /// <summary>
         /// Example using an async task function echoing the input
         /// </summary>
-        @DefineKernelFunction(
-            name = "InputStringTaskWithStringResult",
-            returnType = "java.lang.String"
-        )
+        @DefineKernelFunction(name = "InputStringTaskWithStringResult", returnType = "java.lang.String")
         public Mono<String> InputStringTaskWithStringResult(
 
-            @KernelFunctionParameter(
-                name = "echoInput"
-            )
-            String echoInput) {
+            @KernelFunctionParameter(name = "echoInput") String echoInput) {
             return Mono.fromCallable(() -> {
                 System.out.println(
                     "Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = "
@@ -463,15 +424,9 @@ public class Example09_FunctionTypes {
         /// <summary>
         /// Example using an async void task with string input
         /// </summary>
-        @DefineKernelFunction(
-            name = "InputStringTaskWithVoidResult",
-            returnType = "java.lang.Void"
-        )
+        @DefineKernelFunction(name = "InputStringTaskWithVoidResult", returnType = "java.lang.Void")
         public Mono<Void> InputStringTaskWithVoidResult(
-            @KernelFunctionParameter(
-                name = "x"
-            )
-            String x) {
+            @KernelFunctionParameter(name = "x") String x) {
             return Mono.fromRunnable(() -> {
                 System.out.println(
                     "Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {" + x
@@ -479,36 +434,20 @@ public class Example09_FunctionTypes {
             });
         }
 
-        @DefineKernelFunction(
-            name = "noInputComplexReturnTypeAsync",
-            returnType = "java.time.temporal.Temporal"
-        )
+        @DefineKernelFunction(name = "noInputComplexReturnTypeAsync", returnType = "java.time.temporal.Temporal")
         public Mono<OffsetDateTime> noInputComplexReturnTypeAsync() {
             return Mono.just(
-                OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC)
-            );
+                OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC));
         }
 
-        @DefineKernelFunction(
-            name = "noInputComplexReturnType",
-            returnType = "java.time.temporal.Temporal"
-        )
+        @DefineKernelFunction(name = "noInputComplexReturnType", returnType = "java.time.temporal.Temporal")
         public OffsetDateTime noInputComplexReturnType() {
             return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
-        @DefineKernelFunction(
-            name = "withDefaultValue",
-            returnType = "java.lang.String"
-        )
+        @DefineKernelFunction(name = "withDefaultValue", returnType = "java.lang.String")
         public String withDefaultValue(
-            @KernelFunctionParameter(
-                name = "x",
-                defaultValue = "1",
-                type = int.class
-            )
-            int x
-        ) {
+            @KernelFunctionParameter(name = "x", defaultValue = "1", type = int.class) int x) {
             return Integer.toString(x);
         }
 
@@ -517,140 +456,169 @@ public class Example09_FunctionTypes {
         // |--------------------|-------------------------------|
         // | T                  | T                             |
         // | T                  | U extends T                   |
-        @DefineKernelFunction(
-            name = "conversionScenarioA",
-            returnType = "java.time.OffsetDateTime"
-        )
+        @DefineKernelFunction(name = "conversionScenarioA", returnType = "java.time.OffsetDateTime")
         public OffsetDateTime conversionScenarioA() {
             return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
-        @DefineKernelFunction(
-            name = "conversionScenarioB",
-            returnType = "java.time.temporal.Temporal"
-        )
+        @DefineKernelFunction(name = "conversionScenarioB", returnType = "java.time.temporal.Temporal")
         public OffsetDateTime conversionScenarioB() {
             return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
         /*
-        /// <summary>
-        /// Example using a function to return the result of another inner function
-        /// </summary>
-        @DefineKernelFunction(name = "InputStringTaskWithVoidResult")
-        public FunctionResult NoInputWithFunctionResult()
-        {
-            var myInternalFunction = KernelFunctionFactory.CreateFromMethod(() => { });
-            var result = new FunctionResult(myInternalFunction);
-            Console.WriteLine($"Running {nameof(this.NoInputWithFunctionResult)} -> No input -> result: {result.GetType().Name}");
-            return result;
-        }
+         * /// <summary>
+         * /// Example using a function to return the result of another inner function
+         * /// </summary>
+         * 
+         * @DefineKernelFunction(name = "InputStringTaskWithVoidResult")
+         * public FunctionResult NoInputWithFunctionResult()
+         * {
+         * var myInternalFunction = KernelFunctionFactory.CreateFromMethod(() => { });
+         * var result = new FunctionResult(myInternalFunction);
+         * Console.WriteLine(
+         * $"Running {nameof(this.NoInputWithFunctionResult)} -> No input -> result: {result.GetType().Name}"
+         * );
+         * return result;
+         * }
          */
 
         /*
-
-        /// <summary>
-        /// Example using a task function to return the result of another kernel function
-        /// </summary>
-    [KernelFunction]
-        public async Task<FunctionResult> NoInputTaskWithFunctionResult(Kernel kernel)
-    {
-        var result = await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(this.NoInputWithVoidResult)]);
-        Console.WriteLine($"Running {nameof(this.NoInputTaskWithFunctionResult)} -> Injected kernel -> result: {result.GetType().Name}");
-        return result;
-    }
-
-        /// <summary>
-        /// Example how to inject Kernel in your function
-        /// This example uses the injected kernel to invoke a plugin from within another function
-        /// </summary>
-    [KernelFunction]
-        public async Task<string> TaskInjectingKernelWithInputTextAndStringResult(Kernel kernel, string textToSummarize)
-    {
-        var summary = await kernel.InvokeAsync<string>(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = textToSummarize });
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}");
-        return summary!;
-    }
-
-        /// <summary>
-        /// Example how to inject the executing KernelFunction as a parameter
-        /// </summary>
-    [KernelFunction, Description("Example function injecting itself as a parameter")]
-        public async Task<string> TaskInjectingKernelFunctionWithStringResult(KernelFunction executingFunction)
-    {
-        var result = $"Name: {executingFunction.Name}, Description: {executingFunction.Description}";
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Function -> result: {result}");
-        return result;
-    }
-
-        /// <summary>
-        /// Example how to inject ILogger in your function
-        /// </summary>
-    [KernelFunction]
-        public Task TaskInjectingLoggerWithNoResult(ILogger logger)
-        {
-            logger.LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
-            Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Example how to inject ILoggerFactory in your function
-        /// </summary>
-    [KernelFunction]
-        public Task TaskInjectingLoggerFactoryWithNoResult(ILoggerFactory loggerFactory)
-        {
-            loggerFactory
-                .CreateLogger<LocalExamplePlugin>()
-            .LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
-
-            Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Example how to inject a service selector in your function and use a specific service
-        /// </summary>
-    [KernelFunction]
-        public async Task<string> TaskInjectingServiceSelectorWithStringResult(Kernel kernel, KernelFunction function, KernelArguments arguments, IAIServiceSelector serviceSelector)
-    {
-        ChatMessageContent? chatMessageContent = null;
-        if (serviceSelector.TrySelectAIService<IChatCompletionService>(kernel, function, arguments, out var chatCompletion, out var executionSettings))
-        {
-            chatMessageContent = await chatCompletion.GetChatMessageContentAsync(new ChatHistory("How much is 5 + 5 ?"), executionSettings);
-        }
-
-        var result = chatMessageContent?.Content;
-        Console.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}");
-        return result ?? string.Empty;
-    }
-
-        /// <summary>
-        /// Example how to inject CultureInfo or IFormatProvider in your function
-        /// </summary>
-        public async Task<string> TaskInjectingCultureInfoOrIFormatProviderWithStringResult(CultureInfo cultureInfo, IFormatProvider formatProvider)
-    {
-        var result = $"Culture Name: {cultureInfo.Name}, FormatProvider Equals CultureInfo?: {formatProvider.Equals(cultureInfo)}";
-        Console.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected CultureInfo, IFormatProvider -> result: {result}");
-        return result;
-    }
-
-        /// <summary>
-        /// Example how to inject current CancellationToken in your function
-        /// </summary>
-    [KernelFunction]
-        public async Task<string> TaskInjectingCancellationTokenWithStringResult(CancellationToken cancellationToken)
-    {
-        var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
-        Console.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}");
-        return result;
-    }
-
-        public override string ToString()
-    {
-        return "Complex type result ToString override";
-    }
-
+         * 
+         * /// <summary>
+         * /// Example using a task function to return the result of another kernel function
+         * /// </summary>
+         * [KernelFunction]
+         * public async Task<FunctionResult> NoInputTaskWithFunctionResult(Kernel kernel)
+         * {
+         * var result = await
+         * kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(this.NoInputWithVoidResult)]);
+         * Console.WriteLine(
+         * $"Running {nameof(this.NoInputTaskWithFunctionResult)} -> Injected kernel -> result: {result.GetType().Name}"
+         * );
+         * return result;
+         * }
+         * 
+         * /// <summary>
+         * /// Example how to inject Kernel in your function
+         * /// This example uses the injected kernel to invoke a plugin from within another function
+         * /// </summary>
+         * [KernelFunction]
+         * public async Task<string> TaskInjectingKernelWithInputTextAndStringResult(Kernel kernel,
+         * string textToSummarize)
+         * {
+         * var summary = await
+         * kernel.InvokeAsync<string>(kernel.Plugins["SummarizePlugin"]["Summarize"], new() {
+         * ["input"] = textToSummarize });
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}"
+         * );
+         * return summary!;
+         * }
+         * 
+         * /// <summary>
+         * /// Example how to inject the executing KernelFunction as a parameter
+         * /// </summary>
+         * [KernelFunction, Description("Example function injecting itself as a parameter")]
+         * public async Task<string> TaskInjectingKernelFunctionWithStringResult(KernelFunction
+         * executingFunction)
+         * {
+         * var result =
+         * $"Name: {executingFunction.Name}, Description: {executingFunction.Description}";
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Function -> result: {result}"
+         * );
+         * return result;
+         * }
+         * 
+         * /// <summary>
+         * /// Example how to inject ILogger in your function
+         * /// </summary>
+         * [KernelFunction]
+         * public Task TaskInjectingLoggerWithNoResult(ILogger logger)
+         * {
+         * logger.LogWarning("Running {FunctionName} -> Injected Logger",
+         * nameof(this.TaskInjectingLoggerWithNoResult));
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger"
+         * );
+         * return Task.CompletedTask;
+         * }
+         * 
+         * /// <summary>
+         * /// Example how to inject ILoggerFactory in your function
+         * /// </summary>
+         * [KernelFunction]
+         * public Task TaskInjectingLoggerFactoryWithNoResult(ILoggerFactory loggerFactory)
+         * {
+         * loggerFactory
+         * .CreateLogger<LocalExamplePlugin>()
+         * .LogWarning("Running {FunctionName} -> Injected Logger",
+         * nameof(this.TaskInjectingLoggerWithNoResult));
+         * 
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger"
+         * );
+         * return Task.CompletedTask;
+         * }
+         * 
+         * /// <summary>
+         * /// Example how to inject a service selector in your function and use a specific service
+         * /// </summary>
+         * [KernelFunction]
+         * public async Task<string> TaskInjectingServiceSelectorWithStringResult(Kernel kernel,
+         * KernelFunction function, KernelArguments arguments, IAIServiceSelector serviceSelector)
+         * {
+         * ChatMessageContent? chatMessageContent = null;
+         * if (serviceSelector.TrySelectAIService<IChatCompletionService>(kernel, function,
+         * arguments, out var chatCompletion, out var executionSettings))
+         * {
+         * chatMessageContent = await chatCompletion.GetChatMessageContentAsync(new
+         * ChatHistory("How much is 5 + 5 ?"), executionSettings);
+         * }
+         * 
+         * var result = chatMessageContent?.Content;
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}"
+         * );
+         * return result ?? string.Empty;
+         * }
+         * 
+         * /// <summary>
+         * /// Example how to inject CultureInfo or IFormatProvider in your function
+         * /// </summary>
+         * public async Task<string>
+         * TaskInjectingCultureInfoOrIFormatProviderWithStringResult(CultureInfo cultureInfo,
+         * IFormatProvider formatProvider)
+         * {
+         * var result =
+         * $"Culture Name: {cultureInfo.Name}, FormatProvider Equals CultureInfo?: {formatProvider.Equals(cultureInfo)}"
+         * ;
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected CultureInfo, IFormatProvider -> result: {result}"
+         * );
+         * return result;
+         * }
+         * 
+         * /// <summary>
+         * /// Example how to inject current CancellationToken in your function
+         * /// </summary>
+         * [KernelFunction]
+         * public async Task<string>
+         * TaskInjectingCancellationTokenWithStringResult(CancellationToken cancellationToken)
+         * {
+         * var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}"
+         * );
+         * return result;
+         * }
+         * 
+         * public override string ToString()
+         * {
+         * return "Complex type result ToString override";
+         * }
+         * 
          */
     }
 }

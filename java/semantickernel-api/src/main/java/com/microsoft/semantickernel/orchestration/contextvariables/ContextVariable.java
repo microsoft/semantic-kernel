@@ -45,14 +45,13 @@ public class ContextVariable<T> {
      * @return the converted value
      */
     public static <T, U> ContextVariable<T> convert(
-        @Nullable
-        U it,
+        @Nullable U it,
         ContextVariableType<T> requestedResultType) {
         return convert(
             it,
             requestedResultType.getClazz(),
-            new ContextVariableTypes(Collections.singletonList(requestedResultType.getConverter()))
-        );
+            new ContextVariableTypes(
+                Collections.singletonList(requestedResultType.getConverter())));
     }
 
     /**
@@ -70,11 +69,9 @@ public class ContextVariable<T> {
      *          cannot be converted to the requested result type
      */
     public static <T, U> ContextVariable<T> convert(
-        @Nullable
-        U it,
+        @Nullable U it,
         Class<T> requestedResultType,
-        @Nullable
-        ContextVariableTypes contextVariableTypes) {
+        @Nullable ContextVariableTypes contextVariableTypes) {
         if (contextVariableTypes == null) {
             contextVariableTypes = new ContextVariableTypes();
         }
@@ -94,10 +91,8 @@ public class ContextVariable<T> {
                 return new ContextVariable<>(
                     new ContextVariableType<>(
                         new NoopConverter<>(requestedResultType),
-                        requestedResultType
-                    ),
-                    requestedResultType.cast(it)
-                );
+                        requestedResultType),
+                    requestedResultType.cast(it));
             }
         }
 
@@ -169,7 +164,7 @@ public class ContextVariable<T> {
      * @param types the types
      * @return the new instance
      */
-    @SuppressWarnings({"rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static ContextVariable<?> untypedOf(
         @Nullable Object value,
         Class<?> clazz,

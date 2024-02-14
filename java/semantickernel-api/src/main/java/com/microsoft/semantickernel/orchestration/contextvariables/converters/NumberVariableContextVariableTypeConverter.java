@@ -28,8 +28,7 @@ public class NumberVariableContextVariableTypeConverter<T extends Number> extend
     public NumberVariableContextVariableTypeConverter(
         Class<T> clazz,
         Function<String, T> fromPromptString,
-        Function<Number, T> fromNumber
-    ) {
+        Function<Number, T> fromNumber) {
         super(
             clazz,
             s -> convert(s, clazz),

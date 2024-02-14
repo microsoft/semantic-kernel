@@ -23,14 +23,14 @@ public class Example55_TextChunker {
         Coral Sea, off the coast of Queensland, Australia. The Great Barrier Reef can be seen from outer space and is the world's
         biggest single structure made by living organisms. This reef structure is composed of and built by billions of tiny organisms,
         known as coral polyps.
-        """.stripIndent();
+        """
+        .stripIndent();
 
     public static void main(String[] args) {
         RunExample();
 
         // TODO: This example should also demo using token counters, not supported in Java atm
     }
-
 
     private static void RunExample() {
         System.out.println("=== Text chunking ===");

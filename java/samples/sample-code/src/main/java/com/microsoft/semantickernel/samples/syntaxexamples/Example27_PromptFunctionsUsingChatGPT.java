@@ -12,7 +12,6 @@ import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 
 public class Example27_PromptFunctionsUsingChatGPT {
 
-
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 

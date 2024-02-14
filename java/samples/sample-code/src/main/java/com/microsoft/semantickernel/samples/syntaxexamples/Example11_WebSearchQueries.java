@@ -27,7 +27,8 @@ public class Example11_WebSearchQueries {
         System.out.println(ask);
         System.out.println(result.getResult());
 
-        /* Expected output:
+        /*
+         * Expected output:
          * ======== WebSearchQueries ========
          * What's the tallest building in Europe?
          *

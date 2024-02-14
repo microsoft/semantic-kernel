@@ -87,11 +87,11 @@ public class KernelPluginFactory {
                         + ", this is an async method, It is required to add an annotation to specify the return type");
             }
         } else {
-            String className = annotation.returnType(); 
+            String className = annotation.returnType();
             if (method.getReturnType().getName().equals(className)) {
                 // primarily meant to handle void
                 return method.getReturnType();
-            }   
+            }
             try {
                 returnType = Thread.currentThread().getContextClassLoader()
                     .loadClass(annotation.returnType());
@@ -136,11 +136,11 @@ public class KernelPluginFactory {
         @Nullable List<KernelFunction<?>> functions) {
         Map<String, KernelFunction<?>> funcs = new HashMap<>();
         if (functions != null) {
-            funcs = functions.stream().collect(Collectors.toMap(KernelFunction<?>::getName, f -> f));
+            funcs = functions.stream()
+                .collect(Collectors.toMap(KernelFunction::getName, f -> f));
         }
         return new KernelPlugin(pluginName, description, funcs);
     }
-
 
     private static List<KernelParameterMetadata<?>> getParameters(Method method) {
         return Arrays.stream(method.getParameters())
@@ -210,8 +210,7 @@ public class KernelPluginFactory {
         return new KernelPlugin(
             pluginDirectoryName,
             null,
-            plugins
-        );
+            plugins);
     }
 
     private static KernelFunction<?> getKernelFunction(
@@ -302,8 +301,7 @@ public class KernelPluginFactory {
         return new KernelPlugin(
             pluginDirectoryName,
             promptTemplateConfig.getDescription(),
-            plugins
-        );
+            plugins);
     }
 
     private static String getTemplatePrompt(
@@ -311,9 +309,9 @@ public class KernelPluginFactory {
         String pluginName,
         String functionName,
         Class<?> clazz) {
-        String promptFileName =
-            pluginDirectory + File.separator + pluginName + File.separator + functionName
-                + File.separator + PROMPT_FILE;
+        String promptFileName = pluginDirectory + File.separator + pluginName + File.separator
+            + functionName
+            + File.separator + PROMPT_FILE;
 
         try {
             return getFileContents(promptFileName, clazz);
@@ -335,9 +333,9 @@ public class KernelPluginFactory {
         String pluginDirectory,
         String pluginName, String functionName,
         Class<?> clazz) {
-        String configFileName =
-            pluginDirectory + File.separator + pluginName + File.separator + functionName
-                + File.separator + CONFIG_FILE;
+        String configFileName = pluginDirectory + File.separator + pluginName + File.separator
+            + functionName
+            + File.separator + CONFIG_FILE;
 
         try {
             String config = getFileContents(configFileName, clazz);

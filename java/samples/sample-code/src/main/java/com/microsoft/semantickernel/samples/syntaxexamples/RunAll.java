@@ -47,8 +47,7 @@ public class RunAll {
             Example62_CustomAIServiceSelector::main,
             Example63_ChatCompletionPrompts::main,
             Example64_MultiplePromptTemplates::main,
-            Example69_MutableKernelPlugin::main
-        );
+            Example69_MutableKernelPlugin::main);
 
         Scanner scanner = new Scanner(System.in);
         mains.forEach(mainMethod -> {

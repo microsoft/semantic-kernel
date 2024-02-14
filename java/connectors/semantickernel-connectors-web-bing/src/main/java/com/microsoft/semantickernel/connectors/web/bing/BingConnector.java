@@ -24,22 +24,25 @@ import reactor.core.publisher.Mono;
 public class BingConnector implements WebSearchEngineConnector {
 
     private static String BING_SEARCH_URL;
-    static { 
-        String bingSearchUrl = System.getProperty("bing.search.url"); 
-        if (bingSearchUrl == null || bingSearchUrl.isEmpty()) bingSearchUrl = System.getenv("BING_SEARCH_URL");
-        if (bingSearchUrl == null || bingSearchUrl.isEmpty()) bingSearchUrl = "https://api.bing.microsoft.com/v7.0/search";
+    static {
+        String bingSearchUrl = System.getProperty("bing.search.url");
+        if (bingSearchUrl == null || bingSearchUrl.isEmpty())
+            bingSearchUrl = System.getenv("BING_SEARCH_URL");
+        if (bingSearchUrl == null || bingSearchUrl.isEmpty())
+            bingSearchUrl = "https://api.bing.microsoft.com/v7.0/search";
         BING_SEARCH_URL = bingSearchUrl;
     }
 
     private static final String OCP_APIM_SUBSCRIPTION_KEY = "Ocp-Apim-Subscription-Key";
-    private static final HttpHeaderName OCP_APIM_SUBSCRIPTION_KEY_HEADER = HttpHeaderName.fromString(OCP_APIM_SUBSCRIPTION_KEY);
+    private static final HttpHeaderName OCP_APIM_SUBSCRIPTION_KEY_HEADER = HttpHeaderName
+        .fromString(OCP_APIM_SUBSCRIPTION_KEY);
 
     private static class BingSearchResponse {
         private final WebPages webPages;
+
         @JsonCreator
         public BingSearchResponse(
-            @JsonProperty("webPages") WebPages webPages
-        ) {
+            @JsonProperty("webPages") WebPages webPages) {
             this.webPages = webPages;
         }
 
@@ -50,10 +53,10 @@ public class BingConnector implements WebSearchEngineConnector {
 
     private static class WebPages {
         private final WebPage[] value;
+
         @JsonCreator
         public WebPages(
-            @JsonProperty("value") BingWebPage[] value
-        ) {
+            @JsonProperty("value") BingWebPage[] value) {
             this.value = value;
         }
 
@@ -71,8 +74,7 @@ public class BingConnector implements WebSearchEngineConnector {
         public BingWebPage(
             @JsonProperty("name") String name,
             @JsonProperty("url") String url,
-            @JsonProperty("snippet") String snippet
-        ) {
+            @JsonProperty("snippet") String snippet) {
             this.name = name;
             this.url = url;
             this.snippet = snippet;
@@ -109,8 +111,10 @@ public class BingConnector implements WebSearchEngineConnector {
     @Override
     public Mono<List<WebPage>> searchAsync(String query, int count, int offset) {
 
-        if (count <= 0 || 50 <= count) throw new IllegalArgumentException("count must be between 1 and 50");
-        if (offset < 0) throw new IllegalArgumentException("offset must be greater than or equal to 0");
+        if (count <= 0 || 50 <= count)
+            throw new IllegalArgumentException("count must be between 1 and 50");
+        if (offset < 0)
+            throw new IllegalArgumentException("offset must be greater than or equal to 0");
 
         HttpRequest request = new HttpRequest(HttpMethod.GET, searchUrl(query, count, offset));
         request.setHeader(OCP_APIM_SUBSCRIPTION_KEY_HEADER, apiKey);
@@ -120,7 +124,7 @@ public class BingConnector implements WebSearchEngineConnector {
     }
 
     private static String searchUrl(String query, int count, int offset) {
-    
+
         try {
             query = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
@@ -133,22 +137,26 @@ public class BingConnector implements WebSearchEngineConnector {
     }
 
     private static Mono<List<WebPage>> handleResponse(HttpResponse response) {
-            return response.getBodyAsString()
-                .map(body -> {
-                    if (body == null || body.isEmpty()) return null;
-                    try {
-                        ObjectMapper objectMapper = new ObjectMapper()
-                            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                            .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
-
-                            BingSearchResponse bingSearchResponse = objectMapper.readValue(body, BingSearchResponse.class);
-                        if (bingSearchResponse.getWebPages() != null && bingSearchResponse.getWebPages().getValue() != null) {
-                            return Arrays.asList(bingSearchResponse.getWebPages().getValue());
-                        }
-                    } catch (JsonProcessingException e) {
-                       throw new SKException(e.getMessage(), e);
-                    }
+        return response.getBodyAsString()
+            .map(body -> {
+                if (body == null || body.isEmpty())
                     return null;
-                });
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper()
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES,
+                            false);
+
+                    BingSearchResponse bingSearchResponse = objectMapper.readValue(body,
+                        BingSearchResponse.class);
+                    if (bingSearchResponse.getWebPages() != null
+                        && bingSearchResponse.getWebPages().getValue() != null) {
+                        return Arrays.asList(bingSearchResponse.getWebPages().getValue());
+                    }
+                } catch (JsonProcessingException e) {
+                    throw new SKException(e.getMessage(), e);
+                }
+                return null;
+            });
     }
 }

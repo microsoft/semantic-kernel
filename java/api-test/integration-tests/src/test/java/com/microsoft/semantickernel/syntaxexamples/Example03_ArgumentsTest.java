@@ -21,8 +21,8 @@ public class Example03_ArgumentsTest {
         Kernel kernel = Kernel.builder().build();
 
         // Load native plugin
-        KernelPlugin functionCollection =
-            KernelPluginFactory.createFromObject(new StaticTextPlugin(), "text");
+        KernelPlugin functionCollection = KernelPluginFactory
+            .createFromObject(new StaticTextPlugin(), "text");
 
         KernelFunctionArguments arguments = KernelFunctionArguments.builder()
             .withInput("Today is: ")
@@ -30,7 +30,7 @@ public class Example03_ArgumentsTest {
             .build();
 
         FunctionResult<String> resultValue = kernel.invokeAsync(
-                functionCollection.<String>get("AppendDay"))
+            functionCollection.<String>get("AppendDay"))
             .withArguments(arguments)
             .block();
 

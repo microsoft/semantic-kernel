@@ -12,7 +12,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 public class PromptRenderingEvent implements KernelHookEvent {
 
-    private final KernelFunction<?>function;
+    private final KernelFunction<?> function;
     private final KernelFunctionArguments arguments;
 
     /**
@@ -20,16 +20,18 @@ public class PromptRenderingEvent implements KernelHookEvent {
      * @param function the function
      * @param arguments the arguments
      */
-    public PromptRenderingEvent(KernelFunction<?>function, @Nullable KernelFunctionArguments arguments) {
+    public PromptRenderingEvent(KernelFunction<?> function,
+        @Nullable KernelFunctionArguments arguments) {
         this.function = function;
-        this.arguments = arguments != null ? new KernelFunctionArguments(arguments) : new KernelFunctionArguments();
+        this.arguments = arguments != null ? new KernelFunctionArguments(arguments)
+            : new KernelFunctionArguments();
     }
 
     /**
      * Gets the function that was invoked.
      * @return the function
      */
-    public KernelFunction<?>getFunction() {
+    public KernelFunction<?> getFunction() {
         return function;
     }
 

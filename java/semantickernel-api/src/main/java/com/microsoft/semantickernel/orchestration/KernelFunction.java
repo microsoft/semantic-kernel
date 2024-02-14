@@ -48,8 +48,7 @@ public abstract class KernelFunction<T> implements Buildable {
      */
     protected KernelFunction(
         KernelFunctionMetadata<?> metadata,
-        @Nullable
-        Map<String, PromptExecutionSettings> executionSettings) {
+        @Nullable Map<String, PromptExecutionSettings> executionSettings) {
         this.metadata = metadata;
         this.executionSettings = new HashMap<>();
         if (executionSettings != null) {
@@ -196,8 +195,7 @@ public abstract class KernelFunction<T> implements Buildable {
          * @return The builder
          */
         FromPromptBuilder<T> withExecutionSettings(
-            @Nullable
-            Map<String, PromptExecutionSettings> executionSettings);
+            @Nullable Map<String, PromptExecutionSettings> executionSettings);
 
         /**
          * Set the default execution settings for the function.
@@ -206,8 +204,7 @@ public abstract class KernelFunction<T> implements Buildable {
          * @return The builder
          */
         FromPromptBuilder<T> withDefaultExecutionSettings(
-            @Nullable
-            PromptExecutionSettings executionSettings);
+            @Nullable PromptExecutionSettings executionSettings);
 
         /**
          * Set the description of the function.

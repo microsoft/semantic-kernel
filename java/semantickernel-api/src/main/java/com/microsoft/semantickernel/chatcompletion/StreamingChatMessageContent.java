@@ -15,7 +15,8 @@ import javax.annotation.Nullable;
  * Represents the content of a chat message that is streamed.
  * @param <T> the type of the inner content
  */
-public class StreamingChatMessageContent<T extends KernelContent<T>> extends StreamingKernelContent<T> {
+public class StreamingChatMessageContent<T extends KernelContent<T>>
+    extends StreamingKernelContent<T> {
 
     private final String content;
     private final AuthorRole role;
@@ -30,8 +31,7 @@ public class StreamingChatMessageContent<T extends KernelContent<T>> extends Str
     public StreamingChatMessageContent(
         AuthorRole role,
         String content,
-        @Nullable
-        String modelId) {
+        @Nullable String modelId) {
         this(role, content, null, 0, modelId, null, null);
     }
 
@@ -48,15 +48,11 @@ public class StreamingChatMessageContent<T extends KernelContent<T>> extends Str
     public StreamingChatMessageContent(
         AuthorRole role,
         String content,
-        @Nullable
-        T innerContent,
+        @Nullable T innerContent,
         int choiceIndex,
-        @Nullable
-        String modelId,
-        @Nullable
-        Charset encoding,
-        @Nullable
-        Map<String, ContextVariable<?>> metadata) {
+        @Nullable String modelId,
+        @Nullable Charset encoding,
+        @Nullable Map<String, ContextVariable<?>> metadata) {
         super(innerContent, choiceIndex, modelId, metadata);
         this.role = role;
         this.content = content;
@@ -99,4 +95,3 @@ public class StreamingChatMessageContent<T extends KernelContent<T>> extends Str
         return this;
     }
 }
-

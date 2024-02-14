@@ -67,7 +67,6 @@ public class Example61_MultipleLLMs {
         runByFirstModelIdAsync(kernel, "text-davinci-003", "gpt-35-turbo-2");
     }
 
-
     public static void runByServiceIdAsync(Kernel kernel, String serviceId) {
         System.out.println("======== Service Id: " + serviceId + " ========");
 
@@ -81,8 +80,7 @@ public class Example61_MultipleLLMs {
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
                     .withServiceId(serviceId)
-                    .build()
-            )
+                    .build())
             .withOutputVariable("result", "java.lang.String")
             .build();
 
@@ -90,29 +88,26 @@ public class Example61_MultipleLLMs {
         System.out.println(result.getResult());
     }
 
-
     public static void runByModelIdAsync(Kernel kernel, String modelId) {
         System.out.println("======== Model Id: " + modelId + " ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
         var result = kernel.invokeAsync(
-                KernelFunctionFromPrompt
-                    .builder()
-                    .withTemplate(prompt)
-                    .withDefaultExecutionSettings(
-                        PromptExecutionSettings.builder()
-                            .withModelId(modelId)
-                            .build()
-                    )
-                    .withOutputVariable("result", "java.lang.String")
-                    .build())
+            KernelFunctionFromPrompt
+                .builder()
+                .withTemplate(prompt)
+                .withDefaultExecutionSettings(
+                    PromptExecutionSettings.builder()
+                        .withModelId(modelId)
+                        .build())
+                .withOutputVariable("result", "java.lang.String")
+                .build())
             .withArguments(KernelFunctionArguments.builder().build())
             .block();
 
         System.out.println(result.getResult());
     }
-
 
     public static void runByFirstModelIdAsync(Kernel kernel, String... modelIds) {
         System.out.println("======== Model Ids: " + String.join(",", modelIds) + " ========");
@@ -128,8 +123,7 @@ public class Example61_MultipleLLMs {
                     PromptExecutionSettings.builder()
                         .withModelId(modelId)
                         .build());
-            }
-        );
+            });
 
         var promptConfig = new PromptTemplateConfig(prompt);
         promptConfig.setName("HelloAI");

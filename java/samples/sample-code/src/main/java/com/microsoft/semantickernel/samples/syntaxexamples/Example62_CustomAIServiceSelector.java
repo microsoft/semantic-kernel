@@ -72,8 +72,7 @@ public class Example62_CustomAIServiceSelector {
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
                     .withTopP(1.0)
-                    .build()
-            )
+                    .build())
             .withOutputVariable("result", "java.lang.String")
             .build();
 
@@ -93,12 +92,10 @@ public class Example62_CustomAIServiceSelector {
         @SuppressWarnings("unchecked")
         public <T extends AIService> AIServiceSelection<T> trySelectAIService(
             Class<T> serviceType,
-    
-            @Nullable
-            KernelFunction<?> function,
 
-            @Nullable
-            KernelFunctionArguments arguments,
+            @Nullable KernelFunction<?> function,
+
+            @Nullable KernelFunctionArguments arguments,
             Map<Class<? extends AIService>, AIService> services) {
 
             // Just get the first one
@@ -109,8 +106,7 @@ public class Example62_CustomAIServiceSelector {
 
             return new AIServiceSelection<>(
                 service,
-                executionSettings
-            );
+                executionSettings);
         }
 
     }

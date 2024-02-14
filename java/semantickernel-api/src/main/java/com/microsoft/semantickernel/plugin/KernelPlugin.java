@@ -28,8 +28,7 @@ public class KernelPlugin implements Iterable<KernelFunction<?>> {
      */
     public KernelPlugin(
         String name,
-        @Nullable
-        String description,
+        @Nullable String description,
         Map<String, KernelFunction<?>> plugins) {
         this.name = name;
         this.description = description;

@@ -7,7 +7,8 @@ import javax.annotation.Nullable;
 /** AI logic exception */
 public class AIException extends SKException {
 
-    @Nonnull private final ErrorCodes errorCode;
+    @Nonnull
+    private final ErrorCodes errorCode;
 
     /**
      * Initializes a new instance of the {@link AIException} class.
@@ -36,9 +37,9 @@ public class AIException extends SKException {
      * @param innerException The cause of the exception.
      */
     public AIException(
-            @Nonnull ErrorCodes errorCode,
-            @Nullable String message,
-            @Nullable Throwable innerException) {
+        @Nonnull ErrorCodes errorCode,
+        @Nullable String message,
+        @Nullable Throwable innerException) {
         super(formatDefaultMessage(errorCode.getMessage(), message), innerException);
         this.errorCode = errorCode;
     }
@@ -82,6 +83,7 @@ public class AIException extends SKException {
         INVALID_CONFIGURATION("The supplied configuration was invalid"),
         /** Function type not supported. */
         FUNCTION_TYPE_NOT_SUPPORTED("The function is not supported");
+
         private final String message;
 
         ErrorCodes(String message) {

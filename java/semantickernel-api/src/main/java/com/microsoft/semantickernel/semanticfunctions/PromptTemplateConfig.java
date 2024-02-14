@@ -66,8 +66,7 @@ public class PromptTemplateConfig {
             "",
             Collections.emptyList(),
             new OutputVariable("out", String.class.getName()),
-            Collections.emptyMap()
-        );
+            Collections.emptyMap());
     }
 
     /**
@@ -84,30 +83,14 @@ public class PromptTemplateConfig {
      */
     @JsonCreator
     public PromptTemplateConfig(
-        @JsonProperty("schema")
-        int schema,
-        @Nullable
-        @JsonProperty("name")
-        String name,
-        @JsonProperty("template")
-        String template,
-        @Nullable
-        @JsonProperty(
-            value = "template_format",
-            defaultValue = SEMANTIC_KERNEL_TEMPLATE_FORMAT)
-        String templateFormat,
-        @Nullable
-        @JsonProperty("description")
-        String description,
-        @Nullable
-        @JsonProperty("input_variables")
-        List<InputVariable> inputVariables,
-        @Nullable
-        @JsonProperty("output_variable")
-        OutputVariable outputVariable,
-        @Nullable
-        @JsonProperty("execution_settings")
-        Map<String, PromptExecutionSettings> executionSettings) {
+        @JsonProperty("schema") int schema,
+        @Nullable @JsonProperty("name") String name,
+        @JsonProperty("template") String template,
+        @Nullable @JsonProperty(value = "template_format", defaultValue = SEMANTIC_KERNEL_TEMPLATE_FORMAT) String templateFormat,
+        @Nullable @JsonProperty("description") String description,
+        @Nullable @JsonProperty("input_variables") List<InputVariable> inputVariables,
+        @Nullable @JsonProperty("output_variable") OutputVariable outputVariable,
+        @Nullable @JsonProperty("execution_settings") Map<String, PromptExecutionSettings> executionSettings) {
         this.name = name;
         this.template = template;
         if (templateFormat == null) {
@@ -140,19 +123,13 @@ public class PromptTemplateConfig {
      * @param executionSettings Execution settings
      */
     public PromptTemplateConfig(
-        @Nullable
-        String name,
+        @Nullable String name,
         String template,
-        @Nullable
-        String templateFormat,
-        @Nullable
-        String description,
-        @Nullable
-        List<InputVariable> inputVariables,
-        @Nullable
-        OutputVariable outputVariable,
-        @Nullable
-        Map<String, PromptExecutionSettings> executionSettings) {
+        @Nullable String templateFormat,
+        @Nullable String description,
+        @Nullable List<InputVariable> inputVariables,
+        @Nullable OutputVariable outputVariable,
+        @Nullable Map<String, PromptExecutionSettings> executionSettings) {
         this(
             CURRENT_SCHEMA,
             name,
@@ -161,8 +138,7 @@ public class PromptTemplateConfig {
             description,
             inputVariables,
             outputVariable,
-            executionSettings
-        );
+            executionSettings);
     }
 
     /**
@@ -178,8 +154,7 @@ public class PromptTemplateConfig {
             promptTemplate.description,
             promptTemplate.inputVariables,
             promptTemplate.outputVariable,
-            promptTemplate.executionSettings
-        );
+            promptTemplate.executionSettings);
     }
 
     /**
@@ -197,8 +172,7 @@ public class PromptTemplateConfig {
                 inputVariable.getName(),
                 inputVariable.getDescription(),
                 inputVariable.getTypeClass(),
-                inputVariable.getDefaultValue(), inputVariable.isRequired()
-            ))
+                inputVariable.getDefaultValue(), inputVariable.isRequired()))
             .collect(Collectors.toList());
     }
 
@@ -214,8 +188,7 @@ public class PromptTemplateConfig {
 
         return new KernelReturnParameterMetadata<>(
             outputVariable.getDescription(),
-            outputVariable.getType()
-        );
+            outputVariable.getType());
     }
 
     /**
@@ -352,13 +325,13 @@ public class PromptTemplateConfig {
         return null;
     }
 
-
     /**
      * Set the prompt execution settings of the prompt template config.
      * @param executionSettings The prompt execution settings of the prompt template config.
      * @return {@code this} prompt template config.
      */
-    public PromptTemplateConfig setExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
+    public PromptTemplateConfig setExecutionSettings(
+        Map<String, PromptExecutionSettings> executionSettings) {
         this.executionSettings = new HashMap<>(executionSettings);
         return this;
     }

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -43,13 +42,13 @@ public class Example05_InlineFunctionDefinitionTest {
         String promptTemplate = """
                 Generate a creative reason or excuse for the given event.
                 Be creative and be funny. Let your imagination run wild.
-                
+
                 Event: I am running late.
                 Excuse: I was being held ransom by giraffe gangsters.
-                
+
                 Event: I haven't been to the gym for a year
                 Excuse: I've been too busy training my pet dragon.
-                
+
                 Event: {{$input}}
             """.stripIndent();
 
@@ -61,8 +60,7 @@ public class Example05_InlineFunctionDefinitionTest {
                     .withTemperature(0.4)
                     .withTopP(1)
                     .withMaxTokens(100)
-                    .build()
-            )
+                    .build())
             .build();
 
         WireMockUtil.mockCompletionResponse("I missed the F1 final race", "a-response");
@@ -90,8 +88,7 @@ public class Example05_InlineFunctionDefinitionTest {
         WireMockUtil.mockCompletionResponse("Translate this date ", "a-response-3");
 
         var fixedFunction = KernelFunctionFactory.<String>createFromPrompt(
-            "Translate this date " + DateTimeFormatter
-                .ISO_LOCAL_DATE
+            "Translate this date " + DateTimeFormatter.ISO_LOCAL_DATE
                 .withZone(ZoneOffset.UTC)
                 .format(Instant.now())
                 + " to French format",

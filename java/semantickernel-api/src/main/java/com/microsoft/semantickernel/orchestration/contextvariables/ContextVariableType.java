@@ -53,8 +53,7 @@ public class ContextVariableType<T> {
         if (it == null) {
             return new ContextVariable<>(
                 this,
-                clazz.cast(null)
-            );
+                clazz.cast(null));
         }
 
         if (clazz.isAssignableFrom(it.getClass())) {
@@ -64,8 +63,7 @@ public class ContextVariableType<T> {
 
         return new ContextVariable<>(
             this,
-            converter.fromObject(it)
-        );
+            converter.fromObject(it));
     }
 
 }

@@ -43,7 +43,7 @@ public class SKCheckedException extends Exception {
      * @return A formatted message
      */
     protected static String formatDefaultMessage(
-            @Nonnull String errorMessage, @Nullable String message) {
+        @Nonnull String errorMessage, @Nullable String message) {
         return SKException.formatDefaultMessage(errorMessage, message);
     }
 }

@@ -22,7 +22,6 @@ public class Example43_GetModelResult {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
-
     public static void main(String[] args) {
         System.out.println("======== Open AI - ChatGPT Streaming ========");
 
@@ -58,7 +57,7 @@ public class Example43_GetModelResult {
 
         // Invoke function through kernel
         FunctionResult<String> result = kernel.invokeAsync(
-                myFunction)
+            myFunction)
             .withArguments(
                 KernelFunctionArguments.builder()
                     .withVariable("input", "travel")

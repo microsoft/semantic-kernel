@@ -19,7 +19,6 @@ import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactor
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
-
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
@@ -95,17 +94,21 @@ public class Example07_BingAndGooglePlugins {
         System.out.printf("----%s----%n", searchPluginName);
         System.out.println(result.getResult());
 
-        /* OUTPUT:
-
-            What's the largest building in the world?
-            ----
-            The Aerium near Berlin, Germany is the largest uninterrupted volume in the world, while Boeing's
-            factory in Everett, Washington, United States is the world's largest building by volume. The AvtoVAZ
-            main assembly building in Tolyatti, Russia is the largest building in area footprint.
-            ----
-            The Aerium near Berlin, Germany is the largest uninterrupted volume in the world, while Boeing's
-            factory in Everett, Washington, United States is the world's ...
-       */
+        /*
+         * OUTPUT:
+         * 
+         * What's the largest building in the world?
+         * ----
+         * The Aerium near Berlin, Germany is the largest uninterrupted volume in the world, while
+         * Boeing's
+         * factory in Everett, Washington, United States is the world's largest building by volume.
+         * The AvtoVAZ
+         * main assembly building in Tolyatti, Russia is the largest building in area footprint.
+         * ----
+         * The Aerium near Berlin, Germany is the largest uninterrupted volume in the world, while
+         * Boeing's
+         * factory in Everett, Washington, United States is the world's ...
+         */
     }
 
     private static void example2Async(Kernel kernel) {
@@ -143,8 +146,9 @@ public class Example07_BingAndGooglePlugins {
 
                 [TASK]
                 Question: {{ $question }}.
-                Answer: 
-            """.stripIndent();
+                Answer:
+            """
+            .stripIndent();
 
         // The prompt function will append the answer here
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
@@ -196,22 +200,30 @@ public class Example07_BingAndGooglePlugins {
         System.out.println("---- ANSWER:");
         System.out.println(answer.getResult());
 
-        /* OUTPUT:
-
-            Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?
-            ---- Fetching information from Bing...
-            Information found:
-
-            Khaby Lame is the most-followed user on TikTok. This list contains the top 50 accounts by number
-            of followers on the Chinese social media platform TikTok, which was merged with musical.ly in 2018.
-            [1] The most-followed individual on the platform is Khaby Lame, with over 153 million followers..
-            EUR – Euro To USD – US Dollar 1.00 Euro = 1.10 37097 US Dollars 1 USD = 0.906035 EUR We use the
-            mid-market rate for our Converter. This is for informational purposes only. You won’t receive this
-            rate when sending money. Check send rates Convert Euro to US Dollar Convert US Dollar to Euro..
-            ---- ANSWER:
-
-            * The most followed person on TikTok right now is Khaby Lame, with over 153 million followers.
-            * The exchange rate for EUR to USD is 1.1037097 US Dollars for 1 Euro.
+        /*
+         * OUTPUT:
+         * 
+         * Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?
+         * ---- Fetching information from Bing...
+         * Information found:
+         * 
+         * Khaby Lame is the most-followed user on TikTok. This list contains the top 50 accounts by
+         * number
+         * of followers on the Chinese social media platform TikTok, which was merged with
+         * musical.ly in 2018.
+         * [1] The most-followed individual on the platform is Khaby Lame, with over 153 million
+         * followers..
+         * EUR – Euro To USD – US Dollar 1.00 Euro = 1.10 37097 US Dollars 1 USD = 0.906035 EUR We
+         * use the
+         * mid-market rate for our Converter. This is for informational purposes only. You won’t
+         * receive this
+         * rate when sending money. Check send rates Convert Euro to US Dollar Convert US Dollar to
+         * Euro..
+         * ---- ANSWER:
+         * 
+         * The most followed person on TikTok right now is Khaby Lame, with over 153 million
+         * followers.
+         * The exchange rate for EUR to USD is 1.1037097 US Dollars for 1 Euro.
          */
     }
 

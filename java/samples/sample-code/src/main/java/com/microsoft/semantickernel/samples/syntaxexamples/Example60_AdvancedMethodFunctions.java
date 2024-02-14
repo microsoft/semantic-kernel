@@ -27,8 +27,7 @@ public class Example60_AdvancedMethodFunctions {
             MyCustomType.class,
             o -> (MyCustomType) o,
             o -> o.text + " " + o.number,
-            s -> null
-        );
+            s -> null);
 
         ContextVariableTypes.addGlobalConverter(type);
 
@@ -46,7 +45,6 @@ public class Example60_AdvancedMethodFunctions {
             "CustomType.Text: " + result.getResult().text); // From Function1 + From Function2
 
     }
-
 
     /// <summary>
     /// In order to use custom types, <see cref="TypeConverter"/> should be specified,
@@ -76,10 +74,7 @@ public class Example60_AdvancedMethodFunctions {
 
         public static final String PluginName = "FunctionsChainingPlugin";
 
-
-        @DefineKernelFunction(
-            name = "Function1",
-            returnType = "com.microsoft.semantickernel.samples.syntaxexamples.Example60_AdvancedMethodFunctions$MyCustomType")
+        @DefineKernelFunction(name = "Function1", returnType = "com.microsoft.semantickernel.samples.syntaxexamples.Example60_AdvancedMethodFunctions$MyCustomType")
         public Mono<MyCustomType> function1Async(Kernel kernel) {
             // Execute another function
             return kernel
@@ -96,9 +91,7 @@ public class Example60_AdvancedMethodFunctions {
                 });
         }
 
-        @DefineKernelFunction(
-            name = "Function2",
-            returnType = "com.microsoft.semantickernel.samples.syntaxexamples.Example60_AdvancedMethodFunctions$MyCustomType")
+        @DefineKernelFunction(name = "Function2", returnType = "com.microsoft.semantickernel.samples.syntaxexamples.Example60_AdvancedMethodFunctions$MyCustomType")
         public MyCustomType function2() {
             return new MyCustomType(1, "From Function2");
         }

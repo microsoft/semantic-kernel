@@ -79,10 +79,8 @@ public class PromptExecutionSettings {
         @JsonProperty(RESULTS_PER_PROMPT) int resultsPerPrompt,
         @JsonProperty(BEST_OF) int bestOf,
         @JsonProperty(USER) String user,
-        @Nullable
-        @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
-        @Nullable
-        @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
+        @Nullable @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
+        @Nullable @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
         this.serviceId = serviceId;
         this.modelId = modelId;
         this.temperature = clamp(temperature, 0d, 2d, DEFAULT_TEMPERATURE);
@@ -91,14 +89,14 @@ public class PromptExecutionSettings {
         this.frequencyPenalty = clamp(frequencyPenalty, -2d, 2d, DEFAULT_FREQUENCY_PENALTY);
         this.maxTokens = clamp(maxTokens, 1, Integer.MAX_VALUE);
         this.resultsPerPrompt = clamp(resultsPerPrompt, 1, Integer.MAX_VALUE);
-        this.bestOf = clamp(bestOf, 1, Integer.MAX_VALUE); ;
+        this.bestOf = clamp(bestOf, 1, Integer.MAX_VALUE);
+        ;
         this.user = user;
-        this.stopSequences =
-            stopSequences != null ? new ArrayList<>(stopSequences) : Collections.emptyList();
-        this.tokenSelectionBiases =
-            tokenSelectionBiases != null 
-                ? new HashMap<>(tokenSelectionBiases)
-                : Collections.emptyMap();
+        this.stopSequences = stopSequences != null ? new ArrayList<>(stopSequences)
+            : Collections.emptyList();
+        this.tokenSelectionBiases = tokenSelectionBiases != null
+            ? new HashMap<>(tokenSelectionBiases)
+            : Collections.emptyMap();
         this.tokenSelectionBiases.replaceAll((k, v) -> clamp(v, -100, 100));
     }
 
@@ -237,7 +235,6 @@ public class PromptExecutionSettings {
     public static Builder builder() {
         return new Builder();
     }
-
 
     /**
      * Builder for PromptExecutionSettings.
@@ -409,8 +406,7 @@ public class PromptExecutionSettings {
                 (String) settings.getOrDefault(USER, ""),
                 (List<String>) settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
                 (Map<Integer, Integer>) settings.getOrDefault(TOKEN_SELECTION_BIASES,
-                    Collections.emptyMap())
-            );
+                    Collections.emptyMap()));
         }
     }
 
@@ -419,8 +415,8 @@ public class PromptExecutionSettings {
             return defaultValue;
         }
         return Math.max(min, Math.min(max, value));
-    }  
-    
+    }
+
     private static int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
     }

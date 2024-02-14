@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 
 public class Example30_ChatWithPrompts {
 
-
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -58,10 +57,13 @@ public class Example30_ChatWithPrompts {
 
         System.out.println("======== Chat with prompts ========");
 
-        /* Load 3 files:
+        /*
+         * Load 3 files:
          * - 30-system-prompt.txt: the system prompt, used to initialize the chat session.
-         * - 30-user-context.txt:  the user context, e.g. a piece of a document the user selected and is asking to process.
-         * - 30-user-prompt.txt:   the user prompt, just for demo purpose showing that one can leverage the same approach also to augment user messages.
+         * - 30-user-context.txt: the user context, e.g. a piece of a document the user selected and
+         * is asking to process.
+         * - 30-user-prompt.txt: the user prompt, just for demo purpose showing that one can
+         * leverage the same approach also to augment user messages.
          */
 
         var systemPromptTemplate = EmbeddedResourceLoader.readFile("30-system-prompt.txt",

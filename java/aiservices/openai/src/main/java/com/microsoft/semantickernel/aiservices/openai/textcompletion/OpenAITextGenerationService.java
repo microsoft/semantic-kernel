@@ -42,8 +42,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
     public OpenAITextGenerationService(
         OpenAIAsyncClient client,
         String modelId,
-        @Nullable
-        String serviceId) {
+        @Nullable String serviceId) {
         this.serviceId = serviceId;
         this.client = client;
         attributes = new HashMap<>();
@@ -86,8 +85,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
 
     protected Mono<List<TextContent>> internalCompleteTextAsync(
         String text,
-        @Nullable
-        PromptExecutionSettings requestSettings) {
+        @Nullable PromptExecutionSettings requestSettings) {
 
         CompletionsOptions completionsOptions = getCompletionsOptions(text, requestSettings);
 
@@ -135,8 +133,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
 
     private CompletionsOptions getCompletionsOptions(
         String text,
-        @Nullable
-        PromptExecutionSettings requestSettings) {
+        @Nullable PromptExecutionSettings requestSettings) {
         if (requestSettings == null) {
             return new CompletionsOptions(Collections.singletonList(text))
                 .setMaxTokens(PromptExecutionSettings.DEFAULT_MAX_TOKENS);
@@ -151,18 +148,17 @@ public class OpenAITextGenerationService implements TextGenerationService {
                     MAX_RESULTS_PER_PROMPT));
         }
 
-        CompletionsOptions options =
-            new CompletionsOptions(Collections.singletonList(text))
-                .setMaxTokens(requestSettings.getMaxTokens())
-                .setTemperature(requestSettings.getTemperature())
-                .setTopP(requestSettings.getTopP())
-                .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
-                .setPresencePenalty(requestSettings.getPresencePenalty())
-                .setModel(getModelId())
-                .setN(requestSettings.getResultsPerPrompt())
-                .setUser(requestSettings.getUser())
-                .setBestOf(requestSettings.getBestOf())
-                .setLogitBias(new HashMap<>());
+        CompletionsOptions options = new CompletionsOptions(Collections.singletonList(text))
+            .setMaxTokens(requestSettings.getMaxTokens())
+            .setTemperature(requestSettings.getTemperature())
+            .setTopP(requestSettings.getTopP())
+            .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
+            .setPresencePenalty(requestSettings.getPresencePenalty())
+            .setModel(getModelId())
+            .setN(requestSettings.getResultsPerPrompt())
+            .setUser(requestSettings.getUser())
+            .setBestOf(requestSettings.getBestOf())
+            .setLogitBias(new HashMap<>());
         return options;
     }
 
@@ -186,8 +182,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
             return new OpenAITextGenerationService(
                 this.client,
                 this.modelId,
-                this.serviceId
-            );
+                this.serviceId);
         }
     }
 }

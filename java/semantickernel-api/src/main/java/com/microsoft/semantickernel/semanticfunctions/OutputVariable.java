@@ -24,12 +24,9 @@ public class OutputVariable {
      */
     @JsonCreator
     public OutputVariable(
-        @Nullable
-        @JsonProperty("description")
-        String description,
+        @Nullable @JsonProperty("description") String description,
 
-        @JsonProperty("type")
-        String type) {
+        @JsonProperty("type") String type) {
         this.description = description;
         this.type = type;
     }

@@ -41,7 +41,6 @@ public class DateTimeContextVariableTypeConverter extends
                     public Instant toObject(OffsetDateTime offsetDateTime) {
                         return offsetDateTime.toInstant();
                     }
-                }
-            ));
+                }));
     }
 }

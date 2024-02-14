@@ -71,8 +71,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     public FunctionInvocation(
         Kernel kernel,
         KernelFunction<?> function,
-        @Nullable
-        ContextVariableType<T> resultType) {
+        @Nullable ContextVariableType<T> resultType) {
         this.function = function;
         this.kernel = kernel;
         this.resultType = resultType;
@@ -88,8 +87,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
     public FunctionInvocation<T> withArguments(
-        @Nullable
-        KernelFunctionArguments arguments) {
+        @Nullable KernelFunctionArguments arguments) {
         if (arguments == null) {
             this.arguments = null;
         } else {
@@ -136,8 +134,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
     public FunctionInvocation<T> addKernelHooks(
-        @Nullable
-        KernelHooks hooks) {
+        @Nullable KernelHooks hooks) {
         if (hooks == null) {
             return this;
         }
@@ -151,8 +148,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
     public FunctionInvocation<T> withPromptExecutionSettings(
-        @Nullable
-        PromptExecutionSettings promptExecutionSettings) {
+        @Nullable PromptExecutionSettings promptExecutionSettings) {
         this.promptExecutionSettings = promptExecutionSettings;
         return this;
     }
@@ -176,7 +172,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         contextVariableTypes.putConverter(typeConverter.getConverter());
         return this;
     }
-
 
     /**
      * Supply a context variable type to the function invocation.
@@ -222,8 +217,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 hooks,
                 promptExecutionSettings,
                 toolCallBehavior,
-                contextVariableTypes
-            ));
+                contextVariableTypes));
     }
 
     // Extracted to static to ensure mutable state is not used
@@ -231,13 +225,9 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         CoreSubscriber<? super FunctionResult<T>> coreSubscriber,
         Kernel kernel,
         KernelFunction<?> function,
-        @Nullable
-        KernelFunctionArguments arguments,
-        @Nullable
-        ContextVariableType<T> variableType,
-        @Nullable
-        InvocationContext context
-    ) {
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable InvocationContext context) {
         if (variableType == null) {
             LOGGER.debug(
                 "No variable type explicitly specified by calling 'withResultType' for function invocation: "
@@ -256,16 +246,14 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     }
 
     private static <T> BiConsumer<FunctionResult<?>, SynchronousSink<FunctionResult<T>>> convertToType(
-        @Nullable
-        ContextVariableType<T> variableType) {
+        @Nullable ContextVariableType<T> variableType) {
         return (result, sink) -> {
             // If a specific result type was requested, convert the result to that type.
             if (variableType != null) {
                 try {
                     sink.next(new FunctionResult<>(
                         ContextVariable.convert(result.getResult(), variableType),
-                        result.getMetadata()
-                    ));
+                        result.getMetadata()));
                 } catch (Exception e) {
                     sink.error(new SKException(
                         "Failed to convert result to requested type: "
@@ -281,8 +269,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
 
     @Nullable
     private static UnmodifiableToolCallBehavior unmodifiableClone(
-        @Nullable
-        ToolCallBehavior toolCallBehavior) {
+        @Nullable ToolCallBehavior toolCallBehavior) {
         if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
             return (UnmodifiableToolCallBehavior) toolCallBehavior;
         } else if (toolCallBehavior != null) {

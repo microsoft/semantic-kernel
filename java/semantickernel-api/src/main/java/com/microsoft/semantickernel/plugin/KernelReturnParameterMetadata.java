@@ -20,8 +20,7 @@ public class KernelReturnParameterMetadata<T> {
      * @param parameterType the type of the return parameter
      */
     public KernelReturnParameterMetadata(
-        @Nullable
-        String description,
+        @Nullable String description,
         Class<T> parameterType) {
         this.description = description;
         this.parameterType = parameterType;

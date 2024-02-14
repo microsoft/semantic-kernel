@@ -19,7 +19,7 @@ public class WiremockRecord {
                 WiremockExamplesIT.mains.forEach(testClazz -> {
                     try {
                         Method main = testClazz.getMethod("main", String[].class);
-                        main.invoke(null, new Object[]{null});
+                        main.invoke(null, new Object[] { null });
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

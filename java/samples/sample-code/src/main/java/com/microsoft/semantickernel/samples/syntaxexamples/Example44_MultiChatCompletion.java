@@ -18,7 +18,8 @@ public class Example44_MultiChatCompletion {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-            .getOrDefault("MODEL_ID", "gpt-35-turbo");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
+
     public static void main(String[] args) {
         System.out.println("======== Open AI - Multiple Chat Completion ========");
 
@@ -26,37 +27,36 @@ public class Example44_MultiChatCompletion {
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
 
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
         ChatCompletionService chatGPT = OpenAIChatCompletion.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build();
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
+            .build();
 
         System.out.println("Chat content:");
         System.out.println("------------------------");
 
         ChatHistory chatHistory = new ChatHistory("You are a librarian, expert about books");
         var executionSettings = PromptExecutionSettings.builder()
-                .withMaxTokens(1024)
-                .withTemperature(1)
-                .withResultsPerPrompt(2)
-                .build();
+            .withMaxTokens(1024)
+            .withTemperature(1)
+            .withResultsPerPrompt(2)
+            .build();
 
         chatHistory.addUserMessage("Hi, I'm looking for 3 different book suggestions about sci-fi");
         messageOutput(chatHistory);
 
         GPTReply(chatGPT, chatHistory, executionSettings);
     }
-
 
     private static void messageOutput(ChatHistory chatHistory) {
         var message = chatHistory.getLastMessage().get();
@@ -65,12 +65,13 @@ public class Example44_MultiChatCompletion {
     }
 
     private static void GPTReply(ChatCompletionService chatGPT, ChatHistory chatHistory,
-                                 PromptExecutionSettings settings) {
-        
-        var invocationContext = InvocationContext.builder().withPromptExecutionSettings(settings).build();
+        PromptExecutionSettings settings) {
+
+        var invocationContext = InvocationContext.builder().withPromptExecutionSettings(settings)
+            .build();
 
         var reply = chatGPT.getChatMessageContentsAsync(chatHistory, null, invocationContext)
-                .block();
+            .block();
 
         reply.forEach(chatMessageContent -> {
             chatHistory.addAssistantMessage(chatMessageContent.getContent());

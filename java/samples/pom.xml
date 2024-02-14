@@ -16,7 +16,6 @@
     <description>Parent pom for sample code for using the Semantic Kernel project</description>
 
     <modules>
-        <module>sk-v1</module>
         <module>sample-code</module>
     </modules>
 

@@ -69,8 +69,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     public OpenAIChatCompletion(
         OpenAIAsyncClient client,
         String modelId,
-        @Nullable
-        String serviceId) {
+        @Nullable String serviceId) {
         this.serviceId = serviceId;
         this.client = client;
         this.attributes = new HashMap<>();
@@ -99,8 +98,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable InvocationContext invocationContext) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        List<FunctionDefinition> functions =
-            kernel != null ? getFunctions(kernel) : Collections.emptyList();
+        List<FunctionDefinition> functions = kernel != null ? getFunctions(kernel)
+            : Collections.emptyList();
 
         return internalChatMessageContentsAsync(
             chatRequestMessages,
@@ -121,17 +120,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             invocationContext);
     }
 
-
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> chatRequestMessages,
-        @Nullable
-        List<FunctionDefinition> functions,
+        @Nullable List<FunctionDefinition> functions,
         @Nullable InvocationContext invocationContext) {
 
         ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
             invocationContext);
-        Mono<List<ChatMessageContent>> results =
-            internalChatMessageContentsAsync(options, invocationContext);
+        Mono<List<ChatMessageContent>> results = internalChatMessageContentsAsync(options,
+            invocationContext);
 
         return results
             .flatMap(list -> {
@@ -157,8 +154,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         ChatCompletionsOptions options,
         @Nullable InvocationContext invocationContext) {
 
-        KernelHooks kernelHooks =
-            invocationContext != null && invocationContext.getKernelHooks() != null
+        KernelHooks kernelHooks = invocationContext != null
+            && invocationContext.getKernelHooks() != null
                 ? invocationContext.getKernelHooks()
                 : new KernelHooks();
 
@@ -178,14 +175,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             })
             .filter(choices -> choices.getChoices() != null && !choices.getChoices().isEmpty())
             .map(this::accumulateResponses)
-            .map(responses ->
-                responses.stream()
-                    .map(ChatResponseCollector::toChatMessageContent)
-                    .collect(Collectors.toList())
-            );
+            .map(responses -> responses.stream()
+                .map(ChatResponseCollector::toChatMessageContent)
+                .collect(Collectors.toList()));
 
     }
-
 
     // non-streaming case
     private List<ChatResponseCollector> accumulateResponses(ChatCompletions chatCompletions) {
@@ -200,7 +194,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         return collectors;
     }
 
-
     private Function<ChatResponseMessage, ChatResponseCollector> accumulateResponse(
         ChatCompletions completions) {
 
@@ -214,8 +207,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 getModelId(),
                 null,
                 null,
-                metadata
-            );
+                metadata);
 
             // collector is null for the non-streaming case and not null for the streaming case
             if (response.getContent() != null) {
@@ -293,8 +285,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             });
             arguments = KernelFunctionArguments.builder().withVariables(variables).build();
         }
-        ContextVariableType<String> variableType = ContextVariableTypes.getGlobalVariableTypeForClass(
-            String.class);
+        ContextVariableType<String> variableType = ContextVariableTypes
+            .getGlobalVariableTypeForClass(
+                String.class);
         return kernelFunction
             .invokeAsync(kernel)
             .withArguments(arguments)
@@ -304,10 +297,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private static ChatCompletionsOptions getCompletionsOptions(
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
-        @Nullable
-        List<FunctionDefinition> functions,
-        @Nullable
-        InvocationContext invocationContext) {
+        @Nullable List<FunctionDefinition> functions,
+        @Nullable InvocationContext invocationContext) {
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
@@ -330,8 +321,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         ToolCallBehavior toolCallBehavior = invocationContext != null
             ? invocationContext.getToolCallBehavior()
             : null;
-        List<ChatCompletionsToolDefinition> toolDefinitions =
-            chatCompletionsToolDefinitions(toolCallBehavior, functions);
+        List<ChatCompletionsToolDefinition> toolDefinitions = chatCompletionsToolDefinitions(
+            toolCallBehavior, functions);
 
         if (toolDefinitions != null && !toolDefinitions.isEmpty()) {
             options.setTools(toolDefinitions);
@@ -346,8 +337,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 .stream()
                 .collect(Collectors.toMap(
                     entry -> entry.getKey().toString(),
-                    Map.Entry::getValue)
-                );
+                    Map.Entry::getValue));
         }
 
         options
@@ -362,7 +352,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
             .setStop(promptExecutionSettings.getStopSequences() == null
                 || promptExecutionSettings.getStopSequences().isEmpty() ? null
-                : promptExecutionSettings.getStopSequences())
+                    : promptExecutionSettings.getStopSequences())
             .setUser(promptExecutionSettings.getUser())
             .setLogitBias(logit);
 
@@ -371,10 +361,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     @SuppressWarnings("StringSplitter")
     private static List<ChatCompletionsToolDefinition> chatCompletionsToolDefinitions(
-        @Nullable
-        ToolCallBehavior toolCallBehavior,
-        @Nullable
-        List<FunctionDefinition> functions) {
+        @Nullable ToolCallBehavior toolCallBehavior,
+        @Nullable List<FunctionDefinition> functions) {
 
         if (functions == null || functions.isEmpty()) {
             return Collections.emptyList();
@@ -414,7 +402,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             })
             .collect(Collectors.toList());
     }
-
 
     static ChatRequestMessage getChatRequestMessage(
         AuthorRole authorRole,
@@ -534,7 +521,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             this.metadata = metadata;
         }
 
-
         @Override
         public void append(String content) {
             sb.append(content);
@@ -548,8 +534,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 modelId,
                 innerContent,
                 encoding,
-                metadata
-            );
+                metadata);
         }
     }
 
@@ -652,8 +637,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     modelId,
                     innerContent,
                     encoding,
-                    metadata
-                );
+                    metadata);
             });
         }
 
@@ -669,7 +653,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             return contentBuffer.toChatMessageContent();
         }
     }
-
 
     public static class Builder extends ChatCompletionService.Builder {
 

@@ -44,7 +44,6 @@ public class KernelFunctionFactory {
             parameters, returnParameter);
     }
 
-
     /**
      * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template.
      *
@@ -129,8 +128,7 @@ public class KernelFunctionFactory {
     }
 
     private static Map<String, PromptExecutionSettings> createSettingsDictionary(
-        @Nullable
-        PromptExecutionSettings executionSettings) {
+        @Nullable PromptExecutionSettings executionSettings) {
         HashMap<String, PromptExecutionSettings> map = new HashMap<>();
         if (executionSettings != null) {
             map.put("default", executionSettings);

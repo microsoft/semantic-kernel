@@ -67,8 +67,7 @@ public class WiremockExamplesIT {
         Example62_CustomAIServiceSelector.class,
         Example63_ChatCompletionPrompts.class,
         Example64_MultiplePromptTemplates.class,
-        Example69_MutableKernelPlugin.class
-    );
+        Example69_MutableKernelPlugin.class);
 
     public static WireMockServer createWiremockServer(String dir) {
         return new WireMockServer(
@@ -80,8 +79,7 @@ public class WiremockExamplesIT {
                 .keystorePath("scripts/server.keystore")
                 .keystorePassword("password")
                 .keystoreType("jks")
-                .usingFilesUnderDirectory(dir)
-        );
+                .usingFilesUnderDirectory(dir));
     }
 
     public static void main(String[] args) {
@@ -114,7 +112,7 @@ public class WiremockExamplesIT {
                                 server = createWiremockServer("src/test/resources/wiremock");
 
                                 server.start();
-                                main.invoke(null, new Object[]{null});
+                                main.invoke(null, new Object[] { null });
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 throw new RuntimeException(e);

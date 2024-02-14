@@ -21,7 +21,6 @@ public class Example33_Chat {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
-
     public static void main(String[] args) {
         System.out.println("======== Open AI - ChatGPT Streaming ========");
 

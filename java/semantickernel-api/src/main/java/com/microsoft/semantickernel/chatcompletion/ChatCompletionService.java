@@ -35,8 +35,7 @@ public interface ChatCompletionService extends Buildable, TextAIService {
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         ChatHistory chatHistory,
         @Nullable Kernel kernel,
-        @Nullable InvocationContext invocationContext
-    );
+        @Nullable InvocationContext invocationContext);
 
     /**
      * Gets the chat message contents asynchronously using a prompt.
@@ -49,8 +48,7 @@ public interface ChatCompletionService extends Buildable, TextAIService {
     Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         String prompt,
         @Nullable Kernel kernel,
-        @Nullable InvocationContext invocationContext
-    );
+        @Nullable InvocationContext invocationContext);
 
     /**
      * Get a builder for creating a {@code ChatCompletionService}. The builder loads a service
@@ -59,7 +57,7 @@ public interface ChatCompletionService extends Buildable, TextAIService {
      */
     static Builder builder() {
         return ServiceLoadUtil.findServiceLoader(Builder.class,
-                "com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion$Builder")
+            "com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion$Builder")
             .get();
     }
 
@@ -78,7 +76,6 @@ public interface ChatCompletionService extends Buildable, TextAIService {
 
         @Nullable
         protected String serviceId;
-
 
         /**
          * Sets the model ID to use with the ChatCompletion service.

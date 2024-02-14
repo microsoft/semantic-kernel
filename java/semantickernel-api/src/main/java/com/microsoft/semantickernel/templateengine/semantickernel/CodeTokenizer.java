@@ -43,11 +43,7 @@ import javax.annotation.Nullable;
 public class CodeTokenizer {
 
     private enum TokenTypes {
-        None(0),
-        Value(1),
-        Variable(2),
-        FunctionId(3),
-        NamedArg(4);
+        None(0), Value(1), Variable(2), FunctionId(3), NamedArg(4);
 
         TokenTypes(int i) {
         }

@@ -31,8 +31,7 @@ public class KernelFunctionYaml {
      */
     public static <T> KernelFunction<T> fromPromptYaml(
         String yaml,
-        @Nullable PromptTemplateFactory promptTemplateFactory
-    ) throws IOException {
+        @Nullable PromptTemplateFactory promptTemplateFactory) throws IOException {
         InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
         return fromYaml(targetStream, promptTemplateFactory);
     }
@@ -45,8 +44,7 @@ public class KernelFunctionYaml {
      * @throws IOException If an error occurs while reading the YAML.
      */
     public static <T> KernelFunction<T> fromPromptYaml(
-        String yaml
-    ) throws IOException {
+        String yaml) throws IOException {
         InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
         return fromYaml(targetStream, null);
     }
@@ -64,11 +62,10 @@ public class KernelFunctionYaml {
         return fromYaml(inputStream, null);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static <T> KernelFunction<T> fromYaml(
         InputStream inputStream,
-        @Nullable PromptTemplateFactory promptTemplateFactory
-    ) throws IOException {
+        @Nullable PromptTemplateFactory promptTemplateFactory) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         PromptTemplateConfig functionModel = mapper.readValue(inputStream,
             PromptTemplateConfig.class);
@@ -80,7 +77,7 @@ public class KernelFunctionYaml {
             promptTemplate = promptTemplateFactory.tryCreate(functionModel);
         }
 
-        return (KernelFunction<T>)new KernelFunctionFromPrompt.Builder()
+        return (KernelFunction<T>) new KernelFunctionFromPrompt.Builder()
             .withName(functionModel.getName())
             .withInputParameters(functionModel.getInputVariables())
             .withPromptTemplate(promptTemplate)

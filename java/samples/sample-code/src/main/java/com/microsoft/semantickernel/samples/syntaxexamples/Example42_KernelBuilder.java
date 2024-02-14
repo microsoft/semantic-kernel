@@ -69,7 +69,6 @@ public class Example42_KernelBuilder {
         Kernel kernel = new Kernel(
             new OrderedAIServiceSelector(),
             new ArrayList<>(),
-            null
-        );
+            null);
     }
 }

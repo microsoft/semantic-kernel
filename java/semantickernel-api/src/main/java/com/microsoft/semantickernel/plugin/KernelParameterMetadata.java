@@ -28,11 +28,9 @@ public class KernelParameterMetadata<T> {
      */
     public KernelParameterMetadata(
         String name,
-        @Nullable
-        String description,
+        @Nullable String description,
         Class<T> parameterType,
-        @Nullable
-        String defaultValue,
+        @Nullable String defaultValue,
         boolean isRequired) {
         this.name = name;
         this.description = description;

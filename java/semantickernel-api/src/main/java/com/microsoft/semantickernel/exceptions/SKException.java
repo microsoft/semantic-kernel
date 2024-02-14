@@ -41,7 +41,7 @@ public class SKException extends RuntimeException {
      * @return A formatted message
      */
     protected static String formatDefaultMessage(
-            @Nonnull String errorMessage, @Nullable String message) {
+        @Nonnull String errorMessage, @Nullable String message) {
         return String.format("%s: %s", errorMessage, message);
     }
 }

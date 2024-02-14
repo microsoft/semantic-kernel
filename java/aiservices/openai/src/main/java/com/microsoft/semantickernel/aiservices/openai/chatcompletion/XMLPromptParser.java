@@ -36,8 +36,7 @@ class XMLPromptParser {
     public static ParsedPrompt parse(String rawPrompt) {
         List<String> prompts = Arrays.asList(
             rawPrompt,
-            "<prompt>" + rawPrompt + "</prompt>"
-        );
+            "<prompt>" + rawPrompt + "</prompt>");
 
         for (String prompt : prompts) {
             try {

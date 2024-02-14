@@ -33,8 +33,8 @@ public final class VarBlock extends Block implements TextRendering {
 
         if (name == null || name.isEmpty()) {
             throw new TemplateException(
-                    TemplateException.ErrorCodes.SYNTAX_ERROR,
-                    "Variable rendering failed, the variable name is empty");
+                TemplateException.ErrorCodes.SYNTAX_ERROR,
+                "Variable rendering failed, the variable name is empty");
         }
 
         ContextVariable<?> value = variables.get(
@@ -51,7 +51,7 @@ public final class VarBlock extends Block implements TextRendering {
     public boolean isValid() {
         if (getContent() == null || getContent().isEmpty()) {
             LOGGER.error(
-                    "A variable must start with the symbol {} and have a name", Symbols.VarPrefix);
+                "A variable must start with the symbol {} and have a name", Symbols.VarPrefix);
             return false;
         }
 
@@ -67,9 +67,9 @@ public final class VarBlock extends Block implements TextRendering {
 
         if (!name.matches("^[a-zA-Z0-9_]*$")) {
             LOGGER.error(
-                    "The variable name '{}' contains invalid characters. "
-                            + "Only alphanumeric chars and underscore are allowed.",
-                    name);
+                "The variable name '{}' contains invalid characters. "
+                    + "Only alphanumeric chars and underscore are allowed.",
+                name);
             return false;
         }
 

@@ -57,10 +57,9 @@ public interface TextGenerationService extends Buildable, TextAIService {
      */
     static Builder builder() {
         return ServiceLoadUtil.findServiceLoader(Builder.class,
-                "com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService$Builder")
+            "com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService$Builder")
             .get();
     }
-
 
     /**
      * Builder for a TextGenerationService

@@ -69,7 +69,6 @@ public class ContextVariableTypes {
         DEFAULT_TYPES = new ContextVariableTypes(types);
     }
 
-
     private final Map<Class<?>, ContextVariableType<?>> variableTypes;
 
     /**
@@ -151,7 +150,6 @@ public class ContextVariableTypes {
             return null;
         }
     }
-
 
     /**
      * Get the context variable type for the given class.

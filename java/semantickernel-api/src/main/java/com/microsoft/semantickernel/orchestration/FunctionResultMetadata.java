@@ -24,7 +24,6 @@ public class FunctionResultMetadata {
     /** The key for createdAt metadata. */
     public static final String CREATED_AT = "createdAt";
 
-
     private final CaseInsensitiveMap<ContextVariable<?>> metadata;
 
     /**

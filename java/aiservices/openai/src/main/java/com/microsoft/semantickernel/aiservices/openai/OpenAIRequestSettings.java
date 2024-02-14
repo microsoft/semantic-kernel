@@ -16,7 +16,6 @@ public final class OpenAIRequestSettings {
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTIES_FILE = "semantic-kernel-version.properties";
     private static final String version;
 
-
     static {
         version = loadVersion();
     }

@@ -115,8 +115,7 @@ public class ToolCallBehavior {
                     } else {
                         return new FunctionCallBehavior(function, require, v.enabled());
                     }
-                }
-            );
+                });
         }
         return this;
     }
@@ -143,8 +142,7 @@ public class ToolCallBehavior {
                     } else {
                         return new FunctionCallBehavior(function, v.required(), enable);
                     }
-                }
-            );
+                });
         }
         return this;
     }
@@ -308,7 +306,7 @@ public class ToolCallBehavior {
             throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
         }
 
-        @Override 
+        @Override
         protected final void setFlag(String key, boolean value) {
             throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
         }
@@ -316,8 +314,8 @@ public class ToolCallBehavior {
         @Override
         protected final void setSetting(String key, int value) {
             throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }   
+        }
 
-    }    
+    }
 
 }

@@ -33,8 +33,7 @@ public class MethodDetails {
      */
     public MethodDetails(
         String name,
-        @Nullable
-        String description,
+        @Nullable String description,
         ImplementationFunc<?> function,
         List<KernelParameterMetadata<?>> parameters,
         KernelReturnParameterMetadata<?> returnParameter) {

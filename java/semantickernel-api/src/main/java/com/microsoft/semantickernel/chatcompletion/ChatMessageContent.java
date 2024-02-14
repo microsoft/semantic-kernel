@@ -32,8 +32,7 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
      */
     public ChatMessageContent(
         AuthorRole authorRole,
-        String content
-    ) {
+        String content) {
         this(
             authorRole,
             content,
@@ -55,15 +54,10 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
     public ChatMessageContent(
         AuthorRole authorRole,
         String content,
-        @Nullable
-        String modelId,
-        @Nullable
-        String innerContent,
-        @Nullable
-        Charset encoding,
-        @Nullable
-        FunctionResultMetadata metadata
-    ) {
+        @Nullable String modelId,
+        @Nullable String innerContent,
+        @Nullable Charset encoding,
+        @Nullable FunctionResultMetadata metadata) {
         super(innerContent, modelId, metadata);
         this.authorRole = authorRole;
         this.content = content;
@@ -85,8 +79,7 @@ public class ChatMessageContent extends KernelContent<ChatMessageContent> {
         String modelId,
         String innerContent,
         Charset encoding,
-        FunctionResultMetadata metadata
-    ) {
+        FunctionResultMetadata metadata) {
         super(innerContent, modelId, metadata);
         this.content = null;
         this.authorRole = authorRole;

@@ -42,13 +42,10 @@ public class NamedArgBlock extends Block implements TextRendering {
     protected NamedArgBlock(
         String content,
         String name,
-        @Nullable
-        String value,
+        @Nullable String value,
         VarBlock argNameAsVarBlock,
-        @Nullable
-        VarBlock varBlock,
-        @Nullable
-        ValBlock valBlock) {
+        @Nullable VarBlock varBlock,
+        @Nullable ValBlock valBlock) {
         super(content, NamedArg);
         this.name = name;
         this.value = value;
@@ -59,7 +56,7 @@ public class NamedArgBlock extends Block implements TextRendering {
 
     public static NamedArgBlock from(String content) {
         String name = tryGetName(content);
-        if(name == null) {
+        if (name == null) {
             throw new SKException("Unable to extract name from: " + content);
         }
         String value = tryGetValue(content);

@@ -36,12 +36,10 @@ public class WireMockUtil {
         WireMock.reset();
         WireMock.stubFor(WireMock
             .post(new UrlPathPattern(
-                new RegexPattern("/openai/deployments/text-davinci-003/completions"), true)
-            )
+                new RegexPattern("/openai/deployments/text-davinci-003/completions"), true))
             .withRequestBody(WireMock.matching(".*" + regexMatcher + ".*"))
             .willReturn(WireMock.ok()
                 .withBody(body)));
     }
-
 
 }

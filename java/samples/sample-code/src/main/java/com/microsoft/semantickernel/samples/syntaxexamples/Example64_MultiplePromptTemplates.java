@@ -25,7 +25,6 @@ public class Example64_MultiplePromptTemplates {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
-
     public static void main(String[] args) {
         System.out.println("======== Example64_MultiplePromptTemplates ========");
 
@@ -55,9 +54,7 @@ public class Example64_MultiplePromptTemplates {
         var templateFactory = new AggregatorPromptTemplateFactory(
             List.of(
                 new KernelPromptTemplateFactory(),
-                new HandlebarsPromptTemplateFactory()
-            )
-        );
+                new HandlebarsPromptTemplateFactory()));
 
         runPrompt(kernel,
             "semantic-kernel",

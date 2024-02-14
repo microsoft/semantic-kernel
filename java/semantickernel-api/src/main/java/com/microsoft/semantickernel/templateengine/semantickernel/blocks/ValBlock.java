@@ -49,8 +49,8 @@ public final class ValBlock extends Block implements TextRendering {
         // Check if delimiting chars are consistent
         if (first != last) {
             LOGGER.error(
-                    "A value must be defined using either single quotes or double quotes, not"
-                            + " both");
+                "A value must be defined using either single quotes or double quotes, not"
+                    + " both");
             return false;
         }
 
@@ -59,7 +59,7 @@ public final class ValBlock extends Block implements TextRendering {
 
     public static boolean hasValPrefix(@Nullable String text) {
         return text != null
-                && text.length() > 0
-                && (text.charAt(0) == Symbols.DblQuote || text.charAt(0) == Symbols.SglQuote);
+            && text.length() > 0
+            && (text.charAt(0) == Symbols.DblQuote || text.charAt(0) == Symbols.SglQuote);
     }
 }

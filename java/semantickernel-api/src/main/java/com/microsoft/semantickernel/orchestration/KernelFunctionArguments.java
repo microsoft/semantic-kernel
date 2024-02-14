@@ -36,8 +36,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
      * @param variables The variables to use for the function invocation.
      */
     public KernelFunctionArguments(
-        @Nullable
-        Map<String, ContextVariable<?>> variables) {
+        @Nullable Map<String, ContextVariable<?>> variables) {
         if (variables == null) {
             this.variables = new CaseInsensitiveMap<>();
         } else {
@@ -81,15 +80,13 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
         return variables.entrySet().stream()
             .reduce(
                 "",
-                (str, entry) ->
-                    str
-                        + System.lineSeparator()
-                        + entry.getKey()
-                        + ": "
-                        + entry.getValue(),
+                (str, entry) -> str
+                    + System.lineSeparator()
+                    + entry.getKey()
+                    + ": "
+                    + entry.getValue(),
                 (a, b) -> a + b);
     }
-
 
     /**
      * Return the variable with the given name
@@ -252,10 +249,8 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
             return withInput(new ContextVariable<>(
                 new ContextVariableType<>(
                     typeConverter,
-                    typeConverter.getType()
-                ),
-                content)
-            );
+                    typeConverter.getType()),
+                content));
         }
 
         /**
@@ -309,10 +304,8 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
             return withVariable(key, new ContextVariable<>(
                 new ContextVariableType<>(
                     typeConverter,
-                    typeConverter.getType()
-                ),
-                value
-            ));
+                    typeConverter.getType()),
+                value));
         }
 
         @Override

@@ -25,8 +25,7 @@ public class ChatHistoryVariableContextVariableTypeConverter extends
             x -> {
                 throw new UnsupportedOperationException(
                     "ChatHistoryVariableConverter does not support fromPromptString");
-            }
-        );
+            });
     }
 
     /*

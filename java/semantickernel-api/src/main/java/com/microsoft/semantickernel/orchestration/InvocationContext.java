@@ -126,8 +126,7 @@ public class InvocationContext implements Buildable {
 
     @Nullable
     private static UnmodifiableToolCallBehavior unmodifiableClone(
-        @Nullable
-        ToolCallBehavior toolCallBehavior) {
+        @Nullable ToolCallBehavior toolCallBehavior) {
         if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
             return (UnmodifiableToolCallBehavior) toolCallBehavior;
         } else if (toolCallBehavior != null) {
@@ -139,8 +138,7 @@ public class InvocationContext implements Buildable {
 
     @Nullable
     private static UnmodifiableKernelHooks unmodifiableClone(
-        @Nullable
-        KernelHooks kernelHooks) {
+        @Nullable KernelHooks kernelHooks) {
         if (kernelHooks instanceof UnmodifiableKernelHooks) {
             return (UnmodifiableKernelHooks) kernelHooks;
         } else if (kernelHooks != null) {
@@ -183,8 +181,7 @@ public class InvocationContext implements Buildable {
          * @return this {@link Builder}
          */
         public Builder withPromptExecutionSettings(
-            @Nullable
-            PromptExecutionSettings promptExecutionSettings) {
+            @Nullable PromptExecutionSettings promptExecutionSettings) {
             this.promptExecutionSettings = promptExecutionSettings;
             return this;
         }
@@ -195,8 +192,7 @@ public class InvocationContext implements Buildable {
          * @return this {@link Builder}
          */
         public Builder withToolCallBehavior(
-            @Nullable
-            ToolCallBehavior toolCallBehavior) {
+            @Nullable ToolCallBehavior toolCallBehavior) {
             this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
             return this;
         }
@@ -208,12 +204,10 @@ public class InvocationContext implements Buildable {
          */
         public Builder withContextVariableConverter(ContextVariableTypeConverter<?> converter) {
             this.contextVariableTypes.putConverter(
-                converter
-            );
+                converter);
             return this;
         }
 
-        
         @Override
         public InvocationContext build() {
             return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior,

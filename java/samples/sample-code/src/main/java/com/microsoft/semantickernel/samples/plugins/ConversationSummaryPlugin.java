@@ -67,17 +67,9 @@ public class ConversationSummaryPlugin {
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    @DefineKernelFunction(
-        description = "Given a long conversation transcript, summarize the conversation.",
-        name = "SummarizeConversation",
-        returnType = "java.lang.String"
-    )
+    @DefineKernelFunction(description = "Given a long conversation transcript, summarize the conversation.", name = "SummarizeConversation", returnType = "java.lang.String")
     public Mono<String> SummarizeConversationAsync(
-        @KernelFunctionParameter(
-            description = "A long conversation transcript.",
-            name = "input"
-        )
-        String input,
+        @KernelFunctionParameter(description = "A long conversation transcript.", name = "input") String input,
         Kernel kernel) {
         return processAsync(this.summarizeConversationFunction, input, kernel);
     }
@@ -87,17 +79,9 @@ public class ConversationSummaryPlugin {
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    @DefineKernelFunction(
-        description = "Given a long conversation transcript, identify action items.",
-        name = "GetConversationActionItems",
-        returnType = "java.lang.String"
-    )
+    @DefineKernelFunction(description = "Given a long conversation transcript, identify action items.", name = "GetConversationActionItems", returnType = "java.lang.String")
     public Mono<String> GetConversationActionItemsAsync(
-        @KernelFunctionParameter(
-            description = "A long conversation transcript.",
-            name = "input"
-        )
-        String input,
+        @KernelFunctionParameter(description = "A long conversation transcript.", name = "input") String input,
         Kernel kernel) {
         return processAsync(this.conversationActionItemsFunction, input, kernel);
     }
@@ -107,18 +91,10 @@ public class ConversationSummaryPlugin {
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    @DefineKernelFunction(
-        description = "Given a long conversation transcript, identify topics worth remembering.",
-        name = "GetConversationTopics",
-        returnType = "java.lang.String"
-    )
+    @DefineKernelFunction(description = "Given a long conversation transcript, identify topics worth remembering.", name = "GetConversationTopics", returnType = "java.lang.String")
 
     public Mono<String> GetConversationTopicsAsync(
-        @KernelFunctionParameter(
-            description = "A long conversation transcript.",
-            name = "input"
-        )
-        String input,
+        @KernelFunctionParameter(description = "A long conversation transcript.", name = "input") String input,
         Kernel kernel) {
         return processAsync(this.conversationTopicsFunction, input, kernel);
     }
@@ -135,8 +111,7 @@ public class ConversationSummaryPlugin {
                     .withArguments(
                         new KernelFunctionArguments.Builder()
                             .withInput(paragraph)
-                            .build()
-                    )
+                            .build())
                     .withResultType(
                         ContextVariableTypes.getGlobalVariableTypeForClass(String.class));
             })

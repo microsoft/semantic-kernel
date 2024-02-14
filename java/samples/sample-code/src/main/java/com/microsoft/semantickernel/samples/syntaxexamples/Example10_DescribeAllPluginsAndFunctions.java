@@ -23,9 +23,8 @@ import java.util.Locale;
 
 public class Example10_DescribeAllPluginsAndFunctions {
 
-
-    private static final String PLUGIN_DIR =
-        System.getenv("PLUGIN_DIR") == null ? "." : System.getenv("PLUGIN_DIR");
+    private static final String PLUGIN_DIR = System.getenv("PLUGIN_DIR") == null ? "."
+        : System.getenv("PLUGIN_DIR");
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -34,47 +33,27 @@ public class Example10_DescribeAllPluginsAndFunctions {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "text-davinci-003");
 
-
     public static class StaticTextPlugin {
 
-        @DefineKernelFunction(
-            description = "Change all string chars to uppercase",
-            name = "uppercase"
-        )
+        @DefineKernelFunction(description = "Change all string chars to uppercase", name = "uppercase")
         public static String uppercase(
-            @KernelFunctionParameter(
-                description = "Text to uppercase",
-                name = "input"
-            )
-            String input) {
+            @KernelFunctionParameter(description = "Text to uppercase", name = "input") String input) {
             return input.toUpperCase(Locale.ROOT);
         }
 
-        @DefineKernelFunction(
-            description = "Append the day variable",
-            name = "appendDay"
-        )
+        @DefineKernelFunction(description = "Append the day variable", name = "appendDay")
         public String appendDay(
-            @KernelFunctionParameter(
-                description = "Append the day variable",
-                name = "appendDay"
-            )
-            String input,
-            @KernelFunctionParameter(
-                description = "Value of the day to append",
-                name = "day"
-            )
-            String day) {
+            @KernelFunctionParameter(description = "Append the day variable", name = "appendDay") String input,
+            @KernelFunctionParameter(description = "Value of the day to append", name = "day") String day) {
             return input + day;
         }
     }
 
-
     /// <summary>
-/// Print a list of all the functions imported into the kernel, including function descriptions,
-/// list of parameters, parameters descriptions, etc.
-/// See the end of the file for a sample of what the output looks like.
-/// </summary>
+    /// Print a list of all the functions imported into the kernel, including function descriptions,
+    /// list of parameters, parameters descriptions, etc.
+    /// See the end of the file for a sample of what the output looks like.
+    /// </summary>
     public static void main(String[] args) {
         OpenAIAsyncClient client;
 
@@ -101,22 +80,19 @@ public class Example10_DescribeAllPluginsAndFunctions {
 
         kernel.getPlugins().add(
             KernelPluginFactory.createFromObject(
-                new StaticTextPlugin(), "StaticTextPlugin")
-        );
+                new StaticTextPlugin(), "StaticTextPlugin"));
 
         // Import another native plugin
         kernel.getPlugins().add(
             KernelPluginFactory.createFromObject(
-                new TextPlugin(), "AnotherTextPlugin")
-        );
+                new TextPlugin(), "AnotherTextPlugin"));
 
         kernel.getPlugins().add(
             KernelPluginFactory
                 .importPluginFromDirectory(
                     Path.of(PLUGIN_DIR, "java/samples/sample-code/src/main/resources/Plugins"),
                     "SummarizePlugin",
-                    null)
-        );
+                    null));
 
         // Not added to kernel so should not be printed
         var jokeFunction = KernelFunctionFromPrompt.builder()
@@ -124,8 +100,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
                     .withMaxTokens(150)
-                    .build()
-            )
+                    .build())
             .build();
 
         // Not added to kernel so should not be printed
@@ -136,8 +111,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
                     .withMaxTokens(150)
-                    .build()
-            )
+                    .build())
             .build();
 
         System.out.println("**********************************************");

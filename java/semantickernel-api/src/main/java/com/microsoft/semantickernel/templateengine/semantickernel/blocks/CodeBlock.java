@@ -157,7 +157,6 @@ public final class CodeBlock extends Block implements CodeRendering {
             .map(FunctionResult::getResultVariable);
     }
 
-
     /// <summary>
     /// Adds function arguments. If the first argument is not a named argument, it is added to the arguments collection as the 'input' argument.
     /// Additionally, for the prompt expression - {{MyPlugin.MyFunction p1=$v1}}, the value of the v1 variable will be resolved from the original arguments collection.
@@ -172,8 +171,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         Kernel kernel,
         FunctionIdBlock fBlock,
         KernelFunctionArguments arguments,
-        @Nullable
-        InvocationContext context) {
+        @Nullable InvocationContext context) {
         Block firstArg = this.tokens.get(1);
 
         // Get the function metadata
@@ -211,9 +209,7 @@ public final class CodeBlock extends Block implements CodeRendering {
                     .convert(
                         firstPositionalInputValue,
                         functionMetadata.getParameters().get(0).getType(),
-                        context == null ? null : context.getContextVariableTypes()
-                    )
-            );
+                        context == null ? null : context.getContextVariableTypes()));
             namedArgsStartIndex++;
         }
 

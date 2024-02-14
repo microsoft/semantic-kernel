@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.util;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import java.util.Locale;
 
-
 /**
  * Locale parser to support Java 8 and Java 9+ due to JEP 252.
  *
