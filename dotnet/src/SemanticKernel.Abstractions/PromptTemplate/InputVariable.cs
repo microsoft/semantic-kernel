@@ -28,6 +28,8 @@ public sealed class InputVariable
     /// <param name="inputVariable"></param>
     public InputVariable(InputVariable inputVariable)
     {
+        Verify.NotNull(inputVariable);
+
         this.Name = inputVariable.Name;
         this.Description = inputVariable.Description;
         this.Default = inputVariable.Default;
