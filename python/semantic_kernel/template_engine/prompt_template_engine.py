@@ -3,7 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, List, Optional
 
-from pydantic import PrivateAttr
+from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
@@ -19,14 +19,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PromptTemplateEngine(KernelBaseModel):
-    _tokenizer: TemplateTokenizer = PrivateAttr()
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__()
-
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        self._tokenizer = TemplateTokenizer()
+    tokenizer: TemplateTokenizer = Field(default_factory=TemplateTokenizer, init_var=False)
 
     def extract_blocks(self, template_text: Optional[str] = None, validate: bool = True) -> List[Block]:
         """
@@ -39,8 +32,10 @@ class PromptTemplateEngine(KernelBaseModel):
         :return: A list of all the blocks, ie the template tokenized in
             text, variables and function calls
         """
+        if not template_text:
+            return []
         logger.debug(f"Extracting blocks from template: {template_text}")
-        blocks = self._tokenizer.tokenize(template_text)
+        blocks = self.tokenizer.tokenize(template_text)
 
         if validate:
             for block in blocks:
@@ -75,14 +70,14 @@ class PromptTemplateEngine(KernelBaseModel):
         from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 
         logger.debug(f"Rendering list of {len(blocks)} blocks")
-        rendered_blocks = []
+        rendered_blocks: List[str] = []
         for block in blocks:
             if isinstance(block, TextRenderer):
                 rendered_blocks.append(block.render(kernel, arguments))
             elif isinstance(block, CodeRenderer):
                 rendered_blocks.append(await block.render_code(kernel, arguments))
             else:
-                error = "unexpected block type, the block doesn't have a rendering " "protocol assigned to it"
+                error = "unexpected block type, the block doesn't have a rendering protocol assigned to it"
                 logger.error(error)
                 raise ValueError(error)
 
@@ -105,7 +100,7 @@ class PromptTemplateEngine(KernelBaseModel):
 
         logger.debug("Rendering variables")
 
-        rendered_blocks = []
+        rendered_blocks: List[Block] = []
         for block in blocks:
             if block.type != BlockTypes.VARIABLE:
                 rendered_blocks.append(block)
@@ -131,7 +126,7 @@ class PromptTemplateEngine(KernelBaseModel):
 
         logger.debug("Rendering code")
 
-        rendered_blocks = []
+        rendered_blocks: List[Block] = []
         for block in blocks:
             if block.type != BlockTypes.CODE:
                 rendered_blocks.append(block)

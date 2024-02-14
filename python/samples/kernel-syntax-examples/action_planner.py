@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.core_plugins import (
     MathPlugin,
     TextPlugin,
@@ -15,8 +13,8 @@ from semantic_kernel.planners import ActionPlanner
 async def main():
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
-
     kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
+
     kernel.import_plugin(MathPlugin(), "math")
     kernel.import_plugin(TimePlugin(), "time")
     kernel.import_plugin(TextPlugin(), "text")
@@ -31,7 +29,7 @@ async def main():
     plan = await planner.create_plan(goal=ask)
 
     # ask the action planner to execute the identified function.
-    result = await plan.invoke()
+    result = await plan.invoke(kernel)
     print(result)
     """
     Output:
