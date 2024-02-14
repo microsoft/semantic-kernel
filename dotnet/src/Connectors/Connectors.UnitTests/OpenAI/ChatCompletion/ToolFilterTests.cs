@@ -476,7 +476,6 @@ public sealed class ToolFilterTests : IDisposable
   }
 }";
 
-
     private const string ToolResponseMultipleToolCalls = @"{
   ""id"": ""response-id"",
   ""object"": ""chat.completion"",
