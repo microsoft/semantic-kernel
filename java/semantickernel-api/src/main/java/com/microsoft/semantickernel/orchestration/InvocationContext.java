@@ -118,7 +118,7 @@ public class InvocationContext implements Buildable {
 
     /**
      * Create a new {@link Builder} for building an instance of {@code InvocationContext}.
-     * @return
+     * @return the new Builder.
      */
     public static Builder builder() {
         return new Builder();

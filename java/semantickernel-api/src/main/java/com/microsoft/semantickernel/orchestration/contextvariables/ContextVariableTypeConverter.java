@@ -34,8 +34,17 @@ public class ContextVariableTypeConverter<T> {
      */
     public interface Converter<T, U> {
 
+        /**
+         * Convert the object to the target type.
+         * @param t the object to convert
+         * @return the converted object
+         */
         U toObject(T t);
 
+        /**
+         * Get the class of the target type.
+         * @return the class of the target type
+         */
         Class<U> getTargetType();
     }
 
@@ -46,6 +55,10 @@ public class ContextVariableTypeConverter<T> {
      */
     public static class NoopConverter<T> extends ContextVariableTypeConverter<T> {
 
+        /**
+         * Create a new noop converter.
+         * @param clazz the class of the type
+         */
         public NoopConverter(Class<T> clazz) {
             super(
                 clazz,

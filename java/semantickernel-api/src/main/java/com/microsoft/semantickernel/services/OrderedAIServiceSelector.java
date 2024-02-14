@@ -19,12 +19,11 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/// <summary>
-/// </summary>
 /**
- * Implementation of {@link ServiceSelector} that selects the AI service based on the order of the execution settings.
- * Uses the service id or model id to select the preferred service provider and then returns the service 
- * and associated execution settings.
+ * Implementation of {@link com.microsoft.semantickernel.services.AIServiceSelector} that 
+ * selects the AI service based on the order of the execution settings.
+ * Uses the service id or model id to select the preferred service provider and then 
+ * returns the service and associated execution settings.
  */
 public class OrderedAIServiceSelector extends BaseAIServiceSelector {
 
@@ -197,7 +196,6 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
      * @param clazz The type of service to get.
      * @param <T> The type of service to get.
      * @return The service of the specified type, or {@code null} if no such service exists.
-     * @see AIService#getClass()
      */
     @Nullable
     @SuppressWarnings("unchecked")

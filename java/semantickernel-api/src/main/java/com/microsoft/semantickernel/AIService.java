@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-
 /**
  * Marker interface for AI services. {@code AIService}s are registered with the {@code Kernel} 
  * and are used to provide access to AI services.
- * @see Kernel.Builder#withService(AIService)
  */
 public interface AIService {
 

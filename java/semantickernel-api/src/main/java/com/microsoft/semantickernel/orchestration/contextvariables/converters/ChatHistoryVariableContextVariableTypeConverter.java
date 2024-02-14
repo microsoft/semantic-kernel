@@ -5,8 +5,11 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 
 /**
- * A {@link ContextVariableTypeConverter} for {@link ChatHistory} variables.
- * Typically, one will use the {@link ContextVariableTypes.get }
+ * A {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter} 
+ * for {@code com.microsoft.semantickernel.chathistory.ChatHistory} variables. Use
+ * {@code ContextVariableTypes.getGlobalVariableTypeForClass(ChatHistory.class)} 
+ * to get an instance of this class.
+ * @see com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class ChatHistoryVariableContextVariableTypeConverter extends
     ContextVariableTypeConverter<ChatHistory> {

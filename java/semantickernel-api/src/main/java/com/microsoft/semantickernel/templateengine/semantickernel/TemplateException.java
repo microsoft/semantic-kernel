@@ -110,6 +110,12 @@ public class TemplateException extends SKException {
             this.message = message;
         }
 
+        // spotless:off
+        /**
+         * Gets the message for the error code.
+         * @return The error code message
+         */
+        //spotless:on
         public String getMessage() {
             return message;
         }

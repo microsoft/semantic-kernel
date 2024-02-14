@@ -41,6 +41,11 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
     private final PromptTemplateConfig promptTemplate;
 
+    /**
+     * Initializes a new instance of the {@link HandlebarsPromptTemplate} class.
+     *
+     * @param promptTemplate The prompt template configuration.
+     */
     public HandlebarsPromptTemplate(
         @Nonnull PromptTemplateConfig promptTemplate) {
         this.promptTemplate = new PromptTemplateConfig(promptTemplate);

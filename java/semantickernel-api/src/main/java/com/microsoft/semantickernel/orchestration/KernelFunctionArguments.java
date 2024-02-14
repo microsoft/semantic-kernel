@@ -193,6 +193,11 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
         return variables.entrySet();
     }
 
+    /**
+     * Create a new instance of Builder.
+     *
+     * @return Builder
+     */
     public static Builder builder() {
         return new KernelFunctionArguments.Builder();
     }
@@ -204,6 +209,9 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
 
         private final Map<String, ContextVariable<?>> variables;
 
+        /**
+         * Create a new instance of Builder.
+         */
         public Builder() {
             variables = new HashMap<>();
             this.variables.put(MAIN_KEY, ContextVariable.of(""));
@@ -213,6 +221,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * Builds an instance with the given content in the default main key
          *
          * @param content Entry to place in the "input" slot
+         * @param <T>           Type of the value
          * @return {$code this} Builder for fluent coding
          */
         public <T> Builder withInput(ContextVariable<T> content) {
@@ -235,6 +244,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          *
          * @param content       Entry to place in the "input" slot
          * @param typeConverter Type converter for the content
+         * @param <T>           Type of the value
          * @return {$code this} Builder for fluent coding
          * @throws SKException if the content cannot be converted to a ContextVariable
          */
@@ -264,6 +274,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          *
          * @param key   variable name
          * @param value variable value
+         * @param <T>           Type of the value
          * @return {$code this} Builder for fluent coding
          */
         public <T> Builder withVariable(String key, ContextVariable<T> value) {
@@ -289,6 +300,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * @param key           variable name
          * @param value         variable value
          * @param typeConverter Type converter for the value
+         * @param <T>           Type of the value
          * @return {$code this} Builder for fluent coding
          * @throws SKException if the value cannot be converted to a ContextVariable
          */

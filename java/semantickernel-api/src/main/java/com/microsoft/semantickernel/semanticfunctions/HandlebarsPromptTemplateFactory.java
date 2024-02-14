@@ -12,6 +12,9 @@ import reactor.util.annotation.NonNull;
  */
 public class HandlebarsPromptTemplateFactory implements PromptTemplateFactory {
 
+    /**
+     * The handlebars template format.
+     */
     public static final String HANDLEBARS_TEMPLATE_FORMAT = "handlebars";
 
     @Override

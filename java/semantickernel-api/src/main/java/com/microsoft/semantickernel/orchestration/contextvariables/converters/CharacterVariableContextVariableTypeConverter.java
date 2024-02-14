@@ -1,14 +1,14 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 
 /**
- * A {@link ContextVariableTypeConverter} for {@link Character} variables. Use
- * {@code ContextVariableTypes.getDefaultVariableTypeForClass(Character.class)} 
+ * A {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter}
+ * for {@code java.lang.Character} variables. Use
+ * {@code ContextVariableTypes.getGlobalVariableTypeForClass(Character.class)} 
  * to get an instance of this class.
- * @see ContextVariableTypes#getDefaultVariableTypeForClass
+ * @see com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class CharacterVariableContextVariableTypeConverter extends
     ContextVariableTypeConverter<Character> {

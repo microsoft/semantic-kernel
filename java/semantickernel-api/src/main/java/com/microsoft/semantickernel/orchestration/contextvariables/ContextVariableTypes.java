@@ -224,6 +224,10 @@ public class ContextVariableTypes {
                 () -> new SKException("Unknown context variable type: " + aClass.getName()));
     }
 
+    /**
+     * Add all the converters from the given collection to this collection.
+     * @param contextVariableTypes The collection of converters to add.
+     */
     public void putConverters(ContextVariableTypes contextVariableTypes) {
         this.variableTypes.putAll(contextVariableTypes.variableTypes);
     }

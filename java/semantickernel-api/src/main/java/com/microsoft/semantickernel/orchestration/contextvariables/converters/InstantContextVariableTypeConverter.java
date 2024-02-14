@@ -6,7 +6,11 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 
 /**
- * A {@link ContextVariableTypeConverter} for {@link Instant}.
+ * A {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter} 
+ * for {@code java.time.Instant} variables. Use
+ * {@code ContextVariableTypes.getGlobalVariableTypeForClass(Instant.class)} 
+ * to get an instance of this class.
+ * @see com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class InstantContextVariableTypeConverter extends
     ContextVariableTypeConverter<Instant> {

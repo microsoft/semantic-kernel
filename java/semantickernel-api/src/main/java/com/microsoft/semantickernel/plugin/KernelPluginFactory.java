@@ -51,7 +51,7 @@ public class KernelPluginFactory {
      * 
      * @param target The instance of the class to be wrapped.
      * @param pluginName Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the target.
-     * @return
+     * @return The new plugin.
      */
     public static KernelPlugin createFromObject(Object target, String pluginName) {
         List<KernelFunction<?>> methods = Arrays.stream(target.getClass().getMethods())
@@ -117,6 +117,7 @@ public class KernelPluginFactory {
      * Creates a plugin from the provided name and function collection.
      * @param pluginName The name for the plugin.
      * @param functions The initial functions to be available as part of the plugin.
+     * @return The new plugin.
      */
     public static KernelPlugin createFromFunctions(
         String pluginName,
@@ -129,7 +130,7 @@ public class KernelPluginFactory {
      * @param pluginName The name for the plugin.
      * @param description A description of the plugin.
      * @param functions The initial functions to be available as part of the plugin.
-     * @return
+     * @return The new plugin.
      */
     public static KernelPlugin createFromFunctions(String pluginName, @Nullable String description,
         @Nullable List<KernelFunction<?>> functions) {

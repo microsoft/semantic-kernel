@@ -449,7 +449,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
      * @param templateFormat the format of the template
      * @param promptTemplateFactory the prompt template factory to use for creating the prompt template
      * @param <T> the type of the return value of the function
-     * @return
+     * @return a new instance of {@link KernelFunction}
      */
     @SuppressWarnings("unchecked")
     public static <T> KernelFunction<T> create(

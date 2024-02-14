@@ -35,9 +35,13 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
     private final PromptTemplateConfig promptTemplate;
 
+    /**
+     * Create a new prompt template.
+     * @param promptTemplateConfig The prompt template configuration.
+     */
     public DefaultPromptTemplate(
-        @Nonnull PromptTemplateConfig promptTemplate) {
-        this.promptTemplate = new PromptTemplateConfig(promptTemplate);
+        @Nonnull PromptTemplateConfig promptTemplateConfig) {
+        this.promptTemplate = new PromptTemplateConfig(promptTemplateConfig);
     }
 
     /*

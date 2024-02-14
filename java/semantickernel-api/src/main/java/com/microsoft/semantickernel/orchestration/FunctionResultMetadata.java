@@ -15,8 +15,13 @@ import javax.annotation.Nullable;
  */
 public class FunctionResultMetadata {
 
+    /** The key for id metadata. */
     public static final String ID = "id";
+
+    /** The key for usage metadata. */
     public static final String USAGE = "usage";
+
+    /** The key for createdAt metadata. */
     public static final String CREATED_AT = "createdAt";
 
 

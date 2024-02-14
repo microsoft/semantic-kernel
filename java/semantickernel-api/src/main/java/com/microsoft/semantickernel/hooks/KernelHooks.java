@@ -66,9 +66,10 @@ public class KernelHooks {
         return Collections.unmodifiableMap(hooks);
     }
 
-    /*
+    /**
      * Add a {@link FunctionInvokingHook} to the collection of hooks.
-     * @param the key of the hook in the collection
+     * @param function the function to add
+     * @return the key of the hook in the collection
      */
     public String addFunctionInvokingHook(
         Function<FunctionInvokingEvent<?>, FunctionInvokingEvent<?>> function) {
@@ -118,6 +119,7 @@ public class KernelHooks {
     /**
      * Executes the hooks in this collection that accept the event.
      * @param event the event to execute the hooks on
+     * @param <T> the type of the event
      * @return the event after the hooks have been executed
      */
     @SuppressWarnings("unchecked")

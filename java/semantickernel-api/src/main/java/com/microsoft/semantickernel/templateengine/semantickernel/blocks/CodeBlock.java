@@ -24,11 +24,20 @@ import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents a code block.
+ */
 public final class CodeBlock extends Block implements CodeRendering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CodeBlock.class);
     private final List<Block> tokens;
 
+    /**
+     * Initializes a new instance of the {@link CodeBlock} class.
+     *
+     * @param tokens  The tokens.
+     * @param content The content.
+     */
     public CodeBlock(List<Block> tokens, String content) {
         super(content, BlockTypes.Code);
         this.tokens = Collections.unmodifiableList(tokens);

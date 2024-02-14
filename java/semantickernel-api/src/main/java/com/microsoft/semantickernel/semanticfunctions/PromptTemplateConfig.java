@@ -364,10 +364,10 @@ public class PromptTemplateConfig {
     }
 
     /**
-     * Serialize the prompt template config to a JSON string.
-     *
-     * @return The JSON string.
-     * @throws SKException If the prompt template config cannot be serialized.
+     * Deserialize the JSON string to a PromptTemplateConfig.
+     * @param json The JSON string to parse
+     * @return The PromptTemplateConfig object
+     * @throws SKException If the prompt template config cannot be deserialized.
      */
     public static PromptTemplateConfig parseFromJson(String json) throws SKException {
         try {

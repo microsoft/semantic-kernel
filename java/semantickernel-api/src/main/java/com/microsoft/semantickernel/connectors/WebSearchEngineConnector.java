@@ -13,8 +13,22 @@ public interface WebSearchEngineConnector {
      * Represents a web page.
      */
     interface WebPage {
+        /**
+         * Gets the name of the web page.
+         * @return The name of the web page.
+         */
         String getName();
+
+        /** 
+         * Gets the URL of the web page.
+         * @return The URL of the web page.
+         */
         String getUrl();
+
+        /**
+         * Gets the snippet of the web page.
+         * @return The snippet of the web page.
+         */
         String getSnippet();
     }
 

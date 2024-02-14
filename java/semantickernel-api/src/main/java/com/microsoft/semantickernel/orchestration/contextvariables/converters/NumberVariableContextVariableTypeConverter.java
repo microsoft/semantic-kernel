@@ -8,7 +8,11 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
- * A {@link ContextVariableTypeConverter} for {@link Number}.
+ * A {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter} 
+ * for {@code java.lang.Number} type variables. Use, for example,
+ * {@code ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class)} 
+ * to get an instance of this class that works with the {@code Integer} type.
+ * @see com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class NumberVariableContextVariableTypeConverter<T extends Number> extends
     ContextVariableTypeConverter<T> {

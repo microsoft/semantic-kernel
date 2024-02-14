@@ -21,7 +21,7 @@ import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 
-/* 
+/** 
  * {@code FunctionInvocation} supports fluent invocation of a function in the kernel.
  * @param <T> The type of the result of the function invocation.
  */
@@ -98,6 +98,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     /**
      * Supply the result type of function invocation.
      * @param resultType The arguments to supply to the function invocation.
+     * @param <U> The type of the result of the function invocation.
      * @return A new {@code FunctionInvocation} for fluent chaining.
      */
     public <U> FunctionInvocation<U> withResultType(ContextVariableType<U> resultType) {

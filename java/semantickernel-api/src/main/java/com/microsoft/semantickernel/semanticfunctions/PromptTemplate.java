@@ -21,7 +21,7 @@ public interface PromptTemplate extends Buildable {
      * @param kernel The {@link Kernel} containing services, plugins, and other state for use throughout the operation.
      * @param arguments The arguments to use to satisfy any input variables in the prompt template.
      * @param context The {@link InvocationContext} which carries optional information for the prompt rendering.
-     * @return
+     * @return The rendered prompt.
      */
     Mono<String> renderAsync(
         Kernel kernel,

@@ -89,6 +89,17 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
      * Concrete implementation of the abstract method in KernelFunction. {@inheritDoc}
      */
     public interface ImplementationFunc<T> {
+
+        /**
+         * Invokes the function.
+         *
+         * @param kernel the kernel to invoke the function on
+         * @param function the function to invoke
+         * @param arguments the arguments to the function
+         * @param variableType the variable type of the function
+         * @param invocationContext the invocation context
+         * @return a {@link Mono} that emits the result of the function invocation
+         */
         Mono<FunctionResult<T>> invoke(
             Kernel kernel,
             KernelFunction<T> function,

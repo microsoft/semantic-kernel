@@ -27,7 +27,8 @@ public class KernelFunctionFactory {
      * @param method The method to be represented via the created {@link KernelFunction}.
      * @param target The target object for the {@code method} if it represents an instance method. This should be null if and only if {@code method} is a static method.
      * @param functionName Optional function name. If null, it will default to one derived from the method represented by {@code method}.
-     * @param description Optional description of the method. If null, it will default to one derived from the method represented by {@code method}, if possible (e.g. via a {@link DescriptionAttribute} on the method).
+     * @param description Optional description of the method. If null, it will default to one derived from the method represented by {@code method}, 
+     *                    if possible (e.g. via a {@link com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction} on the method).
      * @param parameters Optional parameter descriptions. If null, it will default to one derived from the method represented by {@code method}.
      * @param returnParameter Optional return parameter description. If null, it will default to one derived from the method represented by {@code method}.
      * @return The created {@link KernelFunction} wrapper for {@code method}.
@@ -48,6 +49,7 @@ public class KernelFunctionFactory {
      * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template.
      *
      * @param promptTemplate Prompt template for the function.
+     * @param <T>           Type of the value that the function will return
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
     public static <T> KernelFunction<T> createFromPrompt(String promptTemplate) {
@@ -68,6 +70,7 @@ public class KernelFunctionFactory {
      * @param promptTemplateFactory The {@link PromptTemplateFactory} to use when interpreting the
      *                              {@code promptTemplate} into a {@link PromptTemplate}. If null, a
      *                              default factory will be used.
+     * @param <T>           Type of the value that the function will return
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
     public static <T> KernelFunction<T> createFromPrompt(
@@ -93,6 +96,7 @@ public class KernelFunctionFactory {
      * @param promptTemplateFactory The {@code PromptTemplateFactory} to use when interpreting
      *                               the prompt template configuration into a {@link PromptTemplate}.
      *                               If null, a default factory will be used.
+     * @param <T>           Type of the value that the function will return
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
     public static <T> KernelFunction<T> createFromPrompt(
@@ -112,6 +116,7 @@ public class KernelFunctionFactory {
      *
      * @param promptConfig        A prompt template configuration for the function.
      * @param promptTemplate The prompt template to use when creating the function.
+     * @param <T>           Type of the value that the function will return
      * @return The created {@link KernelFunction} for invoking the prompt.
      */
     public static <T> KernelFunction<T> create(

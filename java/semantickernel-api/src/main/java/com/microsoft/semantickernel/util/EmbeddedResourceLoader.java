@@ -19,9 +19,21 @@ import java.util.stream.Collectors;
  */
 public class EmbeddedResourceLoader {
 
+    /**
+     * Enum for specifying the location of the resource
+     */
     public enum ResourceLocation {
+        /**
+         * Load from the classpath
+         */
         CLASSPATH,
+        /**
+         * Load from the filesystem
+         */
         FILESYSTEM,
+        /**
+         * Load from the classpath root
+         */
         CLASSPATH_ROOT
     }
 
@@ -29,6 +41,7 @@ public class EmbeddedResourceLoader {
      * Loads a file to a string from the classpath using getResourceAsStream
      *
      * @param fileName Filename to read
+     * @param clazz Class to use for classpath loading
      * @return File content
      * @throws FileNotFoundException Error in case the file doesn't exist
      */
@@ -40,6 +53,8 @@ public class EmbeddedResourceLoader {
      * Loads a file to a string from the classpath, classpath root or filesystem
      *
      * @param fileName Filename to read
+     * @param clazz Class to use for classpath loading
+     * @param locations Locations to search for the file
      * @return File content
      * @throws FileNotFoundException Error in case the file doesn't exist
      */

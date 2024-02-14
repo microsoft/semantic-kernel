@@ -24,14 +24,13 @@ public interface AIServiceSelector {
      * @param function The KernelFunction to use to select the service, or {@code null}.
      * @param arguments The KernelFunctionArguments to use to select the service, or {@code null}.
      * @param <T> The type of service to select.
-     * @return
+     * @return An {@code AIServiceSelection} containing the selected service and associated PromptExecutionSettings.
      */
     @Nullable
     <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable
         KernelFunction<?> function,
-
         @Nullable
         KernelFunctionArguments arguments
     );

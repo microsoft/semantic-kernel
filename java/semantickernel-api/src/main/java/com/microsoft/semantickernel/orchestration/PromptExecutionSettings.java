@@ -50,8 +50,23 @@ public class PromptExecutionSettings {
     private final String user;
     @Nullable
     private final List<String> stopSequences;
-    public Map<Integer, Integer> tokenSelectionBiases;
+    private Map<Integer, Integer> tokenSelectionBiases;
 
+    /**
+     * Create a new instance of PromptExecutionSettings.
+     * @param serviceId The id of the AI service to use for prompt execution.
+     * @param modelId The id of the model to use for prompt execution.
+     * @param temperature The temperature setting for prompt execution.
+     * @param topP The topP setting for prompt execution.
+     * @param presencePenalty The presence penalty setting for prompt execution.
+     * @param frequencyPenalty The frequency penalty setting for prompt execution.
+     * @param maxTokens The maximum number of tokens to generate in the output.
+     * @param resultsPerPrompt The number of results to generate for each prompt.
+     * @param bestOf The best of setting for prompt execution.
+     * @param user The user to associate with the prompt execution.
+     * @param stopSequences The stop sequences to use for prompt execution.
+     * @param tokenSelectionBiases The token selection biases to use for prompt execution.
+     */
     @JsonCreator
     public PromptExecutionSettings(
         @JsonProperty(SERVICE_ID) String serviceId,
@@ -89,7 +104,7 @@ public class PromptExecutionSettings {
 
     /**
      * Get the id of the AI service to use for prompt execution.
-     * @return
+     * @return The id of the AI service to use for prompt execution.
      */
     @JsonProperty(SERVICE_ID)
     public String getServiceId() {
@@ -98,7 +113,7 @@ public class PromptExecutionSettings {
 
     /**
      * Get the id of the model to use for prompt execution.
-     * @return
+     * @return The id of the model to use for prompt execution.
      */
     @JsonProperty(MODEL_ID)
     public String getModelId() {

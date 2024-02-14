@@ -44,7 +44,8 @@ public @interface KernelFunctionParameter {
     boolean required() default true;
 
     /**
-     * The type of the parameter. The Semantic Kernel will use the type to find a {@link ContextVariableType}
+     * The type of the parameter. The Semantic Kernel will use the type to find a 
+     * {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType}
      * to convert the value from a prompt string to the correct argument type. The type defaults to
      * {@link String} if not provided.
      * @return the type of the parameter

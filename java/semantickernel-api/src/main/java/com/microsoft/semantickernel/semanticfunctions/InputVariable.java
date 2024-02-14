@@ -19,6 +19,11 @@ public class InputVariable {
     private String defaultValue;
     private boolean isRequired;
 
+    /**
+     * Creates a new instance of {@link InputVariable}.
+     *
+     * @param name the name of the input variable
+     */
     public InputVariable(String name) {
         this.name = name;
         this.type = String.class.getName();

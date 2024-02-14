@@ -18,6 +18,11 @@ public class FunctionInvokingEvent<T> implements KernelHookEvent {
     private final KernelFunction<T> function;
     private final KernelFunctionArguments arguments;
 
+    /**
+     * Creates a new instance of the FunctionInvokingEvent class.
+     * @param function The function that is being invoked
+     * @param arguments The arguments that are being passed to the function
+     */
     public FunctionInvokingEvent(KernelFunction<T> function, 
         @Nullable KernelFunctionArguments arguments) {
         this.function = function;

@@ -51,6 +51,10 @@ public interface TextGenerationService extends Buildable, TextAIService {
         @Nullable PromptExecutionSettings executionSettings,
         @Nullable Kernel kernel);
 
+    /**
+     * Get the builder for the TextGenerationService
+     * @return The builder
+     */
     static Builder builder() {
         return ServiceLoadUtil.findServiceLoader(Builder.class,
                 "com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService$Builder")

@@ -4,7 +4,11 @@ import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariab
 import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 
 /**
- * A {@link ContextVariableTypeConverter} for {@link String}.
+ * A {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter} 
+ * for {@code java.lang.String} variables. Use
+ * {@code ContextVariableTypes.getGlobalVariableTypeForClass(String.class)} 
+ * to get an instance of this class.
+ * @see com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class StringVariableContextVariableTypeConverter extends
     ContextVariableTypeConverter<String> {

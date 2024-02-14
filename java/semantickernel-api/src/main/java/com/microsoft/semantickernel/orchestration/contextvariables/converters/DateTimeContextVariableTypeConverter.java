@@ -8,7 +8,11 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 
 /**
- * A {@link ContextVariableTypeConverter} for {@link OffsetDateTime}.
+ * A {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter} 
+ * for {@code java.time.OffsetDateTime} variables. Use
+ * {@code ContextVariableTypes.getGlobalVariableTypeForClass(OffsetDateTime.class)} 
+ * to get an instance of this class.
+ * @see com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class DateTimeContextVariableTypeConverter extends
     ContextVariableTypeConverter<OffsetDateTime> {

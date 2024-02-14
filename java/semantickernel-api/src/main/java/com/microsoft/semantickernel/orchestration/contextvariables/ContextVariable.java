@@ -182,6 +182,7 @@ public class ContextVariable<T> {
     /**
      * Convenience method for creating a {@code ContextVariable} from the 
      * given {@code CompletionsUsage} instance.
+     * @param x the value
      * @return the new instance
      */
     public static ContextVariable<CompletionsUsage> of(CompletionsUsage x) {
@@ -191,6 +192,7 @@ public class ContextVariable<T> {
     /**
      * Convenience method for creating a {@code ContextVariable} from the 
      * given {@code OffsetDateTime} instance.
+     * @param x the value
      * @return the new instance
      */
     public static ContextVariable<OffsetDateTime> of(OffsetDateTime x) {
@@ -200,6 +202,7 @@ public class ContextVariable<T> {
     /**
      * Convenience method for creating a {@code ContextVariable} from the 
      * given {@code String} instance.
+     * @param value the value
      * @return the new instance
      */
     public static ContextVariable<String> of(String value) {
@@ -209,6 +212,7 @@ public class ContextVariable<T> {
     /**
      * Convenience method for creating a {@code ContextVariable} from the 
      * given object.
+     * @param x the object
      * @return the new instance
      */
     public static ContextVariable<Object> ofGlobalType(Object x) {
@@ -291,6 +295,13 @@ public class ContextVariable<T> {
         return new ContextVariable<>(type, value);
     }
 
+    /**
+     * Creates a new instance of the {@link ContextVariable} class.
+     * @param value the value
+     * @param converter the converter
+     * @param <T> the type of the value
+     * @return the new instance
+     */
     public static <T> ContextVariable<T> of(T value, ContextVariableTypeConverter<T> converter) {
         Objects.requireNonNull(value, "value cannot be null");
         Objects.requireNonNull(converter, "converter cannot be null");

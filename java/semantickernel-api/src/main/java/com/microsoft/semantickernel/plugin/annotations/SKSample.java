@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that decorates an {@link DefineSKFunction} annotation to provide examples of how to use the function.
+ * Annotation that decorates an {@link DefineKernelFunction} annotation to provide examples of how to use the function.
  * For example:
  * <pre><code>
  * {@literal @}DefineSKFunction(

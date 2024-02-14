@@ -164,7 +164,7 @@ public class Kernel implements Buildable {
      * @param clazz The class of the service to get.
      * @return The service of the specified type from the kernel.
      * @throws ServiceNotFoundException if the service is not found.
-     * @see AIServiceSelector#trySelectAIService(Class, String, String)
+     * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class, KernelFunction, KernelFunctionArguments)
      */
     public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
         AIServiceSelection<T> selector = serviceSelector

@@ -53,9 +53,9 @@ public interface ChatCompletionService extends Buildable, TextAIService {
     );
 
     /**
-     * Get a builder for creating a {@link ChatCompletionService}. The builder loads a service
-     * that implements the {@link ChatCompletionService.Bulder} interface.
-     * @return
+     * Get a builder for creating a {@code ChatCompletionService}. The builder loads a service
+     * that implements the {@link ChatCompletionService.Builder} interface.
+     * @return a builder for creating a {@code ChatCompletionService}
      */
     static Builder builder() {
         return ServiceLoadUtil.findServiceLoader(Builder.class,

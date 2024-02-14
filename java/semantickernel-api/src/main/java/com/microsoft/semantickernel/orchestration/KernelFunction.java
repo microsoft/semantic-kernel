@@ -98,10 +98,18 @@ public abstract class KernelFunction<T> implements Buildable {
         throw new Todo();
     }
 
+    /**
+     * Get an unmodifiable map of the execution settings for the function.
+     * @return An unmodifiable map of the execution settings for the function
+     */
     public Map<String, PromptExecutionSettings> getExecutionSettings() {
         return Collections.unmodifiableMap(executionSettings);
     }
 
+    /**
+     * Get the metadata for the function.
+     * @return The metadata for the function
+     */
     public KernelFunctionMetadata<?> getMetadata() {
         return metadata;
     }
@@ -139,6 +147,12 @@ public abstract class KernelFunction<T> implements Buildable {
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext);
 
+    /**
+     * Invokes this KernelFunction.
+     * @param kernel The Kernel containing services, plugins, and other state for use
+     *              throughout the operation.
+     * @return The result of the function's execution.
+     */
     public FunctionInvocation<T> invokeAsync(Kernel kernel) {
         return new FunctionInvocation<>(kernel, this);
     }

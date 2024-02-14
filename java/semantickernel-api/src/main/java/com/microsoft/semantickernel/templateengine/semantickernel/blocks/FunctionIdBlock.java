@@ -1,15 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 
+import javax.annotation.Nullable;
+
+/**
+ * Represents a function identifier block.
+ */
 public final class FunctionIdBlock extends Block implements TextRendering {
     private final String skillName;
 
     private final String functionName;
 
+    /**
+     * Initializes a new instance of the {@link FunctionIdBlock} class.
+     *
+     * @param content The content.
+     */
     public FunctionIdBlock(String content) {
         super(content, BlockTypes.FunctionId);
 
@@ -61,10 +69,20 @@ public final class FunctionIdBlock extends Block implements TextRendering {
         return value.matches("^.*\\..*\\..*$");
     }
 
+    /**
+     * Get the plugin name.
+     *
+     * @return The plugin name.
+     */
     public String getPluginName() {
         return skillName;
     }
 
+    /**
+     * Get the function name.
+     *
+     * @return The function name.
+     */
     public String getFunctionName() {
         return functionName;
     }

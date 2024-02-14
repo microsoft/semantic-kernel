@@ -1,19 +1,20 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 
-/// <summary>
-/// Interface of static blocks that don't need async IO to be rendered.
-/// </summary>
+import javax.annotation.Nullable;
+
+/**
+ * Interface of static blocks that don't need async IO to be rendered.
+ */
 public interface TextRendering {
-    /// <summary>
-    /// Render the block using only the given variables.
-    /// </summary>
-    /// <param name="variables">Optional variables used to render the block</param>
-    /// <returns>Rendered content</returns>
+
+    /**
+     * Render the block using only the given variables.
+     * @param variables Optional variables used to render the block
+     * @return Rendered content
+     */
     @Nullable
     String render(@Nullable KernelFunctionArguments variables);
 }

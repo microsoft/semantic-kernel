@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
 
+/**
+ * Block types
+ */
 public enum BlockTypes {
     /**
      * Undefined block type
@@ -26,6 +29,9 @@ public enum BlockTypes {
      * Function block type
      */
     FunctionId(5),
+    /**
+     * Named argument block type
+     */
     NamedArg(6);
 
     BlockTypes(int i) {
