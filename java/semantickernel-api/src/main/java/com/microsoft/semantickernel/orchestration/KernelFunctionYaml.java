@@ -7,22 +7,28 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+
 import javax.annotation.Nullable;
 
+/**
+ * A class for creating a {@link KernelFunction} instance from a YAML representation of a prompt function.
+ */
 public class KernelFunctionYaml {
 
-    /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
-    /// </summary>
-    /// <param name="text">YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function</param>
-    /// <param name="promptTemplateFactory">>Prompt template factory.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="KernelFunction"/>.</returns>
+    /**
+     * Create a KernelFunction instance for a prompt function using the specified markdown text.
+     * @param yaml YAML representation of the PromptTemplateConfig to use to create the prompt function
+     * @param promptTemplateFactory Prompt template factory.
+     * @param <T> The return type of the function.
+     * @return The created KernelFunction.
+     * @throws IOException If an error occurs while reading the YAML.
+     */
     public static <T> KernelFunction<T> fromPromptYaml(
         String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory
@@ -31,6 +37,13 @@ public class KernelFunctionYaml {
         return fromYaml(targetStream, promptTemplateFactory);
     }
 
+    /**
+     * Create a KernelFunction instance for a prompt function using the specified markdown text.
+     * @param yaml YAML representation of the PromptTemplateConfig to use to create the prompt function
+     * @param <T> The return type of the function.
+     * @return The created KernelFunction.
+     * @throws IOException If an error occurs while reading the YAML.
+     */
     public static <T> KernelFunction<T> fromPromptYaml(
         String yaml
     ) throws IOException {
@@ -38,13 +51,20 @@ public class KernelFunctionYaml {
         return fromYaml(targetStream, null);
     }
 
+    /**
+     * Create a KernelFunction instance for a prompt function using the specified markdown text.
+     * @param filePath Path to the YAML representation of the PromptTemplateConfig to use to create the prompt function
+     * @param <T> The return type of the function.
+     * @return The created KernelFunction.
+     * @throws IOException If an error occurs while reading the YAML.
+     */
     public static <T> KernelFunction<T> fromYaml(Path filePath) throws IOException {
         InputStream inputStream = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(filePath.toString());
         return fromYaml(inputStream, null);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static <T> KernelFunction<T> fromYaml(
         InputStream inputStream,
         @Nullable PromptTemplateFactory promptTemplateFactory

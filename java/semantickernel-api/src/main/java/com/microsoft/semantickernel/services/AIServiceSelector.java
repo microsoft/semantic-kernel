@@ -16,22 +16,21 @@ public interface AIServiceSelector {
 
     /**
      * Resolves an {@link AIService} and associated and
-     * {@link com.microsoft.semantickernel.orchestration.PromptExecutionSettings} from the specified
-     * {@link com.microsoft.semantickernel.Kernel} based on the associated {@link KernelFunction}
-     * and {@link KernelFunctionArguments}.
+     * {@link com.microsoft.semantickernel.orchestration.PromptExecutionSettings} based on the 
+     * associated {@link KernelFunction} and {@link KernelFunctionArguments}.
      *
      * @param serviceType The type of service to select.  This must be the same type with which the
      *                    service was registered in the {@link AIServiceSelection}
-     * @param function
-     * @param arguments
-     * @return
+     * @param function The KernelFunction to use to select the service, or {@code null}.
+     * @param arguments The KernelFunctionArguments to use to select the service, or {@code null}.
+     * @param <T> The type of service to select.
+     * @return An {@code AIServiceSelection} containing the selected service and associated PromptExecutionSettings.
      */
     @Nullable
     <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable
         KernelFunction<?> function,
-
         @Nullable
         KernelFunctionArguments arguments
     );

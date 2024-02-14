@@ -1,5 +1,19 @@
 package com.microsoft.semantickernel.plugin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
+import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
+import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
+import com.microsoft.semantickernel.util.EmbeddedResourceLoader.ResourceLocation;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,36 +34,25 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.exceptions.SKException;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
-import com.microsoft.semantickernel.util.EmbeddedResourceLoader.ResourceLocation;
-
+/**
+ * Factory for creating {@link KernelPlugin} instances. {@code KernelPlugin}s can be
+ * created from a Java object, from loading a directory of plugins, or from loading plugins
+ * from a resource. 
+ */
 public class KernelPluginFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelPluginFactory.class);
     private static final String CONFIG_FILE = "config.json";
     private static final String PROMPT_FILE = "skprompt.txt";
 
-    /// <summary>Creates a plugin that wraps the specified target object.</summary>
-    /// <param name="target">The instance of the class to be wrapped.</param>
-    /// <param name="pluginName">
-    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
-    /// </param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <remarks>
-    /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
-    /// Attributed methods must all have different names; overloads are not supported.
-    /// </remarks>
+    /**
+     * Creates a plugin that wraps the specified target object. Methods decorated with 
+     * {@code {@literal @}DefineSKFunction} will be included in the plugin.
+     * 
+     * @param target The instance of the class to be wrapped.
+     * @param pluginName Name of the plugin for function collection and prompt templates. If the value is {@code null}, a plugin name is derived from the type of the target.
+     * @return The new plugin.
+     */
     public static KernelPlugin createFromObject(Object target, String pluginName) {
         List<KernelFunction<?>> methods = Arrays.stream(target.getClass().getMethods())
             .filter(method -> method.isAnnotationPresent(DefineKernelFunction.class))
@@ -110,27 +113,25 @@ public class KernelPluginFactory {
         return returnType;
     }
 
-    /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
-    /// <param name="pluginName">The name for the plugin.</param>
-    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
-    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
-    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
-    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    /**
+     * Creates a plugin from the provided name and function collection.
+     * @param pluginName The name for the plugin.
+     * @param functions The initial functions to be available as part of the plugin.
+     * @return The new plugin.
+     */
     public static KernelPlugin createFromFunctions(
         String pluginName,
         @Nullable List<KernelFunction<?>> functions) {
         return createFromFunctions(pluginName, null, functions);
     }
 
-    /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
-    /// <param name="pluginName">The name for the plugin.</param>
-    /// <param name="description">A description of the plugin.</param>
-    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
-    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
-    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
-    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    /**
+     * Initializes the new plugin from the provided name, description, and function collection.
+     * @param pluginName The name for the plugin.
+     * @param description A description of the plugin.
+     * @param functions The initial functions to be available as part of the plugin.
+     * @return The new plugin.
+     */
     public static KernelPlugin createFromFunctions(String pluginName, @Nullable String description,
         @Nullable List<KernelFunction<?>> functions) {
         Map<String, KernelFunction<?>> funcs = new HashMap<>();
@@ -157,7 +158,15 @@ public class KernelPluginFactory {
             }).collect(Collectors.toList());
     }
 
-
+    /**
+     * Imports a plugin from a directory. The directory should contain subdirectories, each of which
+     * contains a prompt template and a configuration file. The configuration file should be named
+     * "config.json" and the prompt template should be named "skprompt.txt".
+     * @param parentDirectory The parent directory containing the plugin directories.
+     * @param pluginDirectoryName The name of the plugin directory.
+     * @param promptTemplateFactory The factory to use for creating prompt templates.
+     * @return The imported plugin.
+     */
     public static KernelPlugin importPluginFromDirectory(Path parentDirectory,
         String pluginDirectoryName, PromptTemplateFactory promptTemplateFactory) {
 
@@ -252,6 +261,18 @@ public class KernelPluginFactory {
             .build();
     }
 
+    /**
+     * Imports a plugin from a resource directory, which may be on the classpath or filesystem. 
+     * The directory should contain subdirectories, each of which
+     * contains a prompt template and a configuration file. The configuration file should be named
+     * "config.json" and the prompt template should be named "skprompt.txt".
+     * @param parentDirectory The parent directory containing the plugin directories.
+     * @param pluginDirectoryName The name of the plugin directory.
+     * @param functionName The name of the function to import.
+     * @param promptTemplateFactory The factory to use for creating prompt templates.
+     * @param clazz The class to use for loading resources.
+     * @return The imported plugin.
+     */
     @Nullable
     public static KernelPlugin importPluginFromResourcesDirectory(
         String parentDirectory,
