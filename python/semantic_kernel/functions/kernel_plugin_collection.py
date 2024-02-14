@@ -4,8 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, TypeVar, 
 
 from pydantic import Field
 
-from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -187,27 +186,27 @@ class KernelPluginCollection(KernelBaseModel):
         """Clear the collection of all plugins"""
         self.plugins.clear()
 
-    def get_list_of_function_metadata(
-        self, include_semantic: bool = True, include_native: bool = True
-    ) -> List[KernelFunctionMetadata]:
+    def get_functions_view(self, include_semantic: bool = True, include_native: bool = True) -> FunctionsView:
         """
-        Get a list of the function metadata in the plugin collection
+        Get a view of the functions in the collection
 
         Args:
-            include_semantic (bool): Whether to include semantic functions in the list.
-            include_native (bool): Whether to include native functions in the list.
+            include_semantic (bool): Whether to include semantic functions in the view.
+            include_native (bool): Whether to include native functions in the view.
 
         Returns:
-            A list of KernelFunctionMetadata objects in the collection.
+            A view of the functions in the collection.
         """
-        if not self.plugins:
-            return []
-        return [
-            func.describe()
-            for plugin in self.plugins.values()
-            for func in plugin.functions.values()
-            if (include_semantic and func.is_semantic) or (include_native and not func.is_semantic)
-        ]
+        result = FunctionsView()
+
+        for _, plugin in self.plugins.items():
+            for _, function in plugin.functions.items():
+                if include_semantic and function.is_prompt:
+                    result.add_function(function.describe())
+                elif include_native and not function.is_prompt:
+                    result.add_function(function.describe())
+
+        return result
 
     def __iter__(self) -> Any:
         """Define an iterator for the collection"""

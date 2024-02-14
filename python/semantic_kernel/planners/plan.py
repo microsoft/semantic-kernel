@@ -147,7 +147,7 @@ class Plan:
             KernelContext: The updated context.
         """
         if not arguments:
-            arguments = copy(self._state)
+            arguments = KernelArguments()
         if self._function is not None:
             try:
                 result = await self._function.invoke(kernel=kernel, arguments=arguments)

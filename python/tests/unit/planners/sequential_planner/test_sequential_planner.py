@@ -122,8 +122,8 @@ async def test_invalid_xml_throws():
     kernel.memory = memory
     plugins = Mock(spec=KernelPluginCollection)
 
-    functions_list = []
-    plugins.get_list_of_function_metadata.return_value = functions_list
+    functionsView = FunctionsView()
+    plugins.get_functions_view.return_value = functionsView
 
     plan_string = "<plan>notvalid<</plan>"
     function_result = FunctionResult(function=None, value=plan_string, metadata={})

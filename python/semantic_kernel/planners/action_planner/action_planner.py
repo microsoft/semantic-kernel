@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import itertools
 import json
 import logging
 import os
@@ -92,7 +93,7 @@ class ActionPlanner:
 
         logger.info(f"Finding the best function for achieving the goal: {goal}")
 
-        self._arguments["goal"] = goal
+        self._arguments["input"] = goal
 
         generated_plan_raw = await self._planner_function.invoke(self._kernel, self._arguments)
         generated_plan_raw_str = str(generated_plan_raw)
@@ -231,9 +232,17 @@ class ActionPlanner:
                 inner_exception=ValueError("No plugins are available."),
             )
 
+        functions_view = self._kernel.plugins.get_functions_view()
+
+        available_functions: List[KernelFunctionMetadata] = [
+            *functions_view.semantic_functions.values(),
+            *functions_view.native_functions.values(),
+        ]
+        available_functions = itertools.chain.from_iterable(available_functions)
+
         available_functions = [
             self._create_function_string(func)
-            for func in self._kernel.plugins.get_list_of_function_metadata()
+            for func in available_functions
             if (
                 func.plugin_name != self.RESTRICTED_PLUGIN_NAME
                 and func.plugin_name not in self.config.excluded_plugins

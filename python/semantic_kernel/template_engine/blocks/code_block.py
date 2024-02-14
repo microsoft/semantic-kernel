@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
 
 from pydantic import Field
 
+# from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block

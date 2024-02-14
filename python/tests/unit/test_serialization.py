@@ -126,6 +126,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             is_prompt=True,
             is_asynchronous=False,
         ),
+        FunctionsView: create_functions_view(),
         KernelPluginCollection: create_plugin_collection(),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import itertools
 import logging
 from typing import List, Optional
 
@@ -79,9 +80,17 @@ class SequentialPlannerKernelExtension:
                 "Plugin collection not found in the context",
             )
 
+        functions_view = kernel.plugins.get_functions_view()
+
+        available_functions: List[KernelFunctionMetadata] = [
+            *functions_view.semantic_functions.values(),
+            *functions_view.native_functions.values(),
+        ]
+        available_functions = itertools.chain.from_iterable(available_functions)
+
         available_functions = [
             func
-            for func in kernel.plugins.get_list_of_function_metadata()
+            for func in available_functions
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
 
