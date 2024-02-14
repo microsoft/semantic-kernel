@@ -37,8 +37,8 @@ public class Kernel implements Buildable {
     /**
      * Initializes a new instance of {@code Kernel}.
      * @param serviceSelector The {@code AIServiceSelector} used to query for services available through the kernel.
-     * @param plugins The collection of plugins available through the kernel. If null, an empty collection will be used.
-     * @param globalKernelHooks The global hooks to be used throughout the kernel. If null, an empty collection will be used.
+     * @param plugins The collection of plugins available through the kernel. If {@code null}, an empty collection will be used.
+     * @param globalKernelHooks The global hooks to be used throughout the kernel. If {@code null}, an empty collection will be used.
      */
     public Kernel(
         AIServiceSelector serviceSelector,

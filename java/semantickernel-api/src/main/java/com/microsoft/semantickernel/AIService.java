@@ -39,7 +39,7 @@ public interface AIService {
      * Gets the model identifier from the {@code attributes} map.
      *
      * @return The model identifier if it was specified in the service's attributes; otherwise,
-     * null.
+     * {@code null}.
      */
     @Nullable
     default String getModelId() {
@@ -49,7 +49,7 @@ public interface AIService {
     /**
      * Gets the endpoint from the {@code attributes} map.
      *
-     * @return The endpoint if it was specified in the service's attributes; otherwise, null.
+     * @return The endpoint if it was specified in the service's attributes; otherwise, {@code null}.
      */
     @Nullable
     default String getEndpoint() {
@@ -59,7 +59,7 @@ public interface AIService {
     /**
      * Gets the API version from the {@code attributes} map.
      *
-     * @return The API version if it was specified in the service's attributes; otherwise, null.
+     * @return The API version if it was specified in the service's attributes; otherwise, {@code null}.
      */
     @Nullable
     default String getApiVersion() {

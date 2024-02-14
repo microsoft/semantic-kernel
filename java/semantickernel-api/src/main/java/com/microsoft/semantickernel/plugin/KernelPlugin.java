@@ -59,7 +59,7 @@ public class KernelPlugin implements Iterable<KernelFunction<?>> {
      * Gets a function by name.
      * @param functionName The name of the function.
      * @param <T> The return type of the function.
-     * @return The function with the specified name, or null if no such function exists.
+     * @return The function with the specified name, or {@code null} if no such function exists.
      */
     @Nullable
     @SuppressWarnings("unchecked")

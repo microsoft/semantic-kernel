@@ -104,7 +104,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
     /**
      * Creates a new instance of {@link KernelFunctionFromPrompt} from a
      * {@code PromptTemplateConfig}, using the {@code PropmptTemplateFactory}
-     * to create the prompt template. If {@code promptTemplateFactory} is null,
+     * to create the prompt template. If {@code promptTemplateFactory} is {@code null},
      * a default factory will be used.
      *
      * @param promptConfig the configuration for the prompt
@@ -441,7 +441,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
     /**
      * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template.
-     * If any of the optional parameters are null, default values will be used.
+     * If any of the optional parameters are {@code null}, default values will be used.
      * @param promptTemplate the prompt template for the function
      * @param executionSettings the default execution settings to use when invoking this prompt function
      * @param functionName the name of the function

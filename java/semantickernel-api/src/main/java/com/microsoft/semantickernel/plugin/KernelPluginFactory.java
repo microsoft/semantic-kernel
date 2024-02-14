@@ -50,7 +50,7 @@ public class KernelPluginFactory {
      * {@code {@literal @}DefineSKFunction} will be included in the plugin.
      * 
      * @param target The instance of the class to be wrapped.
-     * @param pluginName Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the target.
+     * @param pluginName Name of the plugin for function collection and prompt templates. If the value is {@code null}, a plugin name is derived from the type of the target.
      * @return The new plugin.
      */
     public static KernelPlugin createFromObject(Object target, String pluginName) {

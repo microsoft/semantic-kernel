@@ -275,8 +275,8 @@ public class ContextVariable<T> {
     }
 
     /** 
-     * Returns true if the value of this {@code ContextVariable} is null or empty.
-     * @return true if the value is null or empty
+     * Returns true if the value of this {@code ContextVariable} is {@code null} or empty.
+     * @return true if the value is {@code null} or empty
      */
     public boolean isEmpty() {
         return value == null || value.toString().isEmpty();

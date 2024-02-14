@@ -124,9 +124,9 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
     }
 
     /**
-     * Return whether the variable with the given name is null or empty.
+     * Return whether the variable with the given name is {@code null} or empty.
      * @param key the key for the variable
-     * @return {@code true} if the variable is null or empty, {@code false} otherwise
+     * @return {@code true} if the variable is {@code null} or empty, {@code false} otherwise
      */
     public boolean isNullOrEmpty(String key) {
         return get(key) == null || get(key).isEmpty();

@@ -25,12 +25,12 @@ public class KernelFunctionFactory {
      * Creates a {@link KernelFunction} instance for a method, specified via a {@link Method} instance
      * @param <T> The return type of the method.
      * @param method The method to be represented via the created {@link KernelFunction}.
-     * @param target The target object for the {@code method} if it represents an instance method. This should be null if and only if {@code method} is a static method.
-     * @param functionName Optional function name. If null, it will default to one derived from the method represented by {@code method}.
-     * @param description Optional description of the method. If null, it will default to one derived from the method represented by {@code method}, 
+     * @param target The target object for the {@code method} if it represents an instance method. This should be {@code null} if and only if {@code method} is a static method.
+     * @param functionName Optional function name. If {@code null}, it will default to one derived from the method represented by {@code method}.
+     * @param description Optional description of the method. If {@code null}, it will default to one derived from the method represented by {@code method}, 
      *                    if possible (e.g. via a {@link com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction} on the method).
-     * @param parameters Optional parameter descriptions. If null, it will default to one derived from the method represented by {@code method}.
-     * @param returnParameter Optional return parameter description. If null, it will default to one derived from the method represented by {@code method}.
+     * @param parameters Optional parameter descriptions. If {@code null}, it will default to one derived from the method represented by {@code method}.
+     * @param returnParameter Optional return parameter description. If {@code null}, it will default to one derived from the method represented by {@code method}.
      * @return The created {@link KernelFunction} wrapper for {@code method}.
      */
     public static <T> KernelFunction<T> createFromMethod(
@@ -62,13 +62,13 @@ public class KernelFunctionFactory {
      * @param promptTemplate        Prompt template for the function.
      * @param executionSettings     Default execution settings to use when invoking this prompt
      *                              function.
-     * @param functionName          The name to use for the function. If null, it will default to a
+     * @param functionName          The name to use for the function. If {@code null}, it will default to a
      *                              randomly generated name.
      * @param description           The description to use for the function.
      * @param templateFormat        The template format of {@code promptTemplate}. This must be
-     *                              provided if {@code promptTemplateFactory} is not null.
+     *                              provided if {@code promptTemplateFactory} is not {@code null}.
      * @param promptTemplateFactory The {@link PromptTemplateFactory} to use when interpreting the
-     *                              {@code promptTemplate} into a {@link PromptTemplate}. If null, a
+     *                              {@code promptTemplate} into a {@link PromptTemplate}. If {@code null}, a
      *                              default factory will be used.
      * @param <T>           Type of the value that the function will return
      * @return The created {@link KernelFunction} for invoking the prompt.
@@ -95,7 +95,7 @@ public class KernelFunctionFactory {
      * @param promptConfig        A prompt template configuration for the function.
      * @param promptTemplateFactory The {@code PromptTemplateFactory} to use when interpreting
      *                               the prompt template configuration into a {@link PromptTemplate}.
-     *                               If null, a default factory will be used.
+     *                               If {@code null}, a default factory will be used.
      * @param <T>           Type of the value that the function will return
      * @return The created {@link KernelFunction} for invoking the prompt.
      */

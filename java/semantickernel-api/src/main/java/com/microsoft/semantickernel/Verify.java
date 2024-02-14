@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 public class Verify {
 
     /**
-     * Verifies that the given object is not null.
+     * Verifies that the given object is not {@code null}.
      * @param object The object to verify.
      */
     public static void notNull(Object object) {
@@ -18,18 +18,18 @@ public class Verify {
     }
 
     /**
-     * Verifies that the given object is null or empty.
+     * Verifies that the given object is {@code null} or empty.
      * @param s The String to verify.
-     * @return true if the object is null or empty; otherwise, false.
+     * @return true if the object is {@code null} or empty; otherwise, false.
      */
     public static boolean isNullOrEmpty(@Nullable String s) {
         return s == null || s.isEmpty();
     }
 
     /**
-     * Verifies that the given object is null or contains only whitespace.
+     * Verifies that the given object is {@code null} or contains only whitespace.
      * @param s The String to verify.
-     * @return true if the object is null or whitespace; otherwise, false.
+     * @return true if the object is {@code null} or whitespace; otherwise, false.
      */
     public static boolean isNullOrWhiteSpace(String s) {
         return s == null || s.matches("^\\w+$");
