@@ -8,7 +8,7 @@ from semantic_kernel.core_plugins import (
     TextPlugin,
     TimePlugin,
 )
-from semantic_kernel.planning import SequentialPlanner
+from semantic_kernel.planners import SequentialPlanner
 
 
 async def main():

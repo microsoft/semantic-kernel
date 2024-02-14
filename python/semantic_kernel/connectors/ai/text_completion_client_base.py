@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, List, Optional
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.models.contents import StreamingTextContent, TextContent
+    from semantic_kernel.contents import StreamingTextContent, TextContent
 
 
 class TextCompletionClientBase(ABC):
