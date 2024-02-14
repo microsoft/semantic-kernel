@@ -4,12 +4,17 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.contents.azure_streaming_chat_message_content import (
+    AzureStreamingChatMessageContent,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSources,
     AzureChatPromptExecutionSettings,
     AzureDataSources,
     ExtraBody,
 )
+from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import OpenAIChatPromptTemplate
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 kernel = sk.Kernel()
 
@@ -56,22 +61,18 @@ chat_service = sk_oai.AzureChatCompletion(
 kernel.add_chat_service("chat-gpt", chat_service)
 
 
-prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
+prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
 prompt_template.add_user_message("Hi there, who are you?")
 prompt_template.add_assistant_message("I am an AI assistant here to answer your questions.")
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
-context = kernel.create_new_context()
 
 
 async def chat() -> bool:
-    context_vars = sk.ContextVariables()
-
     try:
         user_input = input("User:> ")
-        context_vars["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
         return False
@@ -86,14 +87,19 @@ async def chat() -> bool:
     # Non streaming
     # answer = await kernel.run(chat_function, input_vars=context_vars)
     # print(f"Assistant:> {answer}")
+    arguments = KernelArguments(user_input=user_input, execution_settings=req_settings)
 
-    answer = kernel.run_stream(chat_function, input_vars=context_vars, input_context=context)
+    full_message = None
     print("Assistant:> ", end="")
-    async for message in answer:
-        print(message, end="")
+    async for message in kernel.invoke_stream(chat_function, arguments=arguments):
+        print(str(message[0]), end="")
+        full_message = message[0] if not full_message else full_message + message[0]
+    prompt_template.add_assistant_message(str(full_message))
     print("\n")
     # The tool message containing cited sources is available in the context
-    print(f"Tool:> {context.objects.get('tool_message')}")
+    if isinstance(full_message, AzureStreamingChatMessageContent):
+        prompt_template.add_function_response_message(name="tool", content=full_message.tool_message)
+        print(f"Tool:> {full_message.tool_message}")
     return True
 
 

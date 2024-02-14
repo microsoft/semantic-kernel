@@ -385,15 +385,19 @@ class KernelFunction(KernelBaseModel):
     async def __call__(
         self,
         kernel: "Kernel",
-        arguments: KernelArguments,
+        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ) -> "FunctionResult":
-        return await self.invoke(kernel, arguments)
+        return await self.invoke(kernel, arguments, **kwargs)
 
     async def invoke(
         self,
         kernel: "Kernel",
-        arguments: KernelArguments,
+        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ) -> "FunctionResult":
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
         function_arguments = self.gather_function_parameters(kernel, arguments)
         logger.debug("Invoking %s with arguments: %s", self.name, function_arguments)
         try:
@@ -414,12 +418,15 @@ class KernelFunction(KernelBaseModel):
     async def invoke_stream(
         self,
         kernel: "Kernel",
-        arguments: KernelArguments,
+        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
         """
         Yields:
             StreamingKernelContent or FunctionResult -- The results of the function, if there is an error a FunctionResult is yielded.
         """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
         if not self.stream_function:
             raise ValueError("Function does not support streaming")
         function_arguments = self.gather_function_parameters(kernel, arguments)
@@ -446,7 +453,7 @@ class KernelFunction(KernelBaseModel):
         else:
             exec_settings = self.prompt_execution_settings
 
-        function_arguments = {}
+        function_arguments: Dict[str, Any] = {}
         for param in self.parameters:
             if param.name == "function":
                 function_arguments[param.name] = self.describe()
@@ -471,5 +478,7 @@ class KernelFunction(KernelBaseModel):
                 continue
             if param.required:
                 raise ValueError(f"Parameter {param.name} is required but not provided in the arguments.")
-            logger.debug(f"Parameter {param.name} is not provided, using default value {param.default_value}")
+            logger.debug(
+                f"Parameter {param.name} is not provided, using default value {param.default_value}"
+            )  # default value is not set here but in the functions
         return function_arguments

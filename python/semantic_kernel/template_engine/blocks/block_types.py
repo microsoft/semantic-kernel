@@ -10,3 +10,5 @@ class BlockTypes(Enum):
     VARIABLE = auto()
     VALUE = auto()
     FUNCTION_ID = auto()
+    # commented out for now
+    # NAMED_ARG = auto()
