@@ -2,8 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -15,7 +18,9 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 internal abstract class OllamaClient : IOllamaClient
 {
+    private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
+
     protected IHttpRequestFactory HttpRequestFactory { get; }
     protected IEndpointProvider EndpointProvider { get; }
     protected HttpClient HttpClient { get; }
@@ -26,13 +31,93 @@ internal abstract class OllamaClient : IOllamaClient
         HttpClient httpClient,
         IHttpRequestFactory httpRequestFactory,
         IEndpointProvider endpointProvider,
-        ILogger? logger)
+        IStreamJsonParser? streamJsonParser = null,
+        ILogger? logger = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId);
+
         this._modelId = modelId;
         this.HttpClient = httpClient;
         this.HttpRequestFactory = httpRequestFactory;
         this.EndpointProvider = endpointProvider;
         this.Logger = logger ?? NullLogger.Instance;
+        this._streamJsonParser = streamJsonParser ?? new OllamaStreamJsonParser();
+    }
+
+    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings executionSettings, CancellationToken cancellationToken)
+    {
+        var endpoint = this.EndpointProvider.TextGenerationEndpoint;
+        var request = CreateTextRequest(prompt, executionSettings);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = DeserializeResponse<OllamaTextResponse>(body);
+        var textContents = GetTextContentFromResponse(response);
+
+        this.LogUsage(textContents[0].Metadata! as OllamaMetadata);
+
+        return textContents;
+    }
+
+    public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+    {
+        var endpoint = this.EndpointProvider.StreamTextGenerationEndpoint;
+        var request = CreateTextRequest(prompt, executionSettings);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+
+        using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
+            .ConfigureAwait(false);
+
+        foreach (var streamingTextContent in this.ProcessTextResponseStream(responseStream))
+        {
+            yield return streamingTextContent;
+        }
+    }
+
+    /// <inheritdoc/>
+    public virtual async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        var endpoint = this.EndpointProvider.ChatCompletionEndpoint;
+        var request = CreateChatRequest(chatHistory, executionSettings);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = DeserializeResponse<OllamaChatResponse>(body);
+
+        var chatMessages = this.GetChatMessageContentsFromResponse(response);
+        this.LogUsage(chatMessages[0].Metadata! as OllamaMetadata);
+
+        return chatMessages;
+    }
+
+    /// <inheritdoc/>
+    public virtual async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var endpoint = this.EndpointProvider.StreamChatCompletionEndpoint;
+        var request = CreateChatRequest(chatHistory, executionSettings);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+
+        using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
+            .ConfigureAwait(false);
+
+        foreach (var streamingChatMessageContent in this.ProcessChatResponseStream(responseStream))
+        {
+            yield return streamingChatMessageContent;
+        }
     }
 
     protected static void ValidateMaxTokens(int? maxTokens)
@@ -63,19 +148,21 @@ internal abstract class OllamaClient : IOllamaClient
         return response;
     }
 
-    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings executionSettings, CancellationToken cancellationToken)
-    {
-        var endpoint = this.EndpointProvider.TextGenerationEndpoint;
-        var request = CreateTextRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+    private IEnumerable<StreamingChatMessageContent> ProcessChatResponseStream(Stream stream)
+        => from ollamaResponse in this.ParseChatResponseStream(stream)
+           from chatMessageContent in this.GetChatMessageContentsFromResponse(ollamaResponse)
+           select GetStreamingChatContentFromChatContent(chatMessageContent);
 
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+    private IEnumerable<StreamingTextContent> ProcessTextResponseStream(Stream stream)
+        => from ollamaResponse in this.ParseTextResponseStream(stream)
+           from textContent in this.GetTextContentsFromResponse(ollamaResponse)
+           select GetStreamingTextContentFromTextContent(textContent);
 
-        var response = JsonSerializer.Deserialize<OllamaTextResponse>(body);
+    private IEnumerable<OllamaTextResponse> ParseTextResponseStream(Stream responseStream)
+        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<OllamaTextResponse>);
 
-
-    }
+    private IEnumerable<OllamaChatResponse> ParseChatResponseStream(Stream responseStream)
+        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<OllamaChatResponse>);
 
     private List<ChatMessageContent> GetChatMessageContentsFromResponse(OllamaChatResponse response)
     {
@@ -86,59 +173,36 @@ internal abstract class OllamaClient : IOllamaClient
                 content: response.Message?.Content ?? string.Empty,
                 modelId: this._modelId,
                 innerContent: response,
-                metadata: GetResponseMetadata(response))
+                metadata: new OllamaMetadata(response))
         };
     }
 
-    private IReadOnlyDictionary<string, object?>? GetResponseMetadata(OllamaChatResponse response)
+    private List<TextContent> GetTextContentsFromResponse(OllamaTextResponse response)
     {
-        throw new NotImplementedException();
-    }
-
-    public IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public virtual async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        var endpoint = this.EndpointProvider.ChatCompletionEndpoint;
-        var request = CreateChatRequest(chatHistory, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
-
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-
-        throw new NotImplementedException();
-    }
-
-
-    /// <inheritdoc/>
-    public virtual async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var endpoint = this.EndpointProvider.StreamChatCompletionEndpoint;
-        var request = CreateChatRequest(chatHistory, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
-
-        using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-            .ConfigureAwait(false);
-
-        await foreach (var streamingChatMessageContent in this.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken))
+        return new List<TextContent>
         {
-            yield return streamingChatMessageContent;
-        }
+            new(text: response.Response,
+                modelId: this._modelId,
+                innerContent: response,
+                metadata: new OllamaMetadata(response))
+        };
     }
+    private static StreamingChatMessageContent GetStreamingChatContentFromChatContent(ChatMessageContent chatMessageContent)
+        => new(
+            role: chatMessageContent.Role,
+            content: chatMessageContent.Content,
+            modelId: chatMessageContent.ModelId,
+            innerContent: chatMessageContent.InnerContent,
+            metadata: chatMessageContent.Metadata);
 
-    protected static OllamaChatRequest CreateChatRequest(
+    private static StreamingTextContent GetStreamingTextContentFromTextContent(TextContent textContent)
+        => new(
+            text: textContent.Text,
+            modelId: textContent.ModelId,
+            innerContent: textContent.InnerContent,
+            metadata: textContent.Metadata);
+
+    private static OllamaChatRequest CreateChatRequest(
         ChatHistory chatHistory,
         PromptExecutionSettings? promptExecutionSettings)
     {
@@ -148,7 +212,7 @@ internal abstract class OllamaClient : IOllamaClient
         return request;
     }
 
-    protected static OllamaTextRequest CreateTextRequest(
+    private static OllamaTextRequest CreateTextRequest(
         string prompt,
         PromptExecutionSettings? promptExecutionSettings)
     {
@@ -156,5 +220,50 @@ internal abstract class OllamaClient : IOllamaClient
         ValidateMaxTokens(ollamaExecutionSettings.MaxTokens);
         var request = OllamaTextRequest.FromPromptAndExecutionSettings(prompt, ollamaExecutionSettings);
         return request;
+    }
+
+    private static T DeserializeResponse<T>(string body)
+    {
+        try
+        {
+            T? deserializedResponse = JsonSerializer.Deserialize<T>(body);
+            if (deserializedResponse is null)
+            {
+                throw new JsonException("Response is null");
+            }
+
+            return deserializedResponse;
+        }
+        catch (JsonException exc)
+        {
+            throw new KernelException("Unexpected response from model", exc)
+            {
+                Data = { { "ResponseData", body } },
+            };
+        }
+    }
+
+    private static List<TextContent> GetTextContentFromResponse(OllamaTextResponse response)
+        => new()
+        {
+            new(response.Response, response.Model, response, Encoding.UTF8, new OllamaMetadata(response))
+        };
+
+    protected void LogUsage(OllamaMetadata? metadata)
+    {
+        if (metadata is null)
+        {
+            return;
+        }
+
+        this.Logger.LogDebug(
+            "Ollama usage metadata: Created At: {CreatedAt}, Eval Count: {EvalCount}, Eval Duration: {EvalDuration}, Total Duration: {TotalDuration}, Load Duration: {LoadDuration}, Prompt Eval Count: {PromptEvalCount}, Prompt Eval Duration: {PromptEvalDuration}",
+            metadata.CreatedAt,
+            metadata.EvalCount,
+            metadata.EvalDuration,
+            metadata.TotalDuration,
+            metadata.LoadDuration,
+            metadata.PromptEvalCount,
+            metadata.PromptEvalDuration);
     }
 }

@@ -19,8 +19,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

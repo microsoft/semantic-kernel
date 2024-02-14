@@ -57,4 +57,4 @@ internal interface IOllamaClient
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
 }
-}
+

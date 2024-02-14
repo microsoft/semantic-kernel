@@ -23,43 +23,63 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string ,object?>
         this.PromptEvalDuration = ollamaResponse.PromptEvalDuration;
     }
 
+    /// <summary>
+    /// Time spent in nanoseconds evaluating the prompt
+    /// </summary>
     public long PromptEvalDuration
     {
         get => (this.GetValueFromDictionary() as long?) ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
+    /// <summary>
+    /// Number of tokens in the prompt
+    /// </summary>
     public int PromptEvalCount
     {
         get => (this.GetValueFromDictionary() as int?) ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
+    /// <summary>
+    /// Time spent in nanoseconds loading the model
+    /// </summary>
     public long LoadDuration
     {
         get => (this.GetValueFromDictionary() as long?) ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
+    /// <summary>
+    /// Returns the prompt's feedback related to the content filters.
+    /// </summary>
     public DateTime? CreatedAt
     {
         get => (this.GetValueFromDictionary() as DateTime?) ?? DateTime.MinValue;
         internal init => this.SetValueInDictionary(value);
     }
 
-
+    /// <summary>
+    /// Time in nano seconds spent generating the response
+    /// </summary>
     public long EvalDuration
     {
         get => (this.GetValueFromDictionary() as long?) ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
+    /// <summary>
+    /// Number of tokens the response
+    /// </summary>
     public int EvalCount
     {
         get => (this.GetValueFromDictionary() as int?) ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
+    /// <summary>
+    /// Time spent in nanoseconds generating the response
+    /// </summary>
     public long TotalDuration
     {
         get => (this.GetValueFromDictionary() as long?) ?? 0;
