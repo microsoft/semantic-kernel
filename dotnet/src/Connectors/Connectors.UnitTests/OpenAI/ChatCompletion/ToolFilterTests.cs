@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -51,7 +53,7 @@ public sealed class ToolFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await this._service.GetChatMessageContentsAsync(new ChatHistory(), this._settings, kernel);
+        var result = await this._service.GetChatMessageContentsAsync([], this._settings, kernel);
 
         // Assert
         Assert.Equal(1, toolInvocations);
@@ -118,7 +120,7 @@ public sealed class ToolFilterTests : IDisposable
         var chatHistory = new ChatHistory();
 
         // Act
-        var result = await this._service.GetChatMessageContentAsync(chatHistory, this._settings, kernel);
+        var result = await this._service.GetChatMessageContentsAsync(chatHistory, this._settings, kernel);
 
         // Assert
         Assert.Equal(1, preFilterInvocations);
@@ -149,7 +151,7 @@ public sealed class ToolFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await this._service.GetChatMessageContentAsync(new ChatHistory(), this._settings, kernel);
+        var result = await this._service.GetChatMessageContentsAsync([], this._settings, kernel);
 
         // Assert
         Assert.Equal(1, functionInvocations);
@@ -179,7 +181,7 @@ public sealed class ToolFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await this._service.GetChatMessageContentAsync(chatHistory, this._settings, kernel);
+        var result = await this._service.GetChatMessageContentsAsync(chatHistory, this._settings, kernel);
 
         // Assert
         Assert.Equal(4, chatHistory.Count); // includes tool call and tool result messages
@@ -188,7 +190,69 @@ public sealed class ToolFilterTests : IDisposable
     }
 
     [Fact]
-    public async Task MultipleFunctionFiltersCancellationWorksCorrectlyAsync()
+    public async Task ToolFilterStopAutoInvokeWorksCorrectlyAsync()
+    {
+        // Arrange
+        var toolInvocations = 0;
+        var kernel = new Kernel();
+        kernel.ImportPluginFromObject(new FakePlugin(() => { toolInvocations++; }));
+
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(
+            new FakeToolFilter(onToolInvoked: (context) =>
+            {
+                context.StopBehavior = ToolFilterStopBehavior.StopAutoInvoke;
+            }));
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ToolResponseNoArgs) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ToolResponseNoArgs) };
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act
+        var result = await this._service.GetChatMessageContentsAsync([], this._settings, kernel);
+
+        // Assert
+        var requestContents = this._messageHandlerStub.RequestContents;
+        Assert.Equal(2, requestContents.Count);
+        requestContents.ForEach(Assert.NotNull);
+        var secondContent = Encoding.UTF8.GetString(requestContents[1]!);
+        var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
+        Assert.Equal("auto", secondContentJson.GetProperty("tool_choice").GetString());
+        Assert.Equal(1, toolInvocations);
+    }
+
+    [Fact]
+    public async Task ToolFilterStopToolsWorksCorrectlyAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.ImportPluginFromObject(new FakePlugin(() => { }));
+
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(
+            new FakeToolFilter(onToolInvoked: (context) =>
+            {
+                context.StopBehavior = ToolFilterStopBehavior.StopTools;
+            }));
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(ToolResponseNoArgs) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act
+        var result = await this._service.GetChatMessageContentsAsync([], this._settings, kernel);
+
+        // Assert
+        var requestContents = this._messageHandlerStub.RequestContents;
+        Assert.Equal(2, requestContents.Count);
+        requestContents.ForEach(Assert.NotNull);
+        var secondContent = Encoding.UTF8.GetString(requestContents[1]!);
+        var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
+        Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
+    }
+
+    [Fact]
+    public async Task MultipleToolFiltersCancellationWorksCorrectlyAsync()
     {
         // Arrange
         var functionInvocations = 0;
@@ -219,7 +283,7 @@ public sealed class ToolFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await this._service.GetChatMessageContentsAsync(new ChatHistory(), this._settings, kernel);
+        var result = await this._service.GetChatMessageContentsAsync([], this._settings, kernel);
 
         // Assert
         Assert.Equal(1, functionInvocations);
