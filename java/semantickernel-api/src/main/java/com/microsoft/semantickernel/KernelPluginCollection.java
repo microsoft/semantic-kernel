@@ -6,6 +6,8 @@ import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensiti
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -83,8 +85,8 @@ class KernelPluginCollection {
      * Gets all plugins that were added to the kernel.
      * @return The plugins available through the kernel.
      */
-    List<KernelPlugin> getPlugins() {
-        return new ArrayList<>(plugins.values());
+    Collection<KernelPlugin> getPlugins() {
+        return Collections.unmodifiableCollection(plugins.values());
     }
 
     /**

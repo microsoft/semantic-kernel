@@ -13,6 +13,8 @@ import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,9 +111,8 @@ public class Kernel implements Buildable {
      * @return The plugins available through the kernel.
      * @see Kernel#getPlugins()
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
-    public List<KernelPlugin> getPlugins() {
-        return plugins.getPlugins();
+    public Collection<KernelPlugin> getPlugins() {
+        return Collections.unmodifiableCollection(plugins.getPlugins());
     }
 
     /**

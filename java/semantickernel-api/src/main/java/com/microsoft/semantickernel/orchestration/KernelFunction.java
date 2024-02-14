@@ -12,19 +12,16 @@ import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
-
 import reactor.core.publisher.Mono;
 
 /**
- * Semantic Kernel callable function interface. The Semantic Kernel creates 
- * {@code KernelFunction}s from prompts, templates, or plugin methods.  
+ * Semantic Kernel callable function interface. The Semantic Kernel creates {@code KernelFunction}s
+ * from prompts, templates, or plugin methods.
  *
  * @param <T> The type of the result of the function
  * @see com.microsoft.semantickernel.semanticfunctions
@@ -100,6 +97,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
     /**
      * Get an unmodifiable map of the execution settings for the function.
+     *
      * @return An unmodifiable map of the execution settings for the function
      */
     public Map<String, PromptExecutionSettings> getExecutionSettings() {
@@ -108,6 +106,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
     /**
      * Get the metadata for the function.
+     *
      * @return The metadata for the function
      */
     public KernelFunctionMetadata<?> getMetadata() {
@@ -149,8 +148,9 @@ public abstract class KernelFunction<T> implements Buildable {
 
     /**
      * Invokes this KernelFunction.
-     * @param kernel The Kernel containing services, plugins, and other state for use
-     *              throughout the operation.
+     *
+     * @param kernel The Kernel containing services, plugins, and other state for use throughout the
+     *               operation.
      * @return The result of the function's execution.
      */
     public FunctionInvocation<T> invokeAsync(Kernel kernel) {
@@ -184,6 +184,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Set the prompt template for the function.
+         *
          * @param promptTemplate The prompt template for the function
          * @return The builder
          */
@@ -192,6 +193,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Set the execution settings for the function.
+         *
          * @param executionSettings The execution settings for the function
          * @return The builder
          */
@@ -201,7 +203,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Set the default execution settings for the function.
-         * 
+         *
          * @param executionSettings The default execution settings for the function
          * @return The builder
          */
@@ -211,7 +213,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Set the description of the function.
-         * 
+         *
          * @param description The description of the function
          * @return The builder
          */
@@ -219,7 +221,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Set the template for the function.
-         * 
+         *
          * @param template The template for the function
          * @return The builder
          */
@@ -227,12 +229,14 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Create a new KernelFunction instance from the builder.
+         *
          * @return The new KernelFunction instance
          */
         KernelFunction<T> build();
 
         /**
          * Set the template format for the function.
+         *
          * @param templateFormat The template format for the function
          * @return The builder
          */
@@ -240,6 +244,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Set the output variable for the function.
+         *
          * @param outputVariable The output variable for the function
          * @return The builder
          */
@@ -247,14 +252,16 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Set the output variable for the function.
+         *
          * @param description The description of the output variable
-         * @param type The type of the output variable
+         * @param type        The type of the output variable
          * @return The builder
          */
         FromPromptBuilder<T> withOutputVariable(@Nullable String description, String type);
 
         /**
          * Set the prompt template factory used to build the function.
+         *
          * @param promptTemplateFactory The prompt template factory for the function
          * @return The builder
          */
@@ -263,6 +270,7 @@ public abstract class KernelFunction<T> implements Buildable {
 
         /**
          * Set the prompt template config used to build the function.
+         *
          * @param promptTemplateConfig The prompt template config for the function
          * @return The builder
          */

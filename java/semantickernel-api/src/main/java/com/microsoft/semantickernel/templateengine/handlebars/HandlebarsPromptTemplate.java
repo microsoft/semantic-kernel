@@ -19,6 +19,7 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -210,7 +211,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         private static Handlebars.SafeString handleFunctions(Kernel kernel, Options options)
             throws IOException {
             StringBuilder sb = new StringBuilder("<functions>");
-            List<KernelPlugin> plugins = kernel.getPlugins();
+            Collection<KernelPlugin> plugins = kernel.getPlugins();
             sb.append(options.fn(plugins));
             sb.append("</functions>");
 

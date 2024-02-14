@@ -64,13 +64,12 @@ public class KernelPluginFactory {
                     returnType);
 
                 return KernelFunctionFactory
-                    .createFromMethod(
-                        method,
-                        target,
-                        annotation.name(),
-                        annotation.description(),
-                        getParameters(method),
-                        kernelReturnParameterMetadata);
+                    .createFromMethod(method, target)
+                    .withFunctionName(annotation.name())
+                    .withDescription(annotation.description())
+                    .withParameters(getParameters(method))
+                    .withReturnParameter(kernelReturnParameterMetadata)
+                    .build();
             }).collect(ArrayList::new, (list, it) -> list.add(it), (a, b) -> a.addAll(b));
 
         return createFromFunctions(pluginName, methods);
@@ -136,7 +135,7 @@ public class KernelPluginFactory {
         @Nullable List<KernelFunction<?>> functions) {
         Map<String, KernelFunction<?>> funcs = new HashMap<>();
         if (functions != null) {
-            funcs = functions.stream().collect(Collectors.toMap(KernelFunction<?>::getName, f -> f));
+            funcs = functions.stream().collect(Collectors.toMap(KernelFunction::getName, f -> f));
         }
         return new KernelPlugin(pluginName, description, funcs);
     }

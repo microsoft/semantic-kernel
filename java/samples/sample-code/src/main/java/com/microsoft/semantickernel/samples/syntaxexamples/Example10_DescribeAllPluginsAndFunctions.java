@@ -99,18 +99,18 @@ public class Example10_DescribeAllPluginsAndFunctions {
             .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
-        kernel.getPlugins().add(
+        kernel.addPlugin(
             KernelPluginFactory.createFromObject(
                 new StaticTextPlugin(), "StaticTextPlugin")
         );
 
         // Import another native plugin
-        kernel.getPlugins().add(
+        kernel.addPlugin(
             KernelPluginFactory.createFromObject(
                 new TextPlugin(), "AnotherTextPlugin")
         );
 
-        kernel.getPlugins().add(
+        kernel.addPlugin(
             KernelPluginFactory
                 .importPluginFromDirectory(
                     Path.of(PLUGIN_DIR, "java/samples/sample-code/src/main/resources/Plugins"),

@@ -48,7 +48,8 @@ public class Example27_PromptFunctionsUsingChatGPT {
             .build();
 
         var func = KernelFunctionFactory.<String>createFromPrompt(
-            "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
+            "List the two planets closest to '{{$input}}', excluding moons, using bullet points.")
+            .build();
 
         var result = func.invokeAsync(kernel)
             .withArguments(
