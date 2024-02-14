@@ -1,6 +1,12 @@
 import json
 import logging
-from typing import Annotated, Dict, Mapping, Optional, Union
+import sys
+from typing import Dict, Mapping, Optional, Union
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 from urllib.parse import urljoin
 
 import aiohttp

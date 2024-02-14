@@ -6,7 +6,6 @@ import pytest
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -30,7 +29,7 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
 
 def create_kernel_and_functions_mock(functions) -> Kernel:
     kernel = Kernel()
-    functions_view = FunctionsView()
+    functions_list = []
     for name, plugin_name, description, is_semantic, result_string in functions:
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
@@ -40,7 +39,7 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
             is_semantic=is_semantic,
             is_asynchronous=True,
         )
-        functions_view.add_function(kernel_function_metadata)
+        functions_list.append(kernel_function_metadata)
         mock_function = create_mock_function(kernel_function_metadata)
 
         mock_function.invoke.return_value = FunctionResult(
