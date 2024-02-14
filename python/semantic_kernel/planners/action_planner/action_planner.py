@@ -1,12 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import itertools
 import json
 import logging
 import os
+import sys
 from textwrap import dedent
-from typing import Annotated, List, Optional
+from typing import Optional
 
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 import regex
 
 from semantic_kernel import Kernel
@@ -228,17 +237,9 @@ class ActionPlanner:
                 inner_exception=ValueError("No plugins are available."),
             )
 
-        functions_view = self._kernel.plugins.get_functions_view()
-
-        available_functions: List[KernelFunctionMetadata] = [
-            *functions_view.semantic_functions.values(),
-            *functions_view.native_functions.values(),
-        ]
-        available_functions = itertools.chain.from_iterable(available_functions)
-
         available_functions = [
             self._create_function_string(func)
-            for func in available_functions
+            for func in self._kernel.plugins.get_list_of_function_metadata()
             if (
                 func.plugin_name != self.RESTRICTED_PLUGIN_NAME
                 and func.plugin_name not in self.config.excluded_plugins

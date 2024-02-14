@@ -136,22 +136,11 @@ class BasicPlanner:
         # Get a dictionary of plugin names to all native and semantic functions
         if not kernel.plugins:
             return ""
-        native_functions = kernel.plugins.get_functions_view().native_functions
-        semantic_functions = kernel.plugins.get_functions_view().semantic_functions
-        native_functions.update(semantic_functions)
-
-        # Create a mapping between all function names and their descriptions
-        # and also a mapping between function names and their parameters
-        all_functions = native_functions
-        plugin_names = list(all_functions.keys())
-        all_functions_descriptions_dict = {}
-        all_functions_params_dict = {}
-
-        for plugin_name in plugin_names:
-            for func in all_functions[plugin_name]:
-                key = plugin_name + "." + func.name
-                all_functions_descriptions_dict[key] = func.description
-                all_functions_params_dict[key] = func.parameters
+        all_functions = {
+            f"{func.plugin_name}.{func.name}": func for func in kernel.plugins.get_list_of_function_metadata()
+        }
+        all_functions_descriptions_dict = {key: func.description for key, func in all_functions.items()}
+        all_functions_params_dict = {key: func.parameters for key, func in all_functions.items()}
 
         # Create the [AVAILABLE FUNCTIONS] section of the prompt
         available_functions_string = ""

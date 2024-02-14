@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import itertools
 import json
 import logging
 import os
@@ -363,19 +362,12 @@ class StepwisePlanner:
                 PlanningException.ErrorCodes.CreatePlanError,
                 "Plugin collection not found in the kernel",
             )
-        functions_view = self._kernel.plugins.get_functions_view()
 
         excluded_plugins = self.config.excluded_plugins or []
         excluded_functions = self.config.excluded_functions or []
-
-        available_functions: List[KernelFunctionMetadata] = [
-            *functions_view.semantic_functions.values(),
-            *functions_view.native_functions.values(),
-        ]
-        available_functions = itertools.chain.from_iterable(available_functions)
         available_functions = [
             func
-            for func in available_functions
+            for func in self._kernel.plugins.get_list_of_function_metadata()
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
         available_functions = sorted(available_functions, key=lambda x: (x.plugin_name, x.name))
@@ -393,7 +385,7 @@ class StepwisePlanner:
         kernel: Kernel,
         function_name: str,
         prompt_template: str,
-        config: PromptTemplateConfig = None,
+        config: "PromptTemplateConfig" = None,
     ) -> "KernelFunction":
         template = PromptTemplate(prompt_template, kernel.prompt_template_engine, config)
         function_config = SemanticFunctionConfig(config, template)

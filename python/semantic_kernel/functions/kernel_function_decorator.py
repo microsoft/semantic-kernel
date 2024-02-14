@@ -3,7 +3,7 @@
 
 import logging
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
-from typing import Callable, ForwardRef, Optional, Tuple, Union
+from typing import Callable, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def kernel_function(
             _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
         ]
 
-        if func_sig.return_annotation:
+        if func_sig.return_annotation != Signature.empty:
             return_description, return_type, return_required = _parse_annotation(func_sig.return_annotation)
         else:
             return_description, return_type, return_required = "", "None", False
@@ -65,7 +65,11 @@ def kernel_function(
 
 
 def _parse_parameter(param: Parameter):
-    param_description, type_, required = _parse_annotation(param.annotation)
+    param_description = ""
+    type_ = "str"
+    required = True
+    if param != Parameter.empty:
+        param_description, type_, required = _parse_annotation(param.annotation)
     return {
         "name": param.name,
         "description": param_description,
@@ -75,24 +79,21 @@ def _parse_parameter(param: Parameter):
     }
 
 
-def _parse_annotation(annotation: Union[str, Signature]) -> Tuple[str, str, bool]:
+def _parse_annotation(annotation: Parameter) -> Tuple[str, str, bool]:
     if isinstance(annotation, str):
         return "", annotation, True
     logger.debug(f"{annotation=}")
-    if annotation.__name__ == "Annotated":
+    description = ""
+    if getattr(annotation, "__name__", None) == "Annotated":
         description = annotation.__metadata__[0]
-    else:
-        description = ""
     return (description, *_parse_internal_annotation(annotation, True))
 
 
-def _parse_internal_annotation(annotation: Union[str, Signature], required: bool) -> Tuple[str, bool]:
+def _parse_internal_annotation(annotation: Parameter, required: bool) -> Tuple[str, bool]:
     logger.debug(f"{annotation=}")
-    if isinstance(annotation, str):
-        return annotation, required
-    if isinstance(annotation, ForwardRef):
+    if hasattr(annotation, "__forward_arg__"):
         return annotation.__forward_arg__, required
-    if annotation.__name__ == "Optional":
+    if getattr(annotation, "__name__", None) == "Optional":
         required = False
     if hasattr(annotation, "__args__"):
         results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]
@@ -103,4 +104,4 @@ def _parse_internal_annotation(annotation: Union[str, Signature], required: bool
         else:
             required = not (any(not result[1] for result in results))
         return ", ".join(str_results), required
-    return annotation.__name__, required
+    return getattr(annotation, "__name__", ""), required
