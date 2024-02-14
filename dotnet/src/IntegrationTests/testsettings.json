@@ -22,6 +22,17 @@
     "Endpoint": "",
     "ApiKey": ""
   },
+  "OpenAITextToAudio": {
+    "ServiceId": "tts-1",
+    "ModelId": "tts-1",
+    "ApiKey": ""
+  },
+  "AzureOpenAITextToAudio": {
+    "ServiceId": "azure-tts",
+    "DeploymentName": "tts",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
   "HuggingFace": {
     "ApiKey": ""
   },
