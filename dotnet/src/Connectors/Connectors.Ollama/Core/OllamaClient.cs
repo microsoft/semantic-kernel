@@ -45,7 +45,7 @@ internal sealed class OllamaClient : IOllamaClient
         this._streamJsonParser = streamJsonParser ?? new OllamaStreamJsonParser();
     }
 
-    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings executionSettings, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
     {
         var endpoint = this.EndpointProvider.TextGenerationEndpoint;
         var request = CreateTextRequest(prompt, executionSettings);
