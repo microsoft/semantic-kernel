@@ -17,7 +17,7 @@ public sealed class ImageContent : KernelContent
     public Uri? Uri { get; set; }
 
     /// <summary>
-    /// The Data used as DataUri for the image.
+    /// The image binary data.
     /// </summary>
     public BinaryData? Data { get; }
 
@@ -64,7 +64,11 @@ public sealed class ImageContent : KernelContent
         this.Data = data;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns the string representation of the image.
+    /// BinaryData images will be represented as DataUri
+    /// Remote Uri images will be represented as is
+    /// </summary>
     public override string ToString()
     {
         return this.BuildDataUri() ?? this.Uri?.ToString() ?? string.Empty;

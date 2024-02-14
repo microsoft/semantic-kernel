@@ -110,25 +110,18 @@ public sealed class ImageContentTests
     public void ToStringForDataUriFromStreamReturnsDataUriString()
     {
         // Arrange
-        var ms = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes("this is a test"));
-        try
-        {
-            var data = BinaryData.FromStream(ms, "text/plain");
-            var content1 = new ImageContent(data);
+        using var ms = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes("this is a test"));
+        var data = BinaryData.FromStream(ms, "text/plain");
+        var content1 = new ImageContent(data);
 
-            // Act
-            var result1 = content1.ToString();
-            var dataUriToExpect = $"data:{data.MediaType};base64,{Convert.ToBase64String(data.ToArray())}";
+        // Act
+        var result1 = content1.ToString();
+        var dataUriToExpect = $"data:{data.MediaType};base64,{Convert.ToBase64String(data.ToArray())}";
 
-            // Assert
-            Assert.Equal(dataUriToExpect, result1);
+        // Assert
+        Assert.Equal(dataUriToExpect, result1);
 
-            // Assert throws if mediatype is null
-            Assert.Throws<ArgumentNullException>(() => new ImageContent(BinaryData.FromStream(ms, null)));
-        }
-        finally
-        {
-            ms.Dispose();
-        }
+        // Assert throws if mediatype is null
+        Assert.Throws<ArgumentNullException>(() => new ImageContent(BinaryData.FromStream(ms, null)));
     }
 }
