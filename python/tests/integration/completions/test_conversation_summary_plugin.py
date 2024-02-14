@@ -10,6 +10,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 @pytest.mark.asyncio
@@ -32,9 +33,9 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
 
     conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
 
-    summary = await retry(
-        lambda: kernel.run(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
-    )
+    arguments = KernelArguments(input=chatTranscript)
+
+    summary = await retry(lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments))
 
     output = str(summary).strip().lower()
     print(output)
@@ -43,7 +44,6 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="This test fails intermittently when run in parallel with other tests")
 async def test_oai_summarize_conversation_using_plugin(
     setup_summarize_conversation_using_plugin,
 ):
@@ -67,9 +67,9 @@ async def test_oai_summarize_conversation_using_plugin(
 
     conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
 
-    summary = await retry(
-        lambda: kernel.run(conversationSummaryPlugin["SummarizeConversation"], input_str=chatTranscript)
-    )
+    arguments = KernelArguments(input=chatTranscript)
+
+    summary = await retry(lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments))
 
     output = str(summary).strip().lower()
     print(output)

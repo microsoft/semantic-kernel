@@ -11,9 +11,11 @@ if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
+
 import regex
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -68,11 +70,14 @@ class ActionPlanner:
 
         self._prompt_template = prompt if prompt else open(__prompt_file, "r").read()
 
-        self._planner_function = kernel.create_semantic_function(
+        execute_settings = PromptExecutionSettings(
+            extension_data={"max_tokens": self.config.max_tokens, "stop_sequences": self._stop_sequence}
+        )
+
+        self._planner_function = kernel.create_function_from_prompt(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
-            prompt_template=self._prompt_template,
-            max_tokens=self.config.max_tokens,
-            stop_sequences=[self._stop_sequence],
+            template=self._prompt_template,
+            execution_settings={"default": execute_settings},
         )
         kernel.import_plugin(self, self.RESTRICTED_PLUGIN_NAME)
 

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
@@ -156,13 +155,13 @@ def get_function_calling_object(
     if include_function and exclude_function:
         raise ValueError("Cannot use both include_function and exclude_function at the same time.")
     if include_plugin:
-        include_plugin = [plugin.lower() for plugin in include_plugin]
+        include_plugin = [plugin for plugin in include_plugin]
     if exclude_plugin:
-        exclude_plugin = [plugin.lower() for plugin in exclude_plugin]
+        exclude_plugin = [plugin for plugin in exclude_plugin]
     if include_function:
-        include_function = [function.lower() for function in include_function]
+        include_function = [function for function in include_function]
     if exclude_function:
-        exclude_function = [function.lower() for function in exclude_function]
+        exclude_function = [function for function in exclude_function]
     result = []
     for (
         plugin_name,
@@ -182,14 +181,14 @@ async def execute(kernel: Kernel, func: KernelFunction, arguments: KernelArgumen
     """Execute a function and return the result.
 
     Args:
-        kernel (Kernel): the kernel to use.
-        func (KernelFunction): the function to execute.
-        input_vars (ContextVariables): the input variables.
+        kernel: the kernel to use.
+        func: the function to execute.
+        arguments: the arguments to pass to the function.
 
     Returns:
         str: the result of the execution.
     """
-    result = await kernel.invoke(func, arguments=arguments)
+    result = await kernel.invoke(functions=func, arguments=arguments)
     logger.info(f"Execution result: {result}")
     return result
 
@@ -222,7 +221,7 @@ async def execute_tool_call(kernel: Kernel, tool_call: ToolCall) -> FunctionResu
 
 async def chat_completion_with_tool_call(
     kernel: Kernel,
-    arguments: KernelArguments,
+    arguments: Optional[KernelArguments] = None,
     chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[KernelFunction] = None,
@@ -268,18 +267,35 @@ async def chat_completion_with_tool_call(
     settings = chat_function.chat_prompt_template.prompt_config.execution_settings
     arguments.execution_settings[settings.service_id] = settings
     if current_call_count >= max_function_calls:
-        # when the maximum number of function calls is reached, execute the chat function without Functions.
-        for settings in arguments.execution_settings.values():
-            settings.tool_choice = None
-    result = await chat_function.invoke(kernel=kernel, arguments=arguments)
-    if hasattr(result.value[0], "tool_message") and (tool_message := result.value[0].tool_message):
-        chat_function.chat_prompt_template.add_function_response_message(name="tool", content=tool_message)
-    if not (tool_calls := result.value[0].tool_calls):
-        chat_function.chat_prompt_template.add_assistant_message(message=str(result))
-        return result
-    await asyncio.gather(*[execute_and_store_tool_call(kernel, tool_call, chat_function) for tool_call in tool_calls])
-    return await chat_completion_with_tool_call(
+        settings.functions = []
+    result = await chat_function.invoke(
         kernel=kernel,
+        arguments=KernelArguments(settings=settings),
+        # when the maximum number of function calls is reached, execute the chat function without Functions.
+    )
+    if not (results := result.objects.pop("results", None)):
+        return result
+    function_call = next(
+        (
+            fc
+            for fc in (results[0].function_call or results[0].tool_calls or [None])
+            if isinstance(fc, (FunctionCall, ToolCall))
+        ),
+        None,
+    )
+    if function_call:
+        execute_call = execute_tool_call if isinstance(function_call, ToolCall) else execute_function_call
+        result = await execute_call(kernel, function_call)
+        tool_call_id = function_call.id
+    else:
+        return result
+    # add the result to the chat prompt template
+    chat_function.chat_prompt_template.add_function_response_message(
+        name=function_call.function.name, content=str(result), tool_call_id=tool_call_id
+    )
+    # request another completion
+    return await chat_completion_with_tool_call(
+        kernel,
         arguments=arguments,
         chat_function=chat_function,
         max_function_calls=max_function_calls,

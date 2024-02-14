@@ -4,6 +4,9 @@ import sys
 
 import pytest
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
 if sys.version_info >= (3, 9):
     import semantic_kernel.connectors.ai.google_palm as sk_gp
 
@@ -15,7 +18,6 @@ def setup_tldr_function_for_oai_models(create_kernel):
     # Define semantic function using SK prompt template language
     sk_prompt = """
     {{$input}}
-    {{$input2}}
 
     (hyphenated words count as 1 word)
     Give me the TLDR in exactly 5 words:
@@ -92,10 +94,14 @@ def setup_gp_text_completion_function(create_kernel, get_gp_config):
     kernel.add_text_completion_service("models/text-bison-001", palm_text_completion)
 
     # Define semantic function using SK prompt template language
-    sk_prompt = "Hello, I like {{$input}}{{$input2}}"
+    prompt = "Hello, I like {{$input}}{{$input2}}"
+
+    exec_settings = PromptExecutionSettings(extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+
+    prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings={"default": exec_settings})
 
     # Create the semantic function
-    text2text_function = kernel.create_semantic_function(sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5)
+    text2text_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
     # User input
     simple_input = "sleeping and "

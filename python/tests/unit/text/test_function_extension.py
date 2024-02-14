@@ -2,8 +2,11 @@ import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.input_variable import InputVariable
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.text import aggregate_chunked_results
 
 
@@ -11,19 +14,31 @@ from semantic_kernel.text import aggregate_chunked_results
 async def test_aggregate_results():
     kernel = Kernel()
     kernel.add_text_completion_service("davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none"))
-    sk_prompt = """
+    prompt = """
         {{$input}}
         How is that ?
     """
 
-    func = kernel.create_semantic_function(
-        sk_prompt,
-        max_tokens=200,
-        temperature=0,
-        top_p=0.5,
+    req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
+
+    prompt_template_config = PromptTemplateConfig(
+        template=prompt,
+        name="chat",
+        template_format="semantic-kernel",
+        input_variables=[
+            InputVariable(name="request", description="The user input", is_required=True),
+        ],
+        execution_settings={"default": req_settings},
     )
-    func.function = lambda function, kernel, arguments, client, request_settings: FunctionResult(
-        function=function, value=arguments["input"], metadata={}
+
+    func = kernel.create_function_from_prompt(
+        prompt_template_config=prompt_template_config,
+    )
+
+    func.function = (
+        lambda function, kernel, arguments, client, request_settings, prompt_template_config: FunctionResult(
+            function=function, value=arguments["input"], metadata={}
+        )
     )
 
     chunked = [

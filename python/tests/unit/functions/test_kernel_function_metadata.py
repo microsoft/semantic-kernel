@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 import pytest
 
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -11,10 +12,10 @@ def test_kernel_function_metadata():
         plugin_name="plugin1",
         description="Semantic function",
         parameters=[],
-        is_semantic=True,
+        is_prompt=True,
         is_asynchronous=True,
     )
-    assert function_metadata.is_semantic
+    assert function_metadata.is_prompt
 
 
 def test_kernel_function_metadata_defaults():
@@ -22,7 +23,7 @@ def test_kernel_function_metadata_defaults():
         name="function1",
         plugin_name="plugin1",
         description="Semantic function",
-        is_semantic=True,
+        is_prompt=True,
     )
     assert function_metadata.parameters == []
     assert function_metadata.is_asynchronous
@@ -34,7 +35,7 @@ def test_kernel_function_metadata_name_pattern_error():
             name="-",
             plugin_name="plugin1",
             description="Semantic function",
-            is_semantic=True,
+            is_prompt=True,
         )
 
 
@@ -44,7 +45,7 @@ def test_kernel_function_metadata_name_empty_error():
             name="",
             plugin_name="plugin1",
             description="Semantic function",
-            is_semantic=True,
+            is_prompt=True,
         )
 
 
@@ -53,13 +54,13 @@ def test_kernel_function_equals():
         name="function1",
         plugin_name="plugin1",
         description="Semantic function",
-        is_semantic=True,
+        is_prompt=True,
     )
     function_metadata_2 = KernelFunctionMetadata(
         name="function1",
         plugin_name="plugin1",
         description="Semantic function",
-        is_semantic=True,
+        is_prompt=True,
     )
     assert function_metadata_1 == function_metadata_2
 
@@ -69,13 +70,13 @@ def test_kernel_function_not_equals():
         name="function1",
         plugin_name="plugin1",
         description="Semantic function",
-        is_semantic=True,
+        is_prompt=True,
     )
     function_metadata_2 = KernelFunctionMetadata(
         name="function2",
         plugin_name="plugin1",
         description="Semantic function",
-        is_semantic=True,
+        is_prompt=True,
     )
     assert function_metadata_1 != function_metadata_2
 
@@ -85,7 +86,7 @@ def test_kernel_function_not_equals_other_object():
         name="function1",
         plugin_name="plugin1",
         description="Semantic function",
-        is_semantic=True,
+        is_prompt=True,
     )
     function_metadata_2 = KernelParameterMetadata(name="function2", description="Semantic function", default_value="")
     assert function_metadata_1 != function_metadata_2

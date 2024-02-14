@@ -24,6 +24,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.utils.chat import prepare_chat_history_for_request
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -47,19 +49,19 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     async def complete(
-        self, prompt: str, settings: GooglePalmTextPromptExecutionSettings, **kwargs
+        self, chat_history: ChatHistory, settings: GooglePalmTextPromptExecutionSettings, **kwargs
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Arguments:
-            prompt {str} -- The prompt to send to the LLM.
+            chat_history {ChatHistory} -- The chat history to use as a prompt.
             settings {GooglePalmTextPromptExecutionSettings} -- Settings for the request.
 
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
-        settings.prompt = prompt
+        settings.prompt = prepare_chat_history_for_request(chat_history)[-1].get("content")
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         try:
@@ -95,7 +97,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
     async def complete_stream(
         self,
-        prompt: str,
+        chat_history: ChatHistory,
         settings: GooglePalmTextPromptExecutionSettings,
         logger: Optional[Any] = None,
     ):

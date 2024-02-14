@@ -4,10 +4,10 @@ import time
 
 import pytest
 
-import semantic_kernel
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import SequentialPlanner
+from semantic_kernel.planners.planning_exception import PlanningException
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
@@ -37,7 +37,7 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
         kernel.add_chat_service(
             "chat_completion",
             sk_oai.AzureChatCompletion(
-                deployment_name="gpt-35-turbo",
+                deployment_name="gpt-35-turbo-0613",
                 endpoint=endpoint,
                 api_key=api_key,
             ),
@@ -45,8 +45,8 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     else:
         kernel.add_text_completion_service(
             "text_completion",
-            sk_oai.AzureChatCompletion(
-                deployment_name="gpt-35-turbo",
+            sk_oai.AzureTextCompletion(
+                deployment_name="gpt-35-turbo-instruct",
                 endpoint=endpoint,
                 api_key=api_key,
             ),
@@ -110,7 +110,7 @@ async def test_create_plan_function_flow(get_aoai_config, use_chat_model, prompt
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=semantic_kernel.planning.planning_exception.PlanningException,
+    raises=PlanningException,
     reason="Test is known to occasionally produce unexpected results.",
 )
 async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_function, expected_plugin, expected_default):
@@ -145,7 +145,7 @@ async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_funct
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=semantic_kernel.planning.planning_exception.PlanningException,
+    raises=PlanningException,
     reason="Test is known to occasionally produce unexpected results.",
 )
 async def test_create_plan_goal_relevant(get_aoai_config, prompt, expected_function, expected_plugin):

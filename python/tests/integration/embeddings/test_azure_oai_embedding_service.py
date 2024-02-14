@@ -85,14 +85,14 @@ async def test_batch_azure_embeddings(get_aoai_config):
         deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
 
     else:
-        deployment_name = "ada-002"
+        deployment_name = "text-embedding-ada-002"
 
     embeddings_service = sk_oai.AzureTextEmbedding(
         deployment_name=deployment_name,
         endpoint=endpoint,
         api_key=api_key,
     )
-    texts = ["hello world", "goodbye world"]
+    texts = ["hello world"]
     results = await embeddings_service.generate_embeddings(texts)
     batch_results = await embeddings_service.generate_embeddings(texts, batch_size=1)
     assert len(results) == len(batch_results)

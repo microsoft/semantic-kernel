@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -10,8 +10,11 @@ else:
 
 from pydantic import Field, StringConstraints
 
-from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 
 class KernelPlugin(KernelBaseModel):
@@ -28,14 +31,16 @@ class KernelPlugin(KernelBaseModel):
 
     name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
     description: Optional[str] = Field(default=None)
-    functions: Optional[Dict[str, KernelFunction]] = Field(default_factory=dict)
+    functions: Optional[Dict[str, "KernelFunction"]] = Field(default_factory=dict)
 
-    def __init__(self, name: str, description: Optional[str] = None, functions: Optional[List[KernelFunction]] = None):
+    def __init__(
+        self, name: str, description: Optional[str] = None, functions: Optional[List["KernelFunction"]] = None
+    ):
         """
         Initialize a new instance of the KernelPlugin class
 
         Args:
-            name (str): The name of the plugin.
+            name (str): The name of the plugin. It is normalized to lower case.
             description (Optional[str]): The description of the plugin.
             functions (List[KernelFunction]): The functions in the plugin.
 
@@ -105,3 +110,23 @@ class KernelPlugin(KernelBaseModel):
             A KernelPlugin instance.
         """
         return cls(name=plugin_name, description=description, functions=functions)
+
+    def get_functions_metadata(self) -> List["KernelFunctionMetadata"]:
+        """
+        Get the metadata for the functions in the plugin.
+
+        Returns:
+            A list of KernelFunctionMetadata instances.
+        """
+        return [
+            KernelFunctionMetadata(
+                name=func.name,
+                plugin_name=self.name,
+                description=func.description,
+                parameters=func.parameters,
+                is_prompt=func.is_prompt,
+                is_asynchronous=func.is_asynchronous,
+                return_parameter=func.return_parameter,
+            )
+            for func in self.functions.values()
+        ]

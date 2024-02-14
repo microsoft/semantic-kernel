@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -27,7 +28,7 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Mo
     mock_function.describe.return_value = kernel_function_metadata
     mock_function.name = kernel_function_metadata.name
     mock_function.plugin_name = kernel_function_metadata.plugin_name
-    mock_function.is_semantic = kernel_function_metadata.is_semantic
+    mock_function.is_prompt = kernel_function_metadata.is_prompt
     mock_function.description = kernel_function_metadata.description
     mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
@@ -41,7 +42,7 @@ def test_throw_without_kernel():
 def test_throw_without_completion_service():
     kernel = Kernel()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(AIException):
         ActionPlanner(kernel)
 
 
@@ -53,13 +54,13 @@ def mock_kernel(plugins_input):
 
     mock_plugins = {}
 
-    for name, plugin_name, description, is_semantic in plugins_input:
+    for name, plugin_name, description, is_prompt in plugins_input:
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name=plugin_name,
             description=description,
             parameters=[],
-            is_semantic=is_semantic,
+            is_prompt=is_prompt,
             is_asynchronous=True,
         )
         mock_function = create_mock_function(kernel_function_metadata)
@@ -103,7 +104,7 @@ async def test_plan_creation():
         name="Translate",
         description="Translate something",
         plugin_name="WriterPlugin",
-        is_semantic=False,
+        is_prompt=False,
         parameters=[],
     )
     mock_function = create_mock_function(kernel_function_metadata)
@@ -113,7 +114,7 @@ async def test_plan_creation():
     function_result = FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
     mock_function.invoke.return_value = function_result
 
-    kernel.create_semantic_function.return_value = mock_function
+    kernel.create_function_from_prompt.return_value = mock_function
 
     planner = ActionPlanner(kernel)
     plan = await planner.create_plan(goal)
@@ -194,7 +195,7 @@ async def test_empty_goal_throw():
         name="Translate",
         description="Translate something",
         plugin_name="WriterPlugin",
-        is_semantic=False,
+        is_prompt=False,
         parameters=[],
     )
     mock_function = create_mock_function(kernel_function_metadata)
@@ -221,7 +222,7 @@ async def test_invalid_json_throw():
         name="Translate",
         plugin_name="WriterPlugin",
         description="Translate something",
-        is_semantic=False,
+        is_prompt=False,
         parameters=[],
     )
     mock_function = create_mock_function(kernel_function_metadata)
@@ -231,7 +232,7 @@ async def test_invalid_json_throw():
     function_result = FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
     mock_function.invoke.return_value = function_result
 
-    kernel.create_semantic_function.return_value = mock_function
+    kernel.create_function_from_prompt.return_value = mock_function
 
     planner = ActionPlanner(kernel)
 

@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
 
 from pydantic import Field
 
-from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
@@ -16,6 +15,7 @@ from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -148,7 +148,7 @@ class CodeBlock(Block):
 
     def _get_function_from_plugin_collection(
         self, plugins: KernelPluginCollection, function_block: FunctionIdBlock
-    ) -> Optional[KernelFunction]:
+    ) -> Optional["KernelFunction"]:
         """
         Get the function from the plugin collection
 

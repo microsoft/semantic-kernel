@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import AsyncIterable, Dict, List, Optional
+from typing import AsyncIterable, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
@@ -22,6 +22,8 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.utils.chat import prepare_chat_history_for_request
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -43,7 +45,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
 
     async def complete_chat(
         self,
-        messages: List[Dict[str, str]],
+        chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs,
     ) -> List[ChatMessageContent]:
@@ -51,15 +53,15 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
-                set of messages, from system, user, assistant and function.
+            chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
+                that can be rendered into a set of messages, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging. (Deprecated)
 
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
-        settings.messages = messages
+        settings.messages = prepare_chat_history_for_request(chat_history)
         settings.stream = False
         async with AsyncSession(self.session) as session:
             async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
@@ -76,7 +78,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
 
     async def complete_chat_stream(
         self,
-        messages: List[Dict[str, str]],
+        chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs,
     ) -> AsyncIterable[List[StreamingChatMessageContent]]:
@@ -85,13 +87,14 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         Note that this method does not support multiple responses.
 
         Arguments:
-            prompt {str} -- Prompt to complete.
+            chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
+                that can be rendered into a set of messages, from system, user, assistant and function.
             settings {OllamaChatPromptExecutionSettings} -- Request settings.
 
         Yields:
             List[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.
         """
-        settings.messages = messages
+        settings.messages = prepare_chat_history_for_request(chat_history)
         settings.stream = True
         async with AsyncSession(self.session) as session:
             async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
@@ -113,7 +116,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
 
     async def complete(
         self,
-        prompt: str,
+        chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs,
     ) -> List[TextContent]:
@@ -121,14 +124,14 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Arguments:
-            prompt {str} -- The prompt to send to the LLM.
+            chat_history {ChatHistory} -- A chat history that contains the prompt to complete.
             settings {OllamaChatPromptExecutionSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging (deprecated).
 
         Returns:
             List["TextContent"] -- The completion result(s).
         """
-        settings.messages = [{"role": "user", "content": prompt}]
+        settings.messages = [prepare_chat_history_for_request(chat_history)[-1]]
         settings.stream = False
         async with AsyncSession(self.session) as session:
             async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
@@ -144,7 +147,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
 
     async def complete_stream(
         self,
-        prompt: str,
+        chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
@@ -153,14 +156,14 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, A
         Note that this method does not support multiple responses.
 
         Arguments:
-            prompt {str} -- Prompt to complete.
+            chat_history {ChatHistory} -- A chat history that contains the prompt to complete.
             settings {OllamaChatPromptExecutionSettings} -- Request settings.
 
         Yields:
             List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
         """
 
-        settings.messages = [{"role": "user", "content": prompt}]
+        settings.messages = [prepare_chat_history_for_request(chat_history)[-1]]
         settings.stream = True
         async with AsyncSession(self.session) as session:
             async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:

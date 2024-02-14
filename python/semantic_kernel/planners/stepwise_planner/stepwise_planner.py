@@ -19,12 +19,8 @@ from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
 from semantic_kernel.planners.stepwise_planner.system_step import SystemStep
-from semantic_kernel.prompt_template.prompt_template import PromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import (
     PromptTemplateConfig,
-)
-from semantic_kernel.prompt_template.semantic_function_config import (
-    SemanticFunctionConfig,
 )
 
 if TYPE_CHECKING:
@@ -84,11 +80,10 @@ class StepwisePlanner:
         if prompt_user_config is None:
             prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
 
-        prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
+        prompt_config.execution_settings["default"].extension_data["max_tokens"] = self.config.max_tokens
+        prompt_config.template = prompt_template
 
-        self._system_step_function = self.import_semantic_function(
-            kernel, "StepwiseStep", prompt_template, prompt_config
-        )
+        self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)
         self._native_functions = self._kernel.import_plugin(self, RESTRICTED_PLUGIN_NAME)
 
         self._context = KernelArguments()
@@ -101,7 +96,7 @@ class StepwisePlanner:
             parameters=[
                 KernelParameterMetadata(name="goal", description="The goal to achieve", default_value="", required=True)
             ],
-            is_semantic=True,
+            is_prompt=True,
             is_asynchronous=True,
         )
 
@@ -380,17 +375,15 @@ class StepwisePlanner:
         function_descriptions = "\n".join([self.to_manual_string(f) for f in available_functions])
         return function_descriptions
 
-    def import_semantic_function(
+    def import_function_from_prompt(
         self,
         kernel: Kernel,
         function_name: str,
-        prompt_template: str,
-        config: "PromptTemplateConfig" = None,
+        config: PromptTemplateConfig = None,
     ) -> "KernelFunction":
-        template = PromptTemplate(prompt_template, kernel.prompt_template_engine, config)
-        function_config = SemanticFunctionConfig(config, template)
-
-        return kernel.register_semantic_function(RESTRICTED_PLUGIN_NAME, function_name, function_config)
+        return kernel.create_function_from_prompt(
+            plugin_name=RESTRICTED_PLUGIN_NAME, function_name=function_name, prompt_template_config=config
+        )
 
     def to_manual_string(self, function: KernelFunctionMetadata) -> str:
         inputs = [

@@ -18,7 +18,7 @@ async def main():
 
     kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
 
-    plugin = kernel.import_semantic_plugin_from_directory("../../samples/plugins", "FunPlugin")
+    plugin = kernel.import_plugin_from_prompt_directory("../../samples/plugins", "FunPlugin")
 
     joke_function = plugin["Joke"]
 

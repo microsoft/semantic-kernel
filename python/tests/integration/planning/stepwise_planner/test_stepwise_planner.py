@@ -10,13 +10,13 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.functions.old.kernel_context import KernelContext
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import StepwisePlanner
 from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
 
 
 class TempWebSearchEnginePlugin:
@@ -36,12 +36,8 @@ class TempWebSearchEnginePlugin:
         self._connector = connector
 
     @kernel_function(description="Performs a web search for a given query", name="searchAsync")
-    @kernel_function_context_parameter(
-        name="query",
-        description="The search query",
-    )
-    async def search(self, query: str, context: KernelContext) -> str:
-        query = query or context.variables.get("query")
+    async def search(self, query: str, arguments: KernelArguments) -> str:
+        query = query or arguments.get("query")
         result = await self._connector.search(query, num_results=5, offset=0)
         return str(result)
 
@@ -69,8 +65,8 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     else:
         kernel.add_text_completion_service(
             "text_completion",
-            sk_oai.AzureChatCompletion(
-                deployment_name="gpt-35-turbo",
+            sk_oai.AzureTextCompletion(
+                deployment_name="gpt-35-turbo-instruct",
                 endpoint=endpoint,
                 api_key=api_key,
             ),

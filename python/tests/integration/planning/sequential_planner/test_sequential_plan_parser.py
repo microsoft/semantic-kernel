@@ -43,7 +43,7 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_string,
         goal,
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
 
     assert plan is not None

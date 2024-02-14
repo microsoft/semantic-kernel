@@ -11,6 +11,8 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
 logging.basicConfig(level=logging.INFO)
@@ -32,14 +34,16 @@ chat_service = sk_oai.AzureChatCompletion(**azure_openai_settings_from_dot_env_a
 kernel.add_chat_service("chat-gpt", chat_service)
 
 ## there are three ways to create the request settings in code: # noqa: E266
+## Note: the prompt_execution_settings are a dictionary with the service_id as the key and the request settings as the value. # noqa: E501
 
 ## 1. create the request settings from the base class: # noqa: E266
 # from semantic_kernel.connectors.ai.chat_completion_client_base import PromptExecutionSettings
 # req_settings = PromptExecutionSettings(extension_data = { "max_tokens": 2000, "temperature": 0.7, "top_p": 0.8} )
+# req_settings_dict = {"default": req_settings}
 ## This method (using the PromptExecutionSettings base class) is the most generic, and it allows you to store request settings for different services in the same extension_data field. There are two downsides to this approach: the specific request setting class will be created dynamically for each call, this is overhead when using just a single service. and the request settings are not type checked, so you will receive error messages once the dynamic creation of the request settings class fails. # noqa: E501 E266
 
 ## 2. create the request settings directly for the service you are using: # noqa: E266
-# req_settings = sk_oai.AzureChatPromptExecutionSettings(max_tokens=2000, temperature=0.7, top_p=0.8)
+# req_settings = {"default": sk_oai.AzureOpenAIChatPromptExecutionSettings(max_tokens=2000, temperature=0.7, top_p=0.8)}
 ## The second method is useful when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
 
 ## 3. create the request settings from the kernel based on the registered service class: # noqa: E266
@@ -49,23 +53,31 @@ req_settings.temperature = 0.7
 req_settings.top_p = 0.8
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
+prompt_template_config = sk.PromptTemplateConfig(
+    template="Use the {{$request}} to summarize the {{$history}}",
+    name="chat",
+    template_format="semantic-kernel",
+    input_variables=[
+        InputVariable(name="history", description="The history of the conversation", is_required=True, default=""),
+        InputVariable(name="request", description="The user input", is_required=True),
+    ],
+    execution_settings={"default": req_settings},
+)
 
-prompt_config = sk.PromptTemplateConfig(execution_settings=req_settings)
+history = ChatHistory()
 
-prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
+history.add_system_message(system_message)
+history.add_user_message("Hi there, who are you?")
+history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-prompt_template.add_system_message(system_message)
-prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+arguments = KernelArguments()
 
-function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
+chat_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
 
 async def chat() -> bool:
     try:
         user_input = input("User:> ")
-        arguments = KernelArguments(user_input=user_input or "what is openai?")
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
         return False
@@ -79,14 +91,22 @@ async def chat() -> bool:
 
     stream = True
     if stream:
-        answer = kernel.invoke_stream(chat_function, arguments=arguments)
+        answer = kernel.invoke_stream(
+            chat_function,
+            KernelArguments(request=user_input, history=("\n").join([f"{msg.role}: {msg.content}" for msg in history])),
+        )
         print("Mosscap:> ", end="")
         async for message in answer:
             print(str(message[0]), end="")
         print("\n")
         return True
-    answer = await kernel.invoke(chat_function, arguments=arguments)
+    answer = await kernel.invoke(
+        chat_function,
+        KernelArguments(request=user_input, history=("\n").join([f"{msg.role}: {msg.content}" for msg in history])),
+    )
     print(f"Mosscap:> {answer}")
+    history.add_user_message(user_input)
+    history.add_assistant_message(str(answer))
     return True
 
 

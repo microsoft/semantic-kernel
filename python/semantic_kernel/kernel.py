@@ -6,7 +6,7 @@ import inspect
 import logging
 import os
 from copy import copy
-from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 from pydantic import Field
 
@@ -37,17 +37,16 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.prompt_template.prompt_template import PromptTemplate
+from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import (
     PromptTemplateConfig,
-)
-from semantic_kernel.prompt_template.semantic_function_config import (
-    SemanticFunctionConfig,
 )
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
+from semantic_kernel.services.ai_service_selector import get_ai_service
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
@@ -117,7 +116,7 @@ class Kernel(KernelBaseModel):
             **kwargs (Any): Additional fields to be passed to the Kernel model
         """
         plugins = plugins if plugins else KernelPluginCollection()
-        prompt_template_engine = prompt_template_engine if prompt_template_engine else PromptTemplateEngine()
+        prompt_template_engine = prompt_template_engine if prompt_template_engine else PromptTemplatingEngine()
         memory = memory if memory else NullMemory()
 
         super().__init__(plugins=plugins, prompt_template_engine=prompt_template_engine, memory=memory, **kwargs)
@@ -143,34 +142,83 @@ class Kernel(KernelBaseModel):
         else:
             self.plugins.add(plugin)
 
-    def register_semantic_function(
+    def create_function_from_prompt(
         self,
-        plugin_name: Optional[str],
-        function_name: str,
-        function_config: SemanticFunctionConfig,
+        template: Optional[str] = None,
+        prompt_template_config: Optional[PromptTemplateConfig] = None,
+        execution_settings: Optional[PromptExecutionSettings] = None,
+        function_name: Optional[str] = None,
+        plugin_name: Optional[str] = None,
+        description: Optional[str] = None,
+        template_format: Optional[str] = None,
+        prompt_template: Optional[PromptTemplateBase] = None,
     ) -> KernelFunction:
         """
-        Creates a semantic function from the plugin name, function name and function config
+        Create a Kernel Function from a prompt.
 
         Args:
-            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
-            function_name (str): The name of the function
-            function_config (SemanticFunctionConfig): The function config
+            template (Optional[str]): The prompt template
+            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
+            execution_settings (Optional[PromptExecutionSettings]): The execution settings
+            function_name (Optional[str]): The name of the function
+            plugin_name (Optional[str]): The name of the plugin
+            description (Optional[str]): The description of the function
+            template_format (Optional[str]): The format of the prompt template
+            prompt_template (Optional[PromptTemplateBase]): The prompt template
 
         Returns:
-            KernelFunction: The created semantic function
-
-        Raises:
-            ValueError: If the plugin name or function name are invalid
+            KernelFunction: The created Kernel Function
         """
-        if plugin_name is None or plugin_name == "":
+        if not plugin_name:
             plugin_name = f"p_{generate_random_ascii_name()}"
         assert plugin_name is not None  # for type checker
+
+        if not function_name:
+            function_name = f"f_{generate_random_ascii_name()}"
+        assert function_name is not None  # for type checker
 
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        function = self._create_semantic_function(plugin_name, function_name, function_config)
+        function = KernelFunction.from_prompt(
+            prompt=template,
+            execution_settings=execution_settings,
+            function_name=function_name,
+            plugin_name=plugin_name,
+            description=description,
+            template_format=template_format,
+            prompt_template=prompt_template,
+            prompt_template_config=prompt_template_config,
+        )
+
+        # TODO: Can this `get_ai_service` call be moved to the function invoke?
+        service, _, service_base_type = get_ai_service(self, function, KernelArguments())
+        if service is None:
+            raise AIException(
+                AIException.ErrorCodes.InvalidConfiguration,
+                (f"Could not load AI service for: {function.plugin_name}.{function.name}"),
+            )
+
+        if not execution_settings:
+            execution_settings = function.prompt_execution_settings
+
+        if issubclass(service_base_type, ChatCompletionClientBase):
+            req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
+            exec_settings = req_settings_type.from_prompt_execution_settings(
+                execution_settings["default"]
+            )  # TODO, make dynamic
+            function.set_chat_configuration({"default": exec_settings})
+            function.set_chat_service(lambda: service(self))
+        elif issubclass(service_base_type, TextCompletionClientBase):
+            req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
+            exec_settings = req_settings_type.from_prompt_execution_settings(
+                execution_settings["default"]
+            )  # TODO, make dynamic
+            function.set_ai_configuration({"default": exec_settings})
+            function.set_ai_service(lambda: service(self))
+        else:
+            raise ValueError(f"Unknown AI service type: {service.__name__}")
+
         self.add_plugin(plugin_name, [function])
         function.set_default_plugin_collection(self.plugins)
 
@@ -280,7 +328,8 @@ class Kernel(KernelBaseModel):
             try:
                 async for stream_message in stream_function.invoke_stream(self, arguments):
                     if isinstance(stream_message, FunctionResult):
-                        raise stream_message.metadata.get("error", Exception("Error occurred in stream function"))
+                        err_msg = stream_message.metadata.get("error", None)
+                        exception = Exception(f"Error occurred in stream function: {err_msg}")
                     function_result.append(stream_message)
                     yield stream_message
             except Exception as exc:
@@ -521,7 +570,7 @@ class Kernel(KernelBaseModel):
             candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
         # Read every method from the plugin instance
         for _, candidate in candidates:
-            # If the method is a semantic function, register it
+            # If the method is a prompt function, register it
             if not hasattr(candidate, "__kernel_function__"):
                 continue
 
@@ -586,11 +635,62 @@ class Kernel(KernelBaseModel):
     def all_text_completion_services(self) -> List[str]:
         return list(self.text_completion_services.keys())
 
+    def all_text_completion_services_with_types(self) -> List[Tuple[str, Type[TextCompletionClientBase]]]:
+        """
+        Returns a list of tuples, each containing the key and the type of a text completion service.
+
+        Returns:
+        A list of tuples (service_id, service_type).
+        """
+        services_with_types = []
+        for service_id in self.text_completion_services.keys():
+            service_type = self.get_service_type(self.text_completion_services, service_id)
+            if service_type is not None:
+                services_with_types.append((service_id, service_type))
+
+        return services_with_types
+
     def all_chat_services(self) -> List[str]:
         return list(self.chat_services.keys())
 
+    def all_chat_services_with_types(self) -> List[Tuple[str, Type[ChatCompletionClientBase]]]:
+        """
+        Returns a list of tuples, each containing the key and the type of a chat service.
+
+        Returns:
+        A list of tuples (service_id, service_type).
+        """
+        services_with_types = []
+        for service_id in self.chat_services.keys():
+            service_type = self.get_service_type(self.chat_services, service_id)
+            if service_type is not None:
+                services_with_types.append((service_id, service_type))
+
+        return services_with_types
+
     def all_text_embedding_generation_services(self) -> List[str]:
         return list(self.text_embedding_generation_services.keys())
+
+    def all_text_embedding_generation_services_with_types(self) -> List[Tuple[str, Type[ChatCompletionClientBase]]]:
+        """
+        Returns a list of tuples, each containing the key and the type of a chat service.
+
+        Returns:
+        A list of tuples (service_id, service_type).
+        """
+        services_with_types = []
+        for service_id in self.chat_services.keys():
+            service_type = self.get_service_type(self.text_embedding_generation_services, service_id)
+            if service_type is not None:
+                services_with_types.append((service_id, service_type))
+
+        return services_with_types
+
+    def add_default_values(self, arguments, prompt_template_config):
+        for parameter in prompt_template_config.input_variables:
+            # if parameter.name not in arguments and not parameter.default:
+            if not arguments.get(parameter.name) and parameter.default not in {None, "", False, 0}:
+                arguments[parameter.name] = parameter.default
 
     def add_text_completion_service(
         self,
@@ -628,6 +728,32 @@ class Kernel(KernelBaseModel):
             self.add_text_completion_service(service_id, service)
 
         return self
+
+    def get_service_type(self, service_type: Any, service_id: str) -> Union[Type[ChatCompletionClientBase], None]:
+        """
+        Get the type of a chat service stored in chat_services.
+
+        Parameters:
+        - service_id: The ID of the chat service.
+
+        Returns:
+        The type of the chat service if found, otherwise None.
+        """
+        service = service_type.get(service_id)
+        if service is None:
+            return None
+
+        if isinstance(service, Callable):
+            try:
+                service_instance = service(self)  # Assuming 'self' is a valid Kernel instance
+                return type(service_instance)
+            except Exception as e:
+                print(f"Error instantiating service from callable for service_id '{service_id}': {e}")
+                return None
+        else:
+            return type(service)
+
+        return None
 
     def add_text_embedding_generation_service(
         self,
@@ -746,79 +872,6 @@ class Kernel(KernelBaseModel):
 
         return self
 
-    def _create_semantic_function(
-        self,
-        plugin_name: str,
-        function_name: str,
-        function_config: SemanticFunctionConfig,
-    ) -> KernelFunction:
-        function_type = function_config.prompt_template_config.type
-        if not function_type == "completion":
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                f"Function type not supported: {function_type}",
-            )
-
-        function = KernelFunction.from_semantic_config(plugin_name, function_name, function_config)
-        function.prompt_execution_settings.update_from_prompt_execution_settings(
-            function_config.prompt_template_config.execution_settings
-        )
-
-        if function_config.has_chat_prompt:
-            service = self.get_ai_service(
-                ChatCompletionClientBase,
-                function_config.prompt_template_config.default_services[0]
-                if len(function_config.prompt_template_config.default_services) > 0
-                else None,
-            )
-            req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
-
-            function.set_chat_configuration(
-                req_settings_type.from_prompt_execution_settings(
-                    function_config.prompt_template_config.execution_settings
-                )
-            )
-
-            if service is None:
-                raise AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    (
-                        "Could not load chat service, unable to prepare semantic"
-                        " function. Function description:"
-                        " {function_config.prompt_template_config.description}"
-                    ),
-                )
-
-            function.set_chat_service(lambda: service(self))
-        else:
-            service = self.get_ai_service(
-                TextCompletionClientBase,
-                function_config.prompt_template_config.default_services[0]
-                if len(function_config.prompt_template_config.default_services) > 0
-                else None,
-            )
-            req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
-
-            function.set_ai_configuration(
-                req_settings_type.from_prompt_execution_settings(
-                    function_config.prompt_template_config.execution_settings
-                )
-            )
-
-            if service is None:
-                raise AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    (
-                        "Could not load text service, unable to prepare semantic"
-                        " function. Function description:"
-                        " {function_config.prompt_template_config.description}"
-                    ),
-                )
-
-            function.set_ai_service(lambda: service(self))
-
-        return function
-
     def import_native_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         MODULE_NAME = "native_function"
 
@@ -846,7 +899,7 @@ class Kernel(KernelBaseModel):
 
         return {}
 
-    def import_semantic_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
+    def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         CONFIG_FILE = "config.json"
         PROMPT_FILE = "skprompt.txt"
 
@@ -872,45 +925,28 @@ class Kernel(KernelBaseModel):
 
             config_path = os.path.join(directory, CONFIG_FILE)
             with open(config_path, "r") as config_file:
-                config = PromptTemplateConfig.from_json(config_file.read())
+                prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
+            prompt_template_config.name = function_name
 
             # Load Prompt Template
             with open(prompt_path, "r") as prompt_file:
-                template = PromptTemplate(prompt_file.read(), self.prompt_template_engine, config)
+                prompt = prompt_file.read()
+                prompt_template_config.template = prompt
 
-            # Prepare lambda wrapping AI logic
-            function_config = SemanticFunctionConfig(config, template)
+            kernel_prompt_template = KernelPromptTemplate(prompt_template_config)
 
-            functions += [self.register_semantic_function(plugin_directory_name, function_name, function_config)]
+            functions += [
+                self.create_function_from_prompt(
+                    prompt_template=kernel_prompt_template,
+                    prompt_template_config=prompt_template_config,
+                    template_format="semantic-kernel",
+                    function_name=function_name,
+                )
+            ]
 
         plugin = KernelPlugin(name=plugin_directory_name, functions=functions)
 
         return plugin
-
-    def create_semantic_function(
-        self,
-        prompt_template: str,
-        function_name: Optional[str] = None,
-        plugin_name: Optional[str] = None,
-        description: Optional[str] = None,
-        **kwargs: Any,
-    ) -> "KernelFunction":
-        function_name = function_name if function_name is not None else f"f_{generate_random_ascii_name()}"
-
-        config = PromptTemplateConfig(
-            description=(description if description is not None else "Generic function, unknown purpose"),
-            type="completion",
-            execution_settings=PromptExecutionSettings(extension_data=kwargs),
-        )
-
-        validate_function_name(function_name)
-        if plugin_name is not None:
-            validate_plugin_name(plugin_name)
-
-        template = PromptTemplate(prompt_template, self.prompt_template_engine, config)
-        function_config = SemanticFunctionConfig(config, template)
-
-        return self.register_semantic_function(plugin_name, function_name, function_config)
 
     def add_function_invoking_handler(
         self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]

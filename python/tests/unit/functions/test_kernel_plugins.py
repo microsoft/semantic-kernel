@@ -3,12 +3,11 @@
 
 import pytest
 
+from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.prompt_template.chat_prompt_template import ChatPromptTemplate
+from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.prompt_template.semantic_function_config import SemanticFunctionConfig
-from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 
 def test_throws_for_missing_name():
@@ -94,15 +93,28 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
         assert plugin[func.name] == func
 
 
-def test_default_kernel_plugin_construction_with_semantic_function():
-    prompt_config = PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
-    prompt_template = ChatPromptTemplate("{{$user_input}}", PromptTemplateEngine(), prompt_config)
-    function_config = SemanticFunctionConfig(prompt_config, prompt_template)
+def test_default_kernel_plugin_construction_with_prompt_function():
+    req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
+
+    prompt = "Use this input: {{$request}}"
+
+    prompt_template_config = PromptTemplateConfig(
+        template=prompt,
+        name="chat",
+        template_format="semantic-kernel",
+        input_variables=[
+            InputVariable(name="request", description="The user input", is_required=True),
+        ],
+        execution_settings={"default": req_settings},
+    )
 
     expected_plugin_name = "test_plugin"
     expected_function_name = "mock_function"
-    semantic_function = KernelFunction.from_semantic_config(
-        plugin_name=expected_plugin_name, function_name=expected_function_name, function_config=function_config
+    semantic_function = KernelFunction.from_prompt(
+        prompt=prompt,
+        prompt_template_config=prompt_template_config,
+        plugin_name=expected_plugin_name,
+        function_name=expected_function_name,
     )
 
     expected_plugin_description = "A unit test plugin"
@@ -118,15 +130,27 @@ def test_default_kernel_plugin_construction_with_semantic_function():
 
 
 def test_default_kernel_plugin_construction_with_both_function_types():
-    # Construct a semantic function
-    prompt_config = PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
-    prompt_template = ChatPromptTemplate("{{$user_input}}", PromptTemplateEngine(), prompt_config)
-    function_config = SemanticFunctionConfig(prompt_config, prompt_template)
+    req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
+
+    prompt = "Use this input: {{$request}}"
+
+    prompt_template_config = PromptTemplateConfig(
+        template=prompt,
+        name="chat",
+        template_format="semantic-kernel",
+        input_variables=[
+            InputVariable(name="request", description="The user input", is_required=True),
+        ],
+        execution_settings={"default": req_settings},
+    )
 
     expected_plugin_name = "test_plugin"
-    expected_function_name = "mock_semantic_function"
-    semantic_function = KernelFunction.from_semantic_config(
-        plugin_name=expected_plugin_name, function_name=expected_function_name, function_config=function_config
+    expected_function_name = "mock_function"
+    semantic_function = KernelFunction.from_prompt(
+        prompt=prompt,
+        prompt_template_config=prompt_template_config,
+        plugin_name=expected_plugin_name,
+        function_name=expected_function_name,
     )
 
     # Construct a nativate function
@@ -169,15 +193,27 @@ def test_default_kernel_plugin_construction_with_both_function_types():
 
 
 def test_default_kernel_plugin_construction_with_same_function_names_throws():
-    # Construct a semantic function
-    prompt_config = PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
-    prompt_template = ChatPromptTemplate("{{$user_input}}", PromptTemplateEngine(), prompt_config)
-    function_config = SemanticFunctionConfig(prompt_config, prompt_template)
+    req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
+
+    prompt = "Use this input: {{$request}}"
+
+    prompt_template_config = PromptTemplateConfig(
+        template=prompt,
+        name="chat",
+        template_format="semantic-kernel",
+        input_variables=[
+            InputVariable(name="request", description="The user input", is_required=True),
+        ],
+        execution_settings={"default": req_settings},
+    )
 
     expected_plugin_name = "test_plugin"
     expected_function_name = "mock_function"
-    semantic_function = KernelFunction.from_semantic_config(
-        plugin_name=expected_plugin_name, function_name=expected_function_name, function_config=function_config
+    semantic_function = KernelFunction.from_prompt(
+        prompt=prompt,
+        prompt_template_config=prompt_template_config,
+        plugin_name=expected_plugin_name,
+        function_name=expected_function_name,
     )
 
     # Construct a nativate function

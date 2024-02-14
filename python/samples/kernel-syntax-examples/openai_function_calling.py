@@ -5,7 +5,7 @@ import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import (
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.open_ai_chat_message import (
     OpenAIChatMessage,
 )
 from semantic_kernel.core_plugins import MathPlugin
@@ -37,7 +37,7 @@ kernel.add_chat_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-kernel.import_semantic_plugin_from_directory(plugins_directory, "FunPlugin")
+kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin(MathPlugin(), plugin_name="math")
 

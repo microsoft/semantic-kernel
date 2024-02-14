@@ -13,7 +13,6 @@ from semantic_kernel.connectors.memory.azure_cognitive_search import (
     AzureCognitiveSearchMemoryStore,
 )
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
-from semantic_kernel.functions.old.context_variables import ContextVariables
 
 COLLECTION_NAME = "generic"
 
@@ -101,13 +100,13 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
 
     answer = await kernel.run(
         chat_func,
-        input_vars=ContextVariables(
-            variables={
-                "user_input": user_input,
-                "collection": COLLECTION_NAME,
-                "limit": "2",
-            }
-        ),
+        # input_vars=ContextVariables(
+        #     variables={
+        #         "user_input": user_input,
+        #         "collection": COLLECTION_NAME,
+        #         "limit": "2",
+        #     }
+        # ),
     )
     print(f"Answer: {str(answer).strip()}")
     check = await kernel.run(self_critique_func, input_context=answer)

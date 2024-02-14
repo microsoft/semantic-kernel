@@ -34,13 +34,13 @@ class TestCodeBlock:
             raise Exception("error")
 
         function = KernelFunction(
-            function_name="functionName",
+            function_name="funcName",
             plugin_name="pluginName",
             description="",
             function=invoke,
             parameters=[],
             return_parameter=None,
-            is_semantic=False,
+            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -197,7 +197,7 @@ class TestCodeBlock:
             function=invoke,
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
             return_parameter=None,
-            is_semantic=False,
+            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -253,7 +253,7 @@ class TestCodeBlock:
             description="",
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
             return_parameter=None,
-            is_semantic=False,
+            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -299,7 +299,7 @@ class TestCodeBlock:
             description="",
             parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
             return_parameter=None,
-            is_semantic=False,
+            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])

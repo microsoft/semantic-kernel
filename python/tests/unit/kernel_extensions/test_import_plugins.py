@@ -5,7 +5,9 @@ import random
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 def test_plugin_can_be_imported():
@@ -21,11 +23,12 @@ def test_plugin_can_be_imported():
     # import plugins
     plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_plugins")
     # path to plugins directory
-    plugin = kernel.import_semantic_plugin_from_directory(plugins_directory, "TestPlugin")
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
 
     assert plugin is not None
     assert len(plugin.functions) == 1
-    assert plugin.functions.get("TestFunction") is not None
+    func = plugin.functions["TestFunction"]
+    assert func is not None
 
 
 def test_native_plugin_can_be_imported():
@@ -45,7 +48,7 @@ def test_native_plugin_can_be_imported():
     assert plugin_config.description == "Echo for input text"
 
 
-def test_create_semantic_function_succeeds():
+def test_create_function_from_prompt_succeeds():
     # create a kernel
     kernel = sk.Kernel()
 
@@ -71,7 +74,7 @@ def test_create_semantic_function_succeeds():
     # import plugins
     _ = kernel.import_plugin(GenerateNamesPlugin(), plugin_name="GenerateNames")
 
-    sk_prompt = """
+    prompt = """
     Write a short story about two Corgis on an adventure.
     The story must be:
     - G rated
@@ -82,16 +85,19 @@ def test_create_semantic_function_succeeds():
     - The two names of the corgis are {{GenerateNames.generate_names}}
     """
 
-    print(sk_prompt)
+    print(prompt)
 
-    test_func = kernel.create_semantic_function(
-        prompt_template=sk_prompt,
+    exec_settings = PromptExecutionSettings(extension_data={"max_tokens": 500, "temperature": 0.5, "top_p": 0.5})
+
+    prompt_template_config = PromptTemplateConfig(
+        template=prompt, description="Write a short story.", execution_settings={"default": exec_settings}
+    )
+
+    test_func = kernel.create_function_from_prompt(
+        prompt_template_config=prompt_template_config,
         function_name="TestFunction",
         plugin_name="TestPlugin",
         description="Write a short story.",
-        max_tokens=500,
-        temperature=0.5,
-        top_p=0.5,
     )
 
     assert len(test_func.plugins) > 0
