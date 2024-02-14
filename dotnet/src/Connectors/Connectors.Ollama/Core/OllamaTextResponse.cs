@@ -4,7 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
-internal class OllamaTextResponse : OllamaResponseBase
+#pragma warning disable CA1812
+
+internal sealed class OllamaTextResponse : OllamaResponseBase
 {
     /// <summary>
     /// Returns the text response data from LLM.

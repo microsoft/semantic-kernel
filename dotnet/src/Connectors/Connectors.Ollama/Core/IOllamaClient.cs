@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.Ollama;
+namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
 internal interface IOllamaClient
 {
@@ -57,4 +57,3 @@ internal interface IOllamaClient
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
 }
-

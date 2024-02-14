@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 /// <summary>
 /// Represents the metadata of the Ollama response.
 /// </summary>
-public sealed class OllamaMetadata : ReadOnlyDictionary<string ,object?>
+public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
 {
     internal OllamaMetadata(OllamaResponseBase ollamaResponse) : base(new Dictionary<string, object?>())
     {

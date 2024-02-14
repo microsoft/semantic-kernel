@@ -7,26 +7,27 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
-internal abstract class OllamaClient : IOllamaClient
+
+internal sealed class OllamaClient : IOllamaClient
 {
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
 
-    protected IHttpRequestFactory HttpRequestFactory { get; }
-    protected IEndpointProvider EndpointProvider { get; }
-    protected HttpClient HttpClient { get; }
-    protected ILogger Logger { get; }
+    private IHttpRequestFactory HttpRequestFactory { get; }
+    private IEndpointProvider EndpointProvider { get; }
+    private HttpClient HttpClient { get; }
+    private ILogger Logger { get; }
 
-    protected OllamaClient(
+    internal OllamaClient(
         string modelId,
         HttpClient httpClient,
         IHttpRequestFactory httpRequestFactory,
@@ -61,7 +62,10 @@ internal abstract class OllamaClient : IOllamaClient
         return textContents;
     }
 
-    public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var endpoint = this.EndpointProvider.StreamTextGenerationEndpoint;
         var request = CreateTextRequest(prompt, executionSettings);
@@ -79,7 +83,7 @@ internal abstract class OllamaClient : IOllamaClient
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
+    public async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
@@ -100,7 +104,7 @@ internal abstract class OllamaClient : IOllamaClient
     }
 
     /// <inheritdoc/>
-    public virtual async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
+    public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -120,7 +124,7 @@ internal abstract class OllamaClient : IOllamaClient
         }
     }
 
-    protected static void ValidateMaxTokens(int? maxTokens)
+    private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens is < 1)
         {
@@ -128,7 +132,7 @@ internal abstract class OllamaClient : IOllamaClient
         }
     }
 
-    protected async Task<string> SendRequestAndGetStringBodyAsync(
+    private async Task<string> SendRequestAndGetStringBodyAsync(
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
     {
@@ -139,7 +143,7 @@ internal abstract class OllamaClient : IOllamaClient
         return body;
     }
 
-    protected async Task<HttpResponseMessage> SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(
+    private async Task<HttpResponseMessage> SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
     {
@@ -249,7 +253,7 @@ internal abstract class OllamaClient : IOllamaClient
             new(response.Response, response.Model, response, Encoding.UTF8, new OllamaMetadata(response))
         };
 
-    protected void LogUsage(OllamaMetadata? metadata)
+    private void LogUsage(OllamaMetadata? metadata)
     {
         if (metadata is null)
         {

@@ -8,7 +8,7 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
-internal class OllamaStreamJsonParser : IStreamJsonParser
+internal sealed class OllamaStreamJsonParser : IStreamJsonParser
 {
     /// <inheritdoc />
     public IEnumerable<string> Parse(Stream stream, bool validateJson = false)
