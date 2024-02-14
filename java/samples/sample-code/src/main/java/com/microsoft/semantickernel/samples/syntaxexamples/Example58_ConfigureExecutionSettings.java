@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.templateengine.semantickernel.DefaultPromptTemplate;
 
 public class Example58_ConfigureExecutionSettings {
 
@@ -87,10 +88,13 @@ public class Example58_ConfigureExecutionSettings {
               }
             }""".stripIndent();
 
-        var promptConfig = PromptTemplateConfig.parseFromJson(configPayload);
-        promptConfig.setTemplate(prompt);
+        var promptConfig = PromptTemplateConfig
+            .parseFromJson(configPayload)
+            .setTemplate(prompt);
 
-        var func = KernelFunctionFactory.createFromPrompt(promptConfig, null);
+        var func = KernelFunctionFactory
+            .createFromPrompt(promptConfig)
+            .build();
 
         result = kernel.invokeAsync(func).block();
         System.out.println(result.getResult());

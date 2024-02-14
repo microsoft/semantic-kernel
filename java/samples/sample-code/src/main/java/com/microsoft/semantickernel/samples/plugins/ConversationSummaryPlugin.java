@@ -37,29 +37,28 @@ public class ConversationSummaryPlugin {
             .withTopP(0.5)
             .build();
 
-        this.summarizeConversationFunction = KernelFunctionFactory.createFromPrompt(
-            PromptFunctionConstants.SummarizeConversationDefinition,
-            settings,
-            "summarizeConversation",
-            "Given a section of a conversation transcript, summarize the part of the conversation.",
-            null,
-            null);
+        this.summarizeConversationFunction = KernelFunctionFactory
+            .<String>createFromPrompt(PromptFunctionConstants.SummarizeConversationDefinition)
+            .withDefaultExecutionSettings(settings)
+            .withName("summarizeConversation")
+            .withDescription(
+                "Given a section of a conversation transcript, summarize the part of the conversation.")
+            .build();
 
-        this.conversationActionItemsFunction = KernelFunctionFactory.createFromPrompt(
-            PromptFunctionConstants.GetConversationActionItemsDefinition,
-            settings,
-            "conversationActionItems",
-            "Given a section of a conversation transcript, identify action items.",
-            null,
-            null);
+        this.conversationActionItemsFunction = KernelFunctionFactory
+            .<String>createFromPrompt(PromptFunctionConstants.GetConversationActionItemsDefinition)
+            .withDefaultExecutionSettings(settings)
+            .withName("conversationActionItems")
+            .withDescription("Given a section of a conversation transcript, identify action items.")
+            .build();
 
-        this.conversationTopicsFunction = KernelFunctionFactory.createFromPrompt(
-            PromptFunctionConstants.GetConversationTopicsDefinition,
-            settings,
-            "conversationTopics",
-            "Analyze a conversation transcript and extract key topics worth remembering.",
-            null,
-            null);
+        this.conversationTopicsFunction = KernelFunctionFactory
+            .<String>createFromPrompt(PromptFunctionConstants.GetConversationTopicsDefinition)
+            .withDefaultExecutionSettings(settings)
+            .withName("conversationTopics")
+            .withDescription(
+                "Analyze a conversation transcript and extract key topics worth remembering.")
+            .build();
     }
 
     /// <summary>
