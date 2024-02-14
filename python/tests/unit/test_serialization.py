@@ -14,7 +14,6 @@ from semantic_kernel.core_plugins.text_plugin import TextPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
 from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
-from semantic_kernel.functions.functions_view import FunctionsView
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -62,31 +61,6 @@ class _Serializable(t.Protocol):
 def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     """Return a factory for various objects in semantic-kernel."""
 
-    def create_functions_view() -> FunctionsView:
-        """Return a functions view."""
-        result = FunctionsView()
-        result.add_function(
-            KernelFunctionMetadata(
-                name="function1",
-                plugin_name="plugin1",
-                description="Native function",
-                parameters=[],
-                is_semantic=False,
-                is_asynchronous=True,
-            )
-        )
-        result.add_function(
-            KernelFunctionMetadata(
-                name="function1",
-                plugin_name="plugin1",
-                description="Semantic function",
-                parameters=[],
-                is_semantic=True,
-                is_asynchronous=True,
-            )
-        )
-        return result
-
     def create_kernel_function() -> KernelFunction:
         """Return an KernelFunction."""
 
@@ -126,7 +100,6 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             is_semantic=True,
             is_asynchronous=False,
         ),
-        FunctionsView: create_functions_view(),
         KernelPluginCollection: create_plugin_collection(),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
@@ -177,7 +150,6 @@ PYDANTIC_MODELS = [
     VarBlock,
     KernelParameterMetadata,
     KernelFunctionMetadata,
-    FunctionsView,
     KernelPluginCollection,
     pytest.param(
         KernelFunction,

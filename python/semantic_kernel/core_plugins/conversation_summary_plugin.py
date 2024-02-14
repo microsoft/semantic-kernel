@@ -2,13 +2,12 @@
 import sys
 from typing import TYPE_CHECKING
 
-if sys.version_info > (3, 8):
+if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
 
 if TYPE_CHECKING:
-    # from semantic_kernel.functions.old.kernel_context import KernelContext
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
 
