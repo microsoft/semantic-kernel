@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -17,25 +18,61 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// Should be in format {filename}.{extension}
     /// </summary>
     [JsonPropertyName("filename")]
-    public string Filename { get; set; }
+    public string Filename
+    {
+        get => this._filename;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._filename = value;
+        }
+    }
 
     /// <summary>
     /// An optional language of the audio data as two-letter ISO-639-1 language code (e.g. 'en' or 'es').
     /// </summary>
     [JsonPropertyName("language")]
-    public string? Language { get; set; }
+    public string? Language
+    {
+        get => this._language;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._language = value;
+        }
+    }
 
     /// <summary>
     /// An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.
     /// </summary>
     [JsonPropertyName("prompt")]
-    public string? Prompt { get; set; }
+    public string? Prompt
+    {
+        get => this._prompt;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._prompt = value;
+        }
+    }
 
     /// <summary>
     /// The format of the transcript output, in one of these options: json, text, srt, verbose_json, or vtt. Default is 'json'.
     /// </summary>
     [JsonPropertyName("response_format")]
-    public string ResponseFormat { get; set; } = "json";
+    public string ResponseFormat
+    {
+        get => this._responseFormat;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseFormat = value;
+        }
+    }
 
     /// <summary>
     /// The sampling temperature, between 0 and 1.
@@ -44,7 +81,16 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// Default is 0.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public float Temperature { get; set; } = 0;
+    public float Temperature
+    {
+        get => this._temperature;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._temperature = value;
+        }
+    }
 
     /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class.
@@ -52,7 +98,21 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// <param name="filename">Filename or identifier associated with audio data. Should be in format {filename}.{extension}</param>
     public OpenAIAudioToTextExecutionSettings(string filename)
     {
-        this.Filename = filename;
+        this._filename = filename;
+    }
+
+    /// <inheritdoc/>
+    public override PromptExecutionSettings Clone()
+    {
+        return new OpenAIAudioToTextExecutionSettings(this.Filename)
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Temperature = this.Temperature,
+            ResponseFormat = this.ResponseFormat,
+            Language = this.Language,
+            Prompt = this.Prompt
+        };
     }
 
     /// <summary>
@@ -83,4 +143,14 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
     }
+
+    #region private ================================================================================
+
+    private float _temperature = 0;
+    private string _responseFormat = "json";
+    private string _filename;
+    private string? _language;
+    private string? _prompt;
+
+    #endregion
 }

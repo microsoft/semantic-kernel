@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -23,7 +24,16 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Default is 1.0.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; } = 1;
+    public double Temperature
+    {
+        get => this._temperature;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._temperature = value;
+        }
+    }
 
     /// <summary>
     /// TopP controls the diversity of the completion.
@@ -31,7 +41,16 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Default is 1.0.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double TopP { get; set; } = 1;
+    public double TopP
+    {
+        get => this._topP;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._topP = value;
+        }
+    }
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -39,7 +58,16 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// model's likelihood to talk about new topics.
     /// </summary>
     [JsonPropertyName("presence_penalty")]
-    public double PresencePenalty { get; set; }
+    public double PresencePenalty
+    {
+        get => this._presencePenalty;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._presencePenalty = value;
+        }
+    }
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -47,19 +75,46 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the model's likelihood to repeat the same line verbatim.
     /// </summary>
     [JsonPropertyName("frequency_penalty")]
-    public double FrequencyPenalty { get; set; }
+    public double FrequencyPenalty
+    {
+        get => this._frequencyPenalty;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._frequencyPenalty = value;
+        }
+    }
 
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
     [JsonPropertyName("max_tokens")]
-    public int? MaxTokens { get; set; }
+    public int? MaxTokens
+    {
+        get => this._maxTokens;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._maxTokens = value;
+        }
+    }
 
     /// <summary>
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
-    public IList<string>? StopSequences { get; set; }
+    public IList<string>? StopSequences
+    {
+        get => this._stopSequences;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._stopSequences = value;
+        }
+    }
 
     /// <summary>
     /// How many completions to generate for each prompt. Default is 1.
@@ -67,7 +122,16 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Use carefully and ensure that you have reasonable settings for max_tokens and stop.
     /// </summary>
     [JsonPropertyName("results_per_prompt")]
-    public int ResultsPerPrompt { get; set; } = 1;
+    public int ResultsPerPrompt
+    {
+        get => this._resultsPerPrompt;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._resultsPerPrompt = value;
+        }
+    }
 
     /// <summary>
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
@@ -75,7 +139,16 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [Experimental("SKEXP0013")]
     [JsonPropertyName("seed")]
-    public long? Seed { get; set; }
+    public long? Seed
+    {
+        get => this._seed;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._seed = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the response format to use for the completion.
@@ -85,7 +158,16 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </remarks>
     [Experimental("SKEXP0013")]
     [JsonPropertyName("response_format")]
-    public object? ResponseFormat { get; set; }
+    public object? ResponseFormat
+    {
+        get => this._responseFormat;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseFormat = value;
+        }
+    }
 
     /// <summary>
     /// The system prompt to use when generating text using a chat model.
@@ -95,8 +177,11 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public string ChatSystemPrompt
     {
         get => this._chatSystemPrompt;
+
         set
         {
+            this.ThrowIfFrozen();
+
             if (string.IsNullOrWhiteSpace(value))
             {
                 value = DefaultChatSystemPrompt;
@@ -109,7 +194,16 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     [JsonPropertyName("token_selection_biases")]
-    public IDictionary<int, int>? TokenSelectionBiases { get; set; }
+    public IDictionary<int, int>? TokenSelectionBiases
+    {
+        get => this._tokenSelectionBiases;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._tokenSelectionBiases = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the behavior for how tool calls are handled.
@@ -141,12 +235,68 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the function, and sending back the result. The intermediate messages will be retained in the
     /// <see cref="ChatHistory"/> if an instance was provided.
     /// </remarks>
-    public ToolCallBehavior? ToolCallBehavior { get; set; }
+    public ToolCallBehavior? ToolCallBehavior
+    {
+        get => this._toolCallBehavior;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._toolCallBehavior = value;
+        }
+    }
 
     /// <summary>
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse
     /// </summary>
-    public string? User { get; set; }
+    public string? User
+    {
+        get => this._user;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._user = value;
+        }
+    }
+
+    /// <inheritdoc/>
+    public override void Freeze()
+    {
+        base.Freeze();
+
+        if (this._stopSequences is not null)
+        {
+            this._stopSequences = new ReadOnlyCollection<string>(this._stopSequences);
+        }
+        if (this._tokenSelectionBiases is not null)
+        {
+            this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(this._tokenSelectionBiases);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override PromptExecutionSettings Clone()
+    {
+        return new OpenAIPromptExecutionSettings()
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Temperature = this.Temperature,
+            TopP = this.TopP,
+            PresencePenalty = this.PresencePenalty,
+            FrequencyPenalty = this.FrequencyPenalty,
+            MaxTokens = this.MaxTokens,
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            ResultsPerPrompt = this.ResultsPerPrompt,
+            Seed = this.Seed,
+            ResponseFormat = this.ResponseFormat,
+            TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
+            ToolCallBehavior = this.ToolCallBehavior,
+            User = this.User,
+            ChatSystemPrompt = this.ChatSystemPrompt
+        };
+    }
 
     /// <summary>
     /// Default value for chat system property.
@@ -212,6 +362,18 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
     #region private ================================================================================
 
+    private double _temperature = 1;
+    private double _topP = 1;
+    private double _presencePenalty;
+    private double _frequencyPenalty;
+    private int? _maxTokens;
+    private IList<string>? _stopSequences;
+    private int _resultsPerPrompt = 1;
+    private long? _seed;
+    private object? _responseFormat;
+    private IDictionary<int, int>? _tokenSelectionBiases;
+    private ToolCallBehavior? _toolCallBehavior;
+    private string? _user;
     private string _chatSystemPrompt = DefaultChatSystemPrompt;
 
     #endregion

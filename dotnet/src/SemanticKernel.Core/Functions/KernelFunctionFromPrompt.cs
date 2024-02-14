@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -234,13 +235,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this._logger = loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance;
 
         this._promptTemplate = template;
-        this._promptConfig = promptConfig;
+        this._inputVariables = promptConfig.InputVariables.Select(iv => new InputVariable(iv)).ToList();
     }
 
     #region private
 
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptConfig;
+    private readonly List<InputVariable> _inputVariables;
     private readonly IPromptTemplate _promptTemplate;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -264,7 +265,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
     {
-        foreach (var parameter in this._promptConfig.InputVariables)
+        foreach (var parameter in this._inputVariables)
         {
             if (!arguments.ContainsName(parameter.Name) && parameter.Default != null)
             {

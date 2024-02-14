@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -16,19 +17,46 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     /// The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.
     /// </summary>
     [JsonPropertyName("voice")]
-    public string Voice { get; set; }
+    public string Voice
+    {
+        get => this._voice;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._voice = value;
+        }
+    }
 
     /// <summary>
     /// The format to audio in. Supported formats are mp3, opus, aac, and flac.
     /// </summary>
     [JsonPropertyName("response_format")]
-    public string ResponseFormat { get; set; } = "mp3";
+    public string ResponseFormat
+    {
+        get => this._responseFormat;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseFormat = value;
+        }
+    }
 
     /// <summary>
     /// The speed of the generated audio. Select a value from 0.25 to 4.0. 1.0 is the default.
     /// </summary>
     [JsonPropertyName("speed")]
-    public float Speed { get; set; } = 1.0f;
+    public float Speed
+    {
+        get => this._speed;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._speed = value;
+        }
+    }
 
     /// <summary>
     /// Creates an instance of <see cref="OpenAITextToAudioExecutionSettings"/> class.
@@ -36,7 +64,19 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     /// <param name="voice">The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.</param>
     public OpenAITextToAudioExecutionSettings(string voice)
     {
-        this.Voice = voice;
+        this._voice = voice;
+    }
+
+    /// <inheritdoc/>
+    public override PromptExecutionSettings Clone()
+    {
+        return new OpenAITextToAudioExecutionSettings(this.Voice)
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Speed = this.Speed,
+            ResponseFormat = this.ResponseFormat
+        };
     }
 
     /// <summary>
@@ -67,4 +107,12 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
 
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAITextToAudioExecutionSettings)}", nameof(executionSettings));
     }
+
+    #region private ================================================================================
+
+    private float _speed = 1.0f;
+    private string _responseFormat = "mp3";
+    private string _voice;
+
+    #endregion
 }

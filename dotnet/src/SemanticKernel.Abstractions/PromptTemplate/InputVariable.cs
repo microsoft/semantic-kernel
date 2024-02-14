@@ -16,6 +16,28 @@ public sealed class InputVariable
     private string _description = string.Empty;
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="InputVariable"/> class.
+    /// </summary>
+    public InputVariable()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InputVariable"/> class from an existing instance.
+    /// </summary>
+    /// <param name="inputVariable"></param>
+    public InputVariable(InputVariable inputVariable)
+    {
+        Verify.NotNull(inputVariable);
+
+        this.Name = inputVariable.Name;
+        this.Description = inputVariable.Description;
+        this.Default = inputVariable.Default;
+        this.IsRequired = inputVariable.IsRequired;
+        this.JsonSchema = inputVariable.JsonSchema;
+    }
+
+    /// <summary>
     /// Gets or sets the name of the variable.
     /// </summary>
     /// <remarks>
