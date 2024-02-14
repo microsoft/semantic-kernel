@@ -24,6 +24,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0012: OpenAI image service
 - SKEXP0013: OpenAI parameters
 - SKEXP0014: OpenAI chat history extension
+- SKEXP0015: OpenAI file service
 
 ## Memory connectors
 
