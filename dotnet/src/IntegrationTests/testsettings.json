@@ -33,6 +33,17 @@
     "Endpoint": "",
     "ApiKey": ""
   },
+  "OpenAIAudioToText": {
+    "ServiceId": "whisper-1",
+    "ModelId": "whisper-1",
+    "ApiKey": ""
+  },
+  "AzureOpenAIAudioToText": {
+    "ServiceId": "azure-whisper",
+    "DeploymentName": "whisper",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
   "HuggingFace": {
     "ApiKey": ""
   },
