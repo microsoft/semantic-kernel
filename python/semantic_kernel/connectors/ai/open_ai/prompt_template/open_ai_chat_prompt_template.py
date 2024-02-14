@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Optional
 
-from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import (
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.open_ai_chat_message import (
     OpenAIChatMessage,
 )
 from semantic_kernel.prompt_template.chat_prompt_template import ChatPromptTemplate

@@ -30,11 +30,11 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self):
-        def invoke(_):
+        def invoke():
             raise Exception("error")
 
         function = KernelFunction(
-            function_name="funcName",
+            function_name="functionName",
             plugin_name="pluginName",
             description="",
             function=invoke,
@@ -48,8 +48,6 @@ class TestCodeBlock:
         plugins.add(dkp)
         kernel = Kernel()
         kernel.plugins = plugins
-
-        # Create a context with the variables, memory, and plugin collection
 
         target = CodeBlock(
             content="functionName",
@@ -75,7 +73,7 @@ class TestCodeBlock:
         )
 
     def test_it_checks_validity_of_internal_blocks(self):
-        valid_block1 = FunctionIdBlock(content="x")
+        valid_block1 = FunctionIdBlock(content="plug.func")
 
         valid_block2 = ValBlock(content="''")
         invalid_block = VarBlock(content="!notvalid")

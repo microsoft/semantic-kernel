@@ -48,7 +48,7 @@ async def test_text_completion(model_name, task, input_str):
     # Create the semantic function
     function = kernel.create_semantic_function(sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5)
 
-    summary = await kernel.invoke(function, arguments=KernelArguments(input=input_str))
+    summary = await kernel.invoke(function, input=input_str)
 
     output = str(summary).strip()
     print(f"Completion using input string: '{output}'")

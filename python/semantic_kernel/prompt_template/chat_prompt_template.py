@@ -110,17 +110,14 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
 
     async def render_messages(self, kernel: "Kernel", arguments: "KernelArguments") -> List[Dict[str, str]]:
         """Render the content of the message in the chat template, based on the context."""
-        if len(self.messages) == 0 or self.messages[-1].role in [
-            "assistant",
-            "system",
-        ]:
+        if len(self.messages) == 0 or self.messages[-1].role in ["assistant", "system", "function"]:
             self.add_user_message(message=self.template)
         await asyncio.gather(*[message.render_message(kernel, arguments) for message in self.messages])
         # Don't resend the assistant + tool_calls message as it will error
         return [
             message.as_dict()
             for message in self.messages
-            if not (message.role == "assistant" and hasattr(message, "tool_calls"))
+            if not (message.role == "assistant" and getattr(message, "tool_calls", None))
         ]
 
     def dump_messages(self) -> List[Dict[str, str]]:

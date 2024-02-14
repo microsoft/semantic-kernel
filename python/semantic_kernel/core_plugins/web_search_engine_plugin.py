@@ -31,7 +31,7 @@ class WebSearchEnginePlugin:
     def __init__(self, connector: "ConnectorBase") -> None:
         self._connector = connector
 
-    @kernel_function(description="Performs a web search for a given query", name="searchAsync")
+    @kernel_function(description="Performs a web search for a given query", name="search")
     async def search(
         self,
         query: Annotated[str, "The search query"],
