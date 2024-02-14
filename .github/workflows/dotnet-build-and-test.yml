@@ -109,6 +109,16 @@ jobs:
           Planners__AzureOpenAI__DeploymentName: ${{ vars.PLANNERS__AZUREOPENAI__DEPLOYMENTNAME }}
           Planners__OpenAI__ApiKey: ${{ secrets.PLANNERS__OPENAI__APIKEY }}
           Planners__OpenAI__ModelId: ${{ vars.PLANNERS__OPENAI__MODELID }}
+          OpenAITextToAudio__ApiKey: ${{ secrets.OPENAITEXTTOAUDIO__APIKEY }}
+          OpenAITextToAudio__ModelId: ${{ vars.OPENAITEXTTOAUDIO__MODELID }}
+          OpenAIAudioToText__ApiKey: ${{ secrets.OPENAIAUDIOTOTEXT__APIKEY }}
+          OpenAIAudioToText__ModelId: ${{ vars.OPENAIAUDIOTOTEXT__MODELID }}
+          AzureOpenAITextToAudio__ApiKey: ${{ secrets.AZUREOPENAITEXTTOAUDIO__APIKEY }}
+          AzureOpenAITextToAudio__Endpoint: ${{ secrets.AZUREOPENAITEXTTOAUDIO__ENDPOINT }}
+          AzureOpenAITextToAudio__DeploymentName: ${{ vars.AZUREOPENAITEXTTOAUDIO__DEPLOYMENTNAME }}
+          AzureOpenAIAudioToText__ApiKey: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__APIKEY }}
+          AzureOpenAIAudioToText__Endpoint: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__ENDPOINT }}
+          AzureOpenAIAudioToText__DeploymentName: ${{ vars.AZUREOPENAIAUDIOTOTEXT__DEPLOYMENTNAME }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
 
