@@ -129,3 +129,10 @@ def test_it_throws_when_separators_are_missing():
 
     with raises(ValueError):
         target.tokenize(template2)
+
+
+def test_named_args():
+    target = CodeTokenizer()
+    template = '{{ plugin.function "direct" arg1=$arg1 arg2="arg2" }}'
+    blocks = target.tokenize(template)
+    assert len(blocks) == 6

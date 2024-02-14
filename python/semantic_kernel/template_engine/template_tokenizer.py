@@ -25,7 +25,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
 class TemplateTokenizer(KernelBaseModel):
-    code_tokenizer: CodeTokenizer = Field(default_factory=CodeTokenizer, init_var=False)
+    code_tokenizer: CodeTokenizer = Field(default_factory=CodeTokenizer, init=False)
 
     def tokenize(self, text: str) -> List[Block]:
         # An empty block consists of 4 chars: "{{}}"
@@ -128,11 +128,6 @@ class TemplateTokenizer(KernelBaseModel):
 
                                 blocks.append(code_blocks[0])
                             elif first_block_type == BlockTypes.FUNCTION_ID:
-                                if len(code_blocks) > 2:
-                                    raise ValueError(
-                                        "Functions support only one " f"parameter: {content_without_delimiters}"
-                                    )
-
                                 blocks.append(
                                     CodeBlock(
                                         content=content_without_delimiters,

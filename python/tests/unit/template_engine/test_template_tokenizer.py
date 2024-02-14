@@ -209,3 +209,26 @@ def test_it_tokenizes_a_typical_prompt():
 
     assert blocks[7].content == "and 'values'"
     assert blocks[7].type == BlockTypes.CODE
+
+
+def test_it_tokenizes_a_named_args_prompt():
+    target = TemplateTokenizer()
+
+    template = '{{ plugin.function "direct" arg1=$arg1 arg2="arg2" }}'
+
+    blocks = target.tokenize(template)
+
+    assert len(blocks) == 1
+    block = blocks[0]
+    assert block.type == BlockTypes.CODE
+
+    assert len(block.tokens) == 4
+    assert block.tokens[0].type == BlockTypes.FUNCTION_ID
+    assert block.tokens[1].type == BlockTypes.VALUE
+    assert block.tokens[2].type == BlockTypes.NAMED_ARG
+    assert block.tokens[3].type == BlockTypes.NAMED_ARG
+
+    assert block.tokens[2].name.name == "arg1"
+    assert block.tokens[2].value.content == "$arg1"
+    assert block.tokens[3].name.name == "arg2"
+    assert block.tokens[3].value.content == '"arg2"'

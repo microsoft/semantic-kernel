@@ -11,6 +11,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
@@ -98,6 +99,7 @@ class TestCodeBlock:
 
         val_block = ValBlock(content="'value'")
         var_block = VarBlock(content="$var")
+        named_arg_block = NamedArgBlock(content="arg1=$arg1")
 
         code_block1 = CodeBlock(
             tokens=[func_id, val_block],
@@ -108,25 +110,43 @@ class TestCodeBlock:
             content="",
         )
         code_block3 = CodeBlock(
-            tokens=[func_id, func_id],
+            tokens=[func_id, var_block, named_arg_block],
             content="",
         )
         code_block4 = CodeBlock(
+            tokens=[func_id, val_block, named_arg_block],
+            content="",
+        )
+        code_block5 = CodeBlock(
+            tokens=[func_id, named_arg_block],
+            content="",
+        )
+        code_block6 = CodeBlock(
+            tokens=[func_id, func_id],
+            content="",
+        )
+        code_block7 = CodeBlock(
             tokens=[func_id, var_block, var_block],
             content="",
         )
 
         is_valid1, _ = code_block1.is_valid()
         is_valid2, _ = code_block2.is_valid()
-
         is_valid3, _ = code_block3.is_valid()
         is_valid4, _ = code_block4.is_valid()
+        is_valid5, _ = code_block5.is_valid()
+
+        is_valid6, _ = code_block6.is_valid()
+        is_valid7, _ = code_block7.is_valid()
 
         assert is_valid1
         assert is_valid2
+        assert is_valid3
+        assert is_valid4
+        assert is_valid5
 
-        assert not is_valid3
-        assert not is_valid4
+        assert not is_valid6
+        assert not is_valid7
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_var_block1(self):
@@ -318,3 +338,100 @@ class TestCodeBlock:
         assert str(result) == VALUE
         # Check that the canary value matches the value
         assert canary == VALUE
+
+    @mark.asyncio
+    async def test_it_invokes_function_with_multiple_arguments(self):
+        # Define a value to be used in the test
+        VALUE = "value"
+
+        code_block = CodeBlock(
+            content=" ",
+            tokens=[
+                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName", validated=True),
+                ValBlock(content=f'"{VALUE}"'),
+                NamedArgBlock(content="arg1=$arg1"),
+                NamedArgBlock(content='arg2="arg2"'),
+            ],
+        )
+        # Set up a canary variable to track changes in the context input
+        canary = ""
+
+        # Define the function to be invoked, which modifies the canary variable
+        def invoke(input, arg1, arg2):
+            nonlocal canary
+            canary = f"{input} {arg1} {arg2}"
+            return input
+
+        # Create an KernelFunction with the invoke function as its delegate
+        function = KernelFunction(
+            function=invoke,
+            plugin_name="pluginName",
+            function_name="funcName",
+            description="",
+            parameters=[
+                KernelParameterMetadata(name="input", description="", default_value=None, required=True),
+                KernelParameterMetadata(name="arg1", description="", default_value=None, required=True),
+                KernelParameterMetadata(name="arg2", description="", default_value=None, required=True),
+            ],
+            return_parameter=None,
+            is_semantic=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+
+        # Create a CodeBlock with the FunctionIdBlock and ValBlock,
+        # and render it with the context
+        result = await code_block.render_code(kernel, KernelArguments(arg1="arg1"))
+
+        # Check that the result matches the value
+        assert str(result) == VALUE
+        # Check that the canary value matches the value
+        assert canary == f"{VALUE} arg1 arg2"
+
+    @mark.asyncio
+    async def test_it_invokes_function_with_only_named_arguments(self):
+        code_block = CodeBlock(
+            content=" ",
+            tokens=[
+                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName", validated=True),
+                NamedArgBlock(content="arg1=$arg1"),
+                NamedArgBlock(content='arg2="arg2"'),
+            ],
+        )
+        # Set up a canary variable to track changes in the context input
+        canary = ""
+
+        # Define the function to be invoked, which modifies the canary variable
+        def invoke(arg1, arg2):
+            nonlocal canary
+            canary = f"{arg1} {arg2}"
+            return arg1
+
+        # Create an KernelFunction with the invoke function as its delegate
+        function = KernelFunction(
+            function=invoke,
+            plugin_name="pluginName",
+            function_name="funcName",
+            description="",
+            parameters=[
+                KernelParameterMetadata(name="arg1", description="", default_value=None, required=True),
+                KernelParameterMetadata(name="arg2", description="", default_value=None, required=True),
+            ],
+            return_parameter=None,
+            is_semantic=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+
+        # Create a CodeBlock with the FunctionIdBlock and ValBlock,
+        # and render it with the context
+        result = await code_block.render_code(kernel, KernelArguments(arg1="arg1"))
+
+        # Check that the result matches the value
+        assert str(result) == "arg1"
+        # Check that the canary value matches the value
+        assert canary == "arg1 arg2"

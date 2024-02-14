@@ -134,6 +134,10 @@ class KernelFunction(KernelBaseModel):
             chat_prompt_template=chat_prompt_template,
         )
 
+    @property
+    def metadata(self) -> KernelFunctionMetadata:
+        return self.describe()
+
     @staticmethod
     def from_native_method(method: Callable[..., Any], plugin_name: str) -> "KernelFunction":
         """

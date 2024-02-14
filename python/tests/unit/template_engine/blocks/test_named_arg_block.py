@@ -1,0 +1,141 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import logging
+
+from pytest import raises
+
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
+from semantic_kernel.template_engine.blocks.symbols import Symbols
+from semantic_kernel.template_engine.blocks.val_block import ValBlock
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
+
+logger = logging.getLogger(__name__)
+
+
+def test_init_with_var():
+    named_arg_block = NamedArgBlock(content="test=$test_var")
+    assert named_arg_block.content == "test=$test_var"
+    assert named_arg_block.name.name == "test"
+    assert named_arg_block.value.content == "$test_var"
+    assert isinstance(named_arg_block.value, VarBlock)
+
+
+def test_init_with_val():
+    named_arg_block = NamedArgBlock(content="test='test_val'")
+    assert named_arg_block.content == "test='test_val'"
+    assert named_arg_block.name.name == "test"
+    assert named_arg_block.value.value == "test_val"
+    assert isinstance(named_arg_block.value, ValBlock)
+
+
+def test_type_property():
+    named_arg_block = NamedArgBlock(content="test=$test_var")
+    assert named_arg_block.type == BlockTypes.NAMED_ARG
+
+
+def test_is_valid():
+    named_arg_block = NamedArgBlock(content="test=$test_var")
+    is_valid, error_msg = named_arg_block.is_valid()
+    assert is_valid
+    assert error_msg == ""
+
+
+def test_is_valid_no_name():
+    named_arg_block = NamedArgBlock(content="='test_var'")
+    is_valid, error_msg = named_arg_block.is_valid()
+    assert not is_valid
+    assert (
+        error_msg
+        == f"The variable name '='test_var'' contains invalid characters. Should have a '{Symbols.NAMED_ARG_BLOCK_SEPARATOR}' and a proper name for the argument and a value,with or without the symbol '{Symbols.VAR_PREFIX}'"
+    )
+
+
+def test_is_valid_invalid_characters():
+    named_arg_block = NamedArgBlock(content="test=$test-var")
+    is_valid, error_msg = named_arg_block.is_valid()
+    assert not is_valid
+    assert (
+        error_msg
+        == f"The variable name 'test=$test-var' contains invalid characters. Should have a '{Symbols.NAMED_ARG_BLOCK_SEPARATOR}' and a proper name for the argument and a value,with or without the symbol '{Symbols.VAR_PREFIX}'"
+    )
+
+
+def test_render():
+    named_arg_block = NamedArgBlock(content="test=$test_var")
+    rendered_value = named_arg_block.render(Kernel(), KernelArguments(test_var="test_value"))
+    assert rendered_value == "test_value"
+
+
+def test_render_variable_not_found():
+    named_arg_block = NamedArgBlock(content="test=$test_var")
+    rendered_value = named_arg_block.render(Kernel(), KernelArguments())
+    assert rendered_value == ""
+
+
+def test_init_minimal():
+    block = NamedArgBlock(content="a=$")
+    assert block.name.name == "a"
+    assert block.value.name == ""
+
+
+def test_init_empty():
+    block = NamedArgBlock(content="")
+    assert block.content == ""
+
+
+def test_init_empty_is_valid():
+    block = NamedArgBlock(content="")
+    is_valid, error_msg = block.is_valid()
+    assert not is_valid
+    assert error_msg == (
+        f"A variable must be at least three characters, with a {Symbols.NAMED_ARG_BLOCK_SEPARATOR}"
+        f"and a valid name for the argument and a value, with or without the symbol {Symbols.VAR_PREFIX}"
+    )
+
+
+def test_it_trims_spaces():
+    assert NamedArgBlock(content="  a=$x  ").content == "a=$x"
+
+
+def test_it_ignores_spaces_around():
+    target = NamedArgBlock(content="  a=$var \n ")
+    assert target.content == "a=$var"
+
+
+def test_it_renders_to_empty_string_without_variables():
+    target = NamedArgBlock(content="  a=$var \n ")
+    result = target.render(Kernel(), None)
+    assert result == ""
+
+
+def test_it_renders_to_empty_string_if_variable_is_missing():
+    target = NamedArgBlock(content="  a=$var \n ")
+    result = target.render(Kernel(), KernelArguments(foo="bar"))
+    assert result == ""
+
+
+def test_it_renders_to_variable_value_when_available():
+    target = NamedArgBlock(content="  a=$var \n ")
+    result = target.render(Kernel(), KernelArguments(foo="bar", var="able"))
+    assert result == "able"
+
+
+def test_it_renders_to_value():
+    target = NamedArgBlock(content="  a='var' \n ")
+    result = target.render(Kernel(), None)
+    assert result == "var"
+
+
+def test_it_throws_if_the_var_name_is_empty():
+    with raises(ValueError):
+        target = NamedArgBlock(content=" a=$ ")
+        target.render(Kernel(), KernelArguments(foo="bar", var="able"))
+
+
+def test_it_throws_if_the_value_is_empty():
+    with raises(ValueError):
+        target = NamedArgBlock(content=" a=$ ")
+        target.render(Kernel(), KernelArguments(foo="bar", var="able"))

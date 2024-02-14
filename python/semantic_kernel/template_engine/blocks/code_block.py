@@ -41,19 +41,22 @@ class CodeBlock(Block):
 
         if len(self.tokens) > 1:
             if self.tokens[0].type != BlockTypes.FUNCTION_ID:
-                error_msg = f"Unexpected second token found: {self.tokens[1].content}"
+                error_msg = f"Unexpected first token found: {self.tokens[1].content}"
                 logger.error(error_msg)
                 return False, error_msg
 
-            if self.tokens[1].type != BlockTypes.VALUE and self.tokens[1].type != BlockTypes.VARIABLE:
-                error_msg = "Functions support only one parameter"
-                logger.error(error_msg)
-                return False, error_msg
-
-        if len(self.tokens) > 2:
-            error_msg = f"Unexpected second token found: {self.tokens[1].content}"
-            logger.error(error_msg)
-            return False, error_msg
+            for index in range(1, len(self.tokens)):
+                token = self.tokens[index]
+                if index == 1 and token.type not in (BlockTypes.VALUE, BlockTypes.VARIABLE, BlockTypes.NAMED_ARG):
+                    error_msg = f"Unexpected token found: {token}"
+                    logger.error(error_msg)
+                    return False, error_msg
+                if index > 1 and token.type != BlockTypes.NAMED_ARG:
+                    error_msg = (
+                        f"Unexpected token found: {token}, after the first argument all tokens must be named_args."
+                    )
+                    logger.error(error_msg)
+                    return False, error_msg
 
         self.validated = True
 
@@ -104,45 +107,29 @@ class CodeBlock(Block):
         function_metadata: KernelFunctionMetadata,
     ) -> "KernelArguments":
         function_block: FunctionIdBlock = self.tokens[0]
-        # current templates only support 1 argument.
-        function_argument: Block = self.tokens[1]
+        first_function_argument: Block = self.tokens[1]
 
         if not function_metadata.parameters:
             raise ValueError(
                 f"Function {function_block.plugin_name}.{function_block.function_name} does not take any arguments "
                 f"but it is being called in the template with {len(self.tokens) - 1} arguments."
             )
+        named_args_start_index = 1
 
-        # if function_argument.type != BlockTypes.NAMED_ARG:
-        logger.debug(f"Passing variable/value: `{self.tokens[1].content}`")
-        rendered_value = function_argument.render(kernel, arguments)
-        if function_argument.type == BlockTypes.VALUE:
-            arguments[function_metadata.parameters[0].name] = rendered_value
-        elif function_argument.type == BlockTypes.VARIABLE:
-            arguments[function_argument.name] = rendered_value
-        else:
-            raise ValueError("Unknown block type: %s", self.tokens[0].type)
-            # first_positional_parameter_name = function_metadata.parameters[0].name
-            # first_positional_input_value = function_argument.render(kernel, arguments)
-            # arguments[first_positional_parameter_name] = first_positional_input_value
-            # named_args_start_index += 1
+        if first_function_argument.type != BlockTypes.NAMED_ARG:
+            logger.debug(f"Passing variable/value: `{self.tokens[1].content}`")
+            rendered_value = first_function_argument.render(kernel, arguments)
+            first_positional_parameter_name = function_metadata.parameters[0].name
+            arguments[first_positional_parameter_name] = rendered_value
+            named_args_start_index += 1
 
-        # Commented out because not needed until ADR0009 is implemented
-        # for i in range(named_args_start_index, len(self.tokens)):
-        #     arg = self.tokens[i]
-        #     if arg.type != BlockTypes.NAMED_ARG:
-        #         error_msg = "Functions support up to one positional argument"
-        #         logger.error(error_msg)
-        #         raise Exception(f"Unexpected first token type: {arg.type}")
-
-        #     if first_positional_parameter_name and first_positional_parameter_name.lower() == arg.name.lower():
-        #         raise ValueError(
-        #             f"Ambiguity found as a named parameter '{arg.name}' cannot be set for the first parameter "
-        #             f"when there is also a positional value: '{first_positional_input_value}' provided. "
-        #             f"Function: {function_block.plugin_name}.{function_block.function_name}"
-        #         )
-
-        #     arguments[arg.name] = arg.get_value(arguments)
+        for i in range(named_args_start_index, len(self.tokens)):
+            arg = self.tokens[i]
+            if arg.type != BlockTypes.NAMED_ARG:
+                error_msg = "Functions support up to one positional argument"
+                logger.error(error_msg)
+                raise Exception(f"Unexpected token type at index {i} in {self.content}: {arg.type}")
+            arguments[arg.name.name] = arg.render(kernel, arguments)
 
         return arguments
 

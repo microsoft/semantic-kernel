@@ -7,6 +7,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
@@ -78,7 +79,7 @@ class CodeTokenizer(KernelBaseModel):
                 continue
 
             # While reading values between quotes
-            if current_token_type == BlockTypes.VALUE:
+            if current_token_type == BlockTypes.VALUE or current_token_type == BlockTypes.NAMED_ARG:
                 # If the current char is escaping the next special char we:
                 #  - skip the current char (escape char)
                 #  - add the next char (special char)
@@ -106,7 +107,10 @@ class CodeTokenizer(KernelBaseModel):
                     blocks.append(VarBlock(content="".join(current_token_content)))
                     current_token_content.clear()
                 elif current_token_type == BlockTypes.FUNCTION_ID:
-                    blocks.append(FunctionIdBlock(content="".join(current_token_content)))
+                    if Symbols.NAMED_ARG_BLOCK_SEPARATOR.value in current_token_content:
+                        blocks.append(NamedArgBlock(content="".join(current_token_content)))
+                    else:
+                        blocks.append(FunctionIdBlock(content="".join(current_token_content)))
                     current_token_content.clear()
 
                 space_separator_found = True
@@ -140,7 +144,10 @@ class CodeTokenizer(KernelBaseModel):
         elif current_token_type == BlockTypes.VARIABLE:
             blocks.append(VarBlock(content="".join(current_token_content)))
         elif current_token_type == BlockTypes.FUNCTION_ID:
-            blocks.append(FunctionIdBlock(content="".join(current_token_content)))
+            if Symbols.NAMED_ARG_BLOCK_SEPARATOR.value in current_token_content:
+                blocks.append(NamedArgBlock(content="".join(current_token_content)))
+            else:
+                blocks.append(FunctionIdBlock(content="".join(current_token_content)))
         else:
             raise ValueError("Tokens must be separated by one space least")
 
