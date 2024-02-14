@@ -83,7 +83,11 @@ async def test_can_call_get_available_functions_with_functions():
     functions_view.add_function(native_kernel_function_metadata)
 
     mock_plugins = Mock(spec=KernelPluginCollection)
-    mock_plugins.get_functions_view.return_value = functions_view
+    mock_plugins.get_list_of_function_metadata.return_value = functions_list
+
+    kernel.plugins = mock_plugins
+
+    kernel.plugins = mock_plugins
 
     kernel.plugins = mock_plugins
 
@@ -165,7 +169,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
     memory.search.return_value = [memory_query_result]
 
     mock_plugins = Mock(spec=KernelPluginCollection)
-    mock_plugins.get_functions_view.return_value = functions_view
+    mock_plugins.get_list_of_function_metadata.return_value = functions_list
 
     # Arrange GetAvailableFunctionsAsync parameters
     kernel = Kernel()

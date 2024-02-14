@@ -10,6 +10,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.functions.old.kernel_context import KernelContext
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import StepwisePlanner
 from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (

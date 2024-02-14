@@ -15,10 +15,6 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
 
-if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_arguments import KernelArguments
-    from semantic_kernel.kernel import Kernel
-
 logger: logging.Logger = logging.getLogger(__name__)
 
 
@@ -58,7 +54,7 @@ class VarBlock(Block):
 
         return True, ""
 
-    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
+    def render(self, _: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
         if arguments is None:
             return ""
 
