@@ -25,7 +25,7 @@ class KernelArguments(dict):
             **kwargs {Dict[str, Any]} -- The arguments for the function invocation, works similar to a regular dict.
         """
         super().__init__(**kwargs)
-        settings_dict = None
+        settings_dict = {}
         if settings:
             if isinstance(settings, list):
                 settings_dict = {s.service_id: s for s in settings}

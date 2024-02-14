@@ -11,11 +11,6 @@ if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
 import regex
 
 from semantic_kernel import Kernel
@@ -95,7 +90,7 @@ class ActionPlanner:
 
         logger.info(f"Finding the best function for achieving the goal: {goal}")
 
-        self._arguments["input"] = goal
+        self._arguments["goal"] = goal
 
         generated_plan_raw = await self._planner_function.invoke(self._kernel, self._arguments)
         generated_plan_raw_str = str(generated_plan_raw)
@@ -214,9 +209,6 @@ class ActionPlanner:
             // Makes a POST request to a uri.
             HttpPlugin.PostAsync
             Parameter ""body"": The body of the request.
-            // Read a file.
-            FileIOPlugin.ReadAsync
-            Parameter ""path"": Source file.
             - End list of functions.
             Goal: tell me a joke.
             {""plan"":{
