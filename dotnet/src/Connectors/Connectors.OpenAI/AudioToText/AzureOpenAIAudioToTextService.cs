@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -10,6 +9,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
+using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -87,9 +87,9 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
 
     /// <inheritdoc/>
     public Task<TextContent> GetTextContentAsync(
-        BinaryData audioData,
+        AudioContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._core.GetTextContentFromAudioAsync(audioData, executionSettings, cancellationToken);
+        => this._core.GetTextContentFromAudioAsync(content, executionSettings, cancellationToken);
 }

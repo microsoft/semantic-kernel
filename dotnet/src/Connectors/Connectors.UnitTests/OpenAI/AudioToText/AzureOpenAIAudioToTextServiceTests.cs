@@ -7,6 +7,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Contents;
 using Moq;
 using Xunit;
 
@@ -87,7 +88,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var exception = await Record.ExceptionAsync(() => service.GetTextContentAsync(new BinaryData("data"), settings));
+        var exception = await Record.ExceptionAsync(() => service.GetTextContentAsync(new AudioContent(new BinaryData("data")), settings));
 
         // Assert
         Assert.NotNull(exception);
@@ -105,7 +106,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentAsync(new BinaryData("data"), new OpenAIAudioToTextExecutionSettings("file.mp3"));
+        var result = await service.GetTextContentAsync(new AudioContent(new BinaryData("data")), new OpenAIAudioToTextExecutionSettings("file.mp3"));
 
         // Assert
         Assert.NotNull(result);

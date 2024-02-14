@@ -17,6 +17,7 @@ using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
@@ -241,17 +242,19 @@ internal abstract class ClientCore
     }
 
     internal async Task<TextContent> GetTextContentFromAudioAsync(
-        BinaryData audioData,
+        AudioContent content,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
+        Verify.NotNull(content.Data);
+
         OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
         Verify.ValidFilename(audioExecutionSettings?.Filename);
 
         var audioOptions = new AudioTranscriptionOptions
         {
-            AudioData = audioData,
+            AudioData = content.Data,
             DeploymentName = this.DeploymentOrModelName,
             Filename = audioExecutionSettings.Filename,
             Language = audioExecutionSettings.Language,
