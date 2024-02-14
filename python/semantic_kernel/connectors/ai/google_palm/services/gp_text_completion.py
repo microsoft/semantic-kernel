@@ -4,7 +4,7 @@ import logging
 import sys
 from typing import Any, List, Optional
 
-from semantic_kernel.models.contents.text_content import TextContent
+from semantic_kernel.contents.text_content import TextContent
 
 if sys.version_info >= (3, 9):
     from typing import Annotated

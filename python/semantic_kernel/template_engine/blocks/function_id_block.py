@@ -2,26 +2,26 @@
 
 import logging
 from re import match as re_match
-from typing import Any, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
-import pydantic as pdt
+from pydantic import Field
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class FunctionIdBlock(Block):
-    _plugin_name: str = pdt.PrivateAttr()
-    _function_name: str = pdt.PrivateAttr()
+    plugin_name: str = Field("", init_var=False)
+    function_name: str = Field("", init_var=False)
 
-    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
+    def __init__(self, content: Optional[str] = None, **kwargs):
         super().__init__(content=content and content.strip())
-
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         function_name_parts = self.content.split(".")
         if len(function_name_parts) > 2:
@@ -31,31 +31,15 @@ class FunctionIdBlock(Block):
             )
 
         if len(function_name_parts) == 2:
-            self._plugin_name = function_name_parts[0]
-            self._function_name = function_name_parts[1]
+            self.plugin_name = function_name_parts[0]
+            self.function_name = function_name_parts[1]
         else:
-            self._plugin_name = ""
-            self._function_name = self.content
+            self.plugin_name = ""
+            self.function_name = self.content
 
     @property
     def type(self) -> BlockTypes:
         return BlockTypes.FUNCTION_ID
-
-    @property
-    def plugin_name(self) -> str:
-        return self._plugin_name
-
-    @plugin_name.setter
-    def plugin_name(self, value: str) -> None:
-        self._plugin_name = value
-
-    @property
-    def function_name(self) -> str:
-        return self._function_name
-
-    @function_name.setter
-    def function_name(self, value: str) -> None:
-        self._function_name = value
 
     def is_valid(self) -> Tuple[bool, str]:
         if self.content is None or len(self.content) == 0:
@@ -72,7 +56,7 @@ class FunctionIdBlock(Block):
             )
             return False, error_msg
 
-        if self._has_more_than_one_dot(self.content):
+        if self.content.count(".") > 1:
             error_msg = (
                 "The function identifier can contain max one '.' " "char separating plugin name from function name"
             )
@@ -80,18 +64,5 @@ class FunctionIdBlock(Block):
 
         return True, ""
 
-    def render(self, _: Optional[ContextVariables] = None) -> str:
+    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
         return self.content
-
-    def _has_more_than_one_dot(self, value: Optional[str]) -> bool:
-        if value is None or len(value) < 2:
-            return False
-
-        count = 0
-        for char in value:
-            if char == ".":
-                count += 1
-                if count > 1:
-                    return True
-
-        return False
