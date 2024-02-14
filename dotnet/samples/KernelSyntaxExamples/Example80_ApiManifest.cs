@@ -75,7 +75,7 @@ public class Example80_ApiManifest : BaseTest
             try
             {
 #pragma warning disable SKEXP0042
-#pragma warning disable SKEXP0099
+#pragma warning disable SKEXP0043
                 KernelPlugin plugin =
                 await kernel.ImportPluginFromApiManifestAsync(
                     pluginName,
@@ -85,7 +85,7 @@ public class Example80_ApiManifest : BaseTest
                     .ConfigureAwait(false);
                 this.WriteLine($">> {pluginName} is created.");
 #pragma warning restore SKEXP0042
-#pragma warning restore SKEXP0099
+#pragma warning restore SKEXP0043
             }
             catch (Exception ex)
             {
