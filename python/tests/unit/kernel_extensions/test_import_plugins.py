@@ -5,7 +5,7 @@ import random
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.plugin_definition import kernel_function
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 def test_plugin_can_be_imported():

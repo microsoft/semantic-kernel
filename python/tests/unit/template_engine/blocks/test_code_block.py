@@ -1,16 +1,13 @@
-from unittest.mock import Mock
-
 from pytest import mark, raises
 
-from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
-from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -20,22 +17,16 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 class TestCodeBlock:
     def setup_method(self):
-        self.plugins = Mock(spec=KernelPluginCollection)
+        self.kernel = Kernel()
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self):
-        context = KernelContext.model_construct(
-            variables=ContextVariables(),
-            memory=NullMemory(),
-            plugins=KernelPluginCollection(),
-        )
-
         target = CodeBlock(
             content="functionName",
         )
 
         with raises(ValueError):
-            await target.render_code(context)
+            await target.render_code(self.kernel, KernelArguments())
 
     @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self):
@@ -43,32 +34,29 @@ class TestCodeBlock:
             raise Exception("error")
 
         function = KernelFunction(
-            delegate_type=DelegateTypes.InKernelContext,
-            delegate_function=invoke,
-            plugin_name="test",
             function_name="funcName",
+            plugin_name="pluginName",
             description="",
+            function=invoke,
             parameters=[],
+            return_parameter=None,
             is_semantic=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
         plugins = KernelPluginCollection()
         plugins.add(dkp)
+        kernel = Kernel()
+        kernel.plugins = plugins
 
         # Create a context with the variables, memory, and plugin collection
-        context = KernelContext.model_construct(
-            variables=ContextVariables(),
-            memory=NullMemory(),
-            plugins=plugins,
-        )
 
         target = CodeBlock(
             content="functionName",
         )
 
         with raises(ValueError):
-            await target.render_code(context)
+            await target.render_code(kernel, KernelArguments())
 
     def test_it_has_the_correct_type(self):
         assert (
@@ -144,126 +132,86 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_var_block1(self):
-        variables = ContextVariables()
-        variables["varName"] = "foo"
-
-        context = KernelContext.model_construct(
-            variables=variables,
-            memory=NullMemory(),
-            plugins=None,
-        )
-
         code_block = CodeBlock(
             content="$varName",
         )
-        result = await code_block.render_code(context)
+        result = await code_block.render_code(self.kernel, KernelArguments(varName="foo"))
 
         assert result == "foo"
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_var_block2(self):
-        variables = ContextVariables()
-        variables["varName"] = "bar"
-
-        context = KernelContext.model_construct(
-            variables=variables,
-            memory=NullMemory(),
-            plugins=None,
-        )
-
         code_block = CodeBlock(
             tokens=[VarBlock(content="$varName")],
             content="",
         )
-        result = await code_block.render_code(context)
+        result = await code_block.render_code(self.kernel, KernelArguments(varName="bar"))
 
         assert result == "bar"
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block1(self):
-        context = KernelContext.model_construct(
-            variables=ContextVariables(),
-            memory=NullMemory(),
-            plugins=None,
-        )
-
         code_block = CodeBlock(
             content="'ciao'",
         )
-        result = await code_block.render_code(context)
+        result = await code_block.render_code(self.kernel, KernelArguments())
 
         assert result == "ciao"
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block2(self):
-        context = KernelContext.model_construct(
-            variables=ContextVariables(),
-            memory=NullMemory(),
-            plugins=None,
-        )
-
         code_block = CodeBlock(
             tokens=[ValBlock(content="'arrivederci'")],
             content="",
         )
-        result = await code_block.render_code(context)
+        result = await code_block.render_code(self.kernel, KernelArguments())
 
         assert result == "arrivederci"
 
     @mark.asyncio
     async def test_it_invokes_function_cloning_all_variables(self):
         # Set up initial context variables
-        variables = ContextVariables()
-        variables["input"] = "zero"
-        variables["var1"] = "uno"
-        variables["var2"] = "due"
+        arguments = KernelArguments(input="zero", var1="uno", var2="due")
 
         # Create a FunctionIdBlock with the function name
-        func_id = FunctionIdBlock(content="funcName")
+        func_id = FunctionIdBlock(content="test.funcName")
 
         # Set up a canary dictionary to track changes in the context variables
         canary = {"input": "", "var1": "", "var2": ""}
 
         # Define the function to be invoked, which modifies the canary
         # and context variables
-        def invoke(ctx):
+        def invoke(arguments: KernelArguments):
             nonlocal canary
-            canary["input"] = ctx["input"]
-            canary["var1"] = ctx["var1"]
-            canary["var2"] = ctx["var2"]
+            canary["input"] = arguments["input"]
+            canary["var1"] = arguments["var1"]
+            canary["var2"] = arguments["var2"]
 
-            ctx["input"] = "overridden"
-            ctx["var1"] = "overridden"
-            ctx["var2"] = "overridden"
+            arguments["input"] = "overridden"
+            arguments["var1"] = "overridden"
+            arguments["var2"] = "overridden"
 
         # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
-            delegate_type=DelegateTypes.InKernelContext,
-            delegate_function=invoke,
-            plugin_name="test",
             function_name="funcName",
+            plugin_name="pluginName",
             description="",
-            parameters=[],
+            function=invoke,
+            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
+            return_parameter=None,
             is_semantic=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
-        plugins = KernelPluginCollection()
-        plugins.add(dkp)
-
-        # Create a context with the variables, memory, and plugin collection
-        context = KernelContext.model_construct(
-            variables=variables,
-            memory=NullMemory(),
-            plugins=plugins,
-        )
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
 
         # Create a CodeBlock with the FunctionIdBlock and render it with the context
         code_block = CodeBlock(
             tokens=[func_id],
             content="",
         )
-        await code_block.render_code(context)
+        await code_block.render_code(kernel, arguments)
 
         # Check that the canary values match the original context variables
         assert canary["input"] == "zero"
@@ -271,9 +219,9 @@ class TestCodeBlock:
         assert canary["var2"] == "due"
 
         # Check that the original context variables were not modified
-        assert variables["input"] == "zero"
-        assert variables["var1"] == "uno"
-        assert variables["var2"] == "due"
+        assert arguments["input"] == "zero"
+        assert arguments["var1"] == "uno"
+        assert arguments["var2"] == "due"
 
     @mark.asyncio
     async def test_it_invokes_function_with_custom_variable(self):
@@ -282,43 +230,37 @@ class TestCodeBlock:
         VAR_VALUE = "varValue"
 
         # Set up initial context variables
-        variables = ContextVariables()
-        variables[VAR_NAME] = VAR_VALUE
+        arguments = KernelArguments()
+        arguments[VAR_NAME] = VAR_VALUE
 
         # Create a FunctionIdBlock with the function name and a
         # VarBlock with the custom variable
-        func_id = FunctionIdBlock(content="funcName")
+        func_id = FunctionIdBlock(content="test.funcName")
         var_block = VarBlock(content=f"${VAR_NAME}")
 
         # Set up a canary variable to track changes in the context input
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
-        def invoke(ctx):
+        def invoke(arguments):
             nonlocal canary
-            canary = ctx["input"]
+            canary = arguments["varName"]
+            return arguments["varName"]
 
         # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
-            delegate_type=DelegateTypes.InKernelContext,
-            delegate_function=invoke,
-            plugin_name="test",
+            function=invoke,
+            plugin_name="pluginName",
             function_name="funcName",
             description="",
-            parameters=[],
+            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
+            return_parameter=None,
             is_semantic=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
-        plugins = KernelPluginCollection()
-        plugins.add(dkp)
-
-        # Create a context with the variables, memory, and plugin collection
-        context = KernelContext.model_construct(
-            variables=variables,
-            memory=NullMemory(),
-            plugins=plugins,
-        )
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
 
         # Create a CodeBlock with the FunctionIdBlock and VarBlock,
         # and render it with the context
@@ -326,7 +268,7 @@ class TestCodeBlock:
             tokens=[func_id, var_block],
             content="",
         )
-        result = await code_block.render_code(context)
+        result = await code_block.render_code(kernel, arguments)
 
         # Check that the result matches the custom variable value
         assert result == VAR_VALUE
@@ -339,38 +281,32 @@ class TestCodeBlock:
         VALUE = "value"
 
         # Create a FunctionIdBlock with the function name and a ValBlock with the value
-        func_id = FunctionIdBlock(content="funcName")
+        func_id = FunctionIdBlock(content="test.funcName")
         val_block = ValBlock(content=f"'{VALUE}'")
 
         # Set up a canary variable to track changes in the context input
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
-        def invoke(ctx):
+        def invoke(arguments):
             nonlocal canary
-            canary = ctx["input"]
+            canary = arguments["input"]
+            return arguments["input"]
 
         # Create an KernelFunction with the invoke function as its delegate
         function = KernelFunction(
-            delegate_type=DelegateTypes.InKernelContext,
-            delegate_function=invoke,
-            plugin_name="test",
+            function=invoke,
+            plugin_name="pluginName",
             function_name="funcName",
             description="",
-            parameters=[],
+            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
+            return_parameter=None,
             is_semantic=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
-        plugins = KernelPluginCollection()
-        plugins.add(dkp)
-
-        # Create a context with empty variables, memory, and plugin collection
-        context = KernelContext.model_construct(
-            variables=ContextVariables(),
-            memory=NullMemory(),
-            plugins=plugins,
-        )
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
@@ -378,9 +314,9 @@ class TestCodeBlock:
             tokens=[func_id, val_block],
             content="",
         )
-        result = await code_block.render_code(context)
+        result = await code_block.render_code(kernel, KernelArguments(input="value"))
 
         # Check that the result matches the value
-        assert result == VALUE
+        assert str(result) == VALUE
         # Check that the canary value matches the value
         assert canary == VALUE
