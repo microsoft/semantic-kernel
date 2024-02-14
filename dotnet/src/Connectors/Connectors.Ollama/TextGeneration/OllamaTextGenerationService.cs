@@ -31,7 +31,7 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
         string model,
         Uri baseUri,
         HttpClient? httpClient = null,
-        ILoggerFactory loggerFactory = null)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(model);
 
