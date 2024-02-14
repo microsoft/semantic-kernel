@@ -190,7 +190,14 @@ internal sealed class RestApiOperationRunner
     {
         var contentType = content.Headers.ContentType;
 
-        var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
+        // Check if content type is null for 204 response
+        if (contentType == null)
+        {
+            // Return an empty response with no content type for 204 responses
+            return new RestApiOperationResponse(string.Empty, string.Empty);
+        }
+
+        var mediaType = contentType.MediaType;
 
         // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)
         if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
