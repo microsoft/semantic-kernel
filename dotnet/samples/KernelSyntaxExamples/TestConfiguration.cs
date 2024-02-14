@@ -39,6 +39,7 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
+    public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
 
@@ -176,6 +177,11 @@ public sealed class TestConfiguration
     public class MongoDBConfig
     {
         public string ConnectionString { get; set; }
+    }
+
+    public class ChatGPTRetrievalPluginConfig
+    {
+        public string Token { get; set; }
     }
 
     public class GoogleAIConfig
