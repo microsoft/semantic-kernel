@@ -24,7 +24,7 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
 
         var options = new FunctionCallingStepwisePlannerOptions
         {
-            MaxIterations = 3,
+            MaxIterations = 15,
             MaxTokens = 4000,
         };
         var planner = new FunctionCallingStepwisePlanner(options);
