@@ -11,12 +11,12 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example78_TextEmbedding : BaseTest
+public class Example81_TextEmbedding : BaseTest
 {
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Example76_TextEmbedding ========");
+        this.WriteLine("======== Text Embedding ========");
         await RunExampleAsync();
     }
 
@@ -64,7 +64,7 @@ public class Example78_TextEmbedding : BaseTest
         return tokens.Count;
     }
 
-    public Example78_TextEmbedding(ITestOutputHelper output) : base(output)
+    public Example81_TextEmbedding(ITestOutputHelper output) : base(output)
     {
     }
 
