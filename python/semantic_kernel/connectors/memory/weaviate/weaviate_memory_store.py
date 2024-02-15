@@ -134,23 +134,23 @@ class WeaviateMemoryStore(MemoryStoreBase):
         else:
             raise ValueError("Weaviate config must have either url or use_embed set")
 
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         schema = SCHEMA.copy()
         schema["class"] = collection_name
         await asyncio.get_running_loop().run_in_executor(None, self.client.schema.create_class, schema)
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         schemas = await asyncio.get_running_loop().run_in_executor(None, self.client.schema.get)
         return [schema["class"] for schema in schemas["classes"]]
 
-    async def delete_collection_async(self, collection_name: str) -> bool:
+    async def delete_collection(self, collection_name: str) -> bool:
         await asyncio.get_running_loop().run_in_executor(None, self.client.schema.delete_class, collection_name)
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
-        collections = await self.get_collections_async()
+    async def does_collection_exist(self, collection_name: str) -> bool:
+        collections = await self.get_collections()
         return collection_name in collections
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         weaviate_record = self.FieldMapper.sk_to_weaviate(vars(record))
 
         vector = weaviate_record.pop("vector", None)
@@ -165,7 +165,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             vector,
         )
 
-    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         def _upsert_batch_inner():
             results = []
             with self.client.batch as batch:
@@ -185,12 +185,12 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         return await asyncio.get_running_loop().run_in_executor(None, _upsert_batch_inner)
 
-    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         # Call the batched version with a single key
-        results = await self.get_batch_async(collection_name, [key], with_embedding)
+        results = await self.get_batch(collection_name, [key], with_embedding)
         return results[0] if results else None
 
-    async def get_batch_async(self, collection_name: str, keys: List[str], with_embedding: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: List[str], with_embedding: bool) -> List[MemoryRecord]:
         queries = self._build_multi_get_query(collection_name, keys, with_embedding)
 
         results = await asyncio.get_running_loop().run_in_executor(None, self.client.query.multi_get(queries).do)
@@ -230,10 +230,10 @@ class WeaviateMemoryStore(MemoryStoreBase):
         mem_vals = self.FieldMapper.remove_underscore_prefix(sk_doc)
         return MemoryRecord(**mem_vals)
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
-        await self.remove_batch_async(collection_name, [key])
+    async def remove(self, collection_name: str, key: str) -> None:
+        await self.remove_batch(collection_name, [key])
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         # TODO: Use In operator when it's available
         #       (https://github.com/weaviate/weaviate/issues/2387)
         #       and handle max delete objects
@@ -249,7 +249,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
                 None, self.client.batch.delete_objects, collection_name, where
             )
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: np.ndarray,
@@ -289,14 +289,14 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         return memory_records_and_scores
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: np.ndarray,
         min_relevance_score: float,
         with_embedding: bool,
     ) -> Tuple[MemoryRecord, float]:
-        results = await self.get_nearest_matches_async(
+        results = await self.get_nearest_matches(
             collection_name,
             embedding,
             limit=1,

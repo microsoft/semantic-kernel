@@ -85,11 +85,10 @@ internal sealed class ChatThread : IAgentThread
         // Create run using templated prompt
         var runModel = await this._restContext.CreateRunAsync(this.Id, agent.Id, instructions, agent.Tools, cancellationToken).ConfigureAwait(false);
         var run = new ChatRun(runModel, agent.Kernel, this._restContext);
-        var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 
-        var messages = await this._restContext.GetMessagesAsync(this.Id, results, cancellationToken).ConfigureAwait(false);
-        foreach (var message in messages)
+        await foreach (var messageId in run.GetResultAsync(cancellationToken).ConfigureAwait(false))
         {
+            var message = await this._restContext.GetMessageAsync(this.Id, messageId, cancellationToken).ConfigureAwait(false);
             yield return new ChatMessage(message);
         }
     }
