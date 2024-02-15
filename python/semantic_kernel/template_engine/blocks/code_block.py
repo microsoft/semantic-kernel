@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
 
 from pydantic import Field
 
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
@@ -19,6 +20,8 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+VALID_ARG_TYPES = [BlockTypes.VALUE, BlockTypes.VARIABLE, BlockTypes.NAMED_ARG]
 
 
 class CodeBlock(Block):
@@ -45,9 +48,8 @@ class CodeBlock(Block):
                 logger.error(error_msg)
                 return False, error_msg
 
-            for index in range(1, len(self.tokens)):
-                token = self.tokens[index]
-                if index == 1 and token.type not in (BlockTypes.VALUE, BlockTypes.VARIABLE, BlockTypes.NAMED_ARG):
+            for index, token in enumerate(self.tokens[1:], start=1):
+                if index == 1 and token.type not in VALID_ARG_TYPES:
                     error_msg = f"Unexpected token found: {token}"
                     logger.error(error_msg)
                     return False, error_msg
@@ -72,11 +74,10 @@ class CodeBlock(Block):
         if len(self.tokens) == 0:
             raise ValueError("No tokens to render.")
 
-        if self.tokens[0].type in (BlockTypes.VALUE, BlockTypes.VARIABLE):
-            return self.tokens[0].render(kernel, arguments)
-
         if self.tokens[0].type == BlockTypes.FUNCTION_ID:
             return await self._render_function_call(kernel, arguments)
+        if self.tokens[0].type in VALID_ARG_TYPES:
+            return self.tokens[0].render(kernel, arguments)
 
         raise ValueError(f"Unexpected first token type: {self.tokens[0].type}")
 
@@ -106,30 +107,22 @@ class CodeBlock(Block):
         arguments: "KernelArguments",
         function_metadata: KernelFunctionMetadata,
     ) -> "KernelArguments":
-        function_block: FunctionIdBlock = self.tokens[0]
-        first_function_argument: Block = self.tokens[1]
-
         if not function_metadata.parameters:
             raise ValueError(
-                f"Function {function_block.plugin_name}.{function_block.function_name} does not take any arguments "
+                f"Function {function_metadata.plugin_name}.{function_metadata.name} does not take any arguments "
                 f"but it is being called in the template with {len(self.tokens) - 1} arguments."
             )
-        named_args_start_index = 1
-
-        if first_function_argument.type != BlockTypes.NAMED_ARG:
-            logger.debug(f"Passing variable/value: `{self.tokens[1].content}`")
-            rendered_value = first_function_argument.render(kernel, arguments)
-            first_positional_parameter_name = function_metadata.parameters[0].name
-            arguments[first_positional_parameter_name] = rendered_value
-            named_args_start_index += 1
-
-        for i in range(named_args_start_index, len(self.tokens)):
-            arg = self.tokens[i]
-            if arg.type != BlockTypes.NAMED_ARG:
+        for index, token in enumerate(self.tokens[1:], start=1):
+            logger.debug(f"Parsing variable/value: `{self.tokens[1].content}`")
+            rendered_value = token.render(kernel, arguments)
+            if token.type != BlockTypes.NAMED_ARG:
+                if index == 1:
+                    arguments[function_metadata.parameters[0].name] = rendered_value
+                    continue
                 error_msg = "Functions support up to one positional argument"
                 logger.error(error_msg)
-                raise Exception(f"Unexpected token type at index {i} in {self.content}: {arg.type}")
-            arguments[arg.name.name] = arg.render(kernel, arguments)
+                raise AIException(AIException.ErrorCodes.InvalidPrompt, error_msg)
+            arguments[token.name.name] = rendered_value
 
         return arguments
 

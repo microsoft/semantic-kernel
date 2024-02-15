@@ -31,7 +31,7 @@ class NamedArgBlock(Block):
         else:
             match = re_match(NAMED_ARG_REGEX, self.content)
             if match:
-                self.name = VarBlock(content=f"{Symbols.VAR_PREFIX}{match.group('name')}")
+                self.name = VarBlock(content=f"{Symbols.VAR_PREFIX.value}{match.group('name')}")
                 value = match.group("value")
                 if value[0] == Symbols.VAR_PREFIX:
                     self.value = VarBlock(content=value)

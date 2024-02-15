@@ -24,6 +24,9 @@ class FunctionIdBlock(Block):
     validated: bool = Field(True, init=False, exclude=True)
 
     def model_post_init(self, __context: Any):
+        if len(self.content) == 0:
+            self.validated = False
+            return
         if self.content.count(".") > 1:
             raise ValueError("The content should not have more then 1 dot in it.")
         names = re_match(FULLY_QUALIFIED_FUNCTION_NAME, self.content)
@@ -31,6 +34,8 @@ class FunctionIdBlock(Block):
             self.plugin_name = groups["plugin"]
             self.function_name = groups["function"]
             return
+        if self.content[0] == ".":
+            self.content = self.content[1:]
         function_only = re_match(FUNCTION_NAME_REGEX, self.content)
         if function_only:
             self.plugin_name = ""

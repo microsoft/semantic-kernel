@@ -21,6 +21,7 @@ class TextBlock(Block):
     @field_validator("content", mode="before")
     @classmethod
     def content_strip(cls, content: str):
+        # overload strip method for all other blocks, should not be done for this.
         return content
 
     @classmethod

@@ -19,7 +19,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PromptTemplateEngine(KernelBaseModel):
-    tokenizer: TemplateTokenizer = Field(default_factory=TemplateTokenizer, init_var=False)
+    tokenizer: TemplateTokenizer = Field(default_factory=TemplateTokenizer, init=False)
 
     def extract_blocks(self, template_text: Optional[str] = None, validate: bool = True) -> List[Block]:
         """

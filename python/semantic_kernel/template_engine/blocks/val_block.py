@@ -31,7 +31,7 @@ class ValBlock(Block):
         self.value = self.content[1:-1]
 
     def is_valid(self) -> Tuple[bool, str]:
-        if self.first not in [Symbols.DBL_QUOTE, Symbols.SGL_QUOTE]:
+        if self.first not in [Symbols.DBL_QUOTE.value, Symbols.SGL_QUOTE.value]:
             error_msg = "A value must be wrapped in either single quotes or double quotes"
             logger.error(error_msg)
             return False, error_msg
