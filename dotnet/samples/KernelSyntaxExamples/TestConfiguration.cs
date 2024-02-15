@@ -3,6 +3,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 using Reliability;
 
 public sealed class TestConfiguration
@@ -40,6 +41,7 @@ public sealed class TestConfiguration
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
     public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
+    public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
