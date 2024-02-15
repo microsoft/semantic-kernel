@@ -96,7 +96,7 @@ public sealed class HandlebarsPlannerTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ItInjectsPredefinedVariablesWhenAppropriateAsync(bool containsPredefinedVariables)
+    public async Task ItInjectsPredefinedVariablesAsync(bool containsPredefinedVariables)
     {
         // Arrange
         var kernel = this.CreateKernelWithMockCompletionResult(PlanString);
@@ -137,7 +137,7 @@ public sealed class HandlebarsPlannerTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ItInjectsAdditionalContextWhenAppropriateAsync(bool hasAdditionalContext)
+    public async Task ItInjectsAdditionalContextAsync(bool hasAdditionalContext)
     {
         // Arrange
         var kernel = this.CreateKernelWithMockCompletionResult(PlanString);
@@ -163,6 +163,28 @@ public sealed class HandlebarsPlannerTests
         {
             Assert.DoesNotContain(sectionHeader, plan.Prompt, StringComparison.CurrentCulture);
         }
+    }
+
+    [Fact]
+    public async Task ItOverridesPromptAsync()
+    {
+        // Arrange
+        var kernel = this.CreateKernelWithMockCompletionResult(PlanString);
+        var mockPromptOverride = "Help me fulfill my goal!";
+
+        var planner = new HandlebarsPlanner(
+            new HandlebarsPlannerOptions()
+            {
+                CreatePlanPromptHandler = () => $"{mockPromptOverride} {{{{> UserGoal }}}}"
+            });
+
+        // Act
+        var plan = await planner.CreatePlanAsync(kernel, "goal");
+
+        // Assert
+        Assert.Contains(mockPromptOverride, plan.Prompt, StringComparison.CurrentCulture);
+        Assert.Contains("## Goal", plan.Prompt, StringComparison.CurrentCulture);
+        Assert.DoesNotContain("## Tips and reminders", plan.Prompt, StringComparison.CurrentCulture);
     }
 
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)

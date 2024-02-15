@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
+using Resources;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
@@ -82,7 +83,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         return kernel;
     }
 
-    private void PrintPlannerDetails(string goal, HandlebarsPlan plan, string result, bool shouldPrintPrompt = false)
+    private void PrintPlannerDetails(string goal, HandlebarsPlan plan, string result, bool shouldPrintPrompt)
     {
         WriteLine($"Goal: {goal}");
         WriteLine($"\nOriginal plan:\n{plan}");
@@ -91,12 +92,18 @@ public class Example65_HandlebarsPlanner : BaseTest
         // Print the prompt template
         if (shouldPrintPrompt && plan.Prompt is not null)
         {
-            WriteLine("\n======== Prompt Template ========");
+            WriteLine("\n======== CreatePlan Prompt ========");
             WriteLine(plan.Prompt);
         }
     }
 
-    private async Task RunSampleAsync(string goal, KernelArguments? initialContext = null, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
+    private async Task RunSampleAsync(
+        string goal,
+        HandlebarsPlannerOptions? plannerOptions = null,
+        KernelArguments? initialContext = null,
+        bool shouldPrintPrompt = false,
+        bool shouldInvokePlan = true,
+        params string[] pluginDirectoryNames)
     {
         var kernel = await SetupKernelAsync(pluginDirectoryNames);
         if (kernel is null)
@@ -104,42 +111,41 @@ public class Example65_HandlebarsPlanner : BaseTest
             return;
         }
 
-        // Use gpt-4 or newer models if you want to test with loops. 
-        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
-        var allowLoopsInPlan = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
-        var planner = new HandlebarsPlanner(
-            new HandlebarsPlannerOptions()
+        // Set the planner options
+        plannerOptions ??= new HandlebarsPlannerOptions()
+        {
+            // When using OpenAI models, we recommend using low values for temperature and top_p to minimize planner hallucinations.
+            ExecutionSettings = new OpenAIPromptExecutionSettings()
             {
-                // When using OpenAI models, we recommend using low values for temperature and top_p to minimize planner hallucinations.
-                ExecutionSettings = new OpenAIPromptExecutionSettings()
-                {
-                    Temperature = 0.0,
-                    TopP = 0.1,
-                },
+                Temperature = 0.0,
+                TopP = 0.1,
+            },
+        };
 
-                // Change this if you want to test with loops regardless of model selection.
-                AllowLoops = allowLoopsInPlan
-            });
+        // Use gpt-4 or newer models if you want to test with loops.
+        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
+        plannerOptions.AllowLoops = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
 
-        // Create the plan
+        // Instantiate the planner and create the plan
+        var planner = new HandlebarsPlanner(plannerOptions);
         var plan = await planner.CreatePlanAsync(kernel, goal, initialContext);
 
         // Execute the plan
-        var result = await plan.InvokeAsync(kernel, initialContext);
+        var result = shouldInvokePlan ? await plan.InvokeAsync(kernel, initialContext) : string.Empty;
 
         PrintPlannerDetails(goal, plan, result, shouldPrintPrompt);
     }
 
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
-    public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
+    public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("Plan Not Possible");
 
         try
         {
             // Load additional plugins to enable planner but not enough for the given goal.
-            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, shouldPrintPrompt, "SummarizePlugin");
+            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, null, shouldPrintPrompt, true, "SummarizePlugin");
         }
         catch (KernelException ex) when (
             ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal), StringComparison.CurrentCultureIgnoreCase)
@@ -161,10 +167,10 @@ public class Example65_HandlebarsPlanner : BaseTest
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
 
-    public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
+    public Task RunCourseraSampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("Coursera OpenAPI Plugin");
-        return RunSampleAsync("Show me courses about Artificial Intelligence.", null, shouldPrintPrompt, CourseraPluginName);
+        return RunSampleAsync("Show me courses about Artificial Intelligence.", null, null, shouldPrintPrompt, true, CourseraPluginName);
         /*
             Original plan:
             {{!-- Step 0: Extract key values --}}
@@ -193,10 +199,10 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
-    public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
+    public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("Basic Types using Local Dictionary Plugin");
-        return RunSampleAsync("Get a random word and its definition.", null, shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
+        return RunSampleAsync("Get a random word and its definition.", null, null, shouldPrintPrompt, true, StringParamsDictionaryPlugin.PluginName);
         /*
             Original plan:
             {{!-- Step 1: Get a random word --}}
@@ -215,10 +221,10 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
-    public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
+    public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("Complex Types using Local Dictionary Plugin");
-        return RunSampleAsync("Teach me two random words and their definition.", null, shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
+        return RunSampleAsync("Teach me two random words and their definition.", null, null, shouldPrintPrompt, true, ComplexParamsDictionaryPlugin.PluginName);
         /*
             Original Plan:
             {{!-- Step 1: Get two random dictionary entries --}}
@@ -251,10 +257,10 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
-    public Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
+    public Task RunPoetrySampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("Multiple Plugins");
-        return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", null, shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
+        return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", null, null, shouldPrintPrompt, true, "SummarizePlugin", "WriterPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the scenario for the poem --}}
@@ -280,10 +286,10 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
-    public Task RunBookSampleAsync(bool shouldPrintPrompt = false)
+    public Task RunBookSampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("Loops and Conditionals");
-        return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", null, shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
+        return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", null, null, shouldPrintPrompt, true, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the book title and chapter count --}}
@@ -310,7 +316,7 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
-    public Task RunPredefinedVariablesSample(bool shouldPrintPrompt = false)
+    public Task RunPredefinedVariablesSampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("CreatePlan Prompt With Predefined Variables");
 
@@ -326,7 +332,7 @@ public class Example65_HandlebarsPlanner : BaseTest
             } }
         };
 
-        return RunSampleAsync("Write a poem about the given person, then translate it into French.", initialArguments, shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
+        return RunSampleAsync("Write a poem about the given person, then translate it into French.", null, initialArguments, shouldPrintPrompt, true, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 0: Set the given person --}}
@@ -352,7 +358,7 @@ public class Example65_HandlebarsPlanner : BaseTest
 
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
-    public async Task RunPromptWithAdditionalContextSampleAsync(bool shouldPrintPrompt = false)
+    public Task RunPromptWithAdditionalContextSampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("Prompt With Additional Context");
 
@@ -383,31 +389,13 @@ public class Example65_HandlebarsPlanner : BaseTest
         }
 
         var goal = "Help me onboard to the Semantic Kernel SDK by creating a quick guide that includes a brief overview of the SDK for C# developers and detailed set-up steps. Include relevant links where possible. Then, draft an email with this guide, so I can share it with my team.";
-
-        var kernel = await SetupKernelAsync("WriterPlugin");
-        if (kernel is null)
+        var plannerOptions = new HandlebarsPlannerOptions()
         {
-            return;
-        }
+            // Context to be used in the prompt template.
+            GetAdditionalPromptContext = getDomainContext,
+        };
 
-        // Use gpt-4 or newer models if you want to test with loops. 
-        // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
-        var allowLoopsInPlan = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
-        var planner = new HandlebarsPlanner(
-            new HandlebarsPlannerOptions()
-            {
-                // Context to be used in the prompt template.
-                GetAdditionalPromptContext = getDomainContext,
-                AllowLoops = false
-            });
-
-        // Create the plan
-        var plan = await planner.CreatePlanAsync(kernel, goal);
-
-        // Execute the plan
-        var result = await plan.InvokeAsync(kernel);
-
-        PrintPlannerDetails(goal, plan, result, shouldPrintPrompt);
+        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt, true, "WriterPlugin");
         /*
             {{!-- Step 0: Extract Key Values --}}
             {{set "sdkLink" "https://learn.microsoft.com/en-us/semantic-kernel/overview/"}}
@@ -442,6 +430,32 @@ public class Example65_HandlebarsPlanner : BaseTest
             Best Regards,
             Your Name
         */
+    }
+
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(true)]
+    public Task RunOverrideCreatePlanPromptSampleAsync(bool shouldPrintPrompt)
+    {
+        WriteSampleHeading("CreatePlan Prompt Override");
+
+        static string OverridePlanPrompt()
+        {
+            // Load a custom CreatePlan prompt template from an embedded resource.
+            var ResourceFileName = "65-prompt-override.handlebars";
+            var fileContent = EmbeddedResource.ReadStream(ResourceFileName);
+            return new StreamReader(fileContent!).ReadToEnd();
+        }
+
+        var plannerOptions = new HandlebarsPlannerOptions()
+        {
+            // Callback to override the default prompt template.
+            CreatePlanPromptHandler = OverridePlanPrompt,
+        };
+
+        var goal = "I just watched the movie 'Inception' and I loved it! I want to leave a 5 star review. Can you help me?";
+        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt, false, "WriterPlugin");
+
+        // For a simpler example, see `ItOverridesPromptAsync` in the dotnet\src\Planners\Planners.Handlebars.UnitTests\Handlebars\HandlebarsPlannerTests.cs file.
     }
 
     public Example65_HandlebarsPlanner(ITestOutputHelper output) : base(output)

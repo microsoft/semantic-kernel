@@ -2,7 +2,8 @@
 {{#message role="user"}}## Goal
 {{goal}}
 
-{{#if predefinedArguments}}
+{{~#if predefinedArguments}}
+
 ### Predefined Variables
 You have these predefined variables that can be used within the template. You can access these variables using `@root` (e.g., `@root.variableName`).
 Only use the `@root` object when referencing values from this initial context.
