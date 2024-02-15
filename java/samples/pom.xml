@@ -5,19 +5,17 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>1.0.0-alpha.1-SNAPSHOT</version>
+        <version>1.0.0-alpha.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.microsoft.semantic-kernel</groupId>
-    <artifactId>samples</artifactId>
-    <version>1.0.0-alpha.1-SNAPSHOT</version>
+    <artifactId>semantickernel-samples-parent</artifactId>
+    <version>1.0.0-alpha.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Semantic Kernel Samples Parent</name>
     <description>Parent pom for sample code for using the Semantic Kernel project</description>
 
     <modules>
-        <!--        <module>semantickernel-samples-guice</module> -->
         <module>sk-v1</module>
         <module>sample-code</module>
     </modules>
@@ -100,6 +98,13 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

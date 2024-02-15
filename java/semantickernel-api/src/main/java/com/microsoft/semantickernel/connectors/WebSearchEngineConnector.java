@@ -1,15 +1,34 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors;
 
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 
-public interface WebSearchEngineConnector {
+import reactor.core.publisher.Mono;
 
+/**
+ * Web search engine connector interface.
+ */
+public interface WebSearchEngineConnector {
+    /**
+     * Represents a web page.
+     */
     interface WebPage {
+        /**
+         * Gets the name of the web page.
+         * @return The name of the web page.
+         */
         String getName();
+
+        /** 
+         * Gets the URL of the web page.
+         * @return The URL of the web page.
+         */
         String getUrl();
+
+        /**
+         * Gets the snippet of the web page.
+         * @return The snippet of the web page.
+         */
         String getSnippet();
     }
 

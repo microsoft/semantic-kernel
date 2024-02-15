@@ -11,6 +11,11 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class is used for loading services that are not directly referenced
+ * in the code, but are instead loaded using the ServiceLoader pattern.
+ *
+ */
 public class ServiceLoadUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceLoadUtil.class);
@@ -18,6 +23,15 @@ public class ServiceLoadUtil {
     private ServiceLoadUtil() {
     }
 
+    /**
+     * Finds a service loader for the given class and returns a supplier for it.
+     *
+     * @param clazz The class to find a service loader for.
+     * @param <T>   The type of the class to find a service loader for.
+     * @param alternativeClassName The name of the alternative class to load if the service loader
+     *                            is not found.
+     * @return A {@code java.util.function.Supplier} for the service loader.
+     */
     public static <T>
     Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);

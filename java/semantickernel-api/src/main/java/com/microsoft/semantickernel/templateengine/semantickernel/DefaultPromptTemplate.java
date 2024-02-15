@@ -15,32 +15,39 @@ import com.microsoft.semantickernel.templateengine.semantickernel.blocks.CodeRen
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.NamedArgBlock;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.TextRendering;
 import com.microsoft.semantickernel.templateengine.semantickernel.blocks.VarBlock;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/// <summary>
-/// Prompt template.
-/// </summary>
+/**
+ * The default prompt template.
+ */
 public class DefaultPromptTemplate implements PromptTemplate {
 
     private final PromptTemplateConfig promptTemplate;
 
+    /**
+     * Create a new prompt template.
+     * @param promptTemplateConfig The prompt template configuration.
+     */
     public DefaultPromptTemplate(
-        @Nonnull PromptTemplateConfig promptTemplate) {
-        this.promptTemplate = new PromptTemplateConfig(promptTemplate);
+        @Nonnull PromptTemplateConfig promptTemplateConfig) {
+        this.promptTemplate = new PromptTemplateConfig(promptTemplateConfig);
     }
 
-    /// <summary>
-    /// Given a prompt template string, extract all the blocks (text, variables, function calls)
-    /// </summary>
-    /// <returns>A list of all the blocks, ie the template tokenized in text, variables and function calls</returns>
+    /*
+     * Given a prompt template string, extract all the blocks (text, variables, function calls)
+     * @return A list of all the blocks, ie the template tokenized in text, variables and function calls
+     */
     private List<Block> extractBlocks() {
         String templateText = promptTemplate.getTemplate();
 
@@ -60,10 +67,11 @@ public class DefaultPromptTemplate implements PromptTemplate {
     }
 
 
-    /// <summary>
-    /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
-    /// not already contained there but that are referenced in the prompt template.
-    /// </summary>
+    /**
+     * Augments the prompt template with any variables
+     * not already contained there but that are referenced in the prompt template.
+     * @param blocks The blocks to search for input variables.
+     */
     @SuppressWarnings("NullAway")
     private void addMissingInputVariables(List<Block> blocks) {
         // Add all of the existing input variables to our known set. We'll avoid adding any

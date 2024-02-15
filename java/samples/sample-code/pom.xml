@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
-        <artifactId>samples</artifactId>
-        <version>1.0.0-alpha.1-SNAPSHOT</version>
+        <artifactId>semantickernel-samples-parent</artifactId>
+        <version>1.0.0-alpha.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>sample-code</artifactId>
+    <artifactId>semantickernel-sample-code</artifactId>
     <name>Semantic Kernel Samples</name>
     <description>Sample code for using the Semantic Kernel project</description>
     <packaging>jar</packaging>
@@ -71,7 +71,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>aiservices-openai</artifactId>
+            <artifactId>semantickernel-aiservices-openai</artifactId>
         </dependency>
     </dependencies>
 

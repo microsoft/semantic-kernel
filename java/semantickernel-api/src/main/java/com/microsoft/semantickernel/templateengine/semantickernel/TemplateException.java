@@ -2,9 +2,13 @@
 package com.microsoft.semantickernel.templateengine.semantickernel;
 
 import com.microsoft.semantickernel.exceptions.SKException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Exception thrown when a template error occurs.
+ */
 public class TemplateException extends SKException {
 
     @Nonnull
@@ -50,9 +54,8 @@ public class TemplateException extends SKException {
     // spotless:off
 
     /**
-     * <p>
      * Gets the error code for this exception.
-     * </p>
+     * @return The error code.
      */
     //spotless:on
     public ErrorCodes getErrorCode() {
@@ -62,53 +65,41 @@ public class TemplateException extends SKException {
     // spotless:off
 
     /**
-     * <p>
      * Error codes for {@code TemplateException}.
-     * </p>
      */
     //spotless:on
     public enum ErrorCodes {
 
         // spotless:off
         /**
-         * <p>
          * Unknown error.
-         * </p>
          */
         //spotless:on
         UNKNOWN_ERROR("Unknown error"),
 
         // spotless:off
         /**
-         * <p>
          * Syntax error, the template syntax used is not valid.
-         * </p>
          */
         //spotless:on
         SYNTAX_ERROR("Syntax error, the template syntax used is not valid"),
 
         // spotless:off
         /**
-         * <p>
          * The block type produced be the tokenizer was not expected.
-         * </p>
          */
         UNEXPECTED_BLOCK_TYPE("The block type produced be the tokenizer was not expected"),
 
         //spotless:off
         /**
-         * <p>
          * The template requires an unknown function.
-         * </p>
          */
         //spotless:on
         FUNCTION_NOT_FOUND("The template requires an unknown function"),
 
         // spotless:off
         /**
-         * <p>
          * The template execution failed, e.g. a function call threw an exception.
-         * </p>
          */
         //spotless:on
         RUNTIME_ERROR("The template execution failed, e.g. a function call threw an exception");
@@ -119,6 +110,12 @@ public class TemplateException extends SKException {
             this.message = message;
         }
 
+        // spotless:off
+        /**
+         * Gets the message for the error code.
+         * @return The error code message
+         */
+        //spotless:on
         public String getMessage() {
             return message;
         }

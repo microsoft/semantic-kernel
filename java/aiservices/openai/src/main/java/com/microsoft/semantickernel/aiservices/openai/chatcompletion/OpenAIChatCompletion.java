@@ -14,7 +14,6 @@ import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.ai.openai.models.ChatRequestToolMessage;
 import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
-import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -136,7 +135,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 invocationContext,
                 Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
                         invocationContext != null && invocationContext.getToolCallBehavior() != null
-                                ? invocationContext.getToolCallBehavior().getMaximumAutoInvokeAttempts() : 0)
+                                ? invocationContext.getToolCallBehavior().maximumAutoInvokeAttempts() : 0)
         );
     }
 

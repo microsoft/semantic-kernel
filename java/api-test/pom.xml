@@ -7,10 +7,11 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>1.0.0-alpha.1-SNAPSHOT</version>
+        <version>1.0.0-alpha.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <name>Semantic Kernel Api Tests</name>
     <artifactId>api-test</artifactId>
     <packaging>pom</packaging>
 
@@ -48,6 +49,13 @@
                     <source>${maven.compiler.release}</source>
                     <target>${maven.compiler.release}</target>
                     <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>

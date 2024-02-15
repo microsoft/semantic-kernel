@@ -108,8 +108,8 @@ public class Example59_OpenAIFunctionCalling {
             .build();
 
         var toolCallBehavior = new ToolCallBehavior()
-//                .kernelFunctions(true)
-                .enableFunction(plugin.get("getsTheWeatherForCity"), true)
+                .kernelFunctions(true)
+//                .enableFunction(plugin.get("getsTheWeatherForCity"), true)
                 .autoInvoke(true);
 
         var result = kernel
