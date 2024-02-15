@@ -120,18 +120,16 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         if (kernel != null) {
             kernel.getPlugins().forEach(plugin ->
                     plugin.getFunctions().forEach((name, function) ->
-                            functions.add(new OpenAIFunction(plugin.getName(), function.getMetadata()))
+                            functions.add(new OpenAIFunction(function.getMetadata(), plugin.getName()))
                     )
             );
         }
 
-        // Create copy to avoid reactor exceptions when updating the chat options messages internally
-        ChatCompletionsOptions options = getCompletionsOptions(this, new ArrayList<>(messages),
-                functions, invocationContext);
-
+        // Create copy to avoid reactor exceptions when updating request messages internally
         return internalChatMessageContentsAsync(
+                new ArrayList<>(messages),
                 kernel,
-                options,
+                functions,
                 invocationContext,
                 Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
                         invocationContext != null && invocationContext.getToolCallBehavior() != null
@@ -140,8 +138,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
+        List<ChatRequestMessage> messages,
         Kernel kernel,
-        ChatCompletionsOptions completionsOptions,
+        List<OpenAIFunction> functions,
         InvocationContext invocationContext,
         int autoInvokeAttempts) {
 
@@ -151,7 +150,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                         : new KernelHooks();
 
         ChatCompletionsOptions options = kernelHooks
-                .executeHooks(new PreChatCompletionEvent(completionsOptions))
+                .executeHooks(new PreChatCompletionEvent(
+                        getCompletionsOptions(this, messages,
+                                functions, invocationContext, autoInvokeAttempts)
+                ))
                 .getOptions();
 
         Mono<ChatCompletions> result = client.getChatCompletions(getModelId(), options);
@@ -183,7 +185,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
             // Add the original assistant message to the chat options; this is required for the service
             // to understand the tool call responses
-            options.getMessages().add(requestMessage);
+            messages.add(requestMessage);
 
             return Flux
                 .fromIterable(toolCalls)
@@ -201,7 +203,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                                             ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
                                                 functionResult.getResult(),
                                                 functionToolCall.getId());
-                                            op.getMessages().add(requestToolMessage);
+                                            messages.add(requestToolMessage);
                                             return op;
                                         });
                                 });
@@ -210,7 +212,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     })
                 .flatMap(op -> op)
                 .flatMap(
-                    op -> internalChatMessageContentsAsync(kernel, op, invocationContext, autoInvokeAttempts - 1));
+                    op -> internalChatMessageContentsAsync(messages, kernel, functions, invocationContext, autoInvokeAttempts - 1));
         });
     }
 
@@ -274,13 +276,14 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable
         List<OpenAIFunction> functions,
         @Nullable
-        InvocationContext invocationContext) {
+        InvocationContext invocationContext,
+        int autoInvokeAttempts) {
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
 
         if (invocationContext != null && invocationContext.getToolCallBehavior() != null) {
-            configureToolCallBehaviorOptions(options, invocationContext.getToolCallBehavior(), functions);
+            configureToolCallBehaviorOptions(options, invocationContext.getToolCallBehavior(), functions, autoInvokeAttempts);
         }
 
         PromptExecutionSettings promptExecutionSettings = invocationContext != null
@@ -334,25 +337,46 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             @Nullable
             ToolCallBehavior toolCallBehavior,
             @Nullable
-            List<OpenAIFunction> functions) {
+            List<OpenAIFunction> functions,
+            int autoInvokeAttempts) {
 
         if (functions == null || functions.isEmpty()) {
             return;
         }
 
-        if (toolCallBehavior == null || (!toolCallBehavior.kernelFunctionsEnabled() &&
-                 !toolCallBehavior.autoInvokeEnabled())) {
-            // If tool calls are not explicitly enabled, then we don't need to send any tool definitions
+        if (toolCallBehavior == null || autoInvokeAttempts == 0) {
+            // if auto-invoked is not enabled, then we don't need to send any tool definitions
+            return;
+        }
+
+        // If a specific function is required to be called
+        KernelFunction<?> toolChoice = toolCallBehavior.functionRequired();
+        if (toolChoice != null) {
+            List<ChatCompletionsToolDefinition> toolDefinitions = new ArrayList<>();
+            toolDefinitions.add(new ChatCompletionsFunctionToolDefinition(
+                    OpenAIFunction.toFunctionDefinition(
+                        toolCallBehavior.functionRequired().getMetadata(),
+                        toolCallBehavior.functionRequired().getPluginName()
+                    ))
+            );
+
+            options.setTools(toolDefinitions);
+            try {
+                String json = String.format("{\"type\":\"function\",\"function\":{\"name\":\"%s%s%s\"}}",
+                        toolChoice.getPluginName(),
+                        OpenAIFunction.getNameSeparator(),
+                        toolChoice.getName()
+                );
+                options.setToolChoice(BinaryData.fromObject(new ObjectMapper().readTree(json)));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             return;
         }
 
         List<ChatCompletionsToolDefinition> toolDefinitions = functions.stream()
             .filter(function -> {
-                // if auto-invoked is not enable no need to send tools
-                if (!toolCallBehavior.autoInvokeEnabled()) {
-                    return false;
-                }
-                // if kernel functions are enable send all functions as options tools
+                // if kernel functions are enabled we send all tool definitions
                 if (toolCallBehavior.kernelFunctionsEnabled()) {
                     return true;
                 }
@@ -368,22 +392,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
 
         options.setTools(toolDefinitions);
-
-        KernelFunction<?> toolChoice = toolCallBehavior.functionRequired();
-        if (toolChoice == null) {
-            options.setToolChoice(BinaryData.fromString("auto"));
-        } else {
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            try {
-                String json = objectMapper.writeValueAsString(
-                        OpenAIFunction.toFunctionDefinition(toolChoice.getMetadata(), toolChoice.getPluginName()));
-
-                options.setToolChoice(BinaryData.fromObject(objectMapper.readTree(json)));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        options.setToolChoice(BinaryData.fromString("auto"));
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(ChatHistory chatHistory) {

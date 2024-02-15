@@ -66,7 +66,7 @@ public class Example59_OpenAIFunctionCalling {
     }
 
     public static void main(String[] args) throws NoSuchMethodException {
-        System.out.println("======== Open AI - ChatGPT ========");
+        System.out.println("======== Open AI - Function calling ========");
 
         OpenAIAsyncClient client;
 
@@ -96,20 +96,30 @@ public class Example59_OpenAIFunctionCalling {
         kernel.addPlugin(plugin);
 
         var function = KernelFunctionFromPrompt.builder()
-            .withTemplate(
-                "What is the probable current color of the sky in Thrapston?")
-            .withDefaultExecutionSettings(
-                PromptExecutionSettings.builder()
-                    .withTemperature(0.4)
-                    .withTopP(1)
-                    .withMaxTokens(100)
-                    .build()
-            )
-            .build();
+                .withTemplate(
+                        "What is the probable current color of the sky in Thrapston?")
+                .withDefaultExecutionSettings(
+                        PromptExecutionSettings.builder()
+                                .withTemperature(0.4)
+                                .withTopP(1)
+                                .withMaxTokens(100)
+                                .build()
+                )
+                .build();
+
+        // Example 1: All kernel functions are enabled to be called by the model
+        kernelFunctions(kernel, function);
+        // Example 2: A set of functions available to be called by the model
+        enableFunctions(kernel, plugin, function);
+        // Example 3: A specific function to be called by the model
+        requireFunction(kernel, plugin, function);
+    }
+
+    public static void kernelFunctions(Kernel kernel, KernelFunction<?> function) {
+        System.out.println("======== Kernel functions ========");
 
         var toolCallBehavior = new ToolCallBehavior()
                 .kernelFunctions(true)
-//                .enableFunction(plugin.get("getsTheWeatherForCity"), true)
                 .autoInvoke(true);
 
         var result = kernel
@@ -118,7 +128,42 @@ public class Example59_OpenAIFunctionCalling {
                 .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
                 .block();
 
-        System.out.print(result.getResult());
+        System.out.println(result.getResult());
     }
 
+    public static void enableFunctions(Kernel kernel, KernelPlugin plugin, KernelFunction<?> function) {
+        System.out.println("======== Enable functions ========");
+
+        // Based on coordinates
+        var toolCallBehavior = new ToolCallBehavior()
+                .enableFunction(plugin.get("getLatitudeOfCity"), true)
+                .enableFunction(plugin.get("getLongitudeOfCity"), true)
+                .enableFunction(plugin.get("getsTheWeatherAtAGivenLocation"), true)
+                .autoInvoke(true);
+
+        var result = kernel
+                .invokeAsync(function)
+                .withToolCallBehavior(toolCallBehavior)
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+                .block();
+
+        System.out.println(result.getResult());
+    }
+
+    public static void requireFunction(Kernel kernel, KernelPlugin plugin, KernelFunction<?> function) {
+        System.out.println("======== Require a function ========");
+
+        // Based on coordinates
+        var toolCallBehavior = new ToolCallBehavior()
+                .requireFunction(plugin.get("getsTheWeatherForCity"))
+                .autoInvoke(true);
+
+        var result = kernel
+                .invokeAsync(function)
+                .withToolCallBehavior(toolCallBehavior)
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+                .block();
+
+        System.out.println(result.getResult());
+    }
 }

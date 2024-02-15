@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-public class OpenAIFunction {
+class OpenAIFunction {
     private final String pluginName;
     private final String name;
     private final FunctionDefinition functionDefinition;
-    public OpenAIFunction(String pluginName, KernelFunctionMetadata<?> metadata) {
+    public OpenAIFunction(KernelFunctionMetadata<?> metadata, String pluginName) {
         this.name = metadata.getName();
         this.pluginName = pluginName;
         this.functionDefinition = toFunctionDefinition(metadata, pluginName);
@@ -69,7 +69,7 @@ public class OpenAIFunction {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             for (KernelParameterMetadata<?> parameter : metadata.getParameters()) {
-                String parameterJsonSchema = getDefaultSchemaForParameter(parameter.getDescription());
+                String parameterJsonSchema = getSchemaForFunctionParameter(parameter.getDescription());
                 properties.put(parameter.getName(), objectMapper.readTree(parameterJsonSchema));
 
                 if (parameter.isRequired()) {
@@ -105,7 +105,7 @@ public class OpenAIFunction {
         }
     }
 
-    private static String getDefaultSchemaForParameter(String description) {
+    private static String getSchemaForFunctionParameter(String description) {
         if (description == null)
             return "{\"type\":\"string\"}";
         return String.format("{\"type\":\"string\", \"description\":\"%s\"}", description);

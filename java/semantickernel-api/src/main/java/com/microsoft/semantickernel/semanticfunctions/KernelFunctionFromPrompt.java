@@ -58,6 +58,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         Map<String, PromptExecutionSettings> executionSettings) {
         super(
             new KernelFunctionMetadata<>(
+                null,
                 getName(promptConfig),
                 promptConfig.getDescription(),
                 promptConfig.getKernelParametersMetadata(),

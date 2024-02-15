@@ -72,7 +72,7 @@ public class ToolCallBehavior {
      * @return This ToolCallBehavior.
      */
     public ToolCallBehavior autoInvoke(boolean enable) {
-        this.maximumAutoInvokeAttempts = enable ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0;
+        maximumAutoInvokeAttempts(enable ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0);
         return this;
     }
 
@@ -88,6 +88,7 @@ public class ToolCallBehavior {
      */
     public ToolCallBehavior requireFunction(KernelFunction<?> function) {
         requiredFunction = function;
+        maximumAutoInvokeAttempts(1);
         return this;
     }
 
@@ -128,7 +129,11 @@ public class ToolCallBehavior {
         if (maximumAutoInvokeAttempts < 0) {
             throw new SKException("The maximum auto-invoke attempts should be greater than or equal to zero.");
         }
-        this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
+        if (requiredFunction == null) {
+            this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
+        } else {
+            this.maximumAutoInvokeAttempts = Math.min(1, maximumAutoInvokeAttempts);
+        }
         return this;
     }
 

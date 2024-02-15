@@ -18,6 +18,8 @@ public class KernelFunctionMetadata<T> {
 
     private final String name;
     @Nullable
+    private final String pluginName;
+    @Nullable
     private final String description;
     private final List<KernelParameterMetadata<?>> parameters;
     private final KernelReturnParameterMetadata<T> returnParameter;
@@ -25,18 +27,22 @@ public class KernelFunctionMetadata<T> {
     /**
      * Create a new instance of KernelFunctionMetadata.
      *
+     * @param pluginName     The name of the plugin to which the function belongs
      * @param name           The name of the function.
      * @param description    The description of the function.
      * @param parameters     The parameters of the function.
      * @param returnParameter The return parameter of the function.
      */
     public KernelFunctionMetadata(
+        @Nullable
+        String pluginName,
         String name,
         @Nullable
         String description,
         @Nullable
         List<KernelParameterMetadata<?>> parameters,
         KernelReturnParameterMetadata<T> returnParameter) {
+        this.pluginName = pluginName;
         this.name = name;
         this.description = description;
         if (parameters == null) {
@@ -46,6 +52,14 @@ public class KernelFunctionMetadata<T> {
         }
 
         this.returnParameter = returnParameter;
+    }
+
+    /**
+     * Get the name of the plugin to which the function belongs
+     * @return The name of the function.
+     */
+    public String getPluginName() {
+        return pluginName;
     }
 
     /**
