@@ -1,9 +1,9 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.functions.KernelFunction;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.functions.annotations.DefineKernelFunction;
 
 public class Example69_MutableKernelPlugin {
 

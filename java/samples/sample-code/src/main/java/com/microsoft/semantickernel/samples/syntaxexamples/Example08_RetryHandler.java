@@ -6,10 +6,10 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+
+import com.microsoft.semantickernel.functions.KernelFunction;
+import com.microsoft.semantickernel.functions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.time.Duration;
 
 public class Example08_RetryHandler {
@@ -17,7 +17,7 @@ public class Example08_RetryHandler {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "text-davinci-003");
 
-    public static void main(String[] args) throws ConfigurationException {
+    public static void main(String[] args) {
         // Create a Kernel with the HttpClient
         RetryOptions retryOptions = new RetryOptions(new ExponentialBackoffOptions()
             .setMaxDelay(Duration.ofSeconds(10))

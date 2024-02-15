@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.plugins.web;
 
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.functions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.functions.annotations.KernelFunctionParameter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 

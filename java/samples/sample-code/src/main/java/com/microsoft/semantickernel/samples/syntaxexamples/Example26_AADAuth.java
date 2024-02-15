@@ -5,9 +5,8 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.identity.DeviceCodeCredential;
 import com.azure.identity.DeviceCodeCredentialBuilder;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.exceptions.ConfigurationException;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 
 public class Example26_AADAuth {
 
@@ -15,7 +14,7 @@ public class Example26_AADAuth {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
-    public static void main(String[] args) throws ConfigurationException {
+    public static void main(String[] args) {
 
         DeviceCodeCredential token = new DeviceCodeCredentialBuilder()
             .build();

@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.implementation.tokenizer.blocks;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 

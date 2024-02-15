@@ -1,6 +1,7 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.functions.KernelFunction;
 import java.util.HashSet;
 import java.util.Set;
 

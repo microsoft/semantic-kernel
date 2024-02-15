@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import java.util.Map;
 import javax.annotation.Nullable;
 

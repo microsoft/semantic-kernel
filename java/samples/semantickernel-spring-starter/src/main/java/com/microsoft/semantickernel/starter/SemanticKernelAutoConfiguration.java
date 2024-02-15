@@ -45,7 +45,7 @@ public class SemanticKernelAutoConfiguration {
     /**
      * Creates a {@link Kernel} with a default
      * {@link com.microsoft.semantickernel.services.AIService} that uses the
-     * {@link com.microsoft.semantickernel.chatcompletion;} with the model id specified in the
+     * {@link com.microsoft.semantickernel.services.chatcompletion;} with the model id specified in the
      * {@link AzureOpenAIConnectionProperties} as DeploymentName.
      *
      * @param client the {@link OpenAIAsyncClient} to use

@@ -6,18 +6,18 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.functions.FunctionResult;
+import com.microsoft.semantickernel.functions.KernelFunction;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugins.web.WebSearchEnginePlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.functions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.functions.KernelPromptTemplateFactory;
+import com.microsoft.semantickernel.functions.PromptTemplate;
+import com.microsoft.semantickernel.functions.PromptTemplateConfig;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data

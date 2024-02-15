@@ -6,13 +6,13 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-import com.microsoft.semantickernel.semanticfunctions.AggregatorPromptTemplateFactory;
-import com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments;
+import com.microsoft.semantickernel.functions.AggregatorPromptTemplateFactory;
+import com.microsoft.semantickernel.functions.HandlebarsPromptTemplateFactory;
+import com.microsoft.semantickernel.functions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.functions.KernelPromptTemplateFactory;
+import com.microsoft.semantickernel.functions.PromptTemplateFactory;
 import java.util.List;
 
 public class Example64_MultiplePromptTemplates {

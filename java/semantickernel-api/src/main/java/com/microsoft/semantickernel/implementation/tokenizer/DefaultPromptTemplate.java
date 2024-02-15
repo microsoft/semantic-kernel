@@ -10,10 +10,10 @@ import com.microsoft.semantickernel.implementation.tokenizer.blocks.NamedArgBloc
 import com.microsoft.semantickernel.implementation.tokenizer.blocks.TextRendering;
 import com.microsoft.semantickernel.implementation.tokenizer.blocks.VarBlock;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-import com.microsoft.semantickernel.semanticfunctions.InputVariable;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments;
+import com.microsoft.semantickernel.functions.InputVariable;
+import com.microsoft.semantickernel.functions.PromptTemplate;
+import com.microsoft.semantickernel.functions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
 import java.util.HashSet;

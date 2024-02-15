@@ -4,7 +4,7 @@ import static com.microsoft.semantickernel.implementation.tokenizer.blocks.Block
 
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.Verify;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

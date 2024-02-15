@@ -7,13 +7,13 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
-import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments.Builder;
+
+import com.microsoft.semantickernel.functions.FunctionResult;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments.Builder;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
-import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import reactor.core.publisher.Mono;
 
 /**
@@ -143,7 +143,7 @@ public class Example13_ConversationSummaryPlugin {
         """
         .stripIndent();
 
-    public static void main(String[] args) throws ConfigurationException {
+    public static void main(String[] args) {
         conversationSummaryPluginAsync();
         getConversationActionItemsAsync();
         getConversationTopicsAsync();

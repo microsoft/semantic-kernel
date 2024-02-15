@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.implementation.tokenizer.blocks;
 
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments;
 import javax.annotation.Nullable;
 
 public final class TextBlock extends Block implements TextRendering {

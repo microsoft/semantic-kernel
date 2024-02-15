@@ -1,8 +1,8 @@
 package com.microsoft.semantickernel.hooks;
 
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.functions.FunctionResult;
+import com.microsoft.semantickernel.functions.KernelFunction;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 

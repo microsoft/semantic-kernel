@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.plugins;
 
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.functions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.functions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.util.LocaleParser;
 import java.time.ZoneId;
 import java.time.ZoneOffset;

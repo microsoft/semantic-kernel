@@ -1,3 +1,4 @@
+
 package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;

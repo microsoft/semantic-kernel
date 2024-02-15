@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.implementation.tokenizer.CodeTokenizer;
 import com.microsoft.semantickernel.implementation.tokenizer.blocks.Block;
 import com.microsoft.semantickernel.implementation.tokenizer.blocks.FunctionIdBlock;
 import com.microsoft.semantickernel.implementation.tokenizer.blocks.NamedArgBlock;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.functions.KernelFunctionArguments;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
