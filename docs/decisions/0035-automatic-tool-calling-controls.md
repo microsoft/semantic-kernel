@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: gitri-ms
 date: 2024-02-15
 deciders: stephentoub, alliscode, markwallace-microsoft
