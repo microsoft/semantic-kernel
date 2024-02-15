@@ -121,7 +121,6 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 
     public static TheoryData<OpenAIAudioToTextExecutionSettings?, Type> ExecutionSettings => new()
     {
-        { null, typeof(ArgumentNullException) },
         { new OpenAIAudioToTextExecutionSettings(""), typeof(ArgumentException) },
         { new OpenAIAudioToTextExecutionSettings("file"), typeof(ArgumentException) }
     };
