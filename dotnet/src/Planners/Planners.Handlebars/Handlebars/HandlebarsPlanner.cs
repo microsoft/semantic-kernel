@@ -72,11 +72,6 @@ public sealed class HandlebarsPlanner
 
     private readonly HandlebarsPromptTemplateFactory _templateFactory;
 
-    /// <summary>
-    /// Error message if kernel does not contain sufficient functions to create a plan.
-    /// </summary>
-    private const string InsufficientFunctionsError = "Additional helpers or information may be required";
-
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
         string? createPlanPrompt = null;
@@ -93,14 +88,6 @@ public sealed class HandlebarsPlanner
             // Get the chat completion results
             var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
             modelResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            // Check if plan could not be created due to insufficient functions
-            if (modelResults.Content is not null && modelResults.Content.IndexOf(InsufficientFunctionsError, StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{this._templateFactory.NameDelimiter}{func.Name}");
-                throw new KernelException(
-                    $"[{HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal}] Unable to create plan for goal with available functions.");
-            }
 
             Match match = Regex.Match(modelResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
             if (!match.Success)
@@ -252,7 +239,6 @@ public sealed class HandlebarsPlanner
                 { "goal", goal },
                 { "predefinedArguments", predefinedArgumentsWithTypes},
                 { "nameDelimiter", this._templateFactory.NameDelimiter},
-                { "insufficientFunctionsErrorMessage", InsufficientFunctionsError},
                 { "allowLoops", this._options.AllowLoops },
                 { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
                 { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
