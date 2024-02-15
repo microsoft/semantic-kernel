@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
 /// </summary>
-internal sealed class HandlebarsPlanCreationException : KernelException
+public sealed class HandlebarsPlanCreationException : KernelException
 {
     /// <summary>
     /// Gets the prompt template used to generate the plan.
@@ -17,19 +19,39 @@ internal sealed class HandlebarsPlanCreationException : KernelException
     /// </summary>
     public ChatMessageContent? ModelResults { get; set; } = null;
 
-    public HandlebarsPlanCreationException() : base()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HandlebarsPlanCreationException"/> class.
+    /// </summary>
+    public HandlebarsPlanCreationException()
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HandlebarsPlanCreationException"/> class with a specified error message.
+    /// </summary>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
     public HandlebarsPlanCreationException(string? message) : base(message)
     {
     }
 
-    public HandlebarsPlanCreationException(string? message, System.Exception? innerException) : base(message, innerException)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HandlebarsPlanCreationException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
+    /// </summary>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
+    public HandlebarsPlanCreationException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
 
-    public HandlebarsPlanCreationException(string? message, string? createPlanPrompt, ChatMessageContent? modelResults, System.Exception? innerException = null) : base(message, innerException)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HandlebarsPlanCreationException"/> class.
+    /// Exception thrown when a plan cannot be created containing the prompt and model results.
+    /// </summary>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="createPlanPrompt">The prompt template used to generate the plan.</param>
+    /// <param name="modelResults">Completion results from the model, generally, the proposed handlebars template representing the plan.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
+    public HandlebarsPlanCreationException(string? message, string? createPlanPrompt, ChatMessageContent? modelResults, Exception? innerException = null) : base(message, innerException)
     {
         this.CreatePlanPrompt = createPlanPrompt;
         this.ModelResults = modelResults;
