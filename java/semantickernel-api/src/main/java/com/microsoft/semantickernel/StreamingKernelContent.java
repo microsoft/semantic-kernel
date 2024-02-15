@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
  * Base class which represents the content returned by a streaming AI service.
  * @param <T> The type of the content. 
  */
-public abstract class StreamingKernelContent<T extends KernelContent<T>> extends KernelContent<T> {
+public abstract class StreamingKernelContent<T> extends KernelContent<T> {
 
     /**
      * In a scenario of multiple choices per request, this represents 

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.services.AIService;
+
 /**
  * Marker interface for Text AI services, typically Chat or Text generation for OpenAI
  */

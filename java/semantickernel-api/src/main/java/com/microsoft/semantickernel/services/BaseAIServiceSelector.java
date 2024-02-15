@@ -1,6 +1,5 @@
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 
@@ -17,14 +16,14 @@ import javax.annotation.Nullable;
  */
 public abstract class BaseAIServiceSelector implements AIServiceSelector {
 
-    protected final Map<Class<? extends AIService>, AIService> services;
+    protected final AiServiceCollection services;
 
     /**
      * Initializes a new instance of the {@link BaseAIServiceSelector} class.
      *
      * @param services The services to select from.
      */
-    protected BaseAIServiceSelector(Map<Class<? extends AIService>, AIService> services) {
+    protected BaseAIServiceSelector(AiServiceCollection services) {
         this.services = services;
     }
 

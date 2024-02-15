@@ -8,9 +8,9 @@ import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.time.Instant;
@@ -92,7 +92,7 @@ public class Example05_InlineFunctionDefinitionTest {
         var date = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneOffset.UTC)
             .format(Instant.ofEpochSecond(1));
         var message = "Translate this date " + date + " to French format";
-        var fixedFunction = KernelFunctionFactory.<String>createFromPrompt(message)
+        var fixedFunction = KernelFunction.<String>createFromPrompt(message)
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
                     .withMaxTokens(100)

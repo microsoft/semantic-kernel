@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 /**
  * Content from a text completion service.
  */
-public class TextContent extends KernelContent<TextContent> {
+public class TextContent extends KernelContent<String> {
 
     private final String content;
 

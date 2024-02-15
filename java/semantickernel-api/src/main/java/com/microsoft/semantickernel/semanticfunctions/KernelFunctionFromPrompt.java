@@ -1,7 +1,6 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.azure.core.exception.HttpResponseException;
-import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
@@ -19,6 +18,7 @@ import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.ArrayList;
@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

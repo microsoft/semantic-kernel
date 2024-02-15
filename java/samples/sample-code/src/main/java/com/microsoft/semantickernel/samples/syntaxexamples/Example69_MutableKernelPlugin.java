@@ -1,9 +1,8 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 
 public class Example69_MutableKernelPlugin {
@@ -25,7 +24,11 @@ public class Example69_MutableKernelPlugin {
     public static void main(String[] args) throws NoSuchMethodException {
         System.out.println("======== Example69_MutableKernelPlugin ========");
 
-        KernelPlugin plugin = KernelPluginFactory.createFromObject(new Time(), "MutablePlugin");
+        KernelPlugin plugin = new KernelPlugin("Plugin", "Mutable plugin", null);
+        plugin.addFunction(KernelFunction.createFromMethod(
+            Time.class.getMethod("date"), new Time())
+                .withFunctionName("dateFunction")
+                .build());
 
         Kernel kernel = Kernel.builder().build();
         kernel.addPlugin(plugin);

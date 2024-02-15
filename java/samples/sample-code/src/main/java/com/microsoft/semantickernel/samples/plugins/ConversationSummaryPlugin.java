@@ -5,7 +5,6 @@ import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.text.TextChunker;
@@ -37,7 +36,7 @@ public class ConversationSummaryPlugin {
             .withTopP(0.5)
             .build();
 
-        this.summarizeConversationFunction = KernelFunctionFactory
+        this.summarizeConversationFunction = KernelFunction
             .<String>createFromPrompt(PromptFunctionConstants.SummarizeConversationDefinition)
             .withDefaultExecutionSettings(settings)
             .withName("summarizeConversation")
@@ -45,14 +44,14 @@ public class ConversationSummaryPlugin {
                 "Given a section of a conversation transcript, summarize the part of the conversation.")
             .build();
 
-        this.conversationActionItemsFunction = KernelFunctionFactory
+        this.conversationActionItemsFunction = KernelFunction
             .<String>createFromPrompt(PromptFunctionConstants.GetConversationActionItemsDefinition)
             .withDefaultExecutionSettings(settings)
             .withName("conversationActionItems")
             .withDescription("Given a section of a conversation transcript, identify action items.")
             .build();
 
-        this.conversationTopicsFunction = KernelFunctionFactory
+        this.conversationTopicsFunction = KernelFunction
             .<String>createFromPrompt(PromptFunctionConstants.GetConversationTopicsDefinition)
             .withDefaultExecutionSettings(settings)
             .withName("conversationTopics")

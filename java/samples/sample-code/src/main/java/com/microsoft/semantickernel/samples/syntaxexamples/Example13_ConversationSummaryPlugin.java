@@ -14,8 +14,6 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-import com.sun.jna.StringArray;
-
 import reactor.core.publisher.Mono;
 
 /**

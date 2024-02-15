@@ -11,7 +11,6 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
-
 import java.util.ArrayList;
 
 public class Example42_KernelBuilder {

@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine.semantickernel;
+package com.microsoft.semantickernel.implementation.tokenizer;
 
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.Block;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.CodeBlock;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.Symbols;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.TextBlock;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.Block;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.CodeBlock;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.Symbols;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.TextBlock;
+import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
