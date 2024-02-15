@@ -26,7 +26,7 @@ class BingConnector(ConnectorBase):
         if not self._api_key:
             raise ValueError("Bing API key cannot be null. Please set environment variable BING_API_KEY.")
 
-    async def search_async(self, query: str, num_results: str, offset: str) -> List[str]:
+    async def search(self, query: str, num_results: str, offset: str) -> List[str]:
         """
         Returns the search results of the query provided by pinging the Bing web search API.
         Returns `num_results` results and ignores the first `offset`.

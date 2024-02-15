@@ -30,7 +30,7 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
     url: HttpUrl = "http://localhost:11434/api/embeddings"
     session: Optional[aiohttp.ClientSession] = None
 
-    async def generate_embeddings_async(self, texts: List[str], **kwargs) -> ndarray:
+    async def generate_embeddings(self, texts: List[str], **kwargs) -> ndarray:
         """
         Generates embeddings for a list of texts.
 
@@ -42,7 +42,8 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
         """
         async with AsyncSession(self.session) as session:
             async with session.post(
-                self.url, json={"model": self.ai_model_id, "texts": texts, "options": kwargs}
+                self.url,
+                json={"model": self.ai_model_id, "texts": texts, "options": kwargs},
             ) as response:
                 response.raise_for_status()
                 return array(await response.json())

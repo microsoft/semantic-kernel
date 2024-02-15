@@ -5,52 +5,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using Xunit;
+using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
+namespace Examples;
+
 /// <summary>
 /// Showcase complex Open AI Agent collaboration using semantic kernel.
 /// </summary>
-public static class Example72_AgentCollaboration
+public class Example72_AgentCollaboration : BaseTest
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-4-0613";
+    private const string OpenAIFunctionEnabledModel = "gpt-4-turbo-preview";
+
+    /// <summary>
+    /// Set this to 'true' to target OpenAI instead of Azure OpenAI.
+    /// </summary>
+    private const bool UseOpenAI = false;
 
     // Track agents for clean-up
     private static readonly List<IAgent> s_agents = new();
 
     /// <summary>
-    /// Show how to combine and coordinate multiple agents.
-    /// </summary>
-    public static async Task RunAsync()
-    {
-        Console.WriteLine("======== Example72_AgentCollaboration ========");
-
-        if (TestConfiguration.OpenAI.ApiKey == null)
-        {
-            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
-            return;
-        }
-
-        // NOTE: Either of these examples produce a conversation
-        // whose duration may vary depending on the collaboration dynamics.
-        // It is sometimes possible that agreement is never achieved.
-
-        // Explicit collaboration
-        await RunCollaborationAsync();
-
-        // Coordinate collaboration as plugin agents (equivalent to previous case - shared thread)
-        await RunAsPluginsAsync();
-    }
-
-    /// <summary>
     /// Show how two agents are able to collaborate as agents on a single thread.
     /// </summary>
-    private static async Task RunCollaborationAsync()
+    [Fact(Skip = "This test take more than 5 minutes to execute")]
+    public async Task RunCollaborationAsync()
     {
-        Console.WriteLine("======== Run:Collaboration ========");
+        WriteLine($"======== Example72:Collaboration:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
+
         IAgentThread? thread = null;
         try
         {
@@ -99,9 +85,11 @@ public static class Example72_AgentCollaboration
     /// While this may achieve an equivalent result to <see cref="RunCollaborationAsync"/>,
     /// it is not using shared thread state for agent interaction.
     /// </remarks>
-    private static async Task RunAsPluginsAsync()
+    [Fact(Skip = "This test take more than 2 minutes to execute")]
+    public async Task RunAsPluginsAsync()
     {
-        Console.WriteLine("======== Run:AsPlugins ========");
+        WriteLine($"======== Example72:AsPlugins:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
+
         try
         {
             // Create copy-writer agent to generate ideas
@@ -112,8 +100,7 @@ public static class Example72_AgentCollaboration
             // Create coordinator agent to oversee collaboration
             var coordinator =
                 Track(
-                    await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    await CreateAgentBuilder()
                         .WithInstructions("Reply the provided concept and have the copy-writer generate an marketing idea (copy).  Then have the art-director reply to the copy-writer with a review of the copy.  Always include the source copy in any message.  Always include the art-director comments when interacting with the copy-writer.  Coordinate the repeated replies between the copy-writer and art-director until the art-director approves the copy.")
                         .WithPlugin(copyWriter.AsPlugin())
                         .WithPlugin(artDirector.AsPlugin())
@@ -123,7 +110,7 @@ public static class Example72_AgentCollaboration
             var response = await coordinator.AsPlugin().InvokeAsync("concept: maps made out of egg cartons.");
 
             // Display final result
-            Console.WriteLine(response);
+            WriteLine(response);
         }
         finally
         {
@@ -132,13 +119,12 @@ public static class Example72_AgentCollaboration
         }
     }
 
-    private async static Task<IAgent> CreateCopyWriterAsync(IAgent? agent = null)
+    private static async Task<IAgent> CreateCopyWriterAsync(IAgent? agent = null)
     {
         return
             Track(
-                await new AgentBuilder()
-                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                    .WithInstructions("You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.")
+                await CreateAgentBuilder()
+                    .WithInstructions("You are a copywriter with ten years of experience and are known for b/threadsrevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.")
                     .WithName("Copywriter")
                     .WithDescription("Copywriter")
                     .WithPlugin(agent?.AsPlugin())
@@ -149,15 +135,24 @@ public static class Example72_AgentCollaboration
     {
         return
             Track(
-                await new AgentBuilder()
-                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                await CreateAgentBuilder()
                     .WithInstructions("You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print, even if it isn't perfect.  If not, provide insight on how to refine suggested copy without example.  Always respond to the most recent message by evaluating and providing critique without example.  Always repeat the copy at the beginning.  If copy is acceptable and meets your criteria, say: PRINT IT.")
                     .WithName("Art Director")
                     .WithDescription("Art Director")
                     .BuildAsync());
     }
 
-    private static void DisplayMessages(IEnumerable<IChatMessage> messages, IAgent? agent = null)
+    private static AgentBuilder CreateAgentBuilder()
+    {
+        var builder = new AgentBuilder();
+
+        return
+            UseOpenAI ?
+                builder.WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+                builder.WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.DeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
+    }
+
+    private void DisplayMessages(IEnumerable<IChatMessage> messages, IAgent? agent = null)
     {
         foreach (var message in messages)
         {
@@ -165,16 +160,16 @@ public static class Example72_AgentCollaboration
         }
     }
 
-    private static void DisplayMessage(IChatMessage message, IAgent? agent = null)
+    private void DisplayMessage(IChatMessage message, IAgent? agent = null)
     {
-        Console.WriteLine($"[{message.Id}]");
+        WriteLine($"[{message.Id}]");
         if (agent != null)
         {
-            Console.WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
+            WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
         }
         else
         {
-            Console.WriteLine($"# {message.Role}: {message.Content}");
+            WriteLine($"# {message.Role}: {message.Content}");
         }
     }
 
@@ -183,5 +178,9 @@ public static class Example72_AgentCollaboration
         s_agents.Add(agent);
 
         return agent;
+    }
+
+    public Example72_AgentCollaboration(ITestOutputHelper output) : base(output)
+    {
     }
 }
