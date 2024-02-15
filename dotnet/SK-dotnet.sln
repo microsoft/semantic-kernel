@@ -99,6 +99,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs = src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs
 		src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs = src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs
+		src\InternalUtilities\src\Diagnostics\ExperimentalAttribute.cs = src\InternalUtilities\src\Diagnostics\ExperimentalAttribute.cs
+		src\InternalUtilities\src\Diagnostics\IsExternalInit.cs = src\InternalUtilities\src\Diagnostics\IsExternalInit.cs
 		src\InternalUtilities\src\Diagnostics\NullableAttributes.cs = src\InternalUtilities\src\Diagnostics\NullableAttributes.cs
 		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
 	EndProjectSection
@@ -110,15 +112,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3573-4477-BF07-40180FCDE1BD}"
 	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Http\HttpClientExtensions.cs = src\InternalUtilities\src\Http\HttpClientExtensions.cs
 		src\InternalUtilities\src\Http\HttpClientProvider.cs = src\InternalUtilities\src\Http\HttpClientProvider.cs
+		src\InternalUtilities\src\Http\HttpContentExtensions.cs = src\InternalUtilities\src\Http\HttpContentExtensions.cs
+		src\InternalUtilities\src\Http\HttpHeaderValues.cs = src\InternalUtilities\src\Http\HttpHeaderValues.cs
+		src\InternalUtilities\src\Http\HttpRequest.cs = src\InternalUtilities\src\Http\HttpRequest.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\System\EnvExtensions.cs = src\InternalUtilities\src\System\EnvExtensions.cs
+		src\InternalUtilities\src\System\InternalTypeConverter.cs = src\InternalUtilities\src\System\InternalTypeConverter.cs
+		src\InternalUtilities\src\System\NonNullCollection.cs = src\InternalUtilities\src\System\NonNullCollection.cs
+		src\InternalUtilities\src\System\TypeConverterFactory.cs = src\InternalUtilities\src\System\TypeConverterFactory.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Type", "Type", "{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Type\TypeExtensions.cs = src\InternalUtilities\src\Type\TypeExtensions.cs
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Core", "src\Plugins\Plugins.Core\Plugins.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"
 EndProject
@@ -152,8 +164,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.Handlebars", "src\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "planning", "planning", "{A7DAB812-81CF-4931-B38C-468A3261C4C8}"
 	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\planning\PlannerConfigBase.cs = src\InternalUtilities\planning\PlannerConfigBase.cs
 		src\InternalUtilities\planning\PlannerInstrumentation.cs = src\InternalUtilities\planning\PlannerInstrumentation.cs
+		src\InternalUtilities\planning\PlannerOptions.cs = src\InternalUtilities\planning\PlannerOptions.cs
 		src\InternalUtilities\planning\PlanningUtilities.props = src\InternalUtilities\planning\PlanningUtilities.props
 		src\InternalUtilities\planning\SemanticMemoryConfig.cs = src\InternalUtilities\planning\SemanticMemoryConfig.cs
 	EndProjectSection
@@ -172,7 +184,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schema", "Schema", "{873281
 		src\InternalUtilities\planning\Schema\JsonSchemaFunctionResponse.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionResponse.cs
 		src\InternalUtilities\planning\Schema\JsonSchemaFunctionView.cs = src\InternalUtilities\planning\Schema\JsonSchemaFunctionView.cs
 		src\InternalUtilities\planning\Schema\JsonSchemaResponse.cs = src\InternalUtilities\planning\Schema\JsonSchemaResponse.cs
-		src\InternalUtilities\planning\Schema\KernelFunctionMetadataExtensions.cs = src\InternalUtilities\planning\Schema\KernelFunctionMetadataExtensions.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.Handlebars.UnitTests", "src\Planners\Planners.Handlebars.UnitTests\Planners.Handlebars.UnitTests.csproj", "{3FC4A81B-8ABE-473F-BC7C-6F4885775534}"
@@ -194,6 +205,21 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentationExamples", "samples\DocumentationExamples\DocumentationExamples.csproj", "{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateChatGptPlugin", "samples\CreateChatGptPlugin\Solution\CreateChatGptPlugin.csproj", "{87AB5AF5-5783-4372-9789-664895E0A2FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.OpenApi.Extensions", "src\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj", "{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-AE5F-4080-8790-13EB16323CEF}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Text\JsonOptionsCache.cs = src\InternalUtilities\src\Text\JsonOptionsCache.cs
+		src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs = src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-FA0D-45E6-80BA-22A373609E89}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\test\Linq\AsyncEnumerable.cs = src\InternalUtilities\test\Linq\AsyncEnumerable.cs
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureAISearch.UnitTests", "src\Connectors\Connectors.AzureAISearch.UnitTests\Connectors.AzureAISearch.UnitTests.csproj", "{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -470,6 +496,18 @@ Global
 		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87AB5AF5-5783-4372-9789-664895E0A2FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -540,6 +578,10 @@ Global
 		{731CC542-8BE9-42D4-967D-99206EC2B310} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 		{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{87AB5AF5-5783-4372-9789-664895E0A2FF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
+		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
+		{EB2C141A-AE5F-4080-8790-13EB16323CEF} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{607DD6FA-FA0D-45E6-80BA-22A373609E89} = {5C246969-D794-4EC3-8E8F-F90D4D166420}
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

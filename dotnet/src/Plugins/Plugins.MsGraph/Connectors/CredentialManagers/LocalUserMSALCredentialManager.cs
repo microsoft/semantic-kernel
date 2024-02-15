@@ -93,7 +93,7 @@ public sealed class LocalUserMSALCredentialManager
             {
                 IPublicClientApplication newPublicApp = PublicClientApplicationBuilder.Create(clientId)
                     .WithRedirectUri(redirectUri.ToString())
-                    .WithTenantId(tenantId)
+                    .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
                     .Build();
                 this._cacheHelper.RegisterCache(newPublicApp.UserTokenCache);
                 return newPublicApp;
