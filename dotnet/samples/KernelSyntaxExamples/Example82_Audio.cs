@@ -16,13 +16,13 @@ namespace Examples;
 /// <summary>
 /// Represents a class that demonstrates audio processing functionality.
 /// </summary>
-public sealed class Example28_Audio : BaseTest
+public sealed class Example82_Audio : BaseTest
 {
     private const string TextToAudioModel = "tts-1";
     private const string AudioToTextModel = "whisper-1";
-    private const string AudioFilePath = "input.wav";
+    private const string AudioFilePath = "audio.wav";
 
-    [Fact(Skip = "Needs setup.")]
+    [Fact(Skip = "Uncomment the line to write the audio file output before running this test.")]
     public async Task TextToAudioAsync()
     {
         // Create a kernel with OpenAI text to audio service
@@ -37,7 +37,7 @@ public sealed class Example28_Audio : BaseTest
         string sampleText = "Hello, my name is John. I am a software engineer. I am working on a project to convert text to audio.";
 
         // Set execution settings (optional)
-        OpenAITextToAudioExecutionSettings executionSettings = new("alloy")
+        OpenAITextToAudioExecutionSettings executionSettings = new()
         {
             Voice = "alloy", // The voice to use when generating the audio.
                              // Supported voices are alloy, echo, fable, onyx, nova, and shimmer.
@@ -51,10 +51,10 @@ public sealed class Example28_Audio : BaseTest
         AudioContent audioContent = await textToAudioService.GetAudioContentAsync(sampleText, executionSettings);
 
         // Save audio content to a file
-        // await File.WriteAllBytesAsync("output.wav", audioContent.Data.ToArray());
+        // await File.WriteAllBytesAsync(AudioFilePath, audioContent.Data!.ToArray());
     }
 
-    [Fact(Skip = "Setup audio file input before running this test.")]
+    [Fact(Skip = "Setup and run TextToAudioAsync before running this test.")]
     public async Task AudioToTextAsync()
     {
         // Create a kernel with OpenAI audio to text service
@@ -67,7 +67,7 @@ public sealed class Example28_Audio : BaseTest
         var audioToTextService = kernel.GetRequiredService<IAudioToTextService>();
 
         // Set execution settings (optional)
-        OpenAIAudioToTextExecutionSettings executionSettings = new("input.wav")
+        OpenAIAudioToTextExecutionSettings executionSettings = new(AudioFilePath)
         {
             Language = "en", // The language of the audio data as two-letter ISO-639-1 language code (e.g. 'en' or 'es').
             Prompt = "sample prompt", // An optional text to guide the model's style or continue a previous audio segment.
@@ -89,5 +89,5 @@ public sealed class Example28_Audio : BaseTest
         this.WriteLine(textContent.Text);
     }
 
-    public Example28_Audio(ITestOutputHelper output) : base(output) { }
+    public Example82_Audio(ITestOutputHelper output) : base(output) { }
 }
