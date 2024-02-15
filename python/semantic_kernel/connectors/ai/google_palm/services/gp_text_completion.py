@@ -16,7 +16,6 @@ from google.generativeai.types.text_types import TextCompletion
 from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
     GooglePalmTextPromptExecutionSettings,
 )
@@ -28,7 +27,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
+class GooglePalmTextCompletion(TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
     def __init__(self, ai_model_id: str, api_key: str, log: Optional[Any] = None):

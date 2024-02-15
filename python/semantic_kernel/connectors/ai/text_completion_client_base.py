@@ -4,12 +4,14 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, List, Optional
 
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents import StreamingTextContent, TextContent
 
 
-class TextCompletionClientBase(ABC):
+class TextCompletionClientBase(AIServiceClientBase, ABC):
     """Base class for text completion AI services."""
 
     @abstractmethod

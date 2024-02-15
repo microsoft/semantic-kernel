@@ -7,7 +7,6 @@ from typing import AsyncIterable, Dict, List, Optional
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -26,7 +25,7 @@ from semantic_kernel.contents.text_content import TextContent
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase, AIServiceClientBase):
+class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
     """
     Initializes a new instance of the OllamaChatCompletion class.
 

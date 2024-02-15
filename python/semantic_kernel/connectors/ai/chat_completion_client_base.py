@@ -3,13 +3,15 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, List, Optional
 
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents import ChatMessageContent, StreamingChatMessageContent
     from semantic_kernel.models.ai.chat_completion.chat_message import ChatMessage
 
 
-class ChatCompletionClientBase(ABC):
+class ChatCompletionClientBase(AIServiceClientBase, ABC):
     @abstractmethod
     async def complete_chat(
         self,

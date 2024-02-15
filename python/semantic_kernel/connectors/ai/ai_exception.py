@@ -30,6 +30,8 @@ class AIException(Exception):
         FunctionTypeNotSupported = 9
         # The LLM raised an error due to improper content.
         BadContentError = 10
+        # No service was found.
+        NoServiceFound = 11
 
     # The error code.
     _error_code: ErrorCodes

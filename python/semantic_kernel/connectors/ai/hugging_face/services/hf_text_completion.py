@@ -8,7 +8,6 @@ import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
     HuggingFacePromptExecutionSettings,
 )
@@ -24,7 +23,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
+class HuggingFaceTextCompletion(TextCompletionClientBase):
     task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
     generator: Any
@@ -34,6 +33,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         ai_model_id: str,
         task: Optional[str] = "text2text-generation",
         device: Optional[int] = -1,
+        service_id: Optional[str] = None,
         model_kwargs: Optional[Dict[str, Any]] = None,
         pipeline_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -69,6 +69,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             **pipeline_kwargs or {},
         )
         super().__init__(
+            service_id=service_id,
             ai_model_id=ai_model_id,
             task=task,
             device=(f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"),
