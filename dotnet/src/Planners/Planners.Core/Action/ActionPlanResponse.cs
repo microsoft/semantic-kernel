@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Planners.Action;
+namespace Microsoft.SemanticKernel.Planning.Action;
 
 /// <summary>
 /// Plan data structure returned by the basic planner semantic function

@@ -5,7 +5,10 @@ import pytest
 import yaml
 from openapi_core import Spec
 
-from semantic_kernel.connectors.openapi.sk_openapi import (
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
+from semantic_kernel.connectors.openapi.kernel_openapi import (
     OpenApiParser,
     OpenApiRunner,
     PreparedRestApiRequest,
@@ -92,7 +95,11 @@ def test_prepare_request_with_path_params():
         method="PUT",
         url="http://example.com/todos/1",
         params={"completed": False},
-        headers={"Authorization": "Bearer abc123", "Content-Type": "application/json"},
+        headers={
+            "Authorization": "Bearer abc123",
+            "Content-Type": "application/json",
+            USER_AGENT: "Semantic-Kernel",
+        },
         request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
@@ -127,7 +134,11 @@ def test_prepare_request_with_default_query_param():
         method="PUT",
         url="http://example.com/todos/1",
         params={},
-        headers={"Authorization": "Bearer abc123", "Content-Type": "application/json"},
+        headers={
+            "Authorization": "Bearer abc123",
+            "Content-Type": "application/json",
+            USER_AGENT: "Semantic-Kernel",
+        },
         request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
@@ -148,7 +159,31 @@ def test_prepare_request_with_default_header():
         method="PUT",
         url="http://example.com/todos/1",
         params={"completed": False},
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", USER_AGENT: "Semantic-Kernel"},
+        request_body={"title": "Buy milk", "completed": False},
+    )
+    actual_request = put_operation.prepare_request(
+        path_params=path_params,
+        query_params=query_params,
+        headers=headers,
+        request_body=request_body,
+    )
+    assert str(actual_request) == str(expected_request)
+
+
+def test_prepare_request_with_existing_user_agent():
+    path_params = {"id": 1}
+    query_params = {"completed": False}
+    headers = {USER_AGENT: "API/1.0 PythonBindings"}
+    request_body = {"title": "Buy milk", "completed": False}
+    expected_request = PreparedRestApiRequest(
+        method="PUT",
+        url="http://example.com/todos/1",
+        params={"completed": False},
+        headers={
+            USER_AGENT: "Semantic-Kernel API/1.0 PythonBindings",
+            "Content-Type": "application/json",
+        },
         request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
@@ -267,9 +302,7 @@ async def test_run_operation_with_valid_request(mock_request, openapi_runner):
     headers = {"Authorization": "Bearer abc123"}
     request_body = {"title": "Buy milk", "completed": False}
     mock_request.return_value.__aenter__.return_value.text.return_value = 200
-    response = await runner.run_operation(
-        operation, headers=headers, request_body=request_body
-    )
+    response = await runner.run_operation(operation, headers=headers, request_body=request_body)
     assert response == 200
 
 
@@ -282,9 +315,7 @@ async def test_run_operation_with_invalid_request(mock_request, openapi_runner):
     request_body = {"title": "Buy milk"}
     mock_request.return_value.__aenter__.return_value.text.return_value = 400
     with pytest.raises(Exception):
-        await runner.run_operation(
-            operation, headers=headers, request_body=request_body
-        )
+        await runner.run_operation(operation, headers=headers, request_body=request_body)
 
 
 @patch("aiohttp.ClientSession.request")
@@ -296,6 +327,4 @@ async def test_run_operation_with_error(mock_request, openapi_runner):
     request_body = {"title": "Buy milk", "completed": False}
     mock_request.side_effect = Exception("Error")
     with pytest.raises(Exception):
-        await runner.run_operation(
-            operation, headers=headers, request_body=request_body
-        )
+        await runner.run_operation(operation, headers=headers, request_body=request_body)

@@ -13,6 +13,9 @@ from azure.search.documents.indexes.models import (
 )
 from dotenv import load_dotenv
 
+from semantic_kernel.connectors.ai.open_ai.const import (
+    USER_AGENT,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 SEARCH_FIELD_ID = "Id"
@@ -83,17 +86,13 @@ def get_search_index_async_client(
     if azure_credential is None and token_credential is None:
         raise ValueError("Error: Azure Cognitive Search credentials not set.")
 
-    sk_headers = {"User-Agent": "Semantic-Kernel"}
+    sk_headers = {USER_AGENT: "Semantic-Kernel"}
 
     if azure_credential:
-        return SearchIndexClient(
-            endpoint=service_endpoint, credential=azure_credential, headers=sk_headers
-        )
+        return SearchIndexClient(endpoint=service_endpoint, credential=azure_credential, headers=sk_headers)
 
     if token_credential:
-        return SearchIndexClient(
-            endpoint=service_endpoint, credential=token_credential, headers=sk_headers
-        )
+        return SearchIndexClient(endpoint=service_endpoint, credential=token_credential, headers=sk_headers)
 
     raise ValueError("Error: unable to create Azure Cognitive Search client.")
 

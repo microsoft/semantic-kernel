@@ -18,17 +18,11 @@ ChatBot:>
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.add_chat_service(
-    "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-)
+kernel.add_chat_service("chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
 
-prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000, temperature=0.7, top_p=0.4
-)
+prompt_config = sk.PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.4)
 
-prompt_template = sk.PromptTemplate(
-    sk_prompt, kernel.prompt_template_engine, prompt_config
-)
+prompt_template = sk.PromptTemplate(sk_prompt, kernel.prompt_template_engine, prompt_config)
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
@@ -49,7 +43,7 @@ async def chat(context_vars: sk.ContextVariables) -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_async(chat_function, input_vars=context_vars)
+    answer = await kernel.run(chat_function, input_vars=context_vars)
     context_vars["chat_history"] += f"\nUser:> {user_input}\nChatBot:> {answer}\n"
 
     print(f"ChatBot:> {answer}")

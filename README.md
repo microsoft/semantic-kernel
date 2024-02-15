@@ -165,6 +165,10 @@ To learn more and get started:
 - Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
 
+## Contributor Wall of Fame
+
+[![semantic-kernel contributors](https://contrib.rocks/image?repo=microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/graphs/contributors)
+
 ## Code of Conduct
 
 This project has adopted the

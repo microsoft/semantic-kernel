@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from __future__ import annotations
+
 import os
 import typing as t
 import warnings
@@ -9,11 +11,10 @@ import pytest
 import semantic_kernel as sk
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.skill_definition.read_only_skill_collection import (
-    ReadOnlySkillCollection,
-)
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin_collection import KernelPluginCollection
 
 
 @pytest.fixture(autouse=True)
@@ -54,7 +55,7 @@ def enable_debug_mode():
     builtins.pr = snoop.pp
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def create_kernel():
     kernel = sk.Kernel()
     return kernel
@@ -87,22 +88,19 @@ def get_oai_config():
 
 
 @pytest.fixture()
-def context_factory() -> t.Callable[[ContextVariables], SKContext]:
-    """Return a factory for SKContext objects."""
+def context_factory() -> t.Callable[[ContextVariables], KernelContext]:
+    """Return a factory for KernelContext objects."""
 
-    def create_context(
-        context_variables: ContextVariables, *functions: SKFunction
-    ) -> SKContext:
-        """Return a SKContext object."""
-        return SKContext(
+    def create_context(context_variables: ContextVariables, *functions: KernelFunction) -> KernelContext:
+        """Return a KernelContext object."""
+
+        plugin = KernelPlugin(name="test_plugin", functions=functions)
+
+        return KernelContext(
             context_variables,
             NullMemory(),
-            skill_collection=ReadOnlySkillCollection(
-                data={
-                    ReadOnlySkillCollection.GLOBAL_SKILL.lower(): {
-                        f.name: f for f in functions
-                    }
-                },
+            plugins=KernelPluginCollection(
+                plugins=[plugin],
             ),
         )
 

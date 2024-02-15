@@ -25,9 +25,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.mark.asyncio
 async def test_constructor():
     test_endpoint = "https://test-endpoint.search.windows.net"
-    async with AzureCognitiveSearchMemoryStore(
-        vector_size=4, search_endpoint=test_endpoint
-    ) as memory_store:
+    async with AzureCognitiveSearchMemoryStore(vector_size=4, search_endpoint=test_endpoint) as memory_store:
         assert memory_store is not None
         assert memory_store._search_index_client is not None
 
@@ -36,30 +34,30 @@ async def test_constructor():
 async def test_collections():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
-        await memory_store.create_collection_async(collection)
+        await memory_store.create_collection(collection)
         time.sleep(1)
         try:
-            assert await memory_store.does_collection_exist_async(collection)
+            assert await memory_store.does_collection_exist(collection)
         except:
-            await memory_store.delete_collection_async(collection)
+            await memory_store.delete_collection(collection)
             raise
 
-        many = await memory_store.get_collections_async()
+        many = await memory_store.get_collections()
         assert collection in many
 
-        await memory_store.delete_collection_async(collection)
+        await memory_store.delete_collection(collection)
         time.sleep(1)
-        assert not await memory_store.does_collection_exist_async(collection)
+        assert not await memory_store.does_collection_exist(collection)
 
 
 @pytest.mark.asyncio
 async def test_upsert():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
-        await memory_store.create_collection_async(collection)
+        await memory_store.create_collection(collection)
         time.sleep(1)
         try:
-            assert await memory_store.does_collection_exist_async(collection)
+            assert await memory_store.does_collection_exist(collection)
             rec = MemoryRecord(
                 is_reference=False,
                 external_source_name=None,
@@ -69,30 +67,30 @@ async def test_upsert():
                 additional_metadata=None,
                 embedding=np.array([0.2, 0.1, 0.2, 0.7]),
             )
-            id = await memory_store.upsert_async(collection, rec)
+            id = await memory_store.upsert(collection, rec)
             time.sleep(1)
 
-            many = await memory_store.get_batch_async(collection, [id])
-            one = await memory_store.get_async(collection, id)
+            many = await memory_store.get_batch(collection, [id])
+            one = await memory_store.get(collection, id)
 
             assert many[0]._id == id
             assert one._id == id
             assert one._text == rec._text
         except:
-            await memory_store.delete_collection_async(collection)
+            await memory_store.delete_collection(collection)
             raise
 
-        await memory_store.delete_collection_async(collection)
+        await memory_store.delete_collection(collection)
 
 
 @pytest.mark.asyncio
 async def test_record_not_found():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
-        await memory_store.create_collection_async(collection)
+        await memory_store.create_collection(collection)
         time.sleep(1)
         try:
-            assert await memory_store.does_collection_exist_async(collection)
+            assert await memory_store.does_collection_exist(collection)
             rec = MemoryRecord(
                 is_reference=False,
                 external_source_name=None,
@@ -102,35 +100,35 @@ async def test_record_not_found():
                 additional_metadata=None,
                 embedding=np.array([0.2, 0.1, 0.2, 0.7]),
             )
-            id = await memory_store.upsert_async(collection, rec)
+            id = await memory_store.upsert(collection, rec)
         except:
-            await memory_store.delete_collection_async(collection)
+            await memory_store.delete_collection(collection)
             raise
 
         try:
-            await memory_store.remove_async(collection, id)
+            await memory_store.remove(collection, id)
             time.sleep(1)
 
             # KeyError exception should occur
-            await memory_store.get_async(collection, id)
+            await memory_store.get(collection, id)
 
             # Clean up and fail
-            await memory_store.delete_collection_async(collection)
+            await memory_store.delete_collection(collection)
             assert False
         except KeyError:
             pass
 
-        await memory_store.delete_collection_async(collection)
+        await memory_store.delete_collection(collection)
 
 
 @pytest.mark.asyncio
 async def test_search():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
-        await memory_store.create_collection_async(collection)
+        await memory_store.create_collection(collection)
         time.sleep(1)
         try:
-            assert await memory_store.does_collection_exist_async(collection)
+            assert await memory_store.does_collection_exist(collection)
             rec = MemoryRecord(
                 is_reference=False,
                 external_source_name=None,
@@ -140,14 +138,12 @@ async def test_search():
                 additional_metadata=None,
                 embedding=np.array([0.1, 0.2, 0.3, 0.4]),
             )
-            await memory_store.upsert_async(collection, rec)
+            await memory_store.upsert(collection, rec)
             time.sleep(1)
-            result = await memory_store.get_nearest_match_async(
-                collection, np.array([0.1, 0.2, 0.3, 0.38])
-            )
+            result = await memory_store.get_nearest_match(collection, np.array([0.1, 0.2, 0.3, 0.38]))
             assert result[0]._id == rec._id
         except:
-            await memory_store.delete_collection_async(collection)
+            await memory_store.delete_collection(collection)
             raise
 
-        await memory_store.delete_collection_async(collection)
+        await memory_store.delete_collection(collection)

@@ -30,9 +30,7 @@ READ_ONLY_COLLECTION = "nearestSearch"
 DIMENSIONS = 3
 
 
-def is_equal_memory_record(
-    mem1: MemoryRecord, mem2: MemoryRecord, with_embeddings: bool
-):
+def is_equal_memory_record(mem1: MemoryRecord, mem2: MemoryRecord, with_embeddings: bool):
     """Comparator for two memory records"""
 
     def dictify_memory_record(mem):
@@ -70,12 +68,10 @@ def test_collection():
 async def vector_search_store():
     if "Python_Integration_Tests" in os.environ:
         connection_string = os.environ["MONGODB_ATLAS_CONNECTION_STRING"]
-    async with MongoDBAtlasMemoryStore(
-        connection_string=connection_string, database_name="pyMSKTest"
-    ) as memory:
+    async with MongoDBAtlasMemoryStore(connection_string=connection_string, database_name="pyMSKTest") as memory:
         # Delete all collections before and after
-        for cname in await memory.get_collections_async():
-            await memory.delete_collection_async(cname)
+        for cname in await memory.get_collections():
+            await memory.delete_collection(cname)
 
         def patch_index_exception(fn):
             """Function patch for collection creation call to retry
@@ -96,16 +92,14 @@ async def vector_search_store():
 
             return _patch
 
-        memory.create_collection_async = patch_index_exception(
-            memory.create_collection_async
-        )
+        memory.create_collection = patch_index_exception(memory.create_collection)
 
         try:
             yield memory
         finally:
             pass
-            for cname in await memory.get_collections_async():
-                await memory.delete_collection_async(cname)
+            for cname in await memory.get_collections():
+                await memory.delete_collection(cname)
 
 
 @pytest_asyncio.fixture
@@ -113,10 +107,8 @@ async def nearest_match_store():
     """Fixture for read only vector store; the URI for test needs atlas configured"""
     if "Python_Integration_Tests" in os.environ:
         connection_string = os.environ["MONGODB_ATLAS_CONNECTION_STRING"]
-    async with MongoDBAtlasMemoryStore(
-        connection_string=connection_string, database_name="pyMSKTest"
-    ) as memory:
-        if not await memory.does_collection_exist_async("nearestSearch"):
+    async with MongoDBAtlasMemoryStore(connection_string=connection_string, database_name="pyMSKTest") as memory:
+        if not await memory.does_collection_exist("nearestSearch"):
             pytest.skip(
                 reason="db: readOnly collection: nearestSearch not found, "
                 + "please ensure your Atlas Test Cluster has this collection configured"
@@ -131,89 +123,71 @@ async def test_constructor(vector_search_store):
 
 @pytest.mark.asyncio
 async def test_collection_create_and_delete(vector_search_store, test_collection):
-    await vector_search_store.create_collection_async(test_collection)
-    assert await vector_search_store.does_collection_exist_async(test_collection)
-    await vector_search_store.delete_collection_async(test_collection)
-    assert not await vector_search_store.does_collection_exist_async(test_collection)
+    await vector_search_store.create_collection(test_collection)
+    assert await vector_search_store.does_collection_exist(test_collection)
+    await vector_search_store.delete_collection(test_collection)
+    assert not await vector_search_store.does_collection_exist(test_collection)
 
 
 @pytest.mark.asyncio
-async def test_collection_upsert(
-    vector_search_store, test_collection, memory_record_gen
-):
+async def test_collection_upsert(vector_search_store, test_collection, memory_record_gen):
     mems = [memory_record_gen(i) for i in range(1, 4)]
-    mem1 = await vector_search_store.upsert_async(test_collection, mems[0])
+    mem1 = await vector_search_store.upsert(test_collection, mems[0])
     assert mem1 == mems[0]._id
 
 
 @pytest.mark.asyncio
-async def test_collection_batch_upsert(
-    vector_search_store, test_collection, memory_record_gen
-):
+async def test_collection_batch_upsert(vector_search_store, test_collection, memory_record_gen):
     mems = [memory_record_gen(i) for i in range(1, 4)]
-    mems_check = await vector_search_store.upsert_batch_async(test_collection, mems)
+    mems_check = await vector_search_store.upsert_batch(test_collection, mems)
     assert [m._id for m in mems] == mems_check
 
 
 @pytest.mark.asyncio
-async def test_collection_deletion(
-    vector_search_store, test_collection, memory_record_gen
-):
+async def test_collection_deletion(vector_search_store, test_collection, memory_record_gen):
     mem = memory_record_gen(1)
-    await vector_search_store.upsert_async(test_collection, mem)
-    insertion_val = await vector_search_store.get_async(test_collection, mem._id, True)
+    await vector_search_store.upsert(test_collection, mem)
+    insertion_val = await vector_search_store.get(test_collection, mem._id, True)
     assert mem._id == insertion_val._id
     assert mem._embedding.tolist() == insertion_val._embedding.tolist()
     assert insertion_val is not None
-    await vector_search_store.remove_async(test_collection, mem._id)
-    val = await vector_search_store.get_async(test_collection, mem._id, False)
+    await vector_search_store.remove(test_collection, mem._id)
+    val = await vector_search_store.get(test_collection, mem._id, False)
     assert val is None
 
 
 @pytest.mark.asyncio
-async def test_collection_batch_deletion(
-    vector_search_store, test_collection, memory_record_gen
-):
+async def test_collection_batch_deletion(vector_search_store, test_collection, memory_record_gen):
     mems = [memory_record_gen(i) for i in range(1, 4)]
-    await vector_search_store.upsert_batch_async(test_collection, mems)
+    await vector_search_store.upsert_batch(test_collection, mems)
     ids = [mem._id for mem in mems]
-    insertion_val = await vector_search_store.get_batch_async(
-        test_collection, ids, True
-    )
+    insertion_val = await vector_search_store.get_batch(test_collection, ids, True)
     assert len(insertion_val) == len(mems)
-    await vector_search_store.remove_batch_async(test_collection, ids)
-    assert not await vector_search_store.get_batch_async(test_collection, ids, False)
+    await vector_search_store.remove_batch(test_collection, ids)
+    assert not await vector_search_store.get_batch(test_collection, ids, False)
 
 
 @pytest.mark.asyncio
 async def test_collection_get(vector_search_store, test_collection, memory_record_gen):
     mem = memory_record_gen(1)
-    await vector_search_store.upsert_async(test_collection, mem)
-    insertion_val = await vector_search_store.get_async(test_collection, mem._id, False)
+    await vector_search_store.upsert(test_collection, mem)
+    insertion_val = await vector_search_store.get(test_collection, mem._id, False)
     is_equal_memory_record(mem, insertion_val, False)
 
-    refetched_record = await vector_search_store.get_async(
-        test_collection, mem._id, True
-    )
+    refetched_record = await vector_search_store.get(test_collection, mem._id, True)
     is_equal_memory_record(mem, refetched_record, True)
 
 
 @pytest.mark.asyncio
-async def test_collection_batch_get(
-    vector_search_store, test_collection, memory_record_gen
-):
+async def test_collection_batch_get(vector_search_store, test_collection, memory_record_gen):
     mems = {str(i): memory_record_gen(i) for i in range(1, 4)}
-    await vector_search_store.upsert_batch_async(test_collection, list(mems.values()))
-    insertion_val = await vector_search_store.get_batch_async(
-        test_collection, list(mems.keys()), False
-    )
+    await vector_search_store.upsert_batch(test_collection, list(mems.values()))
+    insertion_val = await vector_search_store.get_batch(test_collection, list(mems.keys()), False)
     assert len(insertion_val) == len(mems)
     for val in insertion_val:
         is_equal_memory_record(mems[val._id], val, False)
 
-    refetched_vals = await vector_search_store.get_batch_async(
-        test_collection, list(mems.keys()), True
-    )
+    refetched_vals = await vector_search_store.get_batch(test_collection, list(mems.keys()), True)
     for ref in refetched_vals:
         is_equal_memory_record(mems[ref._id], ref, True)
 
@@ -221,8 +195,8 @@ async def test_collection_batch_get(
 @pytest.mark.asyncio
 async def test_collection_knn_match(nearest_match_store, memory_record_gen):
     mem = memory_record_gen(7)
-    await nearest_match_store.upsert_async(READ_ONLY_COLLECTION, mem)
-    result, score = await nearest_match_store.get_nearest_match_async(
+    await nearest_match_store.upsert(READ_ONLY_COLLECTION, mem)
+    result, score = await nearest_match_store.get_nearest_match(
         collection_name=READ_ONLY_COLLECTION,
         embedding=mem._embedding,
         with_embedding=True,
@@ -238,7 +212,7 @@ async def knn_matcher(
     query_limit,
     expected_limit,
 ):
-    results_and_scores = await nearest_match_store.get_nearest_matches_async(
+    results_and_scores = await nearest_match_store.get_nearest_matches(
         collection_name=test_collection,
         embedding=mems["2"]._embedding,
         limit=query_limit,
@@ -254,7 +228,7 @@ async def knn_matcher(
 @pytest.mark.asyncio
 async def test_collection_knn_matches(nearest_match_store, memory_record_gen):
     mems = {str(i): memory_record_gen(i) for i in range(1, 4)}
-    await nearest_match_store.upsert_batch_async(READ_ONLY_COLLECTION, mems.values())
+    await nearest_match_store.upsert_batch(READ_ONLY_COLLECTION, mems.values())
     await knn_matcher(
         nearest_match_store,
         READ_ONLY_COLLECTION,

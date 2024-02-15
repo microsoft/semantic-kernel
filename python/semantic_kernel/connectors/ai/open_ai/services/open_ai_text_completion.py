@@ -1,186 +1,135 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import Any, List, Optional, Union
+import json
+import logging
+from typing import Any, Dict, Mapping, Optional, overload
 
-import openai
+from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
+    OpenAIConfigBase,
 )
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIModelTypes,
 )
-from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
+)
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAITextCompletion(TextCompletionClientBase):
-    _model_id: str
-    _api_key: str
-    _api_type: Optional[str] = None
-    _api_version: Optional[str] = None
-    _endpoint: Optional[str] = None
-    _org_id: Optional[str] = None
-    _log: Logger
-    _prompt_tokens: int
-    _completion_tokens: int
-    _total_tokens: int
+class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
+    """OpenAI Text Completion class."""
 
+    @overload
     def __init__(
         self,
-        model_id: str,
-        api_key: str,
-        org_id: Optional[str] = None,
-        api_type: Optional[str] = None,
-        api_version: Optional[str] = None,
-        endpoint: Optional[str] = None,
-        log: Optional[Logger] = None,
+        ai_model_id: str,
+        async_client: AsyncOpenAI,
+        log: Optional[Any] = None,
     ) -> None:
         """
-        Initializes a new instance of the OpenAITextCompletion class.
+        Initialize an OpenAITextCompletion service.
 
         Arguments:
-            model_id {str} -- OpenAI model name, see
+            ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
-            api_key {str} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
+            async_client {AsyncOpenAI} -- An existing client to use.
+        """
+
+    @overload
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        org_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
+    ) -> None:
+        """
+        Initialize an OpenAITextCompletion service.
+
+        Arguments:
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {Optional[str]} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys (Optional)
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
                 account belongs to multiple organizations.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
         """
-        self._model_id = model_id
-        self._api_key = api_key
-        self._api_type = api_type
-        self._api_version = api_version
-        self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
-        self._org_id = org_id
-        self._log = log if log is not None else NullLogger()
 
-    async def complete_async(
+    @overload
+    def __init__(
         self,
-        prompt: str,
-        request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
-    ) -> Union[str, List[str]]:
-        # TODO: tracking on token counts/etc.
-        response = await self._send_completion_request(prompt, request_settings, False)
-
-        if len(response.choices) == 1:
-            return response.choices[0].text
-        else:
-            return [choice.text for choice in response.choices]
-
-    # TODO: complete w/ multiple...
-
-    async def complete_stream_async(
-        self,
-        prompt: str,
-        request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
-    ):
-        response = await self._send_completion_request(prompt, request_settings, True)
-
-        async for chunk in response:
-            if request_settings.number_of_responses > 1:
-                for choice in chunk.choices:
-                    completions = [""] * request_settings.number_of_responses
-                    completions[choice.index] = choice.text
-                    yield completions
-            else:
-                yield chunk.choices[0].text
-
-    async def _send_completion_request(
-        self, prompt: str, request_settings: CompleteRequestSettings, stream: bool
-    ):
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
+    ) -> None:
         """
-        Completes the given prompt. Returns a single string completion.
-        Cannot return multiple completions. Cannot return logprobs.
+        Initialize an OpenAITextCompletion service.
 
         Arguments:
-            prompt {str} -- The prompt to complete.
-            request_settings {CompleteRequestSettings} -- The request settings.
-
-        Returns:
-            str -- The completed text.
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {Optional[str]} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys (Optional)
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
         """
-        if not prompt:
-            raise ValueError("The prompt cannot be `None` or empty")
-        if request_settings is None:
-            raise ValueError("The request settings cannot be `None`")
 
-        if request_settings.max_tokens < 1:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "The max tokens must be greater than 0, "
-                f"but was {request_settings.max_tokens}",
-            )
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        org_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        log: Optional[Any] = None,
+        async_client: Optional[AsyncOpenAI] = None,
+    ) -> None:
+        """
+        Initialize an OpenAITextCompletion service.
 
-        if request_settings.logprobs != 0:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "complete_async does not support logprobs, "
-                f"but logprobs={request_settings.logprobs} was requested",
-            )
+        Arguments:
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {Optional[str]} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys (Optional)
+            org_id {Optional[str]} -- OpenAI organization ID.
+                This is usually optional unless your
+                account belongs to multiple organizations.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
+        """
+        if log:
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+        super().__init__(
+            ai_model_id=ai_model_id,
+            api_key=api_key,
+            org_id=org_id,
+            ai_model_type=OpenAIModelTypes.TEXT,
+            default_headers=default_headers,
+            async_client=async_client,
+        )
 
-        model_args = {}
-        if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
-        else:
-            model_args["model"] = self._model_id
+    @classmethod
+    def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextCompletion":
+        """
+        Initialize an Open AI service from a dictionary of settings.
 
-        try:
-            response: Any = await openai.Completion.acreate(
-                **model_args,
-                api_key=self._api_key,
-                api_type=self._api_type,
-                api_base=self._endpoint,
-                api_version=self._api_version,
-                organization=self._org_id,
-                prompt=prompt,
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                presence_penalty=request_settings.presence_penalty,
-                frequency_penalty=request_settings.frequency_penalty,
-                max_tokens=request_settings.max_tokens,
-                stream=stream,
-                n=request_settings.number_of_responses,
-                stop=(
-                    request_settings.stop_sequences
-                    if request_settings.stop_sequences is not None
-                    and len(request_settings.stop_sequences) > 0
-                    else None
-                ),
-                logit_bias=(
-                    request_settings.token_selection_biases
-                    if request_settings.token_selection_biases is not None
-                    and len(request_settings.token_selection_biases) > 0
-                    else {}
-                ),
-            )
-        except Exception as ex:
-            raise AIException(
-                AIException.ErrorCodes.ServiceError,
-                f"{self.__class__.__name__} failed to complete the prompt",
-                ex,
-            )
-
-        if "usage" in response:
-            self._log.info(f"OpenAI usage: {response.usage}")
-            self._prompt_tokens += response.usage.prompt_tokens
-            self._completion_tokens += response.usage.completion_tokens
-            self._total_tokens += response.usage.total_tokens
-
-        return response
-
-    @property
-    def prompt_tokens(self) -> int:
-        return self._prompt_tokens
-
-    @property
-    def completion_tokens(self) -> int:
-        return self._completion_tokens
-
-    @property
-    def total_tokens(self) -> int:
-        return self._total_tokens
+        Arguments:
+            settings: A dictionary of settings for the service.
+        """
+        if "default_headers" in settings and isinstance(settings["default_headers"], str):
+            settings["default_headers"] = json.loads(settings["default_headers"])
+        return OpenAITextCompletion(
+            ai_model_id=settings["ai_model_id"],
+            api_key=settings["api_key"],
+            org_id=settings.get("org_id"),
+            default_headers=settings.get("default_headers"),
+        )

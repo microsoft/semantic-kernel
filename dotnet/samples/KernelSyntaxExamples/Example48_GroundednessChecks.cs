@@ -1,16 +1,130 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
+using xRetry;
+using Xunit;
+using Xunit.Abstractions;
 
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
-internal static class Example48_GroundednessChecks
+namespace Examples;
+
+public class Example48_GroundednessChecks : BaseTest
 {
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task GroundednessCheckingAsync()
+    {
+        WriteLine("\n======== Groundedness Checks ========");
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
+            .Build();
+
+        string folder = RepoFiles.SamplePluginsPath();
+        var summarizePlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        var groundingPlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
+
+        var create_summary = summarizePlugin["Summarize"];
+        var entityExtraction = groundingPlugin["ExtractEntities"];
+        var reference_check = groundingPlugin["ReferenceCheckEntities"];
+        var entity_excision = groundingPlugin["ExciseEntities"];
+
+        var summaryText = @"
+My father, a respected resident of Milan, was a close friend of a merchant named Beaufort who, after a series of
+misfortunes, moved to Zurich in poverty. My father was upset by his friend's troubles and sought him out,
+finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him and
+his daughter, Mary. Mary procured work to eek out a living, but after ten months her father died, leaving
+her a beggar. My father came to her aid and two years later they married.
+";
+
+        KernelArguments variables = new()
+        {
+            ["input"] = summaryText,
+            ["topic"] = "people and places",
+            ["example_entities"] = "John, Jane, mother, brother, Paris, Rome"
+        };
+
+        var extractionResult = (await kernel.InvokeAsync(entityExtraction, variables)).ToString();
+
+        WriteLine("======== Extract Entities ========");
+        WriteLine(extractionResult);
+
+        variables["input"] = extractionResult;
+        variables["reference_context"] = GroundingText;
+
+        var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
+
+        WriteLine("\n======== Reference Check ========");
+        WriteLine(groundingResult);
+
+        variables["input"] = summaryText;
+        variables["ungrounded_entities"] = groundingResult;
+        var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
+
+        WriteLine("\n======== Excise Entities ========");
+        WriteLine(excisionResult.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task PlanningWithGroundednessAsync()
+    {
+        var targetTopic = "people and places";
+        var samples = "John, Jane, mother, brother, Paris, Rome";
+        var ask = @$"Make a summary of the following text. Then make a list of entities
+related to {targetTopic} (such as {samples}) which are present in the summary.
+Take this list of entities, and from it make another list of those which are not
+grounded in the original input text. Finally, rewrite your summary to remove the entities
+which are not grounded in the original.";
+
+        WriteLine("\n======== Planning - Groundedness Checks ========");
+
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
+            .Build();
+
+        string folder = RepoFiles.SamplePluginsPath();
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "GroundingPlugin"));
+
+        kernel.ImportPluginFromType<TextPlugin>();
+
+        var planner = new HandlebarsPlanner(
+            new HandlebarsPlannerOptions()
+            {
+                // When using OpenAI models, we recommend using low values for temperature and top_p to minimize planner hallucinations.
+                ExecutionSettings = new OpenAIPromptExecutionSettings()
+                {
+                    Temperature = 0.0,
+                    TopP = 0.1,
+                }
+            });
+
+        var initialArguments = new KernelArguments()
+        {
+            { "groundingText", GroundingText}
+        };
+        var plan = await planner.CreatePlanAsync(kernel, ask, initialArguments);
+
+        WriteLine($"======== Goal: ========\n{ask}");
+        WriteLine($"======== Plan ========\n{plan}");
+
+        var result = await plan.InvokeAsync(kernel, initialArguments);
+
+        WriteLine("======== Result ========");
+        WriteLine(result);
+    }
+
     private const string GroundingText = @"""I am by birth a Genevese, and my family is one of the most distinguished of that republic.
 My ancestors had been for many years counsellors and syndics, and my father had filled several public situations
 with honour and reputation.He was respected by all who knew him for his integrity and indefatigable attention
@@ -48,101 +162,8 @@ the chamber. He came like a protecting spirit to the poor girl, who committed he
 interment of his friend he conducted her to Geneva and placed her under the protection of a relation.Two years
 after this event Caroline became his wife.""";
 
-    public static async Task RunAsync()
+    public Example48_GroundednessChecks(ITestOutputHelper output) : base(output)
     {
-        await GroundednessCheckingAsync();
-        await PlanningWithGroundednessAsync();
-    }
-
-    public static async Task GroundednessCheckingAsync()
-    {
-        Console.WriteLine("======== Groundedness Checks ========");
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .Build();
-
-        string folder = RepoFiles.SamplePluginsPath();
-        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
-            "SummarizePlugin",
-            "GroundingPlugin");
-
-        var create_summary = functions["Summarize"];
-        var entityExtraction = functions["ExtractEntities"];
-        var reference_check = functions["ReferenceCheckEntities"];
-        var entity_excision = functions["ExciseEntities"];
-
-        var summaryText = @"
-My father, a respected resident of Milan, was a close friend of a merchant named Beaufort who, after a series of
-misfortunes, moved to Zurich in poverty. My father was upset by his friend's troubles and sought him out,
-finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him and
-his daughter, Mary. Mary procured work to eek out a living, but after ten months her father died, leaving
-her a beggar. My father came to her aid and two years later they married.
-";
-
-        var context = kernel.CreateNewContext();
-        context.Variables.Update(summaryText);
-        context.Variables.Set("topic", "people and places");
-        context.Variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
-
-        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).GetValue<string>();
-
-        Console.WriteLine("======== Extract Entities ========");
-        Console.WriteLine(extractionResult);
-
-        context.Variables.Update(extractionResult);
-        context.Variables.Set("reference_context", GroundingText);
-
-        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).GetValue<string>();
-
-        Console.WriteLine("======== Reference Check ========");
-        Console.WriteLine(groundingResult);
-
-        context.Variables.Update(summaryText);
-        context.Variables.Set("ungrounded_entities", groundingResult);
-        var excisionResult = await kernel.RunAsync(context.Variables, entity_excision);
-
-        Console.WriteLine("======== Excise Entities ========");
-        Console.WriteLine(excisionResult.GetValue<string>());
-    }
-
-    public static async Task PlanningWithGroundednessAsync()
-    {
-        var targetTopic = "people and places";
-        var samples = "John, Jane, mother, brother, Paris, Rome";
-        var ask = @$"Make a summary of input text. Then make a list of entities
-related to {targetTopic} (such as {samples}) which are present in the summary.
-Take this list of entities, and from it make another list of those which are not
-grounded in the original input text. Finally, rewrite your summary to remove the entities
-which are not grounded in the original.
-";
-
-        Console.WriteLine("======== Planning - Groundedness Checks ========");
-
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .Build();
-
-        string folder = RepoFiles.SamplePluginsPath();
-        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
-            "SummarizePlugin",
-            "GroundingPlugin");
-
-        kernel.ImportFunctions(new TextPlugin());
-
-        var planner = new SequentialPlanner(kernel);
-        var plan = await planner.CreatePlanAsync(ask);
-        Console.WriteLine(plan.ToPlanWithGoalString());
-
-        var results = await kernel.RunAsync(GroundingText, plan);
-        Console.WriteLine(results.GetValue<string>());
     }
 }
 
@@ -155,46 +176,46 @@ which are not grounded in the original.
 - Zurich
 - Mary
 </entities>
+
 ======== Reference Check ========
 <ungrounded_entities>
 - Milan
 - Zurich
 - Mary
 </ungrounded_entities>
+
 ======== Excise Entities ========
 My father, a respected resident of a city, was a close friend of a merchant named Beaufort who, after a series of
 misfortunes, moved to another city in poverty. My father was upset by his friend's troubles and sought him out,
 finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him and
 his daughter. The daughter procured work to eek out a living, but after ten months her father died, leaving
 her a beggar. My father came to her aid and two years later they married.
+
 ======== Planning - Groundedness Checks ========
-Goal: Make a summary of input text. Then make a list of entities
+======== Goal: ========
+Make a summary of the following text. Then make a list of entities
 related to people and places (such as John, Jane, mother, brother, Paris, Rome) which are present in the summary.
 Take this list of entities, and from it make another list of those which are not
 grounded in the original input text. Finally, rewrite your summary to remove the entities
 which are not grounded in the original.
+======== Plan ========
+{{!-- Step 0: Extract key values --}}
+{{set "inputText" @root.groundingText}}
 
+{{!-- Step 1: Summarize the input text --}}
+{{set "summary" (SummarizePlugin-Summarize input=inputText)}}
 
+{{!-- Step 2: Extract entities related to people and places from the summary --}}
+{{set "extractedEntities" (GroundingPlugin-ExtractEntities input=summary topic="people and places" example_entities="John, Jane, mother, brother, Paris, Rome")}}
 
+{{!-- Step 3: Check if extracted entities are grounded in the original input text --}}
+{{set "notGroundedEntities" (GroundingPlugin-ReferenceCheckEntities input=extractedEntities reference_context=inputText)}}
 
-Steps:
-  - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
-  - SummarizePlugin.Summarize INPUT='' => RESULT__SUMMARY
-  - GroundingPlugin.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
-  - GroundingPlugin.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
-  - GroundingPlugin.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
-A possible summary is:
+{{!-- Step 4: Remove the not grounded entities from the summary --}}
+{{set "finalSummary" (GroundingPlugin-ExciseEntities input=summary ungrounded_entities=notGroundedEntities)}}
 
-
-
-The narrator's father, a respected Genevese politician, befriended Beaufort, a merchant who fell into poverty and hid in Lucerne. After a long search, he found him dying and his daughter Caroline working hard to survive. He took pity on Caroline, buried Beaufort, and married her two years later.
-<ungrounded_entities>
-- narrator
-</ungrounded_entities>
-A possible summary is:
-
-
-
-The father of the story's main character, a respected Genevese politician, befriended Beaufort, a merchant who fell into poverty and hid in Lucerne. After a long search, he found him dying and his daughter Caroline working hard to survive. He took pity on Caroline, buried Beaufort, and married her two years later.
-== DONE ==
+{{!-- Step 5: Output the final summary --}}
+{{json finalSummary}}
+======== Result ========
+Born in Geneva to a distinguished family, the narrator's father held various honorable public positions. He married late in life after helping his impoverished friend Beaufort and his daughter Caroline. Beaufort, once wealthy, fell into poverty and moved to another location, where the narrator's father found him after ten months. Beaufort eventually fell ill and died, leaving his daughter Caroline an orphan. The narrator's father took her in, and two years later, they married.
 */
