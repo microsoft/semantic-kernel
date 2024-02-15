@@ -5,7 +5,7 @@ the Semantic Kernel. The notebooks are organized in order of increasing complexi
 
 To run the notebooks, we recommend the following steps:
 
-- [Install .NET 8](https://dotnet.microsoft.com/download/dotnet/7.0)
+- [Install .NET 8](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Install Visual Studio Code (VS Code)](https://code.visualstudio.com)
 - Launch VS Code and [install the "Polyglot" extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
   Min version required: v1.0.4606021 (Dec 2023).
@@ -60,8 +60,8 @@ For a quick dive, look at the [getting started notebook](00-getting-started.ipyn
 4. [Using Kernel Arguments to Build a Chat Experience](04-kernel-arguments-chat.ipynb)
 5. [Creating and Executing Plans](05-using-the-planner.ipynb)
 6. [Building Memory with Embeddings](06-memory-and-embeddings.ipynb)
-7. [Creating images with DALL-E 2](07-DALL-E-2.ipynb)
-8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-2.ipynb)
+7. [Creating images with DALL-E 3](07-DALL-E-3.ipynb)
+8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-3.ipynb)
 9. [Building Semantic Memory with Chroma](09-memory-with-chroma.ipynb)
 10. [BingSearch using Kernel](10-BingSearch-using-kernel.ipynb)
 
@@ -70,7 +70,7 @@ For a quick dive, look at the [getting started notebook](00-getting-started.ipyn
 You can run the notebooks also in the browser with JupyterLab. These steps
 should be sufficient to start:
 
-Install Python 3, Pip and .NET 7 in your system, then:
+Install Python 3, Pip and .NET 8 in your system, then:
 
     pip install jupyterlab
     dotnet tool install -g Microsoft.dotnet-interactive

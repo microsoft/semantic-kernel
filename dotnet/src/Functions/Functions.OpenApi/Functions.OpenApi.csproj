@@ -4,6 +4,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Plugins.OpenApi</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
@@ -15,6 +16,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Functions.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Plugins.OpenApi.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
@@ -22,7 +24,6 @@
     <PackageReference Include="Microsoft.OpenApi.Readers" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 </Project>

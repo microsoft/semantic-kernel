@@ -1,19 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example58_ConfigureExecutionSettings
+namespace Examples;
+
+public sealed class Example58_ConfigureExecutionSettings : BaseTest
 {
     /// <summary>
     /// Show how to configure model execution settings
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Example58_ConfigureExecutionSettings ========");
+        this.WriteLine("======== Example58_ConfigureExecutionSettings ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -23,7 +27,7 @@ public static class Example58_ConfigureExecutionSettings
 
         if (apiKey == null || chatDeploymentName == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
+            this.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -47,7 +51,7 @@ public static class Example58_ConfigureExecutionSettings
                 MaxTokens = 60,
                 Temperature = 0.7
             }));
-        Console.WriteLine(result.GetValue<string>());
+        this.WriteLine(result.GetValue<string>());
 
         // Option 2:
         // Load prompt template configuration including the execution settings from a JSON payload
@@ -71,7 +75,7 @@ public static class Example58_ConfigureExecutionSettings
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         result = await kernel.InvokeAsync(func);
-        Console.WriteLine(result.GetValue<string>());
+        this.WriteLine(result.GetValue<string>());
 
         /* OUTPUT (using gpt4):
 Hello! As an AI language model, I can help you with a variety of tasks, such as:
@@ -93,5 +97,9 @@ Hello! As an AI language model, I can help you with a variety of tasks, includin
 3. Assisting with problem-solving and brainstorming ideas.
 4. Providing explanations and
          */
+    }
+
+    public Example58_ConfigureExecutionSettings(ITestOutputHelper output) : base(output)
+    {
     }
 }

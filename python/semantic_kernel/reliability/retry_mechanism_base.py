@@ -11,9 +11,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class RetryMechanismBase(ABC):
     @abstractmethod
-    async def execute_with_retry_async(
-        self, action: Callable[[], Awaitable[T]], log: Optional[Any] = None
-    ) -> Awaitable[T]:
+    async def execute_with_retry(self, action: Callable[[], Awaitable[T]], log: Optional[Any] = None) -> Awaitable[T]:
         """Executes the given action with retry logic.
 
         Arguments:
@@ -23,7 +21,5 @@ class RetryMechanismBase(ABC):
             Awaitable[T] -- An awaitable that will return the result of the action.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         pass

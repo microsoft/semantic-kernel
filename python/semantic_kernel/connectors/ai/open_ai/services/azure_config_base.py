@@ -17,7 +17,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
 from semantic_kernel.connectors.telemetry import APP_INFO
-from semantic_kernel.sk_pydantic import HttpsUrl
+from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -60,9 +60,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         This is necessary for types like `HttpsUrl` and `OpenAIModelTypes`.
         """
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
@@ -90,7 +88,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                         "Please provide either base_url or endpoint",
                     )
                 async_client = AsyncAzureOpenAI(
-                    azure_endpoint=endpoint,
+                    azure_endpoint=str(endpoint),
                     azure_deployment=deployment_name,
                     api_version=api_version,
                     api_key=api_key,
@@ -112,9 +110,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "api_key": self.client.api_key,
             "ad_token": self.client._azure_ad_token,
             "ad_token_provider": self.client._azure_ad_token_provider,
-            "default_headers": {
-                k: v for k, v in self.client.default_headers.items() if k != USER_AGENT
-            },
+            "default_headers": {k: v for k, v in self.client.default_headers.items() if k != USER_AGENT},
         }
         base = self.model_dump(
             exclude={
@@ -131,6 +127,3 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         )
         base.update(client_settings)
         return base
-
-    def get_model_args(self) -> Dict[str, Any]:
-        return {"model": self.ai_model_id}

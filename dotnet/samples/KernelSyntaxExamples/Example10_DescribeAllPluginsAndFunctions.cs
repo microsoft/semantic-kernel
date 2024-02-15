@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -8,18 +7,21 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-public static class Example10_DescribeAllPluginsAndFunctions
+namespace Examples;
+
+public class Example10_DescribeAllPluginsAndFunctions : BaseTest
 {
     /// <summary>
     /// Print a list of all the functions imported into the kernel, including function descriptions,
     /// list of parameters, parameters descriptions, etc.
     /// See the end of the file for a sample of what the output looks like.
     /// </summary>
-    public static Task RunAsync()
+    [Fact]
+    public Task RunAsync()
     {
-        Console.WriteLine("======== Describe all plugins and functions ========");
-
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
@@ -48,10 +50,10 @@ public static class Example10_DescribeAllPluginsAndFunctions
 
         var functions = kernel.Plugins.GetFunctionsMetadata();
 
-        Console.WriteLine("*****************************************");
-        Console.WriteLine("****** Registered plugins and functions ******");
-        Console.WriteLine("*****************************************");
-        Console.WriteLine();
+        WriteLine("**********************************************");
+        WriteLine("****** Registered plugins and functions ******");
+        WriteLine("**********************************************");
+        WriteLine();
 
         foreach (KernelFunctionMetadata func in functions)
         {
@@ -61,29 +63,34 @@ public static class Example10_DescribeAllPluginsAndFunctions
         return Task.CompletedTask;
     }
 
-    private static void PrintFunction(KernelFunctionMetadata func)
+    private void PrintFunction(KernelFunctionMetadata func)
     {
-        Console.WriteLine($"   {func.Name}: {func.Description}");
+        WriteLine($"Plugin: {func.PluginName}");
+        WriteLine($"   {func.Name}: {func.Description}");
 
         if (func.Parameters.Count > 0)
         {
-            Console.WriteLine("      Params:");
+            WriteLine("      Params:");
             foreach (var p in func.Parameters)
             {
-                Console.WriteLine($"      - {p.Name}: {p.Description}");
-                Console.WriteLine($"        default: '{p.DefaultValue}'");
+                WriteLine($"      - {p.Name}: {p.Description}");
+                WriteLine($"        default: '{p.DefaultValue}'");
             }
         }
 
-        Console.WriteLine();
+        WriteLine();
+    }
+
+    public Example10_DescribeAllPluginsAndFunctions(ITestOutputHelper output) : base(output)
+    {
     }
 }
 
 /** Sample output:
 
-*****************************************
-****** Native plugins and functions ******
-*****************************************
+**********************************************
+****** Registered plugins and functions ******
+**********************************************
 
 Plugin: StaticTextPlugin
    Uppercase: Change all string chars to uppercase
@@ -91,6 +98,7 @@ Plugin: StaticTextPlugin
       - input: Text to uppercase
         default: ''
 
+Plugin: StaticTextPlugin
    AppendDay: Append the day variable
       Params:
       - input: Text to append to
@@ -98,81 +106,78 @@ Plugin: StaticTextPlugin
       - day: Value of the day to append
         default: ''
 
-Plugin: TextPlugin
-   Uppercase: Convert a string to uppercase.
-      Params:
-      - input: Text to uppercase
-        default: ''
-
+Plugin: AnotherTextPlugin
    Trim: Trim whitespace from the start and end of a string.
-      Params:
-      - input: Text to edit
-        default: ''
-
-   TrimStart: Trim whitespace from the start of a string.
-      Params:
-      - input: Text to edit
-        default: ''
-
-   TrimEnd: Trim whitespace from the end of a string.
-      Params:
-      - input: Text to edit
-        default: ''
-
-   Lowercase: Convert a string to lowercase.
-      Params:
-      - input: Text to lowercase
-        default: ''
-
-*****************************************
-***** Semantic plugins and functions *****
-*****************************************
-
-Plugin: Writing
-   Novel: Write a bedtime story
       Params:
       - input:
         default: ''
-      - language:
+
+Plugin: AnotherTextPlugin
+   TrimStart: Trim whitespace from the start of a string.
+      Params:
+      - input:
+        default: ''
+
+Plugin: AnotherTextPlugin
+   TrimEnd: Trim whitespace from the end of a string.
+      Params:
+      - input:
+        default: ''
+
+Plugin: AnotherTextPlugin
+   Uppercase: Convert a string to uppercase.
+      Params:
+      - input:
+        default: ''
+
+Plugin: AnotherTextPlugin
+   Lowercase: Convert a string to lowercase.
+      Params:
+      - input:
+        default: ''
+
+Plugin: AnotherTextPlugin
+   Length: Get the length of a string.
+      Params:
+      - input:
+        default: ''
+
+Plugin: AnotherTextPlugin
+   Concat: Concat two strings into one.
+      Params:
+      - input: First input to concatenate with
+        default: ''
+      - input2: Second input to concatenate with
+        default: ''
+
+Plugin: AnotherTextPlugin
+   Echo: Echo the input string. Useful for capturing plan input for use in multiple functions.
+      Params:
+      - text: Input string to echo.
+        default: ''
+
+Plugin: SummarizePlugin
+   MakeAbstractReadable: Given a scientific white paper abstract, rewrite it to make it more readable
+      Params:
+      - input:
+        default: ''
+
+Plugin: SummarizePlugin
+   Notegen: Automatically generate compact notes for any text or text document.
+      Params:
+      - input:
+        default: ''
+
+Plugin: SummarizePlugin
+   Summarize: Summarize given text or any text document
+      Params:
+      - input: Text to summarize
         default: ''
 
 Plugin: SummarizePlugin
    Topics: Analyze given text or document and extract key topics worth remembering
       Params:
       - input:
-        default: ''
-
-   Summarize: Summarize given text or any text document
-      Params:
-      - input: Text to summarize
-        default: ''
-
-   MakeAbstractReadable: Given a scientific white paper abstract, rewrite it to make it more readable
-      Params:
-      - input:
-        default: ''
-
-   TopicsMore: Generate list of topics for long length content
-      Params:
-      - input: Block of text to analyze
-        default: ''
-      - previousResults: List of topics found from previous blocks of text
-        default: ''
-
-   Notegen: Automatically generate compact notes for any text or text document.
-      Params:
-      - input:
-        default: ''
-
-   ActionItems: unknown function
-
-   SummarizeMore: Summarize given text or any text document
-      Params:
-      - input: Block of text to analyze
-        default: ''
-      - previousResults: Overview generated from previous blocks of text
-        default: ''
-      - conversationType: Text type, e.g. chat, email thread, document
         default: ''
 
 */

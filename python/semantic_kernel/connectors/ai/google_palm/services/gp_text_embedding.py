@@ -1,11 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import sys
 from typing import List
 
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 import google.generativeai as palm
 from numpy import array, ndarray
-from pydantic import constr
+from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
@@ -15,7 +20,7 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 
 
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
-    api_key: constr(strip_whitespace=True, min_length=1)
+    api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
     def __init__(self, ai_model_id: str, api_key: str) -> None:
         """
@@ -29,7 +34,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
         """
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
-    async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
+    async def generate_embeddings(self, texts: List[str]) -> ndarray:
         """
         Generates embeddings for a list of texts.
 

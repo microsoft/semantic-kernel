@@ -5,9 +5,7 @@ from importlib.metadata import version
 
 TELEMETRY_DISABLED_ENV_VAR = "AZURE_TELEMETRY_DISABLED"
 
-IS_TELEMETRY_ENABLED = os.environ.get(
-    TELEMETRY_DISABLED_ENV_VAR, "false"
-).lower() not in ["true", "1"]
+IS_TELEMETRY_ENABLED = os.environ.get(TELEMETRY_DISABLED_ENV_VAR, "false").lower() not in ["true", "1"]
 
 HTTP_USER_AGENT = "Semantic-Kernel"
 

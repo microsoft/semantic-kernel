@@ -32,9 +32,7 @@ class QdrantMemoryStore(MemoryStoreBase):
     ) -> None:
         """Initializes a new instance of the QdrantMemoryStore class."""
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if local:
             if url:
                 self._qdrantclient = QdrantClient(location=url)
@@ -45,7 +43,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         self._default_vector_size = vector_size
 
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
@@ -62,7 +60,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             ),
         )
 
-    async def get_collections_async(
+    async def get_collections(
         self,
     ) -> List[str]:
         """Gets the list of collections.
@@ -73,20 +71,16 @@ class QdrantMemoryStore(MemoryStoreBase):
         collection_info = self._qdrantclient.get_collections()
         return [collection.name for collection in collection_info.collections]
 
-    async def get_collection_async(
-        self, collection_name: str
-    ) -> qdrant_models.CollectionInfo:
+    async def get_collection(self, collection_name: str) -> qdrant_models.CollectionInfo:
         """Gets the a collections based upon collection name.
 
         Returns:
             CollectionInfo -- Collection Information from Qdrant about collection.
         """
-        collection_info = self._qdrantclient.get_collection(
-            collection_name=collection_name
-        )
+        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
         return collection_info
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
         Arguments:
@@ -98,7 +92,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         self._qdrantclient.delete_collection(collection_name=collection_name)
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
         Arguments:
@@ -108,12 +102,12 @@ class QdrantMemoryStore(MemoryStoreBase):
             bool -- True if the collection exists; otherwise, False.
         """
         try:
-            result = await self.get_collection_async(collection_name=collection_name)
+            result = await self.get_collection(collection_name=collection_name)
             return result.status == qdrant_models.CollectionStatus.GREEN
         except ValueError:
             return False
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
 
         Arguments:
@@ -123,7 +117,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             str -- The unique database key of the record.
         """
-        data_to_upsert = await self._convert_from_memory_record_async(
+        data_to_upsert = await self._convert_from_memory_record(
             collection_name=collection_name,
             record=record,
         )
@@ -138,13 +132,11 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             raise Exception("Upsert failed")
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         tasks = []
         for record in records:
             tasks.append(
-                self._convert_from_memory_record_async(
+                self._convert_from_memory_record(
                     collection_name=collection_name,
                     record=record,
                 )
@@ -162,10 +154,8 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             raise Exception("Batch upsert failed")
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> Optional[MemoryRecord]:
-        result = await self._get_existing_record_by_payload_id_async(
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> Optional[MemoryRecord]:
+        result = await self._get_existing_record_by_payload_id(
             collection_name=collection_name,
             payload_id=key,
             with_embedding=with_embedding,
@@ -186,13 +176,13 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             return None
 
-    async def get_batch_async(
+    async def get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         tasks = []
         for key in keys:
             tasks.append(
-                self.get_async(
+                self.get(
                     collection_name=collection_name,
                     key=key,
                     with_embedding=with_embeddings,
@@ -200,8 +190,8 @@ class QdrantMemoryStore(MemoryStoreBase):
             )
         return await asyncio.gather(*tasks)
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
-        existing_record = await self._get_existing_record_by_payload_id_async(
+    async def remove(self, collection_name: str, key: str) -> None:
+        existing_record = await self._get_existing_record_by_payload_id(
             collection_name=collection_name,
             payload_id=key,
             with_embedding=False,
@@ -209,17 +199,15 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         if existing_record:
             pointId = existing_record.id
-            result = self._qdrantclient.delete(
-                collection_name=collection_name, points_selector=[pointId]
-            )
+            result = self._qdrantclient.delete(collection_name=collection_name, points_selector=[pointId])
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
                 raise Exception("Delete failed")
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         tasks = []
         for key in keys:
             tasks.append(
-                self._get_existing_record_by_payload_id_async(
+                self._get_existing_record_by_payload_id(
                     collection_name=collection_name,
                     payload_id=key,
                     with_embedding=False,
@@ -236,7 +224,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
                 raise Exception("Delete failed")
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -270,14 +258,14 @@ class QdrantMemoryStore(MemoryStoreBase):
             for result in match_results
         ]
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
         min_relevance_score: float,
         with_embedding: bool = False,
     ) -> Tuple[MemoryRecord, float]:
-        result = await self.get_nearest_matches_async(
+        result = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
@@ -286,7 +274,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         )
         return result[0] if result else None
 
-    async def _get_existing_record_by_payload_id_async(
+    async def _get_existing_record_by_payload_id(
         self,
         collection_name: str,
         payload_id: str,
@@ -324,14 +312,14 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             return None
 
-    async def _convert_from_memory_record_async(
+    async def _convert_from_memory_record(
         self, collection_name: str, record: MemoryRecord
     ) -> qdrant_models.PointStruct:
         if record._key is not None and record._key != "":
             pointId = record._key
 
         else:
-            existing_record = await self._get_existing_record_by_payload_id_async(
+            existing_record = await self._get_existing_record_by_payload_id(
                 collection_name=collection_name,
                 payload_id=record._id,
             )
@@ -344,6 +332,4 @@ class QdrantMemoryStore(MemoryStoreBase):
         payload = record.__dict__.copy()
         embedding = payload.pop("_embedding")
 
-        return qdrant_models.PointStruct(
-            id=pointId, vector=embedding.tolist(), payload=payload
-        )
+        return qdrant_models.PointStruct(id=pointId, vector=embedding.tolist(), payload=payload)

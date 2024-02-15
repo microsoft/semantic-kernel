@@ -12,9 +12,7 @@ if sys.version_info >= (3, 9):
     )
 
 
-pytestmark = pytest.mark.skipif(
-    sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
-)
+pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")
 
 
 def test_google_palm_text_embedding_init() -> None:
@@ -61,7 +59,7 @@ async def test_google_palm_text_embedding_calls_with_parameters() -> None:
             api_key=api_key,
         )
 
-        await gp_text_embedding.generate_embeddings_async(texts)
+        await gp_text_embedding.generate_embeddings(texts)
 
         mock_gp.generate_embeddings.assert_called_once_with(
             model=ai_model_id,

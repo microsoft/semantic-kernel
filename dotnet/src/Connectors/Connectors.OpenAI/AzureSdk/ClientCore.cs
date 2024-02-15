@@ -17,6 +17,7 @@ using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
@@ -197,6 +198,16 @@ internal abstract class ClientCore
         };
     }
 
+    private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
+    {
+        return new Dictionary<string, object?>(3)
+        {
+            { nameof(audioTranscription.Language), audioTranscription.Language },
+            { nameof(audioTranscription.Duration), audioTranscription.Duration },
+            { nameof(audioTranscription.Segments), audioTranscription.Segments }
+        };
+    }
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
@@ -210,20 +221,51 @@ internal abstract class ClientCore
         CancellationToken cancellationToken)
     {
         var result = new List<ReadOnlyMemory<float>>(data.Count);
-        foreach (string text in data)
-        {
-            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
-            Response<Azure.AI.OpenAI.Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
-            if (response.Value.Data.Count == 0)
+        if (data.Count > 0)
+        {
+            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
+            var embeddings = response.Value.Data;
+
+            if (embeddings.Count != data.Count)
             {
-                throw new KernelException("Text embedding not found");
+                throw new KernelException($"Expected {data.Count} text embedding(s), but received {embeddings.Count}");
             }
 
-            result.Add(response.Value.Data[0].Embedding.ToArray());
+            for (var i = 0; i < embeddings.Count; i++)
+            {
+                result.Add(embeddings[i].Embedding);
+            }
         }
 
         return result;
+    }
+
+    internal async Task<TextContent> GetTextContentFromAudioAsync(
+        AudioContent content,
+        PromptExecutionSettings? executionSettings,
+        CancellationToken cancellationToken)
+    {
+        Verify.NotNull(content.Data);
+
+        OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
+
+        Verify.ValidFilename(audioExecutionSettings?.Filename);
+
+        var audioOptions = new AudioTranscriptionOptions
+        {
+            AudioData = content.Data,
+            DeploymentName = this.DeploymentOrModelName,
+            Filename = audioExecutionSettings.Filename,
+            Language = audioExecutionSettings.Language,
+            Prompt = audioExecutionSettings.Prompt,
+            ResponseFormat = audioExecutionSettings.ResponseFormat,
+            Temperature = audioExecutionSettings.Temperature
+        };
+
+        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioTranscriptionAsync(audioOptions, cancellationToken)).ConfigureAwait(false)).Value;
+
+        return new TextContent(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData));
     }
 
     /// <summary>
@@ -274,9 +316,12 @@ internal abstract class ClientCore
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
+            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
+            // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
+            // is specified.
             ChatChoice resultChoice = responseData.Choices[0];
             OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
-            if (resultChoice.FinishReason != CompletionsFinishReason.ToolCalls)
+            if (result.ToolCalls.Count == 0)
             {
                 return new[] { result };
             }
@@ -383,7 +428,7 @@ internal abstract class ClientCore
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                chatOptions.Tools.Clear();
+                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
@@ -458,9 +503,11 @@ internal abstract class ClientCore
                 yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
             }
 
-            // If we don't have a function call to invoke, we're done.
+            // If we don't have a function to invoke, we're done.
+            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
+            // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
+            // is specified.
             if (!autoInvoke ||
-                finishReason != CompletionsFinishReason.ToolCalls ||
                 toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
@@ -572,7 +619,7 @@ internal abstract class ClientCore
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                chatOptions.Tools.Clear();
+                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
@@ -709,7 +756,7 @@ internal abstract class ClientCore
             ChoicesPerPrompt = executionSettings.ResultsPerPrompt,
             GenerationSampleCount = executionSettings.ResultsPerPrompt,
             LogProbabilityCount = null,
-            User = null,
+            User = executionSettings.User,
             DeploymentName = deploymentOrModelName
         };
 
@@ -753,7 +800,49 @@ internal abstract class ClientCore
             ChoiceCount = executionSettings.ResultsPerPrompt,
             DeploymentName = deploymentOrModelName,
             Seed = executionSettings.Seed,
+            User = executionSettings.User
         };
+
+        switch (executionSettings.ResponseFormat)
+        {
+            case ChatCompletionsResponseFormat formatObject:
+                // If the response format is an Azure SDK ChatCompletionsResponseFormat, just pass it along.
+                options.ResponseFormat = formatObject;
+                break;
+
+            case string formatString:
+                // If the response format is a string, map the ones we know about, and ignore the rest.
+                switch (formatString)
+                {
+                    case "json_object":
+                        options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                        break;
+
+                    case "text":
+                        options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                        break;
+                }
+                break;
+
+            case JsonElement formatElement:
+                // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
+                // Handling only string formatElement.
+                if (formatElement.ValueKind == JsonValueKind.String)
+                {
+                    string formatString = formatElement.GetString() ?? "";
+                    switch (formatString)
+                    {
+                        case "json_object":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                            break;
+
+                        case "text":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                            break;
+                    }
+                }
+                break;
+        }
 
         executionSettings.ToolCallBehavior?.ConfigureOptions(kernel, options);
         if (executionSettings.TokenSelectionBiases is not null)
@@ -770,6 +859,11 @@ internal abstract class ClientCore
             {
                 options.StopSequences.Add(s);
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
+        {
+            options.Messages.Add(GetRequestMessage(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt)));
         }
 
         foreach (var message in chatHistory)
@@ -841,13 +935,13 @@ internal abstract class ClientCore
             var asstMessage = new ChatRequestAssistantMessage(message.Content);
 
             IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
-            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true)
+            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
             {
-                tools = toolCallsObject as IEnumerable<ChatCompletionsToolCall>;
+                tools = toolCallsObject as IEnumerable<ChatCompletionsFunctionToolCall>;
                 if (tools is null && toolCallsObject is JsonElement { ValueKind: JsonValueKind.Array } array)
                 {
                     int length = array.GetArrayLength();
-                    var ftcs = new List<ChatCompletionsFunctionToolCall>(length);
+                    var ftcs = new List<ChatCompletionsToolCall>(length);
                     for (int i = 0; i < length; i++)
                     {
                         JsonElement e = array[i];
@@ -858,7 +952,7 @@ internal abstract class ClientCore
                             name.ValueKind == JsonValueKind.String &&
                             arguments.ValueKind == JsonValueKind.String)
                         {
-                            ftcs.Add(OpenAIFunctionToolCall.CreateChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                            ftcs.Add(new ChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
                         }
                     }
                     tools = ftcs;
@@ -944,6 +1038,16 @@ internal abstract class ClientCore
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
+        if (usage is null)
+        {
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Usage information is not available.");
+            }
+
+            return;
+        }
+
         if (this.Logger.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(

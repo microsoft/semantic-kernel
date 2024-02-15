@@ -14,30 +14,27 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class FunctionIdBlock(Block):
-    _skill_name: str = pdt.PrivateAttr()
+    _plugin_name: str = pdt.PrivateAttr()
     _function_name: str = pdt.PrivateAttr()
 
     def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
         super().__init__(content=content and content.strip())
 
         if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
         function_name_parts = self.content.split(".")
         if len(function_name_parts) > 2:
             logger.error(f"Invalid function name `{self.content}`")
             raise ValueError(
-                "A function name can contain at most one dot separating "
-                "the skill name from the function name"
+                "A function name can contain at most one dot separating " "the plugin name from the function name"
             )
 
         if len(function_name_parts) == 2:
-            self._skill_name = function_name_parts[0]
+            self._plugin_name = function_name_parts[0]
             self._function_name = function_name_parts[1]
         else:
-            self._skill_name = ""
+            self._plugin_name = ""
             self._function_name = self.content
 
     @property
@@ -45,12 +42,12 @@ class FunctionIdBlock(Block):
         return BlockTypes.FUNCTION_ID
 
     @property
-    def skill_name(self) -> str:
-        return self._skill_name
+    def plugin_name(self) -> str:
+        return self._plugin_name
 
-    @skill_name.setter
-    def skill_name(self, value: str) -> None:
-        self._skill_name = value
+    @plugin_name.setter
+    def plugin_name(self, value: str) -> None:
+        self._plugin_name = value
 
     @property
     def function_name(self) -> str:
@@ -77,8 +74,7 @@ class FunctionIdBlock(Block):
 
         if self._has_more_than_one_dot(self.content):
             error_msg = (
-                "The function identifier can contain max one '.' "
-                "char separating skill name from function name"
+                "The function identifier can contain max one '.' " "char separating plugin name from function name"
             )
             return False, error_msg
 

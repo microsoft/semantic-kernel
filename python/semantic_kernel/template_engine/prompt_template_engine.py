@@ -5,34 +5,30 @@ from typing import TYPE_CHECKING, List, Optional
 
 from pydantic import PrivateAttr
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class PromptTemplateEngine(SKBaseModel):
+class PromptTemplateEngine(KernelBaseModel):
     _tokenizer: TemplateTokenizer = PrivateAttr()
 
     def __init__(self, **kwargs) -> None:
         super().__init__()
 
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._tokenizer = TemplateTokenizer()
 
-    def extract_blocks(
-        self, template_text: Optional[str] = None, validate: bool = True
-    ) -> List[Block]:
+    def extract_blocks(self, template_text: Optional[str] = None, validate: bool = True) -> List[Block]:
         """
         Given a prompt template string, extract all the blocks
         (text, variables, function calls).
@@ -54,7 +50,7 @@ class PromptTemplateEngine(SKBaseModel):
 
         return blocks
 
-    async def render_async(self, template_text: str, context: "SKContext") -> str:
+    async def render(self, template_text: str, context: "KernelContext") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -66,11 +62,9 @@ class PromptTemplateEngine(SKBaseModel):
         """
         logger.debug(f"Rendering string template: {template_text}")
         blocks = self.extract_blocks(template_text)
-        return await self.render_blocks_async(blocks, context)
+        return await self.render_blocks(blocks, context)
 
-    async def render_blocks_async(
-        self, blocks: List[Block], context: "SKContext"
-    ) -> str:
+    async def render_blocks(self, blocks: List[Block], context: "KernelContext") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -86,21 +80,16 @@ class PromptTemplateEngine(SKBaseModel):
             if isinstance(block, TextRenderer):
                 rendered_blocks.append(block.render(context.variables))
             elif isinstance(block, CodeRenderer):
-                rendered_blocks.append(await block.render_code_async(context))
+                rendered_blocks.append(await block.render_code(context))
             else:
-                error = (
-                    "unexpected block type, the block doesn't have a rendering "
-                    "protocol assigned to it"
-                )
+                error = "unexpected block type, the block doesn't have a rendering " "protocol assigned to it"
                 logger.error(error)
                 raise ValueError(error)
 
         logger.debug(f"Rendered prompt: {''.join(rendered_blocks)}")
         return "".join(rendered_blocks)
 
-    def render_variables(
-        self, blocks: List[Block], variables: Optional[ContextVariables] = None
-    ) -> List[Block]:
+    def render_variables(self, blocks: List[Block], variables: Optional[ContextVariables] = None) -> List[Block]:
         """
         Given a list of blocks, render the Variable Blocks, replacing
         placeholders with the actual value in memory.
@@ -125,9 +114,7 @@ class PromptTemplateEngine(SKBaseModel):
 
         return rendered_blocks
 
-    async def render_code_async(
-        self, blocks: List[Block], execution_context: "SKContext"
-    ) -> List[Block]:
+    async def render_code(self, blocks: List[Block], execution_context: "KernelContext") -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.
@@ -149,8 +136,6 @@ class PromptTemplateEngine(SKBaseModel):
                 continue
             if not isinstance(block, CodeRenderer):
                 raise ValueError("CodeBlock must implement CodeRenderer protocol")
-            rendered_blocks.append(
-                TextBlock.from_text(await block.render_code_async(execution_context))
-            )
+            rendered_blocks.append(TextBlock.from_text(await block.render_code(execution_context)))
 
         return rendered_blocks

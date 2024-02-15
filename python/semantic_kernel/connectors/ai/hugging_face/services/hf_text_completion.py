@@ -2,19 +2,24 @@
 
 import logging
 from threading import Thread
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Literal, Optional
 
 import torch
-import transformers
+from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
+    HuggingFacePromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.models.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.models.contents.text_content import TextContent
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -22,14 +27,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
-    generator: transformers.Pipeline
+    generator: Any
 
     def __init__(
         self,
         ai_model_id: str,
         task: Optional[str] = "text2text-generation",
         device: Optional[int] = -1,
-        log: Optional[Any] = None,
         model_kwargs: Optional[Dict[str, Any]] = None,
         pipeline_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -57,120 +61,98 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        generator = pipeline(
+            task=task,
+            model=ai_model_id,
+            device=device,
+            model_kwargs=model_kwargs,
+            **pipeline_kwargs or {},
+        )
         super().__init__(
             ai_model_id=ai_model_id,
             task=task,
-            device=(
-                f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
-            ),
-            generator=transformers.pipeline(
-                task=task,
-                model=ai_model_id,
-                device=device,
-                model_kwargs=model_kwargs,
-                **pipeline_kwargs or {},
-            ),
+            device=(f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"),
+            generator=generator,
         )
-        if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
 
-    async def complete_async(
+    async def complete(
         self,
         prompt: str,
-        request_settings: CompleteRequestSettings,
+        settings: HuggingFacePromptExecutionSettings,
         **kwargs,
-    ) -> Union[str, List[str]]:
+    ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {HuggingFacePromptExecutionSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
-            generation_config = transformers.GenerationConfig(
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                max_new_tokens=request_settings.max_tokens,
-                pad_token_id=50256,  # EOS token
-            )
-
-            results = self.generator(
-                prompt,
-                do_sample=True,
-                num_return_sequences=request_settings.number_of_responses,
-                generation_config=generation_config,
-            )
-
-            completions = list()
-            if self.task == "summarization":
-                for response in results:
-                    completions.append(response["summary_text"])
-                if len(completions) == 1:
-                    return completions[0]
-                return completions
-
-            for response in results:
-                completions.append(response["generated_text"])
-            if len(completions) == 1:
-                return completions[0]
-            return completions
-
+            results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
+        if isinstance(results, list):
+            return [self._create_text_content(results, result) for result in results]
+        return [self._create_text_content(results, results)]
 
-    async def complete_stream_async(
+    def _create_text_content(self, response: Any, candidate: Dict[str, str]) -> TextContent:
+        return TextContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            text=candidate["summary_text" if self.task == "summarization" else "generated_text"],
+        )
+
+    async def complete_stream(
         self,
         prompt: str,
-        request_settings: CompleteRequestSettings,
+        settings: HuggingFacePromptExecutionSettings,
         **kwargs,
-    ):
+    ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Hugging Face model.
         Note that this method does not support multiple responses.
 
         Arguments:
             prompt {str} -- Prompt to complete.
-            request_settings {CompleteRequestSettings} -- Request settings.
+            settings {HuggingFacePromptExecutionSettings} -- Request settings.
 
         Yields:
-            str -- Completion result.
+            List[StreamingTextContent] -- List of StreamingTextContent objects.
         """
         if kwargs.get("logger"):
-            logger.warning(
-                "The `logger` parameter is deprecated. Please use the `logging` module instead."
-            )
-        if request_settings.number_of_responses > 1:
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        if settings.num_return_sequences > 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
                 "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \
-                    If you need multiple responses, please use the complete_async method.",
+                    If you need multiple responses, please use the complete method.",
             )
         try:
-            generation_config = transformers.GenerationConfig(
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                max_new_tokens=request_settings.max_tokens,
-                pad_token_id=50256,  # EOS token
-            )
-
-            tokenizer = transformers.AutoTokenizer.from_pretrained(self.ai_model_id)
-            streamer = transformers.TextIteratorStreamer(tokenizer)
-            args = {prompt}
-            kwargs = {
-                "num_return_sequences": request_settings.number_of_responses,
-                "generation_config": generation_config,
-                "streamer": streamer,
-                "do_sample": True,
-            }
-
+            streamer = TextIteratorStreamer(AutoTokenizer.from_pretrained(self.ai_model_id))
             # See https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py#L159
-            thread = Thread(target=self.generator, args=args, kwargs=kwargs)
+            thread = Thread(
+                target=self.generator, args={prompt}, kwargs=settings.prepare_settings_dict(streamer=streamer)
+            )
             thread.start()
 
             for new_text in streamer:
-                yield new_text
+                yield [
+                    StreamingTextContent(
+                        choice_index=0, inner_content=new_text, text=new_text, ai_model_id=self.ai_model_id
+                    )
+                ]
 
             thread.join()
 
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
+
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
+        """Create a request settings object."""
+        return HuggingFacePromptExecutionSettings
