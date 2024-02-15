@@ -3,36 +3,36 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
-using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
 /// recent information, or for AI to generate recent information to display to users.
 /// </summary>
-// ReSharper disable CommentTypo
-// ReSharper disable once InconsistentNaming
-public static class Example07_BingAndGooglePlugins
+public class Example07_BingAndGooglePlugins : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact(Skip = "Setup Credentials")]
+    public async Task RunAsync()
     {
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
         {
-            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            this.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -41,13 +41,13 @@ public static class Example07_BingAndGooglePlugins
         string bingApiKey = TestConfiguration.Bing.ApiKey;
         if (bingApiKey == null)
         {
-            Console.WriteLine("Bing credentials not found. Skipping example.");
+            this.WriteLine("Bing credentials not found. Skipping example.");
         }
         else
         {
             var bingConnector = new BingConnector(bingApiKey);
             var bing = new WebSearchEnginePlugin(bingConnector);
-            kernel.ImportFunctions(bing, "bing");
+            kernel.ImportPluginFromObject(bing, "bing");
             await Example1Async(kernel, "bing");
             await Example2Async(kernel);
         }
@@ -58,7 +58,7 @@ public static class Example07_BingAndGooglePlugins
 
         if (googleApiKey == null || googleSearchEngineId == null)
         {
-            Console.WriteLine("Google credentials not found. Skipping example.");
+            this.WriteLine("Google credentials not found. Skipping example.");
         }
         else
         {
@@ -66,23 +66,24 @@ public static class Example07_BingAndGooglePlugins
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
             var google = new WebSearchEnginePlugin(googleConnector);
-            kernel.ImportFunctions(new WebSearchEnginePlugin(googleConnector), "google");
+            kernel.ImportPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
+            // ReSharper disable once ArrangeThisQualifier
             await Example1Async(kernel, "google");
         }
     }
 
-    private static async Task Example1Async(IKernel kernel, string searchPluginName)
+    private async Task Example1Async(Kernel kernel, string searchPluginName)
     {
-        Console.WriteLine("======== Bing and Google Search Plugins ========");
+        this.WriteLine("======== Bing and Google Search Plugins ========");
 
         // Run
         var question = "What's the largest building in the world?";
-        var function = kernel.Functions.GetFunction(searchPluginName, "search");
-        var result = await kernel.RunAsync(question, function);
+        var function = kernel.Plugins[searchPluginName]["search"];
+        var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
-        Console.WriteLine(question);
-        Console.WriteLine($"----{searchPluginName}----");
-        Console.WriteLine(result.GetValue<string>());
+        this.WriteLine(question);
+        this.WriteLine($"----{searchPluginName}----");
+        this.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -97,9 +98,9 @@ public static class Example07_BingAndGooglePlugins
        */
     }
 
-    private static async Task Example2Async(IKernel kernel)
+    private async Task Example2Async(Kernel kernel)
     {
-        Console.WriteLine("======== Use Search Plugin to answer user questions ========");
+        this.WriteLine("======== Use Search Plugin to answer user questions ========");
 
         const string SemanticFunction = @"Answer questions only when you know the facts or the information is provided.
 When you don't have sufficient information you reply with a list of commands to find the information needed.
@@ -131,16 +132,17 @@ Answer:
 [END OF EXAMPLES]
 
 [TASK]
-Question: {{ $input }}.
+Question: {{ $question }}.
 Answer: ";
 
-        var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
-        Console.WriteLine(questions);
+        var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
+        this.WriteLine(question);
 
-        var oracle = kernel.CreateSemanticFunction(SemanticFunction, new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
+        var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
-        var answer = await kernel.RunAsync(oracle, new(questions)
+        var answer = await kernel.InvokeAsync(oracle, new KernelArguments()
         {
+            ["question"] = question,
             ["externalInformation"] = string.Empty
         });
 
@@ -149,28 +151,30 @@ Answer: ";
         // If the answer contains commands, execute them using the prompt renderer.
         if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
         {
-            var promptRenderer = new BasicPromptTemplateEngine();
+            var promptTemplateFactory = new KernelPromptTemplateFactory();
+            var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
-            Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptRenderer.RenderAsync(result, kernel.CreateNewContext());
+            this.WriteLine("---- Fetching information from Bing...");
+            var information = await promptTemplate.RenderAsync(kernel);
 
-            Console.WriteLine("Information found:");
-            Console.WriteLine(information);
+            this.WriteLine("Information found:");
+            this.WriteLine(information);
 
-            // Run the semantic function again, now including information from Bing
-            answer = await kernel.RunAsync(oracle, new(questions)
+            // Run the prompt function again, now including information from Bing
+            answer = await kernel.InvokeAsync(oracle, new KernelArguments()
             {
+                ["question"] = question,
                 // The rendered prompt contains the information retrieved from search engines
                 ["externalInformation"] = information
             });
         }
         else
         {
-            Console.WriteLine("AI had all the information, no need to query Bing.");
+            this.WriteLine("AI had all the information, no need to query Bing.");
         }
 
-        Console.WriteLine("---- ANSWER:");
-        Console.WriteLine(answer.GetValue<string>());
+        this.WriteLine("---- ANSWER:");
+        this.WriteLine(answer.GetValue<string>());
 
         /* OUTPUT:
 
@@ -189,5 +193,9 @@ Answer: ";
             * The most followed person on TikTok right now is Khaby Lame, with over 153 million followers.
             * The exchange rate for EUR to USD is 1.1037097 US Dollars for 1 Euro.
          */
+    }
+
+    public Example07_BingAndGooglePlugins(ITestOutputHelper output) : base(output)
+    {
     }
 }

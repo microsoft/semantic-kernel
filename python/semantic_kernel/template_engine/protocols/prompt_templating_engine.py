@@ -6,7 +6,7 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
+    from semantic_kernel.orchestration.kernel_context import KernelContext
 
 
 @runtime_checkable
@@ -15,9 +15,7 @@ class PromptTemplatingEngine(Protocol):
     Prompt templating engine protocol.
     """
 
-    def extract_blocks(
-        self, template_text: Optional[str] = None, validate: bool = True
-    ) -> List[Block]:
+    def extract_blocks(self, template_text: Optional[str] = None, validate: bool = True) -> List[Block]:
         """
         Given a prompt template string, extract all the blocks
         (text, variables, function calls).
@@ -30,7 +28,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_async(self, template_text: str, context: "SKContext") -> str:
+    async def render(self, template_text: str, context: "KernelContext") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -42,9 +40,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_blocks_async(
-        self, blocks: List[Block], context: "SKContext"
-    ) -> str:
+    async def render_blocks(self, blocks: List[Block], context: "KernelContext") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -54,9 +50,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    def render_variables(
-        self, blocks: List[Block], variables: Optional[ContextVariables] = None
-    ) -> List[Block]:
+    def render_variables(self, blocks: List[Block], variables: Optional[ContextVariables] = None) -> List[Block]:
         """
         Given a list of blocks, render the Variable Blocks, replacing
         placeholders with the actual value in memory.
@@ -68,9 +62,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_code_async(
-        self, blocks: List[Block], execution_context: "SKContext"
-    ) -> List[Block]:
+    async def render_code(self, blocks: List[Block], execution_context: "KernelContext") -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.

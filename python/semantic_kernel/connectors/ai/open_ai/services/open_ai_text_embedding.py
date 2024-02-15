@@ -1,86 +1,89 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import Any, List, Optional
+import logging
+from typing import Any, Dict, Mapping, Optional, overload
 
-import openai
-from numpy import array, ndarray
+from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
+    OpenAIConfigBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIModelTypes,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
+    OpenAITextEmbeddingBase,
+)
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAITextEmbedding(EmbeddingGeneratorBase):
-    _model_id: str
-    _api_key: str
-    _api_type: Optional[str] = None
-    _api_version: Optional[str] = None
-    _endpoint: Optional[str] = None
-    _org_id: Optional[str] = None
-    _log: Logger
+class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
+    """OpenAI Text Embedding class."""
+
+    @overload
+    def __init__(
+        self,
+        ai_model_id: str,
+        async_client: AsyncOpenAI,
+        log: Optional[Any] = None,
+    ) -> None:
+        """
+        Initialize an OpenAITextEmbedding service.
+
+        Arguments:
+            ai_model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            async_client {AsyncOpenAI} -- An existing client to use.
+        """
 
     def __init__(
         self,
-        model_id: str,
-        api_key: str,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
         org_id: Optional[str] = None,
-        api_type: Optional[str] = None,
-        api_version: Optional[str] = None,
-        endpoint: Optional[str] = None,
-        log: Optional[Logger] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        async_client: Optional[AsyncOpenAI] = None,
+        log: Optional[Any] = None,
     ) -> None:
         """
         Initializes a new instance of the OpenAITextCompletion class.
 
         Arguments:
-            model_id {str} -- OpenAI model name, see
+            ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
             api_key {str} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
                 account belongs to multiple organizations.
+            default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
         """
-        self._model_id = model_id
-        self._api_key = api_key
-        self._api_type = api_type
-        self._api_version = api_version
-        self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
-        self._org_id = org_id
-        self._log = log if log is not None else NullLogger()
+        super().__init__(
+            ai_model_id=ai_model_id,
+            api_key=api_key,
+            ai_model_type=OpenAIModelTypes.EMBEDDING,
+            org_id=org_id,
+            default_headers=default_headers,
+            async_client=async_client,
+        )
+        if log:
+            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
-    async def generate_embeddings_async(
-        self, texts: List[str], batch_size: Optional[int] = None
-    ) -> ndarray:
-        model_args = {}
-        if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
-        else:
-            model_args["model"] = self._model_id
+    @classmethod
+    def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextEmbedding":
+        """
+        Initialize an Open AI service from a dictionary of settings.
 
-        try:
-            raw_embeddings = []
-            batch_size = batch_size or len(texts)
-            for i in range(0, len(texts), batch_size):
-                batch = texts[i : i + batch_size]
-                response: Any = await openai.Embedding.acreate(
-                    **model_args,
-                    api_key=self._api_key,
-                    api_type=self._api_type,
-                    api_base=self._endpoint,
-                    api_version=self._api_version,
-                    organization=self._org_id,
-                    input=batch,
-                )
-                # make numpy arrays from the response
-                raw_embeddings.extend([array(x["embedding"]) for x in response["data"]])
-            return array(raw_embeddings)
-        except Exception as ex:
-            raise AIException(
-                AIException.ErrorCodes.ServiceError,
-                f"{self.__class__.__name__} failed to generate embeddings",
-                ex,
-            )
+        Arguments:
+            settings: A dictionary of settings for the service.
+        """
+
+        return OpenAITextEmbedding(
+            ai_model_id=settings["ai_model_id"],
+            api_key=settings["api_key"],
+            org_id=settings.get("org_id"),
+            default_headers=settings.get("default_headers"),
+        )

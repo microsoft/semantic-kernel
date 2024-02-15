@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Exception
 namespace System;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Exception extension methods.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class ExceptionExtensions
 {
     /// <summary>

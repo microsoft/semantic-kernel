@@ -1,13 +1,15 @@
 ---
-
 # These are optional elements. Feel free to remove any of them
 
 status: accepted
 contact: markwallace-microsoft
 date: 2023-09-29
-deciders: semenshi, dmytrostruk, rbarreto
-consulted: shawncal, stoub, lemiller
-informed: {list everyone who is kept up-to-date on progress; and with whom there is a one-way communication}
+deciders: SergeyMenshykh, dmytrostruk, RogerBarreto
+consulted: shawncal, stephentoub, lemillermicrosoft
+informed:
+  {
+    list everyone who is kept up-to-date on progress; and with whom there is a one-way communication,
+  }
 ---
 
 # DotNet Project Structure for 1.0 Release
@@ -49,13 +51,13 @@ Chosen option: Option #2: Folder naming matches assembly name, because:
 
 Main categories for the projects will be:
 
-1. `Connectors`: ***A connector project allows the Semantic Kernel to connect to AI and Memory services***. Some of the existing connector projects may move to other repositories.
-1. `Planners`: ***A planner project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask***. This category will include the current action, sequential and stepwise planners (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
-1. `Functions`: ***A function project that enables the Semantic Kernel to access the functions it will orchestrate***. This category will include:
-    1. Semantic functions i.e., prompts executed against an LLM
-    1. GRPC remote procedures i.e., procedures executed remotely using the GRPC framework
-    1. Open API endpoints i.e., REST endpoints that have Open API definitions executed remotely using the HTTP protocol
-1. `Plugins`: ***A plugin project contains the implementation(s) of a Semantic Kernel plugin***. A Semantic Kernel plugin is contains a concrete implementation of a function e.g., a plugin may include code for basic text operations.
+1. `Connectors`: **_A connector project allows the Semantic Kernel to connect to AI and Memory services_**. Some of the existing connector projects may move to other repositories.
+1. `Planners`: **_A planner project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask_**. This category will include the current action, sequential and stepwise planners (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
+1. `Functions`: **_A function project that enables the Semantic Kernel to access the functions it will orchestrate_**. This category will include:
+   1. Semantic functions i.e., prompts executed against an LLM
+   1. GRPC remote procedures i.e., procedures executed remotely using the GRPC framework
+   1. Open API endpoints i.e., REST endpoints that have Open API definitions executed remotely using the HTTP protocol
+1. `Plugins`: **_A plugin project contains the implementation(s) of a Semantic Kernel plugin_**. A Semantic Kernel plugin is contains a concrete implementation of a function e.g., a plugin may include code for basic text operations.
 
 ### Option #1: New `planning`, `functions` and `plugins` project areas
 
@@ -97,17 +99,17 @@ SK-dotnet
 
 ### Changes
 
-| Project                             | Description |
-|-------------------------------------|-------------|
-| `Functions.Native`                  | Extract native functions from Semantic Kernel core and abstractions. |
-| `Functions.Semantic`                | Extract semantic functions from Semantic Kernel core and abstractions. Include the prompt template engine. |
-| `Functions.Planning`                | Extract planning from Semantic Kernel core and abstractions. |
-| `Functions.Grpc`                    | Old `Skills.Grpc` project |
-| `Functions.OpenAPI`                 | Old `Skills.OpenAPI` project |
-| `Plugins.Core`                      | Old `Skills.Core` project |
-| `Plugins.Document`                  | Old `Skills.Document` project |
-| `Plugins.MsGraph`                   | Old `Skills.MsGraph` project |
-| `Plugins.WebSearch`                 | Old `Skills.WebSearch` project |
+| Project              | Description                                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `Functions.Native`   | Extract native functions from Semantic Kernel core and abstractions.                                       |
+| `Functions.Semantic` | Extract semantic functions from Semantic Kernel core and abstractions. Include the prompt template engine. |
+| `Functions.Planning` | Extract planning from Semantic Kernel core and abstractions.                                               |
+| `Functions.Grpc`     | Old `Skills.Grpc` project                                                                                  |
+| `Functions.OpenAPI`  | Old `Skills.OpenAPI` project                                                                               |
+| `Plugins.Core`       | Old `Skills.Core` project                                                                                  |
+| `Plugins.Document`   | Old `Skills.Document` project                                                                              |
+| `Plugins.MsGraph`    | Old `Skills.MsGraph` project                                                                               |
+| `Plugins.WebSearch`  | Old `Skills.WebSearch` project                                                                             |
 
 ### Semantic Kernel Skills and Functions
 
@@ -125,19 +127,19 @@ SK-dotnet
     │
     ├── Microsoft.SemanticKernel.Connectors.AI.OpenAI*
     │   ├── src
-    │   └── tests 
+    │   └── tests
     │ (Not shown but all projects will have src and tests subfolders)
     ├── Microsoft.SemanticKernel.Connectors.AI.HuggingFace
     ├── Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch
     ├── Microsoft.SemanticKernel.Connectors.Memory.Qdrant
     │
     ├── Microsoft.SemanticKernel.Planners*
-    │ 
+    │
     ├── Microsoft.SemanticKernel.Reliability.Basic*
     ├── Microsoft.SemanticKernel.Reliability.Polly
-    │ 
+    │
     ├── Microsoft.SemanticKernel.TemplateEngines.Basic*
-    │ 
+    │
     ├── Microsoft.SemanticKernel.Functions.Semantic*
     ├── Microsoft.SemanticKernel.Functions.Grpc
     ├── Microsoft.SemanticKernel.Functions.OpenAPI
@@ -156,7 +158,7 @@ SK-dotnet
     └── Microsoft.SemanticKernel.MetaPackage
 ```
 
-***Notes:***
+**_Notes:_**
 
 - There will only be a single solution file (initially).
 - Projects will be grouped in the solution i.e., connectors, planners, plugins, functions, extensions, ...
@@ -197,33 +199,33 @@ SK-dotnet
     └── SemanticKernel.UnitTests
 ```
 
-\\* - Means the project is part of the Semantic Kernel meta package
+\\\* - Means the project is part of the Semantic Kernel meta package
 
 ### Project Descriptions
 
-| Project                             | Description |
-|-------------------------------------|-------------|
-| Connectors.AI.OpenAI                | Azure OpenAI and OpenAI service connectors |
-| Connectors...                       | Collection of other AI service connectors, some of which will move to another repository |
-| Connectors.UnitTests                | Connector unit tests |
-| Planner.ActionPlanner               | Semantic Kernel implementation of an action planner |
-| Planner.SequentialPlanner           | Semantic Kernel implementation of a sequential planner |
-| Planner.StepwisePlanner             | Semantic Kernel implementation of a stepwise planner |
-| TemplateEngine.Basic                | Prompt template engine basic implementations which are used by Semantic Functions only |
-| Extensions.UnitTests                | Extensions unit tests |
-| InternalUtilities                   | Internal utilities which are reused by multiple NuGet packages (all internal)  |
-| Skills.Core                         | Core set of native functions which are provided to support Semantic Functions |
-| Skills.Document                     | Native functions for interacting with Microsoft documents |
-| Skills.Grpc                         | Semantic Kernel integration for GRPC based endpoints |
-| Skills.MsGraph                      | Native functions for interacting with Microsoft Graph endpoints |
-| Skills.OpenAPI                      | Semantic Kernel integration for OpenAI endpoints and reference Azure Key Vault implementation |
-| Skills.Web                          | Native functions for interacting with Web endpoints e.g., Bing, Google, File download |
-| Skills.UnitTests                    | Skills unit tests |
-| IntegrationTests                    | Semantic Kernel integration tests |
-| SemanticKernel                      | Semantic Kernel core implementation |
-| SemanticKernel.Abstractions         | Semantic Kernel abstractions i.e., interface, abstract classes, supporting classes, ... |
-| SemanticKernel.MetaPackage          | Semantic Kernel meta package i.e., a NuGet package that references other required Semantic Kernel NuGet packages |
-| SemanticKernel.UnitTests            | Semantic Kernel unit tests |
+| Project                     | Description                                                                                                      |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Connectors.AI.OpenAI        | Azure OpenAI and OpenAI service connectors                                                                       |
+| Connectors...               | Collection of other AI service connectors, some of which will move to another repository                         |
+| Connectors.UnitTests        | Connector unit tests                                                                                             |
+| Planner.ActionPlanner       | Semantic Kernel implementation of an action planner                                                              |
+| Planner.SequentialPlanner   | Semantic Kernel implementation of a sequential planner                                                           |
+| Planner.StepwisePlanner     | Semantic Kernel implementation of a stepwise planner                                                             |
+| TemplateEngine.Basic        | Prompt template engine basic implementations which are used by Semantic Functions only                           |
+| Extensions.UnitTests        | Extensions unit tests                                                                                            |
+| InternalUtilities           | Internal utilities which are reused by multiple NuGet packages (all internal)                                    |
+| Skills.Core                 | Core set of native functions which are provided to support Semantic Functions                                    |
+| Skills.Document             | Native functions for interacting with Microsoft documents                                                        |
+| Skills.Grpc                 | Semantic Kernel integration for GRPC based endpoints                                                             |
+| Skills.MsGraph              | Native functions for interacting with Microsoft Graph endpoints                                                  |
+| Skills.OpenAPI              | Semantic Kernel integration for OpenAI endpoints and reference Azure Key Vault implementation                    |
+| Skills.Web                  | Native functions for interacting with Web endpoints e.g., Bing, Google, File download                            |
+| Skills.UnitTests            | Skills unit tests                                                                                                |
+| IntegrationTests            | Semantic Kernel integration tests                                                                                |
+| SemanticKernel              | Semantic Kernel core implementation                                                                              |
+| SemanticKernel.Abstractions | Semantic Kernel abstractions i.e., interface, abstract classes, supporting classes, ...                          |
+| SemanticKernel.MetaPackage  | Semantic Kernel meta package i.e., a NuGet package that references other required Semantic Kernel NuGet packages |
+| SemanticKernel.UnitTests    | Semantic Kernel unit tests                                                                                       |
 
 ### Naming Patterns
 
@@ -283,10 +285,9 @@ dotnet/
 
 This diagram show current skills are integrated with the Semantic Kernel core.
 
-***Note:***
+**_Note:_**
 
 - This is not a true class hierarchy diagram. It show some class relationships and dependencies.
 - Namespaces are abbreviated to remove Microsoft.SemanticKernel prefix. Namespaces use `_` rather than `.`.
 
 <img src="./diagrams/skfunctions-preview.png" alt="ISKFunction class relationships" width="400"/>
-

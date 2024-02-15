@@ -4,14 +4,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-// ReSharper disable once CheckNamespace
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.Runtime.CompilerServices;
-#pragma warning restore IDE0130
 
 #if !NETCOREAPP
 
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
+[ExcludeFromCodeCoverage]
 internal sealed class CallerArgumentExpressionAttribute : Attribute
 {
     public CallerArgumentExpressionAttribute(string parameterName)

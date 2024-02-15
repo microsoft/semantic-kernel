@@ -6,14 +6,13 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
+using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Pinecone;
+namespace SemanticKernel.Connectors.UnitTests.Pinecone;
 
 public sealed class PineconeMemoryBuilderExtensionsTests : IDisposable
 {
@@ -31,7 +30,7 @@ public sealed class PineconeMemoryBuilderExtensionsTests : IDisposable
     public async Task PineconeMemoryStoreShouldBeProperlyInitializedAsync()
     {
         // Arrange
-        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGeneration>();
+        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGenerationService>();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent("[\"fake-index1\"]", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new MemoryBuilder();

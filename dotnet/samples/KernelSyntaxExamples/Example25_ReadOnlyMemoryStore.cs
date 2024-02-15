@@ -10,12 +10,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
+using Xunit;
+using Xunit.Abstractions;
 
-#pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+namespace Examples;
 
-// ReSharper disable once InconsistentNaming
 /// <summary>
 /// This sample provides a custom implementation of <see cref="IMemoryStore"/> that is read only.
 ///     In this sample, the data is stored in a JSON string and deserialized into an
@@ -23,26 +22,27 @@ using Microsoft.SemanticKernel.Memory;
 ///     of <see cref="IMemoryStore"/> has a single collection, and thus does not need to be named.
 ///     It also assumes that the JSON formatted data can be deserialized into <see cref="MemoryRecord"/> objects.
 /// </summary>
-public static class Example25_ReadOnlyMemoryStore
+public class Example25_ReadOnlyMemoryStore : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         var store = new ReadOnlyMemoryStore(s_jsonVectorEntries);
 
         var embedding = new ReadOnlyMemory<float>(new float[] { 22, 4, 6 });
 
-        Console.WriteLine("Reading data from custom read-only memory store");
+        WriteLine("Reading data from custom read-only memory store");
         var memoryRecord = await store.GetAsync("collection", "key3");
         if (memoryRecord != null)
         {
-            Console.WriteLine("ID = {0}, Embedding = {1}", memoryRecord.Metadata.Id, string.Join(", ", MemoryMarshal.ToEnumerable(memoryRecord.Embedding)));
+            WriteLine($"ID = {memoryRecord.Metadata.Id}, Embedding = {string.Join(", ", MemoryMarshal.ToEnumerable(memoryRecord.Embedding))}");
         }
 
-        Console.WriteLine("Getting most similar vector to {0}", string.Join(", ", MemoryMarshal.ToEnumerable(embedding)));
+        WriteLine($"Getting most similar vector to {string.Join(", ", MemoryMarshal.ToEnumerable(embedding))}");
         var result = await store.GetNearestMatchAsync("collection", embedding, 0.0);
         if (result.HasValue)
         {
-            Console.WriteLine("Embedding = {0}, Similarity = {1}", string.Join(", ", MemoryMarshal.ToEnumerable(result.Value.Item1.Embedding)), result.Value.Item2);
+            WriteLine($"ID = {string.Join(", ", MemoryMarshal.ToEnumerable(result.Value.Item1.Embedding))}, Embedding = {result.Value.Item2}");
         }
     }
 
@@ -241,4 +241,8 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
         }
     ]";
+
+    public Example25_ReadOnlyMemoryStore(ITestOutputHelper output) : base(output)
+    {
+    }
 }

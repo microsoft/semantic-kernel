@@ -1,29 +1,35 @@
 from textwrap import dedent
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning import ActionPlanner
 from semantic_kernel.planning.action_planner.action_planner_config import (
     ActionPlannerConfig,
 )
 from semantic_kernel.planning.planning_exception import PlanningException
-from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.functions_view import FunctionsView
-from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
+from semantic_kernel.plugin_definition.function_view import FunctionView
+from semantic_kernel.plugin_definition.functions_view import FunctionsView
+from semantic_kernel.plugin_definition.kernel_plugin import KernelPlugin
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
 
 
-def create_mock_function(function_view: FunctionView) -> Mock(spec=SKFunctionBase):
-    mock_function = Mock(spec=SKFunctionBase)
+def create_mock_function(function_view: FunctionView):
+    mock_function = Mock(spec=KernelFunction)
     mock_function.describe.return_value = function_view
     mock_function.name = function_view.name
-    mock_function.skill_name = function_view.skill_name
+    mock_function.plugin_name = function_view.plugin_name
+    mock_function.is_semantic = function_view.is_semantic
     mock_function.description = function_view.description
+    mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
 
 
@@ -40,48 +46,45 @@ def test_throw_without_completion_service():
 
 
 @pytest.mark.asyncio
-async def test_plan_creation_async():
+async def test_plan_creation():
     goal = "Translate Happy birthday to German."
     plan_str = dedent(
         """Here is a plan that can achieve the given task:\n\n{""plan"":\n{""rationale"":
         ""the list contains a function that allows to translate one language to another."",
-        ""function"": ""WriterSkill.Translate"",""parameters"": \n{""translate_from"":
+        ""function"": ""WriterPlugin.Translate"",""parameters"": \n{""translate_from"":
         ""english"",""translate_to"": ""german"",""input"": ""Happy birthday""}\n}\n}\n\n
-        This plan makes use of the Translate function in WriterSkill to translate the message
+        This plan makes use of the Translate function in WriterPlugin to translate the message
         `Happy birthday` from english to german."""
     )
 
     kernel = Mock(spec=Kernel)
-    mock_function = Mock(spec=SKFunctionBase)
+    mock_function = Mock(spec=KernelFunction)
     memory = Mock(spec=SemanticTextMemoryBase)
-    skills = Mock(spec=SkillCollectionBase)
+    plugins = KernelPluginCollection()
 
     function_view = FunctionView(
         name="Translate",
         description="Translate something",
-        skill_name="WriterSkill",
+        plugin_name="WriterPlugin",
         is_semantic=False,
         parameters=[],
     )
     mock_function = create_mock_function(function_view)
-    skills.get_function.return_value = mock_function
 
-    context = SKContext.construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-    return_context = SKContext.construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
+    plugins.add(plugin=KernelPlugin(name=function_view.plugin_name, functions=[mock_function]))
+
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
 
     return_context.variables.update(plan_str)
 
-    mock_function.invoke_async.return_value = return_context
+    mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function
     kernel.create_new_context.return_value = context
 
     planner = ActionPlanner(kernel)
-    plan = await planner.create_plan_async(goal)
+    plan = await planner.create_plan(goal)
 
     assert plan is not None
     assert plan.description == mock_function.description
@@ -91,82 +94,79 @@ async def test_plan_creation_async():
 
 
 @pytest.fixture
-def skills_input():
+def plugins_input():
     return [
         ("SendEmail", "email", "Send an e-mail", False),
         ("GetEmailAddress", "email", "Get an e-mail address", False),
-        ("Translate", "WriterSkill", "Translate something", True),
-        ("Summarize", "SummarizeSkill", "Summarize something", True),
+        ("Translate", "WriterPlugin", "Translate something", True),
+        ("Summarize", "SummarizePlugin", "Summarize something", True),
     ]
 
 
 @pytest.fixture
-def mock_context(skills_input):
+def mock_context(plugins_input):
     memory = Mock(spec=Kernel)
-    context = Mock(spec=SKContext)
+    context = Mock(spec=KernelContext)
 
     functionsView = FunctionsView()
-    skills = Mock(spec=SkillCollectionBase)
-    mock_functions = []
-    for name, skillName, description, isSemantic in skills_input:
-        function_view = FunctionView(name, skillName, description, [], isSemantic, True)
+
+    plugins = MagicMock(spec=KernelPluginCollection)
+
+    mock_plugins = {}
+
+    for name, plugin_name, description, is_semantic in plugins_input:
+        function_view = FunctionView(name, plugin_name, description, [], is_semantic, True)
         mock_function = create_mock_function(function_view)
         functionsView.add_function(function_view)
 
-        _context = SKContext.construct(
-            variables=ContextVariables(), memory=memory, skill_collection=skills
-        )
-        _context.variables.update("MOCK FUNCTION CALLED")
-        mock_function.invoke_async.return_value = _context
-        mock_functions.append(mock_function)
+        if plugin_name not in mock_plugins:
+            mock_plugins[plugin_name] = {}
+        mock_plugins[plugin_name][name] = mock_function
 
-    skills.get_function.side_effect = lambda skill_name, function_name: next(
-        (
-            func
-            for func in mock_functions
-            if func.skill_name == skill_name and func.name == function_name
-        ),
-        None,
-    )
-    skills.get_functions_view.return_value = functionsView
-    context.skills.return_value = skills
-    context.skills.get_functions_view.return_value = functionsView
+        _context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+        _context.variables.update("MOCK FUNCTION CALLED")
+        mock_function.invoke.return_value = _context
+
+    plugins.__getitem__.side_effect = lambda plugin_name: MagicMock(__getitem__=mock_plugins[plugin_name].__getitem__)
+
+    context.plugins = plugins
+    context.plugins.get_functions_view.return_value = functionsView
 
     return context
 
 
-def test_available_functions(skills_input, mock_context):
+def test_available_functions(plugins_input, mock_context):
     goal = "Translate Happy birthday to German."
     kernel = Mock(spec=Kernel)
 
     planner = ActionPlanner(kernel)
     result = planner.list_of_functions(goal=goal, context=mock_context)
 
-    expected_skills = [f"{val[1]}.{val[0]}" for val in skills_input[1:]]
+    expected_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input[1:]]
 
-    assert all(skill in result for skill in expected_skills)
+    assert all(plugin in result for plugin in expected_plugins)
 
 
-def test_exclude_skills(skills_input, mock_context):
+def test_exclude_plugins(plugins_input, mock_context):
     goal = "Translate Happy birthday to German."
     kernel = Mock(spec=Kernel)
 
-    # Exclude the first and second in skills_input
-    excluded_skill_name = "email"
+    # Exclude the first and second in plugins_input
+    excluded_plugin_name = "email"
 
-    planner_config = ActionPlannerConfig(excluded_skills=[excluded_skill_name])
+    planner_config = ActionPlannerConfig(excluded_plugins=[excluded_plugin_name])
     planner = ActionPlanner(kernel, config=planner_config)
     result = planner.list_of_functions(goal=goal, context=mock_context)
 
-    all_skills = [f"{val[1]}.{val[0]}" for val in skills_input]
-    excluded_skills = all_skills[:2]
-    expected_skills = all_skills[2:]
+    all_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input]
+    excluded_plugins = all_plugins[:2]
+    expected_plugins = all_plugins[2:]
 
-    assert all(skill in result for skill in expected_skills)
-    assert all(skill not in result for skill in excluded_skills)
+    assert all(plugin in result for plugin in expected_plugins)
+    assert all(plugin not in result for plugin in excluded_plugins)
 
 
-def test_exclude_functions(skills_input, mock_context):
+def test_exclude_functions(plugins_input, mock_context):
     goal = "Translate Happy birthday to German."
     kernel = Mock(spec=Kernel)
 
@@ -176,80 +176,36 @@ def test_exclude_functions(skills_input, mock_context):
     planner = ActionPlanner(kernel, config=planner_config)
     result = planner.list_of_functions(goal=goal, context=mock_context)
 
-    all_skills = [f"{val[1]}.{val[0]}" for val in skills_input]
-    excluded_skills = all_skills[:1]
-    expected_skills = all_skills[1:]
+    all_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input]
+    excluded_plugins = all_plugins[:1]
+    expected_plugins = all_plugins[1:]
 
-    assert all(skill in result for skill in expected_skills)
-    assert all(skill not in result for skill in excluded_skills)
-
-
-@pytest.mark.asyncio
-async def test_invalid_json_throw_async():
-    goal = "Translate Happy birthday to German."
-    plan_str = '{"":{""function"": ""WriterSkill.Translate""}}'
-
-    kernel = Mock(spec=Kernel)
-    mock_function = Mock(spec=SKFunctionBase)
-    memory = Mock(spec=SemanticTextMemoryBase)
-    skills = Mock(spec=SkillCollectionBase)
-
-    function_view = FunctionView(
-        name="Translate",
-        description="Translate something",
-        skill_name="WriterSkill",
-        is_semantic=False,
-        parameters=[],
-    )
-    mock_function = create_mock_function(function_view)
-    skills.get_function.return_value = mock_function
-
-    context = SKContext.construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-    return_context = SKContext.construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-
-    return_context.variables.update(plan_str)
-
-    mock_function.invoke_async.return_value = return_context
-
-    kernel.create_semantic_function.return_value = mock_function
-    kernel.create_new_context.return_value = context
-
-    planner = ActionPlanner(kernel)
-
-    with pytest.raises(PlanningException):
-        await planner.create_plan_async(goal)
+    assert all(plugin in result for plugin in expected_plugins)
+    assert all(plugin not in result for plugin in excluded_plugins)
 
 
 @pytest.mark.asyncio
-async def test_empty_goal_throw_async():
+async def test_empty_goal_throw():
     goal = ""
 
     kernel = Mock(spec=Kernel)
-    mock_function = Mock(spec=SKFunctionBase)
+    mock_function = Mock(spec=KernelFunction)
     memory = Mock(spec=SemanticTextMemoryBase)
-    skills = Mock(spec=SkillCollectionBase)
+    plugins = MagicMock(spec=KernelPluginCollection)
 
     function_view = FunctionView(
         name="Translate",
         description="Translate something",
-        skill_name="WriterSkill",
+        plugin_name="WriterPlugin",
         is_semantic=False,
         parameters=[],
     )
     mock_function = create_mock_function(function_view)
-    skills.get_function.return_value = mock_function
+    plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
 
-    context = SKContext.construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-    return_context = SKContext.construct(
-        variables=ContextVariables(), memory=memory, skill_collection=skills
-    )
-    mock_function.invoke_async.return_value = return_context
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    mock_function.invoke.return_value = return_context
 
     kernel.create_semantic_function.return_value = mock_function
     kernel.create_new_context.return_value = context
@@ -257,4 +213,39 @@ async def test_empty_goal_throw_async():
     planner = ActionPlanner(kernel)
 
     with pytest.raises(PlanningException):
-        await planner.create_plan_async(goal)
+        await planner.create_plan(goal)
+
+
+@pytest.mark.asyncio
+async def test_invalid_json_throw():
+    goal = "Translate Happy birthday to German."
+    plan_str = '{"":{""function"": ""WriterPlugin.Translate""}}'
+
+    kernel = Mock(spec=Kernel)
+    memory = Mock(spec=SemanticTextMemoryBase)
+    plugins = MagicMock(spec=KernelPluginCollection)
+
+    function_view = FunctionView(
+        name="Translate",
+        plugin_name="WriterPlugin",
+        description="Translate something",
+        is_semantic=False,
+        parameters=[],
+    )
+    mock_function = create_mock_function(function_view)
+
+    plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
+
+    context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+    return_context = KernelContext.model_construct(variables=ContextVariables(), memory=memory, plugins=plugins)
+
+    return_context.variables.update(plan_str)
+    mock_function.invoke.return_value = return_context
+
+    kernel.create_semantic_function.return_value = mock_function
+    kernel.create_new_context.return_value = context
+
+    planner = ActionPlanner(kernel)
+
+    with pytest.raises(PlanningException):
+        await planner.create_plan(goal)

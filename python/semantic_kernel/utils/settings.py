@@ -48,13 +48,9 @@ def azure_openai_settings_from_dot_env(
 
     # Azure requires the deployment name, the API key and the endpoint URL.
     if include_deployment:
-        assert (
-            deployment is not None
-        ), "Azure OpenAI deployment name not found in .env file"
+        assert deployment is not None, "Azure OpenAI deployment name not found in .env file"
     if include_api_version:
-        assert (
-            api_version is not None
-        ), "Azure OpenAI API version not found in .env file"
+        assert api_version is not None, "Azure OpenAI API version not found in .env file"
 
     assert api_key, "Azure OpenAI API key not found in .env file"
     assert endpoint, "Azure OpenAI endpoint not found in .env file"
@@ -134,6 +130,46 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     return api_key, environment
 
 
+def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+    """
+    Reads the Astradb API key and Environment from the .env file.
+    Returns:
+        Tuple[str, str]: The Astradb API key, the Astradb Environment
+    """
+
+    app_token, db_id, region, keyspace = None, None, None, None
+    with open(".env", "r") as f:
+        lines = f.readlines()
+
+        for line in lines:
+            if line.startswith("ASTRADB_APP_TOKEN"):
+                parts = line.split("=")[1:]
+                app_token = "=".join(parts).strip().strip('"')
+                continue
+
+            if line.startswith("ASTRADB_ID"):
+                parts = line.split("=")[1:]
+                db_id = "=".join(parts).strip().strip('"')
+                continue
+
+            if line.startswith("ASTRADB_REGION"):
+                parts = line.split("=")[1:]
+                region = "=".join(parts).strip().strip('"')
+                continue
+
+            if line.startswith("ASTRADB_KEYSPACE"):
+                parts = line.split("=")[1:]
+                keyspace = "=".join(parts).strip().strip('"')
+                continue
+
+    assert app_token, "Astradb Application token not found in .env file"
+    assert db_id, "Astradb ID not found in .env file"
+    assert region, "Astradb Region not found in .env file"
+    assert keyspace, "Astradb Keyspace name not found in .env file"
+
+    return app_token, db_id, region, keyspace
+
+
 def weaviate_settings_from_dot_env() -> Tuple[Optional[str], str]:
     """
     Reads the Weaviate API key and URL from the .env file.
@@ -198,6 +234,21 @@ def google_palm_settings_from_dot_env() -> str:
     return api_key
 
 
+def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str]:
+    """
+    Reads the Azure CosmosDB environment variables for the .env file.
+    Returns:
+        dict: The Azure CosmosDB environment variables
+    """
+    config = dotenv_values(".env")
+    cosmos_api = config.get("AZCOSMOS_API")
+    cosmos_connstr = config.get("AZCOSMOS_CONNSTR")
+
+    assert cosmos_connstr is not None, "Azure Cosmos Connection String not found in .env file"
+
+    return cosmos_api, cosmos_connstr
+
+
 def redis_settings_from_dot_env() -> str:
     """Reads the Redis connection string from the .env file.
 
@@ -207,8 +258,41 @@ def redis_settings_from_dot_env() -> str:
     config = dotenv_values(".env")
     connection_string = config.get("REDIS_CONNECTION_STRING", None)
 
-    assert (
-        connection_string is not None
-    ), "Redis connection string not found in .env file"
+    assert connection_string is not None, "Redis connection string not found in .env file"
 
     return connection_string
+
+
+def azure_aisearch_settings_from_dot_env(
+    include_index_name=False,
+) -> Union[Tuple[str, str], Tuple[str, str, str]]:
+    """
+    Reads the Azure AI Search environment variables for the .env file.
+
+    Returns:
+        Tuple[str, str]: Azure AI Search API key, the Azure AI Search URL
+    """
+    config = dotenv_values(".env")
+    api_key = config.get("AZURE_AISEARCH_API_KEY", None)
+    url = config.get("AZURE_AISEARCH_URL", None)
+
+    assert url is not None, "Azure AI Search URL not found in .env file"
+    assert api_key is not None, "Azure AI Search API key not found in .env file"
+
+    if not include_index_name:
+        return api_key, url
+    else:
+        index_name = config.get("AZURE_AISEARCH_INDEX_NAME", None)
+        assert index_name is not None, "Azure AI Search index name not found in .env file"
+        return api_key, url, index_name
+
+
+def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
+    """
+    Reads the Azure AI Search environment variables including index name from the .env file.
+
+    Returns:
+        Dict[str, str]: the Azure AI search environment variables
+    """
+    api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
+    return {"key": api_key, "endpoint": url, "indexName": index_name}

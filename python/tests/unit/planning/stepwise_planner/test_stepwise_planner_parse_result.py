@@ -22,7 +22,7 @@ from semantic_kernel.planning.stepwise_planner.stepwise_planner import StepwiseP
 )
 def test_when_input_is_final_answer_returns_final_answer(input: str, expected: str):
     kernel = Mock(spec=Kernel)
-
+    kernel.prompt_template_engine = Mock()
     planner = StepwisePlanner(kernel)
 
     result = planner.parse_result(input)
@@ -41,6 +41,7 @@ def test_when_input_is_final_answer_returns_final_answer(input: str, expected: s
 )
 def test_when_input_is_only_thought_does_not_throw_error(input: str, expected: str):
     kernel = Mock(spec=Kernel)
+    kernel.prompt_template_engine = Mock()
     planner = StepwisePlanner(kernel)
     result = planner.parse_result(input)
     assert result.thought == expected

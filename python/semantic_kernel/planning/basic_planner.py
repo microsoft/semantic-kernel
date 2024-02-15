@@ -40,24 +40,24 @@ description: looks up the a contact and retrieves their email address
 args:
 - name: the name to look up
 
-WriterSkill.EmailTo
+WriterPlugin.EmailTo
 description: email the input text to a recipient
 args:
 - input: the text to email
 - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 
-WriterSkill.Translate
+WriterPlugin.Translate
 description: translate the input to another language
 args:
 - input: the text to translate
 - language: the language to translate to
 
-WriterSkill.Summarize
+WriterPlugin.Summarize
 description: summarize input text
 args:
 - input: the text to summarize
 
-FunSkill.Joke
+FunPlugin.Joke
 description: Generate a funny joke
 args:
 - input: the input to generate a joke about
@@ -69,29 +69,29 @@ args:
     {
         "input": "cars",
         "subtasks": [
-            {"function": "FunSkill.Joke"},
-            {"function": "WriterSkill.Translate", "args": {"language": "Spanish"}}
+            {"function": "FunPlugin.Joke"},
+            {"function": "WriterPlugin.Translate", "args": {"language": "Spanish"}}
         ]
     }
 
 [AVAILABLE FUNCTIONS]
-WriterSkill.Brainstorm
+WriterPlugin.Brainstorm
 description: Brainstorm ideas
 args:
 - input: the input to brainstorm about
 
-EdgarAllenPoeSkill.Poe
+EdgarAllenPoePlugin.Poe
 description: Write in the style of author Edgar Allen Poe
 args:
 - input: the input to write about
 
-WriterSkill.EmailTo
+WriterPlugin.EmailTo
 description: Write an email to a recipient
 args:
 - input: the input to write about
 - recipient: the recipient's email address.
 
-WriterSkill.Translate
+WriterPlugin.Translate
 description: translate the input to another language
 args:
 - input: the text to translate
@@ -106,10 +106,10 @@ E-mail these ideas to my significant other. Translate it to French."
     {
         "input": "Valentine's Day Date Ideas",
         "subtasks": [
-            {"function": "WriterSkill.Brainstorm"},
-            {"function": "EdgarAllenPoeSkill.Poe"},
-            {"function": "WriterSkill.EmailTo", "args": {"recipient": "significant_other"}},
-            {"function": "WriterSkill.Translate", "args": {"language": "French"}}
+            {"function": "WriterPlugin.Brainstorm"},
+            {"function": "EdgarAllenPoePlugin.Poe"},
+            {"function": "WriterPlugin.EmailTo", "args": {"recipient": "significant_other"}},
+            {"function": "WriterPlugin.Translate", "args": {"language": "French"}}
         ]
     }
 
@@ -133,21 +133,21 @@ class BasicPlanner:
         Given an instance of the Kernel, create the [AVAILABLE FUNCTIONS]
         string for the prompt.
         """
-        # Get a dictionary of skill names to all native and semantic functions
-        native_functions = kernel.skills.get_functions_view().native_functions
-        semantic_functions = kernel.skills.get_functions_view().semantic_functions
+        # Get a dictionary of plugin names to all native and semantic functions
+        native_functions = kernel.plugins.get_functions_view().native_functions
+        semantic_functions = kernel.plugins.get_functions_view().semantic_functions
         native_functions.update(semantic_functions)
 
         # Create a mapping between all function names and their descriptions
         # and also a mapping between function names and their parameters
         all_functions = native_functions
-        skill_names = list(all_functions.keys())
+        plugin_names = list(all_functions.keys())
         all_functions_descriptions_dict = {}
         all_functions_params_dict = {}
 
-        for skill_name in skill_names:
-            for func in all_functions[skill_name]:
-                key = skill_name + "." + func.name
+        for plugin_name in plugin_names:
+            for func in all_functions[plugin_name]:
+                key = plugin_name + "." + func.name
                 all_functions_descriptions_dict[key] = func.description
                 all_functions_params_dict[key] = func.parameters
 
@@ -166,14 +166,12 @@ class BasicPlanner:
                     param_description = ""
                 else:
                     param_description = param.description
-                available_functions_string += (
-                    "- " + param.name + ": " + param_description + "\n"
-                )
+                available_functions_string += "- " + param.name + ": " + param_description + "\n"
             available_functions_string += "\n"
 
         return available_functions_string
 
-    async def create_plan_async(
+    async def create_plan(
         self,
         goal: str,
         kernel: Kernel,
@@ -185,9 +183,7 @@ class BasicPlanner:
         """
 
         # Create the semantic function for the planner with the given prompt
-        planner = kernel.create_semantic_function(
-            prompt, max_tokens=1000, temperature=0.8
-        )
+        planner = kernel.create_semantic_function(prompt, max_tokens=1000, temperature=0.8)
 
         available_functions_string = self._create_available_functions_string(kernel)
 
@@ -196,10 +192,10 @@ class BasicPlanner:
         # Add the goal to the context
         context["goal"] = goal
         context["available_functions"] = available_functions_string
-        generated_plan = await planner.invoke_async(variables=context)
+        generated_plan = await planner.invoke(variables=context)
         return Plan(prompt=prompt, goal=goal, plan=generated_plan)
 
-    async def execute_plan_async(self, plan: Plan, kernel: Kernel) -> str:
+    async def execute_plan(self, plan: Plan, kernel: Kernel) -> str:
         """
         Given a plan, execute each of the functions within the plan
         from start to finish and output the result.
@@ -207,9 +203,7 @@ class BasicPlanner:
 
         # Filter out good JSON from the result in case additional text is present
         json_regex = r"\{(?:[^{}]|(?R))*\}"
-        generated_plan_string = regex.search(
-            json_regex, plan.generated_plan.result
-        ).group()
+        generated_plan_string = regex.search(json_regex, plan.generated_plan.result).group()
         generated_plan = json.loads(generated_plan_string)
 
         context = ContextVariables()
@@ -217,18 +211,18 @@ class BasicPlanner:
         subtasks = generated_plan["subtasks"]
 
         for subtask in subtasks:
-            skill_name, function_name = subtask["function"].split(".")
-            sk_function = kernel.skills.get_function(skill_name, function_name)
+            plugin_name, function_name = subtask["function"].split(".")
+            kernel_function = kernel.plugins[plugin_name][function_name]
 
             # Get the arguments dictionary for the function
             args = subtask.get("args", None)
             if args:
                 for key, value in args.items():
                     context[key] = value
-                output = await sk_function.invoke_async(variables=context)
+                output = await kernel_function.invoke(variables=context)
 
             else:
-                output = await sk_function.invoke_async(variables=context)
+                output = await kernel_function.invoke(variables=context)
 
             # Override the input context variable with the output of the function
             context["input"] = output.result

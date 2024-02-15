@@ -1,5 +1,7 @@
 name: Build Java Semantic Kernel
 
+# Triggers the workflow on manual dispatch, push, and pull request events
+# for the specified branches and paths
 on:
   workflow_dispatch:
   push:
@@ -15,6 +17,7 @@ permissions:
   contents: read
 
 jobs:
+  # Determines if Java files have changed
   paths-filter:
     runs-on: ubuntu-latest
     outputs:
@@ -28,14 +31,14 @@ jobs:
             java:
               - 'java/**'
               - '**/java/**'
-      # run only if 'java' files were changed
       - name: java tests
         if: steps.filter.outputs.java == 'true'
         run: echo "Java file"
-      # run only if not 'java' files were changed
       - name: not java tests
         if: steps.filter.outputs.java != 'true'
         run: echo "NOT java file"
+
+  # Builds and tests the Java project
   java-build:
     runs-on: ubuntu-latest
     needs: paths-filter
@@ -43,6 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Defines a matrix strategy for JDK versions 8 and 17
         java-versions: [8, 17]
 
     name: Java CI on JDK${{ matrix.java-versions }}
@@ -63,20 +67,24 @@ jobs:
             echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/setup-java@v3
+      # Sets up the specified JDK version from the matrix
+        uses: actions/setup-java@v3
         with:
           java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
           distribution: microsoft
           cache: maven
 
+      # Builds the project with Maven using the matrix JDK version
       - name: Build with Maven
         run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
 
+      # Runs tests with Maven using the matrix JDK version
       - name: Run tests
         run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
         working-directory: java
 
+      # Uploads test artifacts for each JDK version
       - uses: actions/upload-artifact@v2
         if: always()
         with:

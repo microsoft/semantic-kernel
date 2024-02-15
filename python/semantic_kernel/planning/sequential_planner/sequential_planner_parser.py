@@ -6,8 +6,8 @@ from xml.etree import ElementTree as ET
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function import KernelFunction
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
 
@@ -21,12 +21,14 @@ APPEND_TO_RESULT_TAG = "appendToResult"
 
 class SequentialPlanParser:
     @staticmethod
-    def get_skill_function(
-        context: SKContext,
-    ) -> Callable[[str, str], Optional[SKFunctionBase]]:
-        def function(skill_name: str, function_name: str) -> Optional[SKFunctionBase]:
+    def get_plugin_function(
+        context: KernelContext,
+    ) -> Callable[[str, str], Optional[KernelFunction]]:
+        def function(plugin_name: str, function_name: str) -> Optional[KernelFunction]:
             try:
-                return context.skills.get_function(skill_name, function_name)
+                return context.plugins[plugin_name][function_name]
+            except KeyError:
+                return None
             except KernelException:
                 return None
 
@@ -36,7 +38,7 @@ class SequentialPlanParser:
     def to_plan_from_xml(
         xml_string: str,
         goal: str,
-        get_skill_function: Callable[[str, str], Optional[SKFunctionBase]],
+        get_plugin_function: Callable[[str, str], Optional[KernelFunction]],
         allow_missing_functions: bool = False,
     ):
         xml_string = "<xml>" + xml_string + "</xml>"
@@ -71,25 +73,23 @@ class SequentialPlanParser:
                     continue
 
                 if child_node.tag.startswith(FUNCTION_TAG):
-                    skill_function_name = child_node.tag.split(FUNCTION_TAG)[1]
+                    plugin_function_name = child_node.tag.split(FUNCTION_TAG)[1]
                     (
-                        skill_name,
+                        plugin_name,
                         function_name,
-                    ) = SequentialPlanParser.get_skill_function_names(
-                        skill_function_name
-                    )
+                    ) = SequentialPlanParser.get_plugin_function_names(plugin_function_name)
 
                     if function_name:
-                        skill_function = get_skill_function(skill_name, function_name)
+                        plugin_function = get_plugin_function(plugin_name, function_name)
 
-                        if skill_function is not None:
-                            plan_step = Plan.from_function(skill_function)
+                        if plugin_function is not None:
+                            plan_step = Plan.from_function(plugin_function)
 
                             function_variables = ContextVariables()
                             function_outputs = []
                             function_results = []
 
-                            view = skill_function.describe()
+                            view = plugin_function.describe()
                             for p in view.parameters:
                                 function_variables.set(p.name, p.default_value)
 
@@ -100,9 +100,7 @@ class SequentialPlanParser:
                                     function_outputs.append(child_node.attrib[attr])
                                     function_results.append(child_node.attrib[attr])
                                 else:
-                                    function_variables.set(
-                                        attr, child_node.attrib[attr]
-                                    )
+                                    function_variables.set(attr, child_node.attrib[attr])
 
                             plan_step._outputs = function_outputs
                             plan_step._parameters = function_variables
@@ -112,24 +110,18 @@ class SequentialPlanParser:
 
                             plan.add_steps([plan_step])
                         elif allow_missing_functions:
-                            plan.add_steps([Plan.from_goal(skill_function_name)])
+                            plan.add_steps([Plan.from_goal(plugin_function_name)])
                         else:
                             raise PlanningException(
                                 PlanningException.ErrorCodes.InvalidPlan,
-                                f"Failed to find function '{skill_function_name}' in skill '{skill_name}'.",
+                                f"Failed to find function '{plugin_function_name}' in plugin '{plugin_name}'.",
                             )
 
         return plan
 
     @staticmethod
-    def get_skill_function_names(skill_function_name: str) -> Tuple[str, str]:
-        skill_function_name_parts = skill_function_name.split(".")
-        skill_name = (
-            skill_function_name_parts[0] if len(skill_function_name_parts) > 0 else ""
-        )
-        function_name = (
-            skill_function_name_parts[1]
-            if len(skill_function_name_parts) > 1
-            else skill_function_name
-        )
-        return skill_name, function_name
+    def get_plugin_function_names(plugin_function_name: str) -> Tuple[str, str]:
+        plugin_function_name_parts = plugin_function_name.split(".")
+        plugin_name = plugin_function_name_parts[0] if len(plugin_function_name_parts) > 0 else ""
+        function_name = plugin_function_name_parts[1] if len(plugin_function_name_parts) > 1 else plugin_function_name
+        return plugin_name, function_name

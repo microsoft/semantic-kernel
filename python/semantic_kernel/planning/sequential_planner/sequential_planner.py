@@ -10,7 +10,7 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_config impor
     SequentialPlannerConfig,
 )
 from semantic_kernel.planning.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerSKContextExtension as SKContextExtension,
+    SequentialPlannerKernelContextExtension as KernelContextExtension,
 )
 from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
@@ -24,8 +24,8 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.orchestration.sk_context import SKContext
-    from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+    from semantic_kernel.orchestration.kernel_context import KernelContext
+    from semantic_kernel.orchestration.kernel_function import KernelFunction
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
@@ -33,10 +33,8 @@ SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
 )
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
-PROMPT_CONFIG_FILE_PATH = os.path.join(CUR_DIR, "Skills/SequentialPlanning/config.json")
-PROMPT_TEMPLATE_FILE_PATH = os.path.join(
-    CUR_DIR, "Skills/SequentialPlanning/skprompt.txt"
-)
+PROMPT_CONFIG_FILE_PATH = os.path.join(CUR_DIR, "Plugins/SequentialPlanning/config.json")
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(CUR_DIR, "Plugins/SequentialPlanning/skprompt.txt")
 
 
 def read_file(file_path: str) -> str:
@@ -45,30 +43,26 @@ def read_file(file_path: str) -> str:
 
 
 class SequentialPlanner:
-    RESTRICTED_SKILL_NAME = "SequentialPlanner_Excluded"
+    RESTRICTED_PLUGIN_NAME = "SequentialPlanner_Excluded"
 
     config: SequentialPlannerConfig
-    _context: "SKContext"
-    _function_flow_function: "SKFunctionBase"
+    _context: "KernelContext"
+    _function_flow_function: "KernelFunction"
 
-    def __init__(
-        self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None
-    ):
+    def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):
         assert isinstance(kernel, Kernel)
         self.config = config or SequentialPlannerConfig()
 
-        self.config.excluded_skills.append(self.RESTRICTED_SKILL_NAME)
+        self.config.excluded_plugins.append(self.RESTRICTED_PLUGIN_NAME)
 
         self._function_flow_function = self._init_flow_function(prompt, kernel)
 
         self._context = kernel.create_new_context()
 
     def _init_flow_function(self, prompt: str, kernel: Kernel):
-        prompt_config = PromptTemplateConfig.from_json(
-            read_file(PROMPT_CONFIG_FILE_PATH)
-        )
+        prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
-        prompt_config.completion.max_tokens = self.config.max_tokens
+        prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
 
         prompt_template = PromptTemplate(
             template=prompt_template,
@@ -78,27 +72,21 @@ class SequentialPlanner:
         function_config = SemanticFunctionConfig(prompt_config, prompt_template)
 
         return kernel.register_semantic_function(
-            skill_name=self.RESTRICTED_SKILL_NAME,
-            function_name=self.RESTRICTED_SKILL_NAME,
+            plugin_name=self.RESTRICTED_PLUGIN_NAME,
+            function_name=self.RESTRICTED_PLUGIN_NAME,
             function_config=function_config,
         )
 
-    async def create_plan_async(self, goal: str) -> Plan:
+    async def create_plan(self, goal: str) -> Plan:
         if len(goal) == 0:
-            raise PlanningException(
-                PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty"
-            )
+            raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
 
-        relevant_function_manual = await SKContextExtension.get_functions_manual_async(
-            self._context, goal, self.config
-        )
+        relevant_function_manual = await KernelContextExtension.get_functions_manual(self._context, goal, self.config)
         self._context.variables.set("available_functions", relevant_function_manual)
 
         self._context.variables.update(goal)
 
-        plan_result = await self._function_flow_function.invoke_async(
-            context=self._context
-        )
+        plan_result = await self._function_flow_function.invoke(context=self._context)
 
         if plan_result.error_occurred:
             raise PlanningException(
@@ -110,14 +98,13 @@ class SequentialPlanner:
         plan_result_string = plan_result.result.strip()
 
         try:
-            get_skill_function = (
-                self.config.get_skill_function
-                or SequentialPlanParser.get_skill_function(self._context)
+            get_plugin_function = self.config.get_plugin_function or SequentialPlanParser.get_plugin_function(
+                self._context
             )
             plan = SequentialPlanParser.to_plan_from_xml(
                 plan_result_string,
                 goal,
-                get_skill_function,
+                get_plugin_function,
                 self.config.allow_missing_functions,
             )
 

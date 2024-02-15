@@ -8,10 +8,8 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Utils for Pinecone connector.
@@ -44,7 +42,7 @@ public static class PineconeUtils
     /// </summary>
     public const PodType DefaultPodType = PodType.P1X1;
 
-    internal static JsonSerializerOptions DefaultSerializerOptions => new()
+    internal static JsonSerializerOptions DefaultSerializerOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
@@ -54,11 +52,7 @@ public static class PineconeUtils
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonNode,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        Converters =
-        {
-            new PodTypeJsonConverter(),
-            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-        }
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
     /// <summary>
@@ -86,7 +80,7 @@ public static class PineconeUtils
                 continue;
             }
 
-            if (!document.Metadata.TryGetValue("text", out object value))
+            if (!document.Metadata.TryGetValue("text", out object? value))
             {
                 yield return document;
 
@@ -159,7 +153,7 @@ public static class PineconeUtils
             currentBatch = new List<PineconeDocument>(batchSize);
         }
 
-        if (currentBatch.Count <= 0)
+        if (currentBatch.Count == 0)
         {
             yield break;
         }
@@ -175,13 +169,6 @@ public static class PineconeUtils
         JsonSerializer.Serialize(writer, metadata);
 
         return (int)stream.Length;
-    }
-
-    private static int GetEntrySize(KeyValuePair<string, object> entry)
-    {
-        Dictionary<string, object> temp = new() { { entry.Key, entry.Value } };
-
-        return GetMetadataSize(temp);
     }
 
     /// <summary>
@@ -250,6 +237,7 @@ public static class PineconeUtils
             PodType.S1X4 => "s1x4",
             PodType.S1X8 => "s1x8",
             PodType.Starter => "starter",
+            PodType.Nano => "nano",
             _ => string.Empty
         };
     }

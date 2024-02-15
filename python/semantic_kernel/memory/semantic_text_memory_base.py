@@ -3,15 +3,15 @@
 from abc import abstractmethod
 from typing import List, Optional, TypeVar
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
-from semantic_kernel.sk_pydantic import PydanticField
 
 SemanticTextMemoryT = TypeVar("SemanticTextMemoryT", bound="SemanticTextMemoryBase")
 
 
-class SemanticTextMemoryBase(PydanticField):
+class SemanticTextMemoryBase(KernelBaseModel):
     @abstractmethod
-    async def save_information_async(
+    async def save_information(
         self,
         collection: str,
         text: str,
@@ -34,7 +34,7 @@ class SemanticTextMemoryBase(PydanticField):
         pass
 
     @abstractmethod
-    async def save_reference_async(
+    async def save_reference(
         self,
         collection: str,
         text: str,
@@ -58,7 +58,7 @@ class SemanticTextMemoryBase(PydanticField):
         pass
 
     @abstractmethod
-    async def get_async(
+    async def get(
         self,
         collection: str,
         query: str,
@@ -76,7 +76,7 @@ class SemanticTextMemoryBase(PydanticField):
         pass
 
     @abstractmethod
-    async def search_async(
+    async def search(
         self,
         collection: str,
         query: str,
@@ -99,7 +99,7 @@ class SemanticTextMemoryBase(PydanticField):
         pass
 
     @abstractmethod
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         """Get the list of collections in the memory (calls the memory store's get_collections method).
 
         Returns:

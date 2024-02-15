@@ -6,15 +6,14 @@ from pytest import fixture, mark
 
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.skill_definition import sk_function
-from semantic_kernel.skill_definition.read_only_skill_collection import (
-    ReadOnlySkillCollection,
+from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel.plugin_definition import kernel_function
+from semantic_kernel.plugin_definition.kernel_plugin_collection import (
+    KernelPluginCollection,
 )
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
-from semantic_kernel.utils.null_logger import NullLogger
 
 
 @fixture
@@ -28,22 +27,17 @@ def variables():
 
 
 @fixture
-def skills():
-    return Mock(spec=ReadOnlySkillCollection)
+def plugins():
+    return Mock(spec=KernelPluginCollection)
 
 
 @fixture
-def context(variables, skills):
-    return SKContext(variables, NullMemory(), skills, NullLogger())
+def context(variables, plugins):
+    return KernelContext(variables=variables, memory=NullMemory(), plugins=plugins)
 
 
-def test_it_renders_variables(
-    target: PromptTemplateEngine, variables: ContextVariables
-):
-    template = (
-        "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} "
-        "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}"
-    )
+def test_it_renders_variables(target: PromptTemplateEngine, variables: ContextVariables):
+    template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}"
 
     blocks = target.extract_blocks(template)
     updated_blocks = target.render_variables(blocks, variables)
@@ -123,23 +117,43 @@ def test_it_renders_variables(
 
 
 @mark.asyncio
-async def test_it_renders_code_using_input_async(
+async def test_it_renders_code_using_input(
     target: PromptTemplateEngine,
     variables: ContextVariables,
     context_factory,
 ):
-    @sk_function(name="function")
-    def my_function_async(cx: SKContext) -> str:
+    @kernel_function(name="function")
+    def my_function(cx: KernelContext) -> str:
         return f"F({cx.variables.input})"
 
-    func = SKFunction.from_native_method(my_function_async)
+    func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
 
     variables.update("INPUT-BAR")
     template = "foo-{{function}}-baz"
-    result = await target.render_async(template, context_factory(variables, func))
+    result = await target.render(template, context_factory(variables, func))
 
     assert result == "foo-F(INPUT-BAR)-baz"
+
+
+@mark.asyncio
+async def test_it_renders_code_using_variables(
+    target: PromptTemplateEngine,
+    variables: ContextVariables,
+    context_factory,
+):
+    @kernel_function(name="function")
+    def my_function(cx: KernelContext) -> str:
+        return f"F({cx.variables.input})"
+
+    func = KernelFunction.from_native_method(my_function, "test")
+    assert func is not None
+
+    variables.set("myVar", "BAR")
+    template = "foo-{{function $myVar}}-baz"
+    result = await target.render(template, context_factory(variables, func))
+
+    assert result == "foo-F(BAR)-baz"
 
 
 @mark.asyncio
@@ -148,37 +162,17 @@ async def test_it_renders_code_using_variables_async(
     variables: ContextVariables,
     context_factory,
 ):
-    @sk_function(name="function")
-    def my_function_async(cx: SKContext) -> str:
-        return f"F({cx.variables.input})"
-
-    func = SKFunction.from_native_method(my_function_async)
-    assert func is not None
-
-    variables.set("myVar", "BAR")
-    template = "foo-{{function $myVar}}-baz"
-    result = await target.render_async(template, context_factory(variables, func))
-
-    assert result == "foo-F(BAR)-baz"
-
-
-@mark.asyncio
-async def test_it_renders_async_code_using_variables_async(
-    target: PromptTemplateEngine,
-    variables: ContextVariables,
-    context_factory,
-):
-    @sk_function(name="function")
-    async def my_function_async(cx: SKContext) -> str:
+    @kernel_function(name="function")
+    async def my_function(cx: KernelContext) -> str:
         return cx.variables.input
 
-    func = SKFunction.from_native_method(my_function_async)
+    func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
 
     variables.set("myVar", "BAR")
 
     template = "foo-{{function $myVar}}-baz"
 
-    result = await target.render_async(template, context_factory(variables, func))
+    result = await target.render(template, context_factory(variables, func))
 
     assert result == "foo-BAR-baz"

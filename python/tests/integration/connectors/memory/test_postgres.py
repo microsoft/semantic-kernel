@@ -18,9 +18,7 @@ try:
 except ImportError:
     psycopg_installed = False
 
-pytestmark = pytest.mark.skipif(
-    not psycopg_installed, reason="psycopg is not installed"
-)
+pytestmark = pytest.mark.skipif(not psycopg_installed, reason="psycopg is not installed")
 
 try:
     import psycopg_pool  # noqa: F401
@@ -29,9 +27,7 @@ try:
 except ImportError:
     psycopg_pool_installed = False
 
-pytestmark = pytest.mark.skipif(
-    not psycopg_pool_installed, reason="psycopg_pool is not installed"
-)
+pytestmark = pytest.mark.skipif(not psycopg_pool_installed, reason="psycopg_pool is not installed")
 
 
 # Needed because the test service may not support a high volume of requests
@@ -100,55 +96,53 @@ def test_constructor(connection_string):
 
 
 @pytest.mark.asyncio
-async def test_create_and_does_collection_exist_async(connection_string):
+async def test_create_and_does_collection_exist(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    result = await memory.does_collection_exist_async("test_collection")
+    await memory.create_collection("test_collection")
+    result = await memory.does_collection_exist("test_collection")
     assert result is not None
 
 
 @pytest.mark.asyncio
-async def test_get_collections_async(connection_string):
+async def test_get_collections(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    result = await memory.get_collections_async()
+    await memory.create_collection("test_collection")
+    result = await memory.get_collections()
     assert "test_collection" in result
 
 
 @pytest.mark.asyncio
-async def test_delete_collection_async(connection_string):
+async def test_delete_collection(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
+    await memory.create_collection("test_collection")
 
-    result = await memory.get_collections_async()
+    result = await memory.get_collections()
     assert "test_collection" in result
 
-    await memory.delete_collection_async("test_collection")
-    result = await memory.get_collections_async()
+    await memory.delete_collection("test_collection")
+    result = await memory.get_collections()
     assert "test_collection" not in result
 
 
 @pytest.mark.asyncio
-async def test_does_collection_exist_async(connection_string):
+async def test_does_collection_exist(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    result = await memory.does_collection_exist_async("test_collection")
+    await memory.create_collection("test_collection")
+    result = await memory.does_collection_exist("test_collection")
     assert result is True
 
 
 @pytest.mark.asyncio
-async def test_upsert_async_and_get_async(connection_string, memory_record1):
+async def test_upsert_and_get(connection_string, memory_record1):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    await memory.upsert_async("test_collection", memory_record1)
-    result = await memory.get_async(
-        "test_collection", memory_record1._id, with_embedding=True
-    )
+    await memory.create_collection("test_collection")
+    await memory.upsert("test_collection", memory_record1)
+    result = await memory.get("test_collection", memory_record1._id, with_embedding=True)
     assert result is not None
     assert result._id == memory_record1._id
     assert result._text == memory_record1._text
@@ -158,15 +152,13 @@ async def test_upsert_async_and_get_async(connection_string, memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_upsert_batch_async_and_get_batch_async(
-    connection_string, memory_record1, memory_record2
-):
+async def test_upsert_batch_and_get_batch(connection_string, memory_record1, memory_record2):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
+    await memory.create_collection("test_collection")
+    await memory.upsert_batch("test_collection", [memory_record1, memory_record2])
 
-    results = await memory.get_batch_async(
+    results = await memory.get_batch(
         "test_collection",
         [memory_record1._id, memory_record2._id],
         with_embeddings=True,
@@ -178,56 +170,44 @@ async def test_upsert_batch_async_and_get_batch_async(
 
 
 @pytest.mark.asyncio
-async def test_remove_async(connection_string, memory_record1):
+async def test_remove(connection_string, memory_record1):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    await memory.upsert_async("test_collection", memory_record1)
+    await memory.create_collection("test_collection")
+    await memory.upsert("test_collection", memory_record1)
 
-    result = await memory.get_async(
-        "test_collection", memory_record1._id, with_embedding=True
-    )
+    result = await memory.get("test_collection", memory_record1._id, with_embedding=True)
     assert result is not None
 
-    await memory.remove_async("test_collection", memory_record1._id)
+    await memory.remove("test_collection", memory_record1._id)
     with pytest.raises(KeyError):
-        _ = await memory.get_async(
-            "test_collection", memory_record1._id, with_embedding=True
-        )
+        _ = await memory.get("test_collection", memory_record1._id, with_embedding=True)
 
 
 @pytest.mark.asyncio
-async def test_remove_batch_async(connection_string, memory_record1, memory_record2):
+async def test_remove_batch(connection_string, memory_record1, memory_record2):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
-    await memory.remove_batch_async(
-        "test_collection", [memory_record1._id, memory_record2._id]
-    )
+    await memory.create_collection("test_collection")
+    await memory.upsert_batch("test_collection", [memory_record1, memory_record2])
+    await memory.remove_batch("test_collection", [memory_record1._id, memory_record2._id])
     with pytest.raises(KeyError):
-        _ = await memory.get_async(
-            "test_collection", memory_record1._id, with_embedding=True
-        )
+        _ = await memory.get("test_collection", memory_record1._id, with_embedding=True)
 
     with pytest.raises(KeyError):
-        _ = await memory.get_async(
-            "test_collection", memory_record2._id, with_embedding=True
-        )
+        _ = await memory.get("test_collection", memory_record2._id, with_embedding=True)
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_match_async(
-    connection_string, memory_record1, memory_record2
-):
+async def test_get_nearest_match(connection_string, memory_record1, memory_record2):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
+    await memory.create_collection("test_collection")
+    await memory.upsert_batch("test_collection", [memory_record1, memory_record2])
     test_embedding = memory_record1.embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.01
 
-    result = await memory.get_nearest_match_async(
+    result = await memory.get_nearest_match(
         "test_collection", test_embedding, min_relevance_score=0.0, with_embedding=True
     )
     assert result is not None
@@ -239,19 +219,15 @@ async def test_get_nearest_match_async(
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches_async(
-    connection_string, memory_record1, memory_record2, memory_record3
-):
+async def test_get_nearest_matches(connection_string, memory_record1, memory_record2, memory_record3):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection")
-    await memory.upsert_batch_async(
-        "test_collection", [memory_record1, memory_record2, memory_record3]
-    )
+    await memory.create_collection("test_collection")
+    await memory.upsert_batch("test_collection", [memory_record1, memory_record2, memory_record3])
     test_embedding = memory_record2.embedding
     test_embedding[0] = test_embedding[0] + 0.025
 
-    result = await memory.get_nearest_matches_async(
+    result = await memory.get_nearest_matches(
         "test_collection",
         test_embedding,
         limit=2,

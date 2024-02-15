@@ -1,44 +1,38 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using Microsoft.SemanticKernel.Orchestration;
+using System;
 
-namespace Microsoft.SemanticKernel.Events;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Event arguments available to the Kernel.FunctionInvoked event.
+/// Provides a <see cref="CancelKernelEventArgs"/> used in events just after a function is invoked.
 /// </summary>
-public class FunctionInvokedEventArgs : SKCancelEventArgs
+[Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
 {
-    private Dictionary<string, object>? _metadata;
-
-    /// <summary>
-    /// Indicates if the function execution should repeat.
-    /// </summary>
-    public bool IsRepeatRequested => this._repeatRequested;
-
-    /// <summary>
-    /// Metadata for storing additional information about function execution result.
-    /// </summary>
-    public Dictionary<string, object> Metadata => this._metadata ??= new();
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="result">Function result</param>
-    public FunctionInvokedEventArgs(FunctionView functionView, FunctionResult result) : base(functionView, result.Context)
+    /// <param name="function">The <see cref="KernelFunction"/> with which this event is associated.</param>
+    /// <param name="arguments">The arguments associated with the operation.</param>
+    /// <param name="result">The result of the function's invocation.</param>
+    public FunctionInvokedEventArgs(KernelFunction function, KernelArguments arguments, FunctionResult result) :
+        base(function, arguments, (result ?? throw new ArgumentNullException(nameof(result))).Metadata)
     {
-        this._metadata = result._metadata;
+        this.Result = result;
+        this.ResultValue = result.Value;
     }
 
-    /// <summary>
-    /// Repeat the current function invocation.
-    /// </summary>
-    public void Repeat()
-    {
-        this._repeatRequested = true;
-    }
+    /// <summary>Gets the result of the function's invocation.</summary>
+    public FunctionResult Result { get; }
 
-    private bool _repeatRequested;
+    /// <summary>Gets the raw result of the function's invocation.</summary>
+    internal object? ResultValue { get; private set; }
+
+    /// <summary>Sets an object to use as the overridden new result for the function's invocation.</summary>
+    /// <param name="value">The value to use as the new result of the function's invocation.</param>
+    public void SetResultValue(object? value)
+    {
+        this.ResultValue = value;
+    }
 }
