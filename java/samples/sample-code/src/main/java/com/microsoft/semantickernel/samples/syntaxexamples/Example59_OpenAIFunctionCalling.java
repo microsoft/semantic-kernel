@@ -107,7 +107,7 @@ public class Example59_OpenAIFunctionCalling {
         System.out.println("======== Kernel functions ========");
 
         var toolCallBehavior = new ToolCallBehavior()
-            .kernelFunctions(true)
+            .enableKernelFunctions(true)
             .autoInvoke(true);
 
         var result = kernel

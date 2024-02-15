@@ -9,8 +9,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -133,11 +131,6 @@ public class KernelHooks {
      */
     @SuppressWarnings("unchecked")
     public <T extends KernelHookEvent> T executeHooks(T event) {
-        SortedSet<KernelHook<?>> hooks = new TreeSet<>(
-            Comparator.comparingInt(KernelHook::getPriority));
-
-        hooks.addAll(this.hooks.values());
-
         return this.hooks.values()
             .stream()
             .filter(hook -> hook.test(event))

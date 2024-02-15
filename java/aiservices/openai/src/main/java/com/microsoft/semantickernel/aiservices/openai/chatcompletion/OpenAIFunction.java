@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
@@ -51,7 +52,8 @@ class OpenAIFunction {
      *
      * @return The fully-qualified name of the function.
      */
-    private static String getFullyQualifiedName(String pluginName, String functionName) {
+    private static String getFullyQualifiedName(
+        @Nullable String pluginName, String functionName) {
         return (pluginName == null || pluginName.isEmpty()) ? functionName
             : pluginName + getNameSeparator() + functionName;
     }
@@ -62,7 +64,7 @@ class OpenAIFunction {
      * @return A FunctionDefinition containing all the function information.
      */
     public static FunctionDefinition toFunctionDefinition(KernelFunctionMetadata<?> metadata,
-        String pluginName) {
+        @Nullable String pluginName) {
         BinaryData resultParameters;
 
         Map<String, JsonNode> properties = new HashMap<>();
@@ -111,7 +113,7 @@ class OpenAIFunction {
         }
     }
 
-    private static String getSchemaForFunctionParameter(String description) {
+    private static String getSchemaForFunctionParameter(@Nullable String description) {
         if (description == null)
             return "{\"type\":\"string\"}";
         return String.format("{\"type\":\"string\", \"description\":\"%s\"}", description);

@@ -59,6 +59,7 @@ public abstract class KernelFunction<T> implements Buildable {
     /**
      * @return The name of the plugin that this function is within
      */
+    @Nullable
     public String getPluginName() {
         return metadata.getPluginName();
     }
