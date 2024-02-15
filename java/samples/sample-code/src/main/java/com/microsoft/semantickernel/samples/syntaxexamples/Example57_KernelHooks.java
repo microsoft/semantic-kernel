@@ -163,6 +163,7 @@ public class Example57_KernelHooks {
         PromptRenderingHook myRenderingHandler = event -> {
             System.out.println(
                 event.getFunction().getName() + " : Prompt Rendering Handler - Triggered");
+
             event.getArguments().put("style", ContextVariable.of("Seinfeld"));
             return event;
         };

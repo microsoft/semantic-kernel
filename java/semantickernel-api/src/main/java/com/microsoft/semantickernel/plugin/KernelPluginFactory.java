@@ -2,6 +2,8 @@ package com.microsoft.semantickernel.plugin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
+import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader.ResourceLocation;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
@@ -11,9 +13,6 @@ import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactor
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
-import com.microsoft.semantickernel.util.EmbeddedResourceLoader.ResourceLocation;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,9 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
-
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,14 +60,13 @@ public class KernelPluginFactory {
                     annotation.returnDescription(),
                     returnType);
 
-                return KernelFunctionFactory
-                    .createFromMethod(
-                        method,
-                        target,
-                        annotation.name(),
-                        annotation.description(),
-                        getParameters(method),
-                        kernelReturnParameterMetadata);
+                return KernelFunction
+                    .createFromMethod(method, target)
+                    .withFunctionName(annotation.name())
+                    .withDescription(annotation.description())
+                    .withParameters(getParameters(method))
+                    .withReturnParameter(kernelReturnParameterMetadata)
+                    .build();
             }).collect(ArrayList::new, (list, it) -> list.add(it), (a, b) -> a.addAll(b));
 
         return createFromFunctions(pluginName, methods);
@@ -136,8 +132,7 @@ public class KernelPluginFactory {
         @Nullable List<KernelFunction<?>> functions) {
         Map<String, KernelFunction<?>> funcs = new HashMap<>();
         if (functions != null) {
-            funcs = functions.stream()
-                .collect(Collectors.toMap(KernelFunction::getName, f -> f));
+            funcs = functions.stream().collect(Collectors.toMap(KernelFunction::getName, f -> f));
         }
         return new KernelPlugin(pluginName, description, funcs);
     }

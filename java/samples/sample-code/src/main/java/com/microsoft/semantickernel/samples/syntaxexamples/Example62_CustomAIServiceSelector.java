@@ -4,7 +4,8 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.microsoft.semantickernel.AIService;
+import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.services.AiServiceCollection;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
@@ -83,7 +84,7 @@ public class Example62_CustomAIServiceSelector {
     // A dumb AIServiceSelector that just returns the first service and execution settings it finds
     static class CustomAIServiceSelector extends BaseAIServiceSelector {
 
-        public CustomAIServiceSelector(Map<Class<? extends AIService>, AIService> services) {
+        public CustomAIServiceSelector(AiServiceCollection services) {
             super(services);
         }
 

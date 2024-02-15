@@ -7,8 +7,8 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -86,10 +86,13 @@ public class Example58_ConfigureExecutionSettings {
               }
             }""".stripIndent();
 
-        var promptConfig = PromptTemplateConfig.parseFromJson(configPayload);
-        promptConfig.setTemplate(prompt);
+        var promptConfig = PromptTemplateConfig
+            .parseFromJson(configPayload)
+            .setTemplate(prompt);
 
-        var func = KernelFunctionFactory.createFromPrompt(promptConfig, null);
+        var func = KernelFunction
+            .createFromPrompt(promptConfig)
+            .build();
 
         result = kernel.invokeAsync(func).block();
         System.out.println(result.getResult());

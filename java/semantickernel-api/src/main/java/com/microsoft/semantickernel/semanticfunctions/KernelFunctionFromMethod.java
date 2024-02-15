@@ -1,6 +1,9 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
+import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
+
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.exceptions.SKException;
@@ -20,8 +23,6 @@ import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-import static com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -31,23 +32,20 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 /**
  * A {@link KernelFunction} that is created from a method. This class is used to create a
- * {@link KernelFunction} from a method that is annotated with {@link DefineKernelFunction}
- * and {@link KernelFunctionParameter}.
+ * {@link KernelFunction} from a method that is annotated with {@link DefineKernelFunction} and
+ * {@link KernelFunctionParameter}.
  *
  * @param <T> the return type of the function
  */
-public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
+public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Buildable {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(KernelFunctionFromMethod.class);
 
@@ -89,10 +87,10 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         /**
          * Invokes the function.
          *
-         * @param kernel the kernel to invoke the function on
-         * @param function the function to invoke
-         * @param arguments the arguments to the function
-         * @param variableType the variable type of the function
+         * @param kernel            the kernel to invoke the function on
+         * @param function          the function to invoke
+         * @param arguments         the arguments to the function
+         * @param variableType      the variable type of the function
          * @param invocationContext the invocation context
          * @return a {@link Mono} that emits the result of the function invocation
          */
@@ -107,13 +105,13 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     /**
      * Creates a new instance of {@link KernelFunctionFromMethod} from a method.
      *
-     * @param method the method to create the function from
-     * @param target the instance of the class that the method is a member of
-     * @param functionName the name of the function
-     * @param description the description of the function
-     * @param parameters the parameters of the function
+     * @param method          the method to create the function from
+     * @param target          the instance of the class that the method is a member of
+     * @param functionName    the name of the function
+     * @param description     the description of the function
+     * @param parameters      the parameters of the function
      * @param returnParameter the return parameter of the function
-     * @param <T> the return type of the function
+     * @param <T>             the return type of the function
      * @return a new instance of {@link KernelFunctionFromMethod}
      */
     @SuppressWarnings("unchecked")
@@ -575,5 +573,75 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             type,
             defaultValue,
             isRequired);
+    }
+
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
+
+    public static class Builder<T> {
+
+        private Method method;
+        private Object target;
+        @Nullable
+        private String functionName;
+        @Nullable
+        private String description;
+        @Nullable
+        private List<KernelParameterMetadata<?>> parameters;
+        @Nullable
+        private KernelReturnParameterMetadata<?> returnParameter;
+
+        public Builder<T> withMethod(Method method) {
+            this.method = method;
+            return this;
+        }
+
+        public Builder<T> withTarget(Object target) {
+            this.target = target;
+            return this;
+        }
+
+        public Builder<T> withFunctionName(String functionName) {
+            this.functionName = functionName;
+            return this;
+        }
+
+        public Builder<T> withDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder<T> withParameters(List<KernelParameterMetadata<?>> parameters) {
+            this.parameters = parameters;
+            return this;
+        }
+
+        public Builder<T> withReturnParameter(KernelReturnParameterMetadata<?> returnParameter) {
+            this.returnParameter = returnParameter;
+            return this;
+        }
+
+        public <T> KernelFunction<T> build() {
+
+            if (method == null) {
+                throw new SKException(
+                    "To build a KernelFunctionFromMethod, a method must be provided");
+            }
+
+            if (target == null) {
+                throw new SKException(
+                    "To build a plugin object must be provided");
+            }
+
+            return KernelFunctionFromMethod.create(
+                method,
+                target,
+                functionName,
+                description,
+                parameters,
+                returnParameter);
+        }
+
     }
 }

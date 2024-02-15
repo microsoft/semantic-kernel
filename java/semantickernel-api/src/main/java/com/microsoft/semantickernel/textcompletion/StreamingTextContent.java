@@ -1,6 +1,7 @@
 package com.microsoft.semantickernel.textcompletion;
 
 import com.microsoft.semantickernel.StreamingKernelContent;
+import javax.annotation.Nullable;
 
 /**
  * StreamingTextContent is a wrapper for TextContent that allows for streaming.
@@ -8,7 +9,8 @@ import com.microsoft.semantickernel.StreamingKernelContent;
 public class StreamingTextContent extends StreamingKernelContent<TextContent> {
 
     /**
-     * Initializes a new instance of the {@code StreamingTextContent} class with a provided text content.
+     * Initializes a new instance of the {@code StreamingTextContent} class with a provided text
+     * content.
      *
      * @param content The text content.
      */
@@ -17,8 +19,13 @@ public class StreamingTextContent extends StreamingKernelContent<TextContent> {
     }
 
     @Override
+    @Nullable
     public String getContent() {
-        return ((TextContent) getInnerContent()).getContent();
+        TextContent content = getInnerContent();
+        if (content == null) {
+            return null;
+        }
+        return content.getContent();
     }
 
 }

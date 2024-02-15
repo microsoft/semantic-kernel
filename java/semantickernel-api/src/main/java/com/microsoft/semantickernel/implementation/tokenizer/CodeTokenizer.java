@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine.semantickernel;
+package com.microsoft.semantickernel.implementation.tokenizer;
 
-import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.implementation.Verify;
 import com.microsoft.semantickernel.exceptions.SKException;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.Block;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.FunctionIdBlock;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.NamedArgBlock;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.Symbols;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.ValBlock;
-import com.microsoft.semantickernel.templateengine.semantickernel.blocks.VarBlock;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.Block;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.FunctionIdBlock;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.NamedArgBlock;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.Symbols;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.ValBlock;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.VarBlock;
+import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 
 import java.util.ArrayList;
 import java.util.Collections;

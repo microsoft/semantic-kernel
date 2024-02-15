@@ -7,8 +7,8 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings.Builder;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
@@ -70,7 +70,7 @@ public class Example06_TemplateLanguage {
         KernelPlugin time = KernelPluginFactory.createFromObject(
             new Time(), "time");
 
-        kernel.getPlugins().add(time);
+        kernel.addPlugin(time);
 
         // Prompt Function invoking time.Date and time.Time method functions
         String functionDefinition = """
@@ -91,16 +91,13 @@ public class Example06_TemplateLanguage {
         var renderedPrompt = promptTemplate.renderAsync(kernel, null, null).block();
         System.out.println(renderedPrompt);
 
-        var kindOfDay = KernelFunctionFactory
-            .<String>createFromPrompt(
-                functionDefinition,
-                new Builder()
+        var kindOfDay = KernelFunction.createFromPrompt(functionDefinition)
+            .withDefaultExecutionSettings(
+                PromptExecutionSettings.builder()
                     .withMaxTokens(100)
-                    .build(),
-                null,
-                null,
-                "semantic-kernel",
-                null);
+                    .build())
+            .withTemplateFormat(PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT)
+            .build();
 
         // Show the result
         System.out.println("--- Prompt Function result");

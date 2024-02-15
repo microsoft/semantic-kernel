@@ -8,9 +8,9 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.time.Instant;
@@ -94,18 +94,15 @@ public class Example05_InlineFunctionDefinition {
             .block();
         System.out.println(result.getResult());
 
-        var fixedFunction = KernelFunctionFactory.createFromPrompt(
-            "Translate this date " + DateTimeFormatter.ISO_LOCAL_DATE
-                .withZone(ZoneOffset.UTC)
-                .format(Instant.ofEpochSecond(1))
-                + " to French format",
-            PromptExecutionSettings.builder()
-                .withMaxTokens(100)
-                .build(),
-            null,
-            null,
-            null,
-            null);
+        var date = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneOffset.UTC)
+            .format(Instant.ofEpochSecond(1));
+        var message = "Translate this date " + date + " to French format";
+        var fixedFunction = KernelFunction.createFromPrompt(message)
+            .withDefaultExecutionSettings(
+                PromptExecutionSettings.builder()
+                    .withMaxTokens(100)
+                    .build())
+            .build();
 
         FunctionResult<?> fixedFunctionResult = kernel
             .invokeAsync(fixedFunction)

@@ -14,7 +14,7 @@ import com.microsoft.semantickernel.samples.plugins.TimePlugin;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
-import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
+import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 
 import java.io.FileNotFoundException;
 import java.time.ZoneId;
@@ -77,7 +77,7 @@ public class Example30_ChatWithPrompts {
         // We could also use a variable, this is just to show that the prompt can invoke functions.
         KernelPlugin timePlugin = KernelPluginFactory.createFromObject(
             new TimePlugin(), "time");
-        kernel.getPlugins().add(timePlugin);
+        kernel.addPlugin(timePlugin);
 
         // Adding required arguments referenced by the prompt templates.
 

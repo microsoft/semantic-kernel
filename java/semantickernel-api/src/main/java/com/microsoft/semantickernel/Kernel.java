@@ -7,15 +7,17 @@ import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionInvocation;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.AIServiceSelector;
+import com.microsoft.semantickernel.services.AiServiceCollection;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -106,12 +108,11 @@ public class Kernel implements Buildable {
 
     /**
      * Gets the plugins that were added to the kernel.
-     * @return The plugins available through the kernel.
+     * @return The plugins available through the kernel (unmodifiable list).
      * @see Kernel#getPlugins()
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
-    public List<KernelPlugin> getPlugins() {
-        return plugins.getPlugins();
+    public Collection<KernelPlugin> getPlugins() {
+        return Collections.unmodifiableCollection(plugins.getPlugins());
     }
 
     /**
@@ -193,10 +194,10 @@ public class Kernel implements Buildable {
      */
     public static class Builder implements SemanticKernelBuilder<Kernel> {
 
-        private final Map<Class<? extends AIService>, AIService> services = new HashMap<>();
+        private final AiServiceCollection services = new AiServiceCollection();
         private final List<KernelPlugin> plugins = new ArrayList<>();
         @Nullable
-        private Function<Map<Class<? extends AIService>, AIService>, AIServiceSelector> serviceSelectorProvider;
+        private Function<AiServiceCollection, AIServiceSelector> serviceSelectorProvider;
 
         /**
          * Adds a service to the kernel.
@@ -226,7 +227,7 @@ public class Kernel implements Buildable {
          * @return {@code this} builder with the service selector provider set.
          */
         public Kernel.Builder withServiceSelector(
-            Function<Map<Class<? extends AIService>, AIService>, AIServiceSelector> serviceSelector) {
+            Function<AiServiceCollection, AIServiceSelector> serviceSelector) {
             this.serviceSelectorProvider = serviceSelector;
             return this;
         }

@@ -33,6 +33,7 @@ public class KernelHooks {
 
     /**
      * Creates a copy of the {@link KernelHooks}.
+     *
      * @param kernelHooks the hooks to copy
      */
     public KernelHooks(@Nullable KernelHooks kernelHooks) {
@@ -43,8 +44,8 @@ public class KernelHooks {
     }
 
     /**
-     * Creates a new instance of the {@link KernelHooks} class 
-     * from the given hooks.
+     * Creates a new instance of the {@link KernelHooks} class from the given hooks.
+     *
      * @param hooks the hooks to add
      */
     public KernelHooks(Map<String, KernelHook<?>> hooks) {
@@ -54,6 +55,7 @@ public class KernelHooks {
 
     /**
      * Creates an unmodifiable copy of this {@link KernelHooks}.
+     *
      * @return an unmodifiable copy of this {@link KernelHooks}
      */
     public UnmodifiableKernelHooks unmodifiableClone() {
@@ -62,6 +64,7 @@ public class KernelHooks {
 
     /**
      * Gets the hooks in this collection.
+     *
      * @return an unmodifiable map of the hooks
      */
     private Map<String, KernelHook<?>> getHooks() {
@@ -70,6 +73,7 @@ public class KernelHooks {
 
     /**
      * Add a {@link FunctionInvokingHook} to the collection of hooks.
+     *
      * @param function the function to add
      * @return the key of the hook in the collection
      */
@@ -80,6 +84,7 @@ public class KernelHooks {
 
     /**
      * Add a {@link FunctionInvokedHook} to the collection of hooks.
+     *
      * @param function the function to add
      * @return the key of the hook in the collection
      */
@@ -90,6 +95,7 @@ public class KernelHooks {
 
     /**
      * Add a {@link PreChatCompletionHook} to the collection of hooks.
+     *
      * @param function the function to add
      * @return the key of the hook in the collection
      */
@@ -100,6 +106,7 @@ public class KernelHooks {
 
     /**
      * Add a {@link PromptRenderedHook} to the collection of hooks.
+     *
      * @param function the function to add
      * @return the key of the hook in the collection
      */
@@ -110,6 +117,7 @@ public class KernelHooks {
 
     /**
      * Add a {@link PromptRenderingHook} to the collection of hooks.
+     *
      * @param function the function to add
      * @return the key of the hook in the collection
      */
@@ -120,8 +128,9 @@ public class KernelHooks {
 
     /**
      * Executes the hooks in this collection that accept the event.
+     *
      * @param event the event to execute the hooks on
-     * @param <T> the type of the event
+     * @param <T>   the type of the event
      * @return the event after the hooks have been executed
      */
     @SuppressWarnings("unchecked")
@@ -131,17 +140,21 @@ public class KernelHooks {
 
         hooks.addAll(this.hooks.values());
 
-        for (KernelHook<?> hook : hooks) {
-            if (hook.test(event)) {
+        return this.hooks.values()
+            .stream()
+            .filter(hook -> hook.test(event))
+            .sorted(Comparator.comparingInt(KernelHook::getPriority))
+            .reduce(event, (event2, hook) -> {
                 // unchecked cast
-                event = ((KernelHook<T>) hook).apply(event);
-            }
-        }
-        return event;
+                return ((KernelHook<T>) hook).apply(event2);
+            }, (a, b) -> {
+                throw new UnsupportedOperationException("No merging for hooks");
+            });
     }
 
     /**
      * Add a {@link KernelHook} to the collection of hooks.
+     *
      * @param hook the hook to add
      * @return the key of the hook in the collection
      */
@@ -151,8 +164,9 @@ public class KernelHooks {
 
     /**
      * Add a {@link KernelHook} to the collection of hooks.
+     *
      * @param hookName the key of the hook in the collection
-     * @param hook the hook to add
+     * @param hook     the hook to add
      * @return the key of the hook in the collection
      */
     public String addHook(String hookName, KernelHook<?> hook) {
@@ -162,6 +176,7 @@ public class KernelHooks {
 
     /**
      * Remove a hook from the collection of hooks.
+     *
      * @param hookName the key of the hook in the collection
      * @return the removed hook, or {@code null} if the hook was not found
      */
@@ -171,6 +186,7 @@ public class KernelHooks {
 
     /**
      * Appends the given hooks to this collection.
+     *
      * @param kernelHooks the hooks to append
      * @return this instance of the {@link KernelHooks} class
      */
@@ -185,6 +201,7 @@ public class KernelHooks {
 
     /**
      * Determines if this collection of hooks is empty.
+     *
      * @return {@code true} if the collection is empty, otherwise {@code false}
      */
     public boolean isEmpty() {

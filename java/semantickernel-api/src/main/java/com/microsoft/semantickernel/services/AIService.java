@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 
