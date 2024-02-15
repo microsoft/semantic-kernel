@@ -16,6 +16,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Functions.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Plugins.OpenApi.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />

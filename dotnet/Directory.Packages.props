@@ -66,7 +66,8 @@
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="[3.32.3, )" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.12" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.11" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.12" />
+    <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.60.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
