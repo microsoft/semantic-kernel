@@ -4,7 +4,7 @@ import com.azure.core.exception.HttpResponseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.AIService;
+import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;

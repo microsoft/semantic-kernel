@@ -1,14 +1,12 @@
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.AIService;
-import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.implementation.Verify;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,7 +32,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
      * class with an empty collection of services.
      */
     public OrderedAIServiceSelector() {
-        super(new HashMap<>());
+        super(new AiServiceCollection());
     }
 
     /**
@@ -43,7 +41,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
      *
      * @param services The services to select from.
      */
-    public OrderedAIServiceSelector(Map<Class<? extends AIService>, AIService> services) {
+    public OrderedAIServiceSelector(AiServiceCollection services) {
         super(services);
     }
 

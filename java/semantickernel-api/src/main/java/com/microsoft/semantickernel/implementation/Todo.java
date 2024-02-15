@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.implementation;
 
 /**
  * This is used as a placeholder for methods that are not yet implemented.

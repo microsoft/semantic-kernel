@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  * Base class which represents the content returned by an AI service.
  * @param <T> The type of the content. 
  */
-public abstract class KernelContent<T extends KernelContent<T>> {
+public abstract class KernelContent<T> {
 
     /*
      * The inner content representation. Use this to bypass the current
@@ -16,7 +16,7 @@ public abstract class KernelContent<T extends KernelContent<T>> {
      * Use it only if strictly necessary.
      */
     @Nullable
-    private final Object innerContent;
+    private final T innerContent;
     
     /** 
      * The model ID used to generate the content.
@@ -38,7 +38,7 @@ public abstract class KernelContent<T extends KernelContent<T>> {
      */
     public KernelContent(
         @Nullable
-        Object innerContent,
+        T innerContent,
         @Nullable
         String modelId,
         @Nullable
@@ -54,7 +54,7 @@ public abstract class KernelContent<T extends KernelContent<T>> {
      * @return The inner content representation.
      */
     @Nullable
-    public Object getInnerContent() {
+    public T getInnerContent() {
         return innerContent;
     }
 

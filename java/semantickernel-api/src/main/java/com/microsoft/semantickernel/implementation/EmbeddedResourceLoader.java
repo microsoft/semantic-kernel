@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.util;
+package com.microsoft.semantickernel.implementation;
 
 import java.io.BufferedReader;
 import java.io.File;

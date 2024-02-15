@@ -1,21 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
-import com.microsoft.semantickernel.KernelContent;
 import com.microsoft.semantickernel.StreamingKernelContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 /**
  * Represents the content of a chat message that is streamed.
+ *
  * @param <T> the type of the inner content
  */
-public class StreamingChatMessageContent<T extends KernelContent<T>> extends StreamingKernelContent<T> {
+public class StreamingChatMessageContent<T> extends StreamingKernelContent<T> {
 
     private final String content;
     private final AuthorRole role;
@@ -23,7 +21,8 @@ public class StreamingChatMessageContent<T extends KernelContent<T>> extends Str
 
     /**
      * Creates a new instance of the {@link StreamingChatMessageContent} class.
-     * @param role the author role that generated the content
+     *
+     * @param role    the author role that generated the content
      * @param content the content
      * @param modelId the model id
      */
@@ -37,13 +36,14 @@ public class StreamingChatMessageContent<T extends KernelContent<T>> extends Str
 
     /**
      * Creates a new instance of the {@link StreamingChatMessageContent} class.
-     * @param role the author role that generated the content
-     * @param content the content
+     *
+     * @param role         the author role that generated the content
+     * @param content      the content
      * @param innerContent the inner content
-     * @param choiceIndex the choice index
-     * @param modelId the model id
-     * @param encoding the encoding
-     * @param metadata the metadata
+     * @param choiceIndex  the choice index
+     * @param modelId      the model id
+     * @param encoding     the encoding
+     * @param metadata     the metadata
      */
     public StreamingChatMessageContent(
         AuthorRole role,
@@ -75,6 +75,7 @@ public class StreamingChatMessageContent<T extends KernelContent<T>> extends Str
 
     /**
      * Gets the role of the author of the message
+     *
      * @return the role of the author of the message
      */
     public AuthorRole getRole() {
@@ -83,6 +84,7 @@ public class StreamingChatMessageContent<T extends KernelContent<T>> extends Str
 
     /**
      * Gets the encoding of the message
+     *
      * @return the encoding of the message
      */
     public Charset getEncoding() {
@@ -91,6 +93,7 @@ public class StreamingChatMessageContent<T extends KernelContent<T>> extends Str
 
     /**
      * Sets the encoding of the message
+     *
      * @param encoding the encoding of the message
      * @return this instance
      */

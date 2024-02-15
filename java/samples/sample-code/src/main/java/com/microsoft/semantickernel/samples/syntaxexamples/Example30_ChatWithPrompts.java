@@ -14,7 +14,7 @@ import com.microsoft.semantickernel.samples.plugins.TimePlugin;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
-import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
+import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 
 import java.io.FileNotFoundException;
 import java.time.ZoneId;

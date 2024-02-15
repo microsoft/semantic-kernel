@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.AIService;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import javax.annotation.Nullable;
 

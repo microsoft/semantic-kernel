@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine.semantickernel.blocks;
+package com.microsoft.semantickernel.implementation.tokenizer.blocks;
 
 public class Symbols {
 

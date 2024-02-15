@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.builders;
+package com.microsoft.semantickernel.implementation;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
