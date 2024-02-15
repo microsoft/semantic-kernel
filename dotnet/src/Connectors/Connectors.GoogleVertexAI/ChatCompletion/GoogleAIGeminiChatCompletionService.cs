@@ -36,17 +36,14 @@ public sealed class GoogleAIGeminiChatCompletionService : GeminiChatCompletionSe
             httpRequestFactory: new GoogleAIHttpRequestFactory(),
             endpointProvider: new GoogleAIEndpointProvider(apiKey),
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiChatCompletionService)));
-        this.TextGenerationClient = new GeminiTextGenerationClient(this.ChatCompletionClient);
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     internal GoogleAIGeminiChatCompletionService(
         IGeminiChatCompletionClient chatCompletionClient,
-        IGeminiTextGenerationClient textGenerationClient,
         string modelId)
     {
         this.ChatCompletionClient = chatCompletionClient;
-        this.TextGenerationClient = textGenerationClient;
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 }

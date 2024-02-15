@@ -121,14 +121,6 @@ public static class VertexAIServiceCollectionExtensions
                 projectId: projectId,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new VertexAIGeminiChatCompletionService(
-                model: modelId,
-                apiKey: apiKey,
-                location: location,
-                projectId: projectId,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;
     }
 
@@ -157,14 +149,6 @@ public static class VertexAIServiceCollectionExtensions
         Verify.NotNull(projectId);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new VertexAIGeminiChatCompletionService(
-                model: modelId,
-                apiKey: apiKey,
-                location: location,
-                projectId: projectId,
-                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-        services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new VertexAIGeminiChatCompletionService(
                 model: modelId,
                 apiKey: apiKey,
