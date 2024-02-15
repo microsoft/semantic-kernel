@@ -29,7 +29,7 @@ public interface ChatCompletionService extends Buildable, TextAIService {
      * @param invocationContext the invocation context
      * @return the chat message contents
      */
-    Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+    Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(
         ChatHistory chatHistory,
         @Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext);
@@ -42,7 +42,7 @@ public interface ChatCompletionService extends Buildable, TextAIService {
      * @param invocationContext the invocation context
      * @return the chat message contents
      */
-    Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+    Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(
         String prompt,
         @Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext);

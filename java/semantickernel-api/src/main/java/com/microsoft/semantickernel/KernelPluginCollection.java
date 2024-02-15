@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.annotation.Nullable;
 
 /**
  * A collection of {@link KernelPlugin} instances.
@@ -91,6 +92,7 @@ class KernelPluginCollection {
      * @param pluginName The name of the plugin to get.
      * @return The plugin with the specified name, or {@code null} if no such plugin exists.
      */
+    @Nullable
     KernelPlugin getPlugin(String pluginName) {
         return plugins.get(pluginName);
     }

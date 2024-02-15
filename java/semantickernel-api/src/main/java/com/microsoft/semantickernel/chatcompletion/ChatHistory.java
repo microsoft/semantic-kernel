@@ -14,11 +14,11 @@ import java.util.function.Consumer;
 /**
  * Provides a history of messages between the User, Assistant and System
  */
-public class ChatHistory implements Iterable<ChatMessageContent> {
+public class ChatHistory implements Iterable<ChatMessageContent<?>> {
 
     private final static String DEFAULT_CHAT_SYSTEM_PROMPT = "Assistant is a large language model.";
 
-    private final List<ChatMessageContent> chatMessageContents;
+    private final List<ChatMessageContent<?>> chatMessageContents;
 
     /**
      * The default constructor adds an "Assistant is a large language model."
@@ -36,7 +36,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
     public ChatHistory(String instructions) {
         this.chatMessageContents = new ArrayList<>();
         this.chatMessageContents.add(
-            new ChatMessageContent(
+            new ChatMessageContent<>(
                 AuthorRole.ASSISTANT,
                 instructions == null || instructions.isEmpty() ? DEFAULT_CHAT_SYSTEM_PROMPT
                     : instructions));
@@ -47,7 +47,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      *
      * @param chatMessageContents The chat message contents to add to the chat history
      */
-    public ChatHistory(List<ChatMessageContent> chatMessageContents) {
+    public ChatHistory(List<ChatMessageContent<?>> chatMessageContents) {
         this.chatMessageContents = new ArrayList<>(chatMessageContents);
     }
 
@@ -56,7 +56,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      *
      * @return List of messages in the chat
      */
-    public List<ChatMessageContent> getMessages() {
+    public List<ChatMessageContent<?>> getMessages() {
         return Collections.unmodifiableList(chatMessageContents);
     }
 
@@ -65,7 +65,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      *
      * @return The most recent message in chat
      */
-    public Optional<ChatMessageContent> getLastMessage() {
+    public Optional<ChatMessageContent<?>> getLastMessage() {
         if (chatMessageContents.isEmpty()) {
             return Optional.empty();
         }
@@ -85,7 +85,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      * Create an {@code Iterator} from the chat history.
      */
     @Override
-    public Iterator<ChatMessageContent> iterator() {
+    public Iterator<ChatMessageContent<?>> iterator() {
         return chatMessageContents.iterator();
     }
 
@@ -95,7 +95,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      * @param action The action to perform for each message in the chat history
      */
     @Override
-    public void forEach(Consumer<? super ChatMessageContent> action) {
+    public void forEach(Consumer<? super ChatMessageContent<?>> action) {
         chatMessageContents.forEach(action);
     }
 
@@ -103,7 +103,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      * Create a {@code Spliterator} from the chat history
      */
     @Override
-    public Spliterator<ChatMessageContent> spliterator() {
+    public Spliterator<ChatMessageContent<?>> spliterator() {
         return chatMessageContents.spliterator();
     }
 
@@ -118,7 +118,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
     public void addMessage(AuthorRole authorRole, String content, Charset encoding,
         FunctionResultMetadata metadata) {
         chatMessageContents.add(
-            new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
+            new ChatMessageContent<>(authorRole, content, null, null, encoding, metadata));
     }
 
     /**
@@ -129,7 +129,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      */
     public void addMessage(AuthorRole authorRole, String content) {
         chatMessageContents.add(
-            new ChatMessageContent(authorRole, content, null, null, null, null));
+            new ChatMessageContent<>(authorRole, content, null, null, null, null));
     }
 
     /**
@@ -137,7 +137,7 @@ public class ChatHistory implements Iterable<ChatMessageContent> {
      *
      * @param content The content of the message
      */
-    public void addMessage(ChatMessageContent content) {
+    public void addMessage(ChatMessageContent<?> content) {
         chatMessageContents.add(content);
     }
 

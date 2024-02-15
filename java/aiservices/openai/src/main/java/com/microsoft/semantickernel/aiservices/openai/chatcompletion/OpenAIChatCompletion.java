@@ -84,7 +84,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     @Override
-    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(
         ChatHistory chatHistory,
         @Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext) {
@@ -97,7 +97,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     @Override
-    public Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(
         String prompt,
         @Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext) {
@@ -109,9 +109,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             invocationContext);
     }
 
-    private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
+    private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> messages,
-        Kernel kernel,
+        @Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext) {
 
         List<OpenAIFunction> functions = new ArrayList<>();
@@ -129,15 +129,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             invocationContext,
             Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
                 invocationContext != null && invocationContext.getToolCallBehavior() != null
-                    ? invocationContext.getToolCallBehavior().maximumAutoInvokeAttempts()
+                    ? invocationContext.getToolCallBehavior().getMaximumAutoInvokeAttempts()
                     : 0));
     }
 
-    private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
+    private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(
         List<ChatRequestMessage> messages,
-        Kernel kernel,
+        @Nullable Kernel kernel,
         List<OpenAIFunction> functions,
-        InvocationContext invocationContext,
+        @Nullable InvocationContext invocationContext,
         int autoInvokeAttempts) {
 
         KernelHooks kernelHooks = invocationContext != null
@@ -151,68 +151,75 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     functions, invocationContext, autoInvokeAttempts)))
             .getOptions();
 
-        Mono<ChatCompletions> result = client.getChatCompletions(getModelId(), options);
+        Mono<List<? extends ChatMessageContent>> result = client
+            .getChatCompletions(getModelId(), options)
+            .flatMap(completions -> {
+                List<ChatResponseMessage> responseMessages = completions
+                    .getChoices()
+                    .stream()
+                    .map(ChatChoice::getMessage)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
 
-        return result.flatMap(completions -> {
-            List<ChatResponseMessage> responseMessages = completions
-                .getChoices()
-                .stream()
-                .map(ChatChoice::getMessage)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                // Just return the result:
+                // If we don't want to attempt to invoke any functions
+                // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
+                if (autoInvokeAttempts == 0 || responseMessages.size() != 1) {
+                    return getChatMessageContentsAsync(completions);
+                }
+                // Or if there are no tool calls to be done
+                ChatResponseMessage response = responseMessages.get(0);
+                List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
+                if (toolCalls == null || toolCalls.isEmpty()) {
+                    return getChatMessageContentsAsync(completions);
+                }
 
-            // Just return the result:
-            // If we don't want to attempt to invoke any functions
-            // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
-            if (autoInvokeAttempts == 0 || responseMessages.size() != 1) {
-                return getChatMessageContentsAsync(completions);
-            }
-            // Or if there are no tool calls to be done
-            ChatResponseMessage response = responseMessages.get(0);
-            List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
-            if (toolCalls == null || toolCalls.isEmpty()) {
-                return getChatMessageContentsAsync(completions);
-            }
+                ChatRequestAssistantMessage requestMessage = new ChatRequestAssistantMessage(
+                    response.getContent());
+                requestMessage.setToolCalls(toolCalls);
 
-            ChatRequestAssistantMessage requestMessage = new ChatRequestAssistantMessage(
-                response.getContent());
-            requestMessage.setToolCalls(toolCalls);
+                // Add the original assistant message to the chat options; this is required for the service
+                // to understand the tool call responses
+                messages.add(requestMessage);
+                return Flux
+                    .fromIterable(toolCalls)
+                    .reduce(
+                        Mono.just(options),
+                        (opts, toolCall) -> {
+                            if (toolCall instanceof ChatCompletionsFunctionToolCall) {
+                                return opts
+                                    .flatMap(op -> {
+                                        // OpenAI only supports function tool call at the moment
+                                        ChatCompletionsFunctionToolCall functionToolCall = (ChatCompletionsFunctionToolCall) toolCall;
+                                        if (kernel == null) {
+                                            return Mono.error(new SKException(
+                                                "A tool call was requested, but no kernel was provided to the invocation, this is a unsupported configuration"));
+                                        }
 
-            // Add the original assistant message to the chat options; this is required for the service
-            // to understand the tool call responses
-            messages.add(requestMessage);
+                                        return invokeFunctionTool(kernel, functionToolCall)
+                                            .map(functionResult -> {
+                                                // Add chat request tool message to the chat options
+                                                ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
+                                                    functionResult.getResult(),
+                                                    functionToolCall.getId());
+                                                messages.add(requestToolMessage);
+                                                return op;
+                                            });
+                                    });
+                            }
+                            return opts;
+                        })
+                    .flatMap(
+                        op -> internalChatMessageContentsAsync(messages, kernel, functions,
+                            invocationContext, autoInvokeAttempts - 1));
+            });
 
-            return Flux
-                .fromIterable(toolCalls)
-                .reduce(
-                    Mono.just(options),
-                    (opts, toolCall) -> {
-                        if (toolCall instanceof ChatCompletionsFunctionToolCall) {
-                            return opts
-                                .flatMap(op -> {
-                                    // OpenAI only supports function tool call at the moment
-                                    ChatCompletionsFunctionToolCall functionToolCall = (ChatCompletionsFunctionToolCall) toolCall;
-                                    return invokeFunctionTool(kernel, functionToolCall)
-                                        .map(functionResult -> {
-                                            // Add chat request tool message to the chat options
-                                            ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
-                                                functionResult.getResult(),
-                                                functionToolCall.getId());
-                                            messages.add(requestToolMessage);
-                                            return op;
-                                        });
-                                });
-                        }
-                        return opts;
-                    })
-                .flatMap(op -> op)
-                .flatMap(
-                    op -> internalChatMessageContentsAsync(messages, kernel, functions,
-                        invocationContext, autoInvokeAttempts - 1));
-        });
+        return result.map(op -> (List<ChatMessageContent<?>>) op);
     }
 
-    private Mono<FunctionResult<String>> invokeFunctionTool(Kernel kernel,
+    @SuppressWarnings("StringSplitter")
+    private Mono<FunctionResult<String>> invokeFunctionTool(
+        Kernel kernel,
         ChatCompletionsFunctionToolCall toolCall) {
         // Split the full name of a function into plugin and function name
         String name = toolCall.getFunction().getName();
@@ -221,6 +228,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         String fnName = parts.length > 1 ? parts[1] : parts[0];
 
         KernelFunction<?> function = kernel.getFunction(pluginName, fnName);
+
         KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
 
         try {
@@ -346,10 +354,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         KernelFunction<?> toolChoice = toolCallBehavior.functionRequired();
         if (toolChoice != null) {
             List<ChatCompletionsToolDefinition> toolDefinitions = new ArrayList<>();
+
             toolDefinitions.add(new ChatCompletionsFunctionToolDefinition(
                 OpenAIFunction.toFunctionDefinition(
-                    toolCallBehavior.functionRequired().getMetadata(),
-                    toolCallBehavior.functionRequired().getPluginName())));
+                    toolChoice.getMetadata(),
+                    toolChoice.getPluginName())));
 
             options.setTools(toolDefinitions);
             try {
@@ -388,7 +397,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(ChatHistory chatHistory) {
-        List<ChatMessageContent> messages = chatHistory.getMessages();
+        List<ChatMessageContent<?>> messages = chatHistory.getMessages();
         if (messages == null || messages.isEmpty()) {
             return new ArrayList<>();
         }
@@ -403,7 +412,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     static ChatRequestMessage getChatRequestMessage(
         AuthorRole authorRole,
-        String content) {
+        @Nullable String content) {
 
         switch (authorRole) {
             case ASSISTANT:

@@ -82,7 +82,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
     }
 
     /**
-     * Concrete implementation of the abstract method in KernelFunction. {@inheritDoc}
+     * Concrete implementation of the abstract method in KernelFunction.
      */
     public interface ImplementationFunc<T> {
 
@@ -586,7 +586,9 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
 
     public static class Builder<T> {
 
+        @Nullable
         private Method method;
+        @Nullable
         private Object target;
         @Nullable
         private String pluginName;
@@ -634,7 +636,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
             return this;
         }
 
-        public <T> KernelFunction<T> build() {
+        public KernelFunction<T> build() {
 
             if (method == null) {
                 throw new SKException(

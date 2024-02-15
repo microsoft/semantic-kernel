@@ -53,6 +53,7 @@ public class KernelFunctionMetadata<T> {
      * Get the name of the plugin to which the function belongs
      * @return The name of the function.
      */
+    @Nullable
     public String getPluginName() {
         return pluginName;
     }

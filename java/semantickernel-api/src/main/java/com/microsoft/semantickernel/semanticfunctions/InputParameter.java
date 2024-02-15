@@ -13,9 +13,9 @@ public class InputParameter {
 
     @JsonCreator
     public InputParameter(
-            @JsonProperty("name") String name,
-            @JsonProperty("description") String description,
-            @JsonProperty("defaultValue") String defaultValue) {
+        @JsonProperty("name") String name,
+        @JsonProperty("description") String description,
+        @JsonProperty("defaultValue") String defaultValue) {
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;

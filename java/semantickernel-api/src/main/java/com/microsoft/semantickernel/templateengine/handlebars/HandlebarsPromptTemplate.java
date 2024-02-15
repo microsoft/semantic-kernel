@@ -106,7 +106,9 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             if (context instanceof KernelFunction) {
                 KernelFunction<?> function = (KernelFunction<?>) context;
                 if ("pluginname".equalsIgnoreCase(name)) {
-                    return function.getPluginName();
+                    if (function.getPluginName() != null) {
+                        return function.getPluginName();
+                    }
                 } else if ("name".equalsIgnoreCase(name)) {
                     return function.getName();
                 }
