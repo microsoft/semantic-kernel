@@ -26,9 +26,9 @@ import reactor.core.publisher.Mono;
 public class OpenAITextGenerationService implements TextGenerationService {
 
     private final OpenAIAsyncClient client;
-    private final Map<String, ContextVariable<?>> attributes;
     @Nullable
     private final String serviceId;
+    private final String modelId;
 
     /// <summary>
     /// Creates a new <see cref="OpenAITextGenerationService"/> client instance supporting AAD auth
@@ -45,17 +45,11 @@ public class OpenAITextGenerationService implements TextGenerationService {
         @Nullable String serviceId) {
         this.serviceId = serviceId;
         this.client = client;
-        attributes = new HashMap<>();
-        attributes.put(MODEL_ID_KEY, ContextVariable.of(modelId));
+        this.modelId = modelId;
     }
 
     public static Builder builder() {
         return new Builder();
-    }
-
-    @Override
-    public Map<String, ContextVariable<?>> getAttributes() {
-        return Collections.unmodifiableMap(attributes);
     }
 
     @Override
@@ -160,6 +154,12 @@ public class OpenAITextGenerationService implements TextGenerationService {
             .setBestOf(requestSettings.getBestOf())
             .setLogitBias(new HashMap<>());
         return options;
+    }
+
+    @Nullable
+    @Override
+    public String getModelId() {
+        return modelId;
     }
 
     /**

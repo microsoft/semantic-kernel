@@ -14,14 +14,14 @@ import javax.annotation.Nullable;
  */
 public abstract class BaseAIServiceSelector implements AIServiceSelector {
 
-    protected final AiServiceCollection services;
+    protected final AIServiceCollection services;
 
     /**
      * Initializes a new instance of the {@link BaseAIServiceSelector} class.
      *
      * @param services The services to select from.
      */
-    protected BaseAIServiceSelector(AiServiceCollection services) {
+    protected BaseAIServiceSelector(AIServiceCollection services) {
         this.services = services;
     }
 
