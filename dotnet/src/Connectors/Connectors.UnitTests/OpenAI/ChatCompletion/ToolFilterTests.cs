@@ -127,6 +127,13 @@ public sealed class ToolFilterTests : IDisposable
         Assert.Equal(0, functionInvocations);
         Assert.Equal(0, postFilterInvocations);
         Assert.Equal("A tool filter requested cancellation before tool invocation.", chatHistory.Last().Content);
+
+        var requestContents = this._messageHandlerStub.RequestContents;
+        Assert.Equal(2, requestContents.Count);
+        requestContents.ForEach(Assert.NotNull);
+        var secondContent = Encoding.UTF8.GetString(requestContents[1]!);
+        var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
+        Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
     }
 
     [Fact]
@@ -195,6 +202,13 @@ public sealed class ToolFilterTests : IDisposable
         Assert.Equal(1, preFilterInvocations);
         Assert.Equal(1, functionInvocations);
         Assert.Equal(1, postFilterInvocations);
+
+        var requestContents = this._messageHandlerStub.RequestContents;
+        Assert.Equal(2, requestContents.Count);
+        requestContents.ForEach(Assert.NotNull);
+        var secondContent = Encoding.UTF8.GetString(requestContents[1]!);
+        var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
+        Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
     }
 
     [Fact]
@@ -251,13 +265,14 @@ public sealed class ToolFilterTests : IDisposable
         var result = await this._service.GetChatMessageContentsAsync([], this._settings, kernel);
 
         // Assert
+        Assert.Equal(1, toolInvocations);
+
         var requestContents = this._messageHandlerStub.RequestContents;
         Assert.Equal(2, requestContents.Count);
         requestContents.ForEach(Assert.NotNull);
         var secondContent = Encoding.UTF8.GetString(requestContents[1]!);
         var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
         Assert.Equal("auto", secondContentJson.GetProperty("tool_choice").GetString());
-        Assert.Equal(1, toolInvocations);
     }
 
     [Fact]
@@ -330,7 +345,7 @@ public sealed class ToolFilterTests : IDisposable
     }
 
     [Fact]
-    public async Task FiltersAreExecutedInCorrectOrderAsync()
+    public async Task ToolFiltersAreExecutedInCorrectOrderAsync()
     {
         // Arrange
         var executionOrder = new List<string>();
@@ -369,6 +384,97 @@ public sealed class ToolFilterTests : IDisposable
         Assert.Equal("ToolFilter1-Invoked", executionOrder[3]);
         Assert.Equal("ToolFilter3-Invoked", executionOrder[4]);
         Assert.Equal("ToolFilter2-Invoked", executionOrder[5]);
+    }
+
+    [Fact]
+    public async Task ToolFiltersAreTriggeredOnStreamingAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+        int preFilterInvocations = 0;
+        int postFilterInvocations = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function1 = KernelFunctionFactory.CreateFromMethod((string location) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetCurrentWeather");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1]));
+
+        var toolFilter = new FakeToolFilter(
+            onToolInvoking: (context) => preFilterInvocations++,
+            onToolInvoked: (context) => postFilterInvocations++);
+
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(toolFilter);
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_single_function_call_test_response.txt")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")) };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act & Assert
+        await foreach (var chunk in this._service.GetStreamingChatMessageContentsAsync([], this._settings, kernel))
+        {
+            Assert.Equal("Test chat streaming response", chunk.Content);
+        }
+
+        Assert.Equal(1, functionCallCount);
+        Assert.Equal(1, preFilterInvocations);
+        Assert.Equal(1, postFilterInvocations);
+    }
+
+    [Fact]
+    public async Task PreInvocationToolFilterCancellationWorksOnStreamingAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+        int preFilterInvocations = 0;
+        int postFilterInvocations = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function1 = KernelFunctionFactory.CreateFromMethod((string location) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetCurrentWeather");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1]));
+
+        var toolFilter = new FakeToolFilter(
+            onToolInvoking: (context) =>
+            {
+                context.StopBehavior = ToolFilterStopBehavior.Cancel;
+                preFilterInvocations++;
+            },
+            onToolInvoked: (context) => postFilterInvocations++);
+
+        this._settings.ToolCallBehavior!.Filters.Clear();
+        this._settings.ToolCallBehavior.Filters.Add(toolFilter);
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_single_function_call_test_response.txt")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")) };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act & Assert
+        await foreach (var chunk in this._service.GetStreamingChatMessageContentsAsync([], this._settings, kernel))
+        {
+            Assert.Equal("Test chat streaming response", chunk.Content);
+        }
+
+        Assert.Equal(1, preFilterInvocations);
+        Assert.Equal(0, functionCallCount);
+        Assert.Equal(0, postFilterInvocations);
+
+        var requestContents = this._messageHandlerStub.RequestContents;
+        Assert.Equal(2, requestContents.Count);
+        requestContents.ForEach(Assert.NotNull);
+        var secondContent = Encoding.UTF8.GetString(requestContents[1]!);
+        var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
+        Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
     }
 
     private sealed class FakeToolFilter(
