@@ -160,7 +160,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             TopK = this.TopK,
             MaxTokens = this.MaxTokens,
             CandidateCount = this.CandidateCount,
-            StopSequences = this.StopSequences?.ToList(),
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
             SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).ToList(),
         };
     }
