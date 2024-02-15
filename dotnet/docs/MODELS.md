@@ -56,12 +56,12 @@ Please note that not all of the model interfaces are defined yet. As part of con
 
 ### Google
 
-| Priority | Model             | Status      | Interface              | Deployment type | GitHub issue | Developer | Reviewer |
-| -------- | ----------------- | ----------- | ---------------------- | --------------- | ------------ | --------- | -------- |
-| P0       | gemini-pro        | Not started | `IChatCompletion`      | Google API      | TBD          | TBD       | TBD      |
-| P0       | gemini-pro-vision | Not started | `IChatCompletion`      | Google API      | TBD          | TBD       | TBD      |
-| P0       | gemini-ultra      | Not started | `IChatCompletion`      | Google API      | TBD          | TBD       | TBD      |
-| P0       | embedding-001     | Not started | `IEmbeddingGeneration` | Google API      | TBD          | TBD       | TBD      |
+| Priority | Model             | Status      | Interface              | Deployment type | GitHub issue | Developer    | Reviewer     |
+| -------- | ----------------- | ----------- | ---------------------- | --------------- | ------------ | ------------ | ------------ |
+| P0       | gemini-pro        | In Progress | `IChatCompletion`      | Google API      | TBD          | Krzysztof318 | RogerBarreto |
+| P0       | gemini-pro-vision | In Progress | `IChatCompletion`      | Google API      | TBD          | Krzysztof318 | RogerBarreto |
+| P0       | gemini-ultra      | In Progress | `IChatCompletion`      | Google API      | TBD          | Krzysztof318 | RogerBarreto |
+| P0       | embedding-001     | In Progress | `IEmbeddingGeneration` | Google API      | TBD          | Krzysztof318 | RogerBarreto |
 
 ### Facebook
 
