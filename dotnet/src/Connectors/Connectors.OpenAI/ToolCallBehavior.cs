@@ -27,15 +27,14 @@ public abstract class ToolCallBehavior
     /// After this number of iterations as part of a single user request is reached, auto-invocation
     /// will be disabled (e.g. <see cref="AutoInvokeKernelFunctions"/> will behave like <see cref="EnableKernelFunctions"/>)).
     /// This is a safeguard against possible runaway execution if the model routinely re-requests
-    /// the same function over and over. It is currently hardcoded, but in the future it could
-    /// be made configurable by the developer. Other configuration is also possible in the future,
+    /// the same function over and over. Other configuration is also possible in the future,
     /// such as a delegate on the instance that can be invoked upon function call failure (e.g. failure
     /// to find the requested function, failure to invoke the function, etc.), with behaviors for
     /// what to do in such a case, e.g. respond to the model telling it to try again. With parallel tool call
     /// support, where the model can request multiple tools in a single response, it is significantly
     /// less likely that this limit is reached, as most of the time only a single request is needed.
     /// </remarks>
-    private const int DefaultMaximumAutoInvokeAttempts = 5;
+    public const int DefaultMaximumAutoInvokeAttempts = 5;
 
     /// <summary>
     /// Gets the collection of filters that will be applied to tool calls.

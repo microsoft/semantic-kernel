@@ -29,6 +29,8 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal abstract class ClientCore
 {
+    private const string ModelIterationsCompletedKey = "ModelIterationsCompleted";
+
     private const int MaxResultsPerPrompt = 128;
 
     /// <summary>
@@ -176,7 +178,7 @@ internal abstract class ClientCore
         };
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions, int iterations)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions, int modelIterations)
     {
         return new Dictionary<string, object?>(6)
         {
@@ -185,18 +187,18 @@ internal abstract class ClientCore
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
-            { "Iterations", iterations },
+            { ModelIterationsCompletedKey, modelIterations },
         };
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions, int iterations)
+    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions, int modelIterations)
     {
         return new Dictionary<string, object?>(4)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
-            { "Iterations", iterations },
+            { ModelIterationsCompletedKey, modelIterations },
         };
     }
 
@@ -373,19 +375,12 @@ internal abstract class ClientCore
                 {
                     // Invoke the pre-invocation filter.
                     var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(openAIFunctionToolCall, chat, iteration);
-                    if (invokingContext is not null)
-                    {
-                        // Need to update the chat options in case chat history has changed
-                        this.UpdateChatHistory(chat, chatOptions, chatExecutionSettings);
-
-                        // Check if filter has requested a stop
-                        this.HandleStopBehavior(invokingContext, chatOptions, ref autoInvoke);
-                    }
+                    this.ApplyToolFilterContextChanges(invokingContext, chatOptions, chat, chatExecutionSettings, ref autoInvoke);
                 }
                 catch (OperationCanceledException)
                 {
                     // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
-                    AddResponseMessage(chatOptions, chat, null, "A tool filter requested cancellation before tool invocation.", toolCall.Id, this.Logger);
+                    AddResponseMessage(chatOptions, chat, null, $"A tool filter requested cancellation before tool invocation. Model iterations completed: {iteration}", toolCall.Id, this.Logger);
                     chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                     break;
                 }
@@ -434,14 +429,7 @@ internal abstract class ClientCore
                 {
                     // Invoke the post-invocation filter.
                     var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(openAIFunctionToolCall, functionResult, chat, iteration);
-                    if (invokedContext is not null)
-                    {
-                        // Need to update the chat options in case chat history has changed
-                        this.UpdateChatHistory(chat, chatOptions, chatExecutionSettings);
-
-                        // Check if filter has requested a stop
-                        this.HandleStopBehavior(invokedContext, chatOptions, ref autoInvoke);
-                    }
+                    this.ApplyToolFilterContextChanges(invokedContext, chatOptions, chat, chatExecutionSettings, ref autoInvoke);
                 }
                 catch (OperationCanceledException)
                 {
@@ -490,6 +478,26 @@ internal abstract class ClientCore
         }
     }
 
+    private void ApplyToolFilterContextChanges(
+        ToolFilterContext? context,
+        ChatCompletionsOptions chatOptions,
+        ChatHistory chatHistory,
+        OpenAIPromptExecutionSettings executionSettings,
+        ref bool autoInvoke)
+    {
+        if (context is not null)
+        {
+            // Since the tool filter has access to the chat history, the chat history may have been modified.
+            // We want to make sure any subsequent requests to the model reflect these changes. The chatOptions object
+            // contains all the configuration information for a chat request, including a copy of the chat history.
+            // So we need to update the chat history stored in the chatOptions object to match what is in the chatHistory object.
+            this.UpdateChatOptions(chatOptions, chatHistory, executionSettings);
+
+            // Check if filter has requested a stop
+            this.HandleStopBehavior(context, chatOptions, ref autoInvoke);
+        }
+    }
+
     private void HandleStopBehavior(ToolFilterContext context, ChatCompletionsOptions chatOptions, ref bool autoInvoke)
     {
         switch (context.StopBehavior)
@@ -505,7 +513,7 @@ internal abstract class ClientCore
         }
     }
 
-    private void UpdateChatHistory(ChatHistory chatHistory, ChatCompletionsOptions options, OpenAIPromptExecutionSettings executionSettings)
+    private void UpdateChatOptions(ChatCompletionsOptions options, ChatHistory chatHistory, OpenAIPromptExecutionSettings executionSettings)
     {
         // Clear out messages, then copy over from chat history
         options.Messages.Clear();
@@ -635,19 +643,12 @@ internal abstract class ClientCore
                 {
                     // Invoke the pre-invocation filter.
                     var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(openAIFunctionToolCall, chat, iteration);
-                    if (invokingContext is not null)
-                    {
-                        // Need to update the chat options in case chat history has changed
-                        this.UpdateChatHistory(chat, chatOptions, chatExecutionSettings);
-
-                        // Check if filter has requested a stop
-                        this.HandleStopBehavior(invokingContext, chatOptions, ref autoInvoke);
-                    }
+                    this.ApplyToolFilterContextChanges(invokingContext, chatOptions, chat, chatExecutionSettings, ref autoInvoke);
                 }
                 catch (OperationCanceledException)
                 {
                     // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
-                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, null, "A tool filter requested cancellation before tool invocation.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, null, $"A tool filter requested cancellation before tool invocation. Model iterations completed: {iteration}", this.Logger);
                     chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                     break;
                 }
@@ -696,14 +697,7 @@ internal abstract class ClientCore
                 {
                     // Invoke the post-invocation filter.
                     var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(openAIFunctionToolCall, functionResult, chat, iteration);
-                    if (invokedContext is not null)
-                    {
-                        // Need to update the chat options in case chat history has changed
-                        this.UpdateChatHistory(chat, chatOptions, chatExecutionSettings);
-
-                        // Check if filter has requested a stop
-                        this.HandleStopBehavior(invokedContext, chatOptions, ref autoInvoke);
-                    }
+                    this.ApplyToolFilterContextChanges(invokedContext, chatOptions, chat, chatExecutionSettings, ref autoInvoke);
                 }
                 catch (OperationCanceledException)
                 {
