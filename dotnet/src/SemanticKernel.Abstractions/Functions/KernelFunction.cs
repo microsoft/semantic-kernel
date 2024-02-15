@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,7 +74,10 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+    /// <remarks>
+    /// The instances of <see cref="PromptExecutionSettings"/> are frozen and cannot be modified.
+    /// </remarks>
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -97,7 +101,13 @@ public abstract class KernelFunction
             Parameters = parameters,
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
         };
-        this.ExecutionSettings = executionSettings;
+
+        if (executionSettings is not null)
+        {
+            this.ExecutionSettings = executionSettings.ToDictionary(
+                entry => entry.Key,
+                entry => { var clone = entry.Value.Clone(); clone.Freeze(); return clone; });
+        }
     }
 
     /// <summary>
@@ -133,25 +143,54 @@ public abstract class KernelFunction
             cancellationToken.ThrowIfCancellationRequested();
 
             // Invoke pre-invocation event handler. If it requests cancellation, throw.
-            if (kernel.OnFunctionInvoking(this, arguments)?.Cancel is true)
+#pragma warning disable CS0618 // Events are deprecated
+            var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+#pragma warning restore CS0618 // Events are deprecated
+
+            // Invoke pre-invocation filter. If it requests cancellation, throw.
+            var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
+
+            if (invokingEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
+            }
+
+            if (invokingContext?.Cancel is true)
+            {
+                throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
             }
 
             // Invoke the function.
             functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
             var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
+#pragma warning restore CS0618 // Events are deprecated
+
+            // Invoke the post-invocation filter. If it requests cancellation, throw.
+            var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
+
             if (invokedEventArgs is not null)
             {
                 // Apply any changes from the event handlers to final result.
                 functionResult = new FunctionResult(this, invokedEventArgs.ResultValue, functionResult.Culture, invokedEventArgs.Metadata ?? functionResult.Metadata);
             }
 
+            if (invokedContext is not null)
+            {
+                // Apply any changes from the function filters to final result.
+                functionResult = new FunctionResult(this, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
+            }
+
             if (invokedEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
+            }
+
+            if (invokedContext?.Cancel is true)
+            {
+                throw new OperationCanceledException("A function filter requested cancellation after function invocation.");
             }
 
             logger.LogFunctionInvokedSuccess(this.Name);
@@ -248,10 +287,21 @@ public abstract class KernelFunction
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Invoke pre-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
                 var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-                if (invokingEventArgs is not null && invokingEventArgs.Cancel)
+#pragma warning restore CS0618 // Events are deprecated
+
+                // Invoke pre-invocation filter. If it requests cancellation, throw.
+                var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
+
+                if (invokingEventArgs?.Cancel is true)
                 {
                     throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
+                }
+
+                if (invokingContext?.Cancel is true)
+                {
+                    throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
                 }
 
                 // Invoke the function and get its streaming enumerator.
@@ -291,7 +341,7 @@ public abstract class KernelFunction
                 }
             }
 
-            // The FunctionInvoked hook is not used when streaming.
+            // The FunctionInvoked hook and filter are not used when streaming.
         }
         finally
         {

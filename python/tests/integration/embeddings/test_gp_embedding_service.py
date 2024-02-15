@@ -29,8 +29,8 @@ async def test_gp_embedding_service(create_kernel, get_gp_config):
     kernel.add_text_embedding_generation_service("gecko", palm_text_embed)
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
-    await kernel.memory.save_information_async("test", id="info1", text="this is a test")
-    await kernel.memory.save_reference_async(
+    await kernel.memory.save_information("test", id="info1", text="this is a test")
+    await kernel.memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",

@@ -32,13 +32,6 @@ internal sealed class Agent : IAgent
     public KernelPluginCollection Plugins => this.Kernel.Plugins;
 
     /// <inheritdoc/>
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-#pragma warning disable CA1716 // Identifiers should not match keywords
-    public string Object => this._model.Object;
-#pragma warning restore CA1720 // Identifier contains type name - We don't control the schema
-#pragma warning restore CA1716 // Identifiers should not match keywords
-
-    /// <inheritdoc/>
     public AgentCapability Capabilities { get; }
 
     /// <inheritdoc/>
@@ -245,7 +238,7 @@ internal sealed class Agent : IAgent
                 new AgentResponse
                 {
                     ThreadId = thread.Id,
-                    Message = string.Concat(messages.Select(m => m.Content)),
+                    Message = string.Join(Environment.NewLine, messages.Select(m => m.Content)),
                 };
 
             return response;
