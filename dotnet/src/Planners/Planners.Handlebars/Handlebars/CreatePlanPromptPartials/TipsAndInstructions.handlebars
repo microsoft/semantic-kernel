@@ -20,7 +20,7 @@ Follow these steps to create one Handlebars template to achieve the goal:
   - Only use the helpers provided. Any helper not listed is considered hallucinated and must not be used.
   - Do not invent or assume the existence of any functions not explicitly defined above.
 3. What if I Need More Helpers?
-  - If the goal cannot be fully achieved with the provided helpers or you need a helper not defined, print the following message: "{{insufficientFunctionsErrorMessage}}".
+  - Stop here if the goal cannot be fully achieved with the provided helpers or you need a helper not defined, and just return a string with an appropriate error message.
 4. Keep It Simple:{{#if allowLoops}}
   - Avoid using loops or block expressions. They are allowed but not always necessary, so try to find a solution that does not use them.{{/if}}
   - Your template should be intelligent and efficient, avoiding unnecessary complexity or redundant steps.
