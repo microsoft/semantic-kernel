@@ -19,10 +19,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
-import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -30,15 +28,15 @@ import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,10 +51,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAIChatCompletion.class);
     private final OpenAIAsyncClient client;
-    private final Map<String, ContextVariable<?>> attributes;
 
     @Nullable
     private final String serviceId;
+    private final String modelId;
 
     public OpenAIChatCompletion(
         OpenAIAsyncClient client,
@@ -64,17 +62,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable String serviceId) {
         this.serviceId = serviceId;
         this.client = client;
-        this.attributes = new HashMap<>();
-        attributes.put(MODEL_ID_KEY, ContextVariable.of(modelId));
+        this.modelId = modelId;
     }
 
     public static OpenAIChatCompletion.Builder builder() {
         return new OpenAIChatCompletion.Builder();
-    }
-
-    @Override
-    public Map<String, ContextVariable<?>> getAttributes() {
-        return Collections.unmodifiableMap(attributes);
     }
 
     @Override
@@ -428,6 +420,12 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 throw new SKException("Unexpected author role: " + authorRole);
         }
 
+    }
+
+    @Nullable
+    @Override
+    public String getModelId() {
+        return modelId;
     }
 
     public static class Builder extends ChatCompletionService.Builder {

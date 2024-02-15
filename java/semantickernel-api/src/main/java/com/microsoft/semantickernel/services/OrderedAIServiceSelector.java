@@ -29,7 +29,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
      * class with an empty collection of services.
      */
     public OrderedAIServiceSelector() {
-        super(new AiServiceCollection());
+        super(new AIServiceCollection());
     }
 
     /**
@@ -38,7 +38,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
      *
      * @param services The services to select from.
      */
-    public OrderedAIServiceSelector(AiServiceCollection services) {
+    public OrderedAIServiceSelector(AIServiceCollection services) {
         super(services);
     }
 

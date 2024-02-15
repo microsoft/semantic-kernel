@@ -10,7 +10,7 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.AIServiceSelector;
-import com.microsoft.semantickernel.services.AiServiceCollection;
+import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -191,10 +191,10 @@ public class Kernel implements Buildable {
      */
     public static class Builder implements SemanticKernelBuilder<Kernel> {
 
-        private final AiServiceCollection services = new AiServiceCollection();
+        private final AIServiceCollection services = new AIServiceCollection();
         private final List<KernelPlugin> plugins = new ArrayList<>();
         @Nullable
-        private Function<AiServiceCollection, AIServiceSelector> serviceSelectorProvider;
+        private Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
 
         /**
          * Adds a service to the kernel.
@@ -224,7 +224,7 @@ public class Kernel implements Buildable {
          * @return {@code this} builder with the service selector provider set.
          */
         public Kernel.Builder withServiceSelector(
-            Function<AiServiceCollection, AIServiceSelector> serviceSelector) {
+            Function<AIServiceCollection, AIServiceSelector> serviceSelector) {
             this.serviceSelectorProvider = serviceSelector;
             return this;
         }
