@@ -17,6 +17,7 @@ public class KernelFunctionMetadata<T> {
     private final List<KernelParameterMetadata<?>> parameters;
     private final KernelReturnParameterMetadata<T> returnParameter;
 
+
     public KernelFunctionMetadata(
         String name,
         @Nullable
@@ -43,12 +44,11 @@ public class KernelFunctionMetadata<T> {
         return Collections.unmodifiableList(parameters);
     }
 
-    @Nullable
     public String getDescription() {
         return description;
     }
 
-    public KernelReturnParameterMetadata<T> getReturnParameter() {
+    public KernelReturnParameterMetadata<?> getReturnParameter() {
         return returnParameter;
     }
 }

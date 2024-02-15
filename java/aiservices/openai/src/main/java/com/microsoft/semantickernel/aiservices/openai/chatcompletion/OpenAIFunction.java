@@ -15,7 +15,27 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-class OpenAIFunction {
+public class OpenAIFunction {
+    private final String pluginName;
+    private final String name;
+    private final FunctionDefinition functionDefinition;
+    public OpenAIFunction(String pluginName, KernelFunctionMetadata<?> metadata) {
+        this.name = metadata.getName();
+        this.pluginName = pluginName;
+        this.functionDefinition = toFunctionDefinition(metadata, pluginName);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPluginName() {
+        return pluginName;
+    }
+
+    public FunctionDefinition getFunctionDefinition() {
+        return functionDefinition;
+    }
 
     /**
      * Gets the separator used between the plugin name and the function name, if a plugin name is present.

@@ -4,10 +4,13 @@ import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.util.BinaryData;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -16,49 +19,26 @@ import java.util.stream.Collectors;
 public class ToolCallBehavior {
 
     private static final int DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS = 5;
+    private static final String FUNCTION_NAME_SEPARATOR = "-";
 
-    private static class FunctionCallBehavior {
-
-        private final boolean required;
-        private final boolean enabled;
-
-        FunctionCallBehavior(KernelFunction function, boolean required, boolean enabled) {
-            this.required = required;
-            this.enabled = enabled;
-        }
-
-        boolean required() {
-            return required;
-        }
-
-        boolean enabled() {
-            return enabled;
-        }
-
-        static String getKey(KernelFunction function) {
-            return getKey(function.getPluginName(), function.getName());
-        }
-
-        static String getKey(String skillName, String functionName) {
-            return String.format("%s-%s", skillName, functionName);
-        }
+    static String getKey(String pluginName, String functionName) {
+        return String.format("%s%s%s", pluginName, FUNCTION_NAME_SEPARATOR, functionName);
     }
 
-    private final Map<String, Boolean> flags = new HashMap<>();
-    private final Map<String, FunctionCallBehavior> functionSettings = new HashMap<>();
-    private final Map<String, Integer> settings = new HashMap<>();
-
     private int maximumAutoInvokeAttempts;
+    private boolean kernelFunctionsEnabled;
+    private KernelFunction<?> requiredFunction;
+    private final Set<String> enabledFunctions = new HashSet<>();
 
     public ToolCallBehavior() {
         this.maximumAutoInvokeAttempts = 0;
     }
 
     public ToolCallBehavior(ToolCallBehavior toolCallBehavior) {
-        flags.putAll(toolCallBehavior.flags);
-        functionSettings.putAll(toolCallBehavior.functionSettings);
-        settings.putAll(toolCallBehavior.settings);
         maximumAutoInvokeAttempts = toolCallBehavior.maximumAutoInvokeAttempts;
+        kernelFunctionsEnabled = toolCallBehavior.kernelFunctionsEnabled;
+        requiredFunction = toolCallBehavior.requiredFunction;
+        enabledFunctions.addAll(toolCallBehavior.enabledFunctions);
     }
 
     public UnmodifiableToolCallBehavior unmodifiableClone() {
@@ -66,7 +46,7 @@ public class ToolCallBehavior {
     }
 
     public ToolCallBehavior kernelFunctions(boolean enable) {
-        setFlag("kernelFunctions", enable);
+        this.kernelFunctionsEnabled = enable;
         return this;
     }
 
@@ -75,118 +55,54 @@ public class ToolCallBehavior {
         return this;
     }
 
-    public ToolCallBehavior requireFunction(KernelFunction function, boolean require) {
-        if (function != null) {
-            String key = FunctionCallBehavior.getKey(function);
-            functionSettings.compute(
-                key,
-                (k, v) -> {
-                    if (v == null) {
-                        return new FunctionCallBehavior(function, require, false);
-                    } else {
-                        return new FunctionCallBehavior(function, require, v.enabled());
-                    }
-                }
-            );
-        }
+    public ToolCallBehavior requireFunction(KernelFunction<?> function) {
+        requiredFunction = function;
         return this;
     }
 
-    public ToolCallBehavior enableFunction(KernelFunction function, boolean enable) {
+    public ToolCallBehavior enableFunction(KernelFunction<?> function, boolean enable) {
         if (function != null) {
-            String key = FunctionCallBehavior.getKey(function);
-            functionSettings.compute(
-                key,
-                (k, v) -> {
-                    if (v == null) {
-                        return new FunctionCallBehavior(function, false, enable);
-                    } else {
-                        return new FunctionCallBehavior(function, v.required(), enable);
-                    }
-                }
-            );
+            String key = getKey(function.getPluginName(), function.getName());
+            if (enable) {
+                enabledFunctions.add(key);
+            } else {
+                enabledFunctions.remove(key);
+            }
         }
         return this;
     }
 
     public ToolCallBehavior setMaximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
+        if (maximumAutoInvokeAttempts < 0) {
+            throw new SKException("The maximum auto-invoke attempts should be greater than or equal to zero.");
+        }
         this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
         return this;
     }
 
     public boolean kernelFunctionsEnabled() {
-        return getFlag("kernelFunctions");
+        return kernelFunctionsEnabled;
     }
 
-    public boolean functionRequired(KernelFunction function) {
-        if (function != null) {
-            return functionRequired(function.getPluginName(), function.getName());
-        }
-        return false;
+    public boolean autoInvokeEnabled() {
+        return maximumAutoInvokeAttempts > 0;
     }
 
-    public boolean functionRequired(String pluginName, String functionName) {
-        String key = FunctionCallBehavior.getKey(pluginName, functionName);
-        if (functionSettings.containsKey(key)) {
-            return functionSettings.get(key).required();
-        }
-        return false;
+    public KernelFunction<?> functionRequired() {
+        return requiredFunction;
     }
 
-    public boolean functionEnabled(KernelFunction function) {
-        if (function != null) {
-            return functionEnabled(function.getPluginName(), function.getName());
-        }
-        return functionSettings.isEmpty();
+    public boolean functionEnabled(KernelFunction<?> function) {
+        return functionEnabled(function.getPluginName(), function.getName());
     }
 
     public boolean functionEnabled(String pluginName, String functionName) {
-
-        String key = FunctionCallBehavior.getKey(pluginName, functionName);
-        if (functionSettings.containsKey(key)) {
-            return functionSettings.get(key).enabled();
-        }
-        return functionSettings.isEmpty();
+        String key = getKey(pluginName, functionName);
+        return enabledFunctions.contains(key);
     }
 
     public int getMaximumAutoInvokeAttempts() {
         return this.maximumAutoInvokeAttempts;
-    }
-
-    protected void setFlag(String key, boolean value) {
-        flags.put(key, value);
-    }
-
-    protected void setSetting(String key, int value) {
-        settings.put(key, value);
-    }
-
-    protected boolean getFlag(String key) {
-        return flags.getOrDefault(key, false);
-    }
-
-    protected int getSetting(String key, int defaultValue) {
-        return settings.getOrDefault(key, defaultValue);
-    }
-
-    public void configureOptions(
-            ChatCompletionsOptions options,
-            List<FunctionDefinition> functions) {
-        if (functions.isEmpty()) {
-            return;
-        }
-
-        options.setTools(functions.stream()
-//            .filter(function -> {
-//                String[] parts = function.getName().split("_");
-//                String pluginName = parts.length > 0 ? parts[0] : "";
-//                String fnName = parts.length > 1 ? parts[1] : "";
-//                return toolCallBehavior.functionEnabled(pluginName, fnName);
-//            })
-            .map(ChatCompletionsFunctionToolDefinition::new)
-            .collect(Collectors.toList()));
-
-        options.setToolChoice(BinaryData.fromString("auto"));
     }
 
     public static class UnmodifiableToolCallBehavior extends ToolCallBehavior {
@@ -206,25 +122,14 @@ public class ToolCallBehavior {
         }
 
         @Override
-        public final ToolCallBehavior requireFunction(KernelFunction function, boolean require) {
+        public final ToolCallBehavior requireFunction(KernelFunction<?> function) {
             throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
         }
 
         @Override
-        public final ToolCallBehavior enableFunction(KernelFunction function, boolean enable) {
+        public final ToolCallBehavior enableFunction(KernelFunction<?> function, boolean enable) {
             throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
         }
-
-        @Override
-        protected final void setFlag(String key, boolean value) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
-
-        @Override
-        protected final void setSetting(String key, int value) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
-
     }
 
 }

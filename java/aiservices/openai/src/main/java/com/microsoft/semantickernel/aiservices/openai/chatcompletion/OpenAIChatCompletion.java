@@ -4,8 +4,10 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsFunctionToolCall;
+import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatCompletionsToolCall;
+import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
 import com.azure.ai.openai.models.ChatRequestAssistantMessage;
 import com.azure.ai.openai.models.ChatRequestMessage;
 import com.azure.ai.openai.models.ChatRequestSystemMessage;
@@ -13,6 +15,7 @@ import com.azure.ai.openai.models.ChatRequestToolMessage;
 import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
 import com.azure.ai.openai.models.FunctionDefinition;
+import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +34,7 @@ import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
 import java.util.ArrayList;
@@ -113,12 +117,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         Kernel kernel,
         @Nullable InvocationContext invocationContext) {
 
-        List<FunctionDefinition> functions = new ArrayList<>();
+        List<OpenAIFunction> functions = new ArrayList<>();
         if (kernel != null) {
             kernel.getPlugins().forEach(plugin ->
                     plugin.getFunctions().forEach((name, function) ->
-                            functions.add(OpenAIFunction.toFunctionDefinition(function.getMetadata(),
-                                    plugin.getName()))
+                            functions.add(new OpenAIFunction(plugin.getName(), function.getMetadata()))
                     )
             );
         }
@@ -270,7 +273,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
         @Nullable
-        List<FunctionDefinition> functions,
+        List<OpenAIFunction> functions,
         @Nullable
         InvocationContext invocationContext) {
 
@@ -278,7 +281,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .setModel(chatCompletionService.getModelId());
 
         if (invocationContext != null && invocationContext.getToolCallBehavior() != null) {
-            invocationContext.getToolCallBehavior().configureOptions(options, functions);
+            configureToolCallBehaviorOptions(options, invocationContext.getToolCallBehavior(), functions);
         }
 
         PromptExecutionSettings promptExecutionSettings = invocationContext != null
@@ -325,6 +328,63 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .setLogitBias(logit);
 
         return options;
+    }
+
+    private static void configureToolCallBehaviorOptions(
+            ChatCompletionsOptions options,
+            @Nullable
+            ToolCallBehavior toolCallBehavior,
+            @Nullable
+            List<OpenAIFunction> functions) {
+
+        if (functions == null || functions.isEmpty()) {
+            return;
+        }
+
+        if (toolCallBehavior == null || (!toolCallBehavior.kernelFunctionsEnabled() &&
+                 !toolCallBehavior.autoInvokeEnabled())) {
+            // If tool calls are not explicitly enabled, then we don't need to send any tool definitions
+            return;
+        }
+
+        List<ChatCompletionsToolDefinition> toolDefinitions = functions.stream()
+            .filter(function -> {
+                // if auto-invoked is not enable no need to send tools
+                if (!toolCallBehavior.autoInvokeEnabled()) {
+                    return false;
+                }
+                // if kernel functions are enable send all functions as options tools
+                if (toolCallBehavior.kernelFunctionsEnabled()) {
+                    return true;
+                }
+                // otherwise, check if the function is enabled
+                return toolCallBehavior.functionEnabled(function.getPluginName(), function.getName());
+            })
+            .map(OpenAIFunction::getFunctionDefinition)
+            .map(ChatCompletionsFunctionToolDefinition::new)
+            .collect(Collectors.toList());
+
+        if (toolDefinitions.isEmpty()) {
+            return;
+        }
+
+        options.setTools(toolDefinitions);
+
+        KernelFunction<?> toolChoice = toolCallBehavior.functionRequired();
+        if (toolChoice == null) {
+            options.setToolChoice(BinaryData.fromString("auto"));
+        } else {
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            try {
+                String json = objectMapper.writeValueAsString(
+                        OpenAIFunction.toFunctionDefinition(toolChoice.getMetadata(), toolChoice.getPluginName()));
+
+                options.setToolChoice(BinaryData.fromObject(objectMapper.readTree(json)));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(ChatHistory chatHistory) {
