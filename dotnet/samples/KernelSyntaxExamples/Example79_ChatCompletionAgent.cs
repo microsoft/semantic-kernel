@@ -24,7 +24,7 @@ public class Example79_ChatCompletionAgent : BaseTest
     [Fact]
     public async Task ChatWithAgentAsync()
     {
-        var agent = new OpenAIChatCompletionAgent(
+        var agent = new ChatCompletionAgent(
             this._kernel,
             instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
             new OpenAIPromptExecutionSettings
@@ -56,7 +56,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             FrequencyPenalty = 0.0,
         };
 
-        var fitnessTrainer = new OpenAIChatCompletionAgent(
+        var fitnessTrainer = new ChatCompletionAgent(
            this._kernel,
            instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
            "You are not a stress management expert, so refrain from recommending stress management strategies. " +
@@ -66,7 +66,7 @@ public class Example79_ChatCompletionAgent : BaseTest
            settings
         );
 
-        var stressManagementExpert = new OpenAIChatCompletionAgent(
+        var stressManagementExpert = new ChatCompletionAgent(
             this._kernel,
             instructions: "As a stress management expert, provide guidance on stress reduction strategies. " +
             "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
@@ -105,7 +105,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
 
-        var agent = new OpenAIChatCompletionAgent(
+        var agent = new ChatCompletionAgent(
             this._kernel,
             instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners.",
             settings);
@@ -141,7 +141,7 @@ public class Example79_ChatCompletionAgent : BaseTest
 
     private sealed class TurnBasedChat
     {
-        public TurnBasedChat(IEnumerable<ChatCompletionAgent> agents, Func<IReadOnlyList<AgentMessage>, IEnumerable<AgentMessage>, int, bool> exitPredicate)
+        public TurnBasedChat(IEnumerable<KernelAgent> agents, Func<IReadOnlyList<AgentMessage>, IEnumerable<AgentMessage>, int, bool> exitPredicate)
         {
             this._agents = agents.ToArray();
             this._exitCondition = exitPredicate;
@@ -171,7 +171,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             return chat;
         }
 
-        private readonly ChatCompletionAgent[] _agents;
+        private readonly KernelAgent[] _agents;
         private readonly Func<IReadOnlyList<AgentMessage>, IEnumerable<AgentMessage>, int, bool> _exitCondition;
     }
 

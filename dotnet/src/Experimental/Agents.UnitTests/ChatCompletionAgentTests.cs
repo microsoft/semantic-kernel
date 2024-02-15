@@ -12,13 +12,13 @@ using Moq;
 using Xunit;
 
 namespace SemanticKernel.Experimental.Agents.UnitTests;
-public class OpenAIChatCompletionAgentTests
+public class ChatCompletionAgentTests
 {
     private readonly IKernelBuilder _kernelBuilder;
 
     private readonly Mock<IChatCompletionService> _mockChatCompletionService;
 
-    public OpenAIChatCompletionAgentTests()
+    public ChatCompletionAgentTests()
     {
         this._kernelBuilder = Kernel.CreateBuilder();
 
@@ -35,7 +35,7 @@ public class OpenAIChatCompletionAgentTests
            .Setup(ccs => ccs.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
            .ReturnsAsync(new List<ChatMessageContent>());
 
-        var agent = new OpenAIChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
 
         // Act
         var result = await agent.InvokeAsync(new List<AgentMessage>());
@@ -58,7 +58,7 @@ public class OpenAIChatCompletionAgentTests
            .Setup(ccs => ccs.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
            .ReturnsAsync(new List<ChatMessageContent>());
 
-        var agent = new OpenAIChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
 
         // Act
         var result = await agent.InvokeAsync(new List<AgentMessage>() { new(AuthorRole.User, "fake-user-message") });
@@ -86,7 +86,7 @@ public class OpenAIChatCompletionAgentTests
                 new(AuthorRole.Assistant, "fake-assistant-message-2")
             });
 
-        var agent = new OpenAIChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
 
         // Act
         var result = await agent.InvokeAsync(new List<AgentMessage>());
