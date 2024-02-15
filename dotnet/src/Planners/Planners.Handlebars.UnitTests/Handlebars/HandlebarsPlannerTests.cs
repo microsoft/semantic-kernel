@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Text;
 using Moq;
@@ -67,7 +68,7 @@ public sealed class HandlebarsPlannerTests
         var planner = new HandlebarsPlanner();
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HandlebarsPlanCreationException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
+        var exception = await Assert.ThrowsAsync<PlanCreationException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
 
         Assert.True(exception?.Message?.Contains("CreatePlan failed. See inner exception for details.", StringComparison.InvariantCulture));
         Assert.True(exception?.InnerException?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));

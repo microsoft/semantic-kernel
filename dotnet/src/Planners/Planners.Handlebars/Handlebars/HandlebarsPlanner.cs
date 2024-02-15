@@ -102,7 +102,7 @@ public sealed class HandlebarsPlanner
         }
         catch (KernelException ex)
         {
-            throw new HandlebarsPlanCreationException(
+            throw new PlanCreationException(
                 "CreatePlan failed. See inner exception for details.",
                 createPlanPrompt,
                 modelResults,
