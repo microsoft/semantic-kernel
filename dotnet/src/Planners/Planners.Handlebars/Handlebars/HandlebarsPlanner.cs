@@ -246,7 +246,7 @@ public sealed class HandlebarsPlanner
             };
 
         // Construct prompt from Partials and Prompt Template
-        var createPlanPrompt = this.ConstructHandlebarsPrompt("CreatePlanPrompt");
+        var createPlanPrompt = this.ConstructHandlebarsPrompt("CreatePlanPrompt", promptOverride: this._options.CreatePlanPromptHandler?.Invoke());
 
         // Render the prompt
         var promptTemplateConfig = new PromptTemplateConfig()
