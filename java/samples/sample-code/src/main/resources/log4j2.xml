@@ -13,6 +13,9 @@
         <Logger name="io.netty" level="warn">
             <AppenderRef ref="Console"/>
         </Logger>
+        <Logger name="com.azure.core.implementation" level="warn">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Root level="debug">
             <AppenderRef ref="Console"/>
         </Root>

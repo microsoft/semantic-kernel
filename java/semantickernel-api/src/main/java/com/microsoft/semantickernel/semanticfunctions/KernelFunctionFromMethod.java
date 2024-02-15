@@ -53,6 +53,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
 
     private KernelFunctionFromMethod(
         ImplementationFunc<T> implementationFunc,
+        @Nullable
+        String pluginName,
         String functionName,
         @Nullable
         String description,
@@ -61,6 +63,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
         KernelReturnParameterMetadata<?> returnParameter) {
         super(
             new KernelFunctionMetadata<>(
+                pluginName,
                 functionName,
                 description,
                 parameters,
@@ -112,6 +115,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
      *
      * @param method          the method to create the function from
      * @param target          the instance of the class that the method is a member of
+     * @param pluginName      the name of the plugin which the function belongs to
      * @param functionName    the name of the function
      * @param description     the description of the function
      * @param parameters      the parameters of the function
@@ -123,6 +127,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
     public static <T> KernelFunction<T> create(
         Method method,
         Object target,
+        @Nullable
+        String pluginName,
         @Nullable
         String functionName,
         @Nullable
@@ -149,6 +155,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
         // unchecked cast
         return (KernelFunction<T>) new KernelFunctionFromMethod<>(
             methodDetails.getFunction(),
+            pluginName,
             methodDetails.getName(),
             description,
             parameters,
@@ -598,6 +605,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
         private Method method;
         private Object target;
         @Nullable
+        private String pluginName;
+        @Nullable
         private String functionName;
         @Nullable
         private String description;
@@ -613,6 +622,11 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
 
         public Builder<T> withTarget(Object target) {
             this.target = target;
+            return this;
+        }
+
+        public Builder<T> withPluginName(String pluginName) {
+            this.pluginName = pluginName;
             return this;
         }
 
@@ -651,6 +665,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
             return KernelFunctionFromMethod.create(
                 method,
                 target,
+                pluginName,
                 functionName,
                 description,
                 parameters,

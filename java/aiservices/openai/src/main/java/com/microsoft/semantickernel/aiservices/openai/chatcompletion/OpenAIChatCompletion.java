@@ -14,21 +14,16 @@ import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.ai.openai.models.ChatRequestToolMessage;
 import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
-import com.azure.ai.openai.models.FunctionCall;
-import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.OpenAIRequestSettings;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatMessageContent;
-import com.microsoft.semantickernel.chatcompletion.StreamingChatMessageContent;
 import com.microsoft.semantickernel.exceptions.AIException;
-import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
@@ -40,21 +35,18 @@ import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class OpenAIChatCompletion implements ChatCompletionService {
@@ -99,12 +91,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable InvocationContext invocationContext) {
 
         List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
-        List<FunctionDefinition> functions =
-            kernel != null ? getFunctions(kernel) : Collections.emptyList();
-
         return internalChatMessageContentsAsync(
             chatRequestMessages,
-            functions,
+            kernel,
             invocationContext);
     }
 
@@ -117,200 +106,185 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         return internalChatMessageContentsAsync(
             parsedPrompt.getChatRequestMessages(),
-            parsedPrompt.getFunctions(),
+            kernel,
             invocationContext);
     }
 
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
-        List<ChatRequestMessage> chatRequestMessages,
-        @Nullable
-        List<FunctionDefinition> functions,
+        List<ChatRequestMessage> messages,
+        Kernel kernel,
         @Nullable InvocationContext invocationContext) {
 
-        ChatCompletionsOptions options = getCompletionsOptions(this, chatRequestMessages, functions,
-            invocationContext);
-        Mono<List<ChatMessageContent>> results =
-            internalChatMessageContentsAsync(options, invocationContext);
+        List<OpenAIFunction> functions = new ArrayList<>();
+        if (kernel != null) {
+            kernel.getPlugins().forEach(plugin ->
+                    plugin.getFunctions().forEach((name, function) ->
+                            functions.add(new OpenAIFunction(function.getMetadata(), plugin.getName()))
+                    )
+            );
+        }
 
-        return results
-            .flatMap(list -> {
-                boolean makeSecondCall = false;
-                for (ChatMessageContent messageContent : list) {
-                    if (messageContent.getAuthorRole() == AuthorRole.TOOL) {
-                        makeSecondCall = true;
-                        String content = messageContent.getContent();
-                        String id = messageContent.getModelId();
-                        ChatRequestToolMessage toolMessage = new ChatRequestToolMessage(content,
-                            id);
-                        chatRequestMessages.add(toolMessage);
-                    }
-                }
-                if (makeSecondCall) {
-                    return internalChatMessageContentsAsync(options, invocationContext);
-                }
-                return Mono.just(list);
-            });
+        // Create copy to avoid reactor exceptions when updating request messages internally
+        return internalChatMessageContentsAsync(
+                new ArrayList<>(messages),
+                kernel,
+                functions,
+                invocationContext,
+                Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
+                        invocationContext != null && invocationContext.getToolCallBehavior() != null
+                                ? invocationContext.getToolCallBehavior().maximumAutoInvokeAttempts() : 0)
+        );
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
-        ChatCompletionsOptions options,
-        @Nullable InvocationContext invocationContext) {
+        List<ChatRequestMessage> messages,
+        Kernel kernel,
+        List<OpenAIFunction> functions,
+        InvocationContext invocationContext,
+        int autoInvokeAttempts) {
 
         KernelHooks kernelHooks =
-            invocationContext != null && invocationContext.getKernelHooks() != null
-                ? invocationContext.getKernelHooks()
-                : new KernelHooks();
+                invocationContext != null && invocationContext.getKernelHooks() != null
+                        ? invocationContext.getKernelHooks()
+                        : new KernelHooks();
 
-        options = kernelHooks
-            .executeHooks(new PreChatCompletionEvent(options))
-            .getOptions();
+        ChatCompletionsOptions options = kernelHooks
+                .executeHooks(new PreChatCompletionEvent(
+                        getCompletionsOptions(this, messages,
+                                functions, invocationContext, autoInvokeAttempts)
+                ))
+                .getOptions();
 
-        return client
-            .getChatCompletionsWithResponse(getModelId(), options,
-                OpenAIRequestSettings.getRequestOptions())
-            .flatMap(completionsResult -> {
-                if (completionsResult.getStatusCode() >= 400) {
-                    return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
-                        "Request failed: " + completionsResult.getStatusCode()));
-                }
-                return Mono.just(completionsResult.getValue());
-            })
-            .filter(choices -> choices.getChoices() != null && !choices.getChoices().isEmpty())
-            .map(this::accumulateResponses)
-            .map(responses ->
-                responses.stream()
-                    .map(ChatResponseCollector::toChatMessageContent)
-                    .collect(Collectors.toList())
-            );
+        Mono<ChatCompletions> result = client.getChatCompletions(getModelId(), options);
 
+        return result.flatMap(completions -> {
+            List<ChatResponseMessage> responseMessages = completions
+                .getChoices()
+                .stream()
+                .map(ChatChoice::getMessage)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+            // Just return the result:
+            // If we don't want to attempt to invoke any functions
+            // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
+            if (autoInvokeAttempts == 0 || responseMessages.size() != 1) {
+                return getChatMessageContentsAsync(completions);
+            }
+            // Or if there are no tool calls to be done
+            ChatResponseMessage response = responseMessages.get(0);
+            List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
+            if (toolCalls == null || toolCalls.isEmpty()) {
+                return getChatMessageContentsAsync(completions);
+            }
+
+            ChatRequestAssistantMessage requestMessage = new ChatRequestAssistantMessage(
+                response.getContent());
+            requestMessage.setToolCalls(toolCalls);
+
+            // Add the original assistant message to the chat options; this is required for the service
+            // to understand the tool call responses
+            messages.add(requestMessage);
+
+            return Flux
+                .fromIterable(toolCalls)
+                .reduce(
+                    Mono.just(options),
+                    (opts, toolCall) -> {
+                        if (toolCall instanceof ChatCompletionsFunctionToolCall) {
+                            return opts
+                                .flatMap(op -> {
+                                    // OpenAI only supports function tool call at the moment
+                                    ChatCompletionsFunctionToolCall functionToolCall = (ChatCompletionsFunctionToolCall) toolCall;
+                                    return invokeFunctionTool(kernel, functionToolCall)
+                                        .map(functionResult -> {
+                                            // Add chat request tool message to the chat options
+                                            ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
+                                                functionResult.getResult(),
+                                                functionToolCall.getId());
+                                            messages.add(requestToolMessage);
+                                            return op;
+                                        });
+                                });
+                        }
+                        return opts;
+                    })
+                .flatMap(op -> op)
+                .flatMap(
+                    op -> internalChatMessageContentsAsync(messages, kernel, functions, invocationContext, autoInvokeAttempts - 1));
+        });
     }
 
+    private Mono<FunctionResult<String>> invokeFunctionTool(Kernel kernel,
+        ChatCompletionsFunctionToolCall toolCall) {
+        // Split the full name of a function into plugin and function name
+        String name = toolCall.getFunction().getName();
+        String[] parts = name.split(OpenAIFunction.getNameSeparator());
+        String pluginName = parts.length > 1 ? parts[0] : "";
+        String fnName = parts.length > 1 ? parts[1] : parts[0];
 
-    // non-streaming case
-    private List<ChatResponseCollector> accumulateResponses(ChatCompletions chatCompletions) {
-        List<ChatResponseCollector> collectors = new ArrayList<>();
-        chatCompletions
-            .getChoices()
-            .stream()
-            .map(ChatChoice::getMessage)
-            .filter(Objects::nonNull)
-            .map(accumulateResponse(chatCompletions))
-            .forEach(collectors::add);
-        return collectors;
+        KernelFunction<?> function = kernel.getFunction(pluginName, fnName);
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonToolCallArguments = mapper.readTree(toolCall.getFunction().getArguments());
+
+            jsonToolCallArguments.fields().forEachRemaining(
+                entry -> arguments.put(entry.getKey(),
+                    ContextVariable.of(entry.getValue().asText())));
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to parse json", e);
+            return Mono.empty();
+        }
+
+        return function
+                .invokeAsync(kernel)
+                .withArguments(arguments)
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
+                        String.class));
     }
 
-
-    private Function<ChatResponseMessage, ChatResponseCollector> accumulateResponse(
+    private Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
         ChatCompletions completions) {
-
-        FunctionResultMetadata metadata = FunctionResultMetadata.build(
+        FunctionResultMetadata completionMetadata = FunctionResultMetadata.build(
             completions.getId(),
             completions.getUsage(),
             completions.getCreatedAt());
 
-        return response -> {
-            ChatResponseCollector collector = new ChatResponseCollector(
-                getModelId(),
+        List<ChatResponseMessage> responseMessages = completions
+            .getChoices()
+            .stream()
+            .map(ChatChoice::getMessage)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+        return Flux.fromIterable(responseMessages)
+            .map(response -> new ChatMessageContent(
+                AuthorRole.ASSISTANT,
+                response.getContent(),
+                this.getModelId(),
                 null,
                 null,
-                metadata
-            );
-
-            // collector is null for the non-streaming case and not null for the streaming case
-            if (response.getContent() != null) {
-                collector.append(AuthorRole.ASSISTANT, response.getContent());
-            } else if (response.getToolCalls() != null) {
-                List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
-                // TODO: This assumes one tool call per response, which is _definitely_ a bad assumption.
-                for (ChatCompletionsToolCall toolCall : toolCalls) {
-                    if (toolCall instanceof ChatCompletionsFunctionToolCall) {
-                        collector.append(AuthorRole.TOOL,
-                            (ChatCompletionsFunctionToolCall) toolCall);
-                    }
-                }
-            }
-            return collector;
-        };
-    }
-
-    /*
-     * Given a json string, invoke the tool specified in the json string.
-     * At this time, the only tool we have is 'function'.
-     * The json string should be of the form:
-     * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
-     * where 'name' is <plugin name '-' function name>.
-     */
-    @SuppressWarnings("UnusedMethod")
-    private Mono<StreamingChatMessageContent<?>> invokeTool(Kernel kernel, String json) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(json);
-            String id = jsonNode.get("id").asText("");
-            jsonNode = jsonNode.get("function");
-            if (jsonNode != null) {
-                // function is the only tool we have right now.
-                Mono<FunctionResult<String>> result = invokeFunction(kernel, jsonNode);
-                if (result != null) {
-                    return result.map(contextVariable -> {
-                        String content = contextVariable.getResult();
-                        if (content == null) {
-                            throw new SKException("Function result must not be null");
-                        }
-                        return new StreamingChatMessageContent<>(AuthorRole.TOOL, content, id);
-                    });
-                }
-            }
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to parse json", e);
-        }
-        return Mono.empty();
-    }
-
-    /*
-     * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
-     */
-    @SuppressWarnings("StringSplitter")
-    private Mono<FunctionResult<String>> invokeFunction(Kernel kernel, JsonNode jsonNode) {
-        String name = jsonNode.get("name").asText();
-        String[] parts = name.split("-");
-        String pluginName = parts.length > 0 ? parts[0] : "";
-        String fnName = parts.length > 1 ? parts[1] : "";
-        JsonNode parameters = jsonNode.get("parameters");
-        KernelFunction<?> kernelFunction = kernel.getFunction(pluginName, fnName);
-        if (kernelFunction == null) {
-            return Mono.empty();
-        }
-
-        KernelFunctionArguments arguments = null;
-        if (parameters != null) {
-            Map<String, ContextVariable<?>> variables = new HashMap<>();
-            parameters.fields().forEachRemaining(entry -> {
-                String paramName = entry.getKey();
-                String paramValue = entry.getValue().asText();
-                ContextVariable<?> contextVariable = ContextVariable.of(paramValue);
-                variables.put(paramName, contextVariable);
-            });
-            arguments = KernelFunctionArguments.builder().withVariables(variables).build();
-        }
-        ContextVariableType<String> variableType = ContextVariableTypes.getGlobalVariableTypeForClass(
-            String.class);
-        return kernelFunction
-            .invokeAsync(kernel)
-            .withArguments(arguments)
-            .withResultType(variableType);
+                completionMetadata)).collectList();
     }
 
     private static ChatCompletionsOptions getCompletionsOptions(
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
         @Nullable
-        List<FunctionDefinition> functions,
+        List<OpenAIFunction> functions,
         @Nullable
-        InvocationContext invocationContext) {
+        InvocationContext invocationContext,
+        int autoInvokeAttempts) {
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
+
+        if (invocationContext != null && invocationContext.getToolCallBehavior() != null) {
+            configureToolCallBehaviorOptions(options, invocationContext.getToolCallBehavior(), functions, autoInvokeAttempts);
+        }
 
         PromptExecutionSettings promptExecutionSettings = invocationContext != null
             ? invocationContext.getPromptExecutionSettings()
@@ -325,17 +299,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
                 String.format("Results per prompt must be in range between 1 and %d, inclusive.",
                     MAX_RESULTS_PER_PROMPT));
-        }
-
-        ToolCallBehavior toolCallBehavior = invocationContext != null
-            ? invocationContext.getToolCallBehavior()
-            : null;
-        List<ChatCompletionsToolDefinition> toolDefinitions =
-            chatCompletionsToolDefinitions(toolCallBehavior, functions);
-
-        if (toolDefinitions != null && !toolDefinitions.isEmpty()) {
-            options.setTools(toolDefinitions);
-            // TODO: options.setToolChoices(toolChoices);
         }
 
         Map<String, Integer> logit = null;
@@ -369,33 +332,67 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         return options;
     }
 
-    @SuppressWarnings("StringSplitter")
-    private static List<ChatCompletionsToolDefinition> chatCompletionsToolDefinitions(
-        @Nullable
-        ToolCallBehavior toolCallBehavior,
-        @Nullable
-        List<FunctionDefinition> functions) {
+    private static void configureToolCallBehaviorOptions(
+            ChatCompletionsOptions options,
+            @Nullable
+            ToolCallBehavior toolCallBehavior,
+            @Nullable
+            List<OpenAIFunction> functions,
+            int autoInvokeAttempts) {
 
         if (functions == null || functions.isEmpty()) {
-            return Collections.emptyList();
+            return;
         }
 
-        if (toolCallBehavior == null || !(toolCallBehavior.kernelFunctionsEnabled()
-            || toolCallBehavior.autoInvokeEnabled())) {
-            // If tool calls are not explicitly enabled, then we don't need to send any tool definitions
-            return Collections.emptyList();
+        if (toolCallBehavior == null || autoInvokeAttempts == 0) {
+            // if auto-invoked is not enabled, then we don't need to send any tool definitions
+            return;
         }
 
-        return functions.stream()
+        // If a specific function is required to be called
+        KernelFunction<?> toolChoice = toolCallBehavior.functionRequired();
+        if (toolChoice != null) {
+            List<ChatCompletionsToolDefinition> toolDefinitions = new ArrayList<>();
+            toolDefinitions.add(new ChatCompletionsFunctionToolDefinition(
+                    OpenAIFunction.toFunctionDefinition(
+                        toolCallBehavior.functionRequired().getMetadata(),
+                        toolCallBehavior.functionRequired().getPluginName()
+                    ))
+            );
+
+            options.setTools(toolDefinitions);
+            try {
+                String json = String.format("{\"type\":\"function\",\"function\":{\"name\":\"%s%s%s\"}}",
+                        toolChoice.getPluginName(),
+                        OpenAIFunction.getNameSeparator(),
+                        toolChoice.getName()
+                );
+                options.setToolChoice(BinaryData.fromObject(new ObjectMapper().readTree(json)));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+
+        List<ChatCompletionsToolDefinition> toolDefinitions = functions.stream()
             .filter(function -> {
-                String[] parts = function.getName().split("-");
-                String pluginName = parts.length > 0 ? parts[0] : "";
-                String fnName = parts.length > 1 ? parts[1] : "";
-                return toolCallBehavior.functionEnabled(pluginName, fnName);
+                // if kernel functions are enabled we send all tool definitions
+                if (toolCallBehavior.kernelFunctionsEnabled()) {
+                    return true;
+                }
+                // otherwise, check if the function is enabled
+                return toolCallBehavior.functionEnabled(function.getPluginName(), function.getName());
             })
+            .map(OpenAIFunction::getFunctionDefinition)
             .map(ChatCompletionsFunctionToolDefinition::new)
             .collect(Collectors.toList());
 
+        if (toolDefinitions.isEmpty()) {
+            return;
+        }
+
+        options.setTools(toolDefinitions);
+        options.setToolChoice(BinaryData.fromString("auto"));
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(ChatHistory chatHistory) {
@@ -407,9 +404,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .map(message -> {
                 AuthorRole authorRole = message.getAuthorRole();
                 String content = message.getContent();
-                if (content == null) {
-                    throw new SKException("ChatMessageContent content must not be null");
-                }
                 return getChatRequestMessage(authorRole, content);
             })
             .collect(Collectors.toList());
@@ -435,241 +429,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
 
     }
-
-    private static List<FunctionDefinition> getFunctions(Kernel kernel) {
-        List<FunctionDefinition> functions = new ArrayList<>();
-        kernel.getPlugins().iterator().forEachRemaining(plugin -> {
-            plugin.iterator().forEachRemaining(function -> {
-                FunctionDefinition functionDefinition = toFunctionDefinition(function);
-                functions.add(functionDefinition);
-            });
-        });
-        return functions;
-    }
-
-    private static FunctionDefinition toFunctionDefinition(KernelFunction function) {
-        String name = String.format("%s-%s", function.getPluginName(), function.getName());
-        FunctionDefinition functionDefinition = new FunctionDefinition(name);
-        functionDefinition.setDescription(function.getDescription());
-        // Example JSON Schema:
-        // {
-        //    "type": "function",
-        //    "function": {
-        //        "name": "get_current_weather",
-        //        "description": "Get the current weather in a given location",
-        //        "parameters": {
-        //            "type": "object",
-        //            "properties": {
-        //                "location": {
-        //                    "type": "string",
-        //                    "description": "The city and state, e.g. San Francisco, CA",
-        //                },
-        //               "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
-        //            },
-        //            "required": ["location"],
-        //        },
-        //    },
-        //}
-        List<KernelParameterMetadata<?>> parameters = function.getMetadata().getParameters();
-        if (!parameters.isEmpty()) {
-            List<String> requiredParmeters = new ArrayList<>();
-            StringBuilder sb = new StringBuilder(
-                "{\"type\": \"object\", \"properties\": {");
-            parameters.forEach(parameter -> {
-                // make "param": {"type": "string", "description": "desc"},
-                sb.append(
-                    String.format("\"%s\": %s,", parameter.getName(), parameter.getDescription()));
-                if (parameter.isRequired()) {
-                    requiredParmeters.add(parameter.getName());
-                }
-            });
-            // strip off trailing comma and close the properties object
-            sb.replace(sb.length() - 1, sb.length(), "}");
-            if (!requiredParmeters.isEmpty()) {
-                sb.append(", \"required\": [");
-                requiredParmeters.forEach(it -> {
-                    sb.append(String.format("\"%s\",", it));
-                });
-                // strip off trailing comma and close the required array
-                sb.replace(sb.length() - 1, sb.length(), "]");
-            }
-            // close the object
-            sb.append("}");
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode jsonNode = objectMapper.readTree(sb.toString());
-                BinaryData binaryData = BinaryData.fromObject(jsonNode);
-                functionDefinition.setParameters(binaryData);
-            } catch (JsonProcessingException e) {
-                LOGGER.error("Failed to parse json", e);
-            }
-        }
-        return functionDefinition;
-    }
-
-    private interface ContentBuffer<T> {
-
-        void append(T content);
-
-        ChatMessageContent toChatMessageContent();
-    }
-
-    private static class AssistantContentBuffer implements ContentBuffer<String> {
-
-        private final StringBuilder sb = new StringBuilder();
-        @Nullable
-        private final String modelId;
-        @Nullable
-        private final String innerContent;
-        @Nullable
-        private final Charset encoding;
-        @Nullable
-        private final FunctionResultMetadata metadata;
-
-        private AssistantContentBuffer(@Nullable String modelId, @Nullable String innerContent,
-            @Nullable Charset encoding, @Nullable FunctionResultMetadata metadata) {
-            this.modelId = modelId;
-            this.innerContent = innerContent;
-            this.encoding = encoding;
-            this.metadata = metadata;
-        }
-
-
-        @Override
-        public void append(String content) {
-            sb.append(content);
-        }
-
-        @Override
-        public ChatMessageContent toChatMessageContent() {
-            return new ChatMessageContent(
-                AuthorRole.ASSISTANT,
-                sb.toString(),
-                modelId,
-                innerContent,
-                encoding,
-                metadata
-            );
-        }
-    }
-
-    private static class ToolContentBuffer implements
-        ContentBuffer<ChatCompletionsFunctionToolCall> {
-
-        @Nullable
-        private String id = null;
-
-        @Nullable
-        private String name = null;
-        private List<String> arguments = new ArrayList<>();
-
-        @Override
-        public void append(ChatCompletionsFunctionToolCall toolCall) {
-            FunctionCall function = toolCall.getFunction();
-            String toolCallId = toolCall.getId();
-            String fnName = function.getName();
-            String fnArguments = function.getArguments();
-            if (this.id == null && toolCallId != null && !toolCallId.isEmpty()) {
-                this.id = toolCallId;
-            }
-            if (this.name == null && fnName != null && !fnName.isEmpty()) {
-                this.name = fnName;
-            }
-            if (fnArguments != null && !fnArguments.isEmpty()) {
-                this.arguments.add(fnArguments);
-            }
-        }
-
-        @Override
-        public ChatMessageContent toChatMessageContent() {
-            return new ChatMessageContent(AuthorRole.TOOL, toJsonString());
-        }
-
-        private String toJsonString() {
-            StringBuilder sb = new StringBuilder(
-                String.format("{\"type\":\"function\", \"id\":\"%s\", \"function\": ", id));
-            sb.append(String.format("{\"name\":\"%s\", \"parameters\": ", name));
-            // when concatentated, args should be valid json
-            for (String argument : arguments) {
-                sb.append(argument);
-            }
-            // close off function, and type
-            sb.append("}}");
-            assert isBalanced(sb.toString());
-            return sb.toString();
-        }
-
-        // used to check that the json string is balanced
-        private boolean isBalanced(String str) {
-            int openParens = 0;
-            int closeParens = 0;
-            boolean inString = false;
-            for (int i = 0; i < str.length(); i++) {
-                char c = str.charAt(i);
-                if (!inString && c == '(') {
-                    openParens++;
-                } else if (!inString && c == ')') {
-                    closeParens++;
-                } else if (c == '"') {
-                    inString = !inString;
-                }
-            }
-            return openParens == closeParens;
-        }
-    }
-
-    // For streaming,
-    private static class ChatResponseCollector {
-
-        @Nullable
-        private final String modelId;
-        @Nullable
-        private final String innerContent;
-        @Nullable
-        private final Charset encoding;
-        @Nullable
-        private final FunctionResultMetadata metadata;
-
-        private final Map<AuthorRole, ContentBuffer<?>> roleToContent = new HashMap<>();
-
-        private ChatResponseCollector(
-            @Nullable String modelId,
-            @Nullable String innerContent,
-            @Nullable Charset encoding,
-            @Nullable FunctionResultMetadata metadata) {
-            this.modelId = modelId;
-            this.innerContent = innerContent;
-            this.encoding = encoding;
-            this.metadata = metadata;
-        }
-
-        private ContentBuffer<?> collectorFor(AuthorRole role) {
-            return roleToContent.computeIfAbsent(role, k -> {
-                if (k == AuthorRole.TOOL) {
-                    return new ToolContentBuffer();
-                }
-                return new AssistantContentBuffer(
-                    modelId,
-                    innerContent,
-                    encoding,
-                    metadata
-                );
-            });
-        }
-
-        @SuppressWarnings("unchecked")
-        private <T> void append(AuthorRole role, T content) {
-            ContentBuffer<T> contentBuffer = (ContentBuffer<T>) collectorFor(role);
-            contentBuffer.append(content);
-        }
-
-        private ChatMessageContent toChatMessageContent() {
-            assert roleToContent.size() == 1;
-            ContentBuffer<?> contentBuffer = roleToContent.values().iterator().next();
-            return contentBuffer.toChatMessageContent();
-        }
-    }
-
 
     public static class Builder extends ChatCompletionService.Builder {
 
