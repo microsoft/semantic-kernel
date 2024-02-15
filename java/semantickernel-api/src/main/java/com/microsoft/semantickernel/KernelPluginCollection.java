@@ -1,8 +1,8 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
-import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
+import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import java.util.Collection;
 import java.util.Collections;

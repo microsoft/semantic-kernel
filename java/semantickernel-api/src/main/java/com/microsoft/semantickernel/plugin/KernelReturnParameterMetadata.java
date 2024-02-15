@@ -1,9 +1,11 @@
 package com.microsoft.semantickernel.plugin;
 
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+
 import javax.annotation.Nullable;
 
 /**
- * Metadata for a return parameter of a {@link com.microsoft.semantickernel.orchestration.KernelFunction}.
+ * Metadata for a return parameter of a {@link KernelFunction}.
  *
  * @param <T> the type of the return parameter
  */

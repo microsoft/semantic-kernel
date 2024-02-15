@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import javax.annotation.Nullable;
 
 /**

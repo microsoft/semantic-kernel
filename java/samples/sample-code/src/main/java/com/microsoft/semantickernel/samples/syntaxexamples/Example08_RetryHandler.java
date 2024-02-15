@@ -7,9 +7,9 @@ import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.time.Duration;
 
 public class Example08_RetryHandler {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.plugin;
 
-import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

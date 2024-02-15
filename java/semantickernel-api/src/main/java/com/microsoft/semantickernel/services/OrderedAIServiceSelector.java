@@ -1,11 +1,11 @@
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.implementation.Verify;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

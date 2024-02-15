@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 

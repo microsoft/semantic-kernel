@@ -4,8 +4,8 @@ package com.microsoft.semantickernel.plugins.web;
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector.WebPage;
 import com.microsoft.semantickernel.exceptions.SKException;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import java.util.stream.Collectors;
 import reactor.core.publisher.Mono;
 

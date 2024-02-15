@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import javax.annotation.Nullable;
 
 /**
- * Metadata for an input variable of a {@link com.microsoft.semantickernel.orchestration.KernelFunction}.
+ * Metadata for an input variable of a {@link KernelFunction}.
  */
 public class InputVariable {
 
