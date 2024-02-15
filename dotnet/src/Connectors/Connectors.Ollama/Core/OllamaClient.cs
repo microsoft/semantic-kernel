@@ -69,6 +69,8 @@ internal sealed class OllamaClient : IOllamaClient
     {
         var endpoint = this.EndpointProvider.StreamTextGenerationEndpoint;
         var request = this.CreateTextRequest(prompt, executionSettings);
+        request.Stream = true;
+
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
@@ -111,6 +113,7 @@ internal sealed class OllamaClient : IOllamaClient
     {
         var endpoint = this.EndpointProvider.StreamChatCompletionEndpoint;
         var request = this.CreateChatRequest(chatHistory, executionSettings);
+        request.Stream = true;
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)

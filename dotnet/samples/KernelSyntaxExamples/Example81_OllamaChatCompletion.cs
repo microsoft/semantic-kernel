@@ -2,12 +2,13 @@
 
 using System;
 using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Xunit;
 using Xunit.Abstractions;
+
+namespace Examples;
 
 public class Example81_OllamaChatCompletion : BaseTest
 {
