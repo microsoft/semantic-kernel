@@ -9,15 +9,11 @@ import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableT
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.function.BiConsumer;
-
 import javax.annotation.Nullable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;

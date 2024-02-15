@@ -1,14 +1,13 @@
 package com.microsoft.semantickernel.implementation.tokenizer.blocks;
 
-import javax.annotation.Nullable;
+import static com.microsoft.semantickernel.implementation.tokenizer.blocks.BlockTypes.NamedArg;
 
 import com.microsoft.semantickernel.exceptions.SKException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.microsoft.semantickernel.implementation.Verify;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-import static com.microsoft.semantickernel.implementation.tokenizer.blocks.BlockTypes.NamedArg;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NamedArgBlock extends Block implements TextRendering {
 

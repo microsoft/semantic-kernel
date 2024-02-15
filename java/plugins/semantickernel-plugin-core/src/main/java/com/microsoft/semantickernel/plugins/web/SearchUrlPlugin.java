@@ -1,10 +1,9 @@
 package com.microsoft.semantickernel.plugins.web;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 public class SearchUrlPlugin {
     /*

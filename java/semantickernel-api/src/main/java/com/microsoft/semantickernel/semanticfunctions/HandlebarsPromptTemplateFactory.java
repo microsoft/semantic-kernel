@@ -1,9 +1,7 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
-
 import java.util.Locale;
-
 import reactor.util.annotation.NonNull;
 
 /**

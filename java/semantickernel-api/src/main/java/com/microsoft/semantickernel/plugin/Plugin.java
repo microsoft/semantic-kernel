@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.plugin;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

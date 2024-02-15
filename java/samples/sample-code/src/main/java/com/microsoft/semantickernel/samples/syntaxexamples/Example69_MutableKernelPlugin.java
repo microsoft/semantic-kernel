@@ -27,8 +27,8 @@ public class Example69_MutableKernelPlugin {
         KernelPlugin plugin = new KernelPlugin("Plugin", "Mutable plugin", null);
         plugin.addFunction(KernelFunction.createFromMethod(
             Time.class.getMethod("date"), new Time())
-                .withFunctionName("dateFunction")
-                .build());
+            .withFunctionName("dateFunction")
+            .build());
 
         Kernel kernel = Kernel.builder().build();
         kernel.addPlugin(plugin);

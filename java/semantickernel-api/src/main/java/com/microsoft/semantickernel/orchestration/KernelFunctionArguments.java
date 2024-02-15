@@ -8,14 +8,11 @@ import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensiti
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
-
 import reactor.util.annotation.NonNull;
 
 /**

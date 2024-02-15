@@ -3,11 +3,9 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod.ImplementationFunc;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 /**

@@ -54,15 +54,10 @@ public class ChatMessageContent<T> extends KernelContent<T> {
     public ChatMessageContent(
         AuthorRole authorRole,
         String content,
-        @Nullable
-        String modelId,
-        @Nullable
-        T innerContent,
-        @Nullable
-        Charset encoding,
-        @Nullable
-        FunctionResultMetadata metadata
-    ) {
+        @Nullable String modelId,
+        @Nullable T innerContent,
+        @Nullable Charset encoding,
+        @Nullable FunctionResultMetadata metadata) {
         super(innerContent, modelId, metadata);
         this.authorRole = authorRole;
         this.content = content;

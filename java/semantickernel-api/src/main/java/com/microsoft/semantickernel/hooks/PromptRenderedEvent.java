@@ -2,10 +2,8 @@ package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-
-import javax.annotation.Nullable;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import javax.annotation.Nullable;
 
 /**
  * Represents a KernelHookEvent that is raised after a prompt is rendered.

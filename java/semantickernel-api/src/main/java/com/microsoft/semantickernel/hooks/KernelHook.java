@@ -2,7 +2,6 @@ package com.microsoft.semantickernel.hooks;
 
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatRequestMessage;
-
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;

@@ -3,6 +3,12 @@ package com.microsoft.semantickernel.implementation.tokenizer;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.implementation.Verify;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.Block;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.BlockTypes;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.CodeRendering;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.NamedArgBlock;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.TextRendering;
+import com.microsoft.semantickernel.implementation.tokenizer.blocks.VarBlock;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
@@ -10,22 +16,13 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.Block;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.BlockTypes;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.CodeRendering;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.NamedArgBlock;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.TextRendering;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.VarBlock;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

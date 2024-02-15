@@ -116,23 +116,21 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         List<OpenAIFunction> functions = new ArrayList<>();
         if (kernel != null) {
-            kernel.getPlugins().forEach(plugin ->
-                    plugin.getFunctions().forEach((name, function) ->
-                            functions.add(new OpenAIFunction(function.getMetadata(), plugin.getName()))
-                    )
-            );
+            kernel.getPlugins()
+                .forEach(plugin -> plugin.getFunctions().forEach((name, function) -> functions
+                    .add(new OpenAIFunction(function.getMetadata(), plugin.getName()))));
         }
 
         // Create copy to avoid reactor exceptions when updating request messages internally
         return internalChatMessageContentsAsync(
-                new ArrayList<>(messages),
-                kernel,
-                functions,
-                invocationContext,
-                Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
-                        invocationContext != null && invocationContext.getToolCallBehavior() != null
-                                ? invocationContext.getToolCallBehavior().maximumAutoInvokeAttempts() : 0)
-        );
+            new ArrayList<>(messages),
+            kernel,
+            functions,
+            invocationContext,
+            Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
+                invocationContext != null && invocationContext.getToolCallBehavior() != null
+                    ? invocationContext.getToolCallBehavior().maximumAutoInvokeAttempts()
+                    : 0));
     }
 
     private Mono<List<ChatMessageContent>> internalChatMessageContentsAsync(
@@ -142,17 +140,16 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         InvocationContext invocationContext,
         int autoInvokeAttempts) {
 
-        KernelHooks kernelHooks =
-                invocationContext != null && invocationContext.getKernelHooks() != null
-                        ? invocationContext.getKernelHooks()
-                        : new KernelHooks();
+        KernelHooks kernelHooks = invocationContext != null
+            && invocationContext.getKernelHooks() != null
+                ? invocationContext.getKernelHooks()
+                : new KernelHooks();
 
         ChatCompletionsOptions options = kernelHooks
-                .executeHooks(new PreChatCompletionEvent(
-                        getCompletionsOptions(this, messages,
-                                functions, invocationContext, autoInvokeAttempts)
-                ))
-                .getOptions();
+            .executeHooks(new PreChatCompletionEvent(
+                getCompletionsOptions(this, messages,
+                    functions, invocationContext, autoInvokeAttempts)))
+            .getOptions();
 
         Mono<ChatCompletions> result = client.getChatCompletions(getModelId(), options);
 
@@ -210,7 +207,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     })
                 .flatMap(op -> op)
                 .flatMap(
-                    op -> internalChatMessageContentsAsync(messages, kernel, functions, invocationContext, autoInvokeAttempts - 1));
+                    op -> internalChatMessageContentsAsync(messages, kernel, functions,
+                        invocationContext, autoInvokeAttempts - 1));
         });
     }
 
@@ -238,10 +236,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
 
         return function
-                .invokeAsync(kernel)
-                .withArguments(arguments)
-                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
-                        String.class));
+            .invokeAsync(kernel)
+            .withArguments(arguments)
+            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
+                String.class));
     }
 
     private Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
@@ -265,23 +263,23 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 this.getModelId(),
                 null,
                 null,
-                completionMetadata)).collectList();
+                completionMetadata))
+            .collectList();
     }
 
     private static ChatCompletionsOptions getCompletionsOptions(
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
-        @Nullable
-        List<OpenAIFunction> functions,
-        @Nullable
-        InvocationContext invocationContext,
+        @Nullable List<OpenAIFunction> functions,
+        @Nullable InvocationContext invocationContext,
         int autoInvokeAttempts) {
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
 
         if (invocationContext != null && invocationContext.getToolCallBehavior() != null) {
-            configureToolCallBehaviorOptions(options, invocationContext.getToolCallBehavior(), functions, autoInvokeAttempts);
+            configureToolCallBehaviorOptions(options, invocationContext.getToolCallBehavior(),
+                functions, autoInvokeAttempts);
         }
 
         PromptExecutionSettings promptExecutionSettings = invocationContext != null
@@ -330,12 +328,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     private static void configureToolCallBehaviorOptions(
-            ChatCompletionsOptions options,
-            @Nullable
-            ToolCallBehavior toolCallBehavior,
-            @Nullable
-            List<OpenAIFunction> functions,
-            int autoInvokeAttempts) {
+        ChatCompletionsOptions options,
+        @Nullable ToolCallBehavior toolCallBehavior,
+        @Nullable List<OpenAIFunction> functions,
+        int autoInvokeAttempts) {
 
         if (functions == null || functions.isEmpty()) {
             return;
@@ -351,19 +347,17 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         if (toolChoice != null) {
             List<ChatCompletionsToolDefinition> toolDefinitions = new ArrayList<>();
             toolDefinitions.add(new ChatCompletionsFunctionToolDefinition(
-                    OpenAIFunction.toFunctionDefinition(
-                        toolCallBehavior.functionRequired().getMetadata(),
-                        toolCallBehavior.functionRequired().getPluginName()
-                    ))
-            );
+                OpenAIFunction.toFunctionDefinition(
+                    toolCallBehavior.functionRequired().getMetadata(),
+                    toolCallBehavior.functionRequired().getPluginName())));
 
             options.setTools(toolDefinitions);
             try {
-                String json = String.format("{\"type\":\"function\",\"function\":{\"name\":\"%s%s%s\"}}",
-                        toolChoice.getPluginName(),
-                        OpenAIFunction.getNameSeparator(),
-                        toolChoice.getName()
-                );
+                String json = String.format(
+                    "{\"type\":\"function\",\"function\":{\"name\":\"%s%s%s\"}}",
+                    toolChoice.getPluginName(),
+                    OpenAIFunction.getNameSeparator(),
+                    toolChoice.getName());
                 options.setToolChoice(BinaryData.fromObject(new ObjectMapper().readTree(json)));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
@@ -378,7 +372,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     return true;
                 }
                 // otherwise, check if the function is enabled
-                return toolCallBehavior.functionEnabled(function.getPluginName(), function.getName());
+                return toolCallBehavior.functionEnabled(function.getPluginName(),
+                    function.getName());
             })
             .map(OpenAIFunction::getFunctionDefinition)
             .map(ChatCompletionsFunctionToolDefinition::new)

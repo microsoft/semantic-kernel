@@ -1,7 +1,6 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.exceptions.SKException;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -127,7 +126,8 @@ public class ToolCallBehavior {
      */
     public ToolCallBehavior maximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
         if (maximumAutoInvokeAttempts < 0) {
-            throw new SKException("The maximum auto-invoke attempts should be greater than or equal to zero.");
+            throw new SKException(
+                "The maximum auto-invoke attempts should be greater than or equal to zero.");
         }
         if (requiredFunction == null) {
             this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;

@@ -60,7 +60,6 @@ public class KernelHooks {
         return new UnmodifiableKernelHooks(this);
     }
 
-
     /**
      * Gets the hooks in this collection.
      *

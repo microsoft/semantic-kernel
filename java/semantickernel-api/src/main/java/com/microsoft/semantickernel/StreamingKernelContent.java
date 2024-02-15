@@ -1,9 +1,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 /**

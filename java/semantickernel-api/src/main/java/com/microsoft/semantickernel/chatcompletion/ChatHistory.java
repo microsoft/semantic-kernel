@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.chatcompletion;
 
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
-
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;

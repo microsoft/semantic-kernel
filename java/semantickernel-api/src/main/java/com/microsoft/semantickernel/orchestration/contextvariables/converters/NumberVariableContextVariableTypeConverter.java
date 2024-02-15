@@ -1,10 +1,9 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
 
 /**

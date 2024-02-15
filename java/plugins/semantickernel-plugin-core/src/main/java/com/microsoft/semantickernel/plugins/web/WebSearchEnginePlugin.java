@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.plugins.web;
 
-import java.util.stream.Collectors;
-
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector.WebPage;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
-
+import java.util.stream.Collectors;
 import reactor.core.publisher.Mono;
 
 /// <summary>

@@ -7,10 +7,8 @@ import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
-
-import javax.annotation.Nullable;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import javax.annotation.Nullable;
 
 /**
  * Context passed to a Kernel or KernelFunction invoke. This class is primarily for

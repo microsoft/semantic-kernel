@@ -1,8 +1,9 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
+import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
+
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
 
 /**
  * A {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter} 

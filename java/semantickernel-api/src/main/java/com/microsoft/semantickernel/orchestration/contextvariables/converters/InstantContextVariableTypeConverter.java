@@ -1,7 +1,6 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-
 import java.time.Instant;
 import java.time.OffsetDateTime;
 

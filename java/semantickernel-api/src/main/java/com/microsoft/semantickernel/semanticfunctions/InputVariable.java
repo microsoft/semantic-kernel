@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.exceptions.SKException;
-
 import javax.annotation.Nullable;
 
 /**

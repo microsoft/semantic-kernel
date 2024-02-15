@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.implementation.tokenizer.blocks;
 
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
-
 import javax.annotation.Nullable;
 
 /**

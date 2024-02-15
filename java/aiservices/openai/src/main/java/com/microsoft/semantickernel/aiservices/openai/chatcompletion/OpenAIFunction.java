@@ -1,6 +1,5 @@
 package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
-
 import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,6 +18,7 @@ class OpenAIFunction {
     private final String pluginName;
     private final String name;
     private final FunctionDefinition functionDefinition;
+
     public OpenAIFunction(KernelFunctionMetadata<?> metadata, String pluginName) {
         this.name = metadata.getName();
         this.pluginName = pluginName;
@@ -52,7 +52,8 @@ class OpenAIFunction {
      * @return The fully-qualified name of the function.
      */
     private static String getFullyQualifiedName(String pluginName, String functionName) {
-        return (pluginName == null || pluginName.isEmpty()) ? functionName : pluginName + getNameSeparator() + functionName;
+        return (pluginName == null || pluginName.isEmpty()) ? functionName
+            : pluginName + getNameSeparator() + functionName;
     }
 
     /**
@@ -60,7 +61,8 @@ class OpenAIFunction {
      *
      * @return A FunctionDefinition containing all the function information.
      */
-    public static FunctionDefinition toFunctionDefinition(KernelFunctionMetadata<?> metadata, String pluginName) {
+    public static FunctionDefinition toFunctionDefinition(KernelFunctionMetadata<?> metadata,
+        String pluginName) {
         BinaryData resultParameters;
 
         Map<String, JsonNode> properties = new HashMap<>();
@@ -69,7 +71,8 @@ class OpenAIFunction {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             for (KernelParameterMetadata<?> parameter : metadata.getParameters()) {
-                String parameterJsonSchema = getSchemaForFunctionParameter(parameter.getDescription());
+                String parameterJsonSchema = getSchemaForFunctionParameter(
+                    parameter.getDescription());
                 properties.put(parameter.getName(), objectMapper.readTree(parameterJsonSchema));
 
                 if (parameter.isRequired()) {
@@ -77,13 +80,15 @@ class OpenAIFunction {
                 }
             }
 
-            String json = objectMapper.writeValueAsString(new OpenAIFunctionParameter("object", required, properties));
+            String json = objectMapper
+                .writeValueAsString(new OpenAIFunctionParameter("object", required, properties));
             resultParameters = BinaryData.fromObject(objectMapper.readTree(json));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
-        FunctionDefinition functionDefinition = new FunctionDefinition(getFullyQualifiedName(pluginName, metadata.getName()));
+        FunctionDefinition functionDefinition = new FunctionDefinition(
+            getFullyQualifiedName(pluginName, metadata.getName()));
         functionDefinition.setDescription(metadata.getDescription());
         functionDefinition.setParameters(resultParameters);
 
@@ -98,7 +103,8 @@ class OpenAIFunction {
         @JsonProperty("properties")
         private Map<String, JsonNode> properties;
 
-        public OpenAIFunctionParameter(String type, List<String> required, Map<String, JsonNode> properties) {
+        public OpenAIFunctionParameter(String type, List<String> required,
+            Map<String, JsonNode> properties) {
             this.type = type;
             this.required = required;
             this.properties = properties;
@@ -111,4 +117,3 @@ class OpenAIFunction {
         return String.format("{\"type\":\"string\", \"description\":\"%s\"}", description);
     }
 }
-

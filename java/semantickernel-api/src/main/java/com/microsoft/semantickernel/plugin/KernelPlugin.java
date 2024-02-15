@@ -2,11 +2,9 @@ package com.microsoft.semantickernel.plugin;
 
 import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 /**

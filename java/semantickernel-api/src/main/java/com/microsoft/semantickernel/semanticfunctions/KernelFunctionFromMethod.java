@@ -53,8 +53,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
 
     private KernelFunctionFromMethod(
         ImplementationFunc<T> implementationFunc,
-        @Nullable
-        String pluginName,
+        @Nullable String pluginName,
         String functionName,
         @Nullable String description,
         @Nullable List<KernelParameterMetadata<?>> parameters,
@@ -122,16 +121,11 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
     public static <T> KernelFunction<T> create(
         Method method,
         Object target,
-        @Nullable
-        String pluginName,
-        @Nullable
-        String functionName,
-        @Nullable
-        String description,
-        @Nullable
-        List<KernelParameterMetadata<?>> parameters,
-        @Nullable
-        KernelReturnParameterMetadata<?> returnParameter) {
+        @Nullable String pluginName,
+        @Nullable String functionName,
+        @Nullable String description,
+        @Nullable List<KernelParameterMetadata<?>> parameters,
+        @Nullable KernelReturnParameterMetadata<?> returnParameter) {
 
         MethodDetails methodDetails = getMethodDetails(functionName, method, target);
 
@@ -584,76 +578,6 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
             type,
             defaultValue,
             isRequired);
-    }
-
-    public static <T> Builder<T> builder() {
-        return new Builder<>();
-    }
-
-    public static class Builder<T> {
-
-        private Method method;
-        private Object target;
-        @Nullable
-        private String functionName;
-        @Nullable
-        private String description;
-        @Nullable
-        private List<KernelParameterMetadata<?>> parameters;
-        @Nullable
-        private KernelReturnParameterMetadata<?> returnParameter;
-
-        public Builder<T> withMethod(Method method) {
-            this.method = method;
-            return this;
-        }
-
-        public Builder<T> withTarget(Object target) {
-            this.target = target;
-            return this;
-        }
-
-        public Builder<T> withFunctionName(String functionName) {
-            this.functionName = functionName;
-            return this;
-        }
-
-        public Builder<T> withDescription(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public Builder<T> withParameters(List<KernelParameterMetadata<?>> parameters) {
-            this.parameters = parameters;
-            return this;
-        }
-
-        public Builder<T> withReturnParameter(KernelReturnParameterMetadata<?> returnParameter) {
-            this.returnParameter = returnParameter;
-            return this;
-        }
-
-        public <T> KernelFunction<T> build() {
-
-            if (method == null) {
-                throw new SKException(
-                    "To build a KernelFunctionFromMethod, a method must be provided");
-            }
-
-            if (target == null) {
-                throw new SKException(
-                    "To build a plugin object must be provided");
-            }
-
-            return KernelFunctionFromMethod.create(
-                method,
-                target,
-                functionName,
-                description,
-                parameters,
-                returnParameter);
-        }
-
     }
 
     public static <T> Builder<T> builder() {

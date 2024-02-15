@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.connectors;
 
 import java.util.List;
-
 import reactor.core.publisher.Mono;
 
 /**

@@ -13,19 +13,13 @@ import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.AiServiceCollection;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Provides state for use throughout a Semantic Kernel workload.

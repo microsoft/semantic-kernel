@@ -4,11 +4,9 @@ package com.microsoft.semantickernel.orchestration.contextvariables;
 import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter.NoopConverter;
-
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 /**

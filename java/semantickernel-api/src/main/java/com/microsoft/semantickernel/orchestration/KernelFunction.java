@@ -2,9 +2,9 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.implementation.Todo;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.implementation.Todo;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
@@ -129,9 +129,8 @@ public abstract class KernelFunction<T> implements Buildable {
      * <p>
      * The difference between calling the {@code KernelFunction.invokeAsync} method directly and
      * calling the {@code Kernel.invokeAsync} method is that the latter adds the
-     * {@link KernelHooks#getGlobalHooks() global KernelHooks} (if any) to the
-     * {@link InvocationContext}. Calling {@code KernelFunction.invokeAsync} directly does not add
-     * the global hooks.
+     * {@link KernelHooks#getHooks()} global KernelHooks} (if any) to the {@link InvocationContext}.
+     * Calling {@code KernelFunction.invokeAsync} directly does not add the global hooks.
      *
      * @param kernel            The Kernel containing services, plugins, and other state for use
      *                          throughout the operation.
@@ -157,53 +156,6 @@ public abstract class KernelFunction<T> implements Buildable {
      */
     public FunctionInvocation<T> invokeAsync(Kernel kernel) {
         return new FunctionInvocation<>(kernel, this);
-    }
-
-
-    /**
-     * Creates a {@link KernelFunction} instance for a method, specified via a {@link Method}
-     * instance
-     *
-     * @param <T>    The return type of the method.
-     * @param method The method to be represented via the created {@link KernelFunction}.
-     * @param target The target object for the {@code method} if it represents an instance method.
-     *               This should be {@code null} if and only if {@code method} is a static method.
-     * @return The created {@link KernelFunction} wrapper for {@code method}.
-     */
-
-    public static <T> KernelFunctionFromMethod.Builder<T> createFromMethod(
-        Method method,
-        Object target) {
-        return KernelFunctionFromMethod.<T>builder()
-            .withMethod(method)
-            .withTarget(target);
-    }
-
-    /**
-     * Creates a {@link KernelFunction} instance based on a given prompt
-     *
-     * @param prompt The prompt to be used for the created {@link KernelFunction}.
-     * @param <T>    The return type of the method
-     * @return The builder for creating a {@link KernelFunction} instance.
-     */
-    public static <T> FromPromptBuilder<T> createFromPrompt(String prompt) {
-        return KernelFunctionFromPrompt.<T>builder()
-            .withTemplate(prompt);
-    }
-
-
-    /**
-     * Builder for creating a {@link KernelFunction} instance for a given
-     * {@link PromptTemplateConfig}.
-     *
-     * @param promptTemplateConfiguration The configuration for the prompt template.
-     * @param <T>                         The return type of the method
-     * @return The builder for creating a {@link KernelFunction} instance.
-     */
-    public static <T> FromPromptBuilder<T> createFromPrompt(
-        PromptTemplateConfig promptTemplateConfiguration) {
-        return KernelFunctionFromPrompt.<T>builder()
-            .withPromptTemplateConfig(promptTemplateConfiguration);
     }
 
     /**

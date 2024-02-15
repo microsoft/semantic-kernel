@@ -2,11 +2,9 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 /**
@@ -34,8 +32,7 @@ public class KernelFunctionMetadata<T> {
      * @param returnParameter The return parameter of the function.
      */
     public KernelFunctionMetadata(
-        @Nullable
-        String pluginName,
+        @Nullable String pluginName,
         String name,
         @Nullable String description,
         @Nullable List<KernelParameterMetadata<?>> parameters,

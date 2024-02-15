@@ -2,7 +2,6 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import reactor.util.annotation.NonNull;
 
 /**

@@ -1,7 +1,8 @@
 package com.microsoft.semantickernel.orchestration.contextvariables.converters;
 
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 import static com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes.convert;
+
+import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
 
 /**
  * A {@link com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter} 

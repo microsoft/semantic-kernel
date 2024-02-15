@@ -30,33 +30,26 @@ public class Example59_OpenAIFunctionCalling {
     public static class Plugin {
         @DefineKernelFunction(name = "getLatitudeOfCity", description = "Gets the latitude of a given city")
         public String getLatitudeOfCity(
-            @KernelFunctionParameter(name = "cityName", description = "City name")
-            String cityName) {
+            @KernelFunctionParameter(name = "cityName", description = "City name") String cityName) {
             return "1.0";
         }
 
         @DefineKernelFunction(name = "getLongitudeOfCity", description = "Gets the longitude of a given city")
         public String getLongitudeOfCity(
-            @KernelFunctionParameter(name = "cityName", description = "City name")
-            String cityName) {
+            @KernelFunctionParameter(name = "cityName", description = "City name") String cityName) {
             return "2.0";
         }
 
         @DefineKernelFunction(name = "getsTheWeatherAtAGivenLocation", description = "Gets the current weather at a given longitude and latitude")
         public String getWeatherForCityAtTime(
-            @KernelFunctionParameter(name = "latitude", description = "latitude of the location")
-            String latitude,
-            @KernelFunctionParameter(name = "longitude", description = "longitude of the location")
-            String longitude
-        ) {
+            @KernelFunctionParameter(name = "latitude", description = "latitude of the location") String latitude,
+            @KernelFunctionParameter(name = "longitude", description = "longitude of the location") String longitude) {
             return "61 and rainy";
         }
 
         @DefineKernelFunction(name = "getsTheWeatherForCity", description = "Gets the current weather at a city name")
         public String getsTheWeatherForCity(
-                @KernelFunctionParameter(name = "cityName", description = "Name of the city")
-                String cityName
-        ) {
+            @KernelFunctionParameter(name = "cityName", description = "Name of the city") String cityName) {
             return "80 and sunny";
         }
     }
@@ -92,16 +85,15 @@ public class Example59_OpenAIFunctionCalling {
         kernel.addPlugin(plugin);
 
         var function = KernelFunctionFromPrompt.builder()
-                .withTemplate(
-                        "What is the probable current color of the sky in Thrapston?")
-                .withDefaultExecutionSettings(
-                        PromptExecutionSettings.builder()
-                                .withTemperature(0.4)
-                                .withTopP(1)
-                                .withMaxTokens(100)
-                                .build()
-                )
-                .build();
+            .withTemplate(
+                "What is the probable current color of the sky in Thrapston?")
+            .withDefaultExecutionSettings(
+                PromptExecutionSettings.builder()
+                    .withTemperature(0.4)
+                    .withTopP(1)
+                    .withMaxTokens(100)
+                    .build())
+            .build();
 
         // Example 1: All kernel functions are enabled to be called by the model
         kernelFunctions(kernel, function);
@@ -115,50 +107,52 @@ public class Example59_OpenAIFunctionCalling {
         System.out.println("======== Kernel functions ========");
 
         var toolCallBehavior = new ToolCallBehavior()
-                .kernelFunctions(true)
-                .autoInvoke(true);
+            .kernelFunctions(true)
+            .autoInvoke(true);
 
         var result = kernel
-                .invokeAsync(function)
-                .withToolCallBehavior(toolCallBehavior)
-                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
-                .block();
+            .invokeAsync(function)
+            .withToolCallBehavior(toolCallBehavior)
+            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+            .block();
 
         System.out.println(result.getResult());
     }
 
-    public static void enableFunctions(Kernel kernel, KernelPlugin plugin, KernelFunction<?> function) {
+    public static void enableFunctions(Kernel kernel, KernelPlugin plugin,
+        KernelFunction<?> function) {
         System.out.println("======== Enable functions ========");
 
         // Based on coordinates
         var toolCallBehavior = new ToolCallBehavior()
-                .enableFunction(plugin.get("getLatitudeOfCity"), true)
-                .enableFunction(plugin.get("getLongitudeOfCity"), true)
-                .enableFunction(plugin.get("getsTheWeatherAtAGivenLocation"), true)
-                .autoInvoke(true);
+            .enableFunction(plugin.get("getLatitudeOfCity"), true)
+            .enableFunction(plugin.get("getLongitudeOfCity"), true)
+            .enableFunction(plugin.get("getsTheWeatherAtAGivenLocation"), true)
+            .autoInvoke(true);
 
         var result = kernel
-                .invokeAsync(function)
-                .withToolCallBehavior(toolCallBehavior)
-                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
-                .block();
+            .invokeAsync(function)
+            .withToolCallBehavior(toolCallBehavior)
+            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+            .block();
 
         System.out.println(result.getResult());
     }
 
-    public static void requireFunction(Kernel kernel, KernelPlugin plugin, KernelFunction<?> function) {
+    public static void requireFunction(Kernel kernel, KernelPlugin plugin,
+        KernelFunction<?> function) {
         System.out.println("======== Require a function ========");
 
         // Based on coordinates
         var toolCallBehavior = new ToolCallBehavior()
-                .requireFunction(plugin.get("getsTheWeatherForCity"))
-                .autoInvoke(true);
+            .requireFunction(plugin.get("getsTheWeatherForCity"))
+            .autoInvoke(true);
 
         var result = kernel
-                .invokeAsync(function)
-                .withToolCallBehavior(toolCallBehavior)
-                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
-                .block();
+            .invokeAsync(function)
+            .withToolCallBehavior(toolCallBehavior)
+            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+            .block();
 
         System.out.println(result.getResult());
     }
