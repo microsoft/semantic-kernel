@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
-import com.microsoft.semantickernel.KernelContent;
 import com.microsoft.semantickernel.StreamingKernelContent;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 /**

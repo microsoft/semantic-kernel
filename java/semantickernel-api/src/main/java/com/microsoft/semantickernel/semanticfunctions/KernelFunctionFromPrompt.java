@@ -1,15 +1,10 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.azure.core.exception.HttpResponseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.TextAIService;
 import com.microsoft.semantickernel.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -23,7 +18,7 @@ import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.ArrayList;
@@ -31,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +56,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable Map<String, PromptExecutionSettings> executionSettings) {
         super(
             new KernelFunctionMetadata<>(
+                null,
                 getName(promptConfig),
                 promptConfig.getDescription(),
                 promptConfig.getKernelParametersMetadata(),
@@ -158,7 +153,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             : context.getContextVariableTypes().getVariableTypeForClass(
                 (Class<T>) this.getMetadata().getReturnParameter().getParameterType());
 
-        return this.template
+        return this
+            .template
             .renderAsync(kernel, arguments, context)
             .flatMapMany(prompt -> {
                 PromptRenderedEvent promptHookResult = kernelHooks
@@ -215,16 +211,9 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                                 return Flux.just(
                                     new FunctionResult<>(
                                         new ContextVariable<>(variableType, value),
-                                        chatMessageContent.getMetadata()));
-                            } else if (chatMessageContent.getAuthorRole() == AuthorRole.TOOL) {
-                                String content = chatMessageContent.getContent();
-                                if (content == null || content.isEmpty()) {
-                                    return Flux.error(new IllegalStateException(
-                                        "Tool message content is empty"));
-                                }
-                                Mono<FunctionResult<T>> toolResult = invokeTool(kernel, content,
-                                    context);
-                                return toolResult.flux();
+                                        chatMessageContent.getMetadata()
+                                    )
+                                );
                             }
                             return Flux.empty();
                         })
@@ -232,8 +221,10 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                             return new FunctionResult<>(
                                 new ContextVariable<>(
                                     variableType,
-                                    variableType.of(it.getResult()).getValue()),
-                                it.getMetadata());
+                                    it.getResult() != null ? variableType.of(it.getResult()).getValue() : null
+                                ),
+                                it.getMetadata()
+                            );
                         });
                 } else if (client instanceof TextGenerationService) {
                     result = ((TextGenerationService) client)
@@ -318,99 +309,6 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             .take(1).single();
     }
 
-    /*
-     * Given a json string, invoke the tool specified in the json string.
-     * At this time, the only tool we have is 'function'.
-     * The json string should be of the form:
-     * {"type":"function", "function": {"name":"search-search", "parameters": {"query":"Banksy"}}}
-     * where 'name' is <plugin name '-' function name>.
-     */
-    private Mono<FunctionResult<T>> invokeTool(
-        Kernel kernel,
-        String json,
-        InvocationContext invocationContext) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(json);
-            jsonNode = jsonNode.get("function");
-            if (jsonNode != null) {
-                return invokeFunction(kernel, jsonNode, invocationContext);
-            }
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to parse json", e);
-        } catch (Exception e) {
-            LOGGER.error("Failed to invoke tool", e);
-        }
-        return Mono.empty();
-    }
-
-    /*
-     * The jsonNode should represent: {"name":"search-search", "parameters": {"query":"Banksy"}}}
-     */
-    @SuppressWarnings({ "StringSplitter", "unchecked" })
-    private Mono<FunctionResult<T>> invokeFunction(
-        Kernel kernel,
-        JsonNode jsonNode,
-        InvocationContext invocationContext) {
-        String name = jsonNode.get("name").asText();
-        String[] parts = name.split("-");
-        String pluginName = parts.length > 0 ? parts[0] : "";
-        String fnName = parts.length > 1 ? parts[1] : "";
-        JsonNode parameters = jsonNode.get("parameters");
-        if (parameters != null) {
-            try {
-                KernelFunction<T> kernelFunction;
-                try {
-                    // unchecked cast
-                    kernelFunction = (KernelFunction<T>) kernel
-                        .getFunction(pluginName, fnName);
-                } catch (IllegalArgumentException | ClassCastException e) {
-                    return Mono.error(new SKException(e.getMessage(), e));
-                }
-
-                List<KernelParameterMetadata<?>> params = kernelFunction.getMetadata()
-                    .getParameters();
-                Map<String, KernelParameterMetadata<?>> parameterMetaaData = params.stream()
-                    .collect(Collectors.toMap(KernelParameterMetadata::getName, it -> it));
-
-                Map<String, ContextVariable<?>> variables = new HashMap<>();
-                parameters.fields().forEachRemaining(entry -> {
-                    String paramName = entry.getKey();
-                    String paramValue = entry.getValue().asText();
-
-                    KernelParameterMetadata<?> parameterMetadata = parameterMetaaData.get(
-                        paramName);
-                    if (parameterMetadata == null) {
-                        // parameter in json not found in function metadata
-                        // TODO: this shouldn't happen, so log it. 
-                        return;
-                    }
-
-                    Class<?> parameterType = parameterMetadata.getType();
-                    ContextVariable<?> contextVariable = ContextVariable.untypedOf(
-                        paramValue,
-                        parameterType,
-                        invocationContext.getContextVariableTypes());
-                    variables.put(paramName, contextVariable);
-                });
-                KernelFunctionArguments arguments = KernelFunctionArguments.builder()
-                    .withVariables(variables)
-                    .build();
-                return kernelFunction.invokeAsync(kernel).withArguments(arguments);
-            } catch (Exception e) {
-                return Mono.error(e);
-            }
-        }
-        return Mono.empty();
-    }
-
-    /**
-     * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template.
-     *
-     * @param <T>            the type of the return value of the function
-     * @param promptTemplate the prompt template for the function
-     * @return a new instance of {@link KernelFunction}
-     */
     public static <T> KernelFunction<T> create(
         String promptTemplate) {
         return create(promptTemplate, null, null, null, null, null);
@@ -494,6 +392,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         private PromptTemplateFactory promptTemplateFactory;
         @Nullable
         private PromptTemplateConfig promptTemplateConfig;
+
 
         @Override
         public FromPromptBuilder<T> withName(@Nullable String name) {
@@ -589,7 +488,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         @Override
         public FromPromptBuilder<T> withPromptTemplateConfig(
-            @Nullable PromptTemplateConfig promptTemplateConfig) {
+            @Nullable
+            PromptTemplateConfig promptTemplateConfig) {
             this.promptTemplateConfig = promptTemplateConfig;
             return this;
         }

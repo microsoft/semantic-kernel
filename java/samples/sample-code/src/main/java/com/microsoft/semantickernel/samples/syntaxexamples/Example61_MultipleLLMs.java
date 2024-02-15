@@ -10,7 +10,6 @@ import com.microsoft.semantickernel.orchestration.KernelFunction;
 import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 import java.util.Arrays;

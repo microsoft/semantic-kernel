@@ -5,7 +5,6 @@ import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,7 +13,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
 
 /**
@@ -61,6 +59,7 @@ public class KernelHooks {
     public UnmodifiableKernelHooks unmodifiableClone() {
         return new UnmodifiableKernelHooks(this);
     }
+
 
     /**
      * Gets the hooks in this collection.

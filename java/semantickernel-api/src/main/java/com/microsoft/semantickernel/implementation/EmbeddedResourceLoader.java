@@ -59,48 +59,51 @@ public class EmbeddedResourceLoader {
      * @throws FileNotFoundException Error in case the file doesn't exist
      */
     public static String readFile(String fileName, Class<?> clazz, ResourceLocation... locations)
-        throws FileNotFoundException {
+            throws FileNotFoundException {
 
-        List<ResourceLocation> locationsList = Arrays.stream(locations)
-            .collect(Collectors.toList());
+        List<ResourceLocation> locationsList =
+                Arrays.stream(locations).collect(Collectors.toList());
 
-        Optional<String> fileContents = locationsList.stream()
-            .map(
-                type -> {
-                    switch (type) {
-                        case CLASSPATH:
-                            try (InputStream inputStream = clazz.getResourceAsStream(fileName)) {
-                                return readInputStream(fileName, inputStream);
-                            } catch (Exception e) {
-                                // IGNORE
-                            }
-                            break;
-                        case CLASSPATH_ROOT:
-                            try (InputStream inputStream = Thread.currentThread()
-                                .getContextClassLoader()
-                                .getResourceAsStream(fileName)) {
-                                return readInputStream(fileName, inputStream);
-                            } catch (IOException e) {
-                                // IGNORE
-                            }
-                            break;
-                        case FILESYSTEM:
-                            File file = new File(fileName);
-                            if (file.exists()) {
-                                try (
-                                    InputStream inputStream = Files.newInputStream(file.toPath())) {
-                                    return readInputStream(fileName, inputStream);
-                                } catch (IOException e) {
-                                    // IGNORE
-                                }
-                            }
-                            break;
-                        default:
-                    }
-                    return null;
-                })
-            .filter(Objects::nonNull)
-            .findFirst();
+        Optional<String> fileContents =
+                locationsList.stream()
+                        .map(
+                                type -> {
+                                    switch (type) {
+                                        case CLASSPATH:
+                                            try (InputStream inputStream =
+                                                    clazz.getResourceAsStream(fileName)) {
+                                                return readInputStream(fileName, inputStream);
+                                            } catch (Exception e) {
+                                                // IGNORE
+                                            }
+                                            break;
+                                        case CLASSPATH_ROOT:
+                                            try (InputStream inputStream =
+                                                    Thread.currentThread()
+                                                            .getContextClassLoader()
+                                                            .getResourceAsStream(fileName)) {
+                                                return readInputStream(fileName, inputStream);
+                                            } catch (IOException e) {
+                                                // IGNORE
+                                            }
+                                            break;
+                                        case FILESYSTEM:
+                                            File file = new File(fileName);
+                                            if (file.exists()) {
+                                                try (InputStream inputStream =
+                                                        Files.newInputStream(file.toPath())) {
+                                                    return readInputStream(fileName, inputStream);
+                                                } catch (IOException e) {
+                                                    // IGNORE
+                                                }
+                                            }
+                                            break;
+                                        default:
+                                    }
+                                    return null;
+                                })
+                        .filter(Objects::nonNull)
+                        .findFirst();
 
         if (fileContents.isPresent()) {
             return fileContents.get();
@@ -110,14 +113,14 @@ public class EmbeddedResourceLoader {
     }
 
     private static String readInputStream(String fileName, InputStream inputStream)
-        throws FileNotFoundException {
+            throws FileNotFoundException {
         if (inputStream == null) {
             throw new FileNotFoundException("File not found: " + fileName);
         }
 
         return new BufferedReader(
-            new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))
-            .lines()
-            .collect(Collectors.joining("\n"));
+                        new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
     }
 }

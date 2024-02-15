@@ -17,7 +17,7 @@ public abstract class KernelContent<T> {
      */
     @Nullable
     private final T innerContent;
-
+    
     /** 
      * The model ID used to generate the content.
      */
@@ -37,9 +37,13 @@ public abstract class KernelContent<T> {
      * @param metadata The metadata associated with the content.
      */
     public KernelContent(
-        @Nullable T innerContent,
-        @Nullable String modelId,
-        @Nullable FunctionResultMetadata metadata) {
+        @Nullable
+        T innerContent,
+        @Nullable
+        String modelId,
+        @Nullable
+        FunctionResultMetadata metadata
+    ) {
         this.innerContent = innerContent;
         this.modelId = modelId;
         this.metadata = metadata;

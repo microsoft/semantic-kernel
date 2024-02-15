@@ -3,13 +3,11 @@ package com.microsoft.semantickernel.chatcompletion;
 
 import com.microsoft.semantickernel.KernelContent;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 /**
@@ -56,10 +54,15 @@ public class ChatMessageContent<T> extends KernelContent<T> {
     public ChatMessageContent(
         AuthorRole authorRole,
         String content,
-        @Nullable String modelId,
-        @Nullable T innerContent,
-        @Nullable Charset encoding,
-        @Nullable FunctionResultMetadata metadata) {
+        @Nullable
+        String modelId,
+        @Nullable
+        T innerContent,
+        @Nullable
+        Charset encoding,
+        @Nullable
+        FunctionResultMetadata metadata
+    ) {
         super(innerContent, modelId, metadata);
         this.authorRole = authorRole;
         this.content = content;
