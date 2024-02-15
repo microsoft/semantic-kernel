@@ -6,14 +6,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.orchestration.KernelFunctionMetadata;
-import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
-
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
+import com.microsoft.semantickernel.semanticfunctions.KernelParameterMetadata;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
 
 class OpenAIFunction {
     private final String pluginName;

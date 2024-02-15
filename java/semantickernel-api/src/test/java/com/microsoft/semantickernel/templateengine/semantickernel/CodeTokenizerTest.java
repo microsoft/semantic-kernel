@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.semantickernel;
 
-import com.microsoft.semantickernel.implementation.tokenizer.CodeTokenizer;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.Block;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.FunctionIdBlock;
-import com.microsoft.semantickernel.implementation.tokenizer.blocks.NamedArgBlock;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.implementation.templateengine.tokenizer.CodeTokenizer;
+import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.Block;
+import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.FunctionIdBlock;
+import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.NamedArgBlock;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

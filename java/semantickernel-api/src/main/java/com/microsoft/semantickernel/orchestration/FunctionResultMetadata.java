@@ -1,8 +1,8 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.azure.ai.openai.models.CompletionsUsage;
-import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import java.time.OffsetDateTime;
 import javax.annotation.Nullable;
 

@@ -1,18 +1,19 @@
 package com.microsoft.semantickernel.plugin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader.ResourceLocation;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.contextvariables.CaseInsensitiveMap;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.KernelParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

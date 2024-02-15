@@ -7,14 +7,14 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 
 public class Example06_TemplateLanguage {
 

@@ -3,11 +3,11 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import java.util.Locale;
 import reactor.core.publisher.Mono;
 

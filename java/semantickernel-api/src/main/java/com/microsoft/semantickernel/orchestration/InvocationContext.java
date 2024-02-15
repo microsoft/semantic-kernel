@@ -5,8 +5,8 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypeConverter;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 

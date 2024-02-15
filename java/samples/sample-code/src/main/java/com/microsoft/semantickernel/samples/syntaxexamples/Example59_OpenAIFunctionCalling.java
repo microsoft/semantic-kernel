@@ -6,15 +6,15 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.orchestration.KernelFunction;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
-import com.microsoft.semantickernel.orchestration.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.plugin.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 
 public class Example59_OpenAIFunctionCalling {

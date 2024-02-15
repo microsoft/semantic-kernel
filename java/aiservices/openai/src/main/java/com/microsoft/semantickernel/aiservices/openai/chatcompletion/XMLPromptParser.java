@@ -6,7 +6,7 @@ import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.chatcompletion.AuthorRole;
+import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.exceptions.SKException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

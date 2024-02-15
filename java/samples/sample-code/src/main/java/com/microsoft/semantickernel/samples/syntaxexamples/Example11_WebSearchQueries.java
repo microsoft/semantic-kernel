@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugins.web.SearchUrlPlugin;
 

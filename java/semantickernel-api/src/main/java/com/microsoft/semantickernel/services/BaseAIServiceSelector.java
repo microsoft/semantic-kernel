@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.orchestration.KernelFunction;
-import com.microsoft.semantickernel.orchestration.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import java.util.Map;
 import javax.annotation.Nullable;
 
