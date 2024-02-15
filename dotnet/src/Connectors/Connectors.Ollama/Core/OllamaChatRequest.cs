@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -8,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 /// <summary>
 /// Ollama chat request object.
 /// </summary>
-public sealed class OllamaChatRequest
+internal sealed class OllamaChatRequest
 {
     /// <summary>
     /// Candidate responses from the model.
@@ -19,8 +21,8 @@ public sealed class OllamaChatRequest
     /// <summary>
     /// Returns the prompt's feedback related to the content filters.
     /// </summary>
-    [JsonPropertyName("messages'")]
-    public ChatHistory? Messages { get; set; }
+    [JsonPropertyName("messages")]
+    public IList<OllamaChatRequestMessage>? Messages { get; set; }
 
     /// <summary>
     /// Returns the text response data from LLM.
@@ -33,14 +35,34 @@ public sealed class OllamaChatRequest
     /// </summary>
     /// <param name="chatHistory">Chat history to be used for the request.</param>
     /// <param name="ollamaPromptExecutionSettings">Execution settings to be used for the request.</param>
+    /// <param name="connectorModelId">Model Id to be used for the request if no one is provided in the execution settings.</param>
     /// <returns>OllamaChatRequest object.</returns>
-    public static OllamaChatRequest FromPromptAndExecutionSettings(ChatHistory chatHistory, OllamaPromptExecutionSettings ollamaPromptExecutionSettings)
+    internal static OllamaChatRequest FromPromptAndExecutionSettings(ChatHistory chatHistory, OllamaPromptExecutionSettings ollamaPromptExecutionSettings, string connectorModelId)
     {
         return new OllamaChatRequest
         {
-            Model = ollamaPromptExecutionSettings.ModelId,
+            Model = ollamaPromptExecutionSettings.ModelId ?? connectorModelId,
             Stream = false,
-            Messages = chatHistory
+            Messages = chatHistory.Select(message => new OllamaChatRequestMessage
+            {
+                Role = message.Role.ToString(),
+                Content = message.Content
+            }).ToList()
         };
+    }
+
+    internal sealed class OllamaChatRequestMessage
+    {
+        /// <summary>
+        /// Role of the message.
+        /// </summary>
+        [JsonPropertyName("role")]
+        public string? Role { get; set; }
+
+        /// <summary>
+        /// Content of the message.
+        /// </summary>
+        [JsonPropertyName("content")]
+        public string? Content { get; set; }
     }
 }

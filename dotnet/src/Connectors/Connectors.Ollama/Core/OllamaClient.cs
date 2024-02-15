@@ -48,7 +48,7 @@ internal sealed class OllamaClient : IOllamaClient
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
     {
         var endpoint = this.EndpointProvider.TextGenerationEndpoint;
-        var request = CreateTextRequest(prompt, executionSettings);
+        var request = this.CreateTextRequest(prompt, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -68,7 +68,7 @@ internal sealed class OllamaClient : IOllamaClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var endpoint = this.EndpointProvider.StreamTextGenerationEndpoint;
-        var request = CreateTextRequest(prompt, executionSettings);
+        var request = this.CreateTextRequest(prompt, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
@@ -89,7 +89,7 @@ internal sealed class OllamaClient : IOllamaClient
         CancellationToken cancellationToken = default)
     {
         var endpoint = this.EndpointProvider.ChatCompletionEndpoint;
-        var request = CreateChatRequest(chatHistory, executionSettings);
+        var request = this.CreateChatRequest(chatHistory, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -110,7 +110,7 @@ internal sealed class OllamaClient : IOllamaClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var endpoint = this.EndpointProvider.StreamChatCompletionEndpoint;
-        var request = CreateChatRequest(chatHistory, executionSettings);
+        var request = this.CreateChatRequest(chatHistory, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
@@ -173,7 +173,7 @@ internal sealed class OllamaClient : IOllamaClient
         return new List<ChatMessageContent>
         {
             new(
-                role: response.Message?.Role ?? AuthorRole.Assistant,
+                role: response.Message?.Role is null ? AuthorRole.Assistant : new AuthorRole(response.Message.Role),
                 content: response.Message?.Content ?? string.Empty,
                 modelId: this._modelId,
                 innerContent: response,
@@ -206,23 +206,23 @@ internal sealed class OllamaClient : IOllamaClient
             innerContent: textContent.InnerContent,
             metadata: textContent.Metadata);
 
-    private static OllamaChatRequest CreateChatRequest(
+    private OllamaChatRequest CreateChatRequest(
         ChatHistory chatHistory,
         PromptExecutionSettings? promptExecutionSettings)
     {
         var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
         ValidateMaxTokens(ollamaExecutionSettings.MaxTokens);
-        var request = OllamaChatRequest.FromPromptAndExecutionSettings(chatHistory, ollamaExecutionSettings);
+        var request = OllamaChatRequest.FromPromptAndExecutionSettings(chatHistory, ollamaExecutionSettings, this._modelId);
         return request;
     }
 
-    private static OllamaTextRequest CreateTextRequest(
+    private OllamaTextRequest CreateTextRequest(
         string prompt,
         PromptExecutionSettings? promptExecutionSettings)
     {
         var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
         ValidateMaxTokens(ollamaExecutionSettings.MaxTokens);
-        var request = OllamaTextRequest.FromPromptAndExecutionSettings(prompt, ollamaExecutionSettings);
+        var request = OllamaTextRequest.FromPromptAndExecutionSettings(prompt, ollamaExecutionSettings, this._modelId);
         return request;
     }
 

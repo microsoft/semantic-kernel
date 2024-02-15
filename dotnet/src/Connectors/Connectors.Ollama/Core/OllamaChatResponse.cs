@@ -2,6 +2,8 @@
 
 using System.Text.Json.Serialization;
 
+#pragma warning disable CA1812
+
 namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
 /// <summary>
@@ -13,5 +15,14 @@ internal sealed class OllamaChatResponse : OllamaResponseBase
     /// Message returned by the model.
     /// </summary>
     [JsonPropertyName("message")]
-    internal ChatMessageContent? Message { get; set; }
+    public OllamaChatResponseMessage? Message { get; set; }
+
+    internal sealed class OllamaChatResponseMessage
+    {
+        [JsonPropertyName("role")]
+        public string? Role { get; set; }
+
+        [JsonPropertyName("content")]
+        public string? Content { get; set; }
+    }
 }

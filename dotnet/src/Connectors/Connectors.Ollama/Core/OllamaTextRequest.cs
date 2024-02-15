@@ -32,12 +32,13 @@ public sealed class OllamaTextRequest
     /// </summary>
     /// <param name="prompt">Prompt to be used for the request.</param>
     /// <param name="ollamaPromptExecutionSettings">Execution settings to be used for the request.</param>
+    /// <param name="connectorModelId">Model Id to be used for the request if no one is provided in the execution settings.</param>
     /// <returns>OllamaTextRequest object.</returns>
-    public static OllamaTextRequest FromPromptAndExecutionSettings(string prompt, OllamaPromptExecutionSettings ollamaPromptExecutionSettings)
+    public static OllamaTextRequest FromPromptAndExecutionSettings(string prompt, OllamaPromptExecutionSettings ollamaPromptExecutionSettings, string connectorModelId)
     {
         return new OllamaTextRequest
         {
-            Model = ollamaPromptExecutionSettings.ModelId,
+            Model = ollamaPromptExecutionSettings.ModelId ?? connectorModelId,
             Stream = false,
             Prompt = prompt
         };

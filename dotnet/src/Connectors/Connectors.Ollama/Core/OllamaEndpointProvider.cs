@@ -12,10 +12,10 @@ internal sealed class OllamaEndpointProvider : IEndpointProvider
     /// <param name="baseUri">Base url for Ollama API</param>
     public OllamaEndpointProvider(Uri baseUri)
     {
-        this.TextGenerationEndpoint = new Uri($"{baseUri}/api/generate");
-        this.ChatCompletionEndpoint = new Uri($"{baseUri}/api/chat");
-        this.StreamChatCompletionEndpoint = new Uri($"{baseUri}/api/chat");
-        this.StreamTextGenerationEndpoint = new Uri($"{baseUri}/api/generate");
+        this.TextGenerationEndpoint = new Uri($"{baseUri}api/generate");
+        this.ChatCompletionEndpoint = new Uri($"{baseUri}api/chat");
+        this.StreamChatCompletionEndpoint = new Uri($"{baseUri}api/chat");
+        this.StreamTextGenerationEndpoint = new Uri($"{baseUri}api/generate");
     }
 
     public Uri TextGenerationEndpoint { get; }
