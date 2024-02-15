@@ -2,10 +2,9 @@
 # These are optional elements. Feel free to remove any of them.
 status: proposed
 contact: gitri-ms
-date: 2024-01-19
-deciders: gitri-ms, stephentoub, alliscode, markwallace-microsoft
-consulted: dmytrostruk
-informed:
+date: 2024-02-15
+deciders: stephentoub, alliscode, markwallace-microsoft
+consulted: dmytrostruk, matthewbolanos
 ---
 
 # Automatic Tool Calling Controls
@@ -22,8 +21,7 @@ The current implementation of automatic tool calling allows for multiple consecu
 
 1. Developers should be able to control how many tool calls (and subsequent model calls) are performed for a single request
 2. Chosen control(s) should be easy for developers to understand and utilize
-3. No breaking changes to abstractions
-4. Do not expose more than necessary
+3. No breaking changes to v1 abstractions
 
 ## Considered Options
 
@@ -195,4 +193,58 @@ private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
 
 ## Decision Outcome
 
-TBD
+Option #3 was chosen as it provides the most flexibility and control to the caller. But rather than just expose a pre-invoke callback, it was decided to implement **tool filters** similar to the [kernel filters](./0033-kernel-filters.md) we already support. This approach allows us to address the current problem with the planner, as well as provide a general solution for other scenarios where the caller wants more control over tool calling.
+
+Developers can optionally implement two different types of filters - a pre-invocation tool filter and a post-invocation tool. The filter context would contain relevant data about the tool call such as tool name, arguments, chat history, number of model iterations, and tool call behavior settings (including options to cancel or turn off subsequent tool calls or auto-invoke). The developer can inspect and/or modify this data via the filters.
+
+`IToolFilter`:
+
+```csharp
+public interface IToolFilter
+{
+    void OnToolInvoking(ToolInvokingContext context);
+
+    void OnToolInvoked(ToolInvokedContext context);
+}
+```
+
+Example filter:
+
+```csharp
+public sealed class MyToolFilter : IToolFilter
+{
+    private readonly ILogger _logger;
+    private readonly int _maxIterations;
+
+    public MyToolFilter(ILoggerFactory loggerFactory, int maxIterations)
+    {
+        this._logger = loggerFactory.CreateLogger("MyLogger");
+        this._maxIterations = maxIterations;
+    }
+
+    public void OnToolInvoking(ToolInvokingContext context)
+    {
+        this._logger.LogInformation("Invoking {ToolName}", context.ToolCall.FullyQualifiedName);
+
+        // If a tool called "myFunction" is called, cancel it.
+        if (context.ToolCall.FunctionName.Equals("myFunction"))
+        {
+            this._logger.LogInformation("Cancelling invocation of tool {ToolName}", context.ToolCall.FullyQualifiedName);
+
+            context.StopBehavior = ToolFilterStopBehavior.Cancel;
+        }
+    }
+
+    public void OnToolInvoked(ToolInvokedContext context)
+    {
+        // Modify the chat history
+        context.ChatHistory.AddAssistantMessage("Tool filter was here!");
+
+        // If the maximum model iterations have been reached, turn off subsequent tool calls
+        if (context.ModelIterations >= maxIterations)
+        {
+            context.StopBehavior = ToolFilterStopBehavior.StopTools;
+        }
+    }
+}
+```
