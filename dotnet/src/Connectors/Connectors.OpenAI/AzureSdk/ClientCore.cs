@@ -17,6 +17,7 @@ using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
@@ -197,6 +198,16 @@ internal abstract class ClientCore
         };
     }
 
+    private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
+    {
+        return new Dictionary<string, object?>(3)
+        {
+            { nameof(audioTranscription.Language), audioTranscription.Language },
+            { nameof(audioTranscription.Duration), audioTranscription.Duration },
+            { nameof(audioTranscription.Segments), audioTranscription.Segments }
+        };
+    }
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
@@ -228,6 +239,33 @@ internal abstract class ClientCore
         }
 
         return result;
+    }
+
+    internal async Task<TextContent> GetTextContentFromAudioAsync(
+        AudioContent content,
+        PromptExecutionSettings? executionSettings,
+        CancellationToken cancellationToken)
+    {
+        Verify.NotNull(content.Data);
+
+        OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
+
+        Verify.ValidFilename(audioExecutionSettings?.Filename);
+
+        var audioOptions = new AudioTranscriptionOptions
+        {
+            AudioData = content.Data,
+            DeploymentName = this.DeploymentOrModelName,
+            Filename = audioExecutionSettings.Filename,
+            Language = audioExecutionSettings.Language,
+            Prompt = audioExecutionSettings.Prompt,
+            ResponseFormat = audioExecutionSettings.ResponseFormat,
+            Temperature = audioExecutionSettings.Temperature
+        };
+
+        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioTranscriptionAsync(audioOptions, cancellationToken)).ConfigureAwait(false)).Value;
+
+        return new TextContent(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData));
     }
 
     /// <summary>
@@ -1000,6 +1038,16 @@ internal abstract class ClientCore
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
+        if (usage is null)
+        {
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Usage information is not available.");
+            }
+
+            return;
+        }
+
         if (this.Logger.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(

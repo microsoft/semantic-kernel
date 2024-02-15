@@ -1,0 +1,17 @@
+{{#*inline "RetryLogic"}}
+{{~#if lastError}}
+{{#message role="system"}}## Previous attempt
+This previous plan failed to achieve the goal:
+```handlebars
+{{lastPlan}}
+```
+
+The error was:
+```
+{{lastError}}
+```
+
+Try again to achieve the goal while fixing the error.
+{{/message}}
+{{/if}}
+{{/inline}}
