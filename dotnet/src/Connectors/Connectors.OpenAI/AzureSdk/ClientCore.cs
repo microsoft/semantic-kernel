@@ -379,9 +379,8 @@ internal abstract class ClientCore
                 }
                 catch (OperationCanceledException)
                 {
-                    // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
+                    // Add cancellation message to chat history and bail out of any remaining tool calls
                     AddResponseMessage(chatOptions, chat, null, $"A tool filter requested cancellation before tool invocation. Model iterations completed: {iteration}", toolCall.Id, this.Logger);
-                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                     break;
                 }
 
@@ -433,8 +432,7 @@ internal abstract class ClientCore
                 }
                 catch (OperationCanceledException)
                 {
-                    // The tool call already happened so we can't cancel it, but turn off tools and bail out of any remaining tool calls
-                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                    // The tool call already happened so we can't cancel it, but bail out of any remaining tool calls
                     break;
                 }
 
@@ -509,6 +507,7 @@ internal abstract class ClientCore
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 break;
             case ToolFilterStopBehavior.Cancel:
+                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                 throw new OperationCanceledException();
         }
     }
@@ -647,9 +646,8 @@ internal abstract class ClientCore
                 }
                 catch (OperationCanceledException)
                 {
-                    // Add cancellation message to chat history, turn off tools, and bail out of any remaining tool calls
+                    // Add cancellation message to chat history and bail out of any remaining tool calls
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, null, $"A tool filter requested cancellation before tool invocation. Model iterations completed: {iteration}", this.Logger);
-                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
                     break;
                 }
 
@@ -701,8 +699,7 @@ internal abstract class ClientCore
                 }
                 catch (OperationCanceledException)
                 {
-                    // This tool call already happened so we can't cancel it, but turn off tools and bail out of any remaining tool calls
-                    chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                    // This tool call already happened so we can't cancel it, but bail out of any remaining tool calls
                     break;
                 }
 
