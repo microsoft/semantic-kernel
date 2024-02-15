@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -388,7 +389,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
 
         Assert.Equal(1, firstContentJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("MyPlugin_GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
 
         Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
     }
@@ -555,9 +556,51 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
 
         Assert.Equal(1, firstContentJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("MyPlugin_GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
 
         Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsUsesPromptAndSettingsCorrectlyAsync()
+    {
+        // Arrange
+        const string Prompt = "This is test prompt";
+        const string SystemMessage = "This is test system message";
+
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings() { ChatSystemPrompt = SystemMessage };
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => service);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokePromptAsync(Prompt, new(settings));
+
+        // Assert
+        Assert.Equal("Test chat response", result.ToString());
+
+        var requestContentByteArray = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContentByteArray);
+
+        var requestContent = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContentByteArray));
+
+        var messages = requestContent.GetProperty("messages");
+
+        Assert.Equal(2, messages.GetArrayLength());
+
+        Assert.Equal("This is test system message", messages[0].GetProperty("content").GetString());
+        Assert.Equal("system", messages[0].GetProperty("role").GetString());
+
+        Assert.Equal("This is test prompt", messages[1].GetProperty("content").GetString());
+        Assert.Equal("user", messages[1].GetProperty("role").GetString());
     }
 
     public void Dispose()
