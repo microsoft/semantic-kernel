@@ -126,7 +126,7 @@ public sealed class ToolFilterTests : IDisposable
         Assert.Equal(1, preFilterInvocations);
         Assert.Equal(0, functionInvocations);
         Assert.Equal(0, postFilterInvocations);
-        Assert.Equal($"A tool filter requested cancellation before tool invocation. Model iterations completed: 1", chatHistory.Last().Content);
+        Assert.Equal("A tool filter requested cancellation before tool invocation. Model iterations completed: 1", chatHistory.Last().Content);
 
         var requestContents = this._messageHandlerStub.RequestContents;
         Assert.Equal(2, requestContents.Count);
