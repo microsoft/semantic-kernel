@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -17,7 +17,6 @@ from google.generativeai.types import ChatResponse, MessageDict
 from pydantic import PrivateAttr, StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -33,7 +32,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase):
+class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     _message_history: Optional[ChatResponse] = PrivateAttr()
 
@@ -42,7 +41,6 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         ai_model_id: str,
         api_key: str,
         message_history: Optional[ChatResponse] = None,
-        log: Optional[Any] = None,
     ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
@@ -53,14 +51,11 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
             message_history {Optional[ChatResponse]} -- The message history to use for context. (Optional)
-            log {Optional[Any]} -- A logger to use for logging. (Optional)
         """
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,
         )
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         self._message_history = message_history
 
     async def complete_chat(
@@ -120,7 +115,6 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
-        **kwargs,
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -132,8 +126,6 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         settings.messages = [{"author": "user", "content": prompt}]
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -162,10 +154,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
-        **kwargs,
     ):
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def _send_chat_request(

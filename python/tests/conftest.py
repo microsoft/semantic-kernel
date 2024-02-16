@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import os
-import typing as t
 import warnings
+from typing import Optional
 
 import pytest
 
-import semantic_kernel as sk
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.settings import (
+    azure_openai_settings_from_dot_env,
+    google_palm_settings_from_dot_env,
+    openai_settings_from_dot_env,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -51,8 +56,8 @@ def enable_debug_mode():
 
 
 @pytest.fixture(scope="module")
-def create_kernel(plugin: t.Optional[KernelPlugin] = None):
-    kernel = sk.Kernel()
+def create_kernel(plugin: Optional[KernelPlugin] = None):
+    kernel = Kernel()
     if plugin:
         kernel.add_plugin(plugin)
     return kernel
@@ -66,7 +71,7 @@ def get_aoai_config():
         endpoint = os.environ["AzureOpenAI__Endpoint"]
     else:
         # Load credentials from .env file
-        deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+        deployment_name, api_key, endpoint = azure_openai_settings_from_dot_env()
         deployment_name = "text-embedding-ada-002"
 
     return deployment_name, api_key, endpoint
@@ -79,7 +84,7 @@ def get_oai_config():
         org_id = None
     else:
         # Load credentials from .env file
-        api_key, org_id = sk.openai_settings_from_dot_env()
+        api_key, org_id = openai_settings_from_dot_env()
 
     return api_key, org_id
 
@@ -90,6 +95,6 @@ def get_gp_config():
         api_key = os.environ["GOOGLE_PALM_API_KEY"]
     else:
         # Load credentials from .env file
-        api_key = sk.google_palm_settings_from_dot_env()
+        api_key = google_palm_settings_from_dot_env()
 
     return api_key

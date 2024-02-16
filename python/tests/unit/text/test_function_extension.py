@@ -10,7 +10,7 @@ from semantic_kernel.text import aggregate_chunked_results
 @pytest.mark.asyncio
 async def test_aggregate_results():
     kernel = Kernel()
-    kernel.add_text_completion_service("davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none"))
+    kernel.add_service(sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none"))
     sk_prompt = """
         {{$input}}
         How is that ?
@@ -18,11 +18,12 @@ async def test_aggregate_results():
 
     func = kernel.create_semantic_function(
         sk_prompt,
+        service_id="text-davinci-002",
         max_tokens=200,
         temperature=0,
         top_p=0.5,
     )
-    func.function = lambda function, kernel, arguments, client, request_settings: FunctionResult(
+    func.function = lambda function, kernel, arguments, service, request_settings: FunctionResult(
         function=function, value=arguments["input"], metadata={}
     )
 
