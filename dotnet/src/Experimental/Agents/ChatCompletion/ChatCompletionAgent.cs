@@ -16,33 +16,34 @@ public sealed class ChatCompletionAgent : KernelAgent
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
     /// </summary>
-    /// <param name="instructions">The instructions for the agent.</param>
-    /// <param name="executionSettings">The optional execution settings for the agent. If not provided, default settings will be used.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
-    public ChatCompletionAgent(string instructions, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
+    /// <param name="instructions">The instructions for the agent.</param>
+    /// <param name="description">The agent description.</param>
+    /// <param name="executionSettings">The optional execution settings for the agent. If not provided, default settings will be used.</param>
+    public ChatCompletionAgent(Kernel kernel, string instructions, string description, PromptExecutionSettings? executionSettings = null) : base(kernel, description)
     {
+        Verify.NotNullOrWhiteSpace(instructions, nameof(instructions));
         this._kernel = kernel;
 
-        Verify.NotNullOrWhiteSpace(instructions, nameof(instructions));
+        Verify.NotNull(instructions, nameof(instructions));
         this._instructions = instructions;
 
         this._promptExecutionSettings = executionSettings;
     }
 
     /// <inheritdoc/>
-    public override async Task<IReadOnlyList<AgentMessage>> InvokeAsync(IReadOnlyList<AgentMessage> messages, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public override async Task<IReadOnlyList<AgentMessage>> InvokeAsync(IReadOnlyList<AgentMessage> messages, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
 
         executionSettings = this.GetExecutionSettings(executionSettings);
-        kernel = this.GetKernel(kernel);
 
         var chat = new ChatHistory(this._instructions);
         chat.AddRange(messages.Select(m => CreateChatMessage(m)));
 
-        var chatMessageContent = await this.InvokeAsync(chat, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        var chatMessageContent = await this.InvokeAsync(chat, executionSettings, cancellationToken).ConfigureAwait(false);
 
-        return chatMessageContent.Select(m => this.CreateAgentMessage(m, kernel)).ToArray();
+        return chatMessageContent.Select(m => this.CreateAgentMessage(m)).ToArray();
     }
 
     /// <summary>
@@ -50,34 +51,22 @@ public sealed class ChatCompletionAgent : KernelAgent
     /// </summary>
     /// <param name="messages">A list of the messages for the agent to process.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to cancel the operation.</param>
     /// <returns>List of messages representing the agent's response.</returns>
-    public async Task<IReadOnlyList<ChatMessageContent>> InvokeAsync(ChatHistory messages, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ChatMessageContent>> InvokeAsync(ChatHistory messages, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
 
         executionSettings = this.GetExecutionSettings(executionSettings);
-        kernel = this.GetKernel(kernel);
 
         // TODO: Use kernel.ServiceSelector after it has been refactored to not require function and kernel arguments.
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var chatCompletionService = this._kernel.GetRequiredService<IChatCompletionService>();
 
         return await chatCompletionService.GetChatMessageContentsAsync(
             messages,
             executionSettings,
-            kernel,
+            this._kernel,
             cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Returns the kernel instance to be used, either from the provided override or the class instance one.
-    /// </summary>
-    /// <param name="kernelOverride">Optional kernel instance to be used instead of the class instance one.</param>
-    /// <returns>The kernel instance to be used.</returns>
-    private Kernel GetKernel(Kernel? kernelOverride)
-    {
-        return kernelOverride ?? this._kernel ?? throw new KernelException("Kernel is not provided.");
     }
 
     /// <summary>
@@ -149,9 +138,8 @@ public sealed class ChatCompletionAgent : KernelAgent
     /// Creates an agent message from a chat message.
     /// </summary>
     /// <param name="message">The chat message to be converted.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <returns>An agent message created from the chat message.</returns>
-    private AgentMessage CreateAgentMessage(ChatMessageContent message, Kernel kernel)
+    private AgentMessage CreateAgentMessage(ChatMessageContent message)
     {
         Verify.NotNull(message, nameof(message));
 
@@ -160,11 +148,11 @@ public sealed class ChatCompletionAgent : KernelAgent
             content: message.Content,
             innerMessage: message,
             agent: this,
-            kernel: kernel,
+            kernel: this._kernel,
             metadata: message.Metadata);
     }
 
-    private readonly Kernel? _kernel;
+    private readonly Kernel _kernel;
     private readonly string _instructions;
     private readonly PromptExecutionSettings? _promptExecutionSettings;
 }

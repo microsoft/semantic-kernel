@@ -35,7 +35,7 @@ public class ChatCompletionAgentTests
            .Setup(ccs => ccs.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
            .ReturnsAsync(new List<ChatMessageContent>());
 
-        var agent = new ChatCompletionAgent("fake-instructions", kernel: this._kernelBuilder.Build());
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
         var result = await agent.InvokeAsync(new List<AgentMessage>());
@@ -58,7 +58,7 @@ public class ChatCompletionAgentTests
            .Setup(ccs => ccs.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
            .ReturnsAsync(new List<ChatMessageContent>());
 
-        var agent = new ChatCompletionAgent("fake-instructions", kernel: this._kernelBuilder.Build());
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
         var result = await agent.InvokeAsync(new List<AgentMessage>() { new(AuthorRole.User, "fake-user-message") });
@@ -86,7 +86,7 @@ public class ChatCompletionAgentTests
                 new(AuthorRole.Assistant, "fake-assistant-message-2")
             });
 
-        var agent = new ChatCompletionAgent("fake-instructions", kernel: this._kernelBuilder.Build());
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
         var result = await agent.InvokeAsync(new List<AgentMessage>());

@@ -28,16 +28,17 @@ public class Example79_ChatCompletionAgent : BaseTest
     public async Task ChatWithAgentAsync()
     {
         var agent = new ChatCompletionAgent(
+            kernel: this._kernel,
             instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
-            new OpenAIPromptExecutionSettings
+            description: "Financial Adviser",
+            executionSettings: new OpenAIPromptExecutionSettings
             {
                 MaxTokens = 500,
                 Temperature = 0.7,
                 TopP = 1.0,
                 PresencePenalty = 0.0,
                 FrequencyPenalty = 0.0,
-            },
-            this._kernel
+            }
          );
 
         var prompt = PrintPrompt("I need help with my investment portfolio. Please guide me.");
@@ -60,24 +61,26 @@ public class Example79_ChatCompletionAgent : BaseTest
         };
 
         var fitnessTrainer = new ChatCompletionAgent(
-           instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
-           "You are not a stress management expert, so refrain from recommending stress management strategies. " +
-           "Collaborate with the stress management expert to create a holistic wellness plan." +
-           "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
-           "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
-           settings,
-           this._kernel
+            kernel: this._kernel,
+            instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
+            "You are not a stress management expert, so refrain from recommending stress management strategies. " +
+            "Collaborate with the stress management expert to create a holistic wellness plan." +
+            "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
+            "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
+            description: "Fitness Trainer",
+            executionSettings: settings
         );
 
         var stressManagementExpert = new ChatCompletionAgent(
+            kernel: this._kernel,
             instructions: "As a stress management expert, provide guidance on stress reduction strategies. " +
             "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
             "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
             "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
             "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
             "Always include your role at the beginning of each response such as 'As a stress management expert.",
-            settings,
-            this._kernel
+            description: "Stress Management Expert",
+            executionSettings: settings
          );
 
         var chat = new TurnBasedChat(new[] { fitnessTrainer, stressManagementExpert }, (chatHistory, replies, turn) =>
@@ -109,9 +112,10 @@ public class Example79_ChatCompletionAgent : BaseTest
         };
 
         var agent = new ChatCompletionAgent(
+            kernel: this._kernel,
             instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners.",
-            settings,
-            this._kernel);
+            description: "Fitness Trainer",
+            executionSettings: settings);
 
         var prompt = PrintPrompt("I need help creating a simple wellness plan for my client James that is appropriate for his age. Please guide me.");
         PrintConversation(await agent.InvokeAsync(new[] { new AgentMessage(AuthorRole.User, prompt) }));
@@ -137,9 +141,10 @@ public class Example79_ChatCompletionAgent : BaseTest
         };
 
         KernelAgent agent = new ChatCompletionAgent(
+            kernel: this._kernel,
             instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners.",
-            settings,
-            this._kernel);
+            description: "Fitness Trainer",
+            executionSettings: settings);
 
         // Register a post-processor to handle the agent's response to manually invoke the CRM function.
         agent = new AgentDecorator(agent, postProcessor: async messages =>
@@ -262,21 +267,21 @@ public class Example79_ChatCompletionAgent : BaseTest
         public AgentDecorator(
             KernelAgent agent,
             Func<IReadOnlyList<AgentMessage>, Task<IReadOnlyList<AgentMessage>>>? preProcessor = null,
-            Func<IReadOnlyList<AgentMessage>, Task<IReadOnlyList<AgentMessage>>>? postProcessor = null)
+            Func<IReadOnlyList<AgentMessage>, Task<IReadOnlyList<AgentMessage>>>? postProcessor = null) : base(agent.Kernel, agent.Description)
         {
             this._agent = agent;
             this._preProcessor = preProcessor;
             this._postProcessor = postProcessor;
         }
 
-        public override async Task<IReadOnlyList<AgentMessage>> InvokeAsync(IReadOnlyList<AgentMessage> messages, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        public override async Task<IReadOnlyList<AgentMessage>> InvokeAsync(IReadOnlyList<AgentMessage> messages, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
         {
             if (this._preProcessor != null)
             {
                 messages = await this._preProcessor(messages);
             }
 
-            var result = await this._agent.InvokeAsync(messages, executionSettings, kernel, cancellationToken);
+            var result = await this._agent.InvokeAsync(messages, executionSettings, cancellationToken);
 
             if (this._postProcessor != null)
             {
