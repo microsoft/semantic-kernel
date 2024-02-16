@@ -37,7 +37,6 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         chat_history: ChatHistory,
         settings: "OpenAIPromptExecutionSettings",
-        **kwargs,
     ) -> List["TextContent"]:
         """Executes a completion request and returns the result.
 
@@ -79,7 +78,6 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         chat_history: ChatHistory,
         settings: "OpenAIPromptExecutionSettings",
-        **kwargs,
     ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
         Executes a completion request and streams the result.

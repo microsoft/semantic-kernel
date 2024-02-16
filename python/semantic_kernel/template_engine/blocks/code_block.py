@@ -89,7 +89,7 @@ class CodeBlock(Block):
 
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:
-            arguments_clone = self._enrich_function_arguments(kernel, arguments_clone, function.metadata)
+            arguments_clone = self._enrich_function_arguments(kernel, arguments_clone, function.describe())
 
         result = await function.invoke(kernel, arguments_clone)
         if exc := result.metadata.get("error", None):

@@ -28,8 +28,7 @@ async def test_azure_e2e_chat_completion_with_plugin(setup_tldr_function_for_oai
     print(f"* Deployment: {deployment_name}")
 
     # Configure LLM service
-    kernel.add_chat_service(
-        "chat_completion",
+    kernel.add_service(
         sk_oai.AzureChatCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
     )
 

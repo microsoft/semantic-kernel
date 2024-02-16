@@ -39,9 +39,8 @@ async def test_text_completion(model_name, task, input_str):
     kernel = Kernel()
 
     # Configure LLM service
-    kernel.add_text_completion_service(
-        service_id=model_name,
-        service=sk_hf.HuggingFaceTextCompletion(ai_model_id=model_name, task=task),
+    kernel.add_service(
+        service=sk_hf.HuggingFaceTextCompletion(service_id=model_name, ai_model_id=model_name, task=task),
     )
 
     exec_settings = PromptExecutionSettings(extension_data={"max_tokens": 25, "temperature": 0.7, "top_p": 0.5})
@@ -97,9 +96,8 @@ async def test_text_completion_stream(model_name, task, input_str):
     kernel = Kernel()
 
     # Configure LLM service
-    kernel.add_text_completion_service(
-        service_id=model_name,
-        service=sk_hf.HuggingFaceTextCompletion(ai_model_id=model_name, task=task),
+    kernel.add_service(
+        sk_hf.HuggingFaceTextCompletion(service_id=model_name, ai_model_id=model_name, task=task),
     )
 
     exec_settings = PromptExecutionSettings(extension_data={"max_tokens": 25, "temperature": 0.7, "top_p": 0.5})

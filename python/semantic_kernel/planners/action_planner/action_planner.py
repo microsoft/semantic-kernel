@@ -55,8 +55,6 @@ class ActionPlanner:
         prompt: Optional[str] = None,
         **kwargs,
     ) -> None:
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if kernel is None:
             raise PlanningException(
                 PlanningException.ErrorCodes.InvalidConfiguration,

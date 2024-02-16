@@ -6,6 +6,7 @@ from typing import Any, Mapping, Optional
 from pydantic import Field
 
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ class FunctionResult(KernelBaseModel):
     """The result of a function.
 
     Arguments:
-        function (Any): The function that was invoked.
+        function (KernelFunctionMetadata): The metadata of the function that was invoked.
         value (Any): The value of the result.
         metadata (Mapping[str, Any]): The metadata of the result.
 
@@ -27,7 +28,7 @@ class FunctionResult(KernelBaseModel):
 
     """
 
-    function: Any
+    function: KernelFunctionMetadata
     value: Any
     metadata: Mapping[str, Any] = Field(default_factory=dict)
 

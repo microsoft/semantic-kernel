@@ -13,13 +13,13 @@ from semantic_kernel.text import aggregate_chunked_results
 @pytest.mark.asyncio
 async def test_aggregate_results():
     kernel = Kernel()
-    kernel.add_text_completion_service("davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none"))
+    kernel.add_service(sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none"))
     prompt = """
         {{$input}}
         How is that ?
     """
 
-    req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
+    req_settings = PromptExecutionSettings(service_id="text-davinci-002", extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt,
@@ -28,7 +28,7 @@ async def test_aggregate_results():
         input_variables=[
             InputVariable(name="request", description="The user input", is_required=True),
         ],
-        execution_settings={"default": req_settings},
+        execution_settings=req_settings,
     )
 
     func = kernel.create_function_from_prompt(

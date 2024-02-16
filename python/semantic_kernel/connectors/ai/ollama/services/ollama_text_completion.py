@@ -7,7 +7,6 @@ from typing import AsyncIterable, List, Optional
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
     OllamaTextPromptExecutionSettings,
 )
@@ -23,7 +22,7 @@ from semantic_kernel.utils.chat import prepare_chat_history_for_request
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
+class OllamaTextCompletion(TextCompletionClientBase):
     """
     Initializes a new instance of the OllamaTextCompletion class.
 
@@ -41,7 +40,6 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         self,
         chat_history: ChatHistory,
         settings: OllamaTextPromptExecutionSettings,
-        **kwargs,
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -65,7 +63,6 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         self,
         chat_history: ChatHistory,
         settings: OllamaTextPromptExecutionSettings,
-        **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Ollama model.

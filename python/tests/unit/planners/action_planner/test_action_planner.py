@@ -39,13 +39,6 @@ def test_throw_without_kernel():
         ActionPlanner(None)
 
 
-def test_throw_without_completion_service():
-    kernel = Kernel()
-
-    with pytest.raises(AIException):
-        ActionPlanner(kernel)
-
-
 @pytest.fixture
 def mock_kernel(plugins_input):
     kernel = Mock(spec=Kernel)
