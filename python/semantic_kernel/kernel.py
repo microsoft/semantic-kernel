@@ -566,6 +566,11 @@ class Kernel(KernelBaseModel):
             raise ValueError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
         return self.plugins[plugin_name][function_name]
 
+    def add_default_values(self, arguments, prompt_template_config):
+        for parameter in prompt_template_config.input_variables:
+            if not arguments.get(parameter.name) and parameter.default not in {None, "", False, 0}:
+                arguments[parameter.name] = parameter.default
+
     def create_function_from_prompt(
         self,
         template: Optional[str] = None,
