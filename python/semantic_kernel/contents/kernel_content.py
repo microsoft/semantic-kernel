@@ -12,7 +12,7 @@ class KernelContent(KernelBaseModel, ABC):
 
     inner_content: Optional[Any] = None
     ai_model_id: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
     @abstractmethod
     def __str__(self) -> str:

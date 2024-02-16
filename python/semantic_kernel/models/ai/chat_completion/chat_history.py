@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Iterator, List, Optional
+from typing import Any, Iterator, List, Optional
 
 from pydantic import Field
 
@@ -43,19 +43,20 @@ class ChatHistory(KernelBaseModel):
         """Add an assistant message to the chat template."""
         self.add_message(ChatRole.ASSISTANT, content)
 
-    def add_tool_message(self, content: str) -> None:
+    def add_tool_message(self, content: str, metadata: Optional[dict[str, Any]] = None) -> None:
         """Add a tool message to the chat template."""
-        self.add_message(ChatRole.TOOL, content)
+        self.add_message(ChatRole.TOOL, content, metadata=metadata)
 
-    def add_message(self, role: ChatRole, content: str, encoding: Optional[str] = None) -> None:
+    def add_message(self, role: ChatRole, content: str, encoding: Optional[str] = None, metadata: Optional[dict[str, Any]] = None) -> None:
         """Add a message to the history.
 
         Args:
             role (ChatRole): The role of the message (user, assistant, system, or tool).
             message (ChatMessageContent): The message to add.
             encoding (Optional[str]): The encoding of the message.
+            metadata (Optional[dict[str, Any]]): Any metadata to attach to the message.
         """
-        self.messages.append(ChatMessageContent(role=role, content=content, encoding=encoding))
+        self.messages.append(ChatMessageContent(role=role, content=content, encoding=encoding, metadata=metadata))
 
     def remove_message(self, message: ChatMessageContent) -> bool:
         """Remove a message from the history.

@@ -8,9 +8,6 @@ from semantic_kernel.prompt_template.prompt_template import PromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.prompt_template.semantic_function_config import (
-    SemanticFunctionConfig,
-)
 from semantic_kernel.utils.logging import setup_logging
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import (
@@ -46,7 +43,6 @@ __all__ = [
     "PromptTemplateConfig",
     "PromptTemplate",
     "ChatPromptTemplate",
-    "SemanticFunctionConfig",
     "KernelArguments",
     "memory",
     "core_plugins",

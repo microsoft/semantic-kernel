@@ -2,19 +2,20 @@
 
 import json
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openai.types.chat import ChatCompletion
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
-from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
-    OpenAIChatPromptTemplate,
-)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
                     for param in func_view.parameters
                     if param.expose
                 },
-                "required": [p.name for p in func_view.parameters if p.required],
+                "required": [p.name for p in func_view.parameters if p.required and p.expose],
             },
         },
     }
@@ -225,6 +226,7 @@ async def chat_completion_with_tool_call(
     chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[KernelFunction] = None,
+    chat_history: Optional[ChatHistory] = None,
     **kwargs: Dict[str, Any],
 ) -> FunctionResult:
     """Perform a chat completion with auto-executing function calling.
@@ -245,6 +247,7 @@ async def chat_completion_with_tool_call(
         chat_function_name: the function name of the chat function.
         chat_function: the chat function, if not provided, it will be retrieved from the kernel.
             make sure to provide either the chat_function or the chat_plugin_name and chat_function_name.
+        chat_history: the chat history to use, if not provided, will attempt to retrieve from arguments
 
         max_function_calls: the maximum number of function calls to execute, defaults to 5.
         current_call_count: the current number of function calls executed.
@@ -260,25 +263,28 @@ async def chat_completion_with_tool_call(
         if chat_plugin_name is None or chat_function_name is None:
             raise ValueError("Please provide either the chat_function or the chat_plugin_name and chat_function_name.")
         chat_function = kernel.func(plugin_name=chat_plugin_name, function_name=chat_function_name)
-    assert isinstance(
-        chat_function.chat_prompt_template, OpenAIChatPromptTemplate
+    assert issubclass(
+        type(chat_function.ai_service), Union[ChatCompletionClientBase, TextCompletionClientBase]
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
 
-    settings = chat_function.chat_prompt_template.prompt_config.execution_settings
+    settings = chat_function.prompt_execution_settings[chat_function.ai_service.service_id]
+
+    if not arguments:
+        arguments = KernelArguments()
     arguments.execution_settings[settings.service_id] = settings
     if current_call_count >= max_function_calls:
         settings.functions = []
     result = await chat_function.invoke(
         kernel=kernel,
-        arguments=KernelArguments(settings=settings),
+        arguments=arguments,
         # when the maximum number of function calls is reached, execute the chat function without Functions.
     )
-    if not (results := result.objects.pop("results", None)):
+    if not isinstance(result, FunctionResult) and result.value[0].tool_call is None:
         return result
     function_call = next(
         (
             fc
-            for fc in (results[0].function_call or results[0].tool_calls or [None])
+            for fc in (result.value[0].function_call or result.value[0].tool_calls or [None])
             if isinstance(fc, (FunctionCall, ToolCall))
         ),
         None,

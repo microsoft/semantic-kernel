@@ -16,4 +16,4 @@ class KernelParameterMetadata(KernelBaseModel):
     type_: Optional[str] = Field(default="str", alias="type")
     required: Optional[bool] = False
     # expose is used to distinguish between parameters that should be exposed to tool calling and those that should not
-    expose: Optional[bool] = Field(default=True, exclude=True)
+    expose: Optional[bool] = Field(default=False, exclude=True)

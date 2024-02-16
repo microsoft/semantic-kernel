@@ -25,14 +25,12 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-from semantic_kernel.prompt_template.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -50,19 +48,6 @@ if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
 DEFAULT_SERVICE_ID = "default"
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-
-def store_results(chat_prompt: ChatPromptTemplate, results: List["ChatMessageContent"]):
-    """Stores specific results in the chat prompt template."""
-    if hasattr(results[0], "tool_message") and results[0].tool_message is not None:
-        chat_prompt.add_message(role="tool", message=results[0].tool_message)
-    chat_prompt.add_message(
-        "assistant",
-        message=results[0].content,
-        function_call=results[0].function_call if hasattr(results[0], "function_call") else None,
-        tool_calls=results[0].tool_calls if hasattr(results[0], "tool_calls") else None,
-    )
-    return chat_prompt
 
 
 class KernelFunction(KernelBaseModel):
@@ -183,6 +168,7 @@ class KernelFunction(KernelBaseModel):
                         default_value=param["default_value"],
                         type=param.get("type", "str"),
                         required=param.get("required", False),
+                        expose=True,
                     )
                 )
         return_param = KernelParameterMetadata(
@@ -267,10 +253,8 @@ class KernelFunction(KernelBaseModel):
                 template=prompt,
             )
 
-        if execution_settings:
-            prompt_template_config.execution_settings = {DEFAULT_SERVICE_ID: execution_settings}
-        else:
-            prompt_template_config.execution_settings = {DEFAULT_SERVICE_ID: PromptExecutionSettings()}
+        if not prompt_template_config.execution_settings or execution_settings:
+            raise ValueError("Execution settings cannot be `None`")
 
         if not prompt_template:
             prompt_template = KernelPromptTemplate(prompt_template_config)
@@ -554,7 +538,7 @@ class KernelFunction(KernelBaseModel):
                 continue
             if param.name == "request_settings":
                 # TODO this needs to support getting exec_settings from other ai_model_ids
-                function_arguments[param.name] = exec_settings["default"]
+                function_arguments[param.name] = exec_settings["default"] if isinstance(exec_settings, dict) else exec_settings
                 continue
             if param.name == "arguments":
                 function_arguments[param.name] = arguments

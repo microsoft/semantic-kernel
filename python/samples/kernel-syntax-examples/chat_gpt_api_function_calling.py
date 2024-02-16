@@ -14,6 +14,10 @@ from semantic_kernel.connectors.ai.open_ai.utils import (
 )
 from semantic_kernel.core_plugins import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.input_variable import InputVariable
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -34,7 +38,7 @@ kernel = sk.Kernel()
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 api_version = "2023-12-01-preview"
 kernel.add_chat_service(
-    "chat-gpt",
+    "default",
     sk_oai.AzureChatCompletion(
         deployment_name,
         endpoint,
@@ -46,7 +50,7 @@ kernel.add_chat_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
+#kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin(MathPlugin(), plugin_name="math")
 
@@ -55,26 +59,47 @@ kernel.import_plugin(MathPlugin(), plugin_name="math")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-prompt_config = sk.PromptTemplateConfig(
-    execution_settings=sk_oai.AzureChatPromptExecutionSettings(
-        service_id="chat-gpt",
-        ai_model_id=deployment_name,
-        max_tokens=2000,
-        temperature=0.7,
-        top_p=0.8,
-        tool_choice="auto",
-        tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
-    )
+execution_settings=sk_oai.AzureChatPromptExecutionSettings(
+    service_id="default",
+    ai_model_id=deployment_name,
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    tool_choice="auto",
+    tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
 )
 
-prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
-prompt_template.add_system_message(system_message)
-prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+# prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
+# prompt_template.add_system_message(system_message)
+# prompt_template.add_user_message("Hi there, who are you?")
+# prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
+# function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+# chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
+prompt_template_config = sk.PromptTemplateConfig(
+    template="{{$user_input}}",
+    name="chat",
+    template_format="semantic-kernel",
+    input_variables=[
+        InputVariable(name="user_input", description="The user input", is_required=True),
+    ],
+    execution_settings={"default": execution_settings},
+)
+
+history = ChatHistory()
+
+history.add_system_message(system_message)
+history.add_user_message("Hi there, who are you?")
+history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+
+arguments = KernelArguments()
+
+chat_function = kernel.create_function_from_prompt(
+    prompt_template_config=prompt_template_config,
+    plugin_name="ChatBot",
+    function_name="Chat",
+)
 
 async def chat() -> bool:
     try:
@@ -89,7 +114,7 @@ async def chat() -> bool:
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
-    arguments = KernelArguments(user_input=user_input, execution_settings=prompt_config.execution_settings)
+    arguments = KernelArguments(user_input=user_input)
     result = await chat_completion_with_tool_call(
         kernel=kernel,
         arguments=arguments,

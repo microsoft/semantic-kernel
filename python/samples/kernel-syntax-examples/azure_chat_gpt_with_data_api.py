@@ -13,8 +13,10 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     AzureDataSources,
     ExtraBody,
 )
-from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import OpenAIChatPromptTemplate
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.input_variable import InputVariable
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 kernel = sk.Kernel()
 
@@ -42,8 +44,7 @@ azure_ai_search_settings["fieldsMapping"] = {
 az_source = AzureAISearchDataSources(**azure_ai_search_settings)
 az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
-req_settings = AzureChatPromptExecutionSettings(extra_body=extra)
-prompt_config = sk.PromptTemplateConfig(execution_settings=req_settings)
+req_settings = AzureChatPromptExecutionSettings(service_id='default', extra_body=extra)
 
 # When using data, set use_extensions=True and use the 2023-12-01-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
@@ -55,14 +56,28 @@ chat_service = sk_oai.AzureChatCompletion(
 )
 kernel.add_chat_service("chat-gpt", chat_service)
 
-prompt_template = OpenAIChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
+prompt_template_config = PromptTemplateConfig(
+    template="{{$user_input}}",
+    name="chat",
+    template_format="semantic-kernel",
+    input_variables=[
+        InputVariable(name="request", description="The user input", is_required=True),
+    ],
+    execution_settings={"default": req_settings},
+)
 
-prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message("I am an AI assistant here to answer your questions.")
+chat = ChatHistory()
 
-function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
+chat.add_user_message("Hi there, who are you?")
+chat.add_assistant_message("I am an AI assistant here to answer your questions.")
 
+arguments = KernelArguments()
+
+chat_function = kernel.create_function_from_prompt(
+    plugin_name="ChatBot", 
+    function_name="Chat", 
+    prompt_template_config=prompt_template_config
+)
 
 async def chat() -> bool:
     try:
@@ -88,12 +103,12 @@ async def chat() -> bool:
     async for message in kernel.invoke_stream(chat_function, arguments=arguments):
         print(str(message[0]), end="")
         full_message = message[0] if not full_message else full_message + message[0]
-    prompt_template.add_assistant_message(str(full_message))
+    chat.add_assistant_message(str(full_message))
     print("\n")
 
     # The tool message containing cited sources is available in the context
     if isinstance(full_message, AzureStreamingChatMessageContent):
-        prompt_template.add_function_response_message(name="tool", content=full_message.tool_message)
+        chat.add_function_response_message(name="tool", content=full_message.tool_message)
         print(f"Tool:> {full_message.tool_message}")
     return True
 

@@ -132,9 +132,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(choice.delta.role),
+            role=ChatRole(choice.delta.role) if choice.delta.role else None,
             content=choice.delta.content,
-            finish_reason=FinishReason(choice.finish_reason),
+            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
         )

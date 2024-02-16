@@ -180,6 +180,12 @@ class Kernel(KernelBaseModel):
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
+        if not prompt_template_config.execution_settings:
+            if execution_settings:
+                prompt_template_config.execution_settings = execution_settings
+            else:
+                prompt_template_config.execution_settings = PromptExecutionSettings()
+
         function = KernelFunction.from_prompt(
             prompt=template,
             execution_settings=execution_settings,
@@ -937,10 +943,12 @@ class Kernel(KernelBaseModel):
 
             functions += [
                 self.create_function_from_prompt(
+                    plugin_name=plugin_directory_name,
                     prompt_template=kernel_prompt_template,
                     prompt_template_config=prompt_template_config,
                     template_format="semantic-kernel",
                     function_name=function_name,
+                    description=prompt_template_config.description,
                 )
             ]
 

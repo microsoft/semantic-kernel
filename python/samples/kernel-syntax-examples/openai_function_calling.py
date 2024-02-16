@@ -5,10 +5,15 @@ import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.open_ai_chat_message import (
-    OpenAIChatMessage,
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
 )
 from semantic_kernel.core_plugins import MathPlugin
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.input_variable import InputVariable
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.functions.function_result import FunctionResult
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -23,11 +28,14 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
+def _prepare_input_chat(chat: ChatHistory):
+    return "".join([f"{msg.role}: {msg.content}\n" for msg in chat])
+
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_chat_service(
-    "gpt-3.5-turbo",
+    "chat",
     sk_oai.OpenAIChatCompletion(
         ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
@@ -74,47 +82,58 @@ tools = [
     }
 ]
 
-prompt_config = sk.PromptTemplateConfig.from_execution_settings(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    tool_choice="auto",
-    tools=tools,
-)
-prompt_template = sk.ChatPromptTemplate[OpenAIChatMessage](
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
-prompt_template.add_system_message(system_message)
-prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+async def main():
+    settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat")
+    settings.tools = tools
+    settings.tool_choice = "auto"
+    settings.max_tokens = 2000
+    settings.temperature = 0.7
+    settings.top_p = 0.8
 
-function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
-# define the functions available
+    prompt_template_config = PromptTemplateConfig(
+        template="{{$user_input}}",
+        name="chat",
+        template_format="semantic-kernel",
+        input_variables=[
+            InputVariable(name="user_input", description="The history of the conversation", is_required=True, default=""),
+        ],
+        execution_settings={"default": settings},
+    )
 
+    chat = ChatHistory(system_message=system_message)
+    chat.add_user_message("Hi there, who are you?")
+    chat.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
 
-async def main() -> None:
-    context = kernel.create_new_context()
-    context.variables["user_input"] = "I want to find a hotel in Seattle with free wifi and a pool."
+    chat_function = kernel.create_function_from_prompt(
+        plugin_name="ChatBot", 
+        function_name="Chat", 
+        prompt_template_config=prompt_template_config
+    )
+
+    chat.add_user_message("I want to find a hotel in Seattle with free wifi and a pool.")
+
+    response = kernel.invoke_stream(chat_function, KernelArguments(user_input=_prepare_input_chat(chat)))
     messages = []
     tool_call = None
-    response = chat_function.invoke_stream_async(context=context)
     async for message in response:
+        if isinstance(message, FunctionResult):
+            # There's been an error, so print it
+            print(message)
+            return
         current = message[0]
-        messages.append(current)
+        messages.append(str(current))
         if current.tool_calls:
             if tool_call is None:
                 tool_call = current.tool_calls[0]
             else:
                 tool_call += current.tool_calls[0]
-
     if tool_call:
         print(f"Function to be called: {tool_call.function.name}")
         print(f"Function parameters: \n{tool_call.function.parse_arguments()}")
         return
     print("No function was called")
-    print(f"Output was: {str(context)}")
-
+    output = "".join([msg for msg in messages])
+    print(f"Output was: {output}")
 
 if __name__ == "__main__":
     asyncio.run(main())
