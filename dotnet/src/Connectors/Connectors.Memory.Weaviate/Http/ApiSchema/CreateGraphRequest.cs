@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
+using System.Linq;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
