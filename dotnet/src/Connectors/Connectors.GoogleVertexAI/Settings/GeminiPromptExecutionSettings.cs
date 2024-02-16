@@ -135,6 +135,11 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// <inheritdoc />
     public override void Freeze()
     {
+        if (this.IsFrozen)
+        {
+            return;
+        }
+
         base.Freeze();
 
         if (this._stopSequences is not null)
