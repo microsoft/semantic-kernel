@@ -6,7 +6,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>1.0.0-rc1</version>
+    <version>1.0.0-rc2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <url>https://www.github.com/microsoft/semantic-kernel</url>
@@ -788,6 +788,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-1.0.0-rc1</tag>
+        <tag>HEAD</tag>
     </scm>
 </project>
