@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel;
 
 namespace HomeAutomation;
 
@@ -15,7 +16,8 @@ internal sealed class Worker : BackgroundService
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly Kernel _kernel;
 
-    public Worker(IHostApplicationLifetime hostApplicationLifetime, Kernel kernel)
+    public Worker(IHostApplicationLifetime hostApplicationLifetime,
+        [FromKeyedServices("HomeAutomationKernel")] Kernel kernel)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _kernel = kernel;
@@ -27,7 +29,10 @@ internal sealed class Worker : BackgroundService
         var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
 
         // Enable auto function calling
-        OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
 
         ChatMessageContent chatResult = await chatCompletionService.GetChatMessageContentAsync("What time is it?",
             openAIPromptExecutionSettings, _kernel, stoppingToken);

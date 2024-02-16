@@ -14,6 +14,7 @@
 using HomeAutomation.Options;
 using HomeAutomation.Plugins;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -32,33 +33,54 @@ internal static class Program
         builder.Services.AddHostedService<Worker>();
 
         // Get configuration
-        builder.Services.AddOptions<AzureOpenAiOptions>()
-                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAiOptions)))
+        builder.Services.AddOptions<AzureOpenAI>()
+                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAI)))
                         .ValidateDataAnnotations()
                         .ValidateOnStart();
 
-        // Add plugins to include in all kernel instances here
-        builder.Services.AddSingleton<IEnumerable<KernelPlugin>>(sp =>
+        // Optionally set an HTTP retry policy
+        builder.Services.ConfigureHttpClientDefaults(c =>
         {
-            return new KernelPlugin[]
+            // Use a standard resiliency policy, augmented to retry 3 times
+            c.AddStandardResilienceHandler().Configure(o =>
             {
-                KernelPluginFactory.CreateFromType<MyTimePlugin>(),
-                KernelPluginFactory.CreateFromObject(new MyLightPlugin(turnedOn: false), "OfficeLight"),
-                KernelPluginFactory.CreateFromObject(new MyLightPlugin(turnedOn: false), "PorchLight"),
-            };
+                o.Retry.MaxRetryAttempts = 3;
+                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+            });
         });
-        builder.Services.AddSingleton<KernelPluginCollection>();
 
-        // Instantiate chat completion service that kernels will use
+        // Chat completion service that kernels will use
         builder.Services.AddSingleton<IChatCompletionService>(sp =>
         {
-            AzureOpenAiOptions options = sp.GetRequiredService<IOptions<AzureOpenAiOptions>>().Value;
+            AzureOpenAI options = sp.GetRequiredService<IOptions<AzureOpenAI>>().Value;
 
-            return new AzureOpenAIChatCompletionService(options.Deployment, options.Endpoint, options.ApiKey);
+            // A custom HttpClient can be provided to this constructor
+            return new AzureOpenAIChatCompletionService(options.ChatDeploymentName, options.Endpoint, options.ApiKey);
+        });
+
+        // Add plugins that can be used by kernels
+        // The plugins are added as singletons so that they can be used by multiple kernels
+        builder.Services.AddSingleton<MyTimePlugin>();
+        builder.Services.AddKeyedSingleton<MyLightPlugin>("OfficeLight");
+        builder.Services.AddKeyedSingleton<MyLightPlugin>("PorchLight", (sp, key) =>
+        {
+            return new MyLightPlugin(turnedOn: true);
+        });
+
+        // Add a home automation kernel to the dependency injection container
+        builder.Services.AddKeyedTransient<Kernel>("HomeAutomationKernel", (sp, key) =>
+        {
+            // Create a collection of plugins that the kernel will use
+            KernelPluginCollection pluginCollection = new();
+            pluginCollection.AddFromObject(sp.GetRequiredService<MyTimePlugin>());
+            pluginCollection.AddFromObject(sp.GetRequiredKeyedService<MyLightPlugin>("OfficeLight"), "OfficeLight");
+            pluginCollection.AddFromObject(sp.GetRequiredKeyedService<MyLightPlugin>("PorchLight"), "PorchLight");
+
+            return new Kernel(sp, pluginCollection);
         });
 
         // When created by the dependency injection container, Semantic Kernel logging is included by default
-        builder.Services.AddTransient<Kernel>();
+        //builder.Services.AddTransient<Kernel>();
 
         using IHost host = builder.Build();
 

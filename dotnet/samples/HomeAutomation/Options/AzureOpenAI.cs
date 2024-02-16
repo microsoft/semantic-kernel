@@ -5,12 +5,12 @@ using System.ComponentModel.DataAnnotations;
 namespace HomeAutomation.Options;
 
 /// <summary>
-/// Loads configuration upon instantiation.
+/// Azure OpenAI settings.
 /// </summary>
-public sealed class AzureOpenAiOptions
+public sealed class AzureOpenAI
 {
     [Required]
-    public string Deployment { get; set; } = string.Empty;
+    public string ChatDeploymentName { get; set; } = string.Empty;
 
     [Required]
     public string Endpoint { get; set; } = string.Empty;
