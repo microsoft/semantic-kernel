@@ -19,8 +19,10 @@ internal sealed class CreateGraphRequest
 
     public HttpRequestMessage Build()
     {
+        var vectors = this.Vector.ToArray();
+        var vectorAsString = string.Join(",", vectors.Select(x => string.Format(CultureInfo.InvariantCulture, "{0:f}", x)));
         string payload = $"{{Get{{{this.Class}(" +
-                         $"nearVector:{{vector:[{string.Join(",", MemoryMarshal.ToEnumerable(this.Vector))}] " +
+                         $"nearVector:{{vector:[{vectorAsString}] " +
                          $"distance:{this.Distance}}} " +
                          $"limit:{this.Limit}){{{(this.WithVector ? "_additional{vector}" : string.Empty)} " +
                          "_additional{id distance} sk_timestamp sk_id sk_description sk_text sk_additional_metadata}}}";
