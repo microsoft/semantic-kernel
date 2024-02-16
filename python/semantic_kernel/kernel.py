@@ -590,47 +590,6 @@ class Kernel(KernelBaseModel):
 
         return function
 
-    def register_native_function(
-        self,
-        plugin_name: Optional[str],
-        kernel_function: Callable,
-    ) -> KernelFunction:
-        """
-        Creates a native function from the plugin name and kernel function
-
-        Args:
-            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
-            kernel_function (Callable): The kernel function
-
-        Returns:
-            KernelFunction: The created native function
-        """
-        if not hasattr(kernel_function, "__kernel_function__"):
-            raise KernelException(
-                KernelException.ErrorCodes.InvalidFunctionType,
-                "kernel_function argument must be decorated with @kernel_function",
-            )
-        function_name = kernel_function.__kernel_function_name__
-
-        if plugin_name is None or plugin_name == "":
-            plugin_name = f"p_{generate_random_ascii_name()}"
-        assert plugin_name is not None  # for type checker
-
-        validate_plugin_name(plugin_name)
-        validate_function_name(function_name)
-
-        if plugin_name in self.plugins and function_name in self.plugins[plugin_name]:
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                "Overloaded functions are not supported, " "please differentiate function names.",
-            )
-
-        function = KernelFunction.from_native_method(kernel_function, plugin_name)
-        self.add_plugin(plugin_name, [function])
-        function.set_default_plugin_collection(self.plugins)
-
-        return function
-
     def create_semantic_function(
         self,
         prompt_template: str,
@@ -673,6 +632,47 @@ class Kernel(KernelBaseModel):
             if exec_settings.service_id in function.prompt_execution_settings:
                 logger.warning("Overwriting execution settings for service_id: %s", exec_settings.service_id)
             function.prompt_execution_settings[exec_settings.service_id] = exec_settings
+
+        return function
+
+    def register_native_function(
+        self,
+        plugin_name: Optional[str],
+        kernel_function: Callable,
+    ) -> KernelFunction:
+        """
+        Creates a native function from the plugin name and kernel function
+
+        Args:
+            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
+            kernel_function (Callable): The kernel function
+
+        Returns:
+            KernelFunction: The created native function
+        """
+        if not hasattr(kernel_function, "__kernel_function__"):
+            raise KernelException(
+                KernelException.ErrorCodes.InvalidFunctionType,
+                "kernel_function argument must be decorated with @kernel_function",
+            )
+        function_name = kernel_function.__kernel_function_name__
+
+        if plugin_name is None or plugin_name == "":
+            plugin_name = f"p_{generate_random_ascii_name()}"
+        assert plugin_name is not None  # for type checker
+
+        validate_plugin_name(plugin_name)
+        validate_function_name(function_name)
+
+        if plugin_name in self.plugins and function_name in self.plugins[plugin_name]:
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                "Overloaded functions are not supported, " "please differentiate function names.",
+            )
+
+        function = KernelFunction.from_native_method(kernel_function, plugin_name)
+        self.add_plugin(plugin_name, [function])
+        function.set_default_plugin_collection(self.plugins)
 
         return function
 
