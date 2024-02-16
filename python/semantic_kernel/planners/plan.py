@@ -195,10 +195,16 @@ class Plan:
         if self._function is not None:
             self._function.set_ai_service(service)
 
-    def describe(self) -> Optional[KernelFunctionMetadata]:
+    def describe(self) -> KernelFunctionMetadata:
         if self._function is not None:
             return self._function.describe()
-        return None
+        return KernelFunctionMetadata(
+            name=self._name or "Plan",
+            plugin_name=self._plugin_name,
+            parameters=[],
+            description=self._description,
+            is_semantic=self._is_semantic or False,
+        )
 
     def set_available_functions(self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments") -> "Plan":
         if len(plan.steps) == 0:

@@ -6,7 +6,7 @@ import inspect
 import logging
 import os
 from copy import copy
-from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 from pydantic import Field
 
@@ -48,6 +48,8 @@ from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
@@ -59,6 +61,8 @@ from semantic_kernel.utils.validation import (
 )
 
 T = TypeVar("T")
+
+ALL_SERVICE_TYPES = Union[TextCompletionClientBase, ChatCompletionClientBase, EmbeddingGeneratorBase]
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -84,17 +88,13 @@ class Kernel(KernelBaseModel):
         function_invoked_handlers (Dict): The function invoked handlers
     """
 
-    plugins: Optional[KernelPluginCollection] = Field(default_factory=KernelPluginCollection)
-    prompt_template_engine: Optional[PromptTemplatingEngine] = Field(default_factory=PromptTemplateEngine)
+    # region Init
+
+    plugins: KernelPluginCollection = Field(default_factory=KernelPluginCollection)
+    services: Dict[str, AIServiceClientBase] = Field(default_factory=dict)
+    prompt_template_engine: PromptTemplatingEngine = Field(default_factory=PromptTemplateEngine)
+    ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     memory: Optional[SemanticTextMemoryBase] = Field(default_factory=SemanticTextMemory)
-    text_completion_services: Dict[str, Callable[["Kernel"], TextCompletionClientBase]] = Field(default_factory=dict)
-    chat_services: Dict[str, Callable[["Kernel"], ChatCompletionClientBase]] = Field(default_factory=dict)
-    text_embedding_generation_services: Dict[str, Callable[["Kernel"], EmbeddingGeneratorBase]] = Field(
-        default_factory=dict
-    )
-    default_text_completion_service: Optional[str] = Field(default=None)
-    default_chat_service: Optional[str] = Field(default=None)
-    default_text_embedding_generation_service: Optional[str] = Field(default=None)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
     function_invoking_handlers: Dict = Field(default_factory=dict)
     function_invoked_handlers: Dict = Field(default_factory=dict)
@@ -102,7 +102,9 @@ class Kernel(KernelBaseModel):
     def __init__(
         self,
         plugins: Optional[KernelPluginCollection] = None,
+        services: Optional[List[AIServiceClientBase]] = None,
         prompt_template_engine: Optional[PromptTemplatingEngine] = None,
+        ai_service_selector: Optional[AIServiceSelector] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs: Any,
     ) -> None:
@@ -116,106 +118,25 @@ class Kernel(KernelBaseModel):
             memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
             **kwargs (Any): Additional fields to be passed to the Kernel model
         """
-        plugins = plugins if plugins else KernelPluginCollection()
-        prompt_template_engine = prompt_template_engine if prompt_template_engine else PromptTemplateEngine()
+        services = {service.service_id: service for service in services} if services else {}
         memory = memory if memory else NullMemory()
 
-        super().__init__(plugins=plugins, prompt_template_engine=prompt_template_engine, memory=memory, **kwargs)
+        args = {
+            "services": services,
+            "memory": memory,
+            **kwargs,
+        }
+        if ai_service_selector:
+            args["ai_service_selector"] = ai_service_selector
+        if prompt_template_engine:
+            args["prompt_template_engine"] = prompt_template_engine
+        if plugins:
+            args["plugins"] = plugins
 
-    def add_plugin(
-        self, plugin_name: str, functions: List[KernelFunction], plugin: Optional[KernelPlugin] = None
-    ) -> None:
-        """
-        Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
-        it uses that instance instead of creating a new KernelPlugin.
+        super().__init__(**args)
 
-        Args:
-            plugin_name (str): The name of the plugin
-            functions (List[KernelFunction]): The functions to add to the plugin
-            plugin (Optional[KernelPlugin]): An optional pre-defined plugin instance
-        """
-        if plugin is None:
-            # If no plugin instance is provided, create a new KernelPlugin
-            plugin = KernelPlugin(name=plugin_name, functions=functions)
-
-        if plugin_name in self.plugins:
-            self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
-        else:
-            self.plugins.add(plugin)
-
-    def register_semantic_function(
-        self,
-        plugin_name: Optional[str],
-        function_name: str,
-        function_config: SemanticFunctionConfig,
-    ) -> KernelFunction:
-        """
-        Creates a semantic function from the plugin name, function name and function config
-
-        Args:
-            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
-            function_name (str): The name of the function
-            function_config (SemanticFunctionConfig): The function config
-
-        Returns:
-            KernelFunction: The created semantic function
-
-        Raises:
-            ValueError: If the plugin name or function name are invalid
-        """
-        if plugin_name is None or plugin_name == "":
-            plugin_name = f"p_{generate_random_ascii_name()}"
-        assert plugin_name is not None  # for type checker
-
-        validate_plugin_name(plugin_name)
-        validate_function_name(function_name)
-
-        function = self._create_semantic_function(plugin_name, function_name, function_config)
-        self.add_plugin(plugin_name, [function])
-        function.set_default_plugin_collection(self.plugins)
-
-        return function
-
-    def register_native_function(
-        self,
-        plugin_name: Optional[str],
-        kernel_function: Callable,
-    ) -> KernelFunction:
-        """
-        Creates a native function from the plugin name and kernel function
-
-        Args:
-            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
-            kernel_function (Callable): The kernel function
-
-        Returns:
-            KernelFunction: The created native function
-        """
-        if not hasattr(kernel_function, "__kernel_function__"):
-            raise KernelException(
-                KernelException.ErrorCodes.InvalidFunctionType,
-                "kernel_function argument must be decorated with @kernel_function",
-            )
-        function_name = kernel_function.__kernel_function_name__
-
-        if plugin_name is None or plugin_name == "":
-            plugin_name = f"p_{generate_random_ascii_name()}"
-        assert plugin_name is not None  # for type checker
-
-        validate_plugin_name(plugin_name)
-        validate_function_name(function_name)
-
-        if plugin_name in self.plugins and function_name in self.plugins[plugin_name]:
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                "Overloaded functions are not supported, " "please differentiate function names.",
-            )
-
-        function = KernelFunction.from_native_method(kernel_function, plugin_name)
-        self.add_plugin(plugin_name, [function])
-        function.set_default_plugin_collection(self.plugins)
-
-        return function
+    # endregion
+    # region Invoke Functions
 
     async def invoke_stream(
         self,
@@ -428,50 +349,14 @@ class Kernel(KernelBaseModel):
 
         return results if number_of_steps > 1 else results[0]
 
-    def func(self, plugin_name: str, function_name: str) -> KernelFunction:
-        if plugin_name not in self.plugins:
-            raise ValueError(f"Plugin '{plugin_name}' not found")
-        if function_name not in self.plugins[plugin_name]:
-            raise ValueError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
-        return self.plugins[plugin_name][function_name]
+    def select_ai_service(
+        self, function: KernelFunction, arguments: KernelArguments
+    ) -> Tuple[ALL_SERVICE_TYPES, PromptExecutionSettings]:
+        """Uses the AI service selector to select a service for the function."""
+        return self.ai_service_selector.select_ai_service(self, function, arguments)
 
-    def use_memory(
-        self,
-        storage: MemoryStoreBase,
-        embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
-    ) -> None:
-        if embeddings_generator is None:
-            service_id = self.get_text_embedding_generation_service_id()
-            if not service_id:
-                raise ValueError("The embedding service id cannot be `None` or empty")
-
-            embeddings_service = self.get_ai_service(EmbeddingGeneratorBase, service_id)
-            if not embeddings_service:
-                raise ValueError(f"AI configuration is missing for: {service_id}")
-
-            embeddings_generator = embeddings_service(self)
-
-        if storage is None:
-            raise ValueError("The storage instance provided cannot be `None`")
-        if embeddings_generator is None:
-            raise ValueError("The embedding generator cannot be `None`")
-
-        self.register_memory(SemanticTextMemory(storage, embeddings_generator))
-
-    def register_memory(self, memory: SemanticTextMemoryBase) -> None:
-        self.memory = memory
-
-    def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
-        self.use_memory(memory_store)
-
-    def on_function_invoking(
-        self, kernel_function_metadata: KernelFunctionMetadata, arguments: KernelArguments
-    ) -> FunctionInvokingEventArgs:
-        args = FunctionInvokingEventArgs(kernel_function_metadata=kernel_function_metadata, arguments=arguments)
-        if self.function_invoking_handlers:
-            for handler in self.function_invoking_handlers.values():
-                handler(self, args)
-        return args
+    # endregion
+    # region Function Invoking/Invoked Events
 
     def on_function_invoked(
         self,
@@ -491,6 +376,48 @@ class Kernel(KernelBaseModel):
             for handler in self.function_invoked_handlers.values():
                 handler(self, args)
         return args
+
+    def add_function_invoking_handler(
+        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
+    ) -> None:
+        self.function_invoking_handlers[id(handler)] = handler
+
+    def add_function_invoked_handler(
+        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokedEventArgs]
+    ) -> None:
+        self.function_invoked_handlers[id(handler)] = handler
+
+    def remove_function_invoking_handler(self, handler: Callable) -> None:
+        if id(handler) in self.function_invoking_handlers:
+            del self.function_invoking_handlers[id(handler)]
+
+    def remove_function_invoked_handler(self, handler: Callable) -> None:
+        if id(handler) in self.function_invoked_handlers:
+            del self.function_invoked_handlers[id(handler)]
+
+    # endregion
+    # region Plugins
+
+    def add_plugin(
+        self, plugin_name: str, functions: List[KernelFunction], plugin: Optional[KernelPlugin] = None
+    ) -> None:
+        """
+        Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
+        it uses that instance instead of creating a new KernelPlugin.
+
+        Args:
+            plugin_name (str): The name of the plugin
+            functions (List[KernelFunction]): The functions to add to the plugin
+            plugin (Optional[KernelPlugin]): An optional pre-defined plugin instance
+        """
+        if plugin is None:
+            # If no plugin instance is provided, create a new KernelPlugin
+            plugin = KernelPlugin(name=plugin_name, functions=functions)
+
+        if plugin_name in self.plugins:
+            self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
+        else:
+            self.plugins.add(plugin)
 
     def import_plugin(self, plugin_instance: Union[Any, Dict[str, Any]], plugin_name: str) -> KernelPlugin:
         """
@@ -551,273 +478,6 @@ class Kernel(KernelBaseModel):
             self.plugins.add(plugin)
 
         return plugin
-
-    def get_prompt_execution_settings_from_service(
-        self, type: Type[T], service_id: Optional[str] = None
-    ) -> PromptExecutionSettings:
-        """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
-        service = self.get_ai_service(type, service_id)
-        service_instance = service.__closure__[0].cell_contents
-        req_settings_type = service_instance.get_prompt_execution_settings_class()
-        return req_settings_type(
-            service_id=service_id,
-            extension_data={"ai_model_id": service_instance.ai_model_id},
-        )
-
-    def get_ai_service(self, type: Type[T], service_id: Optional[str] = None) -> Callable[["Kernel"], T]:
-        matching_type = {}
-        if type == TextCompletionClientBase:
-            service_id = service_id or self.default_text_completion_service
-            matching_type = self.text_completion_services
-        elif type == ChatCompletionClientBase:
-            service_id = service_id or self.default_chat_service
-            matching_type = self.chat_services
-        elif type == EmbeddingGeneratorBase:
-            service_id = service_id or self.default_text_embedding_generation_service
-            matching_type = self.text_embedding_generation_services
-        else:
-            raise ValueError(f"Unknown AI service type: {type.__name__}")
-
-        if service_id not in matching_type:
-            raise ValueError(f"{type.__name__} service with service_id '{service_id}' not found")
-
-        return matching_type[service_id]
-
-    def all_text_completion_services(self) -> List[str]:
-        return list(self.text_completion_services.keys())
-
-    def all_chat_services(self) -> List[str]:
-        return list(self.chat_services.keys())
-
-    def all_text_embedding_generation_services(self) -> List[str]:
-        return list(self.text_embedding_generation_services.keys())
-
-    def add_text_completion_service(
-        self,
-        service_id: str,
-        service: Union[TextCompletionClientBase, Callable[["Kernel"], TextCompletionClientBase]],
-        overwrite: bool = True,
-    ) -> "Kernel":
-        if not service_id:
-            raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self.text_completion_services:
-            raise ValueError(f"Text service with service_id '{service_id}' already exists")
-
-        self.text_completion_services[service_id] = service if isinstance(service, Callable) else lambda _: service
-        if self.default_text_completion_service is None:
-            self.default_text_completion_service = service_id
-
-        return self
-
-    def add_chat_service(
-        self,
-        service_id: str,
-        service: Union[ChatCompletionClientBase, Callable[["Kernel"], ChatCompletionClientBase]],
-        overwrite: bool = True,
-    ) -> "Kernel":
-        if not service_id:
-            raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self.chat_services:
-            raise ValueError(f"Chat service with service_id '{service_id}' already exists")
-
-        self.chat_services[service_id] = service if isinstance(service, Callable) else lambda _: service
-        if self.default_chat_service is None:
-            self.default_chat_service = service_id
-
-        if isinstance(service, TextCompletionClientBase):
-            self.add_text_completion_service(service_id, service)
-
-        return self
-
-    def add_text_embedding_generation_service(
-        self,
-        service_id: str,
-        service: Union[EmbeddingGeneratorBase, Callable[["Kernel"], EmbeddingGeneratorBase]],
-        overwrite: bool = False,
-    ) -> "Kernel":
-        if not service_id:
-            raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self.text_embedding_generation_services:
-            raise ValueError(f"Embedding service with service_id '{service_id}' already exists")
-
-        self.text_embedding_generation_services[service_id] = (
-            service if isinstance(service, Callable) else lambda _: service
-        )
-        if self.default_text_embedding_generation_service is None:
-            self.default_text_embedding_generation_service = service_id
-
-        return self
-
-    def set_default_text_completion_service(self, service_id: str) -> "Kernel":
-        if service_id not in self.text_completion_services:
-            raise ValueError(f"AI service with service_id '{service_id}' does not exist")
-
-        self.default_text_completion_service = service_id
-        return self
-
-    def set_default_chat_service(self, service_id: str) -> "Kernel":
-        if service_id not in self.chat_services:
-            raise ValueError(f"AI service with service_id '{service_id}' does not exist")
-
-        self.default_chat_service = service_id
-        return self
-
-    def set_default_text_embedding_generation_service(self, service_id: str) -> "Kernel":
-        if service_id not in self.text_embedding_generation_services:
-            raise ValueError(f"AI service with service_id '{service_id}' does not exist")
-
-        self.default_text_embedding_generation_service = service_id
-        return self
-
-    def get_text_completion_service_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self.text_completion_services:
-            if self.default_text_completion_service is None:
-                raise ValueError("No default text service is set")
-            return self.default_text_completion_service
-
-        return service_id
-
-    def get_chat_service_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self.chat_services:
-            if self.default_chat_service is None:
-                raise ValueError("No default chat service is set")
-            return self.default_chat_service
-
-        return service_id
-
-    def get_text_embedding_generation_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self.text_embedding_generation_services:
-            if self.default_text_embedding_generation_service is None:
-                raise ValueError("No default embedding service is set")
-            return self.default_text_embedding_generation_service
-
-        return service_id
-
-    def remove_text_completion_service(self, service_id: str) -> "Kernel":
-        if service_id not in self.text_completion_services:
-            raise ValueError(f"AI service with service_id '{service_id}' does not exist")
-
-        del self.text_completion_services[service_id]
-        if self.default_text_completion_service == service_id:
-            self.default_text_completion_service = next(iter(self.text_completion_services), None)
-        return self
-
-    def remove_chat_service(self, service_id: str) -> "Kernel":
-        if service_id not in self.chat_services:
-            raise ValueError(f"AI service with service_id '{service_id}' does not exist")
-
-        del self.chat_services[service_id]
-        if self.default_chat_service == service_id:
-            self.default_chat_service = next(iter(self.chat_services), None)
-        return self
-
-    def remove_text_embedding_generation_service(self, service_id: str) -> "Kernel":
-        if service_id not in self.text_embedding_generation_services:
-            raise ValueError(f"AI service with service_id '{service_id}' does not exist")
-
-        del self.text_embedding_generation_services[service_id]
-        if self.default_text_embedding_generation_service == service_id:
-            self.default_text_embedding_generation_service = next(iter(self.text_embedding_generation_services), None)
-        return self
-
-    def clear_all_text_completion_services(self) -> "Kernel":
-        self.text_completion_services = {}
-        self.default_text_completion_service = None
-        return self
-
-    def clear_all_chat_services(self) -> "Kernel":
-        self.chat_services = {}
-        self.default_chat_service = None
-        return self
-
-    def clear_all_text_embedding_generation_services(self) -> "Kernel":
-        self.text_embedding_generation_services = {}
-        self.default_text_embedding_generation_service = None
-        return self
-
-    def clear_all_services(self) -> "Kernel":
-        self.text_completion_services = {}
-        self.chat_services = {}
-        self.text_embedding_generation_services = {}
-
-        self.default_text_completion_service = None
-        self.default_chat_service = None
-        self.default_text_embedding_generation_service = None
-
-        return self
-
-    def _create_semantic_function(
-        self,
-        plugin_name: str,
-        function_name: str,
-        function_config: SemanticFunctionConfig,
-    ) -> KernelFunction:
-        function_type = function_config.prompt_template_config.type
-        if not function_type == "completion":
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                f"Function type not supported: {function_type}",
-            )
-
-        function = KernelFunction.from_semantic_config(plugin_name, function_name, function_config)
-        function.prompt_execution_settings.update_from_prompt_execution_settings(
-            function_config.prompt_template_config.execution_settings
-        )
-
-        if function_config.has_chat_prompt:
-            service = self.get_ai_service(
-                ChatCompletionClientBase,
-                function_config.prompt_template_config.default_services[0]
-                if len(function_config.prompt_template_config.default_services) > 0
-                else None,
-            )
-            req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
-
-            function.set_chat_configuration(
-                req_settings_type.from_prompt_execution_settings(
-                    function_config.prompt_template_config.execution_settings
-                )
-            )
-
-            if service is None:
-                raise AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    (
-                        "Could not load chat service, unable to prepare semantic"
-                        " function. Function description:"
-                        " {function_config.prompt_template_config.description}"
-                    ),
-                )
-
-            function.set_chat_service(lambda: service(self))
-        else:
-            service = self.get_ai_service(
-                TextCompletionClientBase,
-                function_config.prompt_template_config.default_services[0]
-                if len(function_config.prompt_template_config.default_services) > 0
-                else None,
-            )
-            req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
-
-            function.set_ai_configuration(
-                req_settings_type.from_prompt_execution_settings(
-                    function_config.prompt_template_config.execution_settings
-                )
-            )
-
-            if service is None:
-                raise AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    (
-                        "Could not load text service, unable to prepare semantic"
-                        " function. Function description:"
-                        " {function_config.prompt_template_config.description}"
-                    ),
-                )
-
-            function.set_ai_service(lambda: service(self))
-
-        return function
 
     def import_native_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         MODULE_NAME = "native_function"
@@ -887,6 +547,49 @@ class Kernel(KernelBaseModel):
 
         return plugin
 
+    # endregion
+    # region Functions
+
+    def func(self, plugin_name: str, function_name: str) -> KernelFunction:
+        if plugin_name not in self.plugins:
+            raise ValueError(f"Plugin '{plugin_name}' not found")
+        if function_name not in self.plugins[plugin_name]:
+            raise ValueError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
+        return self.plugins[plugin_name][function_name]
+
+    def register_semantic_function(
+        self,
+        plugin_name: Optional[str],
+        function_name: str,
+        function_config: SemanticFunctionConfig,
+    ) -> KernelFunction:
+        """
+        Creates a semantic function from the plugin name, function name and function config
+
+        Args:
+            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
+            function_name (str): The name of the function
+            function_config (SemanticFunctionConfig): The function config
+
+        Returns:
+            KernelFunction: The created semantic function
+
+        Raises:
+            ValueError: If the plugin name or function name are invalid
+        """
+        if plugin_name is None or plugin_name == "":
+            plugin_name = f"p_{generate_random_ascii_name()}"
+        assert plugin_name is not None  # for type checker
+
+        validate_plugin_name(plugin_name)
+        validate_function_name(function_name)
+
+        function = self._create_semantic_function(plugin_name, function_name, function_config)
+        self.add_plugin(plugin_name, [function])
+        function.set_default_plugin_collection(self.plugins)
+
+        return function
+
     def create_semantic_function(
         self,
         prompt_template: str,
@@ -912,20 +615,163 @@ class Kernel(KernelBaseModel):
 
         return self.register_semantic_function(plugin_name, function_name, function_config)
 
-    def add_function_invoking_handler(
-        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
+    def _create_semantic_function(
+        self,
+        plugin_name: str,
+        function_name: str,
+        function_config: SemanticFunctionConfig,
+    ) -> KernelFunction:
+        if not function_config.prompt_template_config.type == "completion":
+            raise AIException(
+                AIException.ErrorCodes.FunctionTypeNotSupported,
+                f"Function type not supported: {function_config.prompt_template_config.type}",
+            )
+
+        function = KernelFunction.from_semantic_config(plugin_name, function_name, function_config)
+        if exec_settings := function_config.prompt_template_config.execution_settings:
+            if exec_settings.service_id in function.prompt_execution_settings:
+                logger.warning("Overwriting execution settings for service_id: %s", exec_settings.service_id)
+            function.prompt_execution_settings[exec_settings.service_id] = exec_settings
+
+        return function
+
+    def register_native_function(
+        self,
+        plugin_name: Optional[str],
+        kernel_function: Callable,
+    ) -> KernelFunction:
+        """
+        Creates a native function from the plugin name and kernel function
+
+        Args:
+            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
+            kernel_function (Callable): The kernel function
+
+        Returns:
+            KernelFunction: The created native function
+        """
+        if not hasattr(kernel_function, "__kernel_function__"):
+            raise KernelException(
+                KernelException.ErrorCodes.InvalidFunctionType,
+                "kernel_function argument must be decorated with @kernel_function",
+            )
+        function_name = kernel_function.__kernel_function_name__
+
+        if plugin_name is None or plugin_name == "":
+            plugin_name = f"p_{generate_random_ascii_name()}"
+        assert plugin_name is not None  # for type checker
+
+        validate_plugin_name(plugin_name)
+        validate_function_name(function_name)
+
+        if plugin_name in self.plugins and function_name in self.plugins[plugin_name]:
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                "Overloaded functions are not supported, " "please differentiate function names.",
+            )
+
+        function = KernelFunction.from_native_method(kernel_function, plugin_name)
+        self.add_plugin(plugin_name, [function])
+        function.set_default_plugin_collection(self.plugins)
+
+        return function
+
+    # endregion
+    # region Services
+
+    def get_prompt_execution_settings_from_service_id(
+        self, service_id: str, type: Optional[Type[T]] = None
+    ) -> PromptExecutionSettings:
+        """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
+        service = self.get_service(service_id, type=type)
+        return service.instantiate_prompt_execution_settings(
+            service_id=service_id,
+            extension_data={"ai_model_id": service.ai_model_id},
+        )
+
+    def get_service(
+        self,
+        service_id: Optional[str] = None,
+        type: Optional[Type[ALL_SERVICE_TYPES]] = None,
+    ) -> ALL_SERVICE_TYPES:
+        """Get a service by service_id and type.
+
+        Type is optional and when not supplied, no checks are done.
+        Type should be
+            TextCompletionClientBase, ChatCompletionClientBase, EmbeddingGeneratorBase
+            or a subclass of one.
+            You can also check for multiple types in one go,
+            by using Union[TextCompletionClientBase, ChatCompletionClientBase].
+
+        If type and service_id are both None, the first service is returned.
+        """
+        if not service_id and not type:
+            return list(self.services.values())[0]
+        if service_id not in self.services:
+            raise ValueError(f"Service with service_id '{service_id}' does not exist")
+        service = self.services[service_id]
+        if type and not isinstance(service, type):
+            raise ValueError(f"Service with service_id '{service_id}' is not of type {type.__name__}")
+        return service
+
+    def get_services_by_type(self, type: Type[T]) -> Dict[str, T]:
+        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
+
+    def add_service(self, service: AIServiceClientBase, overwrite: bool = False) -> None:
+        if service.service_id not in self.services or overwrite:
+            self.services[service.service_id] = service
+        else:
+            raise ValueError(f"Service with service_id '{service.service_id}' already exists")
+
+    def remove_service(self, service_id: str) -> None:
+        """Delete a single service from the Kernel."""
+        if service_id not in self.services:
+            raise ValueError(f"Service with service_id '{service_id}' does not exist")
+        del self.services[service_id]
+
+    def remove_all_services(self) -> None:
+        """Removes the services from the Kernel, does not delete them."""
+        self.services.clear()
+
+    # endregion
+    # region Memory
+
+    def use_memory(
+        self,
+        storage: MemoryStoreBase,
+        embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
     ) -> None:
-        self.function_invoking_handlers[id(handler)] = handler
+        if embeddings_generator is None:
+            service_id = self.get_text_embedding_generation_service_id()
+            if not service_id:
+                raise ValueError("The embedding service id cannot be `None` or empty")
 
-    def add_function_invoked_handler(
-        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokedEventArgs]
-    ) -> None:
-        self.function_invoked_handlers[id(handler)] = handler
+            embeddings_service = self.get_ai_service(EmbeddingGeneratorBase, service_id)
+            if not embeddings_service:
+                raise ValueError(f"AI configuration is missing for: {service_id}")
 
-    def remove_function_invoking_handler(self, handler: Callable) -> None:
-        if id(handler) in self.function_invoking_handlers:
-            del self.function_invoking_handlers[id(handler)]
+            embeddings_generator = embeddings_service(self)
 
-    def remove_function_invoked_handler(self, handler: Callable) -> None:
-        if id(handler) in self.function_invoked_handlers:
-            del self.function_invoked_handlers[id(handler)]
+        if storage is None:
+            raise ValueError("The storage instance provided cannot be `None`")
+        if embeddings_generator is None:
+            raise ValueError("The embedding generator cannot be `None`")
+
+        self.register_memory(SemanticTextMemory(storage, embeddings_generator))
+
+    def register_memory(self, memory: SemanticTextMemoryBase) -> None:
+        self.memory = memory
+
+    def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
+        self.use_memory(memory_store)
+
+    def on_function_invoking(
+        self, kernel_function_metadata: KernelFunctionMetadata, arguments: KernelArguments
+    ) -> FunctionInvokingEventArgs:
+        args = FunctionInvokingEventArgs(kernel_function_metadata=kernel_function_metadata, arguments=arguments)
+        if self.function_invoking_handlers:
+            for handler in self.function_invoking_handlers.values():
+                handler(self, args)
+        return args
+
+    # endregion

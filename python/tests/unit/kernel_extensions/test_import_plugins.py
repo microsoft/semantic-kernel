@@ -13,9 +13,8 @@ def test_plugin_can_be_imported():
     kernel = sk.Kernel()
     api_key = "test-api-key"
     org_id = "test-org-id"
-    kernel.add_text_completion_service(
-        "test-completion-service",
-        sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id),
+    kernel.add_service(
+        sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id, service_id="test-completion-service"),
     )
 
     # import plugins
@@ -49,9 +48,8 @@ def test_create_semantic_function_succeeds():
     # create a kernel
     kernel = sk.Kernel()
 
-    kernel.add_chat_service(
-        "test-completion-service",
-        sk_oai.OpenAIChatCompletion("test", "test", ""),
+    kernel.add_service(
+        sk_oai.OpenAIChatCompletion("test", "test", "", "test-completion-service"),
     )
 
     class GenerateNamesPlugin:
