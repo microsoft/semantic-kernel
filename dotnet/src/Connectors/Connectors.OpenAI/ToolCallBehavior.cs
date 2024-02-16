@@ -2,8 +2,10 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -34,6 +36,12 @@ public abstract class ToolCallBehavior
     /// less likely that this limit is reached, as most of the time only a single request is needed.
     /// </remarks>
     private const int DefaultMaximumAutoInvokeAttempts = 5;
+
+    /// <summary>
+    /// Gets the collection of filters that will be applied to tool calls.
+    /// </summary>
+    [Experimental("SKEXP0016")]
+    public IList<IToolFilter> Filters { get; } = new List<IToolFilter>();
 
     /// <summary>
     /// Gets an instance that will provide all of the <see cref="Kernel"/>'s plugins' function information.
@@ -236,4 +244,40 @@ public abstract class ToolCallBehavior
         /// </remarks>
         internal override int MaximumUseAttempts => 1;
     }
+
+    #region Filters
+    internal ToolInvokingContext? OnToolInvokingFilter(OpenAIFunctionToolCall toolCall, ChatHistory chatHistory, int iteration)
+    {
+        ToolInvokingContext? context = null;
+
+        if (this.Filters is { Count: > 0 })
+        {
+            context = new(toolCall, chatHistory, iteration);
+
+            for (int i = 0; i < this.Filters.Count; i++)
+            {
+                this.Filters[i].OnToolInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+    internal ToolInvokedContext? OnToolInvokedFilter(OpenAIFunctionToolCall toolCall, object? result, ChatHistory chatHistory, int iteration)
+    {
+        ToolInvokedContext? context = null;
+
+        if (this.Filters is { Count: > 0 })
+        {
+            context = new(toolCall, result, chatHistory, iteration);
+
+            for (int i = 0; i < this.Filters.Count; i++)
+            {
+                this.Filters[i].OnToolInvoked(context);
+            }
+        }
+
+        return context;
+    }
+    #endregion
 }

@@ -281,7 +281,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         ""role"": ""assistant"",
         ""content"": null,
         ""function_call"": {
-          ""name"": ""TimePlugin_Date"",
+          ""name"": ""TimePlugin-Date"",
           ""arguments"": ""{}""
         }
       },

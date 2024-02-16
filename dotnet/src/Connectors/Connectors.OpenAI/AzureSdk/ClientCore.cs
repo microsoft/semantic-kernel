@@ -29,6 +29,8 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal abstract class ClientCore
 {
+    private const string ModelIterationsCompletedKey = "ModelIterationsCompleted";
+
     private const int MaxResultsPerPrompt = 128;
 
     /// <summary>
@@ -176,25 +178,27 @@ internal abstract class ClientCore
         };
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions, int modelIterations)
     {
-        return new Dictionary<string, object?>(5)
+        return new Dictionary<string, object?>(6)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
+            { ModelIterationsCompletedKey, modelIterations },
         };
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
+    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions, int modelIterations)
     {
-        return new Dictionary<string, object?>(3)
+        return new Dictionary<string, object?>(4)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+            { ModelIterationsCompletedKey, modelIterations },
         };
     }
 
@@ -303,7 +307,7 @@ internal abstract class ClientCore
                 throw new KernelException("Chat completions not found");
             }
 
-            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
+            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData, iteration);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
@@ -367,6 +371,19 @@ internal abstract class ClientCore
                     continue;
                 }
 
+                try
+                {
+                    // Invoke the pre-invocation filter.
+                    var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(openAIFunctionToolCall, chat, iteration);
+                    this.ApplyToolFilterContextChanges(invokingContext, chatOptions, chat, chatExecutionSettings, ref autoInvoke);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Add cancellation message to chat history and bail out of any remaining tool calls
+                    AddResponseMessage(chatOptions, chat, null, $"A tool filter requested cancellation before tool invocation. Model iterations completed: {iteration}", toolCall.Id, this.Logger);
+                    break;
+                }
+
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
@@ -395,7 +412,7 @@ internal abstract class ClientCore
                     functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception e)
+                catch (Exception e) when (!e.IsCriticalException())
 #pragma warning restore CA1031
                 {
                     AddResponseMessage(chatOptions, chat, null, $"Error: Exception while invoking function. {e.Message}", toolCall.Id, this.Logger);
@@ -406,6 +423,18 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
                 AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, toolCall.Id, this.Logger);
+
+                try
+                {
+                    // Invoke the post-invocation filter.
+                    var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(openAIFunctionToolCall, functionResult, chat, iteration);
+                    this.ApplyToolFilterContextChanges(invokedContext, chatOptions, chat, chatExecutionSettings, ref autoInvoke);
+                }
+                catch (OperationCanceledException)
+                {
+                    // The tool call already happened so we can't cancel it, but bail out of any remaining tool calls
+                    break;
+                }
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, string toolId, ILogger logger)
                 {
@@ -447,6 +476,58 @@ internal abstract class ClientCore
         }
     }
 
+    private void ApplyToolFilterContextChanges(
+        ToolFilterContext? context,
+        ChatCompletionsOptions chatOptions,
+        ChatHistory chatHistory,
+        OpenAIPromptExecutionSettings executionSettings,
+        ref bool autoInvoke)
+    {
+        if (context is not null)
+        {
+            // Since the tool filter has access to the chat history, the chat history may have been modified.
+            // We want to make sure any subsequent requests to the model reflect these changes. The chatOptions object
+            // contains all the configuration information for a chat request, including a copy of the chat history.
+            // So we need to update the chat history stored in the chatOptions object to match what is in the chatHistory object.
+            this.UpdateChatOptions(chatOptions, chatHistory, executionSettings);
+
+            // Check if filter has requested a stop
+            this.HandleStopBehavior(context, chatOptions, ref autoInvoke);
+        }
+    }
+
+    private void HandleStopBehavior(ToolFilterContext context, ChatCompletionsOptions chatOptions, ref bool autoInvoke)
+    {
+        switch (context.StopBehavior)
+        {
+            case ToolFilterStopBehavior.StopAutoInvoke:
+                autoInvoke = false;
+                break;
+            case ToolFilterStopBehavior.StopTools:
+                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                break;
+            case ToolFilterStopBehavior.Cancel:
+                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                throw new OperationCanceledException();
+        }
+    }
+
+    private void UpdateChatOptions(ChatCompletionsOptions options, ChatHistory chatHistory, OpenAIPromptExecutionSettings executionSettings)
+    {
+        // Clear out messages, then copy over from chat history
+        options.Messages.Clear();
+
+        if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
+        {
+            options.Messages.Add(GetRequestMessage(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt)));
+        }
+
+        foreach (var message in chatHistory)
+        {
+            options.Messages.Add(GetRequestMessage(message));
+        }
+    }
+
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
@@ -485,7 +566,7 @@ internal abstract class ClientCore
             CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
-                metadata ??= GetResponseMetadata(update);
+                metadata ??= GetResponseMetadata(update, iteration);
                 streamedRole ??= update.Role;
                 finishReason = update.FinishReason ?? default;
 
@@ -557,6 +638,19 @@ internal abstract class ClientCore
                     continue;
                 }
 
+                try
+                {
+                    // Invoke the pre-invocation filter.
+                    var invokingContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokingFilter(openAIFunctionToolCall, chat, iteration);
+                    this.ApplyToolFilterContextChanges(invokingContext, chatOptions, chat, chatExecutionSettings, ref autoInvoke);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Add cancellation message to chat history and bail out of any remaining tool calls
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, null, $"A tool filter requested cancellation before tool invocation. Model iterations completed: {iteration}", this.Logger);
+                    break;
+                }
+
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
@@ -585,7 +679,7 @@ internal abstract class ClientCore
                     functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception e)
+                catch (Exception e) when (!e.IsCriticalException())
 #pragma warning restore CA1031
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
@@ -596,6 +690,18 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
+
+                try
+                {
+                    // Invoke the post-invocation filter.
+                    var invokedContext = chatExecutionSettings.ToolCallBehavior?.OnToolInvokedFilter(openAIFunctionToolCall, functionResult, chat, iteration);
+                    this.ApplyToolFilterContextChanges(invokedContext, chatOptions, chat, chatExecutionSettings, ref autoInvoke);
+                }
+                catch (OperationCanceledException)
+                {
+                    // This tool call already happened so we can't cancel it, but bail out of any remaining tool calls
+                    break;
+                }
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
