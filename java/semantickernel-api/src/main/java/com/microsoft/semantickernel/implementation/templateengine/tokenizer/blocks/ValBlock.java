@@ -18,7 +18,7 @@ public final class ValBlock extends Block implements TextRendering {
     private String value = "";
 
     public ValBlock(String quotedValue) {
-        super(quotedValue.trim(), BlockTypes.Value);
+        super(quotedValue.trim(), BlockTypes.VALUE);
 
         if (this.getContent().length() < 2) {
             LOGGER.error("A value must have single quotes or double quotes on both sides");

@@ -8,32 +8,29 @@ public enum BlockTypes {
     /**
      * Undefined block type
      */
-    Undefined(0),
+    UNDEFINED,
     /**
      * Text block type
      */
-    Text(1),
+    TEXT,
     /**
      * Code block type
      */
-    Code(2),
+    CODE,
     /**
      * Variable block type
      */
-    Variable(3),
+    VARIABLE,
     /**
      * Value block type
      */
-    Value(4),
+    VALUE,
     /**
      * Function block type
      */
-    FunctionId(5),
+    FUNCTION_ID,
     /**
      * Named argument block type
      */
-    NamedArg(6);
-
-    BlockTypes(int i) {
-    }
+    NAMED_ARG;
 }

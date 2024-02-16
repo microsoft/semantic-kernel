@@ -18,7 +18,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
      * @param content The content.
      */
     public FunctionIdBlock(String content) {
-        super(content, BlockTypes.FunctionId);
+        super(content, BlockTypes.FUNCTION_ID);
 
         String[] functionNameParts = this.getContent().split("\\.", -1);
         if (functionNameParts.length > 2) {

@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 public final class TextBlock extends Block implements TextRendering {
 
     public TextBlock(String text) {
-        super(text, BlockTypes.Text);
+        super(text, BlockTypes.TEXT);
     }
 
     @Override
@@ -21,6 +21,6 @@ public final class TextBlock extends Block implements TextRendering {
     }
 
     public TextBlock(String text, int startIndex, int stopIndex) {
-        super(text.substring(startIndex, stopIndex), BlockTypes.Text);
+        super(text.substring(startIndex, stopIndex), BlockTypes.TEXT);
     }
 }

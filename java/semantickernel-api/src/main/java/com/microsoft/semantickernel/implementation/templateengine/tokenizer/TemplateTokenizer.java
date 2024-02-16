@@ -134,7 +134,7 @@ public class TemplateTokenizer {
                                 .tokenize(contentWithoutDelimiters);
 
                             switch (codeBlocks.get(0).getType()) {
-                                case Variable:
+                                case VARIABLE:
                                     if (codeBlocks.size() > 1) {
                                         throw new TemplateException(
                                             TemplateException.ErrorCodes.SYNTAX_ERROR,
@@ -145,7 +145,7 @@ public class TemplateTokenizer {
                                     blocks.add(codeBlocks.get(0));
                                     break;
 
-                                case Value:
+                                case VALUE:
                                     if (codeBlocks.size() > 1) {
                                         throw new TemplateException(
                                             TemplateException.ErrorCodes.SYNTAX_ERROR,
@@ -156,13 +156,13 @@ public class TemplateTokenizer {
                                     blocks.add(codeBlocks.get(0));
                                     break;
 
-                                case FunctionId:
+                                case FUNCTION_ID:
                                     blocks.add(new CodeBlock(codeBlocks, contentWithoutDelimiters));
                                     break;
 
-                                case Code:
-                                case Text:
-                                case Undefined:
+                                case CODE:
+                                case TEXT:
+                                case UNDEFINED:
                                 default:
                                     throw new TemplateException(
                                         TemplateException.ErrorCodes.UNEXPECTED_BLOCK_TYPE,
