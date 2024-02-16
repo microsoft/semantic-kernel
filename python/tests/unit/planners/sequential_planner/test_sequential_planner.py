@@ -83,7 +83,13 @@ async def test_it_can_create_plan(goal):
 </plan>"""
 
     mock_function_flow_function = Mock(spec=KernelFunction)
-    mock_function_flow_function.invoke.return_value = FunctionResult(function=None, value=plan_string, metadata={})
+    mock_function_flow_function.invoke.return_value = FunctionResult(
+        function=KernelFunctionMetadata(
+            name="func", plugin_name="plugin", description="", parameters=[], is_semantic=False
+        ),
+        value=plan_string,
+        metadata={},
+    )
     kernel.register_semantic_function.return_value = mock_function_flow_function
 
     planner = SequentialPlanner(kernel)
@@ -125,7 +131,13 @@ async def test_invalid_xml_throws():
     plugins.get_list_of_function_metadata.return_value = functions_list
 
     plan_string = "<plan>notvalid<</plan>"
-    function_result = FunctionResult(function=None, value=plan_string, metadata={})
+    function_result = FunctionResult(
+        function=KernelFunctionMetadata(
+            name="func", plugin_name="plugin", description="", parameters=[], is_semantic=False
+        ),
+        value=plan_string,
+        metadata={},
+    )
 
     mock_function_flow_function = Mock(spec=KernelFunction)
     mock_function_flow_function.invoke.return_value = function_result

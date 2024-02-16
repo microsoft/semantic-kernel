@@ -8,7 +8,6 @@ import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
     HuggingFacePromptExecutionSettings,
 )
@@ -24,7 +23,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
+class HuggingFaceTextCompletion(TextCompletionClientBase):
     task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
     generator: Any
@@ -34,6 +33,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         ai_model_id: str,
         task: Optional[str] = "text2text-generation",
         device: Optional[int] = -1,
+        service_id: Optional[str] = None,
         model_kwargs: Optional[Dict[str, Any]] = None,
         pipeline_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -69,6 +69,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
             **pipeline_kwargs or {},
         )
         super().__init__(
+            service_id=service_id,
             ai_model_id=ai_model_id,
             task=task,
             device=(f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"),
@@ -79,7 +80,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-        **kwargs,
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -91,8 +91,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
             results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
@@ -112,7 +110,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-        **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Hugging Face model.
@@ -125,8 +122,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase, AIServiceClientBase):
         Yields:
             List[StreamingTextContent] -- List of StreamingTextContent objects.
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if settings.num_return_sequences > 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
