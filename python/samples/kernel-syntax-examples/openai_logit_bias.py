@@ -12,10 +12,10 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 """
 Logit bias enables prioritizing certain tokens within a given output.
@@ -32,8 +32,10 @@ def _config_ban_tokens(settings: PromptExecutionSettings, keys: Dict[Any, Any]):
         settings.logit_bias[k] = -100
     return settings
 
+
 def _prepare_input_chat(chat: ChatHistory):
     return "".join([f"{msg.role}: {msg.content}\n" for msg in chat])
+
 
 async def chat_request_example(kernel, api_key, org_id):
     openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
@@ -79,7 +81,9 @@ async def chat_request_example(kernel, api_key, org_id):
         name="chat",
         template_format="semantic-kernel",
         input_variables=[
-            InputVariable(name="user_input", description="The history of the conversation", is_required=True, default=""),
+            InputVariable(
+                name="user_input", description="The history of the conversation", is_required=True, default=""
+            ),
         ],
         execution_settings={"default": settings},
     )
@@ -90,9 +94,7 @@ async def chat_request_example(kernel, api_key, org_id):
     chat.add_assistant_message("I am an AI assistant here to answer your questions.")
 
     chat_function = kernel.create_function_from_prompt(
-        plugin_name="ChatBot", 
-        function_name="Chat", 
-        prompt_template_config=prompt_template_config
+        plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
     )
 
     chat.add_system_message("You are a basketball expert")
@@ -166,7 +168,9 @@ async def text_complete_request_example(kernel, api_key, org_id):
         name="chat",
         template_format="semantic-kernel",
         input_variables=[
-            InputVariable(name="user_input", description="The history of the conversation", is_required=True, default=""),
+            InputVariable(
+                name="user_input", description="The history of the conversation", is_required=True, default=""
+            ),
         ],
         execution_settings={"default": settings},
     )
@@ -176,9 +180,7 @@ async def text_complete_request_example(kernel, api_key, org_id):
     chat.add_user_message("The best pie flavor to have in autumn is")
 
     text_function = kernel.create_function_from_prompt(
-        plugin_name="TextBot", 
-        function_name="TextCompletion", 
-        prompt_template_config=prompt_template_config
+        plugin_name="TextBot", function_name="TextCompletion", prompt_template_config=prompt_template_config
     )
 
     answer = await kernel.invoke(text_function, KernelArguments(user_input=_prepare_input_chat(chat)))

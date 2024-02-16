@@ -5,12 +5,12 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 ALL_COMPLETION_SERVICE_TYPES = Union[TextCompletionClientBase, ChatCompletionClientBase]
 
 if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
 
 
@@ -22,7 +22,7 @@ class AIServiceSelector(KernelBaseModel):
     """
 
     def select_ai_service(
-        self, kernel: "Kernel", function: KernelFunction, arguments: KernelArguments
+        self, kernel: "Kernel", function: "KernelFunction", arguments: KernelArguments
     ) -> Tuple[ALL_COMPLETION_SERVICE_TYPES, PromptExecutionSettings]:
         """Select a AI Service on a first come, first served basis,
         starting with execution settings in the arguments,

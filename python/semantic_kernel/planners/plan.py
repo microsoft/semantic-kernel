@@ -203,7 +203,7 @@ class Plan:
             plugin_name=self._plugin_name,
             parameters=[],
             description=self._description,
-            is_semantic=self._is_semantic or False,
+            is_prompt=self._is_prompt or False,
         )
 
     def set_available_functions(self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments") -> "Plan":

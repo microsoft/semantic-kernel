@@ -11,18 +11,15 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     AzureDataSources,
     ExtraBody,
 )
-from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
-    OpenAIChatPromptTemplate,
-)
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_tool_call,
     get_tool_call_object,
 )
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 kernel = sk.Kernel()
 
@@ -85,9 +82,7 @@ history.add_assistant_message("I am an AI assistant here to answer your question
 arguments = KernelArguments()
 
 chat_function = kernel.create_function_from_prompt(
-    plugin_name="ChatBot", 
-    function_name="Chat", 
-    prompt_template_config=prompt_template_config
+    plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
 )
 
 # calling the chat, you could add a overloaded version of the settings here,
@@ -95,6 +90,7 @@ chat_function = kernel.create_function_from_prompt(
 # see the openai_function_calling example for how to use this with a unrelated function definition
 filter = {"exclude_plugin": ["ChatBot"]}
 req_settings.tools = get_tool_call_object(kernel, filter)
+
 
 async def chat() -> bool:
     try:

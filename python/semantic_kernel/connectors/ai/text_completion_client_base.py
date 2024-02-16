@@ -4,9 +4,8 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, AsyncIterable, List
 
-from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
-
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings

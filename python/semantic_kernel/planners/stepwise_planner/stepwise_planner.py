@@ -80,7 +80,7 @@ class StepwisePlanner:
         if prompt_user_config is None:
             prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
 
-        prompt_config.execution_settings["default"].extension_data["max_tokens"] = self.config.max_tokens
+        prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
         prompt_config.template = prompt_template
 
         self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)

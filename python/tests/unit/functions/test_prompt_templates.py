@@ -18,7 +18,7 @@ def test_prompt_template_config_initialization_minimal():
     assert config.description == ""
     assert config.template_format == "semantic-kernel"
     assert config.input_variables == []
-    assert config.execution_settings == {}
+    assert config.execution_settings == PromptExecutionSettings()
 
 
 def test_prompt_template_config_initialization_full():
@@ -40,12 +40,12 @@ def test_prompt_template_config_initialization_full():
     assert config.description == "Test Description"
     assert config.template_format == "custom-format"
     assert len(config.input_variables) == 1
-    assert len(config.execution_settings) == 1
+    assert config.execution_settings is not None
 
 
 def test_add_execution_settings():
     config = PromptTemplateConfig(template="Example template")
-    new_settings = {"new_setting": PromptExecutionSettings(setting_value="new_value")}
+    new_settings = PromptExecutionSettings(setting_value="new_value")
     config.add_execution_settings(new_settings)
     assert config.execution_settings == new_settings
 

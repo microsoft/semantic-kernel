@@ -51,13 +51,13 @@ async def test_it_can_create_plan(goal):
     functions_list = []
     kernel.plugins = KernelPluginCollection()
     mock_functions = []
-    for name, pluginName, description, isSemantic in input:
+    for name, pluginName, description, is_prompt in input:
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name=pluginName,
             description=description,
             parameters=[],
-            is_prompt=isSemantic,
+            is_prompt=is_prompt,
             is_asynchronous=True,
         )
         mock_function = create_mock_function(kernel_function_metadata)
@@ -83,7 +83,13 @@ async def test_it_can_create_plan(goal):
 </plan>"""
 
     mock_function_flow_function = Mock(spec=KernelFunction)
-    mock_function_flow_function.invoke.return_value = FunctionResult(function=None, value=plan_string, metadata={})
+    mock_function_flow_function.invoke.return_value = FunctionResult(
+        function=KernelFunctionMetadata(
+            name="func", plugin_name="plugin", description="", parameters=[], is_prompt=False
+        ),
+        value=plan_string,
+        metadata={},
+    )
     kernel.create_function_from_prompt.return_value = mock_function_flow_function
 
     planner = SequentialPlanner(kernel)
@@ -127,7 +133,7 @@ async def test_invalid_xml_throws():
     plan_string = "<plan>notvalid<</plan>"
     function_result = FunctionResult(
         function=KernelFunctionMetadata(
-            name="func", plugin_name="plugin", description="", parameters=[], is_semantic=False
+            name="func", plugin_name="plugin", description="", parameters=[], is_prompt=False
         ),
         value=plan_string,
         metadata={},

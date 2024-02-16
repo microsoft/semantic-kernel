@@ -7,14 +7,13 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from openai.types.chat import ChatCompletion
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -248,6 +247,7 @@ async def chat_completion_with_tool_call(
         chat_function: the chat function, if not provided, it will be retrieved from the kernel.
             make sure to provide either the chat_function or the chat_plugin_name and chat_function_name.
         chat_history: the chat history to use, if not provided, will attempt to retrieve from arguments
+            with key "chat_history".
 
         max_function_calls: the maximum number of function calls to execute, defaults to 5.
         current_call_count: the current number of function calls executed.
@@ -255,6 +255,9 @@ async def chat_completion_with_tool_call(
     returns:
         the FunctionResult with the result of the chat completion, just like a regular invoke/run_async.
     """
+
+    chat_history or arguments["chat_history"]
+
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
     current_call_count = kwargs.get("current_call_count", 0)
@@ -272,6 +275,7 @@ async def chat_completion_with_tool_call(
     if not arguments:
         arguments = KernelArguments()
     arguments.execution_settings[settings.service_id] = settings
+    arguments["user_input"] = ("\n").join([f"{msg.role}: {msg.content}" for msg in chat_history])
     if current_call_count >= max_function_calls:
         settings.functions = []
     result = await chat_function.invoke(
@@ -296,6 +300,7 @@ async def chat_completion_with_tool_call(
     else:
         return result
     # add the result to the chat prompt template
+    chat_history.add_tool_message()
     chat_function.chat_prompt_template.add_function_response_message(
         name=function_call.function.name, content=str(result), tool_call_id=tool_call_id
     )

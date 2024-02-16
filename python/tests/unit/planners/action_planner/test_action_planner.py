@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction

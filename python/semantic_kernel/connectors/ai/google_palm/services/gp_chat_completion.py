@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent

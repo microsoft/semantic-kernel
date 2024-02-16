@@ -47,7 +47,9 @@ class ChatHistory(KernelBaseModel):
         """Add a tool message to the chat template."""
         self.add_message(ChatRole.TOOL, content, metadata=metadata)
 
-    def add_message(self, role: ChatRole, content: str, encoding: Optional[str] = None, metadata: Optional[dict[str, Any]] = None) -> None:
+    def add_message(
+        self, role: ChatRole, content: str, encoding: Optional[str] = None, metadata: Optional[dict[str, Any]] = None
+    ) -> None:
         """Add a message to the history.
 
         Args:

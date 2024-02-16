@@ -10,7 +10,6 @@ from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Ty
 
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -581,6 +580,7 @@ class Kernel(KernelBaseModel):
         description: Optional[str] = None,
         template_format: Optional[str] = None,
         prompt_template: Optional[PromptTemplateBase] = None,
+        **kwargs: Any,
     ) -> KernelFunction:
         """
         Create a Kernel Function from a prompt.
@@ -594,6 +594,7 @@ class Kernel(KernelBaseModel):
             description (Optional[str]): The description of the function
             template_format (Optional[str]): The format of the prompt template
             prompt_template (Optional[PromptTemplateBase]): The prompt template
+            kwargs (Any): Additional arguments
 
         Returns:
             KernelFunction: The created Kernel Function
@@ -609,15 +610,16 @@ class Kernel(KernelBaseModel):
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
+        # if not prompt_template_config.execution_settings:
+        #     if execution_settings:
+        #         prompt_template_config.execution_settings = execution_settings
+        #     else:
+        #         prompt_template_config.execution_settings = {'default': PromptExecutionSettings(service_id='default')} # how to handle this?
         if not prompt_template_config.execution_settings:
-            if execution_settings:
-                prompt_template_config.execution_settings = execution_settings
-            else:
-                prompt_template_config.execution_settings = PromptExecutionSettings()
+            prompt_template_config.execution_settings=PromptExecutionSettings(extension_data=kwargs)
 
         function = KernelFunction.from_prompt(
             prompt=template,
-            execution_settings=execution_settings,
             function_name=function_name,
             plugin_name=plugin_name,
             description=description,

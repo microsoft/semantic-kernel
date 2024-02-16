@@ -5,19 +5,14 @@ import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
-    OpenAIChatPromptTemplate,
-)
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_tool_call,
     get_tool_call_object,
 )
 from semantic_kernel.core_plugins import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.prompt_template.input_variable import InputVariable
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -50,7 +45,7 @@ kernel.add_chat_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-#kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
+# kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin(MathPlugin(), plugin_name="math")
 
@@ -59,7 +54,7 @@ kernel.import_plugin(MathPlugin(), plugin_name="math")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-execution_settings=sk_oai.AzureChatPromptExecutionSettings(
+execution_settings = sk_oai.AzureChatPromptExecutionSettings(
     service_id="default",
     ai_model_id=deployment_name,
     max_tokens=2000,
@@ -83,6 +78,7 @@ prompt_template_config = sk.PromptTemplateConfig(
     template_format="semantic-kernel",
     input_variables=[
         InputVariable(name="user_input", description="The user input", is_required=True),
+        InputVariable(name="history", description="The history of the conversation", is_required=True, default=""),
     ],
     execution_settings={"default": execution_settings},
 )
@@ -101,6 +97,7 @@ chat_function = kernel.create_function_from_prompt(
     function_name="Chat",
 )
 
+
 async def chat() -> bool:
     try:
         user_input = input("User:> ")
@@ -114,7 +111,9 @@ async def chat() -> bool:
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
-    arguments = KernelArguments(user_input=user_input)
+    arguments = KernelArguments(
+        user_input=user_input, history=("\n").join([f"{msg.role}: {msg.content}" for msg in history])
+    )
     result = await chat_completion_with_tool_call(
         kernel=kernel,
         arguments=arguments,

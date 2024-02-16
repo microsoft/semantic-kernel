@@ -33,7 +33,7 @@ from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.services.ai_service_selector import get_ai_service
+from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
@@ -80,7 +80,7 @@ class KernelFunction(KernelBaseModel):
     return_parameter: Optional[KernelParameterMetadata] = None
     function: Callable[..., Any] = Field(...)
     plugins: Optional["KernelPluginCollection"] = Field(default=None)
-    #ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]] = Field(default=None)
+    # ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]] = Field(default=None)
     prompt_execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
     prompt_template_config: Optional[PromptTemplateConfig] = Field(default=PromptTemplateConfig)
     metadata: Optional[KernelFunctionMetadata] = Field(default=KernelFunctionMetadata)
@@ -250,10 +250,8 @@ class KernelFunction(KernelBaseModel):
                 template_format=template_format if template_format else "semantic-kernel",
                 description=description if description else "Generic function, unknown purpose",
                 template=prompt,
+                execution_settings=execution_settings if execution_settings else PromptExecutionSettings(),
             )
-
-        if not prompt_template_config.execution_settings or execution_settings:
-            raise ValueError("Execution settings cannot be `None`")
 
         if not prompt_template:
             prompt_template = KernelPromptTemplate(prompt_template_config)
@@ -280,7 +278,7 @@ class KernelFunction(KernelBaseModel):
             FunctionResult.model_rebuild()
             try:
                 if isinstance(service, TextCompletionClientBase):
-                    completions = await service.complete(prompt, request_settings)
+                    completions = await service.complete(messages, request_settings)
                     return FunctionResult(
                         function=function,
                         value=completions,
@@ -321,9 +319,6 @@ class KernelFunction(KernelBaseModel):
             if service is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
-            func = kernel.plugins[function.plugin_name][function.name]
-            _, _, service_type_base = get_ai_service(kernel=kernel, function=func, arguments=arguments)
-
             kernel.add_default_values(arguments, prompt_template_config)
 
             prompt = await prompt_template.render(kernel, arguments)
@@ -333,7 +328,7 @@ class KernelFunction(KernelBaseModel):
             try:
                 if isinstance(service, TextCompletionClientBase):
                     prompt = await prompt_template.render(kernel, arguments)
-                    async for partial_content in service.complete_stream(prompt, request_settings):
+                    async for partial_content in service.complete_stream(messages, request_settings):
                         yield partial_content
                 else:
                     messages = await prompt_template.render_messages(kernel, arguments)
@@ -413,7 +408,6 @@ class KernelFunction(KernelBaseModel):
             stream_function=_local_stream_func,
             is_prompt=True,
             prompt_template_config=prompt_template_config,
-            prompt_execution_settings=prompt_template_config.execution_settings,
         )
 
     def set_default_plugin_collection(self, plugins: "KernelPluginCollection") -> "KernelFunction":

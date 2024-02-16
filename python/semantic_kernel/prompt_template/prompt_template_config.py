@@ -21,21 +21,24 @@ class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
     template: Optional[str] = Field(None, alias="template")
     template_format: Optional[str] = Field(default="semantic-kernel", alias="template_format")
     input_variables: Optional[List[InputVariable]] = Field(default_factory=list, alias="input_variables")
-    execution_settings: Optional[Dict[str, PromptExecutionSettings]] = Field(
-        default_factory=dict, alias="execution_settings"
-    )
+    execution_settings: Optional[PromptExecutionSettings] = Field(
+        default_factory=PromptExecutionSettings, alias="execution_settings"
+    ) # TODO Make this a dict
 
-    def __init__(self, **data) -> None:
+    def __init__(self, **kwargs) -> None:
         """Create a new PromptTemplateConfig instance.
-        
-        Args:
-            **data: The data to initialize the instance with.
-        """
-        super().__init__(**data)
 
-    def add_execution_settings(self, settings: PromptExecutionSettings) -> None:
+        Args:
+            **kwargs: The data to initialize the instance with.
+        """
+        super().__init__(**kwargs)
+
+    def add_execution_settings(self, settings: PromptExecutionSettings, overwrite: bool = True) -> None:
         """Add execution settings to the prompt template."""
-        self.execution_settings = settings
+        if overwrite:
+            self.execution_settings = settings
+            return
+        logger.warning("Execution settings already exist and overwrite is set to False")
 
     def get_kernel_parameter_metadata(self) -> List[KernelParameterMetadata]:
         """Get the kernel parameter metadata for the input variables."""
@@ -60,12 +63,15 @@ class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
         try:
             parsed_json = json.loads(json_str)
             config = PromptTemplateConfig(**parsed_json)
-        except:
-            raise ValueError(f"Unable to deserialize PromptTemplateConfig from the specified JSON string: {json_str}")
+        except Exception as e:
+            raise ValueError(
+                "Unable to deserialize PromptTemplateConfig from the "
+                f"specified JSON string: {json_str} with exception: {e}"
+            )
 
         # Verify that input variable default values are string only
         for variable in config.input_variables:
             if variable.default and not isinstance(variable.default, str):
                 raise ValueError(f"Default value for input variable {variable.name} must be a string for {config.name}")
-            
+
         return config

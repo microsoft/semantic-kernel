@@ -9,11 +9,11 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.core_plugins import MathPlugin
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.prompt_template.input_variable import InputVariable
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -28,8 +28,10 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
+
 def _prepare_input_chat(chat: ChatHistory):
     return "".join([f"{msg.role}: {msg.content}\n" for msg in chat])
+
 
 kernel = sk.Kernel()
 
@@ -82,6 +84,7 @@ tools = [
     }
 ]
 
+
 async def main():
     settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat")
     settings.tools = tools
@@ -95,7 +98,9 @@ async def main():
         name="chat",
         template_format="semantic-kernel",
         input_variables=[
-            InputVariable(name="user_input", description="The history of the conversation", is_required=True, default=""),
+            InputVariable(
+                name="user_input", description="The history of the conversation", is_required=True, default=""
+            ),
         ],
         execution_settings={"default": settings},
     )
@@ -105,9 +110,7 @@ async def main():
     chat.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
 
     chat_function = kernel.create_function_from_prompt(
-        plugin_name="ChatBot", 
-        function_name="Chat", 
-        prompt_template_config=prompt_template_config
+        plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
     )
 
     chat.add_user_message("I want to find a hotel in Seattle with free wifi and a pool.")
@@ -134,6 +137,7 @@ async def main():
     print("No function was called")
     output = "".join([msg for msg in messages])
     print(f"Output was: {output}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

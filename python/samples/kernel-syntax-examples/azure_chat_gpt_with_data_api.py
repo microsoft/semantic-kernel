@@ -14,9 +14,9 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     ExtraBody,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 kernel = sk.Kernel()
 
@@ -44,7 +44,7 @@ azure_ai_search_settings["fieldsMapping"] = {
 az_source = AzureAISearchDataSources(**azure_ai_search_settings)
 az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
-req_settings = AzureChatPromptExecutionSettings(service_id='default', extra_body=extra)
+req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
 # When using data, set use_extensions=True and use the 2023-12-01-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
@@ -74,10 +74,9 @@ chat.add_assistant_message("I am an AI assistant here to answer your questions."
 arguments = KernelArguments()
 
 chat_function = kernel.create_function_from_prompt(
-    plugin_name="ChatBot", 
-    function_name="Chat", 
-    prompt_template_config=prompt_template_config
+    plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
 )
+
 
 async def chat() -> bool:
     try:
