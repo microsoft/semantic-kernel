@@ -158,6 +158,17 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         await ExecuteHandlebarsPromptAsync(kernel, CompanyDescription, handlebarsTemplate01);
     }
 
+    private async Task RunHandlebarsTemplateSample00Async(Kernel kernel)
+    {
+        string handlebarsTemplate01 = @"
+            {{!-- example of set with input and function calling showcasing direct output of the generated value --}}
+            {{set ""companyDescription"" input}}
+            {{set ""productNames"" (productMagician-GenerateJSONProducts companyDescription)}}
+            {{json productNames}}";
+
+        await ExecuteHandlebarsPromptAsync(kernel, CompanyDescription, handlebarsTemplate01);
+    }
+
     private async Task RunHandlebarsPlannerSampleAsync(Kernel kernel)
     {
         // Using the planner to generate a plan for the user
