@@ -255,6 +255,7 @@
                         <failOnError>false</failOnError>
                         <nohelp>true</nohelp>
                         <show>public</show>
+                        <excludePackageNames>*.implementation.*:*.implementation</excludePackageNames>
                     </configuration>
                 </plugin>
                 <plugin>
