@@ -28,7 +28,7 @@ public class ConversationSummaryPlugin
     {
         PromptExecutionSettings settings = new()
         {
-            ExtensionData = new()
+            ExtensionData = new Dictionary<string, object>()
             {
                 { "Temperature", 0.1 },
                 { "TopP", 0.5 },

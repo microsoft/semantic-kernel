@@ -258,7 +258,7 @@ public static class OpenApiKernelExtensions
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
-    private static KernelFunction CreateRestApiFunction(
+    internal static KernelFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
