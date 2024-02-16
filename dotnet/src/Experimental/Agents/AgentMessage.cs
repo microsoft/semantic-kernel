@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -26,6 +27,16 @@ public class AgentMessage
     public KernelAgent? Agent { get; set; }
 
     /// <summary>
+    /// The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.
+    /// </summary>
+    public Kernel? Kernel { get; set; }
+
+    /// <summary>
+    /// The metadata associated with the content.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+
+    /// <summary>
     /// Agent message content items.
     /// </summary>
     public AgentMessageContentItemCollection Items =>
@@ -37,12 +48,14 @@ public class AgentMessage
     /// Creates a new instance of the <see cref="AgentMessage"/> class
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
-    /// <param name="content">Content of the message</param>
+    /// <param name="content">The content of the message can be empty if the message represents a tool/function call,
+    /// the details of which can be obtained from the <see cref="AgentMessage.InnerMessage"/> property of the class.</param>
     /// <param name="innerMessage">Inner content message reference</param>
     /// <param name="agent">Instance of The <see cref="KernelAgent"/> the message was created by.</param>
-    public AgentMessage(AuthorRole role, string? content, object? innerMessage = null, KernelAgent? agent = null)
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="metadata">The metadata associated with the message.</param>
+    public AgentMessage(AuthorRole role, string? content, object? innerMessage = null, KernelAgent? agent = null, Kernel? kernel = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
-        this.InnerMessage = innerMessage;
         this.Role = role;
 
         if (!string.IsNullOrEmpty(content))
@@ -50,7 +63,10 @@ public class AgentMessage
             this.Items.Add(new TextContent(content));
         }
 
+        this.InnerMessage = innerMessage;
         this.Agent = agent;
+        this.Kernel = kernel;
+        this.Metadata = metadata;
     }
 
     /// <summary>
@@ -60,12 +76,16 @@ public class AgentMessage
     /// <param name="items">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
     /// <param name="innerMessage">Inner content message reference</param>
     /// <param name="agent">Instance of The <see cref="KernelAgent"/> the message was created by.</param>
-    public AgentMessage(AuthorRole role, AgentMessageContentItemCollection items, object? innerMessage = null, KernelAgent? agent = null)
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="metadata">The metadata associated with the message.</param>
+    public AgentMessage(AuthorRole role, AgentMessageContentItemCollection items, object? innerMessage = null, KernelAgent? agent = null, Kernel? kernel = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
-        this.InnerMessage = innerMessage;
         this.Role = role;
         this._items = items;
+        this.InnerMessage = innerMessage;
         this.Agent = agent;
+        this.Kernel = kernel;
+        this.Metadata = metadata;
     }
 
     private AgentMessageContentItemCollection? _items;
