@@ -40,17 +40,14 @@ public sealed class VertexAIGeminiChatCompletionService : GeminiChatCompletionSe
             httpRequestFactory: new VertexAIHttpRequestFactory(apiKey),
             endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiChatCompletionService)));
-        this.TextGenerationClient = new GeminiTextGenerationClient(this.ChatCompletionClient);
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     internal VertexAIGeminiChatCompletionService(
         IGeminiChatCompletionClient chatCompletionClient,
-        IGeminiTextGenerationClient textGenerationClient,
         string modelId)
     {
         this.ChatCompletionClient = chatCompletionClient;
-        this.TextGenerationClient = textGenerationClient;
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 }

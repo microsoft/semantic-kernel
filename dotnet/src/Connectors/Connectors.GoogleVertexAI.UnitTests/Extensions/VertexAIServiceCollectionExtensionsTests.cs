@@ -45,7 +45,7 @@ public sealed class VertexAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void VertexAIGeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInKernelServices()
+    public void VertexAIGeminiChatCompletionServiceShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
@@ -61,7 +61,7 @@ public sealed class VertexAIServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void VertexAIGeminiChatCompletionServiceAsIChatCompletionShouldBeRegisteredInServiceCollection()
+    public void VertexAIGeminiChatCompletionServiceShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -74,38 +74,6 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         var chatCompletionService = serviceProvider.GetRequiredService<IChatCompletionService>();
         Assert.NotNull(chatCompletionService);
         Assert.IsType<VertexAIGeminiChatCompletionService>(chatCompletionService);
-    }
-
-    [Fact]
-    public void VertexAIGeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInServiceCollection()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddVertexAIGeminiChatCompletion("modelId", "apiKey", location: "test2", projectId: "projectId");
-        var serviceProvider = services.BuildServiceProvider();
-
-        // Assert
-        var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<VertexAIGeminiChatCompletionService>(textGenerationService);
-    }
-
-    [Fact]
-    public void VertexAIGeminiChatCompletionServiceAsITextGenerationShouldBeRegisteredInKernelServices()
-    {
-        // Arrange
-        var kernelBuilder = Kernel.CreateBuilder();
-
-        // Act
-        kernelBuilder.AddVertexAIGeminiChatCompletion("modelId", "apiKey", location: "test2", projectId: "projectId");
-        var kernel = kernelBuilder.Build();
-
-        // Assert
-        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<VertexAIGeminiChatCompletionService>(textGenerationService);
     }
 
     [Fact]
