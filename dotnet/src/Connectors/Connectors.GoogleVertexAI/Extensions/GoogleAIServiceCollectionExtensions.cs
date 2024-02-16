@@ -97,12 +97,6 @@ public static class GoogleAIServiceCollectionExtensions
                 apiKey: apiKey,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new GoogleAIGeminiChatCompletionService(
-                model: modelId,
-                apiKey: apiKey,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;
     }
 
@@ -125,12 +119,6 @@ public static class GoogleAIServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new GoogleAIGeminiChatCompletionService(
-                model: modelId,
-                apiKey: apiKey,
-                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-        services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new GoogleAIGeminiChatCompletionService(
                 model: modelId,
                 apiKey: apiKey,
