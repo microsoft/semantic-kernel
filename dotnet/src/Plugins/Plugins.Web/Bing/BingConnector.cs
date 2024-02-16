@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -48,6 +49,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this._logger = loggerFactory?.CreateLogger(typeof(BingConnector)) ?? NullLogger.Instance;
         this._httpClient = httpClient;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderValues.UserAgent);
+        this._httpClient.DefaultRequestHeaders.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
     }
 
     /// <inheritdoc/>

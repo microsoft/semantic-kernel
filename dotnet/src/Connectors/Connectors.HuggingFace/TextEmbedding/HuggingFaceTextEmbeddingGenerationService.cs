@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,6 +113,7 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
 
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        httpRequestMessage.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);

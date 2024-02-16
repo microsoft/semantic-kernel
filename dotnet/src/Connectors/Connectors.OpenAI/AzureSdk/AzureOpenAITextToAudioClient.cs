@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -99,6 +100,7 @@ internal sealed class AzureOpenAITextToAudioClient
     {
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         request.Headers.Add("Api-Key", this._apiKey);
+        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
         try
         {

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -150,6 +151,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         request.Headers.Add("Api-Key", this._config.CompletionApiKey);
+        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
         try
         {

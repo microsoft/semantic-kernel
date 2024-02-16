@@ -2,6 +2,7 @@
 
 using System.ComponentModel;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -97,6 +98,7 @@ public sealed class HttpPlugin
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
         using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }

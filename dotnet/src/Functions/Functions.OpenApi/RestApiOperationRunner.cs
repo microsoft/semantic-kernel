@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -163,6 +164,7 @@ internal sealed class RestApiOperationRunner
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
             ? this._userAgent
             : HttpHeaderValues.UserAgent);
+        requestMessage.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
         if (headers != null)
         {

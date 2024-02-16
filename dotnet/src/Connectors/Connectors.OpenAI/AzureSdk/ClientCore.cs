@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -13,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
+using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -700,6 +702,7 @@ internal abstract class ClientCore
         {
             Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
         };
+        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString()), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
