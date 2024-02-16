@@ -86,9 +86,9 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
         blocks.forEach(block -> {
             String name = null;
-            if (block.getType() == BlockTypes.Variable) {
+            if (block.getType() == BlockTypes.VARIABLE) {
                 name = ((VarBlock) block).getName();
-            } else if (block.getType() == BlockTypes.NamedArg) {
+            } else if (block.getType() == BlockTypes.NAMED_ARG) {
                 VarBlock blockName = ((NamedArgBlock) block).getVarBlock();
                 name = blockName == null ? null : blockName.getName();
             }

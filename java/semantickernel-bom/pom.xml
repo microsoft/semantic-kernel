@@ -6,7 +6,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
-    <version>1.0.0-alpha.2-SNAPSHOT</version>
+    <version>1.0.0-rc1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>

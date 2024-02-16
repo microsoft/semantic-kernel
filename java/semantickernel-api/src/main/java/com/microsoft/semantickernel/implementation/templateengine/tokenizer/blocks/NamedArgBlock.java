@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
-import static com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.BlockTypes.NamedArg;
+import static com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.BlockTypes.NAMED_ARG;
 
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.Verify;
@@ -23,7 +23,7 @@ public class NamedArgBlock extends Block implements TextRendering {
     private final ValBlock valBlock;
 
     public NamedArgBlock(String content, String name, String value) {
-        super(content.trim(), NamedArg);
+        super(content.trim(), NAMED_ARG);
         this.name = name.trim();
         this.value = value.trim();
 
@@ -45,7 +45,7 @@ public class NamedArgBlock extends Block implements TextRendering {
         VarBlock argNameAsVarBlock,
         @Nullable VarBlock varBlock,
         @Nullable ValBlock valBlock) {
-        super(content, NamedArg);
+        super(content, NAMED_ARG);
         this.name = name;
         this.value = value;
         this.argNameAsVarBlock = argNameAsVarBlock;

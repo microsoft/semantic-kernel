@@ -7,7 +7,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>1.0.0-alpha.2-SNAPSHOT</version>
+    <version>1.0.0-rc1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <url>https://www.github.com/microsoft/semantic-kernel</url>
@@ -255,6 +255,7 @@
                         <failOnError>false</failOnError>
                         <nohelp>true</nohelp>
                         <show>public</show>
+                        <excludePackageNames>*.implementation.*:*.implementation</excludePackageNames>
                     </configuration>
                 </plugin>
                 <plugin>

@@ -35,7 +35,7 @@ public final class CodeBlock extends Block implements CodeRendering {
      * @param content The content.
      */
     public CodeBlock(List<Block> tokens, String content) {
-        super(content, BlockTypes.Code);
+        super(content, BlockTypes.CODE);
         this.tokens = Collections.unmodifiableList(tokens);
     }
 
@@ -47,7 +47,7 @@ public final class CodeBlock extends Block implements CodeRendering {
             return false;
         }
 
-        if (this.tokens.size() > 0 && this.tokens.get(0).getType() == BlockTypes.NamedArg) {
+        if (this.tokens.size() > 0 && this.tokens.get(0).getType() == BlockTypes.NAMED_ARG) {
             LOGGER.error("Unexpected named argument found. Expected function name first.");
             return false;
         }
@@ -60,21 +60,21 @@ public final class CodeBlock extends Block implements CodeRendering {
     }
 
     private boolean isValidFunctionCall() {
-        if (this.tokens.get(0).getType() != BlockTypes.FunctionId) {
+        if (this.tokens.get(0).getType() != BlockTypes.FUNCTION_ID) {
             LOGGER.error("Unexpected second token found: " + tokens.get(1).getContent());
             return false;
         }
 
-        if (this.tokens.get(1).getType() != BlockTypes.Value &&
-            this.tokens.get(1).getType() != BlockTypes.Variable &&
-            this.tokens.get(1).getType() != BlockTypes.NamedArg) {
+        if (this.tokens.get(1).getType() != BlockTypes.VALUE &&
+            this.tokens.get(1).getType() != BlockTypes.VARIABLE &&
+            this.tokens.get(1).getType() != BlockTypes.NAMED_ARG) {
             LOGGER.error(
                 "The first arg of a function must be a quoted string, variable or named argument");
             return false;
         }
 
         for (int i = 2; i < this.tokens.size(); i++) {
-            if (this.tokens.get(i).getType() != BlockTypes.NamedArg) {
+            if (this.tokens.get(i).getType() != BlockTypes.NAMED_ARG) {
                 LOGGER.error(
                     "Functions only support named arguments after the first argument. Argument " + i
                         + " is not named.");
@@ -101,12 +101,12 @@ public final class CodeBlock extends Block implements CodeRendering {
         // this.Log.LogTrace("Rendering code: `{0}`", this.Content);
 
         switch (this.tokens.get(0).getType()) {
-            case Value:
-            case Variable:
+            case VALUE:
+            case VARIABLE:
                 return Mono.just(
                     ((TextRendering) this.tokens.get(0)).render(arguments));
 
-            case FunctionId:
+            case FUNCTION_ID:
                 return this
                     .renderFunctionCallAsync(
                         (FunctionIdBlock) this.tokens.get(0),
@@ -118,9 +118,9 @@ public final class CodeBlock extends Block implements CodeRendering {
                         return it.getValue();
                     });
 
-            case Undefined:
-            case Text:
-            case Code:
+            case UNDEFINED:
+            case TEXT:
+            case CODE:
             default:
                 throw new RuntimeException("Unknown type");
         }
@@ -185,7 +185,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         Object firstPositionalInputValue;
         int namedArgsStartIndex = 1;
 
-        if (firstArg.getType() != BlockTypes.NamedArg) {
+        if (firstArg.getType() != BlockTypes.NAMED_ARG) {
             // Gets the function first parameter name
             firstPositionalParameterName = functionMetadata.getParameters().get(0).getName();
 
