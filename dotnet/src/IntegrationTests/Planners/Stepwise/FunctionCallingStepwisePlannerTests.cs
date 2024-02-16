@@ -18,7 +18,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
-public sealed class FunctionCallingStepwisePlannerTests : IDisposable
+public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, IDisposable
 {
     private readonly string _bingApiKey;
 
@@ -136,11 +136,11 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        IKernelBuilder builder = Kernel.CreateBuilder();
+        IKernelBuilder builder = this.CreateKernelBuilder();
         builder.Services.AddSingleton<ILoggerFactory>(this._logger);
         builder.AddOpenAIChatCompletion(
-                modelId: openAIConfiguration.ModelId,
-                apiKey: openAIConfiguration.ApiKey);
+            modelId: openAIConfiguration.ModelId,
+            apiKey: openAIConfiguration.ApiKey);
 
         var kernel = builder.Build();
 
