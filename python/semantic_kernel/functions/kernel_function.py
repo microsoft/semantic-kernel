@@ -237,19 +237,38 @@ class KernelFunction(KernelBaseModel):
         ) -> "FunctionResult":
             if service is None:
                 raise ValueError("AI LLM service cannot be `None`")
+            from semantic_kernel.functions.kernel_function import KernelFunction  # noqa # pylint: disable=unused-import
+
+            FunctionResult.model_rebuild()
             try:
                 if isinstance(service, TextCompletionClientBase):
                     prompt = await function_config.prompt_template.render(kernel, arguments)
-                    completion = await service.complete(prompt, request_settings)
-                    return FunctionResult(function=function, value=completion)
+                    completions = await service.complete(prompt, request_settings)
+                    return FunctionResult(
+                        function=function,
+                        value=completions,
+                        metadata={
+                            "prompt": prompt,
+                            "arguments": arguments,
+                            "metadata": [completion.metadata for completion in completions],
+                        },
+                    )
             except Exception as e:
                 logger.error(f"Error occurred while invoking function {function.name}: {e}")
                 raise e
 
-            messages = await function_config.prompt_template.render_messages(kernel, arguments)
             try:
-                result = await service.complete_chat(messages, request_settings)
-                return FunctionResult(function=function, value=result)
+                messages = await function_config.prompt_template.render_messages(kernel, arguments)
+                completions = await service.complete_chat(messages, request_settings)
+                return FunctionResult(
+                    function=function,
+                    value=completions,
+                    metadata={
+                        "messages": messages,
+                        "arguments": arguments,
+                        "metadata": [completion.metadata for completion in completions],
+                    },
+                )
             except Exception as exc:
                 logger.error(f"Error occurred while invoking function {function.name}: {exc}")
                 raise exc
@@ -261,20 +280,20 @@ class KernelFunction(KernelBaseModel):
             request_settings: PromptExecutionSettings,
             arguments: KernelArguments,
             **kwargs: Dict[str, Any],
-        ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+        ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
             if service is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
             try:
-                if isinstance(service, ChatCompletionClientBase):
+                if isinstance(service, TextCompletionClientBase):
+                    prompt = await function_config.prompt_template.render(kernel, arguments)
+                    async for partial_content in service.complete_stream(prompt, request_settings):
+                        yield partial_content
+                else:
                     messages = await function_config.prompt_template.render_messages(kernel, arguments)
                     async for partial_content in service.complete_chat_stream(
                         messages=messages, settings=request_settings
                     ):
-                        yield partial_content
-                else:
-                    prompt = await function_config.prompt_template.render(kernel, arguments)
-                    async for partial_content in service.complete_stream(prompt, request_settings):
                         yield partial_content
 
             except Exception as e:
@@ -346,38 +365,6 @@ class KernelFunction(KernelBaseModel):
         self.plugins = plugins
         return self
 
-    # def set_service(self, service: AIServiceClientBase) -> "KernelFunction":
-    #     if service is None:
-    #         raise ValueError("AI LLM service cannot be `None`")
-    #     self.ai_service = service
-    #     return self
-
-    # def set_ai_service(self, ai_service: TextCompletionClientBase) -> "KernelFunction":
-    #     if ai_service is None:
-    #         raise ValueError("AI LLM service factory cannot be `None`")
-    #     self.ai_service = ai_service
-    #     return self
-
-    # def set_chat_service(self, chat_service: Callable[[], ChatCompletionClientBase]) -> "KernelFunction":
-    #     if chat_service is None:
-    #         raise ValueError("Chat LLM service factory cannot be `None`")
-    #     self.ai_service = chat_service()
-    #     return self
-
-    # def set_ai_configuration(self, settings: PromptExecutionSettings) -> "KernelFunction":
-    #     if settings is None:
-    #         raise ValueError("AI LLM request settings cannot be `None`")
-    #     # self._verify_is_semantic()
-    #     self.prompt_execution_settings = settings
-    #     return self
-
-    # def set_chat_configuration(self, settings: PromptExecutionSettings) -> "KernelFunction":
-    #     if settings is None:
-    #         raise ValueError("Chat LLM request settings cannot be `None`")
-    #     # self._verify_is_semantic()
-    #     self.prompt_execution_settings = settings
-    #     return self
-
     def describe(self) -> KernelFunctionMetadata:
         return KernelFunctionMetadata(
             name=self.name,
@@ -442,24 +429,10 @@ class KernelFunction(KernelBaseModel):
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
             yield FunctionResult(
-                function=self.describe(), value=None, metadata={"error": str(e), "arguments": function_arguments}
+                function=self.describe(), value=None, metadata={"error": e, "arguments": function_arguments}
             )
 
     def gather_function_parameters(self, kernel: "Kernel", arguments: "KernelArguments") -> Dict[str, Any]:
-        # TODO: replace with service selector
-
-        # if arguments.execution_settings and len(arguments.execution_settings) > 1:
-        #     exec_settings = (
-        #         arguments.execution_settings[self.ai_service.ai_model_id]
-        #         if self.ai_service.ai_model_id in arguments.execution_settings
-        #         else self.prompt_execution_settings
-        #     )
-        # elif arguments.execution_settings and len(arguments.execution_settings) == 1:
-        #     exec_settings = list(arguments.execution_settings.values())[0]
-        # else:
-        #     exec_settings = self.prompt_execution_settings
-        service, exec_settings = kernel.select_ai_service(self, arguments)
-
         function_arguments: Dict[str, Any] = {}
         for param in self.parameters:
             if param.name == "function":
@@ -469,10 +442,10 @@ class KernelFunction(KernelBaseModel):
                 function_arguments[param.name] = kernel
                 continue
             if param.name == "service":
-                function_arguments[param.name] = service
+                function_arguments[param.name] = kernel.select_ai_service(self, arguments)[0]
                 continue
             if param.name == "request_settings":
-                function_arguments[param.name] = exec_settings
+                function_arguments[param.name] = kernel.select_ai_service(self, arguments)[1]
                 continue
             if param.name == "arguments":
                 function_arguments[param.name] = arguments

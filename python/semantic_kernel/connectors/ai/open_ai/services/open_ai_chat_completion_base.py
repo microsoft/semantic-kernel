@@ -43,7 +43,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         messages: List[Dict[str, str]],
         settings: OpenAIPromptExecutionSettings,
-        **kwargs,
     ) -> List[OpenAIChatMessageContent]:
         """Executes a chat completion request and returns the result.
 
@@ -68,7 +67,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         messages: List[Dict[str, str]],
         settings: OpenAIPromptExecutionSettings,
-        **kwargs,
     ) -> AsyncIterable[List[OpenAIStreamingChatMessageContent]]:
         """Executes a streaming chat completion request and returns the result.
 

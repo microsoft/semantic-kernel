@@ -24,7 +24,6 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         ai_model_id: str,
         device: Optional[int] = -1,
         service_id: Optional[str] = None,
-        log: Optional[Any] = None,
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextEmbedding class.
@@ -37,8 +36,6 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             ai_model_id=ai_model_id,

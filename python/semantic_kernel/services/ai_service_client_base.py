@@ -44,3 +44,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
         All arguments are passed to the constructor of the request settings object.
         """
         return self.get_prompt_execution_settings_class()(**kwargs)
+
+    def get_prompt_execution_settings_from_settings(self, settings: PromptExecutionSettings) -> PromptExecutionSettings:
+        """Get the request settings from a settings object."""
+        return self.get_prompt_execution_settings_class().from_prompt_execution_settings(settings)

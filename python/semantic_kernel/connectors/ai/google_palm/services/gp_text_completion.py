@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Any, List, Optional
+from typing import List
 
 from semantic_kernel.contents.text_content import TextContent
 
@@ -30,7 +30,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class GooglePalmTextCompletion(TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-    def __init__(self, ai_model_id: str, api_key: str, log: Optional[Any] = None):
+    def __init__(self, ai_model_id: str, api_key: str):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 
@@ -39,15 +39,10 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                 https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
-            log {Optional[Any]} -- The logger instance to use. (Optional) (Deprecated)
         """
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
-    async def complete(
-        self, prompt: str, settings: GooglePalmTextPromptExecutionSettings, **kwargs
-    ) -> List[TextContent]:
+    async def complete(self, prompt: str, settings: GooglePalmTextPromptExecutionSettings) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -96,7 +91,6 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: GooglePalmTextPromptExecutionSettings,
-        logger: Optional[Any] = None,
     ):
         raise NotImplementedError("Google Palm API does not currently support streaming")
 

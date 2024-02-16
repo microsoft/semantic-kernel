@@ -91,7 +91,7 @@ class Kernel(KernelBaseModel):
     # region Init
 
     plugins: KernelPluginCollection = Field(default_factory=KernelPluginCollection)
-    services: Dict[str, ALL_SERVICE_TYPES] = Field(default_factory=dict)
+    services: Dict[str, AIServiceClientBase] = Field(default_factory=dict)
     prompt_template_engine: PromptTemplatingEngine = Field(default_factory=PromptTemplateEngine)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     memory: Optional[SemanticTextMemoryBase] = Field(default_factory=SemanticTextMemory)
@@ -674,58 +674,6 @@ class Kernel(KernelBaseModel):
                 logger.warning("Overwriting execution settings for service_id: %s", exec_settings.service_id)
             function.prompt_execution_settings[exec_settings.service_id] = exec_settings
 
-        # if function_config.has_chat_prompt:
-        #     service = self.get_service(
-        #         function_config.prompt_template_config.default_services[0]
-        #         if len(function_config.prompt_template_config.default_services) > 0
-        #         else None,
-        #         type=ChatCompletionClientBase,
-        #     )
-        #     req_settings_type = service.get_prompt_execution_settings_class()
-
-        #     function.set_chat_configuration(
-        #         req_settings_type.from_prompt_execution_settings(
-        #             function_config.prompt_template_config.execution_settings
-        #         )
-        #     )
-
-        #     if service is None:
-        #         raise AIException(
-        #             AIException.ErrorCodes.InvalidConfiguration,
-        #             (
-        #                 "Could not load chat service, unable to prepare semantic"
-        #                 " function. Function description:"
-        #                 " {function_config.prompt_template_config.description}"
-        #             ),
-        #         )
-
-        #     # function.set_chat_service(service)
-        # else:
-        #     service = self.get_service(
-        #         function_config.prompt_template_config.default_services[0]
-        #         if len(function_config.prompt_template_config.default_services) > 0
-        #         else None,
-        #         type=TextCompletionClientBase,
-        #     )
-        #     req_settings_type = service.get_prompt_execution_settings_class()
-        #     function.set_ai_configuration(
-        #         req_settings_type.from_prompt_execution_settings(
-        #             function_config.prompt_template_config.execution_settings
-        #         )
-        #     )
-
-        #     if service is None:
-        #         raise AIException(
-        #             AIException.ErrorCodes.InvalidConfiguration,
-        #             (
-        #                 "Could not load text service, unable to prepare semantic"
-        #                 " function. Function description:"
-        #                 " {function_config.prompt_template_config.description}"
-        #             ),
-        #         )
-
-        # function.set_ai_service(service)
-
         return function
 
     # endregion
@@ -736,7 +684,6 @@ class Kernel(KernelBaseModel):
     ) -> PromptExecutionSettings:
         """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
         service = self.get_service(service_id, type=type)
-        assert isinstance(service, AIServiceClientBase)
         return service.instantiate_prompt_execution_settings(
             service_id=service_id,
             extension_data={"ai_model_id": service.ai_model_id},
@@ -753,12 +700,13 @@ class Kernel(KernelBaseModel):
         Type should be
             TextCompletionClientBase, ChatCompletionClientBase, EmbeddingGeneratorBase
             or a subclass of one.
+            You can also check for multiple types in one go,
+            by using Union[TextCompletionClientBase, ChatCompletionClientBase].
+
+        If type and service_id are both None, the first service is returned.
         """
-        if not service_id:
-            # this will be replaced by ServicePicker
-            for service in self.services.values():
-                if isinstance(service, type):
-                    return service
+        if not service_id and not type:
+            return list(self.services.values())[0]
         if service_id not in self.services:
             raise ValueError(f"Service with service_id '{service_id}' does not exist")
         service = self.services[service_id]
@@ -766,7 +714,7 @@ class Kernel(KernelBaseModel):
             raise ValueError(f"Service with service_id '{service_id}' is not of type {type.__name__}")
         return service
 
-    def services_by_type(self, type: Type[T]) -> Dict[str, T]:
+    def get_services_by_type(self, type: Type[T]) -> Dict[str, T]:
         return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
 
     def add_service(self, service: AIServiceClientBase, overwrite: bool = False) -> None:
@@ -776,13 +724,14 @@ class Kernel(KernelBaseModel):
             raise ValueError(f"Service with service_id '{service.service_id}' already exists")
 
     def remove_service(self, service_id: str) -> None:
+        """Delete a single service from the Kernel."""
         if service_id not in self.services:
             raise ValueError(f"Service with service_id '{service_id}' does not exist")
         del self.services[service_id]
 
     def remove_all_services(self) -> None:
         """Removes the services from the Kernel, does not delete them."""
-        self.services = {}
+        self.services.clear()
 
     # endregion
     # region Memory
@@ -824,76 +773,5 @@ class Kernel(KernelBaseModel):
             for handler in self.function_invoking_handlers.values():
                 handler(self, args)
         return args
-
-    # endregion
-    # region DEPRECATED FUNCTIONS
-
-    def add_text_completion_service(
-        self,
-        service_id: str,
-        service: Union[TextCompletionClientBase, Callable[["Kernel"], TextCompletionClientBase]],
-        overwrite: bool = True,
-    ) -> "Kernel":
-        logger.warning("add_text_completion_service is deprecated, use add_service instead")
-        service.service_id = service_id
-        self.add_service(service, overwrite)
-        return self
-
-    def add_chat_service(
-        self,
-        service_id: str,
-        service: Union[ChatCompletionClientBase, Callable[["Kernel"], ChatCompletionClientBase]],
-        overwrite: bool = True,
-    ) -> "Kernel":
-        logger.warning("add_chat_service is deprecated, use add_service instead")
-        service.service_id = service_id
-        self.add_service(service, overwrite)
-        return self
-
-    def add_text_embedding_generation_service(
-        self,
-        service_id: str,
-        service: Union[EmbeddingGeneratorBase, Callable[["Kernel"], EmbeddingGeneratorBase]],
-        overwrite: bool = False,
-    ) -> "Kernel":
-        logger.warning("add_text_embedding_generation_service is deprecated, use add_service instead")
-        service.service_id = service_id
-        self.add_service(service, overwrite)
-        return self
-
-    def remove_text_completion_service(self, service_id: str) -> "Kernel":
-        logger.warning("remove_text_completion_service is deprecated, use remove_service instead")
-        self.remove_service(service_id)
-        return self
-
-    def remove_chat_service(self, service_id: str) -> "Kernel":
-        logger.warning("remove_chat_service is deprecated, use remove_service instead")
-        self.remove_service(service_id)
-        return self
-
-    def remove_text_embedding_generation_service(self, service_id: str) -> "Kernel":
-        logger.warning("remove_text_embedding_generation_service is deprecated, use remove_service instead")
-        self.remove_service(service_id)
-        return self
-
-    def clear_all_text_completion_services(self) -> "Kernel":
-        logger.warning("clear_all_text_completion_services is deprecated, use remove_all_services instead")
-        self.remove_all_services()
-        return self
-
-    def clear_all_chat_services(self) -> "Kernel":
-        logger.warning("clear_all_chat_completion_services is deprecated, use remove_all_services instead")
-        self.remove_all_services()
-        return self
-
-    def clear_all_text_embedding_generation_services(self) -> "Kernel":
-        logger.warning("clear_all_text_embedding_services is deprecated, use remove_all_services instead")
-        self.remove_all_services()
-        return self
-
-    def clear_all_services(self) -> "Kernel":
-        logger.warning("clear_all_services is deprecated, use remove_all_services instead")
-        self.remove_all_services()
-        return self
 
     # endregion

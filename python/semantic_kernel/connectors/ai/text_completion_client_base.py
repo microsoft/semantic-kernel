@@ -2,7 +2,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncIterable, List, Optional
+from typing import TYPE_CHECKING, AsyncIterable, List
 
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -19,7 +19,6 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
-        logger: Optional[Any] = None,
     ) -> List["TextContent"]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -27,7 +26,6 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
             settings {PromptExecutionSettings} -- Settings for the request.
-            logger {Logger} -- A logger to use for logging (deprecated).
 
             Returns:
                 Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
@@ -38,7 +36,6 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
-        logger: Optional[Any] = None,
     ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
@@ -46,7 +43,6 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
             settings {PromptExecutionSettings} -- Settings for the request.
-            logger {Logger} -- A logger to use for logging (deprecated).
 
         Yields:
             A stream representing the response(s) from the LLM.

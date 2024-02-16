@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
@@ -40,10 +42,10 @@ def test_can_be_instantiated():
 @pytest.mark.parametrize("wait_time", test_data_good)
 async def test_wait_valid_params(wait_time):
     plugin = WaitPlugin()
+    with patch("asyncio.sleep") as patched_sleep:
+        await plugin.wait(wait_time)
 
-    await plugin.wait(wait_time)
-
-    assert True
+        assert patched_sleep.called_once_with(abs(float(wait_time)))
 
 
 @pytest.mark.asyncio

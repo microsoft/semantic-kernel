@@ -44,7 +44,6 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         messages: List[Dict[str, str]],
         settings: OllamaChatPromptExecutionSettings,
-        **kwargs,
     ) -> List[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -77,7 +76,6 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         messages: List[Dict[str, str]],
         settings: OllamaChatPromptExecutionSettings,
-        **kwargs,
     ) -> AsyncIterable[List[StreamingChatMessageContent]]:
         """
         Streams a text completion using a Ollama model.
@@ -114,7 +112,6 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-        **kwargs,
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -122,7 +119,6 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
             settings {OllamaChatPromptExecutionSettings} -- Settings for the request.
-            logger {Logger} -- A logger to use for logging (deprecated).
 
         Returns:
             List["TextContent"] -- The completion result(s).
@@ -145,7 +141,6 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-        **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Ollama model.
