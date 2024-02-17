@@ -143,7 +143,6 @@ public class Example59_OpenAIFunctionCalling {
         KernelFunction<?> function) {
         System.out.println("======== Require a function ========");
 
-        // Based on coordinates
         var toolCallBehavior = new ToolCallBehavior()
             .requireFunction(plugin.get("getsTheWeatherForCity"))
             .autoInvoke(true);

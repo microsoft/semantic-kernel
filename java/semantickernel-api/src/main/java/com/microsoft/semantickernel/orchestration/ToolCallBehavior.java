@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
  * Defines the behavior of a tool call. Currently, the only tool available is function calling.
  */
 public class ToolCallBehavior {
-
     private static final int DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS = 5;
     private static final String FUNCTION_NAME_SEPARATOR = "-";
 
@@ -59,8 +58,10 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Enable or disable kernel functions. If kernel functions are disabled, they will not be passed
-     * to the model. This is the default behavior.
+     * Enable or disable all kernel functions. If kernel functions are disabled, they will not be passed
+     * to the model unless specific functions have been enabled via {@code enableFunction}.
+     * <p>
+     * By default, all kernel functions are disabled.
      *
      * @param enable Whether to enable kernel functions.
      * @return This ToolCallBehavior.
@@ -84,10 +85,9 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Require or not require a function to be called. If a function is required, it will be called.
-     * If it is not required, it may be called if {@code auto-invcation} is enabled. Whether the
-     * functions are passed to the model is controlled by whether {@code kernelFunctions} is
-     * enabled. By default, no function is required.
+     * Require or not require a function to be called.
+     * If a function is required, it will the only function to be passed to the model and be called.
+     * By default, no function is required.
      *
      * @param function The function to require or not require.
      * @return This ToolCallBehavior.
@@ -99,9 +99,10 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Enable or disable a function. If a function is enabled, it may be called. If it is not
-     * enabled, it will not be called. By default, all functions are enabled. Whether the functions
-     * are passed to the model is controlled by whether {@code kernelFunctions} is enabled.
+     * Enable or disable a specific function if {@code kernelFunctions} is <b>not</b> enabled.
+     * <p>
+     * If a function is enabled, it may be called. If it is not enabled, it will not be called.
+     * By default, all functions are disabled.
      *
      * @param function The function to enable or disable.
      * @param enable   Whether to enable the function.
