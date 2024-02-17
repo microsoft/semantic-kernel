@@ -98,9 +98,9 @@ public class Example59_OpenAIFunctionCalling {
         // Example 1: All kernel functions are enabled to be called by the model
         kernelFunctions(kernel, function);
         // Example 2: A set of functions available to be called by the model
-//        enableFunctions(kernel, plugin, function);
-//        // Example 3: A specific function to be called by the model
-//        requireFunction(kernel, plugin, function);
+        enableFunctions(kernel, plugin, function);
+        // Example 3: A specific function to be called by the model
+        requireFunction(kernel, plugin, function);
     }
 
     public static void kernelFunctions(Kernel kernel, KernelFunction<?> function) {
