@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -58,16 +59,15 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Enable or disable all kernel functions. If kernel functions are disabled, they will not be passed
-     * to the model unless specific functions have been enabled via {@code enableFunction}.
+     * Enable kernel functions. If kernel functions are disabled, they will not be passed
+     * to the model unless specific functions have been enabled via {@code enableFunctions}.
      * <p>
      * By default, all kernel functions are disabled.
      *
-     * @param enable Whether to enable kernel functions.
      * @return This ToolCallBehavior.
      */
-    public ToolCallBehavior enableKernelFunctions(boolean enable) {
-        this.kernelFunctionsEnabled = enable;
+    public ToolCallBehavior enableKernelFunctions() {
+        this.kernelFunctionsEnabled = true;
         return this;
     }
 
@@ -99,23 +99,31 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Enable or disable a specific function if {@code kernelFunctions} is <b>not</b> enabled.
-     * <p>
+     * Enable a function.
      * If a function is enabled, it may be called. If it is not enabled, it will not be called.
      * By default, all functions are disabled.
      *
-     * @param function The function to enable or disable.
-     * @param enable   Whether to enable the function.
+     * @param function The function to enable.
      * @return This ToolCallBehavior.
      */
-    public ToolCallBehavior enableFunction(KernelFunction<?> function, boolean enable) {
+    public ToolCallBehavior enableFunction(KernelFunction<?> function) {
         if (function != null) {
-            String key = getKey(function.getPluginName(), function.getName());
-            if (enable) {
-                enabledFunctions.add(key);
-            } else {
-                enabledFunctions.remove(key);
-            }
+            enabledFunctions.add(getKey(function.getPluginName(), function.getName()));
+        }
+        return this;
+    }
+
+    /**
+     * Enable a set of functions.
+     * If a function is enabled, it may be called. If it is not enabled, it will not be called.
+     * By default, all functions are disabled.
+     *
+     * @param functions The functions to enable.
+     * @return This ToolCallBehavior.
+     */
+    public ToolCallBehavior enableFunctions(List<KernelFunction<?>> functions) {
+        if (functions != null) {
+            functions.forEach(this::enableFunction);
         }
         return this;
     }
@@ -211,7 +219,7 @@ public class ToolCallBehavior {
         }
 
         @Override
-        public final ToolCallBehavior enableKernelFunctions(boolean enable) {
+        public final ToolCallBehavior enableKernelFunctions() {
             throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
         }
 
@@ -226,7 +234,7 @@ public class ToolCallBehavior {
         }
 
         @Override
-        public final ToolCallBehavior enableFunction(KernelFunction<?> function, boolean enable) {
+        public final ToolCallBehavior enableFunction(KernelFunction<?> function) {
             throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
         }
     }
