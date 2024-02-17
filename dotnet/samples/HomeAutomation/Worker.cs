@@ -34,11 +34,7 @@ internal sealed class Worker : BackgroundService
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
 
-        ChatMessageContent chatResult = await chatCompletionService.GetChatMessageContentAsync("What time is it?",
-            openAIPromptExecutionSettings, _kernel, stoppingToken);
-        Console.WriteLine($">>> Result: {chatResult}");
-
-        chatResult = await chatCompletionService.GetChatMessageContentAsync(
+        ChatMessageContent chatResult = await chatCompletionService.GetChatMessageContentAsync(
             "If it's before 7:00 pm, turn on the office light.",
             openAIPromptExecutionSettings, _kernel, stoppingToken);
         Console.WriteLine($">>> Result: {chatResult}");
@@ -49,6 +45,10 @@ internal sealed class Worker : BackgroundService
         Console.WriteLine($">>> Result: {chatResult}");
 
         chatResult = await chatCompletionService.GetChatMessageContentAsync("Which light is currently on?",
+            openAIPromptExecutionSettings, _kernel, stoppingToken);
+        Console.WriteLine($">>> Result: {chatResult}");
+
+        chatResult = await chatCompletionService.GetChatMessageContentAsync("Set an alarm for 6:00 am.",
             openAIPromptExecutionSettings, _kernel, stoppingToken);
         Console.WriteLine($">>> Result: {chatResult}");
 
