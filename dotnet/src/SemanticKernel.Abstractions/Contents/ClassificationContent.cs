@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Contents;
 
 /// <summary>
-/// Represents result of classification the content that is classified by an AI model.
+/// Represents result of classification of content that is classified by an AI model.
 /// </summary>
 public class ClassificationContent : KernelContent
 {
