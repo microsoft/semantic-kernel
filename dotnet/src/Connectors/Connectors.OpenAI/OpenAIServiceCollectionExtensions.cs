@@ -706,7 +706,8 @@ public static class OpenAIServiceCollectionExtensions
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null)
+        string? modelId = null,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
@@ -718,7 +719,7 @@ public static class OpenAIServiceCollectionExtensions
             OpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 new AzureKeyCredential(apiKey),
-                HttpClientProvider.GetHttpClient(serviceProvider));
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
@@ -786,7 +787,8 @@ public static class OpenAIServiceCollectionExtensions
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
-        string? modelId = null)
+        string? modelId = null,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
@@ -798,7 +800,7 @@ public static class OpenAIServiceCollectionExtensions
             OpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 credentials,
-                HttpClientProvider.GetHttpClient(serviceProvider));
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
@@ -974,7 +976,8 @@ public static class OpenAIServiceCollectionExtensions
         string modelId,
         string apiKey,
         string? orgId = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -984,7 +987,7 @@ public static class OpenAIServiceCollectionExtensions
             new(modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(serviceProvider),
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
