@@ -10,8 +10,8 @@ import com.microsoft.semantickernel.implementation.templateengine.tokenizer.bloc
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.TextRendering;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.VarBlock;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
@@ -31,25 +31,28 @@ import reactor.core.publisher.Mono;
  */
 public class DefaultPromptTemplate implements PromptTemplate {
 
-    private final PromptTemplateConfig promptTemplate;
+    private final PromptTemplateConfig promptTemplateConfig;
+    private final List<Block> blocks;
 
     /**
      * Create a new prompt template.
+     *
      * @param promptTemplateConfig The prompt template configuration.
      */
     public DefaultPromptTemplate(
         @Nonnull PromptTemplateConfig promptTemplateConfig) {
-        this.promptTemplate = new PromptTemplateConfig(promptTemplateConfig);
+        this.blocks = extractBlocks(promptTemplateConfig);
+        this.promptTemplateConfig = addMissingInputVariables(promptTemplateConfig, blocks);
     }
 
     /*
      * Given a prompt template string, extract all the blocks (text, variables, function calls)
-     * 
+     *
      * @return A list of all the blocks, ie the template tokenized in text, variables and function
      * calls
      */
-    private List<Block> extractBlocks() {
-        String templateText = promptTemplate.getTemplate();
+    private static List<Block> extractBlocks(PromptTemplateConfig promptTemplateConfig) {
+        String templateText = promptTemplateConfig.getTemplate();
 
         List<Block> blocks = new TemplateTokenizer().tokenize(templateText);
 
@@ -67,22 +70,27 @@ public class DefaultPromptTemplate implements PromptTemplate {
     }
 
     /**
-     * Augments the prompt template with any variables
-     * not already contained there but that are referenced in the prompt template.
+     * Augments the prompt template with any variables not already contained there but that are
+     * referenced in the prompt template.
+     *
      * @param blocks The blocks to search for input variables.
+     * @return
      */
     @SuppressWarnings("NullAway")
-    private void addMissingInputVariables(List<Block> blocks) {
+    private static PromptTemplateConfig addMissingInputVariables(
+        PromptTemplateConfig promptTemplateConfig, List<Block> blocks) {
         // Add all of the existing input variables to our known set. We'll avoid adding any
         // dynamically discovered input variables with the same name.
         Set<String> seen = new HashSet<>();
 
         seen.addAll(
-            promptTemplate
+            promptTemplateConfig
                 .getInputVariables()
                 .stream()
                 .map(InputVariable::getName)
                 .collect(Collectors.toList()));
+
+        PromptTemplateConfig.Builder promptTemplateConfigBuilder = promptTemplateConfig.copy();
 
         blocks.forEach(block -> {
             String name = null;
@@ -95,9 +103,11 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
             if (!Verify.isNullOrEmpty(name) && !seen.contains(name)) {
                 seen.add(name);
-                promptTemplate.addInputVariable(new InputVariable(name));
+                promptTemplateConfigBuilder.addInputVariable(new InputVariable(name));
             }
         });
+
+        return promptTemplateConfigBuilder.build();
     }
 
     @Override
@@ -105,9 +115,6 @@ public class DefaultPromptTemplate implements PromptTemplate {
         Kernel kernel,
         @Nullable KernelFunctionArguments arguments,
         @Nullable InvocationContext context) {
-
-        List<Block> blocks = this.extractBlocks();
-        addMissingInputVariables(blocks);
 
         return Flux
             .fromIterable(blocks)

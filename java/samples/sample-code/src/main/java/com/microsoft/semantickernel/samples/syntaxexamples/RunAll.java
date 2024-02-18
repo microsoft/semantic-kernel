@@ -43,6 +43,7 @@ public class RunAll {
             Example56_TemplateMethodFunctionsWithMultipleArguments::main,
             Example57_KernelHooks::main,
             Example58_ConfigureExecutionSettings::main,
+            Example60_AdvancedMethodFunctions::main,
             Example61_MultipleLLMs::main,
             Example62_CustomAIServiceSelector::main,
             Example63_ChatCompletionPrompts::main,

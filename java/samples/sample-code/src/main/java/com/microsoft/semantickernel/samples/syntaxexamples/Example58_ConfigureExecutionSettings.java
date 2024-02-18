@@ -88,7 +88,9 @@ public class Example58_ConfigureExecutionSettings {
 
         var promptConfig = PromptTemplateConfig
             .parseFromJson(configPayload)
-            .setTemplate(prompt);
+            .copy()
+            .withTemplate(prompt)
+            .build();
 
         var func = KernelFunction
             .createFromPrompt(promptConfig)
