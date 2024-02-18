@@ -610,11 +610,6 @@ class Kernel(KernelBaseModel):
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        # if not prompt_template_config.execution_settings:
-        #     if execution_settings:
-        #         prompt_template_config.execution_settings = execution_settings
-        #     else:
-        #         prompt_template_config.execution_settings = {'default': PromptExecutionSettings(service_id='default')} # how to handle this?
         if not prompt_template_config.execution_settings:
             prompt_template_config.execution_settings=PromptExecutionSettings(extension_data=kwargs)
 

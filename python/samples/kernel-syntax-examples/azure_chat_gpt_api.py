@@ -7,9 +7,6 @@ from dotenv import load_dotenv
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -30,8 +27,10 @@ flowery prose.
 
 kernel = sk.Kernel()
 
-chat_service = sk_oai.AzureChatCompletion(**azure_openai_settings_from_dot_env_as_dict(include_api_version=True))
-kernel.add_chat_service("chat-gpt", chat_service)
+chat_service = sk_oai.AzureChatCompletion(
+    service_id="chat-gpt",**azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+)
+kernel.add_service(chat_service)
 
 ## there are three ways to create the request settings in code: # noqa: E266
 ## Note: the prompt_execution_settings are a dictionary with the service_id as the key and the request settings as the value. # noqa: E501
@@ -39,15 +38,14 @@ kernel.add_chat_service("chat-gpt", chat_service)
 ## 1. create the request settings from the base class: # noqa: E266
 # from semantic_kernel.connectors.ai.chat_completion_client_base import PromptExecutionSettings
 # req_settings = PromptExecutionSettings(extension_data = { "max_tokens": 2000, "temperature": 0.7, "top_p": 0.8} )
-# req_settings_dict = {"default": req_settings}
 ## This method (using the PromptExecutionSettings base class) is the most generic, and it allows you to store request settings for different services in the same extension_data field. There are two downsides to this approach: the specific request setting class will be created dynamically for each call, this is overhead when using just a single service. and the request settings are not type checked, so you will receive error messages once the dynamic creation of the request settings class fails. # noqa: E501 E266
 
 ## 2. create the request settings directly for the service you are using: # noqa: E266
-# req_settings = {"default": sk_oai.AzureOpenAIChatPromptExecutionSettings(max_tokens=2000, temperature=0.7, top_p=0.8)}
-## The second method is useful when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
+# req_settings = sk_oai.AzureChatPromptExecutionSettings(max_tokens=2000, temperature=0.7, top_p=0.8)
 
+## The second method is useful when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
 ## 3. create the request settings from the kernel based on the registered service class: # noqa: E266
-req_settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat-gpt")
+req_settings = kernel.get_service("chat-gpt").get_prompt_execution_settings_class()(service_id="chat-gpt")
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
@@ -61,7 +59,7 @@ prompt_template_config = sk.PromptTemplateConfig(
         InputVariable(name="history", description="The history of the conversation", is_required=True, default=""),
         InputVariable(name="request", description="The user input", is_required=True),
     ],
-    execution_settings={"default": req_settings},
+    execution_settings=req_settings,
 )
 
 history = ChatHistory()

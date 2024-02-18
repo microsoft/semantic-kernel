@@ -44,7 +44,22 @@ class SequentialPlanner:
     _arguments: "KernelArguments"
     _function_flow_function: "KernelFunction"
 
-    def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):
+    def __init__(
+        self, 
+        kernel: Kernel, 
+        service_id: str,
+        config: SequentialPlannerConfig = None, 
+        prompt: str = None,
+    ) -> None:
+        """
+        Initializes a new instance of the SequentialPlanner class.
+
+        Args:
+            kernel (Kernel): The kernel instance to use for planning
+            service_id (str): The service id to use to get the AI service
+            config (SequentialPlannerConfig, optional): The configuration to use for planning. Defaults to None.
+            prompt (str, optional): The prompt to use for planning. Defaults to None.
+        """
         assert isinstance(kernel, Kernel)
         self.config = config or SequentialPlannerConfig()
 
@@ -52,11 +67,18 @@ class SequentialPlanner:
 
         self._kernel = kernel
         self._arguments = KernelArguments()
-        self._function_flow_function = self._init_flow_function(prompt)
+        self._function_flow_function = self._init_flow_function(prompt, service_id)
 
-    def _init_flow_function(self, prompt: str):
+    def _init_flow_function(self, prompt: str, service_id: str) -> "KernelFunction":
         prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
+
+        # TODO: fix when extension settings in PromptTemplateConfig are a dictonary
+        # While the extension settings are not, grab the value for the 'default' key
+        if "default" in prompt_config.execution_settings.extension_data:
+            prompt_config.execution_settings = prompt_config.execution_settings.extension_data["default"]
+
+        prompt_config.execution_settings.service_id = service_id
         prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
         prompt_config.template = prompt_template
 

@@ -108,22 +108,23 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         )
 
         chat_service = sk_oai.AzureChatCompletion(
+            service_id="chat-gpt-extensions",
             deployment_name=deployment_name,
             api_key=api_key,
             endpoint=endpoint,
             api_version="2023-12-01-preview",
             use_extensions=True,
         )
-        kernel.add_chat_service("chat-gpt-extensions", chat_service)
+        kernel.add_service(chat_service)
 
         prompt = "{{$input}}"
 
         exec_settings = PromptExecutionSettings(
-            extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8, "extra_body": extra}
+            service_id="chat-gpt-extensions", extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8, "extra_body": extra}
         )
 
         prompt_template_config = PromptTemplateConfig(
-            template=prompt, description="Write a short story.", execution_settings={"default": exec_settings}
+            template=prompt, description="Write a short story.", execution_settings=exec_settings
         )
 
         # Create the semantic function

@@ -33,8 +33,9 @@ from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.utils.naming import generate_random_ascii_name
+from semantic_kernel.prompt_template.chat_prompt_template import ChatPromptTemplate
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
@@ -44,9 +45,20 @@ if TYPE_CHECKING:
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-DEFAULT_SERVICE_ID = "default"
-
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def store_results(chat_prompt: ChatPromptTemplate, results: List["ChatMessageContent"]):
+    """Stores specific results in the context and chat prompt."""
+    if hasattr(results[0], "tool_message") and results[0].tool_message is not None:
+        chat_prompt.add_message(role="tool", message=results[0].tool_message)
+    chat_prompt.add_message(
+        "assistant",
+        message=results[0].content,
+        function_call=results[0].function_call if hasattr(results[0], "function_call") else None,
+        tool_calls=results[0].tool_calls if hasattr(results[0], "tool_calls") else None,
+    )
+    return chat_prompt
 
 
 class KernelFunction(KernelBaseModel):
@@ -267,7 +279,6 @@ class KernelFunction(KernelBaseModel):
         ) -> "FunctionResult":
             if service is None:
                 raise ValueError("AI LLM service cannot be `None`")
-            from semantic_kernel.functions.kernel_function import KernelFunction  # noqa # pylint: disable=unused-import
 
             kernel.add_default_values(arguments, prompt_template_config)
             prompt = await prompt_template.render(kernel, arguments)
@@ -275,7 +286,23 @@ class KernelFunction(KernelBaseModel):
             # TODO: try to parse chat history object, otherwise for a new history object
             messages = ChatHistory(system_message=prompt)
 
-            FunctionResult.model_rebuild()
+            #FunctionResult.model_rebuild()
+            try:
+                if isinstance(service, ChatCompletionClientBase):
+                    completions = await service.complete_chat(messages, request_settings)
+                    return FunctionResult(
+                        function=function,
+                        value=completions,
+                        metadata={
+                            "messages": messages,
+                            "arguments": arguments,
+                            "metadata": [completion.metadata for completion in completions],
+                        },
+                    )
+            except Exception as exc:
+                logger.error(f"Error occurred while invoking function {function.name}: {exc}")
+                raise exc
+            
             try:
                 if isinstance(service, TextCompletionClientBase):
                     completions = await service.complete(messages, request_settings)
@@ -291,21 +318,8 @@ class KernelFunction(KernelBaseModel):
             except Exception as e:
                 logger.error(f"Error occurred while invoking function {function.name}: {e}")
                 raise e
-
-            try:
-                completions = await service.complete_chat(messages, request_settings)
-                return FunctionResult(
-                    function=function,
-                    value=completions,
-                    metadata={
-                        "messages": messages,
-                        "arguments": arguments,
-                        "metadata": [completion.metadata for completion in completions],
-                    },
-                )
-            except Exception as exc:
-                logger.error(f"Error occurred while invoking function {function.name}: {exc}")
-                raise exc
+            
+            raise ValueError(f"Service `{type(service)}` is not a valid AI service")
 
         async def _local_stream_func(
             function: KernelFunctionMetadata,
@@ -326,17 +340,16 @@ class KernelFunction(KernelBaseModel):
             messages = ChatHistory(system_message=prompt)
 
             try:
-                if isinstance(service, TextCompletionClientBase):
-                    prompt = await prompt_template.render(kernel, arguments)
-                    async for partial_content in service.complete_stream(messages, request_settings):
-                        yield partial_content
-                else:
-                    messages = await prompt_template.render_messages(kernel, arguments)
+                if isinstance(service, ChatCompletionClientBase):
                     async for partial_content in service.complete_chat_stream(
                         messages=messages, settings=request_settings
                     ):
                         yield partial_content
-
+                elif isinstance(service, TextCompletionClientBase):
+                    async for partial_content in service.complete_stream(messages, request_settings):
+                        yield partial_content
+                else:
+                    raise ValueError(f"Service `{type(service)}` is not a valid AI service")
             except Exception as e:
                 logger.error(f"Error occurred while invoking function {function.name}: {e}")
                 raise e

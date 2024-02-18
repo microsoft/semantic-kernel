@@ -11,7 +11,8 @@ from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 @pytest.mark.asyncio
 async def test_azure_summarize_conversation_using_plugin(setup_summarize_conversation_using_plugin, get_aoai_config):
@@ -26,12 +27,22 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
         deployment_name, api_key, endpoint = get_aoai_config
         deployment_name = "gpt-35-turbo-instruct"
 
-    kernel.add_text_completion_service(
-        "text_completion",
-        sk_oai.AzureTextCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
+    service_id = "text_completion"
+
+    execution_settings = PromptExecutionSettings(
+        service_id=service_id,max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
+    )
+    prompt_template_config = PromptTemplateConfig(
+        template=ConversationSummaryPlugin._summarize_conversation_prompt_template, 
+        description="Given a section of a conversation transcript, summarize the part of" " the conversation.", 
+        execution_settings=execution_settings
     )
 
-    conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
+    kernel.add_service(
+        sk_oai.AzureTextCompletion(service_id=service_id,deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
+    )
+
+    conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel, prompt_template_config), "conversationSummary")
 
     arguments = KernelArguments(input=chatTranscript)
 
@@ -49,8 +60,9 @@ async def test_oai_summarize_conversation_using_plugin(
 ):
     _, chatTranscript = setup_summarize_conversation_using_plugin
 
-    # Defining a new kernel here to avoid using the same kernel as the previous test
-    # which causes failures.
+    # Even though the kernel is scoped to the function, it appears that
+    # it is shared because adding the same plugin throws an error.
+    # Create a new kernel for this test.
     kernel = sk.Kernel()
 
     if "Python_Integration_Tests" in os.environ:
@@ -60,12 +72,20 @@ async def test_oai_summarize_conversation_using_plugin(
         # Load credentials from .env file
         api_key, org_id = sk.openai_settings_from_dot_env()
 
-    kernel.add_text_completion_service(
-        "davinci-003",
-        sk_oai.OpenAITextCompletion("gpt-3.5-turbo-instruct", api_key, org_id=org_id),
+    execution_settings = PromptExecutionSettings(
+        service_id="conversation_summary",max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
+    )
+    prompt_template_config = PromptTemplateConfig(
+        template=ConversationSummaryPlugin._summarize_conversation_prompt_template, 
+        description="Given a section of a conversation transcript, summarize the part of" " the conversation.", 
+        execution_settings=execution_settings
     )
 
-    conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversationSummary")
+    kernel.add_service(
+        sk_oai.OpenAITextCompletion(service_id="conversation_summary",ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id),
+    )
+
+    conversationSummaryPlugin = kernel.import_plugin(ConversationSummaryPlugin(kernel, prompt_template_config), "conversationSummary")
 
     arguments = KernelArguments(input=chatTranscript)
 

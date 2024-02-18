@@ -39,13 +39,14 @@ int_to_role = {1: ChatRole.USER, 2: ChatRole.SYSTEM, 3: ChatRole.ASSISTANT, 4: C
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
-    _message_history: Optional[ChatResponse] = PrivateAttr()
+    _message_history: Optional[ChatHistory] = PrivateAttr()
+    service_id: Optional[str] = None
 
     def __init__(
         self,
         ai_model_id: str,
         api_key: str,
-        message_history: Optional[ChatResponse] = None,
+        message_history: Optional[ChatHistory] = None,
     ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
@@ -55,7 +56,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
-            message_history {Optional[ChatResponse]} -- The message history to use for context. (Optional)
+            message_history {Optional[ChatHistory]} -- The message history to use for context. (Optional)
         """
         super().__init__(
             ai_model_id=ai_model_id,

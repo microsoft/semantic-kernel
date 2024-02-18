@@ -92,7 +92,7 @@ async def test_it_can_create_plan(goal):
     )
     kernel.create_function_from_prompt.return_value = mock_function_flow_function
 
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(kernel, service_id="test")
 
     # Act
     plan = await planner.create_plan(goal)
@@ -111,7 +111,7 @@ async def test_empty_goal_throws():
     # Arrange
     kernel = Mock(spec=Kernel)
     kernel.prompt_template_engine = Mock()
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(kernel, service_id="test")
 
     # Act & Assert
     with pytest.raises(PlanningException):
@@ -145,7 +145,7 @@ async def test_invalid_xml_throws():
     kernel.plugins = plugins
     kernel.create_function_from_prompt.return_value = mock_function_flow_function
 
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(kernel, service_id="test")
 
     # Act & Assert
     with pytest.raises(PlanningException):

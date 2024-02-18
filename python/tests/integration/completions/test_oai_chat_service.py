@@ -21,15 +21,14 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     print("* Endpoint: OpenAI")
     print("* Model: gpt-3.5-turbo")
 
-    kernel.add_chat_service(
-        "chat-gpt",
-        sk_oai.OpenAIChatCompletion(ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
+    kernel.add_service(
+        sk_oai.OpenAIChatCompletion(service_id="chat-gpt",ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
     )
 
-    exec_settings = PromptExecutionSettings(extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(service_id="chat-gpt",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
 
     prompt_template_config = PromptTemplateConfig(
-        template=prompt, description="Write a short story.", execution_settings={"default": exec_settings}
+        template=prompt, description="Write a short story.", execution_settings=exec_settings
     )
 
     # Create the semantic function
@@ -59,18 +58,19 @@ async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_fun
         organization=org_id,
     )
 
-    kernel.add_chat_service(
-        "chat-gpt",
+    kernel.add_service(
         sk_oai.OpenAIChatCompletion(
+            service_id="chat-gpt",
             ai_model_id="gpt-3.5-turbo",
             async_client=client,
         ),
+        overwrite = True, # Overwrite the service if it already exists since add service says it does
     )
 
-    exec_settings = PromptExecutionSettings(extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(service_id="chat-gpt",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
 
     prompt_template_config = PromptTemplateConfig(
-        template=prompt, description="Write a short story.", execution_settings={"default": exec_settings}
+        template=prompt, description="Write a short story.", execution_settings=exec_settings
     )
 
     # Create the semantic function
@@ -86,7 +86,6 @@ async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_fun
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test intermittently fails")
 async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_models, get_aoai_config):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
@@ -102,15 +101,20 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
     print(f"* Deployment: {deployment_name}")
 
     # Configure LLM service
-    kernel.add_chat_service(
-        "chat_completion",
-        sk_oai.AzureChatCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
+    kernel.add_service(
+        sk_oai.AzureChatCompletion(
+            service_id="chat_completion",
+            deployment_name=deployment_name, 
+            endpoint=endpoint, 
+            api_key=api_key
+        ),
+        overwrite=True,
     )
 
-    exec_settings = PromptExecutionSettings(extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(service_id="chat_completion",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
 
     prompt_template_config = PromptTemplateConfig(
-        template=prompt, description="Write a short story.", execution_settings={"default": exec_settings}
+        template=prompt, description="Write a short story.", execution_settings=exec_settings
     )
 
     # Create the semantic function

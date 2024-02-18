@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 class ConversationSummaryPlugin:
@@ -34,17 +35,25 @@ class ConversationSummaryPlugin:
         " or tags.\n\nBEGIN SUMMARY:\n"
     )
 
-    def __init__(self, kernel: "Kernel", return_key: str = "summary"):
+    def __init__(
+        self, 
+        kernel: "Kernel", 
+        prompt_template_config: "PromptTemplateConfig", 
+        return_key: str = "summary"
+    ) -> None:
+        """
+        Initializes a new instance of the ConversationSummaryPlugin class.
+
+        :param kernel: The kernel instance.
+        :param prompt_template_config: The prompt template configuration.
+        :param return_key: The key to use for the return value.
+        """
         self.return_key = return_key
-        execution_settings = PromptExecutionSettings(
-            max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
-        )
         self._summarizeConversationFunction = kernel.create_function_from_prompt(
             ConversationSummaryPlugin._summarize_conversation_prompt_template,
             plugin_name=ConversationSummaryPlugin.__name__,
             function_name="SummarizeConversation",
-            description=("Given a section of a conversation transcript, summarize the part of" " the conversation."),
-            execution_settings={"default": execution_settings},
+            prompt_template_config=prompt_template_config,
         )
 
     @kernel_function(

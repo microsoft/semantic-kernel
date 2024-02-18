@@ -20,15 +20,16 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
     else:
         deployment_name = "text-embedding-ada-002"
 
-    kernel.add_text_embedding_generation_service(
-        "aoai-ada",
-        sk_oai.AzureTextEmbedding(
+    embeddings_gen = sk_oai.AzureTextEmbedding(
+            service_id="aoai-ada",
             deployment_name=deployment_name,
             endpoint=endpoint,
             api_key=api_key,
-        ),
-    )
-    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
+        )
+
+    kernel.add_service(embeddings_gen)
+
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
 
     await kernel.memory.save_information("test", id="info1", text="this is a test")
     await kernel.memory.save_reference(
@@ -58,14 +59,14 @@ async def test_azure_text_embedding_service_with_provided_client(create_kernel, 
         default_headers={"Test-User-X-ID": "test"},
     )
 
-    kernel.add_text_embedding_generation_service(
-        "aoai-ada-2",
-        sk_oai.AzureTextEmbedding(
+    embedding_gen = sk_oai.AzureTextEmbedding(
+            service_id="aoai-ada-2",
             deployment_name=deployment_name,
             async_client=client,
-        ),
-    )
-    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
+        )
+
+    kernel.add_service(embedding_gen)
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
 
     await kernel.memory.save_information("test", id="info1", text="this is a test")
     await kernel.memory.save_reference(
