@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -20,18 +23,85 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Content of the message
     /// </summary>
-    public string? Content { get; set; }
+    public string? Content
+    {
+        get
+        {
+            if (this.Items.Count == 0)
+            {
+                return null;
+            }
+
+            if (this.Items[0] is TextContent textContent)
+            {
+                return textContent.Text;
+            }
+
+            throw new InvalidOperationException($"Cannot get the text content of the item of type {this.Items[0].GetType()}.");
+        }
+        set
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            if (this.Items.Count == 0)
+            {
+                this.Items.Add(new TextContent(
+                    text: value,
+                    modelId: this.ModelId,
+                    innerContent: this.InnerContent,
+                    encoding: this.Encoding,
+                    metadata: this.Metadata
+                ));
+                return;
+            }
+
+            if (this.Items[0] is TextContent textContent)
+            {
+                textContent.Text = value;
+                textContent.Encoding = this.Encoding;
+                return;
+            }
+
+            throw new InvalidOperationException($"Cannot set text content for the item of type {this.Items[0].GetType()}");
+        }
+    }
 
     /// <summary>
     /// Chat message content items
     /// </summary>
-    public ChatMessageContentItemCollection? Items { get; set; }
+    public ChatMessageContentItemCollection Items =>
+        this._items ??
+        Interlocked.CompareExchange(ref this._items, new ChatMessageContentItemCollection(), null) ??
+        this._items;
 
     /// <summary>
     /// The encoding of the text content.
     /// </summary>
     [JsonIgnore]
-    public Encoding Encoding { get; set; }
+    public Encoding Encoding
+    {
+        get
+        {
+            if (this.Items.FirstOrDefault() is TextContent textContent)
+            {
+                return textContent.Encoding;
+            }
+
+            return this._encoding;
+        }
+        set
+        {
+            this._encoding = value;
+
+            if (this.Items.FirstOrDefault() is TextContent textContent)
+            {
+                textContent.Encoding = value;
+            }
+        }
+    }
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
@@ -53,8 +123,8 @@ public class ChatMessageContent : KernelContent
         : base(innerContent, modelId, metadata)
     {
         this.Role = role;
+        this._encoding = encoding ?? Encoding.UTF8;
         this.Content = content;
-        this.Encoding = encoding ?? Encoding.UTF8;
     }
 
     /// <summary>
@@ -76,13 +146,25 @@ public class ChatMessageContent : KernelContent
         : base(innerContent, modelId, metadata)
     {
         this.Role = role;
-        this.Encoding = encoding ?? Encoding.UTF8;
-        this.Items = items;
+        this._encoding = encoding ?? Encoding.UTF8;
+        this._items = items;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Content ?? string.Empty;
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            return this.Content ?? string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
+
+    private ChatMessageContentItemCollection? _items;
+    private Encoding _encoding;
 }

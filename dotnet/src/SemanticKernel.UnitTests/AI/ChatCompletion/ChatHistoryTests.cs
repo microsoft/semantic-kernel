@@ -25,11 +25,11 @@ public class ChatHistoryTests
 
         // Assert
         Assert.NotNull(chatHistoryJson);
-        Assert.Equal("[{\"Role\":{\"Label\":\"user\"},\"Content\":\"Hello\",\"Items\":null,\"ModelId\":null,\"Metadata\":null},{\"Role\":{\"Label\":\"assistant\"},\"Content\":\"Hi\",\"Items\":null,\"ModelId\":null,\"Metadata\":null}]", chatHistoryJson);
+        Assert.Equal("[{\"Role\":{\"Label\":\"user\"},\"Content\":\"Hello\",\"Items\":[{\"ModelId\":null,\"Metadata\":null}],\"ModelId\":null,\"Metadata\":null},{\"Role\":{\"Label\":\"assistant\"},\"Content\":\"Hi\",\"Items\":[{\"ModelId\":null,\"Metadata\":null}],\"ModelId\":null,\"Metadata\":null}]", chatHistoryJson);
     }
 
     [Fact]
-    public void ItCanBeDeserialised()
+    public void ItCanBeDeserialized()
     {
         // Arrange
         var options = new JsonSerializerOptions();
