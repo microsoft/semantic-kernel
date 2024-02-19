@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -480,6 +482,39 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains("I don't know", result.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task SemanticKernelVersionHeaderIsSentAsync()
+    {
+        // Arrange
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+        Assert.NotNull(azureOpenAIConfiguration.Endpoint);
+        Assert.NotNull(azureOpenAIConfiguration.ServiceId);
+
+        using var defaultHandler = new HttpClientHandler();
+        using var httpHeaderHandler = new HttpHeaderHandler(defaultHandler);
+        using var httpClient = new HttpClient(httpHeaderHandler);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
+            modelId: azureOpenAIConfiguration.ChatModelId,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey,
+            serviceId: azureOpenAIConfiguration.ServiceId,
+            httpClient: httpClient);
+        Kernel target = builder.Build();
+
+        // Act
+        var result = await target.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
+
+        // Assert
+        Assert.NotNull(httpHeaderHandler.RequestHeaders);
+        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
+    }
+
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;
@@ -571,6 +606,22 @@ public sealed class OpenAICompletionTests : IDisposable
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);
+    }
+
+    private sealed class HttpHeaderHandler : DelegatingHandler
+    {
+        public System.Net.Http.Headers.HttpRequestHeaders? RequestHeaders { get; private set; }
+
+        public HttpHeaderHandler(HttpMessageHandler innerHandler)
+            : base(innerHandler)
+        {
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            this.RequestHeaders = request.Headers;
+            return await base.SendAsync(request, cancellationToken);
+        }
     }
 
     #endregion

@@ -115,7 +115,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3
 		src\InternalUtilities\src\Http\HttpClientExtensions.cs = src\InternalUtilities\src\Http\HttpClientExtensions.cs
 		src\InternalUtilities\src\Http\HttpClientProvider.cs = src\InternalUtilities\src\Http\HttpClientProvider.cs
 		src\InternalUtilities\src\Http\HttpContentExtensions.cs = src\InternalUtilities\src\Http\HttpContentExtensions.cs
-		src\InternalUtilities\src\Http\HttpHeaderValues.cs = src\InternalUtilities\src\Http\HttpHeaderValues.cs
+		src\InternalUtilities\src\Http\HttpHeaderConstant.cs = src\InternalUtilities\src\Http\HttpHeaderConstant.cs
 		src\InternalUtilities\src\Http\HttpRequest.cs = src\InternalUtilities\src\Http\HttpRequest.cs
 	EndProjectSection
 EndProject
@@ -219,7 +219,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-F
 		src\InternalUtilities\test\Linq\AsyncEnumerable.cs = src\InternalUtilities\test\Linq\AsyncEnumerable.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureAISearch.UnitTests", "src\Connectors\Connectors.AzureAISearch.UnitTests\Connectors.AzureAISearch.UnitTests.csproj", "{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAISearch.UnitTests", "src\Connectors\Connectors.AzureAISearch.UnitTests\Connectors.AzureAISearch.UnitTests.csproj", "{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

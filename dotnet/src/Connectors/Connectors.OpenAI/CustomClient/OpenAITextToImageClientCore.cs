@@ -101,7 +101,9 @@ internal sealed class OpenAITextToImageClientCore
             request.Content = content;
         }
 
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAITextToImageClientCore)));
+
         this.RequestCreated?.Invoke(this, request);
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);

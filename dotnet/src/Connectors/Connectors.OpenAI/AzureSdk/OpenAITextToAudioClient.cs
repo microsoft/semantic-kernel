@@ -89,8 +89,9 @@ internal sealed class OpenAITextToAudioClient
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAITextToAudioClient)));
 
         if (!string.IsNullOrWhiteSpace(this._organization))
         {

@@ -103,7 +103,8 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HuggingFaceTextGenerationService)));
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");

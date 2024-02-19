@@ -195,8 +195,9 @@ public sealed class OpenAIFileService
 
     private void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
 
         if (!string.IsNullOrEmpty(this._organization))
         {

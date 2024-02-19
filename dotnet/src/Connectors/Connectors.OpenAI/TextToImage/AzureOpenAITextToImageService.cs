@@ -138,7 +138,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         var options = new OpenAIClientOptions(version)
         {
-            Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
+            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
         };
 
         if (httpClient != null)
