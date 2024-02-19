@@ -98,7 +98,7 @@ public sealed class HttpPlugin
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
+        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(HttpPlugin).Assembly.GetName().Version.ToString());
         using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }

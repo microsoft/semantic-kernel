@@ -702,7 +702,7 @@ internal abstract class ClientCore
         {
             Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
         };
-        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString()), HttpPipelinePosition.PerCall);
+        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderNames.SemanticKernelVersion, typeof(ClientCore).Assembly.GetName().Version.ToString()), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
         {

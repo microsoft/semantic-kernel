@@ -103,7 +103,7 @@ internal sealed class OpenAITextToImageClientCore
         }
 
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
+        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(OpenAITextToImageClientCore).Assembly.GetName().Version.ToString());
 
         this.RequestCreated?.Invoke(this, request);
 

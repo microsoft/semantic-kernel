@@ -92,7 +92,7 @@ internal sealed class OpenAITextToAudioClient
     {
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
+        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(OpenAITextToAudioClient).Assembly.GetName().Version.ToString());
 
         if (!string.IsNullOrWhiteSpace(this._organization))
         {

@@ -113,7 +113,7 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
 
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        httpRequestMessage.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
+        httpRequestMessage.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(HuggingFaceTextEmbeddingGenerationService).Assembly.GetName().Version.ToString());
 
         var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);

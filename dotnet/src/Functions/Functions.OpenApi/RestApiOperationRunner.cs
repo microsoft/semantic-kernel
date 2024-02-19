@@ -164,7 +164,7 @@ internal sealed class RestApiOperationRunner
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
             ? this._userAgent
             : HttpHeaderValues.UserAgent);
-        requestMessage.Headers.Add(HttpHeaderNames.SemanticKernelVersion, Assembly.GetExecutingAssembly().GetName().Version.ToString());
+        requestMessage.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(RestApiOperationRunner).Assembly.GetName().Version.ToString());
 
         if (headers != null)
         {
