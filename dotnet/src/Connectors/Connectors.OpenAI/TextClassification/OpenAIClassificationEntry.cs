@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 public sealed class OpenAIClassificationEntry
 {
-    internal OpenAIClassificationEntry(bool flagged, double score, OpenAIClassificationCategory category)
+    internal OpenAIClassificationEntry(OpenAIClassificationCategory category, bool flagged, double score)
     {
         this.Flagged = flagged;
         this.Score = score;
@@ -32,5 +32,5 @@ public sealed class OpenAIClassificationEntry
 
     /// <inheritdoc />
     public override string ToString()
-        => $"{nameof(OpenAIClassificationEntry)} {{ Category = {this.Category}, Score = {this.Score}, Flagged = {this.Flagged} }}";
+        => $"{nameof(OpenAIClassificationEntry)} {{ Category = {this.Category}, Flagged = {this.Flagged}, Score = {this.Score} }}";
 }
