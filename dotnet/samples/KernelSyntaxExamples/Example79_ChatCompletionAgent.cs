@@ -42,7 +42,7 @@ public class Example79_ChatCompletionAgent : BaseTest
          );
 
         var prompt = PrintPrompt("I need help with my investment portfolio. Please guide me.");
-        PrintConversation(await agent.InvokeAsync(new[] { new AgentMessage(AuthorRole.User, prompt) }));
+        PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
     }
 
     /// <summary>
@@ -118,7 +118,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             executionSettings: settings);
 
         var prompt = PrintPrompt("I need help creating a simple wellness plan for my client James that is appropriate for his age. Please guide me.");
-        PrintConversation(await agent.InvokeAsync(new[] { new AgentMessage(AuthorRole.User, prompt) }));
+        PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
     }
 
     /// <summary>
@@ -150,9 +150,8 @@ public class Example79_ChatCompletionAgent : BaseTest
         agent = new AgentDecorator(agent, postProcessor: async messages =>
         {
             var message = messages.Single();
-            var kernel = message.Kernel!;
 
-            if (message.InnerMessage is not OpenAIChatMessageContent openAIChatMessageContent)
+            if (message is not OpenAIChatMessageContent openAIChatMessageContent)
             {
                 return messages;
             }
@@ -163,22 +162,27 @@ public class Example79_ChatCompletionAgent : BaseTest
                 return messages;
             }
 
-            var result = new List<AgentMessage>(messages); // The original tool calling "request" from LLM is already included in the messages list.
+            var result = new List<ChatMessageContent>(messages); // The original tool calling "request" from LLM is already included in the messages list.
+
+            if (message.Source is not KernelAgent agent)
+            {
+                throw new KernelException("The kernel agent is not available in the message metadata.");
+            }
 
             foreach (var toolCall in toolCalls)
             {
                 string content = "Unable to find function. Please try again!";
 
-                if (kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments))
+                if (agent.Kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments))
                 {
-                    var functionResult = await function.InvokeAsync(kernel, arguments);
+                    var functionResult = await function.InvokeAsync(agent.Kernel, arguments);
 
                     // A custom logic can be added here that would interpret the function's result, update the agent's message, remove it, or replace it with a different one.
 
                     content = JsonSerializer.Serialize(functionResult.GetValue<object>());
                 }
 
-                result.Add(new AgentMessage(
+                result.Add(new ChatMessageContent(
                     AuthorRole.Tool,
                     content,
                     metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
@@ -188,7 +192,7 @@ public class Example79_ChatCompletionAgent : BaseTest
         });
 
         var prompt = PrintPrompt("I need help creating a simple wellness plan for my client James that is appropriate for his age. Please guide me.");
-        PrintConversation(await agent.InvokeAsync(new[] { new AgentMessage(AuthorRole.User, prompt) }));
+        PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
     }
 
     private string PrintPrompt(string prompt)
@@ -198,7 +202,7 @@ public class Example79_ChatCompletionAgent : BaseTest
         return prompt;
     }
 
-    private void PrintConversation(IEnumerable<AgentMessage> messages)
+    private void PrintConversation(IEnumerable<ChatMessageContent> messages)
     {
         foreach (var message in messages)
         {
@@ -221,18 +225,18 @@ public class Example79_ChatCompletionAgent : BaseTest
     /// </summary>
     private sealed class TurnBasedChat
     {
-        public TurnBasedChat(IEnumerable<KernelAgent> agents, Func<IReadOnlyList<AgentMessage>, IEnumerable<AgentMessage>, int, bool> exitPredicate)
+        public TurnBasedChat(IEnumerable<KernelAgent> agents, Func<IReadOnlyList<ChatMessageContent>, IEnumerable<ChatMessageContent>, int, bool> exitPredicate)
         {
             this._agents = agents.ToArray();
             this._exitCondition = exitPredicate;
         }
 
-        public async Task<IReadOnlyList<AgentMessage>> SendMessageAsync(string message, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ChatMessageContent>> SendMessageAsync(string message, CancellationToken cancellationToken = default)
         {
-            var chat = new List<AgentMessage>();
-            chat.Add(new AgentMessage(AuthorRole.User, message));
+            var chat = new List<ChatMessageContent>();
+            chat.Add(new ChatMessageContent(AuthorRole.User, message));
 
-            IReadOnlyList<AgentMessage> result = new List<AgentMessage>();
+            IReadOnlyList<ChatMessageContent> result = new List<ChatMessageContent>();
 
             var turn = 0;
 
@@ -252,7 +256,7 @@ public class Example79_ChatCompletionAgent : BaseTest
         }
 
         private readonly KernelAgent[] _agents;
-        private readonly Func<IReadOnlyList<AgentMessage>, IEnumerable<AgentMessage>, int, bool> _exitCondition;
+        private readonly Func<IReadOnlyList<ChatMessageContent>, IEnumerable<ChatMessageContent>, int, bool> _exitCondition;
     }
 
     /// <summary>
@@ -260,21 +264,21 @@ public class Example79_ChatCompletionAgent : BaseTest
     /// </summary>
     private sealed class AgentDecorator : KernelAgent
     {
-        private readonly Func<IReadOnlyList<AgentMessage>, Task<IReadOnlyList<AgentMessage>>>? _preProcessor;
-        private readonly Func<IReadOnlyList<AgentMessage>, Task<IReadOnlyList<AgentMessage>>>? _postProcessor;
+        private readonly Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? _preProcessor;
+        private readonly Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? _postProcessor;
         private readonly KernelAgent _agent;
 
         public AgentDecorator(
             KernelAgent agent,
-            Func<IReadOnlyList<AgentMessage>, Task<IReadOnlyList<AgentMessage>>>? preProcessor = null,
-            Func<IReadOnlyList<AgentMessage>, Task<IReadOnlyList<AgentMessage>>>? postProcessor = null) : base(agent.Kernel, agent.Description)
+            Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? preProcessor = null,
+            Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? postProcessor = null) : base(agent.Kernel, agent.Description)
         {
             this._agent = agent;
             this._preProcessor = preProcessor;
             this._postProcessor = postProcessor;
         }
 
-        public override async Task<IReadOnlyList<AgentMessage>> InvokeAsync(IReadOnlyList<AgentMessage> messages, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+        public override async Task<IReadOnlyList<ChatMessageContent>> InvokeAsync(IReadOnlyList<ChatMessageContent> messages, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
         {
             if (this._preProcessor != null)
             {

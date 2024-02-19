@@ -38,7 +38,7 @@ public class ChatCompletionAgentTests
         var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
-        var result = await agent.InvokeAsync(new List<AgentMessage>());
+        var result = await agent.InvokeAsync(new List<ChatMessageContent>());
 
         // Assert
         this._mockChatCompletionService.Verify(x =>
@@ -61,7 +61,7 @@ public class ChatCompletionAgentTests
         var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
-        var result = await agent.InvokeAsync(new List<AgentMessage>() { new(AuthorRole.User, "fake-user-message") });
+        var result = await agent.InvokeAsync(new List<ChatMessageContent>() { new(AuthorRole.User, "fake-user-message") });
 
         // Assert
         this._mockChatCompletionService.Verify(
@@ -89,11 +89,11 @@ public class ChatCompletionAgentTests
         var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
-        var result = await agent.InvokeAsync(new List<AgentMessage>());
+        var result = await agent.InvokeAsync(new List<ChatMessageContent>());
 
         // Assert
         Assert.Equal(2, result.Count);
-        Assert.Contains(result, m => m.Role == AuthorRole.Assistant && m.Items.OfType<TextContent>().Any(c => c.Text == "fake-assistant-message-1"));
-        Assert.Contains(result, m => m.Role == AuthorRole.Assistant && m.Items.OfType<TextContent>().Any(c => c.Text == "fake-assistant-message-2"));
+        Assert.Contains(result, m => m.Role == AuthorRole.Assistant && (m.Items?.OfType<TextContent>().Any(c => c.Text == "fake-assistant-message-1") ?? false));
+        Assert.Contains(result, m => m.Role == AuthorRole.Assistant && (m.Items?.OfType<TextContent>().Any(c => c.Text == "fake-assistant-message-2") ?? false));
     }
 }
