@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 /// <summary>
-/// Ollama Execution Settings.
+/// HuggingFace Execution Settings.
 /// </summary>
 public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
 {
@@ -18,10 +18,10 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     public static int DefaultTextMaxTokens { get; } = 256;
 
     /// <summary>
-    /// Gets the specialization for the Ollama execution settings.
+    /// Gets the specialization for the HuggingFace execution settings.
     /// </summary>
     /// <param name="executionSettings">Generic prompt execution settings.</param>
-    /// <returns>Specialized Ollama execution settings.</returns>
+    /// <returns>Specialized HuggingFace execution settings.</returns>
     public static HuggingFacePromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         switch (executionSettings)
@@ -33,10 +33,10 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-        var ollamaExecutionSettings = JsonSerializer.Deserialize<HuggingFacePromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (ollamaExecutionSettings is not null)
+        var huggingFacePromptExecutionSettings = JsonSerializer.Deserialize<HuggingFacePromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+        if (huggingFacePromptExecutionSettings is not null)
         {
-            return ollamaExecutionSettings;
+            return huggingFacePromptExecutionSettings;
         }
 
         throw new ArgumentException(

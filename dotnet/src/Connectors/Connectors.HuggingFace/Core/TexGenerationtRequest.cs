@@ -35,11 +35,11 @@ internal sealed class TexGenerationtRequest
     public HuggignFaceTextOptions? Options { get; set; }
 
     /// <summary>
-    /// Converts a <see cref="PromptExecutionSettings" /> object to a <see cref="OllamaChatRequest" /> object.
+    /// Converts a <see cref="PromptExecutionSettings" /> object to a <see cref="TexGenerationtRequest" /> object.
     /// </summary>
     /// <param name="prompt">Prompt text for generation.</param>
     /// <param name="executionSettings">Execution settings to be used for the request.</param>
-    /// <returns>OllamaChatRequest object.</returns>
+    /// <returns>TexGenerationtRequest object.</returns>
     internal static TexGenerationtRequest FromPromptAndExecutionSettings(string prompt, HuggingFacePromptExecutionSettings executionSettings)
     {
         return new TexGenerationtRequest
