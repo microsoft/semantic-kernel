@@ -1,10 +1,7 @@
 ﻿
 // Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
@@ -20,10 +17,22 @@ internal sealed class TexGenerationtRequest
     public string? Inputs { get; set; }
 
     /// <summary>
+    /// Enable streaming
+    /// </summary>
+    [JsonPropertyName("stream")]
+    public bool Stream { get; set; } = false;
+
+    /// <summary>
     /// Parameters used by the model for generation.
     /// </summary>
     [JsonPropertyName("parameters")]
     public HuggingFaceTextParameters? Parameters { get; set; }
+
+    /// <summary>
+    /// Options used by the model for generation.
+    /// </summary>
+    [JsonPropertyName("options")]
+    public HuggignFaceTextOptions? Options { get; set; }
 
     /// <summary>
     /// Converts a <see cref="PromptExecutionSettings" /> object to a <see cref="OllamaChatRequest" /> object.
@@ -44,7 +53,12 @@ internal sealed class TexGenerationtRequest
                 TopP = executionSettings.TopP,
                 RepetitionPenalty = executionSettings.RepetitionPenalty,
                 MaxTime = executionSettings.MaxTime,
-                NumReturnSequences = executionSettings.
+                NumReturnSequences = executionSettings.ResultsPerPrompt
+            },
+            Options = new()
+            {
+                UseCache = executionSettings.UseCache,
+                WaitForModel = executionSettings.WaitForModel
             }
         };
     }
@@ -116,7 +130,7 @@ internal sealed class TexGenerationtRequest
         public bool DoSample { get; set; } = true;
     }
 
-    internal sealed class HiggignFaceTextOptions
+    internal sealed class HuggignFaceTextOptions
     {
         /// <summary>
         /// (Default: true). Boolean. There is a cache layer on the inference API to speedup requests we have already seen.

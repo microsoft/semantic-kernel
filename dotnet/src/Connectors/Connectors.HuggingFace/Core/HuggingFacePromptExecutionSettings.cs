@@ -174,6 +174,25 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// (Default: 1). Integer. The number of proposition you want to be returned.
+    /// </summary>
+    /// <remarks>
+    /// This may not be supported by all models/inference API.
+    /// </remarks>
+    [JsonPropertyName("results_per_prompt")]
+    public int ResultsPerPrompt
+    {
+        get => this._resultsPerPrompt;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._resultsPerPrompt = value;
+        }
+    }
+
+    private int _resultsPerPrompt = 1;
     private double _temperature = 1;
     private double? _topP;
     private double _repetitionPenalty;
