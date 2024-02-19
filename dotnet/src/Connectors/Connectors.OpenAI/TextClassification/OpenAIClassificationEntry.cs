@@ -31,5 +31,6 @@ public sealed class OpenAIClassificationEntry
     public double Score { get; }
 
     /// <inheritdoc />
-    public override string ToString() => $"ClassificationEntry {{ Category = {this.Category}, Score = {this.Score}, Flagged = {this.Flagged} }}";
+    public override string ToString()
+        => $"{nameof(OpenAIClassificationEntry)} {{ Category = {this.Category}, Score = {this.Score}, Flagged = {this.Flagged} }}";
 }
