@@ -246,7 +246,9 @@ internal abstract class ClientCore
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
-        Verify.NotNull(content.Data);
+        var audioData = await this.GetBinaryDataFromAudioContentAsync(content, cancellationToken).ConfigureAwait(false);
+
+        Verify.NotNull(audioData, nameof(content));
 
         OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
@@ -254,7 +256,7 @@ internal abstract class ClientCore
 
         var audioOptions = new AudioTranscriptionOptions
         {
-            AudioData = content.Data,
+            AudioData = audioData,
             DeploymentName = this.DeploymentOrModelName,
             Filename = audioExecutionSettings.Filename,
             Language = audioExecutionSettings.Language,
@@ -1058,5 +1060,19 @@ internal abstract class ClientCore
         s_promptTokensCounter.Add(usage.PromptTokens);
         s_completionTokensCounter.Add(usage.CompletionTokens);
         s_totalTokensCounter.Add(usage.TotalTokens);
+    }
+
+    private async Task<BinaryData?> GetBinaryDataFromAudioContentAsync(
+        AudioContent audioContent,
+        CancellationToken cancellationToken)
+    {
+        BinaryData? data = audioContent?.Data;
+
+        if (data is null && audioContent?.Stream is not null)
+        {
+            data = await BinaryData.FromStreamAsync(audioContent.Stream, cancellationToken).ConfigureAwait(false);
+        }
+
+        return data;
     }
 }

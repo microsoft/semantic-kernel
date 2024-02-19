@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -95,8 +97,9 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         Assert.IsType(expectedExceptionType, exception);
     }
 
-    [Fact]
-    public async Task GetTextContentByDefaultWorksCorrectlyAsync()
+    [Theory]
+    [MemberData(nameof(ValidAudioContents))]
+    public async Task GetTextContentByDefaultWorksCorrectlyAsync(AudioContent audioContent, string expectedData)
     {
         // Arrange
         var service = new AzureOpenAIAudioToTextService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
@@ -106,11 +109,28 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(new BinaryData("data")), new OpenAIAudioToTextExecutionSettings("file.mp3"));
+        var result = await service.GetTextContentAsync(audioContent, new OpenAIAudioToTextExecutionSettings("file.mp3"));
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Test audio-to-text response", result.Text);
+
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+
+        Assert.Contains(expectedData, requestContent, StringComparison.InvariantCulture);
+    }
+
+    [Theory]
+    [MemberData(nameof(InvalidAudioContents))]
+    public async Task GetTextContentWithNullAudioContentThrowsArgumentNullExceptionAsync(AudioContent? audioContent)
+    {
+        // Arrange
+        var service = new AzureOpenAIAudioToTextService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => service.GetTextContentAsync(audioContent!));
     }
 
     public void Dispose()
@@ -123,5 +143,19 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     {
         { new OpenAIAudioToTextExecutionSettings(""), typeof(ArgumentException) },
         { new OpenAIAudioToTextExecutionSettings("file"), typeof(ArgumentException) }
+    };
+
+    public static TheoryData<AudioContent, string> ValidAudioContents => new()
+    {
+        { new AudioContent(new BinaryData("binary-data")), "binary-data" },
+        { new AudioContent(new BinaryData("stream").ToStream()), "stream" },
+        { new AudioContent(new BinaryData("binary-data")) { Stream = new BinaryData("stream").ToStream() }, "binary-data" },
+    };
+
+    public static TheoryData<AudioContent?> InvalidAudioContents => new()
+    {
+        { null },
+        { new AudioContent((BinaryData)null!) },
+        { new AudioContent((Stream)null!) }
     };
 }
