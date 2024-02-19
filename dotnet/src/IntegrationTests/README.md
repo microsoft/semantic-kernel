@@ -45,6 +45,14 @@ dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "text-embedding-a
 dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
 
+dotnet user-secrets set "AzureOpenAIAudioToText:DeploymentName" "whisper-1"
+dotnet user-secrets set "AzureOpenAIAudioToText:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAIAudioToText:ApiKey" "..."
+
+dotnet user-secrets set "AzureOpenAITextToAudio:DeploymentName" "tts-1"
+dotnet user-secrets set "AzureOpenAITextToAudio:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAITextToAudio:ApiKey" "..."
+
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "Bing:ApiKey" "..."
 dotnet user-secrets set "Postgres:ConnectionString" "..."
