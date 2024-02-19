@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Contents;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents result of classification of content that is classified by an AI model.
