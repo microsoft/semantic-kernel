@@ -28,24 +28,24 @@ internal sealed class TexGenerationtRequest
     /// <summary>
     /// Converts a <see cref="PromptExecutionSettings" /> object to a <see cref="OllamaChatRequest" /> object.
     /// </summary>
-    /// <param name="chatHistory">Chat history to be used for the request.</param>
-    /// <param name="ollamaPromptExecutionSettings">Execution settings to be used for the request.</param>
-    /// <param name="connectorModelId">Model Id to be used for the request if no one is provided in the execution settings.</param>
+    /// <param name="prompt">Prompt text for generation.</param>
+    /// <param name="executionSettings">Execution settings to be used for the request.</param>
     /// <returns>OllamaChatRequest object.</returns>
-    internal static TexGenerationtRequest FromPromptAndExecutionSettings(string prompt, HuggingFacePromptExecutionSettings ollamaPromptExecutionSettings)
+    internal static TexGenerationtRequest FromPromptAndExecutionSettings(string prompt, HuggingFacePromptExecutionSettings executionSettings)
     {
         return new TexGenerationtRequest
         {
             Inputs = prompt,
             Parameters = new()
             {
-                Temperature = 
+                Temperature = executionSettings.Temperature,
+                MaxNewTokens = executionSettings.MaxTokens,
+                TopK = executionSettings.TopK,
+                TopP = executionSettings.TopP,
+                RepetitionPenalty = executionSettings.RepetitionPenalty,
+                MaxTime = executionSettings.MaxTime,
+                NumReturnSequences = executionSettings.
             }
-            Messages = chatHistory.Select(message => new OllamaChatRequestMessage
-            {
-                Role = message.Role.ToString(),
-                Content = message.Content
-            }).ToList()
         };
     }
 
@@ -63,7 +63,7 @@ internal sealed class TexGenerationtRequest
         /// is greater than top_p.
         /// </summary>
         [JsonPropertyName("top_p")]
-        public decimal? TopP { get; set; }
+        public double? TopP { get; set; }
 
         /// <summary>
         /// (Default: 1.0). Float (0.0-100.0). The temperature of the sampling operation.
@@ -71,14 +71,14 @@ internal sealed class TexGenerationtRequest
         /// 100.0 is getting closer to uniform probability.
         /// </summary>
         [JsonPropertyName("temperature")]
-        public decimal? Temperature { get; set; } = 1;
+        public double? Temperature { get; set; } = 1;
 
         /// <summary>
         /// (Default: None). Float (0.0-100.0). The more a token is used within generation
         /// the more it is penalized to not be picked in successive generation passes.
         /// </summary>
         [JsonPropertyName("repetition_penalty")]
-        public decimal? RepetitionPenalty { get; set; }
+        public double? RepetitionPenalty { get; set; }
 
         /// <summary>
         /// (Default: None). Int (0-250). The amount of new tokens to be generated,
@@ -95,7 +95,7 @@ internal sealed class TexGenerationtRequest
         /// Use that in combination with max_new_tokens for best results.
         /// </summary>
         [JsonPropertyName("max_time")]
-        public decimal? MaxTime { get; set; }
+        public double? MaxTime { get; set; }
 
         /// <summary>
         /// (Default: True). Bool. If set to False, the return results will not contain the original query making it easier for prompting.

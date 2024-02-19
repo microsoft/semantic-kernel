@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 /// <summary>
 /// Ollama Execution Settings.
@@ -96,7 +96,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// Network can cause some overhead so it will be a soft limit. Use that in combination with max_new_tokens for best results.
     /// </summary>
     [JsonPropertyName("max_time")]
-    public decimal? MaxTime
+    public double? MaxTime
     {
         get => this._maxTime;
 
@@ -178,7 +178,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     private double? _topP;
     private double _repetitionPenalty;
     private int? _maxTokens;
-    private decimal? _maxTime;
+    private double? _maxTime;
     private int? _topK;
     private bool _useCache = true;
     private bool _waitForModel = false;
