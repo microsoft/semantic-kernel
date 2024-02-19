@@ -37,6 +37,7 @@ public sealed class OpenAITextClassificationService : ITextClassification
         ILoggerFactory? loggerFactory = null)
     {
         throw new NotImplementedException();
+        // todo: implement
 
         this._attributes.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
@@ -49,5 +50,6 @@ public sealed class OpenAITextClassificationService : ITextClassification
         CancellationToken cancellationToken = default)
     {
         throw new System.NotImplementedException();
+        // todo: implement
     }
 }
