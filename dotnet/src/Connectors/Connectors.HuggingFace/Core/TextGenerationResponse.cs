@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using static Microsoft.SemanticKernel.Connectors.HuggingFace.Core.TextGenerationResponse;
 
+#pragma warning disable CA1812
+
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class TextGenerationResponse : List<GeneratedTextItem>

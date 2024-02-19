@@ -90,7 +90,6 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
         }
     }
 
-
     /// <summary>
     /// (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum.
     /// Network can cause some overhead so it will be a soft limit. Use that in combination with max_new_tokens for best results.

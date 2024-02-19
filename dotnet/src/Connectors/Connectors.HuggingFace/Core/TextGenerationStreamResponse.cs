@@ -2,6 +2,8 @@
 
 using System.Text.Json.Serialization;
 
+#pragma warning disable CA1812
+
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class TextGenerationStreamResponse
