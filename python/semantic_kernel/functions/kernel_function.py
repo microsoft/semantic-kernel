@@ -310,7 +310,7 @@ class KernelFunction(KernelBaseModel):
                         function=function,
                         value=completions,
                         metadata={
-                            "prompt": prompt,
+                            "messages": messages,
                             "arguments": arguments,
                             "metadata": [completion.metadata for completion in completions],
                         },
