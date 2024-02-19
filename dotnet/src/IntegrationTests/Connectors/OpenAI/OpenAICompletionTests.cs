@@ -247,29 +247,31 @@ public sealed class OpenAICompletionTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task AzureOpenAIShouldReturnTokenUsageInMetadataAsync(bool useChatModel)
+    public async Task AzureOpenAIShouldReturnMetadataAsync(bool useChatModel)
     {
         // Arrange
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
-        var builder = this._kernelBuilder;
 
         if (useChatModel)
         {
-            this.ConfigureAzureOpenAIChatAsText(builder);
+            this.ConfigureAzureOpenAIChatAsText(this._kernelBuilder);
         }
         else
         {
-            this.ConfigureAzureOpenAI(builder);
+            this.ConfigureAzureOpenAI(this._kernelBuilder);
         }
 
-        Kernel target = builder.Build();
+        var kernel = this._kernelBuilder.Build();
 
-        IReadOnlyKernelPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
+        var plugin = TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
-        // Act and Assert
-        FunctionResult result = await target.InvokeAsync(plugin["FunPlugin"]["Limerick"]);
+        // Act
+        var result = await kernel.InvokeAsync(plugin["FunPlugin"]["Limerick"]);
 
+        // Assert
         Assert.NotNull(result.Metadata);
+
+        // Usage
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
         Assert.NotNull(usageObject);
 
@@ -277,9 +279,13 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.True(jsonObject.TryGetProperty("PromptTokens", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
         Assert.NotEqual(0, promptTokens);
+
         Assert.True(jsonObject.TryGetProperty("CompletionTokens", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
+
+        // ContentFilterResults
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResults"));
     }
 
     [Fact]
