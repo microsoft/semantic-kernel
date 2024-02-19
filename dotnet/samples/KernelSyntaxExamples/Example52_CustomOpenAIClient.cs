@@ -33,7 +33,7 @@ public sealed class Example52_CustomOpenAIClient : BaseTest
 
         // Create an HttpClient and include your custom header(s)
         var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("x-my-custom-header", "My custom value");
+        httpClient.DefaultRequestHeaders.Add("My-Custom-Header", "My Custom Value");
 
         // Configure OpenAIClient to use the customized HttpClient
         var clientOptions = new OpenAIClientOptions
