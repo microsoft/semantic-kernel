@@ -6,7 +6,6 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 ALL_COMPLETION_SERVICE_TYPES = Union[TextCompletionClientBase, ChatCompletionClientBase]
 
@@ -14,7 +13,7 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 
-class AIServiceSelector(KernelBaseModel):
+class AIServiceSelector:
     """Default service selector, can be subclassed and overridden.
 
     To use a custom service selector, subclass this class and override the select_ai_service method.
