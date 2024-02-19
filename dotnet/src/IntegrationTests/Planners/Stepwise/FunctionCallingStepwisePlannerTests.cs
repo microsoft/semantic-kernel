@@ -41,7 +41,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    [Theory]
+    [Theory(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch-Search" })]
     [InlineData("What is the weather in Seattle?", new string[] { "WebSearch-Search" })]
     [InlineData("What is the current hour number, plus 5?", new string[] { "Time-HourNumber", "Math-Add" })]
