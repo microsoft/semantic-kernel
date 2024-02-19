@@ -29,7 +29,7 @@ public sealed class OpenAIToolsTests : IDisposable
             .Build();
     }
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsAsync()
     {
         // Arrange
@@ -56,7 +56,7 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("GetCurrentUtcTime", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsStreamingAsync()
     {
         // Arrange
@@ -91,7 +91,7 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("InterpretValue([value, 3])", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
@@ -107,7 +107,7 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("42.8", result.GetValue<string>(), StringComparison.InvariantCulture); // The WeatherPlugin always returns 42.8 for Dublin, Ireland.
     }
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsWithPrimitiveTypeParametersAsync()
     {
         // Arrange
