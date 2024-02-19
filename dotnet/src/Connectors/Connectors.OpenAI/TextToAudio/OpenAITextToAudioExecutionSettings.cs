@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Execution settings for OpenAI text-to-audio request.
 /// </summary>
+[Experimental("SKEXP0005")]
 public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
@@ -59,6 +61,14 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
+    /// Creates an instance of <see cref="OpenAITextToAudioExecutionSettings"/> class with default voice - "alloy".
+    /// </summary>
+    public OpenAITextToAudioExecutionSettings()
+        : this(DefaultVoice)
+    {
+    }
+
+    /// <summary>
     /// Creates an instance of <see cref="OpenAITextToAudioExecutionSettings"/> class.
     /// </summary>
     /// <param name="voice">The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.</param>
@@ -88,7 +98,7 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     {
         if (executionSettings is null)
         {
-            return null;
+            return new OpenAITextToAudioExecutionSettings();
         }
 
         if (executionSettings is OpenAITextToAudioExecutionSettings settings)
@@ -109,6 +119,8 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     }
 
     #region private ================================================================================
+
+    private const string DefaultVoice = "alloy";
 
     private float _speed = 1.0f;
     private string _responseFormat = "mp3";
