@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -700,9 +699,9 @@ internal abstract class ClientCore
     {
         OpenAIClientOptions options = new()
         {
-            Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
+            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
         };
-        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderNames.SemanticKernelVersion, typeof(ClientCore).Assembly.GetName().Version.ToString()), HttpPipelinePosition.PerCall);
+        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
         {

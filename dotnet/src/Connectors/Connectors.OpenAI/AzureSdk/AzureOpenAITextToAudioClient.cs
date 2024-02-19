@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -98,9 +97,9 @@ internal sealed class AzureOpenAITextToAudioClient
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add("Api-Key", this._apiKey);
-        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(AzureOpenAITextToAudioClient).Assembly.GetName().Version.ToString());
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureOpenAITextToAudioClient)));
 
         try
         {

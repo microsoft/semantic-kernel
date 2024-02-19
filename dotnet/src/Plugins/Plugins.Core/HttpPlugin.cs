@@ -2,7 +2,6 @@
 
 using System.ComponentModel;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -97,8 +96,8 @@ public sealed class HttpPlugin
     private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(HttpPlugin).Assembly.GetName().Version.ToString());
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HttpPlugin)));
         using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }

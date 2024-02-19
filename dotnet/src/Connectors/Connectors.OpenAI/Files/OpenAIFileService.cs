@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -196,9 +195,9 @@ public sealed class OpenAIFileService
 
     private void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(OpenAIFileService).Assembly.GetName().Version.ToString());
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
 
         if (!string.IsNullOrEmpty(this._organization))
         {

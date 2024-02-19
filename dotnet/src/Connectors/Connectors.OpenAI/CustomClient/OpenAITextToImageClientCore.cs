@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -102,8 +101,8 @@ internal sealed class OpenAITextToImageClientCore
             request.Content = content;
         }
 
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        request.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(OpenAITextToImageClientCore).Assembly.GetName().Version.ToString());
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAITextToImageClientCore)));
 
         this.RequestCreated?.Invoke(this, request);
 

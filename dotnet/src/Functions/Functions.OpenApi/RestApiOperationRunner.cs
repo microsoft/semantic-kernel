@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -88,7 +87,7 @@ internal sealed class RestApiOperationRunner
         bool enablePayloadNamespacing = false)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent ?? HttpHeaderValues.UserAgent;
+        this._userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
 
@@ -163,8 +162,8 @@ internal sealed class RestApiOperationRunner
 
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
             ? this._userAgent
-            : HttpHeaderValues.UserAgent);
-        requestMessage.Headers.Add(HttpHeaderNames.SemanticKernelVersion, typeof(RestApiOperationRunner).Assembly.GetName().Version.ToString());
+            : HttpHeaderConstant.Values.UserAgent);
+        requestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(RestApiOperationRunner)));
 
         if (headers != null)
         {
