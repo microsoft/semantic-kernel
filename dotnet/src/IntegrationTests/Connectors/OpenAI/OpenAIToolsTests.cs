@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAIToolsTests : IDisposable
+public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
 {
     public OpenAIToolsTests(ITestOutputHelper output)
     {
@@ -128,7 +128,7 @@ public sealed class OpenAIToolsTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        IKernelBuilder builder = Kernel.CreateBuilder()
+        IKernelBuilder builder = this.CreateKernelBuilder()
             .AddOpenAIChatCompletion(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey);
