@@ -237,41 +237,41 @@ class KernelFunction(KernelBaseModel):
         ) -> "FunctionResult":
             if service is None:
                 raise ValueError("AI LLM service cannot be `None`")
-            from semantic_kernel.functions.kernel_function import KernelFunction  # noqa # pylint: disable=unused-import
+            # from semantic_kernel.functions.kernel_function import KernelFunction  # noqa # pylint: disable=unused-import
 
-            FunctionResult.model_rebuild()
-            try:
-                if isinstance(service, TextCompletionClientBase):
-                    prompt = await function_config.prompt_template.render(kernel, arguments)
-                    completions = await service.complete(prompt, request_settings)
+            # FunctionResult.model_rebuild()
+
+            if isinstance(service, ChatCompletionClientBase):
+                try:
+                    messages = await function_config.prompt_template.render_messages(kernel, arguments)
+                    completions = await service.complete_chat(messages, request_settings)
                     return FunctionResult(
                         function=function,
                         value=completions,
                         metadata={
-                            "prompt": prompt,
+                            "messages": messages,
                             "arguments": arguments,
                             "metadata": [completion.metadata for completion in completions],
                         },
                     )
-            except Exception as e:
-                logger.error(f"Error occurred while invoking function {function.name}: {e}")
-                raise e
-
+                except Exception as exc:
+                    logger.error(f"Error occurred while invoking function {function.name}: {exc}")
+                    raise exc
             try:
-                messages = await function_config.prompt_template.render_messages(kernel, arguments)
-                completions = await service.complete_chat(messages, request_settings)
+                prompt = await function_config.prompt_template.render(kernel, arguments)
+                completions = await service.complete(prompt, request_settings)
                 return FunctionResult(
                     function=function,
                     value=completions,
                     metadata={
-                        "messages": messages,
+                        "prompt": prompt,
                         "arguments": arguments,
                         "metadata": [completion.metadata for completion in completions],
                     },
                 )
-            except Exception as exc:
-                logger.error(f"Error occurred while invoking function {function.name}: {exc}")
-                raise exc
+            except Exception as e:
+                logger.error(f"Error occurred while invoking function {function.name}: {e}")
+                raise e
 
         async def _local_stream_func(
             function: KernelFunctionMetadata,
@@ -285,15 +285,15 @@ class KernelFunction(KernelBaseModel):
                 raise ValueError("AI LLM service cannot be `None`")
 
             try:
-                if isinstance(service, TextCompletionClientBase):
-                    prompt = await function_config.prompt_template.render(kernel, arguments)
-                    async for partial_content in service.complete_stream(prompt, request_settings):
-                        yield partial_content
-                else:
+                if isinstance(service, ChatCompletionClientBase):
                     messages = await function_config.prompt_template.render_messages(kernel, arguments)
                     async for partial_content in service.complete_chat_stream(
                         messages=messages, settings=request_settings
                     ):
+                        yield partial_content
+                else:
+                    prompt = await function_config.prompt_template.render(kernel, arguments)
+                    async for partial_content in service.complete_stream(prompt, request_settings):
                         yield partial_content
 
             except Exception as e:
