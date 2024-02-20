@@ -24,10 +24,10 @@ public class KernelFunctionMetadata<T> {
     /**
      * Create a new instance of KernelFunctionMetadata.
      *
-     * @param pluginName     The name of the plugin to which the function belongs
-     * @param name           The name of the function.
-     * @param description    The description of the function.
-     * @param parameters     The parameters of the function.
+     * @param pluginName      The name of the plugin to which the function belongs
+     * @param name            The name of the function.
+     * @param description     The description of the function.
+     * @param parameters      The parameters of the function.
      * @param returnParameter The return parameter of the function.
      */
     public KernelFunctionMetadata(
@@ -50,6 +50,7 @@ public class KernelFunctionMetadata<T> {
 
     /**
      * Get the name of the plugin to which the function belongs
+     *
      * @return The name of the function.
      */
     @Nullable
@@ -59,6 +60,7 @@ public class KernelFunctionMetadata<T> {
 
     /**
      * Get the name of the function.
+     *
      * @return The name of the function.
      */
     public String getName() {
@@ -67,6 +69,7 @@ public class KernelFunctionMetadata<T> {
 
     /**
      * Get the parameters of the function.
+     *
      * @return The parameters of the function.
      */
     public List<KernelParameterMetadata<?>> getParameters() {
@@ -75,6 +78,7 @@ public class KernelFunctionMetadata<T> {
 
     /**
      * Get the description of the function.
+     *
      * @return The description of the function.
      */
     @Nullable
@@ -84,6 +88,7 @@ public class KernelFunctionMetadata<T> {
 
     /**
      * Get the return parameter of the function.
+     *
      * @return The return parameter of the function.
      */
     public KernelReturnParameterMetadata<T> getReturnParameter() {

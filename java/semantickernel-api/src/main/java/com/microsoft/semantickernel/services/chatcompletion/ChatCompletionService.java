@@ -4,11 +4,11 @@ package com.microsoft.semantickernel.services.chatcompletion;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.services.TextAIService;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.implementation.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.services.TextAIService;
 import java.util.List;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -19,13 +19,24 @@ import reactor.core.publisher.Mono;
 public interface ChatCompletionService extends Buildable, TextAIService {
 
     /**
-     * Gets the chat message contents asynchronously using 
-     * {@code ChatHistory} to support a turn-based conversation. 
-     * Typically, the resulting chat message contents is appended
-     * to the {@code chatHistory} to continue the conversation.
+     * Get a builder for creating a {@code ChatCompletionService}. The builder loads a service that
+     * implements the {@link ChatCompletionService.Builder} interface.
      *
-     * @param chatHistory the chat history
-     * @param kernel the kernel
+     * @return a builder for creating a {@code ChatCompletionService}
+     */
+    static Builder builder() {
+        return ServiceLoadUtil.findServiceLoader(Builder.class,
+            "com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion$Builder")
+            .get();
+    }
+
+    /**
+     * Gets the chat message contents asynchronously using {@code ChatHistory} to support a
+     * turn-based conversation. Typically, the resulting chat message contents is appended to the
+     * {@code chatHistory} to continue the conversation.
+     *
+     * @param chatHistory       the chat history
+     * @param kernel            the kernel
      * @param invocationContext the invocation context
      * @return the chat message contents
      */
@@ -37,8 +48,8 @@ public interface ChatCompletionService extends Buildable, TextAIService {
     /**
      * Gets the chat message contents asynchronously using a prompt.
      *
-     * @param prompt the prompt
-     * @param kernel the kernel
+     * @param prompt            the prompt
+     * @param kernel            the kernel
      * @param invocationContext the invocation context
      * @return the chat message contents
      */
@@ -48,19 +59,8 @@ public interface ChatCompletionService extends Buildable, TextAIService {
         @Nullable InvocationContext invocationContext);
 
     /**
-     * Get a builder for creating a {@code ChatCompletionService}. The builder loads a service
-     * that implements the {@link ChatCompletionService.Builder} interface.
-     * @return a builder for creating a {@code ChatCompletionService}
-     */
-    static Builder builder() {
-        return ServiceLoadUtil.findServiceLoader(Builder.class,
-            "com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion$Builder")
-            .get();
-    }
-
-    /**
      * Builder API for creating a {@link ChatCompletionService}. Concrete implementations of
-     * {@link ChatCompletionService} must implement the {@link SemanticKernelBuilder#build()} 
+     * {@link ChatCompletionService} must implement the {@link SemanticKernelBuilder#build()}
      * method.
      */
     abstract class Builder implements SemanticKernelBuilder<ChatCompletionService> {

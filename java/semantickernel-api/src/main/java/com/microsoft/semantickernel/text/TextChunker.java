@@ -166,17 +166,6 @@ public class TextChunker {
         return paragraphs;
     }
 
-    private static class SplitString {
-
-        public final boolean inputWasSplit;
-        public final List<String> result;
-
-        private SplitString(boolean inputWasSplit, List<String> result) {
-            this.inputWasSplit = inputWasSplit;
-            this.result = result;
-        }
-    }
-
     private static List<String> internalSplitLines(
         String text, int maxTokensPerLine, boolean trim, List<Pattern> splitOptions) {
         text = text.replaceAll("\\r?\\n|\\r", "\n");
@@ -289,5 +278,16 @@ public class TextChunker {
         // strategies
         //       depending on the model to be called. For now, we use an extremely rough estimate.
         return inputLength / 4;
+    }
+
+    private static class SplitString {
+
+        public final boolean inputWasSplit;
+        public final List<String> result;
+
+        private SplitString(boolean inputWasSplit, List<String> result) {
+            this.inputWasSplit = inputWasSplit;
+            this.result = result;
+        }
     }
 }

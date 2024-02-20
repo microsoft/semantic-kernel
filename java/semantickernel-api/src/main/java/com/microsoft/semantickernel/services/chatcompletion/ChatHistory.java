@@ -21,8 +21,8 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
     private final List<ChatMessageContent<?>> chatMessageContents;
 
     /**
-     * The default constructor adds an "Assistant is a large language model."
-     * system message to the chat history
+     * The default constructor adds an "Assistant is a large language model." system message to the
+     * chat history
      */
     public ChatHistory() {
         this(DEFAULT_CHAT_SYSTEM_PROMPT);
@@ -111,9 +111,9 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * Add a message to the chat history
      *
      * @param authorRole The role of the author of the message
-     * @param content The content of the message
-     * @param encoding The encoding of the message
-     * @param metadata The metadata of the message
+     * @param content    The content of the message
+     * @param encoding   The encoding of the message
+     * @param metadata   The metadata of the message
      */
     public void addMessage(AuthorRole authorRole, String content, Charset encoding,
         FunctionResultMetadata metadata) {
@@ -125,7 +125,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * Add a message to the chat history
      *
      * @param authorRole The role of the author of the message
-     * @param content The content of the message
+     * @param content    The content of the message
      */
     public void addMessage(AuthorRole authorRole, String content) {
         chatMessageContents.add(

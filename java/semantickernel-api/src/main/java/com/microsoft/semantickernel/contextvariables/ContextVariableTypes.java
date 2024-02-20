@@ -1,6 +1,5 @@
 package com.microsoft.semantickernel.contextvariables;
 
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.contextvariables.converters.BooleanVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.CharacterVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.ChatHistoryVariableContextVariableTypeConverter;
@@ -10,6 +9,7 @@ import com.microsoft.semantickernel.contextvariables.converters.InstantContextVa
 import com.microsoft.semantickernel.contextvariables.converters.NumberVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.StringVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.VoidVariableContextVariableTypeConverter;
+import com.microsoft.semantickernel.exceptions.SKException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +97,7 @@ public class ContextVariableTypes {
 
     /**
      * Add a converter to the global collection of context variable type converters.
+     *
      * @param conveter The converter to add.
      * @see #getGlobalVariableTypeForClass(Class)
      */
@@ -107,8 +108,9 @@ public class ContextVariableTypes {
 
     /**
      * Get the global context variable type for the given class.
+     *
      * @param aClass The class to get the context variable type for.
-     * @param <T> The type of the context variable.
+     * @param <T>    The type of the context variable.
      * @return The context variable type for the given class.
      * @see #addGlobalConverter(ContextVariableTypeConverter)
      */
@@ -117,21 +119,10 @@ public class ContextVariableTypes {
     }
 
     /**
-     * Add a converter to this {@code ContextVariableTypes} instance.
-     * @param <T> The type of the context variable.
-     * @param contextVariableTypeConverter the converter to add.
-     */
-    public <T> void putConverter(
-        ContextVariableTypeConverter<T> contextVariableTypeConverter) {
-        variableTypes.put(contextVariableTypeConverter.getType(),
-            new ContextVariableType<>(contextVariableTypeConverter,
-                contextVariableTypeConverter.getType()));
-    }
-
-    /**
      * Convert the given object to the given class, if possible.
-     * @param <T> the type to convert to
-     * @param s the object to convert
+     *
+     * @param <T>   the type to convert to
+     * @param s     the object to convert
      * @param clazz the class of the type to convert to
      * @return the converted object, or {@code null} if the object cannot be converted
      */
@@ -150,9 +141,23 @@ public class ContextVariableTypes {
     }
 
     /**
+     * Add a converter to this {@code ContextVariableTypes} instance.
+     *
+     * @param <T>                          The type of the context variable.
+     * @param contextVariableTypeConverter the converter to add.
+     */
+    public <T> void putConverter(
+        ContextVariableTypeConverter<T> contextVariableTypeConverter) {
+        variableTypes.put(contextVariableTypeConverter.getType(),
+            new ContextVariableType<>(contextVariableTypeConverter,
+                contextVariableTypeConverter.getType()));
+    }
+
+    /**
      * Get the context variable type for the given class.
+     *
      * @param aClass The class to get the context variable type for.
-     * @param <T> The type of the context variable.
+     * @param <T>    The type of the context variable.
      * @return The context variable type for the given class
      * @throws SKException if the type cannot be found.
      */
@@ -166,10 +171,11 @@ public class ContextVariableTypes {
     }
 
     /**
-     * Get the context variable type for the given class or for a type that is assignable 
-     * from the given class. its super class.
+     * Get the context variable type for the given class or for a type that is assignable from the
+     * given class. its super class.
+     *
      * @param aClass The class to get the context variable type for.
-     * @param <T> The type of the context variable.
+     * @param <T>    The type of the context variable.
      * @return The context variable type for the given class.
      * @throws SKException if the type cannot be found.
      */
@@ -222,6 +228,7 @@ public class ContextVariableTypes {
 
     /**
      * Add all the converters from the given collection to this collection.
+     *
      * @param contextVariableTypes The collection of converters to add.
      */
     public void putConverters(ContextVariableTypes contextVariableTypes) {

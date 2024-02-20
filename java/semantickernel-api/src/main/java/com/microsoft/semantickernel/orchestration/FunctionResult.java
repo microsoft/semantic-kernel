@@ -39,9 +39,9 @@ public class FunctionResult<T> {
     }
 
     /**
-     * Get the result of the function invocation. 
-     * <em>NOTE: If you get a ClassCastException from this method, 
-     * try adding a result type with 
+     * Get the result of the function invocation.
+     * <em>NOTE: If you get a ClassCastException from this method,
+     * try adding a result type with
      * {@link FunctionInvocation#withResultType(ContextVariableType)}</em>
      *
      * @return The result of the function invocation.

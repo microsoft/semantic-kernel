@@ -19,6 +19,7 @@ import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -30,7 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -65,41 +65,6 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
                 returnParameter),
             null);
         this.function = implementationFunc;
-    }
-
-    /**
-     * Concrete implementation of the abstract method in KernelFunction. {@inheritDoc}
-     */
-    @Override
-    public Mono<FunctionResult<T>> invokeAsync(
-        Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> variableType,
-        @Nullable InvocationContext invocationContext) {
-        return function.invoke(kernel, this, arguments, variableType, invocationContext);
-    }
-
-    /**
-     * Concrete implementation of the abstract method in KernelFunction.
-     */
-    public interface ImplementationFunc<T> {
-
-        /**
-         * Invokes the function.
-         *
-         * @param kernel            the kernel to invoke the function on
-         * @param function          the function to invoke
-         * @param arguments         the arguments to the function
-         * @param variableType      the variable type of the function
-         * @param invocationContext the invocation context
-         * @return a {@link Mono} that emits the result of the function invocation
-         */
-        Mono<FunctionResult<T>> invoke(
-            Kernel kernel,
-            KernelFunction<T> function,
-            @Nullable KernelFunctionArguments arguments,
-            @Nullable ContextVariableType<T> variableType,
-            @Nullable InvocationContext invocationContext);
     }
 
     /**
@@ -294,7 +259,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
                 return type;
             } catch (ClassCastException | SKException e) {
                 // SKException is thrown from ContextVariableTypes.getDefaultVariableTypeForClass
-                // if there is no default variable type for the class. 
+                // if there is no default variable type for the class.
                 // Fallthrough. Let the caller handle a null return.
             }
         }
@@ -586,6 +551,41 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
      */
     public static <T> Builder<T> builder() {
         return new Builder<>();
+    }
+
+    /**
+     * Concrete implementation of the abstract method in KernelFunction. {@inheritDoc}
+     */
+    @Override
+    public Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable InvocationContext invocationContext) {
+        return function.invoke(kernel, this, arguments, variableType, invocationContext);
+    }
+
+    /**
+     * Concrete implementation of the abstract method in KernelFunction.
+     */
+    public interface ImplementationFunc<T> {
+
+        /**
+         * Invokes the function.
+         *
+         * @param kernel            the kernel to invoke the function on
+         * @param function          the function to invoke
+         * @param arguments         the arguments to the function
+         * @param variableType      the variable type of the function
+         * @param invocationContext the invocation context
+         * @return a {@link Mono} that emits the result of the function invocation
+         */
+        Mono<FunctionResult<T>> invoke(
+            Kernel kernel,
+            KernelFunction<T> function,
+            @Nullable KernelFunctionArguments arguments,
+            @Nullable ContextVariableType<T> variableType,
+            @Nullable InvocationContext invocationContext);
     }
 
     /**

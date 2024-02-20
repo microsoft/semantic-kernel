@@ -5,8 +5,8 @@ import java.util.Locale;
 import reactor.util.annotation.NonNull;
 
 /**
- * A factory for creating a {@link HandlebarsPromptTemplate} instance for 
- * a {@code PromptTemplateConfig} that uses the handlebars template format.
+ * A factory for creating a {@link HandlebarsPromptTemplate} instance for a
+ * {@code PromptTemplateConfig} that uses the handlebars template format.
  */
 public class HandlebarsPromptTemplateFactory implements PromptTemplateFactory {
 

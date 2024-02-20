@@ -16,8 +16,8 @@ public class InputParameter {
     /**
      * Creates a new instance of the {@link InputParameter} class.
      *
-     * @param name name of the parameter
-     * @param description description of the parameter
+     * @param name         name of the parameter
+     * @param description  description of the parameter
      * @param defaultValue default value of the parameter
      */
     @JsonCreator

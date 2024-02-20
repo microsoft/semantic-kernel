@@ -4,10 +4,10 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverte
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 
 /**
- * A {@link ContextVariableTypeConverter}
- * for {@code java.lang.Void} types. Use
- * {@code ContextVariableTypes.getGlobalVariableTypeForClass(Void.class)} 
- * to get an instance of this class.
+ * A {@link ContextVariableTypeConverter} for {@code java.lang.Void} types. Use
+ * {@code ContextVariableTypes.getGlobalVariableTypeForClass(Void.class)} to get an instance of this
+ * class.
+ *
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class VoidVariableContextVariableTypeConverter extends

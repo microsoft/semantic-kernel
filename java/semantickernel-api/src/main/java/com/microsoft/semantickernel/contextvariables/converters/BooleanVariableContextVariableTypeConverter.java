@@ -6,10 +6,10 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverte
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 
 /**
- * A {@link ContextVariableTypeConverter}
- * for {@link Boolean} variables. Use
- * {@code ContextVariableTypes.getDefaultVariableTypeForClass(Boolean.class)} 
- * to get an instance of this class.
+ * A {@link ContextVariableTypeConverter} for {@link Boolean} variables. Use
+ * {@code ContextVariableTypes.getDefaultVariableTypeForClass(Boolean.class)} to get an instance of
+ * this class.
+ *
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class BooleanVariableContextVariableTypeConverter extends

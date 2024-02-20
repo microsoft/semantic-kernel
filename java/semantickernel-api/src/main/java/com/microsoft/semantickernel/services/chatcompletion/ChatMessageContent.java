@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.chatcompletion;
 
-import com.microsoft.semantickernel.services.KernelContent;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
+import com.microsoft.semantickernel.services.KernelContent;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

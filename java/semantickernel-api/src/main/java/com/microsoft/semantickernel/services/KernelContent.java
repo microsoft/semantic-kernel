@@ -5,7 +5,8 @@ import javax.annotation.Nullable;
 
 /**
  * Base class which represents the content returned by an AI service.
- * @param <T> The type of the content. 
+ *
+ * @param <T> The type of the content.
  */
 public abstract class KernelContent<T> {
 
@@ -17,7 +18,7 @@ public abstract class KernelContent<T> {
     @Nullable
     private final T innerContent;
 
-    /** 
+    /**
      * The model ID used to generate the content.
      */
     @Nullable
@@ -31,9 +32,10 @@ public abstract class KernelContent<T> {
 
     /**
      * Initializes a new instance of the {@link KernelContent} class.
+     *
      * @param innerContent The inner content representation.
-     * @param modelId The model identifier used to generate the content.
-     * @param metadata The metadata associated with the content.
+     * @param modelId      The model identifier used to generate the content.
+     * @param metadata     The metadata associated with the content.
      */
     public KernelContent(
         @Nullable T innerContent,
@@ -46,6 +48,7 @@ public abstract class KernelContent<T> {
 
     /**
      * Gets the inner content representation.
+     *
      * @return The inner content representation.
      */
     @Nullable
@@ -55,6 +58,7 @@ public abstract class KernelContent<T> {
 
     /**
      * Gets the model identifier used to generate the content.
+     *
      * @return The model identifier used to generate the content.
      */
     @Nullable
@@ -64,6 +68,7 @@ public abstract class KernelContent<T> {
 
     /**
      * Gets the metadata associated with the content.
+     *
      * @return The metadata associated with the content.
      */
     @Nullable
@@ -73,6 +78,7 @@ public abstract class KernelContent<T> {
 
     /**
      * Gets the content returned by the AI service.
+     *
      * @return The content.
      */
     @Nullable

@@ -156,6 +156,41 @@ public class PromptTemplateConfig implements Buildable {
     }
 
     /**
+     * Deserialize the JSON string to a PromptTemplateConfig.
+     *
+     * @param json The JSON string to parse
+     * @return The PromptTemplateConfig object
+     * @throws SKException If the prompt template config cannot be deserialized.
+     */
+    public static PromptTemplateConfig parseFromJson(String json) throws SKException {
+        try {
+            return new ObjectMapper().readValue(json, PromptTemplateConfig.class);
+        } catch (JsonProcessingException e) {
+            throw new SKException("Unable to parse prompt template config", e);
+        }
+    }
+
+    /**
+     * Create a builder for a prompt template config.
+     *
+     * @return The prompt template config builder.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Create a builder for a prompt template config, where the constructed template will be
+     * considered the default to be used if no other config is selected.
+     *
+     * @return The default prompt template config.
+     */
+    public static Builder defaultTemplateBuilder() {
+        return new Builder()
+            .withName(DEFAULT_CONFIG_NAME);
+    }
+
+    /**
      * Get the parameters metadata.
      *
      * @return The parameters metadata.
@@ -260,47 +295,12 @@ public class PromptTemplateConfig implements Buildable {
     }
 
     /**
-     * Deserialize the JSON string to a PromptTemplateConfig.
-     *
-     * @param json The JSON string to parse
-     * @return The PromptTemplateConfig object
-     * @throws SKException If the prompt template config cannot be deserialized.
-     */
-    public static PromptTemplateConfig parseFromJson(String json) throws SKException {
-        try {
-            return new ObjectMapper().readValue(json, PromptTemplateConfig.class);
-        } catch (JsonProcessingException e) {
-            throw new SKException("Unable to parse prompt template config", e);
-        }
-    }
-
-    /**
      * Create a builder for a prompt template config which is a clone of the current object.
      *
      * @return The prompt template config builder.
      */
     public Builder copy() {
         return new Builder(this);
-    }
-
-    /**
-     * Create a builder for a prompt template config.
-     *
-     * @return The prompt template config builder.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
-     * Create a builder for a prompt template config, where the constructed template will be
-     * considered the default to be used if no other config is selected.
-     *
-     * @return The default prompt template config.
-     */
-    public static Builder defaultTemplateBuilder() {
-        return new Builder()
-            .withName(DEFAULT_CONFIG_NAME);
     }
 
     /**

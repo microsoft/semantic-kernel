@@ -25,6 +25,7 @@ public class InputConfig {
 
     /**
      * Gets the list of input parameters.
+     *
      * @return the list of input parameters
      */
     public List<InputParameter> getParameters() {

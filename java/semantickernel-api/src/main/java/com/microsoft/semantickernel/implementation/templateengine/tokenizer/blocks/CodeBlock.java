@@ -2,14 +2,14 @@
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
 import java.util.Collections;

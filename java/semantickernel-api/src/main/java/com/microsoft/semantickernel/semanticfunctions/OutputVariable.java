@@ -32,6 +32,7 @@ public class OutputVariable {
 
     /**
      * Get the description of the output variable.
+     *
      * @return The description of the output variable.
      */
     @Nullable
@@ -41,6 +42,7 @@ public class OutputVariable {
 
     /**
      * Get the type of the output variable.
+     *
      * @return The type of the output variable.
      */
     public Class<?> getType() {

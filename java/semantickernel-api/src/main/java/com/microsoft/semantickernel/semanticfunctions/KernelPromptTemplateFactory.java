@@ -9,8 +9,8 @@ import java.util.Locale;
 import javax.annotation.Nonnull;
 
 /**
- * Factory for creating prompt templates. This factory creates the appropriate 
- * prompt template based on the template format.
+ * Factory for creating prompt templates. This factory creates the appropriate prompt template based
+ * on the template format.
  */
 public class KernelPromptTemplateFactory implements PromptTemplateFactory {
 

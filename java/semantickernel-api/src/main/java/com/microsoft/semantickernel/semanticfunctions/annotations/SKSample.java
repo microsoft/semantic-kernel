@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that decorates an {@link DefineKernelFunction} annotation to provide examples of how to use the function.
- * For example:
+ * Annotation that decorates an {@link DefineKernelFunction} annotation to provide examples of how
+ * to use the function. For example:
  * <pre><code>
  * {@literal @}DefineSKFunction(
  *    name = "add",
@@ -31,14 +31,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface SKSample {
+
     /**
      * An example of inputs to the function.
+     *
      * @return An example of inputs to the function.
      */
     String inputs();
 
     /**
      * An example output of the function given the inputs.
+     *
      * @return An example output of the function given the inputs.
      */
     String output();

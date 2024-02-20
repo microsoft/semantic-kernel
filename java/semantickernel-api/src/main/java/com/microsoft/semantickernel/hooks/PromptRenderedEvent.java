@@ -16,9 +16,10 @@ public class PromptRenderedEvent implements KernelHookEvent {
 
     /**
      * Creates a new instance of the {@link PromptRenderedEvent} class.
-     * @param function the function
+     *
+     * @param function  the function
      * @param arguments the arguments
-     * @param prompt the prompt
+     * @param prompt    the prompt
      */
     public PromptRenderedEvent(
         KernelFunction function,
@@ -32,6 +33,7 @@ public class PromptRenderedEvent implements KernelHookEvent {
 
     /**
      * Gets the function that was invoked.
+     *
      * @return the function
      */
     public KernelFunction getFunction() {
@@ -40,6 +42,7 @@ public class PromptRenderedEvent implements KernelHookEvent {
 
     /**
      * Gets the arguments that were passed to the function.
+     *
      * @return the arguments
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
@@ -49,6 +52,7 @@ public class PromptRenderedEvent implements KernelHookEvent {
 
     /**
      * Gets the prompt that was rendered.
+     *
      * @return the prompt
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")

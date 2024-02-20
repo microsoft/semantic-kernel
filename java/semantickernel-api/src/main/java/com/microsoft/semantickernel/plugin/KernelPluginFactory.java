@@ -33,9 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Factory for creating {@link KernelPlugin} instances. {@code KernelPlugin}s can be
- * created from a Java object, from loading a directory of plugins, or from loading plugins
- * from a resource. 
+ * Factory for creating {@link KernelPlugin} instances. {@code KernelPlugin}s can be created from a
+ * Java object, from loading a directory of plugins, or from loading plugins from a resource.
  */
 public class KernelPluginFactory {
 
@@ -44,11 +43,13 @@ public class KernelPluginFactory {
     private static final String PROMPT_FILE = "skprompt.txt";
 
     /**
-     * Creates a plugin that wraps the specified target object. Methods decorated with 
+     * Creates a plugin that wraps the specified target object. Methods decorated with
      * {@code {@literal @}DefineSKFunction} will be included in the plugin.
-     * 
-     * @param target The instance of the class to be wrapped.
-     * @param pluginName Name of the plugin for function collection and prompt templates. If the value is {@code null}, a plugin name is derived from the type of the target.
+     *
+     * @param target     The instance of the class to be wrapped.
+     * @param pluginName Name of the plugin for function collection and prompt templates. If the
+     *                   value is {@code null}, a plugin name is derived from the type of the
+     *                   target.
      * @return The new plugin.
      */
     public static KernelPlugin createFromObject(Object target, String pluginName) {
@@ -113,8 +114,9 @@ public class KernelPluginFactory {
 
     /**
      * Creates a plugin from the provided name and function collection.
+     *
      * @param pluginName The name for the plugin.
-     * @param functions The initial functions to be available as part of the plugin.
+     * @param functions  The initial functions to be available as part of the plugin.
      * @return The new plugin.
      */
     public static KernelPlugin createFromFunctions(
@@ -125,9 +127,10 @@ public class KernelPluginFactory {
 
     /**
      * Initializes the new plugin from the provided name, description, and function collection.
-     * @param pluginName The name for the plugin.
+     *
+     * @param pluginName  The name for the plugin.
      * @param description A description of the plugin.
-     * @param functions The initial functions to be available as part of the plugin.
+     * @param functions   The initial functions to be available as part of the plugin.
      * @return The new plugin.
      */
     public static KernelPlugin createFromFunctions(String pluginName, @Nullable String description,
@@ -159,8 +162,9 @@ public class KernelPluginFactory {
      * Imports a plugin from a directory. The directory should contain subdirectories, each of which
      * contains a prompt template and a configuration file. The configuration file should be named
      * "config.json" and the prompt template should be named "skprompt.txt".
-     * @param parentDirectory The parent directory containing the plugin directories.
-     * @param pluginDirectoryName The name of the plugin directory.
+     *
+     * @param parentDirectory       The parent directory containing the plugin directories.
+     * @param pluginDirectoryName   The name of the plugin directory.
      * @param promptTemplateFactory The factory to use for creating prompt templates.
      * @return The imported plugin.
      */
@@ -258,15 +262,16 @@ public class KernelPluginFactory {
     }
 
     /**
-     * Imports a plugin from a resource directory, which may be on the classpath or filesystem. 
-     * The directory should contain subdirectories, each of which
-     * contains a prompt template and a configuration file. The configuration file should be named
-     * "config.json" and the prompt template should be named "skprompt.txt".
-     * @param parentDirectory The parent directory containing the plugin directories.
-     * @param pluginDirectoryName The name of the plugin directory.
-     * @param functionName The name of the function to import.
+     * Imports a plugin from a resource directory, which may be on the classpath or filesystem. The
+     * directory should contain subdirectories, each of which contains a prompt template and a
+     * configuration file. The configuration file should be named "config.json" and the prompt
+     * template should be named "skprompt.txt".
+     *
+     * @param parentDirectory       The parent directory containing the plugin directories.
+     * @param pluginDirectoryName   The name of the plugin directory.
+     * @param functionName          The name of the function to import.
      * @param promptTemplateFactory The factory to use for creating prompt templates.
-     * @param clazz The class to use for loading resources.
+     * @param clazz                 The class to use for loading resources.
      * @return The imported plugin.
      */
     @Nullable

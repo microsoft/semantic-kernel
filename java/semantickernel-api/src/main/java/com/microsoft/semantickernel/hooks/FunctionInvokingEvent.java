@@ -6,9 +6,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
 /**
- * Represents a KernelHookEvent that is raised before a function is invoked.
- * This event is raised before the function is invoked, and can be used to 
- * by a {@code KernelHook} to modify the arguments before the function is invoked.
+ * Represents a KernelHookEvent that is raised before a function is invoked. This event is raised
+ * before the function is invoked, and can be used to by a {@code KernelHook} to modify the
+ * arguments before the function is invoked.
+ *
  * @param <T> The type of the KernelFunction being invoked
  */
 public class FunctionInvokingEvent<T> implements KernelHookEvent {
@@ -18,7 +19,8 @@ public class FunctionInvokingEvent<T> implements KernelHookEvent {
 
     /**
      * Creates a new instance of the FunctionInvokingEvent class.
-     * @param function The function that is being invoked
+     *
+     * @param function  The function that is being invoked
      * @param arguments The arguments that are being passed to the function
      */
     public FunctionInvokingEvent(KernelFunction<T> function,
@@ -30,6 +32,7 @@ public class FunctionInvokingEvent<T> implements KernelHookEvent {
 
     /**
      * Gets the function that is being invoked.
+     *
      * @return the function
      */
     public KernelFunction<T> getFunction() {
@@ -38,6 +41,7 @@ public class FunctionInvokingEvent<T> implements KernelHookEvent {
 
     /**
      * Gets the arguments that are being passed to the function.
+     *
      * @return the arguments
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")

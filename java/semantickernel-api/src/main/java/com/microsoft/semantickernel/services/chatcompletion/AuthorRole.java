@@ -6,8 +6,8 @@ package com.microsoft.semantickernel.services.chatcompletion;
  */
 public enum AuthorRole {
 
-    /** 
-     * A system message helps set the behavior of the assistant. 
+    /**
+     * A system message helps set the behavior of the assistant.
      */
     SYSTEM("system"),
     /**
@@ -24,14 +24,14 @@ public enum AuthorRole {
      */
     TOOL("tool");
 
-    @Override
-    public String toString() {
-        return role;
-    }
-
     private final String role;
 
     private AuthorRole(String role) {
         this.role = role;
+    }
+
+    @Override
+    public String toString() {
+        return role;
     }
 }

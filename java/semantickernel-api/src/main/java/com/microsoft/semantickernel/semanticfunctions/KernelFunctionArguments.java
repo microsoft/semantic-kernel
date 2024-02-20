@@ -3,11 +3,11 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.exceptions.SKException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import reactor.util.annotation.NonNull;
 
 /**
- * Arguments to a kernel function. 
+ * Arguments to a kernel function.
  */
 public class KernelFunctionArguments implements Buildable, Map<String, ContextVariable<?>> {
 
@@ -56,6 +56,15 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
      */
     public KernelFunctionArguments() {
         this.variables = new CaseInsensitiveMap<>();
+    }
+
+    /**
+     * Create a new instance of Builder.
+     *
+     * @return Builder
+     */
+    public static Builder builder() {
+        return new KernelFunctionArguments.Builder();
     }
 
     /**
@@ -119,6 +128,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
 
     /**
      * Return whether the variable with the given name is {@code null} or empty.
+     *
      * @param key the key for the variable
      * @return {@code true} if the variable is {@code null} or empty, {@code false} otherwise
      */
@@ -188,15 +198,6 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
     }
 
     /**
-     * Create a new instance of Builder.
-     *
-     * @return Builder
-     */
-    public static Builder builder() {
-        return new KernelFunctionArguments.Builder();
-    }
-
-    /**
      * Builder for ContextVariables
      */
     public static class Builder implements SemanticKernelBuilder<KernelFunctionArguments> {
@@ -215,7 +216,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * Builds an instance with the given content in the default main key
          *
          * @param content Entry to place in the "input" slot
-         * @param <T>           Type of the value
+         * @param <T>     Type of the value
          * @return {$code this} Builder for fluent coding
          */
         public <T> Builder withInput(ContextVariable<T> content) {
@@ -266,7 +267,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          *
          * @param key   variable name
          * @param value variable value
-         * @param <T>           Type of the value
+         * @param <T>   Type of the value
          * @return {$code this} Builder for fluent coding
          */
         public <T> Builder withVariable(String key, ContextVariable<T> value) {

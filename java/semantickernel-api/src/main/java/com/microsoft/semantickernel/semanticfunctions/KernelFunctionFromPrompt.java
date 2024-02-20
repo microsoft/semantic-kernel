@@ -70,6 +70,16 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         }
     }
 
+    /**
+     * Creates a new instance of {@link Builder}.
+     *
+     * @param <T> The type of the return value of the function
+     * @return a new instance of {@link Builder}
+     */
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
+
     private Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelFunctionArguments argumentsIn,
@@ -247,16 +257,6 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         return invokeInternalAsync(kernel, arguments, variableType, invocationContext)
             .take(1).single();
-    }
-
-    /**
-     * Creates a new instance of {@link Builder}.
-     *
-     * @param <T> The type of the return value of the function
-     * @return a new instance of {@link Builder}
-     */
-    public static <T> Builder<T> builder() {
-        return new Builder<>();
     }
 
     /**

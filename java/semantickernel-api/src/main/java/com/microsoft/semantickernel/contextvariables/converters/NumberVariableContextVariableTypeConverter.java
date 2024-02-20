@@ -4,15 +4,14 @@ import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
-
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
- * A {@link ContextVariableTypeConverter}
- * for {@code java.lang.Number} type variables. Use, for example,
- * {@code ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class)} 
- * to get an instance of this class that works with the {@code Integer} type.
+ * A {@link ContextVariableTypeConverter} for {@code java.lang.Number} type variables. Use, for
+ * example, {@code ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class)} to get an
+ * instance of this class that works with the {@code Integer} type.
+ *
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class NumberVariableContextVariableTypeConverter<T extends Number> extends
@@ -22,9 +21,10 @@ public class NumberVariableContextVariableTypeConverter<T extends Number> extend
 
     /**
      * Creates a new instance of the {@link NumberVariableContextVariableTypeConverter} class.
-     * @param clazz the class
+     *
+     * @param clazz            the class
      * @param fromPromptString the function to convert from a prompt string
-     * @param fromNumber the function to convert from a number
+     * @param fromNumber       the function to convert from a number
      */
     public NumberVariableContextVariableTypeConverter(
         Class<T> clazz,
