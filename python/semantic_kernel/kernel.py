@@ -509,7 +509,17 @@ class Kernel(KernelBaseModel):
 
         return {}
 
-    def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
+    def import_plugin_from_prompt_directory(
+        self, service_id: str, parent_directory: str, plugin_directory_name: str
+    ) -> KernelPlugin:
+        """
+        Import a plugin from a directory containing prompt templates.
+
+        Args:
+            service_id (str): The service id
+            parent_directory (str): The parent directory
+            plugin_directory_name (str): The plugin directory name
+        """
         CONFIG_FILE = "config.json"
         PROMPT_FILE = "skprompt.txt"
 
@@ -537,6 +547,17 @@ class Kernel(KernelBaseModel):
             with open(config_path, "r") as config_file:
                 prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
             prompt_template_config.name = function_name
+
+            # TODO: remove this once the PromptTemplateConfig supports a dict of execution_settings
+            if (
+                prompt_template_config.execution_settings
+                and "default" in prompt_template_config.execution_settings.extension_data
+            ):
+                prompt_template_config.execution_settings.extension_data = (
+                    prompt_template_config.execution_settings.extension_data["default"]
+                )
+
+            prompt_template_config.execution_settings.service_id = service_id
 
             # Load Prompt Template
             with open(prompt_path, "r") as prompt_file:

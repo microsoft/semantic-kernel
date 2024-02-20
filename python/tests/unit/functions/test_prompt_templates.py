@@ -70,3 +70,29 @@ def test_get_kernel_parameter_metadata_with_variables():
     assert metadata[0].default_value == "default_val"
     assert metadata[0].type_ == "string"
     assert metadata[0].required is True
+
+
+def test_restore():
+    name = "Test Template"
+    description = "This is a test template."
+    template = "Hello, {{$name}}!"
+    input_variables = [InputVariable(name="name", description="Name of the person to greet", type="string")]
+    execution_settings = PromptExecutionSettings(timeout=30, max_tokens=100)
+
+    restored_template = PromptTemplateConfig.restore(
+        name=name,
+        description=description,
+        template=template,
+        input_variables=input_variables,
+        execution_settings=execution_settings,
+    )
+
+    assert restored_template.name == name, "The name attribute does not match the expected value."
+    assert restored_template.description == description, "The description attribute does not match the expected value."
+    assert restored_template.template == template, "The template attribute does not match the expected value."
+    assert (
+        restored_template.input_variables == input_variables
+    ), "The input_variables attribute does not match the expected value."
+    assert (
+        restored_template.execution_settings == execution_settings
+    ), "The execution_settings attribute does not match the expected value."

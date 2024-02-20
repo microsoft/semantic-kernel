@@ -124,10 +124,19 @@ class ChatHistory(KernelBaseModel):
         return item in self.messages
 
     def __str__(self) -> str:
+        """Return a string representation of the history."""
         return "\n".join([f"{msg.role}: {msg.content}" for msg in self.messages])
 
     def __iter__(self) -> Iterator[ChatMessageContent]:
+        """Return an iterator over the messages in the history."""
         return iter(self.messages)
+
+    def __eq__(self, other: "ChatHistory") -> bool:
+        """Check if two ChatHistory instances are equal."""
+        if not isinstance(other, ChatHistory):
+            return False
+
+        return self.messages == other.messages
 
     # TODO Add restore?
     # @classmethod

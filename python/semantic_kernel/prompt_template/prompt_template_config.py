@@ -75,3 +75,32 @@ class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
                 raise ValueError(f"Default value for input variable {variable.name} must be a string for {config.name}")
 
         return config
+
+    @classmethod
+    def restore(
+        cls,
+        name: str,
+        description: str,
+        template: str,
+        input_variables: List[InputVariable],
+        execution_settings: PromptExecutionSettings,
+    ) -> "PromptTemplateConfig":
+        """Restore a PromptTemplateConfig instance from the specified parameters.
+
+        Args:
+            name: The name of the prompt template.
+            description: The description of the prompt template.
+            template: The template for the prompt.
+            input_variables: The input variables for the prompt.
+            execution_settings: The execution settings for the prompt.
+
+        Returns:
+            A new PromptTemplateConfig instance.
+        """
+        return cls(
+            name=name,
+            description=description,
+            template=template,
+            input_variables=input_variables,
+            execution_settings=execution_settings,
+        )

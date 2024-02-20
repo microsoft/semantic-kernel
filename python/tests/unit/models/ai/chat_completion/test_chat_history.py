@@ -96,3 +96,22 @@ def test_iter(chat_history):
         chat_history.add_user_message(msg)
     for i, message in enumerate(chat_history):
         assert message.content == messages[i]
+
+
+def test_eq():
+    # Create two instances of ChatHistory
+    chat_history1 = ChatHistory()
+    chat_history2 = ChatHistory()
+
+    # Populate both instances with the same set of messages
+    messages = [("Message 1", ChatRole.USER), ("Message 2", ChatRole.ASSISTANT)]
+    for content, role in messages:
+        chat_history1.add_message({"role": role, "content": content})
+        chat_history2.add_message({"role": role, "content": content})
+
+    # Assert that the two instances are considered equal
+    assert chat_history1 == chat_history2
+
+    # Additionally, test inequality by adding an extra message to one of the histories
+    chat_history1.add_user_message("Extra message")
+    assert chat_history1 != chat_history2
