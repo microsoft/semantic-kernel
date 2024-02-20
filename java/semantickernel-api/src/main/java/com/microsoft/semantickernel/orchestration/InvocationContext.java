@@ -4,7 +4,6 @@ import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
-import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -22,7 +21,7 @@ public class InvocationContext implements Buildable {
     @Nullable
     private final PromptExecutionSettings promptExecutionSettings;
     @Nullable
-    private final UnmodifiableToolCallBehavior toolCallBehavior;
+    private final ToolCallBehavior toolCallBehavior;
     private final ContextVariableTypes contextVariableTypes;
 
     /**
@@ -40,7 +39,7 @@ public class InvocationContext implements Buildable {
         @Nullable ContextVariableTypes contextVariableTypes) {
         this.hooks = unmodifiableClone(hooks);
         this.promptExecutionSettings = promptExecutionSettings;
-        this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+        this.toolCallBehavior = toolCallBehavior;
         if (contextVariableTypes == null) {
             this.contextVariableTypes = new ContextVariableTypes();
         } else {
@@ -100,9 +99,9 @@ public class InvocationContext implements Buildable {
      * Get the behavior for tool calls.
      * @return The behavior for tool calls.
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns UnmodifiableToolCallBehavior")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns ToolCallBehavior")
     @Nullable
-    public UnmodifiableToolCallBehavior getToolCallBehavior() {
+    public ToolCallBehavior getToolCallBehavior() {
         return toolCallBehavior;
     }
 
@@ -120,18 +119,6 @@ public class InvocationContext implements Buildable {
      */
     public static Builder builder() {
         return new Builder();
-    }
-
-    @Nullable
-    private static UnmodifiableToolCallBehavior unmodifiableClone(
-        @Nullable ToolCallBehavior toolCallBehavior) {
-        if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
-            return (UnmodifiableToolCallBehavior) toolCallBehavior;
-        } else if (toolCallBehavior != null) {
-            return toolCallBehavior.unmodifiableClone();
-        } else {
-            return null;
-        }
     }
 
     @Nullable
@@ -158,7 +145,7 @@ public class InvocationContext implements Buildable {
         private PromptExecutionSettings promptExecutionSettings;
 
         @Nullable
-        private UnmodifiableToolCallBehavior toolCallBehavior;
+        private ToolCallBehavior toolCallBehavior;
 
         private final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
 
@@ -191,7 +178,7 @@ public class InvocationContext implements Buildable {
          */
         public Builder withToolCallBehavior(
             @Nullable ToolCallBehavior toolCallBehavior) {
-            this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+            this.toolCallBehavior = toolCallBehavior;
             return this;
         }
 

@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHook;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
-import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -41,7 +40,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     @Nullable
     protected PromptExecutionSettings promptExecutionSettings;
     @Nullable
-    protected UnmodifiableToolCallBehavior toolCallBehavior;
+    protected ToolCallBehavior toolCallBehavior;
     protected final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
 
     /**
@@ -157,7 +156,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
     public FunctionInvocation<T> withToolCallBehavior(@Nullable ToolCallBehavior toolCallBehavior) {
-        this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+        this.toolCallBehavior = toolCallBehavior;
         return this;
     }
 
@@ -263,18 +262,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 sink.next((FunctionResult<T>) result);
             }
         };
-    }
-
-    @Nullable
-    private static UnmodifiableToolCallBehavior unmodifiableClone(
-        @Nullable ToolCallBehavior toolCallBehavior) {
-        if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
-            return (UnmodifiableToolCallBehavior) toolCallBehavior;
-        } else if (toolCallBehavior != null) {
-            return toolCallBehavior.unmodifiableClone();
-        } else {
-            return null;
-        }
     }
 
     @Nullable

@@ -1,7 +1,10 @@
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,133 +24,21 @@ public class ToolCallBehavior {
         return String.format("%s%s%s", pluginName, FUNCTION_NAME_SEPARATOR, functionName);
     }
 
-    private int maximumAutoInvokeAttempts;
-    private boolean kernelFunctionsEnabled;
-
+    private final int maximumAutoInvokeAttempts;
+    private final boolean kernelFunctionsEnabled;
     @Nullable
-    private KernelFunction<?> requiredFunction;
-    private final Set<String> enabledFunctions = new HashSet<>();
+    private final KernelFunction<?> requiredFunction;
+    private final Set<String> enabledFunctions;
 
     /**
      * Create a new instance of ToolCallBehavior with defaults.
      */
-    public ToolCallBehavior() {
-        this.maximumAutoInvokeAttempts = 0;
-        this.kernelFunctionsEnabled = false;
-        this.requiredFunction = null;
-    }
-
-    /**
-     * Create a copy of the other ToolCallBehavior.
-     *
-     * @param toolCallBehavior The behavior to copy.
-     */
-    public ToolCallBehavior(ToolCallBehavior toolCallBehavior) {
-        maximumAutoInvokeAttempts = toolCallBehavior.maximumAutoInvokeAttempts;
-        kernelFunctionsEnabled = toolCallBehavior.kernelFunctionsEnabled;
-        requiredFunction = toolCallBehavior.requiredFunction;
-        enabledFunctions.addAll(toolCallBehavior.enabledFunctions);
-    }
-
-    /**
-     * Create an unmodifiable copy of this ToolCallBehavior.
-     *
-     * @return An unmodifiable copy of this ToolCallBehavior.
-     */
-    public UnmodifiableToolCallBehavior unmodifiableClone() {
-        return new UnmodifiableToolCallBehavior(this);
-    }
-
-    /**
-     * Enable kernel functions. If kernel functions are disabled, they will not be passed
-     * to the model unless specific functions have been enabled via {@code enableFunctions}.
-     * <p>
-     * By default, all kernel functions are disabled.
-     *
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior enableKernelFunctions() {
-        this.kernelFunctionsEnabled = true;
-        return this;
-    }
-
-    /**
-     * Enable or disable auto-invocation. If auto-invocation is enabled, the model may request that
-     * the Semantic Kernel invoke functions and return the value to the model. The default behavior
-     * is to disable auto-invocation.
-     *
-     * @param enable Whether to enable auto-invocation.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior autoInvoke(boolean enable) {
-        setMaximumAutoInvokeAttempts(enable ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0);
-        return this;
-    }
-
-    /**
-     * Require or not require a function to be called.
-     * If a function is required, it will the only function to be passed to the model and be called.
-     * By default, no function is required.
-     *
-     * @param function The function to require or not require.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior requireFunction(KernelFunction<?> function) {
-        requiredFunction = function;
-        setMaximumAutoInvokeAttempts(1);
-        return this;
-    }
-
-    /**
-     * Enable a function.
-     * If a function is enabled, it may be called. If it is not enabled, it will not be called.
-     * By default, all functions are disabled.
-     *
-     * @param function The function to enable.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior enableFunction(KernelFunction<?> function) {
-        if (function != null) {
-            enabledFunctions.add(getKey(function.getPluginName(), function.getName()));
-        }
-        return this;
-    }
-
-    /**
-     * Enable a set of functions.
-     * If a function is enabled, it may be called. If it is not enabled, it will not be called.
-     * By default, all functions are disabled.
-     *
-     * @param functions The functions to enable.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior enableFunctions(List<KernelFunction<?>> functions) {
-        if (functions != null) {
-            functions.forEach(this::enableFunction);
-        }
-        return this;
-    }
-
-    /**
-     * Set the maximum number of times that auto-invocation will be attempted. If auto-invocation is
-     * enabled, the model may request that the Semantic Kernel invoke functions and return the value
-     * to the model. If the maximum number of attempts is reached, the model will be notified that
-     * the function could not be invoked. The default maximum number of attempts is 5.
-     *
-     * @param maximumAutoInvokeAttempts The maximum number of attempts.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior setMaximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
-        if (maximumAutoInvokeAttempts < 0) {
-            throw new SKException(
-                "The maximum auto-invoke attempts should be greater than or equal to zero.");
-        }
-        if (requiredFunction == null) {
-            this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
-        } else {
-            this.maximumAutoInvokeAttempts = Math.min(1, maximumAutoInvokeAttempts);
-        }
-        return this;
+    public ToolCallBehavior(boolean kernelFunctionsEnabled, int maximumAutoInvokeAttempts,
+                            @Nullable Set<String> enabledFunctions, @Nullable KernelFunction<?> requiredFunction) {
+        this.kernelFunctionsEnabled = kernelFunctionsEnabled;
+        this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
+        this.requiredFunction = requiredFunction;
+        this.enabledFunctions = enabledFunctions != null ? enabledFunctions : new HashSet<>();
     }
 
     /**
@@ -210,33 +101,135 @@ public class ToolCallBehavior {
     }
 
     /**
-     * An unmodifiable instance of ToolCallBehavior.
+     * Get the fluent builder for creating a new instance of {@code ToolCallBehavior}.
+     * @return The fluent builder for creating a new instance of {@code ToolCallBehavior}.
      */
-    public static class UnmodifiableToolCallBehavior extends ToolCallBehavior {
-
-        protected UnmodifiableToolCallBehavior(ToolCallBehavior toolCallBehavior) {
-            super(toolCallBehavior);
-        }
-
-        @Override
-        public final ToolCallBehavior enableKernelFunctions() {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
-
-        @Override
-        public final ToolCallBehavior autoInvoke(boolean enable) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
-
-        @Override
-        public final ToolCallBehavior requireFunction(KernelFunction<?> function) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
-
-        @Override
-        public final ToolCallBehavior enableFunction(KernelFunction<?> function) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
+    public static Builder builder() {
+        return new Builder();
     }
 
+    public static class Builder implements Buildable {
+        private int maximumAutoInvokeAttempts;
+        private boolean kernelFunctionsEnabled;
+
+        @Nullable
+        private KernelFunction<?> requiredFunction;
+        private final Set<String> enabledFunctions = new HashSet<>();
+
+        /**
+         * Enable kernel functions. If kernel functions are disabled, they will not be passed
+         * to the model unless specific functions have been enabled via {@code enableFunctions}.
+         * <p>
+         * By default, all kernel functions are disabled.
+         *
+         * @return This ToolCallBehavior.
+         */
+        public Builder enableKernelFunctions() {
+            kernelFunctionsEnabled = true;
+            return this;
+        }
+
+        /**
+         * Enable or disable auto-invocation. If auto-invocation is enabled, the model may request that
+         * the Semantic Kernel invoke functions and return the value to the model. The default behavior
+         * is to disable auto-invocation.
+         *
+         * @param enable Whether to enable auto-invocation.
+         * @return This ToolCallBehavior.
+         */
+        public Builder autoInvoke(boolean enable) {
+            return withMaximumAutoInvokeAttempts(enable ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0);
+        }
+
+        /**
+         * Require or not require a function to be called.
+         * If a function is required, it will the only function to be passed to the model and be called.
+         * By default, no function is required.
+         *
+         * @param function The function to require or not require.
+         * @return This ToolCallBehavior.
+         */
+        public Builder requireFunction(KernelFunction<?> function) {
+            requiredFunction = function;
+            return withMaximumAutoInvokeAttempts(1);
+        }
+
+        /**
+         * Enable a function.
+         * If a function is enabled, it may be called. If it is not enabled, it will not be called.
+         * By default, all functions are disabled.
+         *
+         * @param function The function to enable.
+         * @return This ToolCallBehavior.
+         */
+        public Builder enableFunction(KernelFunction<?> function) {
+            if (function != null) {
+                enabledFunctions.add(getKey(function.getPluginName(), function.getName()));
+            }
+            return this;
+        }
+
+        /**
+         * Enable a set of functions.
+         * If a function is enabled, it may be called. If it is not enabled, it will not be called.
+         * By default, all functions are disabled.
+         *
+         * @param functions The functions to enable.
+         * @return This ToolCallBehavior.
+         */
+        public Builder enableFunctions(List<KernelFunction<?>> functions) {
+            if (functions != null) {
+                functions.forEach(this::enableFunction);
+            }
+            return this;
+        }
+
+        /**
+         * Enable a set of functions.
+         * If a function is enabled, it may be called. If it is not enabled, it will not be called.
+         * By default, all functions are disabled.
+         *
+         * @param functions The functions to enable.
+         * @return This ToolCallBehavior.
+         */
+        public Builder enableFunctions(KernelFunction<?>... functions) {
+            return enableFunctions(Arrays.asList(functions));
+        }
+
+        /**
+         * Set the maximum number of times that auto-invocation will be attempted. If auto-invocation is
+         * enabled, the model may request that the Semantic Kernel invoke functions and return the value
+         * to the model. If the maximum number of attempts is reached, the model will be notified that
+         * the function could not be invoked. The default maximum number of attempts is 5.
+         *
+         * @param maximumAutoInvokeAttempts The maximum number of attempts.
+         * @return This ToolCallBehavior.
+         */
+        public Builder withMaximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
+            if (maximumAutoInvokeAttempts < 0) {
+                throw new SKException(
+                        "The maximum auto-invoke attempts should be greater than or equal to zero.");
+            }
+            if (requiredFunction == null) {
+                this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
+            } else {
+                this.maximumAutoInvokeAttempts = Math.min(1, maximumAutoInvokeAttempts);
+            }
+            return this;
+        }
+
+        /**
+         * Create a new ToolCallBehavior instance from the builder.
+         *
+         * @return The new ToolCallBehavior instance
+         */
+        public ToolCallBehavior build() {
+            return new ToolCallBehavior(
+                kernelFunctionsEnabled,
+                maximumAutoInvokeAttempts,
+                enabledFunctions,
+                requiredFunction
+            );
+        }
+    }
 }
