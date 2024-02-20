@@ -34,6 +34,11 @@ public class ChatMessageContent : KernelContent
     public Encoding Encoding { get; set; }
 
     /// <summary>
+    /// The source of the message that generated it.
+    /// </summary>
+    public object? Source { get; set; }
+
+    /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
