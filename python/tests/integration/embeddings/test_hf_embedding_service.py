@@ -12,7 +12,7 @@ async def test_hf_embeddings_with_memories():
 
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
 
-    embedding_gen = sk_hf.HuggingFaceTextEmbedding(service_id=model_id,ai_model_id=model_id)
+    embedding_gen = sk_hf.HuggingFaceTextEmbedding(service_id=model_id, ai_model_id=model_id)
 
     # Configure LLM service
     kernel.add_service(embedding_gen)

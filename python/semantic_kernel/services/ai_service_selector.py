@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 
-class AIServiceSelector():
+class AIServiceSelector:
     """Default service selector, can be subclassed and overridden.
 
     To use a custom service selector, subclass this class and override the select_ai_service method.

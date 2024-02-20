@@ -96,7 +96,9 @@ def setup_gp_text_completion_function(create_kernel, get_gp_config):
     # Define semantic function using SK prompt template language
     prompt = "Hello, I like {{$input}}{{$input2}}"
 
-    exec_settings = PromptExecutionSettings(service_id="models/text-bison-001",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id="models/text-bison-001", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings=exec_settings)
 

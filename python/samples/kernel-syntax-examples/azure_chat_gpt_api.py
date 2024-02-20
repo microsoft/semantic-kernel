@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
@@ -28,7 +29,7 @@ flowery prose.
 kernel = sk.Kernel()
 
 chat_service = sk_oai.AzureChatCompletion(
-    service_id="chat-gpt",**azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+    service_id="chat-gpt", **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
 kernel.add_service(chat_service)
 
@@ -52,12 +53,15 @@ req_settings.top_p = 0.8
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
 prompt_template_config = sk.PromptTemplateConfig(
-    template="Use the {{$request}} to summarize the {{$history}}",
+    template="""Answer the following request: {{$request}}.
+                Additionally summarize the on-going chat history: {{$chat_history}}""",
     name="chat",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="history", description="The history of the conversation", is_required=True, default=""),
         InputVariable(name="request", description="The user input", is_required=True),
+        InputVariable(
+            name=KernelFunction.CHAT_HISTORY_TAG, description="The history of the conversation", is_required=True
+        ),
     ],
     execution_settings=req_settings,
 )
@@ -87,11 +91,12 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = True
+    stream = False
+    kwargs = {"request": user_input, KernelFunction.CHAT_HISTORY_TAG: history}
     if stream:
         answer = kernel.invoke_stream(
             chat_function,
-            KernelArguments(request=user_input, history=("\n").join([f"{msg.role}: {msg.content}" for msg in history])),
+            KernelArguments(**kwargs),
         )
         print("Mosscap:> ", end="")
         async for message in answer:
@@ -100,7 +105,7 @@ async def chat() -> bool:
         return True
     answer = await kernel.invoke(
         chat_function,
-        KernelArguments(request=user_input, history=("\n").join([f"{msg.role}: {msg.content}" for msg in history])),
+        KernelArguments(**kwargs),
     )
     print(f"Mosscap:> {answer}")
     history.add_user_message(user_input)

@@ -52,7 +52,7 @@ def test_add_message(chat_history):
     content = "Test message"
     role = ChatRole.USER
     encoding = "utf-8"
-    chat_history.add_message(role, content, encoding)
+    chat_history.add_message(message={"role": role, "content": content}, encoding=encoding)
     assert chat_history.messages[-1].content == content
     assert chat_history.messages[-1].role == role
     assert chat_history.messages[-1].encoding == encoding

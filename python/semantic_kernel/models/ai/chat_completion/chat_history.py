@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Iterator, List, Optional
+from typing import Any, Iterator, List, Optional, Union
 
 from pydantic import Field
 
@@ -33,32 +33,54 @@ class ChatHistory(KernelBaseModel):
 
     def add_system_message(self, content: str) -> None:
         """Add a system message to the chat template."""
-        self.add_message(ChatRole.SYSTEM, content)
+        self.add_message(message=self._prepare_for_add(ChatRole.SYSTEM, content))
 
     def add_user_message(self, content: str) -> None:
         """Add a user message to the chat template."""
-        self.add_message(ChatRole.USER, content)
+        self.add_message(message=self._prepare_for_add(ChatRole.USER, content))
 
     def add_assistant_message(self, content: str) -> None:
         """Add an assistant message to the chat template."""
-        self.add_message(ChatRole.ASSISTANT, content)
+        self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content))
 
     def add_tool_message(self, content: str, metadata: Optional[dict[str, Any]] = None) -> None:
         """Add a tool message to the chat template."""
-        self.add_message(ChatRole.TOOL, content, metadata=metadata)
+        self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content), metadata=metadata)
 
     def add_message(
-        self, role: ChatRole, content: str, encoding: Optional[str] = None, metadata: Optional[dict[str, Any]] = None
+        self,
+        message: Union[ChatMessageContent, dict],
+        encoding: Optional[str] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> None:
         """Add a message to the history.
 
+        This method accepts either a ChatMessageContent instance or a
+        dictionary with the necessary information to construct a ChatMessageContent instance.
+
         Args:
-            role (ChatRole): The role of the message (user, assistant, system, or tool).
-            message (ChatMessageContent): The message to add.
-            encoding (Optional[str]): The encoding of the message.
-            metadata (Optional[dict[str, Any]]): Any metadata to attach to the message.
+            message (Union[ChatMessageContent, dict]): The message to add, either as
+                a pre-constructed ChatMessageContent instance or a dictionary specifying 'role' and 'content'.
+            encoding (Optional[str]): The encoding of the message. Required if 'message' is a dict.
+            metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
         """
-        self.messages.append(ChatMessageContent(role=role, content=content, encoding=encoding, metadata=metadata))
+        if isinstance(message, ChatMessageContent):
+            chat_message = message
+        elif isinstance(message, dict):
+            required_keys = {"role", "content"}
+            if not required_keys.issubset(message.keys()):
+                raise ValueError(f"Dictionary must contain the following keys: {required_keys}")
+            chat_message = ChatMessageContent(
+                role=message["role"], content=message["content"], encoding=encoding, metadata=metadata
+            )
+        else:
+            raise TypeError("message must be an instance of ChatMessageContent or a dictionary")
+
+        self.messages.append(chat_message)
+
+    def _prepare_for_add(self, role: ChatRole, content: str) -> dict[str, str]:
+        """Prepare a message to be added to the history."""
+        return {"role": role, "content": content}
 
     def remove_message(self, message: ChatMessageContent) -> bool:
         """Remove a message from the history.
@@ -100,6 +122,9 @@ class ChatHistory(KernelBaseModel):
             bool: True if the message is in the history, False otherwise.
         """
         return item in self.messages
+
+    def __str__(self) -> str:
+        return "\n".join([f"{msg.role}: {msg.content}" for msg in self.messages])
 
     def __iter__(self) -> Iterator[ChatMessageContent]:
         return iter(self.messages)

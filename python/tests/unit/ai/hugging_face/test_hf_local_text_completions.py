@@ -43,7 +43,9 @@ async def test_text_completion(model_name, task, input_str):
         service=sk_hf.HuggingFaceTextCompletion(service_id=model_name, ai_model_id=model_name, task=task),
     )
 
-    exec_settings = PromptExecutionSettings(service_id=model_name, extension_data={"max_tokens": 25, "temperature": 0.7, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id=model_name, extension_data={"max_tokens": 25, "temperature": 0.7, "top_p": 0.5}
+    )
 
     # Define semantic function using SK prompt template language
     prompt = "{{$input}}"
@@ -54,7 +56,7 @@ async def test_text_completion(model_name, task, input_str):
         prompt_template_config=prompt_template_config,
         function_name="TestFunction",
         plugin_name="TestPlugin",
-        execution_settings=exec_settings
+        execution_settings=exec_settings,
     )
 
     arguments = KernelArguments(input=input_str)
@@ -101,7 +103,9 @@ async def test_text_completion_stream(model_name, task, input_str):
         sk_hf.HuggingFaceTextCompletion(service_id=model_name, ai_model_id=model_name, task=task),
     )
 
-    exec_settings = PromptExecutionSettings(service_id=model_name, extension_data={"max_tokens": 25, "temperature": 0.7, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id=model_name, extension_data={"max_tokens": 25, "temperature": 0.7, "top_p": 0.5}
+    )
 
     # Define semantic function using SK prompt template language
     prompt = "{{$input}}"

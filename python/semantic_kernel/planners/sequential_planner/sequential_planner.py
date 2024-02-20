@@ -45,10 +45,10 @@ class SequentialPlanner:
     _function_flow_function: "KernelFunction"
 
     def __init__(
-        self, 
-        kernel: Kernel, 
+        self,
+        kernel: Kernel,
         service_id: str,
-        config: SequentialPlannerConfig = None, 
+        config: SequentialPlannerConfig = None,
         prompt: str = None,
     ) -> None:
         """

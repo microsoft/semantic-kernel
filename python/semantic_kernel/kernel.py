@@ -36,6 +36,7 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import (
@@ -156,6 +157,8 @@ class Kernel(KernelBaseModel):
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
+        if KernelFunction.CHAT_HISTORY_TAG not in arguments:
+            arguments[KernelFunction.CHAT_HISTORY_TAG] = ChatHistory()
         if isinstance(functions, KernelFunction):
             stream_function = functions
             results = []
@@ -273,6 +276,8 @@ class Kernel(KernelBaseModel):
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
+        if KernelFunction.CHAT_HISTORY_TAG not in arguments:
+            arguments[KernelFunction.CHAT_HISTORY_TAG] = ChatHistory()
         results = []
         pipeline_step = 0
         if not isinstance(functions, list):
@@ -565,11 +570,6 @@ class Kernel(KernelBaseModel):
             raise ValueError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
         return self.plugins[plugin_name][function_name]
 
-    def add_default_values(self, arguments, prompt_template_config):
-        for parameter in prompt_template_config.input_variables:
-            if not arguments.get(parameter.name) and parameter.default not in {None, "", False, 0}:
-                arguments[parameter.name] = parameter.default
-
     def create_function_from_prompt(
         self,
         template: Optional[str] = None,
@@ -611,7 +611,7 @@ class Kernel(KernelBaseModel):
         validate_function_name(function_name)
 
         if not prompt_template_config.execution_settings:
-            prompt_template_config.execution_settings=PromptExecutionSettings(extension_data=kwargs)
+            prompt_template_config.execution_settings = PromptExecutionSettings(extension_data=kwargs)
 
         function = KernelFunction.from_prompt(
             prompt=template,

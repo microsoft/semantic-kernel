@@ -29,10 +29,14 @@ async def test_azure_e2e_chat_completion_with_plugin(setup_tldr_function_for_oai
 
     # Configure LLM service
     kernel.add_service(
-        sk_oai.AzureChatCompletion(service_id="chat",deployment_name=deployment_name, endpoint=endpoint, api_key=api_key),
+        sk_oai.AzureChatCompletion(
+            service_id="chat", deployment_name=deployment_name, endpoint=endpoint, api_key=api_key
+        ),
     )
 
-    exec_settings = PromptExecutionSettings(service_id="chat",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id="chat", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt, description="Write a short story.", execution_settings=exec_settings
@@ -84,7 +88,9 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(
         ),
     )
 
-    exec_settings = PromptExecutionSettings(service_id="chat_completion",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id="chat_completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt, description="Write a short story.", execution_settings=exec_settings

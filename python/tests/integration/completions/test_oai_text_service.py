@@ -22,10 +22,14 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
     print("* Model: gpt-3.5-turbo-instruct")
 
     kernel.add_service(
-        sk_oai.OpenAITextCompletion(service_id="text-completion",ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id),
+        sk_oai.OpenAITextCompletion(
+            service_id="text-completion", ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id
+        ),
     )
 
-    exec_settings = PromptExecutionSettings(service_id="text-completion",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id="text-completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt, description="Write a short story.", execution_settings=exec_settings
@@ -63,13 +67,15 @@ async def test_oai_text_completion_with_plugins_with_provided_client(
     kernel.add_service(
         sk_oai.OpenAITextCompletion(
             service_id="text-completion",
-            ai_model_id="gpt-3.5-turbo-instruct", 
+            ai_model_id="gpt-3.5-turbo-instruct",
             async_client=client,
         ),
         overwrite=True,
     )
 
-    exec_settings = PromptExecutionSettings(service_id="text-completion",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id="text-completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt, description="Write a short story.", execution_settings=exec_settings
@@ -113,7 +119,9 @@ async def test_oai_text_stream_completion_with_plugins(setup_tldr_function_for_o
     )
 
     # Create the semantic function
-    exec_settings = PromptExecutionSettings(service_id="text_completion",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id="text_completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt, description="Write a short story.", execution_settings=exec_settings

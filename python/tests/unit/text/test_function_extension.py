@@ -37,10 +37,8 @@ async def test_aggregate_results():
         prompt_template_config=prompt_template_config,
     )
 
-    func.function = (
-        lambda function, kernel, arguments, service, request_settings, prompt_template_config: FunctionResult(
-            function=function, value=arguments["input"], metadata={}
-        )
+    func.function = lambda function, kernel, arguments, service, request_settings, chat_history: FunctionResult(
+        function=function, value=arguments["input"], metadata={}
     )
 
     chunked = [

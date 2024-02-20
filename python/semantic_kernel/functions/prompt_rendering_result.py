@@ -14,6 +14,7 @@ class PromptRenderingResult(KernelBaseModel):
 
     Attributes:
         rendered_prompt (str): The rendered prompt.
+        ai_service (Any): The AI service that rendered the prompt.
         prompt_template (PromptTemplateConfig): The prompt template used to render the prompt.
     """
 

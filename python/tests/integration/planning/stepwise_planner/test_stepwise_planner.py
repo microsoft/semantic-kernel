@@ -59,7 +59,9 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     kernel = Kernel()
     if use_chat_model:
         kernel.add_service(
-            sk_oai.AzureChatCompletion(service_id="chat_completion",deployment_name="gpt-35-turbo", endpoint=endpoint, api_key=api_key),
+            sk_oai.AzureChatCompletion(
+                service_id="chat_completion", deployment_name="gpt-35-turbo", endpoint=endpoint, api_key=api_key
+            ),
         )
     else:
         kernel.add_service(

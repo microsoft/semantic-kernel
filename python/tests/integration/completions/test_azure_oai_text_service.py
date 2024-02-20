@@ -37,7 +37,9 @@ async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai
         ),
     )
 
-    exec_settings = PromptExecutionSettings(service_id="text_completion",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id="text_completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt, description="Write a short story.", execution_settings=exec_settings
@@ -87,10 +89,12 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
             deployment_name=deployment_name,
             async_client=client,
         ),
-        overwrite=True, # Overwrite the service for the test if it already exists
+        overwrite=True,  # Overwrite the service for the test if it already exists
     )
 
-    exec_settings = PromptExecutionSettings(service_id="text_completion",extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id="text_completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt, description="Write a short story.", execution_settings=exec_settings

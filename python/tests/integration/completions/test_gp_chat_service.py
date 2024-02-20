@@ -33,7 +33,9 @@ async def test_gp_chat_service_with_plugins(setup_tldr_function_for_oai_models, 
     palm_chat_completion = sk_gp.GooglePalmChatCompletion(ai_model_id=model_id, api_key=api_key)
     kernel.add_service(palm_chat_completion)
 
-    exec_settings = PromptExecutionSettings(service_id=model_id,extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5})
+    exec_settings = PromptExecutionSettings(
+        service_id=model_id, extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
     prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings=exec_settings)
 

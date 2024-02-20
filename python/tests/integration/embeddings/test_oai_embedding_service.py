@@ -13,7 +13,9 @@ async def test_oai_embedding_service(create_kernel, get_oai_config):
 
     api_key, org_id = get_oai_config
 
-    embedding_gen = sk_oai.OpenAITextEmbedding(service_id="oai-ada",ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id)
+    embedding_gen = sk_oai.OpenAITextEmbedding(
+        service_id="oai-ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id
+    )
 
     kernel.add_service(embedding_gen)
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
@@ -38,7 +40,9 @@ async def test_oai_embedding_service_with_provided_client(create_kernel, get_oai
         organization=org_id,
     )
 
-    embedding_gen = sk_oai.OpenAITextEmbedding(service_id="oai-ada",ai_model_id="text-embedding-ada-002", async_client=client)
+    embedding_gen = sk_oai.OpenAITextEmbedding(
+        service_id="oai-ada", ai_model_id="text-embedding-ada-002", async_client=client
+    )
 
     kernel.add_service(embedding_gen)
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)

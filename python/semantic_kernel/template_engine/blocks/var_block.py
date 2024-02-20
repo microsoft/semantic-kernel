@@ -54,7 +54,9 @@ class VarBlock(Block):
 
         return True, ""
 
-    def render(self, _: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
+    def render(self, _: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+        """Render the variable block with the given arguments.
+        If the variable is not found in the arguments, return an empty string."""
         if arguments is None:
             return ""
 
@@ -67,4 +69,4 @@ class VarBlock(Block):
         if not value:
             logger.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found in the KernelArguments")
 
-        return value or ""
+        return str(value) if value else ""

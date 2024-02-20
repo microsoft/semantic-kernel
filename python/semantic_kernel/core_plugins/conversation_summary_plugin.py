@@ -7,7 +7,6 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -36,10 +35,7 @@ class ConversationSummaryPlugin:
     )
 
     def __init__(
-        self, 
-        kernel: "Kernel", 
-        prompt_template_config: "PromptTemplateConfig", 
-        return_key: str = "summary"
+        self, kernel: "Kernel", prompt_template_config: "PromptTemplateConfig", return_key: str = "summary"
     ) -> None:
         """
         Initializes a new instance of the ConversationSummaryPlugin class.

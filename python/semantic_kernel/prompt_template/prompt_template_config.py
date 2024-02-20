@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
-from typing import Dict, Generic, List, Optional, TypeVar
+from typing import Generic, List, Optional, TypeVar
 
 from pydantic import Field
 
@@ -23,7 +23,7 @@ class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
     input_variables: Optional[List[InputVariable]] = Field(default_factory=list, alias="input_variables")
     execution_settings: Optional[PromptExecutionSettings] = Field(
         default_factory=PromptExecutionSettings, alias="execution_settings"
-    ) # TODO Make this a dict
+    )  # TODO Make this a dict
 
     def __init__(self, **kwargs) -> None:
         """Create a new PromptTemplateConfig instance.

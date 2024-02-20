@@ -120,7 +120,8 @@ async def create_with_data_chat_function(get_aoai_config, create_kernel, create_
         prompt = "{{$input}}"
 
         exec_settings = PromptExecutionSettings(
-            service_id="chat-gpt-extensions", extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8, "extra_body": extra}
+            service_id="chat-gpt-extensions",
+            extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8, "extra_body": extra},
         )
 
         prompt_template_config = PromptTemplateConfig(

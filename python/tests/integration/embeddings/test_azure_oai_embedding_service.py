@@ -21,11 +21,11 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
         deployment_name = "text-embedding-ada-002"
 
     embeddings_gen = sk_oai.AzureTextEmbedding(
-            service_id="aoai-ada",
-            deployment_name=deployment_name,
-            endpoint=endpoint,
-            api_key=api_key,
-        )
+        service_id="aoai-ada",
+        deployment_name=deployment_name,
+        endpoint=endpoint,
+        api_key=api_key,
+    )
 
     kernel.add_service(embeddings_gen)
 
@@ -60,10 +60,10 @@ async def test_azure_text_embedding_service_with_provided_client(create_kernel, 
     )
 
     embedding_gen = sk_oai.AzureTextEmbedding(
-            service_id="aoai-ada-2",
-            deployment_name=deployment_name,
-            async_client=client,
-        )
+        service_id="aoai-ada-2",
+        deployment_name=deployment_name,
+        async_client=client,
+    )
 
     kernel.add_service(embedding_gen)
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
