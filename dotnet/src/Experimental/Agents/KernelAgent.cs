@@ -19,19 +19,18 @@ public abstract class KernelAgent
     /// <summary>
     /// The description of the agent
     /// </summary>
-    public string Description { get; internal set; }
+    public string? Description { get; internal set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelAgent"/> class.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="description">The agent description.</param>
-    protected KernelAgent(Kernel kernel, string description)
+    protected KernelAgent(Kernel kernel, string? description)
     {
         Verify.NotNull(kernel, nameof(kernel));
         this.Kernel = kernel;
 
-        Verify.NotNullOrWhiteSpace(description, nameof(description));
         this.Description = description;
     }
 
