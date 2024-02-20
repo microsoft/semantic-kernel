@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Json.More;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Contents;
 
@@ -120,7 +119,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
         request.Content = content;
         using var response = await this._httpClient.SendAsync(request, ct).ConfigureAwait(false);
-        ThrowIfNotSuccessStatusCode(response);
+        await ThrowIfNotSuccessStatusCodeAsync("Failed to upload file.", response, ct)
+            .ConfigureAwait(false);
         var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         return json.RootElement.GetProperty("upload_url").GetString()
@@ -149,7 +149,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
         request.Content = content;
         using var response = await this._httpClient.SendAsync(request, ct).ConfigureAwait(false);
-        ThrowIfNotSuccessStatusCode(response);
+        await ThrowIfNotSuccessStatusCodeAsync("Failed to create transcript", response, ct)
+            .ConfigureAwait(false);
         var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         if (json.RootElement.TryGetProperty("error", out var property))
@@ -169,7 +170,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
             using var response = await this._httpClient.SendAsync(request, ct).ConfigureAwait(false);
-            ThrowIfNotSuccessStatusCode(response);
+            await ThrowIfNotSuccessStatusCodeAsync("Error waiting for transcript.", response, ct)
+                .ConfigureAwait(false);
             var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
 
@@ -194,7 +196,11 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         throw new AssemblyAIApiException("This code is unreachable.");
     }
 
-    private static void ThrowIfNotSuccessStatusCode(HttpResponseMessage response)
+    private static async Task ThrowIfNotSuccessStatusCodeAsync(
+        string errorMessagePrefix,
+        HttpResponseMessage response,
+        CancellationToken ct
+    )
     {
         if (response.IsSuccessStatusCode)
         {
@@ -203,10 +209,11 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
         if (response.Content.Headers.ContentType.MediaType == "application/json")
         {
-            var json = response.Content.ToJsonDocument();
+            var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
             if (json.RootElement.TryGetProperty("error", out var property))
             {
-                throw new AssemblyAIApiException($"Operation failed. Reason: {property.GetString()!}");
+                throw new AssemblyAIApiException($"{errorMessagePrefix} Reason: {property.GetString()!}");
             }
         }
 

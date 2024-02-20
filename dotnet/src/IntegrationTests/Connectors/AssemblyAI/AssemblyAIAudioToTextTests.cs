@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -35,8 +36,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextTestAsync()
     {
-        using var httpClient = new HttpClient();
         // Arrange
+        using var httpClient = new HttpClient();
         const string Filename = "test_audio.wav";
 
         var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
@@ -61,8 +62,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithStreamTestAsync()
     {
-        using var httpClient = new HttpClient();
         // Arrange
+        using var httpClient = new HttpClient();
         const string Filename = "test_audio.wav";
 
         var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
@@ -79,6 +80,70 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         Assert.Equal(
             "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
             result.Text
+        );
+    }
+
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task AssemblyAIAudioToTextWithLanguageParamTestAsync()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        const string Filename = "test_audio.wav";
+
+        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
+                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+
+        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+        var textExecutionSettings = new AssemblyAIAudioToTextExecutionSettings
+        {
+            ExtensionData = new Dictionary<string, object>
+            {
+                ["language_code"] = "en_us"
+            }
+        };
+
+        // Act
+        var result = await service.GetTextContentAsync(audio);
+
+        // Assert
+        Assert.Equal(
+            "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
+            result.Text
+        );
+    }
+
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task AssemblyAIAudioToTextWithUnknownParamShouldThrowAsync()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        const string Filename = "test_audio.wav";
+
+        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
+                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+
+        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+        var textExecutionSettings = new AssemblyAIAudioToTextExecutionSettings
+        {
+            ExtensionData = new Dictionary<string, object>
+            {
+                ["unknown_key"] = "unknown_value"
+            }
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<AssemblyAIApiException>(
+            async () => await service.GetTextContentAsync(audio, textExecutionSettings)
+        );
+        Assert.Equal(
+            "Failed to create transcript Reason: Invalid endpoint schema, please refer to documentation for examples.",
+            exception.Message
         );
     }
 
