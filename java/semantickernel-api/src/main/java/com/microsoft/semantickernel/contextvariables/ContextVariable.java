@@ -147,7 +147,7 @@ public class ContextVariable<T> {
                 return requestedResultTypeVariable.of(result);
             }
 
-            if (requestedResultType.equals(String.class)) {
+            if (it.getClass().equals(String.class)) {
                 // Try using from prompt string
                 return requestedResultTypeVariable.of(
                     requestedResultTypeVariable.getConverter().fromPromptString((String) it));
