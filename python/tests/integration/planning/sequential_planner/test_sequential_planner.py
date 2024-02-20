@@ -7,6 +7,7 @@ import pytest
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import SequentialPlanner
+from semantic_kernel.planners.planning_exception import PlanningException
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )

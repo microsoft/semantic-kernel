@@ -346,7 +346,7 @@ class KernelFunction(KernelBaseModel):
             try:
                 if isinstance(service, ChatCompletionClientBase):
                     async for partial_content in service.complete_chat_stream(
-                        messages=chat_history, settings=request_settings
+                        chat_history=chat_history, settings=request_settings
                     ):
                         yield partial_content
                 elif isinstance(service, TextCompletionClientBase):

@@ -15,14 +15,15 @@ def test_plugin_can_be_imported():
     kernel = sk.Kernel()
     api_key = "test-api-key"
     org_id = "test-org-id"
+    service_id = "text-davinci-003"
     kernel.add_service(
-        sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id, service_id="test-completion-service"),
+        sk_oai.OpenAITextCompletion(service_id, api_key, org_id, service_id="test-completion-service"),
     )
 
     # import plugins
     plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_plugins")
     # path to plugins directory
-    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
+    plugin = kernel.import_plugin_from_prompt_directory(service_id, plugins_directory, "TestPlugin")
 
     assert plugin is not None
     assert len(plugin.functions) == 1

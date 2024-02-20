@@ -172,7 +172,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
         api_key=api_key,
     )
-    await azure_chat_completion.complete_chat(messages=messages, settings=complete_prompt_execution_settings)
+    await azure_chat_completion.complete_chat(chat_history=messages, settings=complete_prompt_execution_settings)
     mock_create.assert_awaited_once_with(
         model=deployment_name,
         frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
@@ -212,7 +212,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete_chat(messages=messages, settings=complete_prompt_execution_settings)
+    await azure_chat_completion.complete_chat(chat_history=messages, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -253,7 +253,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete(messages, complete_prompt_execution_settings)
+    await azure_chat_completion.complete(chat_history=messages, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -340,7 +340,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         use_extensions=True,
     )
 
-    await azure_chat_completion.complete_chat(messages=messages_in, settings=complete_prompt_execution_settings)
+    await azure_chat_completion.complete_chat(chat_history=messages_in, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -389,7 +389,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     )
 
     await azure_chat_completion.complete_chat(
-        messages=messages,
+        chat_history=messages,
         settings=complete_prompt_execution_settings,
     )
 

@@ -15,15 +15,15 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
     @abstractmethod
     async def complete_chat(
         self,
-        messages: "ChatHistory",
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
     ) -> List["ChatMessageContent"]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
-                set of messages, from system, user, assistant and function.
+            chat_history {List[ChatMessage]} -- A list of chat chat_history, that can be rendered into a
+                set of chat_history, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
 
         Returns:
@@ -34,15 +34,15 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
     @abstractmethod
     async def complete_chat_stream(
         self,
-        messages: "ChatHistory",
+        chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
     ) -> AsyncIterable[List["StreamingChatMessageContent"]]:
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
-                set of messages, from system, user, assistant and function.
+            chat_history {List[ChatMessage]} -- A list of chat chat_history, that can be rendered into a
+                set of chat_history, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
 
         Yields:
