@@ -69,6 +69,10 @@ public sealed class ImageContent : KernelContent
     /// BinaryData images will be represented as DataUri
     /// Remote Uri images will be represented as is
     /// </summary>
+    /// <remarks>
+    /// When Data is provided it takes precedence over URI
+    /// </remarks>
+
     public override string ToString()
     {
         return this.BuildDataUri() ?? this.Uri?.ToString() ?? string.Empty;
