@@ -42,6 +42,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Connectors.AssemblyAI\Connectors.AssemblyAI.csproj" />
     <ProjectReference Include="..\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
