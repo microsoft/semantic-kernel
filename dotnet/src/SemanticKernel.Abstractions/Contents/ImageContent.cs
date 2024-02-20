@@ -72,7 +72,6 @@ public sealed class ImageContent : KernelContent
     /// <remarks>
     /// When Data is provided it takes precedence over URI
     /// </remarks>
-
     public override string ToString()
     {
         return this.BuildDataUri() ?? this.Uri?.ToString() ?? string.Empty;
