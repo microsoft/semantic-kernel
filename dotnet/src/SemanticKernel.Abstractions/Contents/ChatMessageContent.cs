@@ -21,7 +21,7 @@ public class ChatMessageContent : KernelContent
     public AuthorRole Role { get; set; }
 
     /// <summary>
-    /// Content of the message
+    /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection.
     /// </summary>
     public string? Content
     {
