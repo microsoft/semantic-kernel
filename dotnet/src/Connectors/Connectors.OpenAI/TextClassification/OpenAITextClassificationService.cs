@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextClassification;
 
@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAITextClassificationService : ITextClassification
 {
     private readonly Dictionary<string, object?> _attributes = new();
+    private readonly IOpenAIModerationClient _client;
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
@@ -36,8 +37,12 @@ public sealed class OpenAITextClassificationService : ITextClassification
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        throw new NotImplementedException();
-        // todo: implement
+        this._client = new OpenAIModerationClient(
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+            modelId: modelId,
+            httpRequestFactory: new OpenAIHttpRequestFactory(apiKey, organization),
+            endpointProvider: new OpenAIEndpointProvider(),
+            logger: loggerFactory?.CreateLogger<OpenAIModerationClient>());
 
         this._attributes.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
@@ -49,7 +54,6 @@ public sealed class OpenAITextClassificationService : ITextClassification
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
-        // todo: implement
+        return this._client.ClassifyTextAsync(text, cancellationToken: cancellationToken);
     }
 }
