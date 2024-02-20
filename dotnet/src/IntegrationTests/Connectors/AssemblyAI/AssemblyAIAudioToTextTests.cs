@@ -6,6 +6,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Microsoft.SemanticKernel.Contents;
 using Xunit;
@@ -32,8 +33,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
             .Build();
     }
 
-    // [Fact]
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextTestAsync()
     {
         // Arrange
@@ -58,8 +59,40 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
     }
 
-    // [Fact]
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
+    public async Task AssemblyAIAudioToTextWithPollingIntervalTestAsync()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        const string Filename = "test_audio.wav";
+
+        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
+                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+
+        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+        var audioData = await BinaryData.FromStreamAsync(audio);
+
+        // Act
+        var result = await service.GetTextContentAsync(
+            new AudioContent(audioData),
+            new AssemblyAIAudioToTextExecutionSettings
+            {
+                PollingInterval = TimeSpan.FromMilliseconds(500)
+            }
+        );
+
+        // Assert
+        Assert.Equal(
+            "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
+            result.Text
+        );
+    }
+
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithStreamTestAsync()
     {
         // Arrange
@@ -74,7 +107,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
 
         // Act
-        var result = await service.GetTextContentAsync(audio);
+        var result = await service.GetTextContentAsync(new AudioStreamContent(audio));
 
         // Assert
         Assert.Equal(
@@ -83,8 +116,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
     }
 
-    // [Fact]
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithFileInfoTestAsync()
     {
         // Arrange
@@ -97,7 +130,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
         // Act
-        var result = await service.GetTextContentAsync(new FileInfo($"./TestData/{Filename}"));
+        var result = await service.GetTextContentAsync(new AudioContent(new FileInfo($"./TestData/{Filename}")));
 
         // Assert
         Assert.Equal(
@@ -106,8 +139,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
     }
 
-    // [Fact]
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithUriTestAsync()
     {
         // Arrange
@@ -120,7 +153,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act
         var result = await service.GetTextContentAsync(
-            new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3")
+            new AudioContent(new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3"))
         );
         Console.Write(result.Text);
         // Assert
@@ -131,8 +164,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
     }
 
-    // [Fact]
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithFileUriShouldThrowTestAsync()
     {
         // Arrange
@@ -145,12 +178,12 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.GetTextContentAsync(new Uri("file://C:/file.mp3"))
+            async () => await service.GetTextContentAsync(new AudioContent(new Uri("file://C:/file.mp3")))
         );
     }
 
-    // [Fact]
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithLanguageParamTestAsync()
     {
         // Arrange
@@ -172,7 +205,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentAsync(audio);
+        var result = await service.GetTextContentAsync(new AudioStreamContent(audio), textExecutionSettings);
 
         // Assert
         Assert.Equal(
@@ -181,8 +214,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
     }
 
-    // [Fact]
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithUnknownParamShouldThrowAsync()
     {
         // Arrange
@@ -204,8 +237,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<AssemblyAIApiException>(
-            async () => await service.GetTextContentAsync(audio, textExecutionSettings)
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(
+            async () => await service.GetTextContentAsync(new AudioStreamContent(audio), textExecutionSettings)
         );
         Assert.Equal(
             "Failed to create transcript Reason: Invalid endpoint schema, please refer to documentation for examples.",

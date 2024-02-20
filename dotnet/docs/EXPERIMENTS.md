@@ -27,7 +27,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0014: OpenAI chat history extension
 - SKEXP0015: OpenAI file service
 
-## Memory connectors
+## Connectors
 
 - SKEXP0020: Hugging Face AI connector
 - SKEXP0021: Azure AI Search memory connector
@@ -42,6 +42,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0030: MongoDB memory connector
 - SKEXP0031: Pinecone memory connector
 - SKEXP0032: Postgres memory connector
+- SKEXP0033: AssemblyAI AudioToText connector
 
 ## Functions
 

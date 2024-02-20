@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 /// <summary>
 /// AssemblyAI speech-to-text service.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0033")]
 public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 {
     private readonly string _apiKey;
@@ -44,14 +44,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         this._httpClient = httpClient;
     }
 
-    /// <summary>
-    /// Transcribe audio file.
-    /// </summary>
-    /// <param name="content">Audio content.</param>
-    /// <param name="executionSettings">The AI execution settings (optional).</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Text content from audio content.</returns>
+    /// <inheritdoc />
     public async Task<TextContent> GetTextContentAsync(
         AudioContent content,
         PromptExecutionSettings? executionSettings = null,
@@ -59,115 +52,65 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         CancellationToken cancellationToken = default)
     {
         string uploadUrl;
-        using var stream = content.Data!.ToStream();
+        if (content.AudioUrl is not null)
         {
+            // to prevent unintentional file uploads by injection attack
+            if (content.AudioUrl.IsFile)
+            {
+                throw new ArgumentException("File URI is not allowed. Use `Stream` or `FileInfo` to transcribe a local file instead.");
+            }
+
+            uploadUrl = content.AudioUrl.ToString();
+        }
+        else if (content.AudioFile is not null)
+        {
+            using var stream = content.AudioFile.OpenRead();
             uploadUrl = await this.UploadFileAsync(stream, cancellationToken).ConfigureAwait(false);
         }
-
-        var transcriptId = await this.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
-            .ConfigureAwait(false);
-        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, cancellationToken)
-            .ConfigureAwait(false);
-
-        return new TextContent(
-            text: transcript.RootElement.GetProperty("text").GetString(),
-            modelId: null,
-            // TODO: change to typed object when AAI SDK is shipped
-            innerContent: transcript,
-            encoding: Encoding.UTF8,
-            metadata: null
-        );
-    }
-
-    /// <summary>
-    /// Transcribe audio file.
-    /// </summary>
-    /// <param name="fileStream">Stream of the audio file</param>
-    /// <param name="executionSettings">The AI execution settings (optional).</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async Task<TextContent> GetTextContentAsync(
-        Stream fileStream,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        string uploadUrl = await this.UploadFileAsync(fileStream, cancellationToken).ConfigureAwait(false);
-
-        var transcriptId = await this.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
-            .ConfigureAwait(false);
-        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, cancellationToken)
-            .ConfigureAwait(false);
-
-        return new TextContent(
-            text: transcript.RootElement.GetProperty("text").GetString(),
-            modelId: null,
-            // TODO: change to typed object when AAI SDK is shipped
-            innerContent: transcript,
-            encoding: Encoding.UTF8,
-            metadata: null
-        );
-    }
-
-    /// <summary>
-    /// Transcribe audio file.
-    /// </summary>
-    /// <param name="fileUrl">Public URL of the audio file to transcribe</param>
-    /// <param name="executionSettings">The AI execution settings (optional).</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async Task<TextContent> GetTextContentAsync(
-        Uri fileUrl,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        // to prevent unintentional file uploads by injection attack
-        if (fileUrl.IsFile)
+        else if (content.Data is not null)
         {
-            throw new ArgumentException("File URI is not allowed. Use `Stream` or `FileInfo` to transcribe a local file instead.");
+            using var stream = content.Data!.ToStream();
+            uploadUrl = await this.UploadFileAsync(stream, cancellationToken).ConfigureAwait(false);
         }
-
-        var transcriptId = await this.CreateTranscriptAsync(fileUrl.ToString(), executionSettings, cancellationToken)
-            .ConfigureAwait(false);
-        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, cancellationToken)
-            .ConfigureAwait(false);
-
-        return new TextContent(
-            text: transcript.RootElement.GetProperty("text").GetString(),
-            modelId: null,
-            // TODO: change to typed object when AAI SDK is shipped
-            innerContent: transcript,
-            encoding: Encoding.UTF8,
-            metadata: null
-        );
-    }
-
-    /// <summary>
-    /// Transcribe audio file.
-    /// </summary>
-    /// <param name="file">Audio file to transcribe</param>
-    /// <param name="executionSettings">The AI execution settings (optional).</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async Task<TextContent> GetTextContentAsync(
-        FileInfo file,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        string uploadUrl;
-        using (var fileStream = file.OpenRead())
+        else
         {
-            uploadUrl = await this.UploadFileAsync(fileStream, cancellationToken).ConfigureAwait(false);
+            throw new ArgumentException("AudioContent doesn't have any content.", nameof(content));
         }
 
         var transcriptId = await this.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
             .ConfigureAwait(false);
-        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, cancellationToken)
+        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
+            .ConfigureAwait(false);
+
+        return new TextContent(
+            text: transcript.RootElement.GetProperty("text").GetString(),
+            modelId: null,
+            // TODO: change to typed object when AAI SDK is shipped
+            innerContent: transcript,
+            encoding: Encoding.UTF8,
+            metadata: null
+        );
+    }
+
+    /// <summary>
+    /// Transcribe audio file.
+    /// </summary>
+    /// <param name="content">Stream of the audio file</param>
+    /// <param name="executionSettings">The AI execution settings (optional).</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Text content from audio content.</returns>
+    public async Task<TextContent> GetTextContentAsync(
+        AudioStreamContent content,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        string uploadUrl = await this.UploadFileAsync(content.Stream, cancellationToken).ConfigureAwait(false);
+
+        var transcriptId = await this.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
+            .ConfigureAwait(false);
+        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
             .ConfigureAwait(false);
 
         return new TextContent(
@@ -194,7 +137,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         return json.RootElement.GetProperty("upload_url").GetString()
-               ?? throw new AssemblyAIApiException("Property 'upload_url' expected but not found.");
+               ?? throw new KernelException("Property 'upload_url' expected but not found.");
     }
 
     private async Task<string> CreateTranscriptAsync(
@@ -225,15 +168,24 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         if (json.RootElement.TryGetProperty("error", out var property))
         {
-            throw new AssemblyAIApiException($"Failed to create transcript. Reason: {property.GetString()!}");
+            throw new KernelException($"Failed to create transcript. Reason: {property.GetString()!}");
         }
 
         return json.RootElement.GetProperty("id").GetString()!;
     }
 
-    private async Task<JsonDocument> WaitForTranscriptToProcessAsync(string transcriptId, CancellationToken ct)
+    private async Task<JsonDocument> WaitForTranscriptToProcessAsync(
+        string transcriptId,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken ct = default
+    )
     {
         var url = $"https://api.assemblyai.com/v2/transcript/{transcriptId}";
+        var pollingInterval = TimeSpan.FromSeconds(1);
+        if (executionSettings is AssemblyAIAudioToTextExecutionSettings aaiSettings)
+        {
+            pollingInterval = aaiSettings.PollingInterval;
+        }
 
         while (!ct.IsCancellationRequested)
         {
@@ -250,20 +202,20 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             {
                 case "processing":
                 case "queued":
-                    await Task.Delay(TimeSpan.FromSeconds(1), ct).ConfigureAwait(false);
+                    await Task.Delay(pollingInterval, ct).ConfigureAwait(false);
                     break;
                 case "completed":
                     return json;
                 case "error":
                     var errorString = json.RootElement.GetProperty("error").GetString()!;
-                    throw new AssemblyAIApiException($"Failed to create transcript. Reason: {errorString}");
+                    throw new KernelException($"Failed to create transcript. Reason: {errorString}");
                 default:
-                    throw new AssemblyAIApiException("Unexpected transcript status. This code shouldn't be reachable.");
+                    throw new KernelException("Unexpected transcript status. This code shouldn't be reachable.");
             }
         }
 
         ct.ThrowIfCancellationRequested();
-        throw new AssemblyAIApiException("This code is unreachable.");
+        throw new KernelException("This code is unreachable.");
     }
 
     private static async Task ThrowIfNotSuccessStatusCodeAsync(
@@ -277,16 +229,26 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             return;
         }
 
+        var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         if (response.Content.Headers.ContentType.MediaType == "application/json")
         {
-            var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
+            var json = JsonDocument.Parse(responseString);
             if (json.RootElement.TryGetProperty("error", out var property))
             {
-                throw new AssemblyAIApiException($"{errorMessagePrefix} Reason: {property.GetString()!}");
+                throw new HttpOperationException(
+                    statusCode: response.StatusCode,
+                    responseContent: responseString,
+                    message: $"{errorMessagePrefix} Reason: {property.GetString()!}",
+                    innerException: null
+                );
             }
         }
 
-        response.EnsureSuccessStatusCode();
+        throw new HttpOperationException(
+            statusCode: response.StatusCode,
+            responseContent: responseString,
+            message: response.ReasonPhrase,
+            innerException: null
+        );
     }
 }

@@ -5,14 +5,13 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Contents;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.AssemblyAI.AudioToText;
 
 /// <summary>
-/// Unit tests for <see cref="OpenAIAudioToTextService"/> class.
+/// Unit tests for <see cref="AssemblyAIAudioToTextService"/> class.
 /// </summary>
 public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 {
@@ -56,6 +55,46 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetTextContentByUrlWorksCorrectlyAsync()
+    {
+        // Arrange
+        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        var result = await service.GetTextContentAsync(
+            new AudioContent(new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3"))
+        );
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Test audio-to-text response", result.Text);
+    }
+
+    [Fact]
+    public async Task GetTextContentByFileInfoWorksCorrectlyAsync()
+    {
+        // Arrange
+        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        var result = await service.GetTextContentAsync(
+            new AudioContent(new FileInfo("./AssemblyAI/TestData/test_audio.wav"))
+        );
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Test audio-to-text response", result.Text);
+    }
+
+    [Fact]
     public async Task GetTextContentByStreamWorksCorrectlyAsync()
     {
         // Arrange
@@ -68,7 +107,9 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         using var ms = new MemoryStream();
 
         // Act
-        var result = await service.GetTextContentAsync(ms);
+        var result = await service.GetTextContentAsync(
+            new AudioStreamContent(ms)
+        );
 
         // Assert
         Assert.NotNull(result);
