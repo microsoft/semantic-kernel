@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -23,6 +24,7 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public string? Content
     {
         get
