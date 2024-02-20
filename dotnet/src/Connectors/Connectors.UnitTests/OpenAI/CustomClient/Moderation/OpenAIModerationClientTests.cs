@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -83,6 +86,60 @@ public sealed class OpenAIModerationClientTests : IDisposable
         await Assert.ThrowsAnyAsync<ArgumentException>(() => sut.ClassifyTextAsync(text!));
     }
 
+    [Fact]
+    public async Task ItSendsRequestWithModelIdInBodyAsync()
+    {
+        // Arrange
+        string modelId = "sample-model";
+        var sut = this.CreateOpenAIModerationClient(modelId: modelId);
+
+        // Act
+        await sut.ClassifyTextAsync("text");
+
+        // Assert
+        var request = this.DeserializeRequestContent();
+        Assert.NotNull(request);
+        Assert.Equal(modelId, request.Model);
+    }
+
+    [Fact]
+    public async Task ItSendRequestWithTextInBodyAsync()
+    {
+        // Arrange
+        string text = "sample-text";
+        var sut = this.CreateOpenAIModerationClient();
+
+        // Act
+        await sut.ClassifyTextAsync(text);
+
+        // Assert
+        var request = this.DeserializeRequestContent();
+        Assert.NotNull(request);
+        Assert.Equal(text, request.Input);
+    }
+
+    [Fact]
+    public async Task ItReturnsClassificationContentFromResponseAsync()
+    {
+        // Arrange
+        var sut = this.CreateOpenAIModerationClient();
+
+        // Act
+        var result = await sut.ClassifyTextAsync("text");
+
+        // Assert
+        var sampleResponse = await DeserializeSampleResponseAsync();
+        Assert.NotNull(result);
+        var openAIResult = result.Result as OpenAIClassificationResult;
+        Assert.NotNull(openAIResult);
+        Assert.Equal(sampleResponse!.ModelId, result.ModelId);
+        Assert.Equal(sampleResponse.Results[0].Flagged, openAIResult.Flagged);
+        Assert.Equivalent(sampleResponse.Results[0].CategoryFlags,
+            openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Flagged)));
+        Assert.Equivalent(sampleResponse.Results[0].CategoryScores,
+            openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Score)));
+    }
+
     private OpenAIModerationClient CreateOpenAIModerationClient(
         HttpClient? httpClient = null,
         string modelId = "modelId",
@@ -97,6 +154,12 @@ public sealed class OpenAIModerationClientTests : IDisposable
             endpointProvider: endpointProvider ?? new FakeEndpointProvider(),
             logger: logger);
     }
+
+    private static async Task<OpenAIModerationResponse?> DeserializeSampleResponseAsync()
+        => JsonSerializer.Deserialize<OpenAIModerationResponse>(await File.ReadAllTextAsync(TestDataFilePath));
+
+    private OpenAIModerationRequest? DeserializeRequestContent()
+        => JsonSerializer.Deserialize<OpenAIModerationRequest>(this._messageHandlerStub.RequestContent);
 
     public void Dispose()
     {
