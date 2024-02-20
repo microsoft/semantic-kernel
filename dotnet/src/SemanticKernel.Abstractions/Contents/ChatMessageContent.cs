@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -36,6 +37,7 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// The source of the message that generated it.
     /// </summary>
+    [Experimental("SKEXP0101")]
     public object? Source { get; set; }
 
     /// <summary>
