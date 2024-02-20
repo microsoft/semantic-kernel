@@ -22,6 +22,7 @@ import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunction
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -29,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -576,10 +578,19 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
             isRequired);
     }
 
+    /**
+     * A builder for {@link KernelFunction}.
+     *
+     * @param <T> the return type of the function
+     * @return a new instance of {@link Builder}
+     */
     public static <T> Builder<T> builder() {
         return new Builder<>();
     }
 
+    /**
+     * A builder for {@link KernelFunction}.
+     */
     public static class Builder<T> {
 
         @Nullable
@@ -597,41 +608,89 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
         @Nullable
         private KernelReturnParameterMetadata<?> returnParameter;
 
+        /**
+         * Sets the method to use to build the function.
+         *
+         * @param method the method to use
+         * @return this instance of the {@link Builder} class
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder<T> withMethod(Method method) {
             this.method = method;
             return this;
         }
 
+        /**
+         * Sets the target to use to build the function.
+         *
+         * @param target the target to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withTarget(Object target) {
             this.target = target;
             return this;
         }
 
+        /**
+         * Sets the plugin name to use to build the function.
+         *
+         * @param pluginName the plugin name to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withPluginName(String pluginName) {
             this.pluginName = pluginName;
             return this;
         }
 
+        /**
+         * Sets the function name to use to build the function.
+         *
+         * @param functionName the function name to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withFunctionName(String functionName) {
             this.functionName = functionName;
             return this;
         }
 
+        /**
+         * Sets the description to use to build the function.
+         *
+         * @param description the description to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withDescription(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Sets the parameters to use to build the function.
+         *
+         * @param parameters the parameters to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withParameters(List<KernelParameterMetadata<?>> parameters) {
-            this.parameters = parameters;
+            this.parameters = new ArrayList<>(parameters);
             return this;
         }
 
+        /**
+         * Sets the return parameter to use to build the function.
+         *
+         * @param returnParameter the return parameter to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withReturnParameter(KernelReturnParameterMetadata<?> returnParameter) {
             this.returnParameter = returnParameter;
             return this;
         }
 
+        /**
+         * Builds a new instance of {@link KernelFunction}.
+         *
+         * @return a new instance of {@link KernelFunction}
+         */
         public KernelFunction<T> build() {
 
             if (method == null) {

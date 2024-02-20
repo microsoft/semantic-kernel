@@ -288,8 +288,10 @@ public class Example57_KernelHooks {
         System.out.println("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         // Initialize prompts
-        var firstFunction = KernelFunctionFromPrompt.create("Write a phrase with Invoke.");
-        var secondFunction = KernelFunctionFromPrompt.create("Write a phrase with Cancellation.");
+        var firstFunction = KernelFunctionFromPrompt.<String>builder()
+            .withTemplate("Write a phrase with Invoke.").build();
+        var secondFunction = KernelFunctionFromPrompt.<String>builder()
+            .withTemplate("Write a phrase with Cancellation.").build();
 
         AtomicInteger invokingCounter = new AtomicInteger(0);
         kernel.getGlobalKernelHooks().addHook((FunctionInvokingHook) event -> {

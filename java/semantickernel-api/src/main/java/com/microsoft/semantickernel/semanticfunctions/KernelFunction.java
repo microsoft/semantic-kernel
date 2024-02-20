@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
  * @param <T> The type of the result of the function
  * @see com.microsoft.semantickernel.semanticfunctions
  * @see com.microsoft.semantickernel.plugin
- * @see com.microsoft.semantickernel.plugin.annotations
+ * @see com.microsoft.semantickernel.semanticfunctions.annotations
  */
 public abstract class KernelFunction<T> implements Buildable {
 
@@ -128,7 +128,7 @@ public abstract class KernelFunction<T> implements Buildable {
      * <p>
      * The difference between calling the {@code KernelFunction.invokeAsync} method directly and
      * calling the {@code Kernel.invokeAsync} method is that the latter adds the
-     * {@link KernelHooks#getHooks()} global KernelHooks} (if any) to the {@link InvocationContext}.
+     * global KernelHooks (if any) to the {@link InvocationContext}.
      * Calling {@code KernelFunction.invokeAsync} directly does not add the global hooks.
      *
      * @param kernel            The Kernel containing services, plugins, and other state for use

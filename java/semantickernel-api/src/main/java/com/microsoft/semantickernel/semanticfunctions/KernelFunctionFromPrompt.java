@@ -2,9 +2,8 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.azure.core.exception.HttpResponseException;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.services.TextAIService;
-import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
-import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -13,10 +12,11 @@ import com.microsoft.semantickernel.hooks.PromptRenderingEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceSelection;
+import com.microsoft.semantickernel.services.TextAIService;
+import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,60 +68,6 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         } else {
             return promptConfig.getName();
         }
-    }
-
-    /**
-     * Creates a new instance of {@link KernelFunctionFromPrompt} from a
-     * {@code PromptTemplateConfig}.
-     *
-     * @param promptConfig the configuration for the prompt
-     * @param <T>          the type of the return value of the function
-     * @return a new instance of {@link KernelFunction}
-     */
-    public static <T> KernelFunction<T> create(
-        PromptTemplateConfig promptConfig) {
-        return create(
-            promptConfig,
-            null);
-    }
-
-    /**
-     * Creates a new instance of {@link KernelFunctionFromPrompt} from a
-     * {@code PromptTemplateConfig}, using the {@code PropmptTemplateFactory} to create the prompt
-     * template. If {@code promptTemplateFactory} is {@code null}, a default factory will be used.
-     *
-     * @param promptConfig          the configuration for the prompt
-     * @param promptTemplateFactory the prompt template factory to use for creating the prompt
-     *                              template
-     * @param <T>                   the type of the return value of the function
-     * @return a new instance of {@link KernelFunction}
-     */
-    public static <T> KernelFunction<T> create(
-        PromptTemplateConfig promptConfig,
-        @Nullable PromptTemplateFactory promptTemplateFactory) {
-        if (promptTemplateFactory == null) {
-            promptTemplateFactory = new KernelPromptTemplateFactory();
-        }
-
-        return create(promptTemplateFactory.tryCreate(promptConfig), promptConfig);
-    }
-
-    /**
-     * Creates a new instance of {@link KernelFunctionFromPrompt} from a
-     * {@code PromptTemplateConfig}, using the provided prompt template.
-     *
-     * @param promptTemplate the prompt template to use for the function
-     * @param promptConfig   the configuration for the prompt
-     * @param <T>            the type of the return value of the function
-     * @return a new instance of {@link KernelFunction}
-     */
-    public static <T> KernelFunction<T> create(
-        PromptTemplate promptTemplate,
-        PromptTemplateConfig promptConfig) {
-        return new KernelFunctionFromPrompt<>(
-            promptTemplate,
-            promptConfig,
-            null);
     }
 
     private Flux<FunctionResult<T>> invokeInternalAsync(
@@ -303,53 +249,6 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             .take(1).single();
     }
 
-    public static <T> KernelFunction<T> create(
-        String promptTemplate) {
-        return create(promptTemplate, null, null, null, null, null);
-    }
-
-    /**
-     * Creates a {@link KernelFunction} instance for a prompt specified via a prompt template. If
-     * any of the optional parameters are {@code null}, default values will be used.
-     *
-     * @param promptTemplate        the prompt template for the function
-     * @param executionSettings     the default execution settings to use when invoking this prompt
-     *                              function
-     * @param functionName          the name of the function
-     * @param description           the description of the function
-     * @param templateFormat        the format of the template
-     * @param promptTemplateFactory the prompt template factory to use for creating the prompt
-     *                              template
-     * @param <T>                   the type of the return value of the function
-     * @return a new instance of {@link KernelFunction}
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> KernelFunction<T> create(
-        String promptTemplate,
-        @Nullable Map<String, PromptExecutionSettings> executionSettings,
-        @Nullable String functionName,
-        @Nullable String description,
-        @Nullable String templateFormat,
-        @Nullable PromptTemplateFactory promptTemplateFactory) {
-
-        if (templateFormat == null) {
-            templateFormat = PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
-        }
-
-        if (functionName == null) {
-            functionName = UUID.randomUUID().toString();
-        }
-
-        return (KernelFunction<T>) new KernelFunctionFromPrompt.Builder<>()
-            .withName(functionName)
-            .withDescription(description)
-            .withPromptTemplateFactory(promptTemplateFactory)
-            .withTemplate(promptTemplate)
-            .withTemplateFormat(templateFormat)
-            .withExecutionSettings(executionSettings)
-            .build();
-    }
-
     /**
      * Creates a new instance of {@link Builder}.
      *
@@ -527,8 +426,6 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             PromptTemplate temp;
             if (promptTemplate != null) {
                 temp = promptTemplate;
-            } else if (promptTemplateFactory != null) {
-                temp = promptTemplateFactory.tryCreate(config);
             } else {
                 temp = new KernelPromptTemplateFactory().tryCreate(config);
             }

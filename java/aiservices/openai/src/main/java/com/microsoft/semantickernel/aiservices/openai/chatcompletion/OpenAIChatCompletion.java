@@ -110,7 +110,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         if (kernel != null) {
             kernel.getPlugins()
                 .forEach(plugin -> plugin.getFunctions().forEach((name, function) -> functions
-                    .add(new OpenAIFunction(function.getMetadata(), plugin.getName()))));
+                    .add(OpenAIFunction.build(function.getMetadata(), plugin.getName()))));
         }
 
         // Create copy to avoid reactor exceptions when updating request messages internally

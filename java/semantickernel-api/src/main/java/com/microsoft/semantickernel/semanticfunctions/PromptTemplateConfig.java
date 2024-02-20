@@ -274,19 +274,38 @@ public class PromptTemplateConfig implements Buildable {
         }
     }
 
+    /**
+     * Create a builder for a prompt template config which is a clone of the current object.
+     *
+     * @return The prompt template config builder.
+     */
     public Builder copy() {
         return new Builder(this);
     }
 
+    /**
+     * Create a builder for a prompt template config.
+     *
+     * @return The prompt template config builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Create a builder for a prompt template config, where the constructed template will be
+     * considered the default to be used if no other config is selected.
+     *
+     * @return The default prompt template config.
+     */
     public static Builder defaultTemplateBuilder() {
         return new Builder()
             .withName(DEFAULT_CONFIG_NAME);
     }
 
+    /**
+     * Builder for a prompt template config.
+     */
     public static class Builder {
 
         @Nullable

@@ -49,7 +49,8 @@ public class Example63_ChatCompletionPrompts {
             <message role="system">Respond with JSON.</message>
             """.stripIndent();
 
-        var chatSemanticFunction = KernelFunctionFromPrompt.create(chatPrompt);
+        var chatSemanticFunction = KernelFunctionFromPrompt.<String>builder()
+            .withTemplate(chatPrompt).build();
         var chatPromptResult = kernel.invokeAsync(chatSemanticFunction).block();
 
         System.out.println("Chat Prompt:");

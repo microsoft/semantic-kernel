@@ -16,6 +16,7 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -39,10 +40,25 @@ public class DefaultPromptTemplate implements PromptTemplate {
      *
      * @param promptTemplateConfig The prompt template configuration.
      */
-    public DefaultPromptTemplate(
-        @Nonnull PromptTemplateConfig promptTemplateConfig) {
-        this.blocks = extractBlocks(promptTemplateConfig);
-        this.promptTemplateConfig = addMissingInputVariables(promptTemplateConfig, blocks);
+    private DefaultPromptTemplate(
+        @Nonnull PromptTemplateConfig promptTemplateConfig,
+        @Nonnull List<Block> blocks) {
+        this.promptTemplateConfig = promptTemplateConfig;
+        this.blocks = Collections.unmodifiableList(blocks);
+    }
+
+    /**
+     * Build a new prompt template from the given prompt template configuration.
+     *
+     * @param promptTemplateConfig The prompt template configuration.
+     * @return The new prompt template.
+     */
+    public static DefaultPromptTemplate build(@Nonnull PromptTemplateConfig promptTemplateConfig) {
+
+        List<Block> blocks = extractBlocks(promptTemplateConfig);
+        promptTemplateConfig = addMissingInputVariables(promptTemplateConfig, blocks);
+
+        return new DefaultPromptTemplate(promptTemplateConfig, blocks);
     }
 
     /*

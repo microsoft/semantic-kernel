@@ -18,7 +18,7 @@ public class KernelPromptTemplateFactory implements PromptTemplateFactory {
     public PromptTemplate tryCreate(@Nonnull PromptTemplateConfig templateConfig) {
         switch (templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT)) {
             case SEMANTIC_KERNEL_TEMPLATE_FORMAT:
-                return new DefaultPromptTemplate(templateConfig);
+                return DefaultPromptTemplate.build(templateConfig);
             case HANDLEBARS_TEMPLATE_FORMAT:
                 return new HandlebarsPromptTemplate(templateConfig);
             default:

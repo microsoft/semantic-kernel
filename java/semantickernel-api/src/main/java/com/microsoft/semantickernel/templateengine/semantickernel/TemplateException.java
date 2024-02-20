@@ -10,6 +10,9 @@ import javax.annotation.Nullable;
  */
 public class TemplateException extends SKException {
 
+    /**
+     * Error code.
+     */
     @Nonnull
     private final ErrorCodes errorCode;
 

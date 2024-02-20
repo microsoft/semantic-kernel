@@ -52,8 +52,8 @@ public class Example43_GetModelResult {
 
         // Create function
         String FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
-        KernelFunction<String> myFunction = KernelFunctionFromPrompt.create(
-            FunctionDefinition);
+        KernelFunction<String> myFunction = KernelFunctionFromPrompt.<String>builder()
+            .withTemplate(FunctionDefinition).build();
 
         // Invoke function through kernel
         FunctionResult<String> result = kernel.invokeAsync(

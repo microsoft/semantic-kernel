@@ -130,7 +130,8 @@ public class Example61_MultipleLLMs {
             .withExecutionSettings(modelSettings)
             .build();
 
-        var function = KernelFunctionFromPrompt.create(promptConfig);
+        var function = KernelFunctionFromPrompt.builder().withPromptTemplateConfig(promptConfig)
+            .build();
 
         var result = kernel.invokeAsync(function)
             .withArguments(KernelFunctionArguments.builder().build())
