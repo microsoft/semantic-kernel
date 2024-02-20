@@ -39,7 +39,7 @@ Please note that not all of the model interfaces are defined yet. As part of con
 | P0       | Speech-to-text          | Complete    | `ISpeechRecognition`           | OpenAI API      | TBD          | dmytrostruk | TBD      |
 | P1       | openai-whisper-large-v3 | Not started | `ISpeechRecognition`           | Azure AI        | TBD          | TBD         | TBD      |
 | P1       | openai-whisper-large-v3 | Not started | `ISpeechRecognition`           | Hugging Face    | TBD          | TBD         | TBD      |
-| P2       | Moderation              | Not started | `ITextClassification`          | OpenAI API      | TBD          | TBD         | TBD      |
+| P2       | Moderation              | In Progress | `ITextClassification`          | OpenAI API      | #5062        | Krzysztof318 | MarkWallace |
 | P2       | clip-vit-base-patch32   | Not started | `IZeroShotImageClassification` | Azure AI        | TBD          | TBD         | TBD      |
 | P2       | clip-vit-base-patch32   | Not started | `IZeroShotImageClassification` | Hugging Face    | TBD          | TBD         | TBD      |
 
