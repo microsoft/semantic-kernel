@@ -116,7 +116,7 @@ public class Example84_AzureAISearchPlugin : BaseTest
     }
 
     /// <summary>
-    /// Implementation of Azure AI Search service. 
+    /// Implementation of Azure AI Search service.
     /// </summary>
     private sealed class AzureAISearchService : IAzureAISearchService
     {
