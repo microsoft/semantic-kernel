@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.TextClassification;
@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.TextClassification;
 /// <summary>
 /// Interface for text classification services.
 /// </summary>
+[Experimental("SKEXP0006")]
 public interface ITextClassification : IAIService
 {
     /// <summary>

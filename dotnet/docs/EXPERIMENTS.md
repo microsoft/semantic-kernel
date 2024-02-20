@@ -17,6 +17,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0003: Memory connectors
 - SKEXP0004: Kernel Filters
 - SKEXP0005: Audio services
+- SKEXP0006: Classification services
 
 ## OpenAI and Azure OpenAI services
 
@@ -26,6 +27,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0013: OpenAI parameters
 - SKEXP0014: OpenAI chat history extension
 - SKEXP0015: OpenAI file service
+- SKEXP0016: OpenAI moderation service
 
 ## Memory connectors
 

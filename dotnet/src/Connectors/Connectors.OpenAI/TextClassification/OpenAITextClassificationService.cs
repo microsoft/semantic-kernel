@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// OpenAI text classification service.
 /// </summary>
+[Experimental("SKEXP0016")]
 public sealed class OpenAITextClassificationService : ITextClassification
 {
     private readonly Dictionary<string, object?> _attributes = new();
