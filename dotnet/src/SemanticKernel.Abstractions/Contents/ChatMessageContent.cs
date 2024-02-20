@@ -72,10 +72,16 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Chat message content items
     /// </summary>
-    public ChatMessageContentItemCollection Items =>
-        this._items ??
-        Interlocked.CompareExchange(ref this._items, new ChatMessageContentItemCollection(), null) ??
-        this._items;
+    public ChatMessageContentItemCollection Items
+    {
+        get
+        {
+            return this._items ??
+                Interlocked.CompareExchange(ref this._items, new ChatMessageContentItemCollection(), null) ??
+                this._items;
+        }
+        set { this._items = value ?? new ChatMessageContentItemCollection(); }
+    }
 
     /// <summary>
     /// The encoding of the text content.
