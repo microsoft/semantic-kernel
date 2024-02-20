@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// OpenAI text classification service.
 /// </summary>
 [Experimental("SKEXP0016")]
-public sealed class OpenAITextClassificationService : ITextClassification
+public sealed class OpenAITextClassificationService : ITextClassificationService
 {
     private readonly Dictionary<string, object?> _attributes = new();
     private readonly IOpenAIModerationClient _client;

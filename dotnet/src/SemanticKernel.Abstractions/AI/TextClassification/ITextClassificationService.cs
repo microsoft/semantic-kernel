@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.TextClassification;
 /// Interface for text classification services.
 /// </summary>
 [Experimental("SKEXP0006")]
-public interface ITextClassification : IAIService
+public interface ITextClassificationService : IAIService
 {
     /// <summary>
     /// Classify text.
