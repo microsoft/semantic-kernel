@@ -1,5 +1,6 @@
 from pytest import mark, raises
 
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
@@ -16,17 +17,40 @@ from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 
-class TestCodeBlock:
+def test_init():
+    target = CodeBlock(
+        content="plugin.function 'value'  arg1=$arg1",
+    )
+    assert len(target.tokens) == 3
+    assert target.tokens[0] == FunctionIdBlock(content="plugin.function")
+    assert target.tokens[1] == ValBlock(content="'value'")
+    assert target.tokens[2] == NamedArgBlock(content="arg1=$arg1")
+    assert target.type == BlockTypes.CODE
+
+
+class TestCodeBlockRendering:
     def setup_method(self):
         self.kernel = Kernel()
+
+    @mark.asyncio
+    async def test_it_throws_if_a_plugins_are_empty(self):
+        target = CodeBlock(
+            content="functionName",
+        )
+        assert target.tokens[0].type == BlockTypes.FUNCTION_ID
+        with raises(ValueError, match="Plugin collection not set in kernel"):
+            await target.render_code(self.kernel, KernelArguments())
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self):
         target = CodeBlock(
             content="functionName",
         )
-
-        with raises(ValueError):
+        assert target.tokens[0].type == BlockTypes.FUNCTION_ID
+        self.kernel.plugins = KernelPluginCollection()
+        dkp = KernelPlugin(name="test", functions=[])
+        self.kernel.plugins.add(dkp)
+        with raises(ValueError, match="Function `functionName` not found"):
             await target.render_code(self.kernel, KernelArguments())
 
     @mark.asyncio
@@ -54,118 +78,17 @@ class TestCodeBlock:
             content="functionName",
         )
 
-        with raises(ValueError):
+        with raises(AIException):
             await target.render_code(kernel, KernelArguments())
-
-    def test_it_has_the_correct_type(self):
-        assert (
-            CodeBlock(
-                content="",
-            ).type
-            == BlockTypes.CODE
-        )
-
-    def test_it_trims_spaces(self):
-        assert (
-            CodeBlock(
-                content="  aa  ",
-            ).content
-            == "aa"
-        )
-
-    def test_it_checks_validity_of_internal_blocks(self):
-        valid_block1 = FunctionIdBlock(content="plug.func")
-
-        valid_block2 = ValBlock(content="''")
-        invalid_block = VarBlock(content="!notvalid")
-
-        code_block1 = CodeBlock(
-            tokens=[valid_block1, valid_block2],
-            content="",
-        )
-        code_block2 = CodeBlock(
-            tokens=[valid_block1, invalid_block],
-            content="",
-        )
-
-        is_valid1, _ = code_block1.is_valid()
-        is_valid2, _ = code_block2.is_valid()
-
-        assert is_valid1
-        assert not is_valid2
-
-    def test_it_requires_a_valid_function_call(self):
-        func_id = FunctionIdBlock(content="funcName")
-
-        val_block = ValBlock(content="'value'")
-        var_block = VarBlock(content="$var")
-        named_arg_block = NamedArgBlock(content="arg1=$arg1")
-
-        code_block1 = CodeBlock(
-            tokens=[func_id, val_block],
-            content="",
-        )
-        code_block2 = CodeBlock(
-            tokens=[func_id, var_block],
-            content="",
-        )
-        code_block3 = CodeBlock(
-            tokens=[func_id, var_block, named_arg_block],
-            content="",
-        )
-        code_block4 = CodeBlock(
-            tokens=[func_id, val_block, named_arg_block],
-            content="",
-        )
-        code_block5 = CodeBlock(
-            tokens=[func_id, named_arg_block],
-            content="",
-        )
-        code_block6 = CodeBlock(
-            tokens=[func_id, func_id],
-            content="",
-        )
-        code_block7 = CodeBlock(
-            tokens=[func_id, var_block, var_block],
-            content="",
-        )
-
-        is_valid1, _ = code_block1.is_valid()
-        is_valid2, _ = code_block2.is_valid()
-        is_valid3, _ = code_block3.is_valid()
-        is_valid4, _ = code_block4.is_valid()
-        is_valid5, _ = code_block5.is_valid()
-
-        is_valid6, _ = code_block6.is_valid()
-        is_valid7, _ = code_block7.is_valid()
-
-        assert is_valid1
-        assert is_valid2
-        assert is_valid3
-        assert is_valid4
-        assert is_valid5
-
-        assert not is_valid6
-        assert not is_valid7
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_var_block1(self):
         code_block = CodeBlock(
-            content="$varName",
+            content="$var",
         )
-        result = await code_block.render_code(self.kernel, KernelArguments(varName="foo"))
+        result = await code_block.render_code(self.kernel, KernelArguments(var="foo"))
 
         assert result == "foo"
-
-    @mark.asyncio
-    async def test_it_renders_code_block_consisting_of_just_a_var_block2(self):
-        code_block = CodeBlock(
-            tokens=[VarBlock(content="$varName")],
-            content="",
-        )
-        result = await code_block.render_code(self.kernel, KernelArguments(varName="bar"))
-
-        assert result == "bar"
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block1(self):
@@ -175,16 +98,6 @@ class TestCodeBlock:
         result = await code_block.render_code(self.kernel, KernelArguments())
 
         assert result == "ciao"
-
-    @mark.asyncio
-    async def test_it_renders_code_block_consisting_of_just_a_val_block2(self):
-        code_block = CodeBlock(
-            tokens=[ValBlock(content="'arrivederci'")],
-            content="",
-        )
-        result = await code_block.render_code(self.kernel, KernelArguments())
-
-        assert result == "arrivederci"
 
     @mark.asyncio
     async def test_it_invokes_function_cloning_all_variables(self):
@@ -395,7 +308,7 @@ class TestCodeBlock:
         code_block = CodeBlock(
             content=" ",
             tokens=[
-                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName", validated=True),
+                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName"),
                 NamedArgBlock(content="arg1=$arg1"),
                 NamedArgBlock(content='arg2="arg2"'),
             ],
@@ -435,3 +348,191 @@ class TestCodeBlock:
         assert str(result) == "arg1"
         # Check that the canary value matches the value
         assert canary == "arg1 arg2"
+
+    @mark.asyncio
+    async def test_it_fails_on_function_without_args(self):
+        code_block = CodeBlock(
+            content=" ",
+            tokens=[
+                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName"),
+                NamedArgBlock(content="arg1=$arg1"),
+                NamedArgBlock(content='arg2="arg2"'),
+            ],
+        )
+
+        def invoke():
+            return "function without args"
+
+        # Create an KernelFunction with the invoke function as its delegate
+        function = KernelFunction(
+            function=invoke,
+            plugin_name="test",
+            function_name="funcName",
+            description="",
+            parameters=[],
+            return_parameter=None,
+            is_semantic=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+
+        # Create a CodeBlock with the FunctionIdBlock and ValBlock,
+        # and render it with the context
+        with raises(
+            ValueError,
+            match="Function test.funcName does not take any arguments but it is being called in the template with 2 arguments.",
+        ):
+            await code_block.render_code(kernel, KernelArguments(arg1="arg1"))
+
+
+@mark.parametrize(
+    "token2",
+    [
+        "",
+        "arg2=$arg!2",
+        "arg2='va\"l'",
+    ],
+    ids=[
+        "empty",
+        "invalid_named_arg",
+        "invalid_named_arg_val",
+    ],
+)
+@mark.parametrize(
+    "token1",
+    [
+        "",
+        "$var!",
+        "\"val'",
+        "arg1=$arg!1",
+        "arg1='va\"l'",
+    ],
+    ids=[
+        "empty",
+        "invalid_var",
+        "invalid_val",
+        "invalid_named_arg",
+        "invalid_named_arg_val",
+    ],
+)
+@mark.parametrize(
+    "token0",
+    [
+        "plugin.func.test",
+        "$var!",
+        '"va"l"',
+    ],
+    ids=[
+        "invalid_func",
+        "invalid_var",
+        "invalid_val",
+    ],
+)
+def test_block_validation(token0, token1, token2):
+    with raises(ValueError):
+        CodeBlock(
+            content=f"{token0} {token1} {token2}",
+        )
+
+
+@mark.parametrize(
+    "token2, token2valid",
+    [
+        ("", True),
+        ("plugin.func", False),
+        ("$var", False),
+        ('"val"', False),
+        ("arg1=$arg1", True),
+        ("arg1='val'", True),
+    ],
+    ids=[
+        "empty",
+        "func_invalid",
+        "invalid_var",
+        "invalid_val",
+        "valid_named_arg",
+        "valid_named_arg_val",
+    ],
+)
+@mark.parametrize(
+    "token1, token1valid",
+    [
+        ("", True),
+        ("plugin.func", False),
+        ("$var", True),
+        ('"val"', True),
+        ("arg1=$arg1", True),
+        ("arg1='val'", True),
+    ],
+    ids=[
+        "empty",
+        "func_invalid",
+        "var",
+        "val",
+        "valid_named_arg",
+        "valid_named_arg_val",
+    ],
+)
+@mark.parametrize(
+    "token0, token0valid",
+    [
+        ("func", True),
+        ("plugin.func", True),
+        ("$var", True),
+        ('"val"', True),
+        ("arg1=$arg1", False),
+        ("arg1='val'", False),
+    ],
+    ids=[
+        "single_name_func",
+        "FQN_func",
+        "var",
+        "val",
+        "invalid_named_arg",
+        "invalid_named_arg_val",
+    ],
+)
+def test_positional_validation(token0, token0valid, token1, token1valid, token2, token2valid):
+    if not token1 and not token2valid:
+        mark.skipif(f"{token0} {token1} {token2}", reason="Not applicable")
+        return
+    valid = token0valid and token1valid and token2valid
+    if token0 in ["$var", '"val"']:
+        valid = True
+    content = f"{token0} {token1} {token2}"
+    if valid:
+        target = CodeBlock(
+            content=content,
+        )
+        assert target.content == content.strip()
+    else:
+        with raises(ValueError):
+            CodeBlock(
+                content=content,
+            )
+
+
+@mark.parametrize(
+    "case, result",
+    [
+        (r"{$a", False),
+    ],
+)
+def test_edge_cases(case, result):
+    if result:
+        target = CodeBlock(
+            content=case,
+        )
+        assert target.content == case
+    else:
+        with raises(ValueError):
+            CodeBlock(
+                content=case,
+            )
+
+
+def test_no_tokens():
+    with raises(ValueError):
+        CodeBlock(content="", tokens=[])

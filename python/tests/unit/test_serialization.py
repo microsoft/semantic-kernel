@@ -29,17 +29,10 @@ from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
-from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
-from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
-from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
-from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
-    PromptTemplatingEngine,
-)
-from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
-from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
@@ -80,11 +73,9 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         CodeBlock: CodeBlock(content="foo"),
         FunctionIdBlock: FunctionIdBlock(content="bar"),
         TextBlock: TextBlock(content="baz"),
-        ValBlock: ValBlock(content="qux"),
-        VarBlock: VarBlock(content="quux"),
-        CodeTokenizer: CodeTokenizer(),
-        PromptTemplateEngine: PromptTemplateEngine(),
-        TemplateTokenizer: TemplateTokenizer(),
+        ValBlock: ValBlock(content="'qux'"),
+        VarBlock: VarBlock(content="$quux"),
+        NamedArgBlock: NamedArgBlock(content="foo='bar'"),
         KernelParameterMetadata: KernelParameterMetadata(
             name="foo",
             description="bar",
@@ -121,9 +112,6 @@ PROTOCOLS = [
     TimePlugin,
     WaitPlugin,
     pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
-    CodeRenderer,
-    PromptTemplatingEngine,
-    TextRenderer,
 ]
 
 BASE_CLASSES = [
@@ -131,9 +119,6 @@ BASE_CLASSES = [
 ]
 
 STATELESS_CLASSES = [
-    CodeTokenizer,
-    PromptTemplateEngine,
-    TemplateTokenizer,
     NullMemory,
 ]
 
@@ -148,6 +133,7 @@ PYDANTIC_MODELS = [
     TextBlock,
     ValBlock,
     VarBlock,
+    NamedArgBlock,
     KernelParameterMetadata,
     KernelFunctionMetadata,
     KernelPluginCollection,

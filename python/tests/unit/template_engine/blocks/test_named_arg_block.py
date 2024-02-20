@@ -8,7 +8,6 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
-from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
@@ -18,7 +17,7 @@ logger = logging.getLogger(__name__)
 def test_init_with_var():
     named_arg_block = NamedArgBlock(content="test=$test_var")
     assert named_arg_block.content == "test=$test_var"
-    assert named_arg_block.name.name == "test"
+    assert named_arg_block.name == "test"
     assert named_arg_block.value.content == "$test_var"
     assert isinstance(named_arg_block.value, VarBlock)
 
@@ -26,7 +25,7 @@ def test_init_with_var():
 def test_init_with_val():
     named_arg_block = NamedArgBlock(content="test='test_val'")
     assert named_arg_block.content == "test='test_val'"
-    assert named_arg_block.name.name == "test"
+    assert named_arg_block.name == "test"
     assert named_arg_block.value.value == "test_val"
     assert isinstance(named_arg_block.value, ValBlock)
 
@@ -36,31 +35,14 @@ def test_type_property():
     assert named_arg_block.type == BlockTypes.NAMED_ARG
 
 
-def test_is_valid():
-    named_arg_block = NamedArgBlock(content="test=$test_var")
-    is_valid, error_msg = named_arg_block.is_valid()
-    assert is_valid
-    assert error_msg == ""
-
-
 def test_is_valid_no_name():
-    named_arg_block = NamedArgBlock(content="='test_var'")
-    is_valid, error_msg = named_arg_block.is_valid()
-    assert not is_valid
-    assert (
-        error_msg
-        == f"The variable name '='test_var'' contains invalid characters. Should have a '{Symbols.NAMED_ARG_BLOCK_SEPARATOR}' and a proper name for the argument and a value,with or without the symbol '{Symbols.VAR_PREFIX}'"
-    )
+    with raises(ValueError):
+        NamedArgBlock(content="=$test_var")
 
 
 def test_is_valid_invalid_characters():
-    named_arg_block = NamedArgBlock(content="test=$test-var")
-    is_valid, error_msg = named_arg_block.is_valid()
-    assert not is_valid
-    assert (
-        error_msg
-        == f"The variable name 'test=$test-var' contains invalid characters. Should have a '{Symbols.NAMED_ARG_BLOCK_SEPARATOR}' and a proper name for the argument and a value,with or without the symbol '{Symbols.VAR_PREFIX}'"
-    )
+    with raises(ValueError):
+        NamedArgBlock(content="test=$test-var")
 
 
 def test_render():
@@ -75,25 +57,21 @@ def test_render_variable_not_found():
     assert rendered_value == ""
 
 
-def test_init_minimal():
-    block = NamedArgBlock(content="a=$")
-    assert block.name.name == "a"
-    assert block.value.name == ""
+def test_init_minimal_var():
+    block = NamedArgBlock(content="a=$a")
+    assert block.name == "a"
+    assert block.value.name == "a"
+
+
+def test_init_minimal_val():
+    block = NamedArgBlock(content="a='a'")
+    assert block.name == "a"
+    assert block.value.value == "a"
 
 
 def test_init_empty():
-    block = NamedArgBlock(content="")
-    assert block.content == ""
-
-
-def test_init_empty_is_valid():
-    block = NamedArgBlock(content="")
-    is_valid, error_msg = block.is_valid()
-    assert not is_valid
-    assert error_msg == (
-        f"A variable must be at least three characters, with a {Symbols.NAMED_ARG_BLOCK_SEPARATOR}"
-        f"and a valid name for the argument and a value, with or without the symbol {Symbols.VAR_PREFIX}"
-    )
+    with raises(ValueError):
+        NamedArgBlock(content="")
 
 
 def test_it_trims_spaces():

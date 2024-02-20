@@ -3,7 +3,6 @@
 import logging
 from typing import List
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -23,15 +22,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [value]          ::= "'" [text] "'" | '"' [text] '"'
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
-class CodeTokenizer(KernelBaseModel):
-    @classmethod
-    def tokenize(cls, text: str) -> List[Block]:
+class CodeTokenizer:
+    @staticmethod
+    def tokenize(text: str) -> List[Block]:
         # Remove spaces, which are ignored anyway
         text = text.strip() if text else ""
-
         # Render None/empty to []
-        if not text or text == "":
+        if not text:
             return []
+        # 1 char only edge case, var and val blocks are invalid with one char, so it must be a function id block
+        if len(text) == 1:
+            return [FunctionIdBlock(content=text)]
 
         # Track what type of token we're reading
         current_token_type = None
@@ -41,32 +42,19 @@ class CodeTokenizer(KernelBaseModel):
 
         # Other state we need to track
         text_value_delimiter = None
-        blocks = []
-        next_char = text[0]
         space_separator_found = False
         skip_next_char = False
 
-        # 1 char only edge case
-        if len(text) == 1:
-            if next_char == Symbols.VAR_PREFIX:
-                blocks.append(VarBlock(content=text))
-            elif next_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
-                blocks.append(ValBlock(content=text))
-            else:
-                blocks.append(FunctionIdBlock(content=text))
-
-            return blocks
-
-        for next_char_cursor in range(1, len(text)):
-            current_char = next_char
-            next_char = text[next_char_cursor]
+        blocks = []
+        for index, current_char in enumerate(text[:-1], start=1):
+            next_char = text[index]
 
             if skip_next_char:
                 skip_next_char = False
                 continue
 
             # First char is easy
-            if next_char_cursor == 1:
+            if index == 1:
                 if current_char == Symbols.VAR_PREFIX:
                     current_token_type = BlockTypes.VARIABLE
                 elif current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
@@ -84,7 +72,11 @@ class CodeTokenizer(KernelBaseModel):
                 #  - skip the current char (escape char)
                 #  - add the next char (special char)
                 #  - jump to the one after (to handle "\\" properly)
-                if current_char == Symbols.ESCAPE_CHAR and cls._can_be_escaped(next_char):
+                if current_char == Symbols.ESCAPE_CHAR and next_char in (
+                    Symbols.DBL_QUOTE,
+                    Symbols.SGL_QUOTE,
+                    Symbols.ESCAPE_CHAR,
+                ):
                     current_token_content.append(next_char)
                     skip_next_char = True
                     continue
@@ -102,7 +94,12 @@ class CodeTokenizer(KernelBaseModel):
 
             # If we're not between quotes, a space signals the end of the current token
             # Note: there might be multiple consecutive spaces
-            if cls._is_blank_space(current_char):
+            if current_char in (
+                Symbols.SPACE,
+                Symbols.NEW_LINE,
+                Symbols.CARRIAGE_RETURN,
+                Symbols.TAB,
+            ):
                 if current_token_type == BlockTypes.VARIABLE:
                     blocks.append(VarBlock(content="".join(current_token_content)))
                     current_token_content.clear()
@@ -136,6 +133,8 @@ class CodeTokenizer(KernelBaseModel):
                     # A function id starts here
                     current_token_type = BlockTypes.FUNCTION_ID
 
+        # end of main for loop
+
         # Capture last token
         current_token_content.append(next_char)
 
@@ -152,20 +151,3 @@ class CodeTokenizer(KernelBaseModel):
             raise ValueError("Tokens must be separated by one space least")
 
         return blocks
-
-    @staticmethod
-    def _is_blank_space(c: str) -> bool:
-        return c in (
-            Symbols.SPACE,
-            Symbols.NEW_LINE,
-            Symbols.CARRIAGE_RETURN,
-            Symbols.TAB,
-        )
-
-    @staticmethod
-    def _can_be_escaped(c: str) -> bool:
-        return c in (
-            Symbols.DBL_QUOTE,
-            Symbols.SGL_QUOTE,
-            Symbols.ESCAPE_CHAR,
-        )

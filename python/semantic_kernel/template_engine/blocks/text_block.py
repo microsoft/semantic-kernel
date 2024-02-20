@@ -48,8 +48,5 @@ class TextBlock(Block):
 
         return cls(content=text)
 
-    def is_valid(self) -> Tuple[bool, str]:
-        return True, ""
-
     def render(self, *_: Tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
         return self.content

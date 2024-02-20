@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from re import compile
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
 
-from pydantic import Field
+from pydantic import model_validator
 
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.blocks.symbols import Symbols
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -15,37 +15,31 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+VAL_BLOCK_REGEX = r"^(?P<quote>[\"'])(?P<value>.*)(?P=quote)$"
+
+VAL_BLOCK_MATCHER = compile(VAL_BLOCK_REGEX)
+
 
 class ValBlock(Block):
     type: ClassVar[BlockTypes] = BlockTypes.VALUE
-    first: str = Field("\0", init=False, exclude=True)
-    last: str = Field("\0", init=False, exclude=True)
-    value: str = Field("", init=False, exclude=True)
+    value: Optional[str] = ""
+    quote: Optional[str] = "'"
 
-    def model_post_init(self, __context: Any):
-        if len(self.content) < 2:
-            logger.error("A value must have single quotes or double quotes on both sides")
-            return
-        self.first = self.content[0]
-        self.last = self.content[-1]
-        self.value = self.content[1:-1]
-
-    def is_valid(self) -> Tuple[bool, str]:
-        if self.first not in [Symbols.DBL_QUOTE.value, Symbols.SGL_QUOTE.value]:
-            error_msg = "A value must be wrapped in either single quotes or double quotes"
-            logger.error(error_msg)
-            return False, error_msg
-
-        if self.first != self.last:
-            error_msg = "A value must be defined using either single quotes or " "double quotes, not both"
-            logger.error(error_msg)
-            return False, error_msg
-
-        return True, ""
+    @model_validator(mode="before")
+    @classmethod
+    def parse_content(cls, fields: Any) -> Any:
+        # when a instance is used as a field this method is called as well
+        if isinstance(fields, Block) or "value" in fields:
+            return fields
+        content = fields.get("content", "").strip()
+        matches = VAL_BLOCK_MATCHER.match(content)
+        if not matches:
+            raise ValueError("The content should be a valid value block.")
+        if value := matches.groupdict().get("value"):
+            fields["value"] = value
+        if quote := matches.groupdict().get("quote"):
+            fields["quote"] = quote
+        return fields
 
     def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
         return self.value
-
-    @staticmethod
-    def has_val_prefix(text: Optional[str]) -> bool:
-        return text is not None and len(text) > 0 and (text[0] == Symbols.DBL_QUOTE or text[0] == Symbols.SGL_QUOTE)

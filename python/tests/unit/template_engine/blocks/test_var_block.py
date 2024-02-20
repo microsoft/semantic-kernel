@@ -7,7 +7,6 @@ from pytest import mark, raises
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 logger = logging.getLogger(__name__)
@@ -16,35 +15,18 @@ logger = logging.getLogger(__name__)
 def test_init():
     var_block = VarBlock(content="$test_var")
     assert var_block.content == "$test_var"
-
-
-def test_type_property():
-    var_block = VarBlock(content="$test_var")
+    assert var_block.name == "test_var"
     assert var_block.type == BlockTypes.VARIABLE
 
 
-def test_is_valid():
-    var_block = VarBlock(content="$test_var")
-    is_valid, error_msg = var_block.is_valid()
-    assert is_valid
-    assert error_msg == ""
-
-
-def test_is_valid_no_prefix():
-    var_block = VarBlock(content="test_var")
-    is_valid, error_msg = var_block.is_valid()
-    assert not is_valid
-    assert error_msg == f"A variable must start with the symbol {Symbols.VAR_PREFIX}"
+def test_no_prefix():
+    with raises(ValueError):
+        VarBlock(content="test_var")
 
 
 def test_is_valid_invalid_characters():
-    var_block = VarBlock(content="$test-var")
-    is_valid, error_msg = var_block.is_valid()
-    assert not is_valid
-    assert (
-        error_msg
-        == "The variable name 'test-var' contains invalid characters. Only alphanumeric chars and underscores are allowed."
-    )
+    with raises(ValueError):
+        VarBlock(content="$test-var")
 
 
 def test_render():
@@ -59,10 +41,9 @@ def test_render_variable_not_found():
     assert rendered_value == ""
 
 
-def test_init_empty():
-    block = VarBlock(content="$")
-
-    assert block.name == ""
+def test_init_only_prefix():
+    with raises(ValueError):
+        VarBlock(content="$")
 
 
 def test_it_trims_spaces():
@@ -72,34 +53,17 @@ def test_it_trims_spaces():
 def test_it_ignores_spaces_around():
     target = VarBlock(content="  $var \n ")
     assert target.content == "$var"
+    assert target.name == "var"
 
 
-def test_it_renders_to_empty_string_without_variables():
-    target = VarBlock(content="  $var \n ")
-    result = target.render(None)
+def test_render_no_args():
+    target = VarBlock(content="$var")
+    result = target.render(Kernel())
     assert result == ""
-
-
-def test_it_renders_to_empty_string_if_variable_is_missing():
-    target = VarBlock(content="  $var \n ")
-    result = target.render(Kernel(), KernelArguments(foo="bar"))
-    assert result == ""
-
-
-def test_it_renders_to_variable_value_when_available():
-    target = VarBlock(content="  $var \n ")
-    result = target.render(Kernel(), KernelArguments(foo="bar", var="able"))
-    assert result == "able"
-
-
-def test_it_throws_if_the_var_name_is_empty():
-    with raises(ValueError):
-        target = VarBlock(content=" $ ")
-        target.render(Kernel(), KernelArguments(foo="bar", var="able"))
 
 
 @mark.parametrize(
-    "name, is_valid",
+    "name, parses",
     [
         ("0", True),
         ("1", True),
@@ -147,11 +111,12 @@ def test_it_throws_if_the_var_name_is_empty():
         ("a\\b", False),
     ],
 )
-def test_it_allows_underscore_letters_and_digits(name, is_valid):
+def test_it_allows_underscore_letters_and_digits(name, parses):
+    if not parses:
+        with raises(ValueError):
+            VarBlock(content=f"${name}")
+        return
     target = VarBlock(content=f" ${name} ")
     result = target.render(Kernel(), KernelArguments(**{name: "value"}))
-
-    assert target.is_valid()[0] == is_valid
-    if is_valid:
-        assert target.name == name
-        assert result == "value"
+    assert target.name == name
+    assert result == "value"

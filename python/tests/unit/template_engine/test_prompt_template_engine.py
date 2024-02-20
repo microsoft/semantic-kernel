@@ -25,11 +25,22 @@ def plugins():
     return Mock(spec=KernelPluginCollection)
 
 
+def test_extract_from_empty(target: PromptTemplateEngine):
+    blocks = target.extract_blocks(None)
+    assert len(blocks) == 0
+
+    blocks = target.extract_blocks("")
+    assert len(blocks) == 0
+
+
 def test_it_renders_variables(target: PromptTemplateEngine, plugins):
     kernel = Kernel(plugins=plugins)
     arguments = KernelArguments()
 
-    template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}"
+    template = (
+        "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} "
+        "template {{foo}}{{bar $a}}{{baz $_a arg1=$arg}}{{yay $x11}}"
+    )
 
     blocks = target.extract_blocks(template)
     updated_blocks = target.render_variables(blocks, kernel, arguments)
@@ -57,8 +68,8 @@ def test_it_renders_variables(target: PromptTemplateEngine, plugins):
     assert blocks[6].type == BlockTypes.CODE
     assert updated_blocks[6].type == BlockTypes.CODE
 
-    assert blocks[7].content == "baz $_a"
-    assert updated_blocks[7].content == "baz $_a"
+    assert blocks[7].content == "baz $_a arg1=$arg"
+    assert updated_blocks[7].content == "baz $_a arg1=$arg"
     assert blocks[7].type == BlockTypes.CODE
     assert updated_blocks[7].type == BlockTypes.CODE
 
@@ -95,8 +106,8 @@ def test_it_renders_variables(target: PromptTemplateEngine, plugins):
     assert blocks[6].type == BlockTypes.CODE
     assert updated_blocks[6].type == BlockTypes.CODE
 
-    assert blocks[7].content == "baz $_a"
-    assert updated_blocks[7].content == "baz $_a"
+    assert blocks[7].content == "baz $_a arg1=$arg"
+    assert updated_blocks[7].content == "baz $_a arg1=$arg"
     assert blocks[7].type == BlockTypes.CODE
     assert updated_blocks[7].type == BlockTypes.CODE
 
@@ -104,6 +115,31 @@ def test_it_renders_variables(target: PromptTemplateEngine, plugins):
     assert updated_blocks[8].content == "yay $x11"
     assert blocks[8].type == BlockTypes.CODE
     assert updated_blocks[8].type == BlockTypes.CODE
+
+
+@mark.asyncio
+async def test_it_renders_code(target: PromptTemplateEngine):
+    kernel = Kernel()
+    arguments = KernelArguments()
+
+    @kernel_function(name="function")
+    def my_function(arguments: KernelArguments) -> str:
+        return f"F({arguments.get('_a')}-{arguments.get('arg1')})"
+
+    func = KernelFunction.from_native_method(my_function, "test")
+    assert func is not None
+    kernel.plugins.add_plugin_from_functions("test", [func])
+
+    arguments["_a"] = "foo"
+    arguments["arg"] = "bar"
+    template = "template {{'val'}}{{test.function $_a arg1=$arg}}"
+
+    blocks = target.extract_blocks(template)
+    result = await target.render_code(blocks, kernel, arguments)
+    assert result[0] == blocks[0]
+    assert result[1] == blocks[1]
+    assert result[2].type == BlockTypes.TEXT
+    assert result[2].content == "F(foo-bar)"
 
 
 @mark.asyncio

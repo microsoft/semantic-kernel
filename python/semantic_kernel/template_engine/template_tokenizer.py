@@ -3,9 +3,6 @@
 import logging
 from typing import List
 
-from pydantic import Field
-
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -24,10 +21,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 #                      | "{{" [function-call] "}}"
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
-class TemplateTokenizer(KernelBaseModel):
-    code_tokenizer: CodeTokenizer = Field(default_factory=CodeTokenizer, init=False)
-
-    def tokenize(self, text: str) -> List[Block]:
+class TemplateTokenizer:
+    @staticmethod
+    def tokenize(text: str) -> List[Block]:
+        code_tokenizer = CodeTokenizer()
         # An empty block consists of 4 chars: "{{}}"
         EMPTY_CODE_BLOCK_LENGTH = 4
         # A block shorter than 5 chars is either empty or
@@ -37,7 +34,7 @@ class TemplateTokenizer(KernelBaseModel):
         text = text or ""
 
         # Render None/empty to ""
-        if not text or text == "":
+        if not text:
             return [TextBlock.from_text("")]
 
         # If the template is "empty" return it as a text block
@@ -51,13 +48,11 @@ class TemplateTokenizer(KernelBaseModel):
         inside_text_value = False
         text_value_delimiter = None
         skip_next_char = False
-        next_char = text[0]
 
-        for next_char_cursor in range(1, len(text)):
-            current_char_pos = next_char_cursor - 1
-            cursor = next_char_cursor
-            current_char = next_char
-            next_char = text[next_char_cursor]
+        # for next_char_cursor in range(1, len(text)):
+        for current_char_pos, current_char in enumerate(text[:-1]):
+            next_char_pos = current_char_pos + 1
+            next_char = text[next_char_pos]
 
             if skip_next_char:
                 skip_next_char = False
@@ -74,7 +69,12 @@ class TemplateTokenizer(KernelBaseModel):
             if block_start_found:
                 # While inside a text value, when the end quote is found
                 if inside_text_value:
-                    if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(next_char):
+                    # If the current char is escaping the next special char we skip
+                    if current_char == Symbols.ESCAPE_CHAR and next_char in (
+                        Symbols.DBL_QUOTE,
+                        Symbols.SGL_QUOTE,
+                        Symbols.ESCAPE_CHAR,
+                    ):
                         skip_next_char = True
                         continue
 
@@ -87,7 +87,7 @@ class TemplateTokenizer(KernelBaseModel):
                         text_value_delimiter = current_char
                     # If the block ends here
                     elif current_char == Symbols.BLOCK_ENDER and next_char == Symbols.BLOCK_ENDER:
-                        # If there is plain text between the current
+                        # If there is plain text before the current
                         # var/val/code block and the previous one,
                         # add it as a text block
                         if block_start_pos > end_of_last_block:
@@ -100,7 +100,7 @@ class TemplateTokenizer(KernelBaseModel):
                             )
 
                         # Extract raw block
-                        content_with_delimiters = text[block_start_pos : cursor + 1]  # noqa: E203
+                        content_with_delimiters = text[block_start_pos : next_char_pos + 1]  # noqa: E203
                         # Remove "{{" and "}}" delimiters and trim whitespace
                         content_without_delimiters = content_with_delimiters[2:-2].strip()
 
@@ -109,7 +109,11 @@ class TemplateTokenizer(KernelBaseModel):
                             # a TextBlock
                             blocks.append(TextBlock.from_text(content_with_delimiters))
                         else:
-                            code_blocks = self.code_tokenizer.tokenize(content_without_delimiters)
+                            try:
+                                code_blocks = code_tokenizer.tokenize(content_without_delimiters)
+                            except ValueError as e:
+                                logger.warning(f"Failed to tokenize code block: {content_without_delimiters}. {e}")
+                                raise e
 
                             first_block_type = code_blocks[0].type
 
@@ -139,7 +143,7 @@ class TemplateTokenizer(KernelBaseModel):
                                     "Code tokenizer returned an incorrect " f"first token type {first_block_type}"
                                 )
 
-                        end_of_last_block = cursor + 1
+                        end_of_last_block = next_char_pos + 1
                         block_start_found = False
 
         # If there is something left after the last block, capture it as a TextBlock
@@ -147,10 +151,3 @@ class TemplateTokenizer(KernelBaseModel):
             blocks.append(TextBlock.from_text(text, end_of_last_block, len(text)))
 
         return blocks
-
-    def _can_be_escaped(self, c: str) -> bool:
-        return c in (
-            Symbols.DBL_QUOTE,
-            Symbols.SGL_QUOTE,
-            Symbols.ESCAPE_CHAR,
-        )

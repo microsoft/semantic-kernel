@@ -11,19 +11,11 @@ def test_init():
     assert block.content == "test content"
 
 
-def test_is_empty_not_implemented():
-    block = Block(content="test content")
-    block.content = ""
-    with raises(NotImplementedError):
-        block.is_valid()
+def test_content_strip():
+    block = Block(content=" test content ")
+    assert block.content == "test content"
 
 
 def test_no_content():
     with raises(ValidationError):
         Block()
-
-
-def test_is_valid_not_implemented():
-    block = Block(content="")
-    with raises(NotImplementedError):
-        block.is_valid()

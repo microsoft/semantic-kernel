@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pytest import mark
+from pytest import mark, raises
 
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
@@ -25,8 +25,7 @@ from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
     ],
 )
 def test_it_parses_text_without_code(text, block_type):
-    target = TemplateTokenizer()
-    blocks = target.tokenize(text)
+    blocks = TemplateTokenizer.tokenize(text)
 
     assert len(blocks) == 1
     assert blocks[0].type == block_type
@@ -39,7 +38,6 @@ def test_it_parses_text_without_code(text, block_type):
         (" ", BlockTypes.TEXT),
         ("   ", BlockTypes.TEXT),
         (" aaa  ", BlockTypes.TEXT),
-        ("{{$}}", BlockTypes.VARIABLE),
         ("{{$a}}", BlockTypes.VARIABLE),
         ("{{ $a}}", BlockTypes.VARIABLE),
         ("{{ $a }}", BlockTypes.VARIABLE),
@@ -58,8 +56,7 @@ def test_it_parses_text_without_code(text, block_type):
     ],
 )
 def test_it_parses_basic_blocks(text, block_type):
-    target = TemplateTokenizer()
-    blocks = target.tokenize(text)
+    blocks = TemplateTokenizer.tokenize(text)
 
     assert len(blocks) == 1
     assert blocks[0].type == block_type
@@ -71,25 +68,22 @@ def test_it_parses_basic_blocks(text, block_type):
         (None, 1),
         ("", 1),
         ("}}{{a}} {{b}}x", 5),
-        ("}}{{ -a}} {{b}}x", 5),
-        ("}}{{ -a\n}} {{b}}x", 5),
+        # ("}}{{ -a}} {{b}}x", 5), # no longer valid
+        # ("}}{{ -a\n}} {{b}}x", 5),
         ("}}{{ -a\n} } {{b}}x", 3),
     ],
 )
 def test_it_tokenizes_the_right_token_count(template, block_count):
-    target = TemplateTokenizer()
-    blocks = target.tokenize(template)
+    blocks = TemplateTokenizer.tokenize(template)
 
     assert len(blocks) == block_count
 
 
 def test_it_tokenizes_edge_cases_correctly_1():
-    target = TemplateTokenizer()
-
-    blocks1 = target.tokenize("{{{{a}}")
-    blocks2 = target.tokenize("{{'{{a}}")
-    blocks3 = target.tokenize("{{'a}}")
-    blocks4 = target.tokenize("{{a'}}")
+    blocks1 = TemplateTokenizer.tokenize("{{{{a}}")
+    blocks2 = TemplateTokenizer.tokenize("{{'{{a}}")
+    blocks3 = TemplateTokenizer.tokenize("{{'a}}")
+    blocks4 = TemplateTokenizer.tokenize("{{a'}}")
 
     assert len(blocks1) == 2
     assert len(blocks2) == 1
@@ -104,36 +98,16 @@ def test_it_tokenizes_edge_cases_correctly_1():
 
 
 def test_it_tokenizes_edge_cases_correctly_2():
-    target = TemplateTokenizer()
-
     template = "}}{{{ {$a}}}} {{b}}x}}"
 
-    blocks = target.tokenize(template)
-
-    assert len(blocks) == 5
-
-    assert blocks[0].content == "}}{"
-    assert blocks[0].type == BlockTypes.TEXT
-
-    assert blocks[1].content == "{$a"
-    assert blocks[1].type == BlockTypes.CODE
-
-    assert blocks[2].content == "}} "
-    assert blocks[2].type == BlockTypes.TEXT
-
-    assert blocks[3].content == "b"
-    assert blocks[3].type == BlockTypes.CODE
-
-    assert blocks[4].content == "x}}"
-    assert blocks[4].type == BlockTypes.TEXT
+    with raises(ValueError):
+        TemplateTokenizer.tokenize(template)
 
 
 def test_it_tokenizes_edge_cases_correctly_3():
-    target = TemplateTokenizer()
-
     template = "}}{{{{$a}}}} {{b}}$x}}"
 
-    blocks = target.tokenize(template)
+    blocks = TemplateTokenizer.tokenize(template)
 
     assert len(blocks) == 5
 
@@ -156,21 +130,19 @@ def test_it_tokenizes_edge_cases_correctly_3():
 @mark.parametrize(
     "template",
     [
-        ("{{a$}}"),
-        ("{{a$a}}"),
-        ("{{a''}}"),
-        ('{{a""}}'),
-        ("{{a'b'}}"),
-        ('{{a"b"}}'),
-        ("{{a'b'   }}"),
-        ('{{a"b"    }}'),
+        # ("{{a$}}"),
+        # ("{{a$a}}"),
+        # ("{{a''}}"),
+        # ('{{a""}}'),
+        # ("{{a'b'}}"),
+        # ('{{a"b"}}'),
+        # ("{{a'b'   }}"),
+        # ('{{a"b"    }}'),
         ("{{ asis 'f\\'oo' }}"),
     ],
 )
 def test_it_tokenizes_edge_cases_correctly_4(template):
-    target = TemplateTokenizer()
-
-    blocks = target.tokenize(template)
+    blocks = TemplateTokenizer.tokenize(template)
 
     assert len(blocks) == 1
     assert blocks[0].type == BlockTypes.CODE
@@ -178,11 +150,9 @@ def test_it_tokenizes_edge_cases_correctly_4(template):
 
 
 def test_it_tokenizes_a_typical_prompt():
-    target = TemplateTokenizer()
-
     template = "this is a {{ $prompt }} with {{$some}} variables " "and {{function $calls}} {{ and 'values' }}"
 
-    blocks = target.tokenize(template)
+    blocks = TemplateTokenizer.tokenize(template)
 
     assert len(blocks) == 8
 
@@ -212,11 +182,9 @@ def test_it_tokenizes_a_typical_prompt():
 
 
 def test_it_tokenizes_a_named_args_prompt():
-    target = TemplateTokenizer()
-
     template = '{{ plugin.function "direct" arg1=$arg1 arg2="arg2" }}'
 
-    blocks = target.tokenize(template)
+    blocks = TemplateTokenizer.tokenize(template)
 
     assert len(blocks) == 1
     block = blocks[0]
@@ -228,7 +196,7 @@ def test_it_tokenizes_a_named_args_prompt():
     assert block.tokens[2].type == BlockTypes.NAMED_ARG
     assert block.tokens[3].type == BlockTypes.NAMED_ARG
 
-    assert block.tokens[2].name.name == "arg1"
+    assert block.tokens[2].name == "arg1"
     assert block.tokens[2].value.content == "$arg1"
-    assert block.tokens[3].name.name == "arg2"
+    assert block.tokens[3].name == "arg2"
     assert block.tokens[3].value.content == '"arg2"'

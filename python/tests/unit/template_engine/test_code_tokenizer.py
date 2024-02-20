@@ -18,8 +18,6 @@ def test_it_parses_empty_text():
 @mark.parametrize(
     "template, content",
     [
-        ("$", "$"),
-        (" $ ", "$"),
         ("$foo", "$foo"),
         ("$foo ", "$foo"),
         (" $foo", "$foo"),
@@ -38,8 +36,6 @@ def test_it_parses_var_blocks(template, content):
 @mark.parametrize(
     "template, content",
     [
-        ("'", "'"),
-        (' " ', '"'),
         ("'foo'", "'foo'"),
         ("'foo' ", "'foo'"),
         (" 'foo'", "'foo'"),
@@ -47,8 +43,7 @@ def test_it_parses_var_blocks(template, content):
     ],
 )
 def test_it_parses_val_blocks(template, content):
-    target = CodeTokenizer()
-    blocks = target.tokenize(template)
+    blocks = CodeTokenizer.tokenize(template)
 
     assert len(blocks) == 1
     assert blocks[0].content == content
@@ -67,8 +62,7 @@ def test_it_parses_val_blocks(template, content):
     ],
 )
 def test_it_parses_function_id_blocks(template, content):
-    target = CodeTokenizer()
-    blocks = target.tokenize(template)
+    blocks = CodeTokenizer.tokenize(template)
 
     assert len(blocks) == 1
     assert blocks[0].content == content
@@ -76,15 +70,13 @@ def test_it_parses_function_id_blocks(template, content):
 
 
 def test_it_parses_function_calls():
-    target = CodeTokenizer()
-
     template1 = "x.y $foo"
     template2 = "xy $foo"
     template3 = "xy '$value'"
 
-    blocks1 = target.tokenize(template1)
-    blocks2 = target.tokenize(template2)
-    blocks3 = target.tokenize(template3)
+    blocks1 = CodeTokenizer.tokenize(template1)
+    blocks2 = CodeTokenizer.tokenize(template2)
+    blocks3 = CodeTokenizer.tokenize(template3)
 
     assert len(blocks1) == 2
     assert len(blocks2) == 2
@@ -108,10 +100,8 @@ def test_it_parses_function_calls():
 
 
 def test_it_supports_escaping():
-    target = CodeTokenizer()
-
     template = "func 'f\\'oo'"
-    blocks = target.tokenize(template)
+    blocks = CodeTokenizer.tokenize(template)
 
     assert len(blocks) == 2
     assert blocks[0].content == "func"
@@ -119,20 +109,21 @@ def test_it_supports_escaping():
 
 
 def test_it_throws_when_separators_are_missing():
-    target = CodeTokenizer()
-
     template1 = "call 'f\\\\'xy'"
     template2 = "call 'f\\\\'x"
 
     with raises(ValueError):
-        target.tokenize(template1)
+        CodeTokenizer.tokenize(template1)
 
     with raises(ValueError):
-        target.tokenize(template2)
+        CodeTokenizer.tokenize(template2)
 
 
 def test_named_args():
-    target = CodeTokenizer()
-    template = '{{ plugin.function "direct" arg1=$arg1 arg2="arg2" }}'
-    blocks = target.tokenize(template)
-    assert len(blocks) == 6
+    template = 'plugin.function "direct" arg1=$arg1 arg2="arg2"'
+    blocks = CodeTokenizer.tokenize(template)
+    assert len(blocks) == 4
+    assert blocks[0].content == "plugin.function"
+    assert blocks[1].content == '"direct"'
+    assert blocks[2].content == "arg1=$arg1"
+    assert blocks[3].content == 'arg2="arg2"'
