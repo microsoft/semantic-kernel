@@ -39,8 +39,8 @@ public sealed class OpenAIModerationResponse
         /// <summary>
         /// Whether the content violates OpenAI's usage policies.
         /// </summary>
-        [JsonRequired]
         [JsonPropertyName("flagged")]
+        [JsonRequired]
         public bool Flagged { get; set; }
 
         /// <summary>

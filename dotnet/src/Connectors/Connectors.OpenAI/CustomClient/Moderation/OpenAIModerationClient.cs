@@ -64,22 +64,22 @@ internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerati
 
     private static ClassificationContent GetClassificationContentFromResponse(OpenAIModerationResponse response)
     {
-        var responseResult = response.Results[0];
+        var moderationResult = response.Results[0];
         var classificationResult = new OpenAIClassificationResult(
-            flagged: responseResult.Flagged,
-            entries: GetClassificationEntriesFromResponseResult(responseResult));
+            flagged: moderationResult.Flagged,
+            entries: GetClassificationEntriesFromModerationResult(moderationResult));
         return new ClassificationContent(innerContent: response, result: classificationResult, modelId: response.ModelId);
     }
 
-    private static List<OpenAIClassificationEntry> GetClassificationEntriesFromResponseResult(
-        OpenAIModerationResponse.ModerationResult responseResult)
+    private static List<OpenAIClassificationEntry> GetClassificationEntriesFromModerationResult(
+        OpenAIModerationResponse.ModerationResult moderationResult)
     {
         var classificationEntries =
-            from flags in responseResult.CategoryFlags
-            join score in responseResult.CategoryScores on flags.Key equals score.Key
+            from flag in moderationResult.CategoryFlags
+            join score in moderationResult.CategoryScores on flag.Key equals score.Key
             select new OpenAIClassificationEntry(
-                category: new OpenAIClassificationCategory(flags.Key),
-                flagged: flags.Value,
+                category: new OpenAIClassificationCategory(flag.Key),
+                flagged: flag.Value,
                 score: score.Value);
         return classificationEntries.ToList();
     }
