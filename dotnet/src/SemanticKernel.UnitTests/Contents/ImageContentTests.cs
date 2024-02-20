@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-
 using Microsoft.SemanticKernel;
-
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;
@@ -70,7 +68,7 @@ public sealed class ImageContentTests
         var data = BinaryData.FromString("this is a test", mediaType);
 
         // Assert
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(data!));
+        Assert.Throws<ArgumentException>(() => new ImageContent(data!));
     }
 
     [Fact]
@@ -87,7 +85,7 @@ public sealed class ImageContentTests
         var data = BinaryData.Empty;
 
         // Assert
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(data));
+        Assert.Throws<ArgumentException>(() => new ImageContent(data));
     }
 
     [Fact]
@@ -122,6 +120,6 @@ public sealed class ImageContentTests
         Assert.Equal(dataUriToExpect, result1);
 
         // Assert throws if mediatype is null
-        Assert.Throws<ArgumentNullException>(() => new ImageContent(BinaryData.FromStream(ms, null)));
+        Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms, null)));
     }
 }

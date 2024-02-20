@@ -56,9 +56,16 @@ public sealed class ImageContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        if (string.IsNullOrWhiteSpace(data?.MediaType) || data!.IsEmpty)
+        Verify.NotNull(data, nameof(data));
+
+        if (data!.IsEmpty)
         {
-            throw new ArgumentNullException(nameof(data), "MediaType is needed for DataUri Images");
+            throw new ArgumentException("Data cannot be empty", nameof(data));
+        }
+
+        if (string.IsNullOrWhiteSpace(data!.MediaType))
+        {
+            throw new ArgumentException("MediaType is needed for DataUri Images", nameof(data));
         }
 
         this.Data = data;
