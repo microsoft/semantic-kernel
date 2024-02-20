@@ -134,8 +134,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         KernelHooks kernelHooks = invocationContext != null
             && invocationContext.getKernelHooks() != null
-            ? invocationContext.getKernelHooks()
-            : new KernelHooks();
+                ? invocationContext.getKernelHooks()
+                : new KernelHooks();
 
         ChatCompletionsOptions options = kernelHooks
             .executeHooks(new PreChatCompletionEvent(
@@ -320,7 +320,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
             .setStop(promptExecutionSettings.getStopSequences() == null
                 || promptExecutionSettings.getStopSequences().isEmpty() ? null
-                : promptExecutionSettings.getStopSequences())
+                    : promptExecutionSettings.getStopSequences())
             .setUser(promptExecutionSettings.getUser())
             .setLogitBias(logit);
 
