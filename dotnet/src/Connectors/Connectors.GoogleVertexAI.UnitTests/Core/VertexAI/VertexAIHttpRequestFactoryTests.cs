@@ -77,7 +77,7 @@ public sealed class VertexAIHttpRequestFactoryTestsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(HttpHeaderValues.UserAgent, result.Headers.UserAgent.ToString());
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, result.Headers.UserAgent.ToString());
     }
 
     [Fact]

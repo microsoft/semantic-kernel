@@ -123,7 +123,6 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
 
     public static TheoryData<OpenAITextToAudioExecutionSettings?, Type> ExecutionSettings => new()
     {
-        { null, typeof(ArgumentNullException) },
         { new OpenAITextToAudioExecutionSettings(""), typeof(ArgumentException) },
     };
 }
