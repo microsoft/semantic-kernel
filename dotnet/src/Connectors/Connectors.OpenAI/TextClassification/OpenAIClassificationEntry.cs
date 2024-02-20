@@ -30,7 +30,9 @@ public sealed class OpenAIClassificationEntry
     /// </summary>
     public double Score { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns a string representation in record style of the OpenAIClassificationEntry object.
+    /// </summary>
     public override string ToString()
         => $"{nameof(OpenAIClassificationEntry)} {{ Category = {this.Category}, Flagged = {this.Flagged}, Score = {this.Score} }}";
 }
