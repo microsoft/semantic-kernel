@@ -110,6 +110,76 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         );
     }
 
+    /// <summary>
+    /// Transcribe audio file.
+    /// </summary>
+    /// <param name="fileUrl">Public URL of the audio file to transcribe</param>
+    /// <param name="executionSettings">The AI execution settings (optional).</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    public async Task<TextContent> GetTextContentAsync(
+        Uri fileUrl,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        // to prevent unintentional file uploads by injection attack
+        if (fileUrl.IsFile)
+        {
+            throw new ArgumentException("File URI is not allowed. Use `Stream` or `FileInfo` to transcribe a local file instead.");
+        }
+
+        var transcriptId = await this.CreateTranscriptAsync(fileUrl.ToString(), executionSettings, cancellationToken)
+            .ConfigureAwait(false);
+        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, cancellationToken)
+            .ConfigureAwait(false);
+
+        return new TextContent(
+            text: transcript.RootElement.GetProperty("text").GetString(),
+            modelId: null,
+            // TODO: change to typed object when AAI SDK is shipped
+            innerContent: transcript,
+            encoding: Encoding.UTF8,
+            metadata: null
+        );
+    }
+
+    /// <summary>
+    /// Transcribe audio file.
+    /// </summary>
+    /// <param name="file">Audio file to transcribe</param>
+    /// <param name="executionSettings">The AI execution settings (optional).</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    public async Task<TextContent> GetTextContentAsync(
+        FileInfo file,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        string uploadUrl;
+        using (var fileStream = file.OpenRead())
+        {
+            uploadUrl = await this.UploadFileAsync(fileStream, cancellationToken).ConfigureAwait(false);
+        }
+
+        var transcriptId = await this.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
+            .ConfigureAwait(false);
+        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, cancellationToken)
+            .ConfigureAwait(false);
+
+        return new TextContent(
+            text: transcript.RootElement.GetProperty("text").GetString(),
+            modelId: null,
+            // TODO: change to typed object when AAI SDK is shipped
+            innerContent: transcript,
+            encoding: Encoding.UTF8,
+            metadata: null
+        );
+    }
+
     private async Task<string> UploadFileAsync(Stream audioStream, CancellationToken ct)
     {
         const string URL = "https://api.assemblyai.com/v2/upload";

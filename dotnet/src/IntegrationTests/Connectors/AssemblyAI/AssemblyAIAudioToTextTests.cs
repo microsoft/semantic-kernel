@@ -85,6 +85,72 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
     // [Fact]
     [Fact(Skip = "This test is for manual verification.")]
+    public async Task AssemblyAIAudioToTextWithFileInfoTestAsync()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        const string Filename = "test_audio.wav";
+
+        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
+                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+
+        // Act
+        var result = await service.GetTextContentAsync(new FileInfo($"./TestData/{Filename}"));
+
+        // Assert
+        Assert.Equal(
+            "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
+            result.Text
+        );
+    }
+
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task AssemblyAIAudioToTextWithUriTestAsync()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+
+        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
+                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+
+        // Act
+        var result = await service.GetTextContentAsync(
+            new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3")
+        );
+        Console.Write(result.Text);
+        // Assert
+        Assert.Contains(
+            "There's the traditional red blue divide you're very familiar with. But there's a lot more below the surface going on in both parties. Let's set the table.",
+            result.Text,
+            StringComparison.Ordinal
+        );
+    }
+
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task AssemblyAIAudioToTextWithFileUriShouldThrowTestAsync()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+
+        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
+                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            async () => await service.GetTextContentAsync(new Uri("file://C:/file.mp3"))
+        );
+    }
+
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithLanguageParamTestAsync()
     {
         // Arrange
