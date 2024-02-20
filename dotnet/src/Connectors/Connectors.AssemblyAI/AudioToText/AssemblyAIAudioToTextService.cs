@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -57,7 +58,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             // to prevent unintentional file uploads by injection attack
             if (content.AudioUrl.IsFile)
             {
-                throw new ArgumentException("File URI is not allowed. Use `Stream` or `FileInfo` to transcribe a local file instead.");
+                throw new ArgumentException("File URI is not allowed. Use `AudioContent.Stream` or `AudioContent.File` to transcribe a local file instead.");
             }
 
             uploadUrl = content.AudioUrl.ToString();
@@ -131,9 +132,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         using var request = new HttpRequestMessage(HttpMethod.Post, URL);
         request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
         request.Content = content;
-        using var response = await this._httpClient.SendAsync(request, ct).ConfigureAwait(false);
-        await ThrowIfNotSuccessStatusCodeAsync("Failed to upload file.", response, ct)
-            .ConfigureAwait(false);
+        using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
         var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         return json.RootElement.GetProperty("upload_url").GetString()
@@ -161,9 +160,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         using var request = new HttpRequestMessage(HttpMethod.Post, URL);
         request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
         request.Content = content;
-        using var response = await this._httpClient.SendAsync(request, ct).ConfigureAwait(false);
-        await ThrowIfNotSuccessStatusCodeAsync("Failed to create transcript", response, ct)
-            .ConfigureAwait(false);
+        using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
         var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         if (json.RootElement.TryGetProperty("error", out var property))
@@ -191,9 +188,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
-            using var response = await this._httpClient.SendAsync(request, ct).ConfigureAwait(false);
-            await ThrowIfNotSuccessStatusCodeAsync("Error waiting for transcript.", response, ct)
-                .ConfigureAwait(false);
+            using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
             var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
 
@@ -218,37 +213,52 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         throw new KernelException("This code is unreachable.");
     }
 
-    private static async Task ThrowIfNotSuccessStatusCodeAsync(
-        string errorMessagePrefix,
-        HttpResponseMessage response,
-        CancellationToken ct
-    )
+    private async Task<HttpResponseMessage> SendWithSuccessCheckAsync(HttpClient client, HttpRequestMessage request, CancellationToken ct)
     {
+        HttpResponseMessage? response = null;
+        try
+        {
+            response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, ct).ConfigureAwait(false);
+        }
+        catch (HttpRequestException e)
+        {
+            throw new HttpOperationException(HttpStatusCode.BadRequest, null, e.Message, e);
+        }
+
         if (response.IsSuccessStatusCode)
         {
-            return;
+            return response;
         }
 
-        var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        if (response.Content.Headers.ContentType.MediaType == "application/json")
+        string? responseContent = null;
+        try
         {
-            var json = JsonDocument.Parse(responseString);
-            if (json.RootElement.TryGetProperty("error", out var property))
+            // On .NET Framework, EnsureSuccessStatusCode disposes of the response content;
+            // that was changed years ago in .NET Core, but for .NET Framework it means in order
+            // to read the response content in the case of failure, that has to be
+            // done before calling EnsureSuccessStatusCode.
+            responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (response.Content.Headers.ContentType.MediaType == "application/json")
             {
-                throw new HttpOperationException(
-                    statusCode: response.StatusCode,
-                    responseContent: responseString,
-                    message: $"{errorMessagePrefix} Reason: {property.GetString()!}",
-                    innerException: null
-                );
+                var json = JsonDocument.Parse(responseContent);
+                if (json.RootElement.TryGetProperty("error", out var errorProperty))
+                {
+                    throw new HttpOperationException(
+                        statusCode: response.StatusCode,
+                        responseContent: responseContent,
+                        message: errorProperty.GetString()!,
+                        innerException: null
+                    );
+                }
             }
+
+            response.EnsureSuccessStatusCode(); // will always throw
+        }
+        catch (Exception e)
+        {
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
-        throw new HttpOperationException(
-            statusCode: response.StatusCode,
-            responseContent: responseString,
-            message: response.ReasonPhrase,
-            innerException: null
-        );
+        throw new KernelException("Unreachable code.");
     }
 }

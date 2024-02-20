@@ -241,7 +241,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
             async () => await service.GetTextContentAsync(new AudioStreamContent(audio), textExecutionSettings)
         );
         Assert.Equal(
-            "Failed to create transcript Reason: Invalid endpoint schema, please refer to documentation for examples.",
+            "Invalid endpoint schema, please refer to documentation for examples.",
             exception.Message
         );
     }
