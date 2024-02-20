@@ -76,11 +76,11 @@ internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerati
     {
         var classificationEntries =
             from flags in responseResult.CategoryFlags
-            join score in responseResult.CategoryScores on flags.Label equals score.Label
+            join score in responseResult.CategoryScores on flags.Key equals score.Key
             select new OpenAIClassificationEntry(
-                category: new OpenAIClassificationCategory(flags.Label),
-                flagged: flags.Flagged,
-                score: score.Score);
+                category: new OpenAIClassificationCategory(flags.Key),
+                flagged: flags.Value,
+                score: score.Value);
         return classificationEntries.ToList();
     }
 

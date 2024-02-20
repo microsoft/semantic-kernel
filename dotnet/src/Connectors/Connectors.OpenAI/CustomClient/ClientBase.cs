@@ -49,11 +49,11 @@ internal abstract class CustomClientBase
         return response;
     }
 
-    protected static T DeserializeResponse<T>(string body)
+    protected static T DeserializeResponse<T>(string body, JsonSerializerOptions? options = null!)
     {
         try
         {
-            T? geminiResponse = JsonSerializer.Deserialize<T>(body);
+            T? geminiResponse = JsonSerializer.Deserialize<T>(body, options);
             if (geminiResponse is null)
             {
                 throw new JsonException("Response is null");

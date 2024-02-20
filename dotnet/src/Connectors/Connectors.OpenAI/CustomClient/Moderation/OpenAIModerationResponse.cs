@@ -13,18 +13,21 @@ public sealed class OpenAIModerationResponse
     /// <summary>
     /// The unique identifier for the moderation request.
     /// </summary>
+    [JsonPropertyName("id")]
     [JsonRequired]
     public string Id { get; set; } = null!;
 
     /// <summary>
     /// The model used to generate the moderation results.
     /// </summary>
+    [JsonPropertyName("model")]
     [JsonRequired]
     public string ModelId { get; set; } = null!;
 
     /// <summary>
     /// A list of moderation objects.
     /// </summary>
+    [JsonPropertyName("results")]
     [JsonRequired]
     public IList<ModerationResult> Results { get; set; } = null!;
 
@@ -37,54 +40,21 @@ public sealed class OpenAIModerationResponse
         /// Whether the content violates OpenAI's usage policies.
         /// </summary>
         [JsonRequired]
+        [JsonPropertyName("flagged")]
         public bool Flagged { get; set; }
 
         /// <summary>
         /// A list of the categories, and whether they are flagged or not.
         /// </summary>
+        [JsonPropertyName("categories")]
         [JsonRequired]
-        public IList<ModerationCategoryFlag> CategoryFlags { get; set; } = null!;
+        public IDictionary<string, bool> CategoryFlags { get; set; } = null!;
 
         /// <summary>
         /// A list of the categories along with their scores as predicted by model.
         /// </summary>
+        [JsonPropertyName("category_scores")]
         [JsonRequired]
-        public IList<ModerationCategoryScore> CategoryScores { get; set; } = null!;
-    }
-
-    /// <summary>
-    /// Represents a moderation flag for a category.
-    /// </summary>
-    public sealed class ModerationCategoryFlag
-    {
-        /// <summary>
-        /// The category of the moderation result.
-        /// </summary>
-        [JsonRequired]
-        public string Label { get; set; } = null!;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the content has been flagged.
-        /// </summary>
-        [JsonRequired]
-        public bool Flagged { get; set; }
-    }
-
-    /// <summary>
-    /// Represents a category score obtained from moderation results.
-    /// </summary>
-    public sealed class ModerationCategoryScore
-    {
-        /// <summary>
-        /// The category of the moderation result.
-        /// </summary>
-        [JsonRequired]
-        public string Label { get; set; } = null!;
-
-        /// <summary>
-        /// The confidence of the moderation result.
-        /// </summary>
-        [JsonRequired]
-        public double Score { get; set; }
+        public IDictionary<string, double> CategoryScores { get; set; } = null!;
     }
 }
