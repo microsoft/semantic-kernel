@@ -22,6 +22,28 @@
     "Endpoint": "",
     "ApiKey": ""
   },
+  "OpenAITextToAudio": {
+    "ServiceId": "tts-1",
+    "ModelId": "tts-1",
+    "ApiKey": ""
+  },
+  "AzureOpenAITextToAudio": {
+    "ServiceId": "azure-tts",
+    "DeploymentName": "tts",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
+  "OpenAIAudioToText": {
+    "ServiceId": "whisper-1",
+    "ModelId": "whisper-1",
+    "ApiKey": ""
+  },
+  "AzureOpenAIAudioToText": {
+    "ServiceId": "azure-whisper",
+    "DeploymentName": "whisper",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
   "HuggingFace": {
     "ApiKey": ""
   },
