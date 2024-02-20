@@ -68,7 +68,7 @@ public class KustoMemoryStoreTests
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith($".create table {CollectionName}")),
-                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderValues.UserAgent, StringComparison.Ordinal))
+                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderConstant.Values.UserAgent, StringComparison.Ordinal))
             ), Times.Once());
     }
 
@@ -87,7 +87,7 @@ public class KustoMemoryStoreTests
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith($".drop table {CollectionName}")),
-                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderValues.UserAgent, StringComparison.Ordinal))
+                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderConstant.Values.UserAgent, StringComparison.Ordinal))
             ), Times.Once());
     }
 

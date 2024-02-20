@@ -148,8 +148,9 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add("Api-Key", this._config.CompletionApiKey);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureOpenAIChatCompletionWithDataService)));
 
         try
         {
