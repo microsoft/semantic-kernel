@@ -40,6 +40,9 @@ async def test_aggregate_results():
     func.function = lambda function, kernel, arguments, service, request_settings, chat_history: FunctionResult(
         function=function, value=arguments["input"], metadata={}
     )
+    func.function = lambda function, kernel, arguments, service, request_settings: FunctionResult(
+        function=function, value=arguments["input"], metadata={}
+    )
 
     chunked = [
         "This is a test of the emergency broadcast system.",

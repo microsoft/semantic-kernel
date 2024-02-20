@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-
 import pytest
 
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata

@@ -187,13 +187,13 @@ class KernelPluginCollection(KernelBaseModel):
         self.plugins.clear()
 
     def get_list_of_function_metadata(
-        self, include_semantic: bool = True, include_native: bool = True
+        self, include_prompt: bool = True, include_native: bool = True
     ) -> List[KernelFunctionMetadata]:
         """
         Get a list of the function metadata in the plugin collection
 
         Args:
-            include_semantic (bool): Whether to include semantic functions in the list.
+            include_prompt (bool): Whether to include semantic functions in the list.
             include_native (bool): Whether to include native functions in the list.
 
         Returns:
@@ -205,7 +205,7 @@ class KernelPluginCollection(KernelBaseModel):
             func.describe()
             for plugin in self.plugins.values()
             for func in plugin.functions.values()
-            if (include_semantic and func.is_prompt) or (include_native and not func.is_prompt)
+            if (include_prompt and func.is_prompt) or (include_native and not func.is_prompt)
         ]
 
     def __iter__(self) -> Any:

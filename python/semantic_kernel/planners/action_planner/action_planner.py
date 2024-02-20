@@ -12,6 +12,10 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 import regex
 
 from semantic_kernel import Kernel

@@ -105,6 +105,7 @@ async def chat() -> bool:
     # Non streaming
     # answer = await kernel.invoke(chat_function, input_vars=context_vars)
     # print(f"Assistant:> {answer}")
+    arguments = KernelArguments(user_input=user_input, execution_settings=req_settings)
 
     full_message = None
     print("Assistant:> ", end="")
