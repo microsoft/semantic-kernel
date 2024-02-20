@@ -119,7 +119,37 @@ public sealed class OpenAIModerationClientTests : IDisposable
     }
 
     [Fact]
-    public async Task ItReturnsValidClassificationContentFromResponseAsync()
+    public async Task ItReturnsClassificationContentWithModelIdFromResponseAsync()
+    {
+        // Arrange
+        var sut = this.CreateOpenAIModerationClient();
+
+        // Act
+        var result = await sut.ClassifyTextAsync("text");
+
+        // Assert
+        var sampleResponse = await DeserializeSampleResponseAsync();
+        Assert.NotNull(result);
+        Assert.Equal(sampleResponse!.ModelId, result.ModelId);
+    }
+
+    [Fact]
+    public async Task ItReturnsClassificationContentWithMetadataFromResponseAsync()
+    {
+        // Arrange
+        var sut = this.CreateOpenAIModerationClient();
+
+        // Act
+        var result = await sut.ClassifyTextAsync("text");
+
+        // Assert
+        var sampleResponse = await DeserializeSampleResponseAsync();
+        Assert.NotNull(result);
+        Assert.Equal(sampleResponse!.Id, result.Metadata!["Id"]);
+    }
+
+    [Fact]
+    public async Task ItReturnsClassificationContentWithEntriesFromResponseAsync()
     {
         // Arrange
         var sut = this.CreateOpenAIModerationClient();
@@ -132,9 +162,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         Assert.NotNull(result);
         var openAIResult = result.Result as OpenAIClassificationResult;
         Assert.NotNull(openAIResult);
-        Assert.Equal(sampleResponse!.ModelId, result.ModelId);
-        Assert.Equal(sampleResponse.Id, result.Metadata!["Id"]);
-        Assert.Equal(sampleResponse.Results[0].Flagged, openAIResult.Flagged);
+        Assert.Equal(sampleResponse!.Results[0].Flagged, openAIResult.Flagged);
         Assert.Equivalent(sampleResponse.Results[0].CategoryFlags,
             openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Flagged)));
         Assert.Equivalent(sampleResponse.Results[0].CategoryScores,
