@@ -61,7 +61,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         // Arrange
         PromptExecutionSettings actualSettings = new()
         {
-            ExtensionData = new()
+            ExtensionData = new Dictionary<string, object>
             {
                 { "max_tokens", 1000 },
                 { "temperature", 0 }

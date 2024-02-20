@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -77,7 +78,26 @@ public sealed class VertexAIHttpRequestFactoryTestsTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(HttpHeaderValues.UserAgent, result.Headers.UserAgent.ToString());
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, result.Headers.UserAgent.ToString());
+    }
+
+    [Fact]
+    public void CreatePostWhenCalledReturnsHttpRequestMessageWithSemanticKernelVersionHeader()
+    {
+        // Arrange
+        string apiKey = "fake-api-key";
+        var sut = new VertexAIHttpRequestFactory(apiKey);
+        var requestData = JsonNode.Parse("""{"text":"Hello world!"}""")!;
+        var endpoint = new Uri("https://example.com");
+        var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(VertexAIHttpRequestFactory));
+
+        // Act
+        var request = sut.CreatePost(requestData, endpoint);
+
+        // Assert
+        var header = request.Headers.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
+        Assert.NotNull(header);
+        Assert.Equal(expectedVersion, header);
     }
 
     [Fact]

@@ -20,7 +20,9 @@ internal sealed class VertexAIHttpRequestFactory : IHttpRequestFactory
     public HttpRequestMessage CreatePost(object requestData, Uri endpoint)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
+            HttpHeaderConstant.Values.GetAssemblyVersion(typeof(VertexAIHttpRequestFactory)));
         httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
         return httpRequestMessage;
     }
