@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
+using NRedisStack;
 using StackExchange.Redis;
 using Xunit;
 
@@ -756,6 +757,12 @@ public class RedisMemoryStoreTests
 
     private void MockCreateIndex(string collection, Action? callback = null)
     {
+        var mockBatch = new Mock<IBatch>();
+
+        this._mockDatabase
+            .Setup(x => x.CreateBatch(It.IsAny<object>()))
+            .Returns(mockBatch.Object);
+
         this._mockDatabase
             .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
                 It.Is<string>(x => x == "FT.CREATE"),

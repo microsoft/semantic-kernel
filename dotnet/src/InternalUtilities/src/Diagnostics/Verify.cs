@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel;
 internal static class Verify
 {
     private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
+    private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$");
 
     /// <summary>
     /// Equivalent of ArgumentNullException.ThrowIfNull
@@ -74,6 +75,15 @@ internal static class Verify
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
         {
             ThrowArgumentInvalidName("function name", functionName, paramName);
+        }
+    }
+
+    internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression("filename")] string? paramName = null)
+    {
+        NotNullOrWhiteSpace(filename);
+        if (!s_filenameRegex.IsMatch(filename))
+        {
+            throw new ArgumentException($"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
         }
     }
 
