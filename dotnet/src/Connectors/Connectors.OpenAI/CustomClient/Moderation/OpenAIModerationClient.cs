@@ -82,12 +82,12 @@ internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerati
         OpenAIModerationResponse.ModerationResult moderationResult)
     {
         var classificationEntries =
-            from flag in moderationResult.CategoryFlags
-            join score in moderationResult.CategoryScores on flag.Key equals score.Key
+            from categoryWithFlag in moderationResult.CategoryFlags
+            join categoryWithScore in moderationResult.CategoryScores on categoryWithFlag.Key equals categoryWithScore.Key
             select new OpenAIClassificationEntry(
-                category: new OpenAIClassificationCategory(flag.Key),
-                flagged: flag.Value,
-                score: score.Value);
+                category: new OpenAIClassificationCategory(categoryWithFlag.Key),
+                flagged: categoryWithFlag.Value,
+                score: categoryWithScore.Value);
         return classificationEntries.ToList();
     }
 
