@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -189,6 +190,25 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
             this.ThrowIfFrozen();
             this._resultsPerPrompt = value;
         }
+    }
+
+    /// <inheritdoc />
+    public override PromptExecutionSettings Clone()
+    {
+        return new HuggingFacePromptExecutionSettings()
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Temperature = this.Temperature,
+            TopP = this.TopP,
+            TopK = this.TopK,
+            MaxTokens = this.MaxTokens,
+            MaxTime = this.MaxTime,
+            RepetitionPenalty = this.RepetitionPenalty,
+            UseCache = this.UseCache,
+            WaitForModel = this.WaitForModel,
+            ResultsPerPrompt = this.ResultsPerPrompt,
+        };
     }
 
     private int _resultsPerPrompt = 1;
