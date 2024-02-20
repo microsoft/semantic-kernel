@@ -173,18 +173,19 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 // Add the original assistant message to the chat options; this is required for the service
                 // to understand the tool call responses
                 messages.add(requestMessage);
+
                 return Flux
                     .fromIterable(toolCalls)
                     .reduce(
-                        Mono.just(options),
-                        (opts, toolCall) -> {
+                        Mono.just(messages),
+                        (requestMessages, toolCall) -> {
                             if (toolCall instanceof ChatCompletionsFunctionToolCall) {
-                                return opts
-                                    .flatMap(op -> {
+                                return requestMessages
+                                    .flatMap(msgs -> {
                                         // OpenAI only supports function tool call at the moment
                                         ChatCompletionsFunctionToolCall functionToolCall = (ChatCompletionsFunctionToolCall) toolCall;
                                         if (kernel == null) {
-                                            return Mono.error(new SKException(
+                                            return Mono.<List<ChatRequestMessage>>error(new SKException(
                                                 "A tool call was requested, but no kernel was provided to the invocation, this is a unsupported configuration"));
                                         }
 
@@ -194,15 +195,17 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                                                 ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
                                                     functionResult.getResult(),
                                                     functionToolCall.getId());
-                                                messages.add(requestToolMessage);
-                                                return op;
+
+                                                msgs.add(requestToolMessage);
+                                                return msgs;
                                             });
                                     });
                             }
-                            return opts;
+                            return requestMessages;
                         })
+                    .flatMap(it -> it)
                     .flatMap(
-                        op -> internalChatMessageContentsAsync(messages, kernel, functions,
+                        msgs -> internalChatMessageContentsAsync(msgs, kernel, functions,
                             invocationContext, autoInvokeAttempts - 1));
             });
 
