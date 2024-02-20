@@ -16,26 +16,32 @@ public class ChatCompletionAgentTests
 {
     private readonly IKernelBuilder _kernelBuilder;
 
+    private readonly Mock<IChatCompletionService> _mockChatCompletionService;
+
     public ChatCompletionAgentTests()
     {
         this._kernelBuilder = Kernel.CreateBuilder();
+
+        this._mockChatCompletionService = new Mock<IChatCompletionService>();
+
+        this._kernelBuilder.Services.AddSingleton<IChatCompletionService>(this._mockChatCompletionService.Object);
     }
 
     [Fact]
     public async Task ItShouldResolveChatCompletionServiceFromKernelAsync()
     {
         // Arrange
-        var mockChatCompletionService = new Mock<IChatCompletionService>();
+        this._mockChatCompletionService
+           .Setup(ccs => ccs.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new List<ChatMessageContent>());
 
-        this._kernelBuilder.Services.AddSingleton<IChatCompletionService>(mockChatCompletionService.Object);
-
-        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
         var result = await agent.InvokeAsync(new List<ChatMessageContent>());
 
         // Assert
-        mockChatCompletionService.Verify(x =>
+        this._mockChatCompletionService.Verify(x =>
         x.GetChatMessageContentsAsync(
             It.IsAny<ChatHistory>(),
             It.IsAny<PromptExecutionSettings>(),
@@ -48,21 +54,21 @@ public class ChatCompletionAgentTests
     public async Task ItShouldAddSystemInstructionsAndMessagesToChatHistoryAsync()
     {
         // Arrange
-        var mockChatCompletionService = new Mock<IChatCompletionService>();
+        this._mockChatCompletionService
+           .Setup(ccs => ccs.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new List<ChatMessageContent>());
 
-        this._kernelBuilder.Services.AddSingleton<IChatCompletionService>(mockChatCompletionService.Object);
-
-        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
         var result = await agent.InvokeAsync(new List<ChatMessageContent>() { new(AuthorRole.User, "fake-user-message") });
 
         // Assert
-        mockChatCompletionService.Verify(
+        this._mockChatCompletionService.Verify(
             x => x.GetChatMessageContentsAsync(
                 It.Is<ChatHistory>(ch => ch.Count == 2 &&
                                          ch.Any(m => m.Role == AuthorRole.System && m.Content == "fake-instructions") &&
-                                         ch.Any(m => m.Role == AuthorRole.User && m.Content == "fake-user-message")),
+                                         ch.Any(m => m.Role == AuthorRole.User && m.Items!.OfType<TextContent>().Any(c => c.Text == "fake-user-message"))),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>()),
@@ -73,24 +79,21 @@ public class ChatCompletionAgentTests
     public async Task ItShouldReturnChatCompletionServiceMessagesAsync()
     {
         // Arrange
-        var mockChatCompletionService = new Mock<IChatCompletionService>();
-        mockChatCompletionService
+        this._mockChatCompletionService
             .Setup(ccs => ccs.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ChatMessageContent> {
                 new(AuthorRole.Assistant, "fake-assistant-message-1"),
                 new(AuthorRole.Assistant, "fake-assistant-message-2")
             });
 
-        this._kernelBuilder.Services.AddSingleton<IChatCompletionService>(mockChatCompletionService.Object);
-
-        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
+        var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions", "fake-description");
 
         // Act
         var result = await agent.InvokeAsync(new List<ChatMessageContent>());
 
         // Assert
         Assert.Equal(2, result.Count);
-        Assert.Contains(result, m => m.Role == AuthorRole.Assistant && m.Content == "fake-assistant-message-1");
-        Assert.Contains(result, m => m.Role == AuthorRole.Assistant && m.Content == "fake-assistant-message-2");
+        Assert.Contains(result, m => m.Role == AuthorRole.Assistant && (m.Items?.OfType<TextContent>().Any(c => c.Text == "fake-assistant-message-1") ?? false));
+        Assert.Contains(result, m => m.Role == AuthorRole.Assistant && (m.Items?.OfType<TextContent>().Any(c => c.Text == "fake-assistant-message-2") ?? false));
     }
 }
