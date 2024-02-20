@@ -202,7 +202,7 @@ class Kernel(KernelBaseModel):
                 async for stream_message in stream_function.invoke_stream(self, arguments):
                     if isinstance(stream_message, FunctionResult):
                         err_msg = stream_message.metadata.get("error", None)
-                        exception = Exception(f"Error occurred in stream function: {err_msg}")
+                        exception = KernelException(f"Error occurred in stream function: {err_msg}")
                     function_result.append(stream_message)
                     yield stream_message
             except Exception as exc:
