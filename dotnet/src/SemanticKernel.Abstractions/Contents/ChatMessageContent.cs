@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -21,7 +21,7 @@ public class ChatMessageContent : KernelContent
     public AuthorRole Role { get; set; }
 
     /// <summary>
-    /// Content of the message
+    /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection.
     /// </summary>
     public string? Content
     {
@@ -72,10 +72,16 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Chat message content items
     /// </summary>
-    public ChatMessageContentItemCollection Items =>
-        this._items ??
-        Interlocked.CompareExchange(ref this._items, new ChatMessageContentItemCollection(), null) ??
-        this._items;
+    public ChatMessageContentItemCollection Items
+    {
+        get
+        {
+            return this._items ??
+                Interlocked.CompareExchange(ref this._items, new ChatMessageContentItemCollection(), null) ??
+                this._items;
+        }
+        set { this._items = value ?? new ChatMessageContentItemCollection(); }
+    }
 
     /// <summary>
     /// The encoding of the text content.
@@ -102,11 +108,6 @@ public class ChatMessageContent : KernelContent
             }
         }
     }
-
-    /// <summary>
-    /// The source of the message
-    /// </summary>
-    public object? Source { get; set; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
