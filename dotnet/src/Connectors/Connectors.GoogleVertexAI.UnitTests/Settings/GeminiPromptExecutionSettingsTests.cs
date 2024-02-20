@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -114,5 +115,78 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Single(executionSettings.SafetySettings!, settings =>
             settings.Category.Equals(category) &&
             settings.Threshold.Equals(threshold));
+    }
+
+    [Fact]
+    public void PromptExecutionSettingsCloneWorksAsExpected()
+    {
+        // Arrange
+        var category = GeminiSafetyCategory.Harassment;
+        var threshold = GeminiSafetyThreshold.BlockOnlyHigh;
+        string json = $$"""
+                        {
+                          "model_id": "gemini-pro",
+                          "temperature": 0.7,
+                          "top_p": 0.7,
+                          "top_k": 25,
+                          "candidate_count": 2,
+                          "stop_sequences": [ "foo", "bar" ],
+                          "max_tokens": 128,
+                          "safety_settings": [
+                            {
+                              "category": "{{category.Label}}",
+                              "threshold": "{{threshold.Label}}"
+                            }
+                          ]
+                        }
+                        """;
+        var executionSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json);
+
+        // Act
+        var clone = executionSettings!.Clone() as GeminiPromptExecutionSettings;
+
+        // Assert
+        Assert.NotNull(clone);
+        Assert.Equal(executionSettings.ModelId, clone.ModelId);
+        Assert.Equal(executionSettings.Temperature, clone.Temperature);
+        Assert.Equivalent(executionSettings.ExtensionData, clone.ExtensionData);
+        Assert.Equivalent(executionSettings.StopSequences, clone.StopSequences);
+        Assert.Equivalent(executionSettings.SafetySettings, clone.SafetySettings);
+    }
+
+    [Fact]
+    public void PromptExecutionSettingsFreezeWorksAsExpected()
+    {
+        // Arrange
+        var category = GeminiSafetyCategory.Harassment;
+        var threshold = GeminiSafetyThreshold.BlockOnlyHigh;
+        string json = $$"""
+                        {
+                          "model_id": "gemini-pro",
+                          "temperature": 0.7,
+                          "top_p": 0.7,
+                          "top_k": 25,
+                          "candidate_count": 2,
+                          "stop_sequences": [ "foo", "bar" ],
+                          "max_tokens": 128,
+                          "safety_settings": [
+                            {
+                              "category": "{{category.Label}}",
+                              "threshold": "{{threshold.Label}}"
+                            }
+                          ]
+                        }
+                        """;
+        var executionSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json);
+
+        // Act
+        executionSettings!.Freeze();
+
+        // Assert
+        Assert.True(executionSettings.IsFrozen);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.ModelId = "gemini-ultra");
+        Assert.Throws<InvalidOperationException>(() => executionSettings.CandidateCount = 5);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.Temperature = 0.5);
+        Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences!.Add("baz"));
     }
 }
