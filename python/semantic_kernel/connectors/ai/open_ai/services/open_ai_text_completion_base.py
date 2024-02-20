@@ -144,5 +144,5 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     def _get_metadata_from_text_choice(self, choice: CompletionChoice) -> Dict[str, Any]:
         """Get metadata from a completion choice."""
         return {
-            "logprobs": choice.logprobs,
+            "logprobs": getattr(choice, "logprobs", None),
         }

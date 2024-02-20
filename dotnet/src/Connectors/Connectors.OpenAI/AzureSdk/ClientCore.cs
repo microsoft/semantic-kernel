@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
+using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -696,8 +697,9 @@ internal abstract class ClientCore
     {
         OpenAIClientOptions options = new()
         {
-            Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
+            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
         };
+        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
