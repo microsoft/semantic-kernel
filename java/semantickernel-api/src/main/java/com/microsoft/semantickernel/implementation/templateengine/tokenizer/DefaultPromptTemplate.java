@@ -90,7 +90,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
      * referenced in the prompt template.
      *
      * @param blocks The blocks to search for input variables.
-     * @return
+     * @return The augmented prompt template.
      */
     @SuppressWarnings("NullAway")
     private static PromptTemplateConfig addMissingInputVariables(

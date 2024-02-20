@@ -38,15 +38,15 @@ public @interface KernelFunctionParameter {
      * The default value of the parameter. If no value is set, {@code null} will be passed as the
      * value to this argument.
      *
-     * @return the default value of the parameter, or {@link NO_DEFAULT_VALUE} if no default value
-     * is provided.
+     * @return the default value of the parameter, or
+     * {@link KernelFunctionParameter#NO_DEFAULT_VALUE} if no default value is provided.
      */
     String defaultValue() default NO_DEFAULT_VALUE;
 
     /**
      * Whether a value is required for this argument. If required is false, the model is free to
-     * choose whether or not to provide a value. If the model does not provide a value, the default
-     * value is used.
+     * choose whether to provide a value. If the model does not provide a value, the default value
+     * is used.
      *
      * @return whether a value is required for this argument.
      */

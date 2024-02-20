@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
  * example, {@code ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class)} to get an
  * instance of this class that works with the {@code Integer} type.
  *
+ * @param <T> the type of the number
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class NumberVariableContextVariableTypeConverter<T extends Number> extends

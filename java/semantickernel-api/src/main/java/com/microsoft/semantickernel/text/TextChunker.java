@@ -89,7 +89,7 @@ public class TextChunker {
         List<String> lines,
         int maxTokensPerParagraph,
         Function<String, List<String>> longLinesSplitter) {
-        if (lines.size() == 0) {
+        if (lines.isEmpty()) {
             return new ArrayList<>();
         }
 
@@ -128,11 +128,11 @@ public class TextChunker {
 
             if (TokenCount(lastParagraph.length()) < maxTokensPerParagraph / 4) {
                 List<String> lastParagraphTokens = Arrays.stream(lastParagraph.split(s_spaceChar))
-                    .filter(it -> it.length() != 0)
+                    .filter(it -> !it.isEmpty())
                     .collect(Collectors.toList());
                 List<String> secondLastParagraphTokens = Arrays
                     .stream(secondLastParagraph.split(s_spaceChar))
-                    .filter(it -> it.length() != 0)
+                    .filter(it -> !it.isEmpty())
                     .collect(Collectors.toList());
 
                 int lastParagraphTokensCount = lastParagraphTokens.size();

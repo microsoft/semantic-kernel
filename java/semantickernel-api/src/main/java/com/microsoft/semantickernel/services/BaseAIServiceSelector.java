@@ -45,7 +45,7 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
      *                    {@code null}.
      * @param services    The services to select from.
      * @param <T>         The type of service to select.
-     * @return
+     * @return The selected service, or {@code null} if no service could be selected.
      */
     @Nullable
     protected abstract <T extends AIService> AIServiceSelection<T> trySelectAIService(

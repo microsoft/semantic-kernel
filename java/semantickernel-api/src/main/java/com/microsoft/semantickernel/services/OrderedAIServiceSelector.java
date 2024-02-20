@@ -50,7 +50,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
             // unchecked cast
             return (AIServiceSelection<T>) selection;
         } catch (ClassCastException e) {
-            LOGGER.debug("%s", e.getMessage());
+            LOGGER.debug("{}", e.getMessage());
             return null;
         }
     }

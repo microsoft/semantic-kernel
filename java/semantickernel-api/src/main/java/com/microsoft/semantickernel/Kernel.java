@@ -3,10 +3,13 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionInvocation;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.AIServiceSelection;
@@ -187,7 +190,7 @@ public class Kernel implements Buildable {
      * @return The service of the specified type from the kernel.
      * @throws ServiceNotFoundException if the service is not found.
      * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class,
-     * KernelFunction, KernelFunctionArguments)
+     * KernelFunction, com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments)
      */
     public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
         AIServiceSelection<T> selector = serviceSelector

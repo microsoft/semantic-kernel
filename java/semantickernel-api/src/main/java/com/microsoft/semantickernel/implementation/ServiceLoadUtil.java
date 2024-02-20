@@ -36,7 +36,7 @@ public class ServiceLoadUtil {
 
         T impl = null;
 
-        if (services.size() > 0) {
+        if (!services.isEmpty()) {
             impl = services.get(0);
         }
 

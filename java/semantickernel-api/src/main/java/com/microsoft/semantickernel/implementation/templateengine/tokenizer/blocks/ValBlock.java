@@ -32,7 +32,7 @@ public final class ValBlock extends Block implements TextRendering {
 
     public static boolean hasValPrefix(@Nullable String text) {
         return text != null
-            && text.length() > 0
+            && !text.isEmpty()
             && (text.charAt(0) == Symbols.DblQuote || text.charAt(0) == Symbols.SglQuote);
     }
 

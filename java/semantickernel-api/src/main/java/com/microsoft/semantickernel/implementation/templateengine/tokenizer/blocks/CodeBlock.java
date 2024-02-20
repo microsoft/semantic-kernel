@@ -47,7 +47,7 @@ public final class CodeBlock extends Block implements CodeRendering {
             return false;
         }
 
-        if (this.tokens.size() > 0 && this.tokens.get(0).getType() == BlockTypes.NAMED_ARG) {
+        if (!this.tokens.isEmpty() && this.tokens.get(0).getType() == BlockTypes.NAMED_ARG) {
             LOGGER.error("Unexpected named argument found. Expected function name first.");
             return false;
         }

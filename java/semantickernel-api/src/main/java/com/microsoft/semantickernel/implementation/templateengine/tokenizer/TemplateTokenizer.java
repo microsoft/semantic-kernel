@@ -14,9 +14,9 @@ import java.util.List;
  * Simple tokenizer used for default SK template language.
  * <p>
  * BNF parsed by TemplateTokenizer: [template]       ::= "" | [block] | [block] [template] [block]
- *        ::= [sk-block] | [text-block] [sk-block]       ::= "{{" [variable] "}}" | "{{" [value]
- * "}}" | "{{" [function-call] "}}" [text-block]     ::= [any-char] | [any-char] [text-block]
- * [any-char]       ::= any char
+ * ::= [sk-block] | [text-block] [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" |
+ * "{{" [function-call] "}}" [text-block]     ::= [any-char] | [any-char] [text-block] [any-char]
+ * ::= any char
  * <p>
  * BNF parsed by CodeTokenizer: [template]       ::= "" | [variable] " " [template] | [value] " "
  * [template] | [function-call] "
@@ -142,7 +142,7 @@ public class TemplateTokenizer {
                             .substring(2, contentWithDelimiters.length() - 2)
                             .trim();
 
-                        if (contentWithoutDelimiters.length() == 0) {
+                        if (contentWithoutDelimiters.isEmpty()) {
                             // If what is left is empty, consider the raw block a Text Block
                             blocks.add(new TextBlock(contentWithDelimiters));
                         } else {

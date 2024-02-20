@@ -12,6 +12,8 @@ import javax.annotation.Nullable;
 
 /**
  * Represents the content of a chat message
+ *
+ * @param <T> the type of the inner content within the messages
  */
 public class ChatMessageContent<T> extends KernelContent<T> {
 

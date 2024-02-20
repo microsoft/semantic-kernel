@@ -19,9 +19,9 @@ import javax.annotation.Nullable;
  * Simple tokenizer used for default SK template code language.
  * <p>
  * BNF parsed by TemplateTokenizer: [template]       ::= "" | [block] | [block] [template] [block]
- *        ::= [sk-block] | [text-block] [sk-block]       ::= "{{" [variable] "}}" | "{{" [value]
- * "}}" | "{{" [function-call] "}}" [text-block]     ::= [any-char] | [any-char] [text-block]
- * [any-char]       ::= any char
+ * ::= [sk-block] | [text-block] [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" |
+ * "{{" [function-call] "}}" [text-block]     ::= [any-char] | [any-char] [text-block] [any-char]
+ * ::= any char
  * <p>
  * BNF parsed by CodeTokenizer: [template]       ::= "" | [variable] " " [template] | [value] " "
  * [template] | [function-call] " [variable]       ::= "$" [valid-name] [value]          ::= "'"
