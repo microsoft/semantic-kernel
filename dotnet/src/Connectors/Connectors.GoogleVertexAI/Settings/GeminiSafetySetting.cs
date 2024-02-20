@@ -19,10 +19,21 @@ public sealed class GeminiSafetySetting
     /// </summary>
     /// <param name="category">Category of safety</param>
     /// <param name="threshold">Value</param>
+    [JsonConstructor]
     public GeminiSafetySetting(GeminiSafetyCategory category, GeminiSafetyThreshold threshold)
     {
         this.Category = category;
         this.Threshold = threshold;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the Gemini <see cref="GeminiSafetySetting"/> class by cloning another instance.
+    /// </summary>
+    /// <param name="other">Instance to clone</param>
+    public GeminiSafetySetting(GeminiSafetySetting other)
+    {
+        this.Category = other.Category;
+        this.Threshold = other.Threshold;
     }
 
     /// <summary>
