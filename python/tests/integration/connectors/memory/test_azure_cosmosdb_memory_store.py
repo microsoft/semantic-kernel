@@ -8,7 +8,7 @@ import pytest
 try:
     from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import (
         AzureCosmosDBMemoryStore,
-)
+    )
 
     azure_cosmosdb_memory_store_installed = True
 except AssertionError:
@@ -108,7 +108,7 @@ async def test_create_get_drop_exists_collection():
 
     await store.delete_collection(test_collection)
 
-    result = await store.does_collection_exist_async(test_collection)
+    result = await store.does_collection_exist(test_collection)
     assert result is False
 
 
