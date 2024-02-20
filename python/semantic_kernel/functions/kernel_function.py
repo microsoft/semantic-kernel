@@ -288,7 +288,7 @@ class KernelFunction(KernelBaseModel):
             if not chat_history or len(chat_history) == 0:
                 chat_history = ChatHistory(system_message=prompt)
             else:
-                chat_history.add_system_message(prompt)
+                chat_history.add_user_message(prompt)
 
             try:
                 if isinstance(service, ChatCompletionClientBase):
@@ -341,7 +341,7 @@ class KernelFunction(KernelBaseModel):
             if not chat_history or len(chat_history) == 0:
                 chat_history = ChatHistory(system_message=prompt)
             else:
-                chat_history.add_system_message(prompt)
+                chat_history.add_user_message(prompt)
 
             try:
                 if isinstance(service, ChatCompletionClientBase):
