@@ -34,5 +34,5 @@ public sealed class OpenAIClassificationEntry
     /// Returns a string representation in record style of the OpenAIClassificationEntry object.
     /// </summary>
     public override string ToString()
-        => $"{nameof(OpenAIClassificationEntry)} {{ Category = {this.Category}, Flagged = {this.Flagged}, Score = {this.Score:F8} }}";
+        => $"{nameof(OpenAIClassificationEntry)} {{ Category = {this.Category}, Flagged = {this.Flagged}, Score = {this.Score} }}";
 }
