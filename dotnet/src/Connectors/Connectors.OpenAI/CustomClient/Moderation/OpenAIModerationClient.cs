@@ -68,8 +68,15 @@ internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerati
         var classificationResult = new OpenAIClassificationResult(
             flagged: moderationResult.Flagged,
             entries: GetClassificationEntriesFromModerationResult(moderationResult));
-        return new ClassificationContent(innerContent: response, result: classificationResult, modelId: response.ModelId);
+        return new ClassificationContent(
+            innerContent: response,
+            result: classificationResult,
+            modelId: response.ModelId,
+            metadata: GetMetadataFromResponse(response));
     }
+
+    private static Dictionary<string, object?> GetMetadataFromResponse(OpenAIModerationResponse response)
+        => new() { ["Id"] = response.Id };
 
     private static List<OpenAIClassificationEntry> GetClassificationEntriesFromModerationResult(
         OpenAIModerationResponse.ModerationResult moderationResult)

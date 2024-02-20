@@ -119,7 +119,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
     }
 
     [Fact]
-    public async Task ItReturnsClassificationContentFromResponseAsync()
+    public async Task ItReturnsValidClassificationContentFromResponseAsync()
     {
         // Arrange
         var sut = this.CreateOpenAIModerationClient();
@@ -133,6 +133,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var openAIResult = result.Result as OpenAIClassificationResult;
         Assert.NotNull(openAIResult);
         Assert.Equal(sampleResponse!.ModelId, result.ModelId);
+        Assert.Equal(sampleResponse.Id, result.Metadata!["Id"]);
         Assert.Equal(sampleResponse.Results[0].Flagged, openAIResult.Flagged);
         Assert.Equivalent(sampleResponse.Results[0].CategoryFlags,
             openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Flagged)));
