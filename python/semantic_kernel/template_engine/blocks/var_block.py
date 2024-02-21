@@ -23,12 +23,38 @@ VAR_BLOCK_MATCHER = compile(VAR_BLOCK_REGEX)
 
 
 class VarBlock(Block):
+    """Create a variable block.
+
+    A variable block is used to add a variable to a template.
+    It get's rendered from KernelArguments, if the variable is not found
+    a warning is logged and an empty string is returned.
+    The variable must start with $ and be followed by a valid variable name.
+    A valid variable name is a string of letters, numbers and underscores.
+
+    Examples:
+        $var
+        $test_var
+
+    Args:
+        content - str : The content of the variable block, the name of the variable.
+        name - str: The name of the variable.
+
+    Raises:
+        VarBlockSyntaxError: If the content does not match the variable syntax.
+
+    """
+
     type: ClassVar[BlockTypes] = BlockTypes.VARIABLE
     name: Optional[str] = ""
 
     @model_validator(mode="before")
     @classmethod
     def parse_content(cls, fields: Any) -> Any:
+        """Parse the content and extract the name.
+
+        The parsing is based on a regex that returns the name.
+        if the 'name' is already present then the parsing is skipped.
+        """
         if isinstance(fields, Block) or "name" in fields:
             return fields
         content = fields.get("content", "").strip()

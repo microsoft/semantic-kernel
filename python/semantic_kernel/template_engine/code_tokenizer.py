@@ -39,23 +39,24 @@ class CodeTokenizer:
         current_token_type = None
 
         # Track the content of the current token
-        current_token_content = []
+        current_token_content: List[str] = []
 
         # Other state we need to track
         text_value_delimiter = None
         space_separator_found = False
         skip_next_char = False
+        next_char = ""
+        blocks: List[Block] = []
 
-        blocks = []
-        for index, current_char in enumerate(text[:-1], start=1):
-            next_char = text[index]
+        for index, current_char in enumerate(text[:-1]):
+            next_char = text[index + 1]
 
             if skip_next_char:
                 skip_next_char = False
                 continue
 
             # First char is easy
-            if index == 1:
+            if index == 0:
                 if current_char == Symbols.VAR_PREFIX:
                     current_token_type = BlockTypes.VARIABLE
                 elif current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
@@ -68,7 +69,7 @@ class CodeTokenizer:
                 continue
 
             # While reading values between quotes
-            if current_token_type == BlockTypes.VALUE or current_token_type == BlockTypes.NAMED_ARG:
+            if current_token_type in (BlockTypes.VALUE, BlockTypes.NAMED_ARG):
                 # If the current char is escaping the next special char we:
                 #  - skip the current char (escape char)
                 #  - add the next char (special char)

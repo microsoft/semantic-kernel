@@ -419,7 +419,8 @@ class KernelFunction(KernelBaseModel):
     ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
         """
         Yields:
-            StreamingKernelContent or FunctionResult -- The results of the function, if there is an error a FunctionResult is yielded.
+            StreamingKernelContent or FunctionResult -- The results of the function,
+                if there is an error a FunctionResult is yielded.
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)

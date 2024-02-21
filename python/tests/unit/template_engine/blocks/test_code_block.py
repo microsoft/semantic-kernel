@@ -390,7 +390,8 @@ class TestCodeBlockRendering:
         # and render it with the context
         with raises(
             CodeBlockRenderError,
-            match="Function test.funcName does not take any arguments but it is being called in the template with 2 arguments.",
+            match="Function test.funcName does not take any arguments \
+but it is being called in the template with 2 arguments.",
         ):
             await code_block.render_code(kernel, KernelArguments(arg1="arg1"))
 

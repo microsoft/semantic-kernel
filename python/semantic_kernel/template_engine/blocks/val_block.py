@@ -22,6 +22,29 @@ VAL_BLOCK_MATCHER = compile(VAL_BLOCK_REGEX)
 
 
 class ValBlock(Block):
+    """Create a value block.
+
+    A value block is used to represent a value in a template.
+    It can be used to represent any characters.
+    It needs to start and end with the same quote character,
+    can be both single or double quotes, as long as they are not mixed.
+
+    Examples:
+        'value'
+        "value"
+        'value with "quotes"'
+        "value with 'quotes'"
+
+    Args:
+        content - str : The content of the value block.
+        value - str: The value of the block.
+        quote - str: The quote used to wrap the value.
+
+    Raises:
+        ValBlockSyntaxError: If the content does not match the value block syntax.
+
+    """
+
     type: ClassVar[BlockTypes] = BlockTypes.VALUE
     value: Optional[str] = ""
     quote: Optional[str] = "'"
@@ -29,7 +52,11 @@ class ValBlock(Block):
     @model_validator(mode="before")
     @classmethod
     def parse_content(cls, fields: Any) -> Any:
-        # when a instance is used as a field this method is called as well
+        """Parse the content and extract the value and quote.
+
+        The parsing is based on a regex that returns the value and quote.
+        if the 'value' is already present then the parsing is skipped.
+        """
         if isinstance(fields, Block) or "value" in fields:
             return fields
         content = fields.get("content", "").strip()

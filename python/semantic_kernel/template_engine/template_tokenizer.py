@@ -57,7 +57,6 @@ class TemplateTokenizer:
         text_value_delimiter = None
         skip_next_char = False
 
-        # for next_char_cursor in range(1, len(text)):
         for current_char_pos, current_char in enumerate(text[:-1]):
             next_char_pos = current_char_pos + 1
             next_char = text[next_char_pos]
@@ -73,76 +72,101 @@ class TemplateTokenizer:
                 block_start_pos = current_char_pos
                 block_start_found = True
 
+            if not block_start_found:
+                continue
             # After having found "{{"
-            if block_start_found:
+            if inside_text_value:
                 # While inside a text value, when the end quote is found
-                if inside_text_value:
-                    # If the current char is escaping the next special char we skip
-                    if current_char == Symbols.ESCAPE_CHAR and next_char in (
-                        Symbols.DBL_QUOTE,
-                        Symbols.SGL_QUOTE,
-                        Symbols.ESCAPE_CHAR,
-                    ):
-                        skip_next_char = True
-                        continue
+                # If the current char is escaping the next special char we skip
+                if current_char == Symbols.ESCAPE_CHAR and next_char in (
+                    Symbols.DBL_QUOTE,
+                    Symbols.SGL_QUOTE,
+                    Symbols.ESCAPE_CHAR,
+                ):
+                    skip_next_char = True
+                    continue
 
-                    if current_char == text_value_delimiter:
-                        inside_text_value = False
-                else:
-                    # A value starts here
-                    if current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
-                        inside_text_value = True
-                        text_value_delimiter = current_char
-                    # If the block ends here
-                    elif current_char == Symbols.BLOCK_ENDER and next_char == Symbols.BLOCK_ENDER:
-                        # If there is plain text before the current
-                        # var/val/code block and the previous one,
-                        # add it as a text block
-                        if block_start_pos > end_of_last_block:
-                            blocks.append(
-                                TextBlock.from_text(
-                                    text,
-                                    end_of_last_block,
-                                    block_start_pos,
-                                )
-                            )
+                if current_char == text_value_delimiter:
+                    inside_text_value = False
+                continue
 
-                        # Extract raw block
-                        content_with_delimiters = text[block_start_pos : next_char_pos + 1]  # noqa: E203
-                        # Remove "{{" and "}}" delimiters and trim whitespace
-                        content_without_delimiters = content_with_delimiters[2:-2].strip()
-
-                        if len(content_without_delimiters) == 0:
-                            # If what is left is empty, consider the raw block
-                            # a TextBlock
-                            blocks.append(TextBlock.from_text(content_with_delimiters))
-                        else:
-                            try:
-                                code_blocks = code_tokenizer.tokenize(content_without_delimiters)
-                                if code_blocks[0].type in (
-                                    BlockTypes.VALUE,
-                                    BlockTypes.VARIABLE,
-                                    BlockTypes.TEXT,
-                                ):
-                                    blocks.append(code_blocks[0])
-                                else:
-                                    blocks.append(CodeBlock(content=content_without_delimiters, tokens=code_blocks))
-                            except (
-                                CodeBlockTokenError,
-                                CodeBlockSyntaxError,
-                                VarBlockSyntaxError,
-                                ValBlockSyntaxError,
-                                FunctionIdBlockSyntaxError,
-                            ) as e:
-                                msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"
-                                logger.warning(msg)
-                                raise TemplateSyntaxError(msg) from e
-
-                        end_of_last_block = next_char_pos + 1
-                        block_start_found = False
+            # A value starts here
+            if current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
+                inside_text_value = True
+                text_value_delimiter = current_char
+                continue
+            # If the block ends here
+            if current_char == Symbols.BLOCK_ENDER and next_char == Symbols.BLOCK_ENDER:
+                blocks.extend(
+                    TemplateTokenizer._extract_blocks(
+                        text, code_tokenizer, block_start_pos, end_of_last_block, next_char_pos
+                    )
+                )
+                end_of_last_block = next_char_pos + 1
+                block_start_found = False
 
         # If there is something left after the last block, capture it as a TextBlock
         if end_of_last_block < len(text):
             blocks.append(TextBlock.from_text(text, end_of_last_block, len(text)))
 
         return blocks
+
+    @staticmethod
+    def _extract_blocks(
+        text: str, code_tokenizer: CodeTokenizer, block_start_pos: int, end_of_last_block: int, next_char_pos: int
+    ) -> List[Block]:
+        """Extract the blocks from the found code.
+
+        If there is text before the current block, create a TextBlock from that.
+
+        If the block is empty, return a TextBlock with the delimiters.
+
+        If the block is not empty, tokenize it and return the result.
+        If there is only a variable or value in the code block,
+        return just that, instead of the CodeBlock.
+        """
+        new_blocks: List[Block] = []
+        if block_start_pos > end_of_last_block:
+            new_blocks.append(
+                TextBlock.from_text(
+                    text,
+                    end_of_last_block,
+                    block_start_pos,
+                )
+            )
+
+        content_with_delimiters = text[block_start_pos : next_char_pos + 1]  # noqa: E203
+        content_without_delimiters = content_with_delimiters[2:-2].strip()
+
+        if len(content_without_delimiters) == 0:
+            # If what is left is empty (only {{}}), consider the raw block
+            # a TextBlock
+            new_blocks.append(TextBlock.from_text(content_with_delimiters))
+            return new_blocks
+
+        try:
+            code_blocks = code_tokenizer.tokenize(content_without_delimiters)
+        except (
+            CodeBlockTokenError,
+            CodeBlockSyntaxError,
+            VarBlockSyntaxError,
+            ValBlockSyntaxError,
+            FunctionIdBlockSyntaxError,
+        ) as e:
+            msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"
+            logger.warning(msg)
+            raise TemplateSyntaxError(msg) from e
+
+        if code_blocks[0].type in (
+            BlockTypes.VALUE,
+            BlockTypes.VARIABLE,
+        ):
+            new_blocks.append(code_blocks[0])
+            return new_blocks
+        try:
+            new_blocks.append(CodeBlock(content=content_without_delimiters, tokens=code_blocks))
+            return new_blocks
+        except CodeBlockTokenError as e:
+            msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"
+            logger.warning(msg)
+            raise TemplateSyntaxError(msg) from e

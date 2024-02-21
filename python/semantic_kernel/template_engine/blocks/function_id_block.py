@@ -45,6 +45,11 @@ class FunctionIdBlock(Block):
     @model_validator(mode="before")
     @classmethod
     def parse_content(cls, fields: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse the content of the function id block and extract the plugin and function name.
+
+        If both are present in the fields, return the fields as is.
+        Otherwise use the regex to extract the plugin and function name.
+        """
         if "plugin_name" in fields and "function_name" in fields:
             return fields
         content = fields.get("content", "").strip()

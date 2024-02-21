@@ -54,6 +54,10 @@ class CodeBlock(Block):
     @model_validator(mode="before")
     @classmethod
     def parse_content(cls, fields: Any) -> Any:
+        """Parse the content of the code block and tokenize it.
+
+        If tokens are already present, skip the tokenizing.
+        """
         if isinstance(fields, Block) or "tokens" in fields:
             return fields
         content = fields.get("content", "").strip()
@@ -62,6 +66,18 @@ class CodeBlock(Block):
 
     @field_validator("tokens", mode="after")
     def check_tokens(cls, tokens: List[Block]) -> List[Block]:
+        """Check the tokens in the list.
+
+        If the first token is a value or variable, the rest of the tokens will be ignored.
+        If the first token is a function_id, then the next token can be a value,
+            variable or named_arg, the rest have to be named_args.
+
+        Raises:
+            CodeBlockTokenError: If the content does not contain at least one token.
+            CodeBlockTokenError: If the first token is a named argument.
+            CodeBlockTokenError: If the second token is not a value or variable.
+            CodeBlockTokenError: If a token is not a named argument after the second token.
+        """
         if not tokens:
             raise CodeBlockTokenError("The content should contain at least one token.")
         for index, token in enumerate(tokens):
@@ -72,7 +88,8 @@ class CodeBlock(Block):
             if index == 0 and token.type in [BlockTypes.VALUE, BlockTypes.VARIABLE]:
                 if len(tokens) > 1:
                     logger.warning(
-                        "The first token is a value or variable, but there are more tokens in the content, these will be ignored."
+                        "The first token is a value or variable, but there are more tokens in the content, \
+these will be ignored."
                     )
                 return [token]
             if index == 1 and token.type not in VALID_ARG_TYPES:
@@ -86,6 +103,11 @@ class CodeBlock(Block):
         return tokens
 
     async def render_code(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
+        """Render the code block.
+
+        If the first token is a function_id, it will call the function from the plugin collection.
+        Otherwise it is a value or variable and those are then rendered directly.
+        """
         logger.debug(f"Rendering code: `{self.content}`")
         if self.tokens[0].type == BlockTypes.FUNCTION_ID:
             return await self._render_function_call(kernel, arguments)

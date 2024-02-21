@@ -74,15 +74,9 @@ class Kernel(KernelBaseModel):
 
     Attributes:
         plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
+        services (Dict[str, AIServiceClientBase]): The services to be used by the kernel
         prompt_template_engine (Optional[PromptTemplatingEngine]): The prompt template engine to be used by the kernel
         memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
-        text_completion_services (Dict[str, Callable[["Kernel"], TextCompletionClientBase]]): The text
-            completion services
-        chat_services (Dict[str, Callable[["Kernel"], ChatCompletionClientBase]]): The chat services
-        text_embedding_generation_services (Dict[str, Callable[["Kernel"], EmbeddingGeneratorBase]]): The text embedding
-        default_text_completion_service (Optional[str]): The default text completion service
-        default_chat_service (Optional[str]): The default chat service
-        default_text_embedding_generation_service (Optional[str]): The default text embedding generation service
         retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
         function_invoking_handlers (Dict): The function invoking handlers
         function_invoked_handlers (Dict): The function invoked handlers
