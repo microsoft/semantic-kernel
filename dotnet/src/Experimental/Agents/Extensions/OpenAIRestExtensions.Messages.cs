@@ -63,7 +63,7 @@ internal static partial class OpenAIRestExtensions
             new
             {
                 role = AuthorRole.User.Label,
-                fileIds = fileIds,
+                file_ids = fileIds,
                 content
             };
 
