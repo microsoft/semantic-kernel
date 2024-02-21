@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Contents;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
@@ -23,6 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 [Experimental("SKEXP0033")]
 public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 {
+    private const string BaseUrl = "https://api.assemblyai.com/";
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;
 
@@ -126,14 +128,14 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
     private async Task<string> UploadFileAsync(Stream audioStream, CancellationToken ct)
     {
-        const string URL = "https://api.assemblyai.com/v2/upload";
+        var url = this.Url("v2/upload");
         using var content = new StreamContent(audioStream);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-        using var request = new HttpRequestMessage(HttpMethod.Post, URL);
-        request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
+        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        this.AddDefaultHeaders(request);
         request.Content = content;
         using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
-        var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        var jsonStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         return json.RootElement.GetProperty("upload_url").GetString()
                ?? throw new KernelException("Property 'upload_url' expected but not found.");
@@ -145,7 +147,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         CancellationToken ct = default
     )
     {
-        const string URL = "https://api.assemblyai.com/v2/transcript";
+        var url = this.Url("v2/transcript");
         var jsonRequest = new JsonObject();
         jsonRequest["audio_url"] = audioUrl;
         if (executionSettings?.ExtensionData is not null)
@@ -156,10 +158,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             }
         }
 
-        using var content = new StringContent(jsonRequest.ToJsonString(), Encoding.UTF8, "application/json");
-        using var request = new HttpRequestMessage(HttpMethod.Post, URL);
-        request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
-        request.Content = content;
+        using var request = HttpRequest.CreatePostRequest(url, jsonRequest);
+        this.AddDefaultHeaders(request);
         using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
         var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
@@ -177,7 +177,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         CancellationToken ct = default
     )
     {
-        var url = $"https://api.assemblyai.com/v2/transcript/{transcriptId}";
+        var url = this.Url($"v2/transcript/{transcriptId}");
         var pollingInterval = TimeSpan.FromSeconds(1);
         if (executionSettings is AssemblyAIAudioToTextExecutionSettings aaiSettings)
         {
@@ -186,8 +186,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
         while (!ct.IsCancellationRequested)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
+            using var request = HttpRequest.CreateGetRequest(url);
+            this.AddDefaultHeaders(request);
             using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
             var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
@@ -211,6 +211,24 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
         ct.ThrowIfCancellationRequested();
         throw new KernelException("This code is unreachable.");
+    }
+
+    /// <summary>
+    /// Create a URL string that includes the default BaseUrl if the BaseAddress on _httpClient isn't set.
+    /// </summary>
+    /// <param name="url">URL without base.</param>
+    /// <returns>URL with or without BaseUrl.</returns>
+    private string Url(string url)
+    {
+        return this._httpClient.BaseAddress is null ? $"{BaseUrl}{url}" : url;
+    }
+
+    private void AddDefaultHeaders(HttpRequestMessage request)
+    {
+        request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
+            HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AssemblyAIAudioToTextService)));
     }
 
     private async Task<HttpResponseMessage> SendWithSuccessCheckAsync(HttpClient client, HttpRequestMessage request, CancellationToken ct)

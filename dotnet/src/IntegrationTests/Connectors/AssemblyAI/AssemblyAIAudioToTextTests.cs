@@ -57,6 +57,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
             "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
             result.Text
         );
+        Console.WriteLine(result.Text);
     }
 
     [Fact]
@@ -89,6 +90,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
             "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
             result.Text
         );
+        Console.WriteLine(result.Text);
     }
 
     [Fact]
@@ -114,6 +116,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
             "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
             result.Text
         );
+        Console.WriteLine(result.Text);
     }
 
     [Fact]
@@ -137,6 +140,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
             "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
             result.Text
         );
+        Console.WriteLine(result.Text);
     }
 
     [Fact]
@@ -155,13 +159,14 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var result = await service.GetTextContentAsync(
             new AudioContent(new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3"))
         );
-        Console.Write(result.Text);
+
         // Assert
         Assert.Contains(
             "There's the traditional red blue divide you're very familiar with. But there's a lot more below the surface going on in both parties. Let's set the table.",
             result.Text,
             StringComparison.Ordinal
         );
+        Console.WriteLine(result.Text);
     }
 
     [Fact]
@@ -242,6 +247,32 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
         Assert.Equal(
             "Invalid endpoint schema, please refer to documentation for examples.",
+            exception.Message
+        );
+    }
+
+    [Fact]
+    // [Fact(Skip = "This test is for manual verification.")]
+    public async Task AssemblyAIAudioToTextWithLocalhostBaseAddressShouldThrowAsync()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("https://localhost:9999");
+        const string Filename = "test_audio.wav";
+
+        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
+                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+
+        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(
+            async () => await service.GetTextContentAsync(new AudioStreamContent(audio))
+        );
+        Assert.Equal(
+            "Connection refused (localhost:9999)",
             exception.Message
         );
     }
