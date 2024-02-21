@@ -57,10 +57,12 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         @Nullable InvocationContext context) {
         String template = promptTemplate.getTemplate();
         if (template == null) {
-            return Mono.error(new SKException("The prompt template is null."));
+            return Mono.error(new SKException(
+                String.format("No prompt template was provided for the prompt %s.",
+                    promptTemplate.getName())));
         }
         HandleBarsPromptTemplateHandler handler = new HandleBarsPromptTemplateHandler(kernel,
-            promptTemplate.getTemplate());
+            template);
 
         if (arguments == null) {
             arguments = new KernelFunctionArguments();

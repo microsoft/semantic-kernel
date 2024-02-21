@@ -19,7 +19,9 @@ public class KernelPromptTemplateFactory implements PromptTemplateFactory {
     @Override
     public PromptTemplate tryCreate(@Nonnull PromptTemplateConfig templateConfig) {
         if (templateConfig.getTemplate() == null) {
-            throw new SKException("The prompt template is null.");
+            throw new SKException(
+                String.format("No prompt template was provided for the prompt %s.",
+                    templateConfig.getName()));
         }
 
         switch (templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT)) {

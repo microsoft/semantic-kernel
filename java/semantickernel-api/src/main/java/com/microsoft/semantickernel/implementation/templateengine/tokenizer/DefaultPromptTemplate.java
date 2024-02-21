@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.Verify;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.Block;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.BlockTypes;
@@ -69,6 +70,12 @@ public class DefaultPromptTemplate implements PromptTemplate {
      */
     private static List<Block> extractBlocks(PromptTemplateConfig promptTemplateConfig) {
         String templateText = promptTemplateConfig.getTemplate();
+
+        if (templateText == null) {
+            throw new SKException(
+                String.format("No prompt template was provided for the prompt %s.",
+                    promptTemplateConfig.getName()));
+        }
 
         List<Block> blocks = new TemplateTokenizer().tokenize(templateText);
 
