@@ -20,7 +20,7 @@ public sealed class ChatCompletionAgent : KernelAgent
     /// <param name="instructions">The instructions for the agent.</param>
     /// <param name="description">The agent description.</param>
     /// <param name="executionSettings">The optional execution settings for the agent. If not provided, default settings will be used.</param>
-    public ChatCompletionAgent(Kernel kernel, string instructions, string description, PromptExecutionSettings? executionSettings = null) : base(kernel, description)
+    public ChatCompletionAgent(Kernel kernel, string instructions, string? description, PromptExecutionSettings? executionSettings = null) : base(kernel, description)
     {
         Verify.NotNullOrWhiteSpace(instructions, nameof(instructions));
         this._kernel = kernel;
@@ -36,8 +36,6 @@ public sealed class ChatCompletionAgent : KernelAgent
     {
         Verify.NotNull(messages);
 
-        executionSettings = this.GetExecutionSettings(executionSettings);
-
         var chat = new ChatHistory(this._instructions);
         chat.AddRange(messages);
 
@@ -46,21 +44,11 @@ public sealed class ChatCompletionAgent : KernelAgent
 
         var chatMessageContent = await chatCompletionService.GetChatMessageContentsAsync(
             chat,
-            executionSettings,
+            executionSettings ?? this._promptExecutionSettings,
             this._kernel,
             cancellationToken).ConfigureAwait(false);
 
         return chatMessageContent.Select(m => { m.Source = this; return m; }).ToArray();
-    }
-
-    /// <summary>
-    /// Returns the prompt execution settings to be used, either from the provided override or the class instance one.
-    /// </summary>
-    /// <param name="settingsOverride">Optional prompt execution settings to be used instead of the class instance ones.</param>
-    /// <returns>The prompt execution settings to be used, or null if no settings are provided or available.</returns>
-    private PromptExecutionSettings? GetExecutionSettings(PromptExecutionSettings? settingsOverride)
-    {
-        return this._promptExecutionSettings ?? settingsOverride;
     }
 
     private readonly Kernel _kernel;
