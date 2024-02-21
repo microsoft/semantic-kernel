@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -8,6 +9,8 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Represents the response received from the OpenAI Moderation API.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+[Browsable(false)]
 public sealed class OpenAIModerationResponse
 {
     /// <summary>
@@ -34,6 +37,8 @@ public sealed class OpenAIModerationResponse
     /// <summary>
     /// Represents a moderation result obtained from the OpenAI Moderation API.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [Browsable(false)]
     public sealed class ModerationResult
     {
         /// <summary>
