@@ -74,6 +74,11 @@ public class PromptExecutionSettings
     /// </summary>
     public virtual void Freeze()
     {
+        if (this.IsFrozen)
+        {
+            return;
+        }
+
         this._isFrozen = true;
 
         if (this._extensionData is not null)
