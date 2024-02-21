@@ -439,17 +439,22 @@ class KernelFunction(KernelBaseModel):
     async def __call__(
         self,
         kernel: "Kernel",
-        arguments: KernelArguments,
+        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ) -> "FunctionResult":
         """Invoke the function with the given arguments.
 
         Args:
             kernel (Kernel): The kernel
-            arguments (KernelArguments): The Kernel arguments
+            arguments (Optional[KernelArguments]): The Kernel arguments.
+                Optional, defaults to None.
+            kwargs (Dict[str, Any]): Additional keyword arguments that will be
 
         Returns:
             FunctionResult: The result of the function
         """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
         return await self.invoke(kernel, arguments)
 
     async def invoke(

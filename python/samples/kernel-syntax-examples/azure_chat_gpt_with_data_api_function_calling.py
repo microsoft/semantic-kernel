@@ -54,7 +54,7 @@ kernel.add_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
+kernel.import_plugin_from_prompt_directory("chat-gpt", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin(TimePlugin(), plugin_name="time")
 

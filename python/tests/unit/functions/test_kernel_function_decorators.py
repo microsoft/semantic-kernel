@@ -8,7 +8,6 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import _parse_annotation, kernel_function
 
 if TYPE_CHECKING:

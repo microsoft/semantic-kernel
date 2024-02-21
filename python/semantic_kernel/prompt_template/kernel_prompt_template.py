@@ -65,7 +65,7 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         Args:
             template_text: Prompt template
-        
+
         Returns:
             A list of all the blocks, ie the template tokenized in
             text, variables and function calls
@@ -150,7 +150,7 @@ class KernelPromptTemplate(PromptTemplateBase):
             Text Blocks
         """
         from semantic_kernel.template_engine.blocks.text_block import TextBlock
-        
+
         logger.debug("Rendering code")
 
         rendered_blocks: List[Block] = []

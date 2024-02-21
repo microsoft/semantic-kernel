@@ -25,6 +25,7 @@ from semantic_kernel.functions.kernel_plugin_collection import (
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -34,7 +35,6 @@ from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
