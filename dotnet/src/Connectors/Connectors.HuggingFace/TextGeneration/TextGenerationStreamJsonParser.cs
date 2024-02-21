@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 
-internal sealed class HuggingFaceStreamJsonParser : IStreamJsonParser
+internal sealed class TextGenerationStreamJsonParser : IStreamJsonParser
 {
     /// <inheritdoc />
     public IEnumerable<string> Parse(Stream stream, bool validateJson = false)

@@ -14,7 +14,8 @@ internal interface IHttpRequestFactory
     /// Creates a new instance of HttpRequestMessage based on the provided requestData.
     /// </summary>
     /// <param name="requestData">The object containing the data for the HTTP request.</param>
-    /// <param name="endpoint"></param>
+    /// <param name="endpoint">The endpoint to use for the request.</param>
+    /// <param name="apiKey">The API key to use for the request.</param>
     /// <returns>A new instance of HttpRequestMessage.</returns>
-    HttpRequestMessage CreatePost(object requestData, Uri endpoint);
+    HttpRequestMessage CreatePost(object requestData, Uri endpoint, string? apiKey);
 }

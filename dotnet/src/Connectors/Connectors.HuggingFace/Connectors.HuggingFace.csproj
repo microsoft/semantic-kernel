@@ -19,6 +19,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TextGeneration\HuggingFaceTextGenerationServiceOld.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

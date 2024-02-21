@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 
 /// <summary>
-/// Represents the metadata of the Ollama response.
+/// Represents the metadata of the HuggingFace response.
 /// </summary>
-public sealed class HuggingFaceStreamMetadata : ReadOnlyDictionary<string, object?>
+public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, object?>
 {
-    internal HuggingFaceStreamMetadata(TextGenerationStreamResponse response) : base(new Dictionary<string, object?>())
+    internal TextGenerationStreamMetadata(TextGenerationStreamResponse response) : base(new Dictionary<string, object?>())
     {
         this.Details = response.Details;
         this.Index = response.Index;
@@ -46,7 +46,7 @@ public sealed class HuggingFaceStreamMetadata : ReadOnlyDictionary<string, objec
     /// </summary>
     public int Index
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        get => this.GetValueFromDictionary() as int? ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
@@ -55,7 +55,25 @@ public sealed class HuggingFaceStreamMetadata : ReadOnlyDictionary<string, objec
     /// </summary>
     public int TokenId
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        get => this.GetValueFromDictionary() as int? ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the logarithm of the probability of a specific token given its context.
+    /// </summary>
+    public double TokenLogProb
+    {
+        get => this.GetValueFromDictionary() as double? ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    /// <summary>
+    /// Gets true value indicating whether the token is a special token (e.g., [CLS], [SEP], [PAD]) used for specific model purposes.
+    /// </summary>
+    public bool? TokenSpecial
+    {
+        get => this.GetValueFromDictionary() as bool? ?? false;
         internal init => this.SetValueInDictionary(value);
     }
 

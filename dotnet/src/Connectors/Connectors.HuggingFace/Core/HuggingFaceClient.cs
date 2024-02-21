@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
@@ -20,6 +21,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
 {
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
+    private readonly string? _apiKey;
 
     private IHttpRequestFactory HttpRequestFactory { get; }
     private IEndpointProvider EndpointProvider { get; }
@@ -31,30 +33,32 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         HttpClient httpClient,
         IHttpRequestFactory httpRequestFactory,
         IEndpointProvider endpointProvider,
+        string? apiKey = null,
         IStreamJsonParser? streamJsonParser = null,
         ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
 
         this._modelId = modelId;
+        this._apiKey = apiKey;
         this.HttpClient = httpClient;
         this.HttpRequestFactory = httpRequestFactory;
         this.EndpointProvider = endpointProvider;
         this.Logger = logger ?? NullLogger.Instance;
-        this._streamJsonParser = streamJsonParser ?? new HuggingFaceStreamJsonParser();
+        this._streamJsonParser = streamJsonParser ?? new TextGenerationStreamJsonParser();
     }
 
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
     {
         var endpoint = this.EndpointProvider.TextGenerationEndpoint;
         var request = this.CreateTextRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint, this._apiKey);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
 
         var response = DeserializeResponse<TextGenerationResponse>(body);
-        var textContents = GetTextContentFromResponse(response, executionSettings.ModelId ?? this._modelId);
+        var textContents = GetTextContentFromResponse(response, executionSettings?.ModelId ?? this._modelId);
 
         this.LogTextGenerationUsage(executionSettings);
 
@@ -70,7 +74,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint, this._apiKey);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -82,7 +86,6 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
             yield return streamingTextContent;
         }
     }
-
 
     private static void ValidateMaxTokens(int? maxTokens)
     {
@@ -113,8 +116,8 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
     }
 
     private IEnumerable<StreamingTextContent> ProcessTextResponseStream(Stream stream)
-        => from ollamaResponse in this.ParseTextResponseStream(stream)
-           from textContent in this.GetTextStreamContentsFromResponse(ollamaResponse)
+        => from response in this.ParseTextResponseStream(stream)
+           from textContent in this.GetTextStreamContentsFromResponse(response)
            select GetStreamingTextContentFromTextContent(textContent);
 
     private IEnumerable<TextGenerationStreamResponse> ParseTextResponseStream(Stream responseStream)
@@ -127,7 +130,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
             new(text: response.GeneratedText,
                 modelId: this._modelId,
                 innerContent: response,
-                metadata: new HuggingFaceMetadata(response))
+                metadata: new TextGenerationStreamMetadata(response))
         };
     }
 
@@ -144,7 +147,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
     {
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
         ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
-        var request = TextGenerationRequest.FromPromptAndExecutionSettings(prompt, huggingFaceExecutionSettings, this._modelId);
+        var request = TextGenerationRequest.FromPromptAndExecutionSettings(prompt, huggingFaceExecutionSettings);
         return request;
     }
 
