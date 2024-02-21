@@ -632,7 +632,10 @@ class Kernel(KernelBaseModel):
         validate_function_name(function_name)
 
         if not prompt_template_config.execution_settings:
-            prompt_template_config.execution_settings = PromptExecutionSettings(extension_data=kwargs)
+            if execution_settings:
+                prompt_template_config.execution_settings = execution_settings
+            else:
+                prompt_template_config.execution_settings = PromptExecutionSettings(extension_data=kwargs)
 
         function = KernelFunction.from_prompt(
             prompt=template,

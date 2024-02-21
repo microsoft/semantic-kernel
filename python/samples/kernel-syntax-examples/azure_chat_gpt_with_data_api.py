@@ -48,13 +48,14 @@ req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body
 
 # When using data, set use_extensions=True and use the 2023-12-01-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
+    service_id="chat-gpt",
     deployment_name=deployment,
     api_key=api_key,
     endpoint=endpoint,
     api_version="2023-12-01-preview",
     use_extensions=True,
 )
-kernel.add_chat_service("chat-gpt", chat_service)
+kernel.add_service(chat_service)
 
 prompt_template_config = PromptTemplateConfig(
     template="{{$user_input}}",

@@ -40,14 +40,14 @@ req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_bod
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
 chat_service = sk_oai.AzureChatCompletion(
+    service_id="chat-gpt",
     deployment_name=deployment,
     api_key=api_key,
     endpoint=endpoint,
     api_version="2023-12-01-preview",
     use_extensions=True,
 )
-kernel.add_chat_service(
-    "chat-gpt",
+kernel.add_service(
     chat_service,
 )
 
@@ -68,10 +68,10 @@ prompt_template_config = PromptTemplateConfig(
     name="chat",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="history", description="The history of the conversation", is_required=True, default=""),
+        InputVariable(name="history", description="The history of the conversation", is_required=True),
         InputVariable(name="request", description="The user input", is_required=True),
     ],
-    execution_settings={"default": req_settings},
+    execution_settings=req_settings,
 )
 
 history = ChatHistory()

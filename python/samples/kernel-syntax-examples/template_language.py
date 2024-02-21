@@ -19,9 +19,8 @@ async def main():
     service_id = model
 
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_chat_service(
-        service_id,
-        sk_oai.OpenAIChatCompletion(ai_model_id=model, api_key=api_key, org_id=org_id),
+    kernel.add_service(
+        sk_oai.OpenAIChatCompletion(service_id=service_id,ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
     kernel.import_plugin(TimePlugin(), "time")
@@ -43,16 +42,13 @@ async def main():
 
     kind_of_day = kernel.create_function_from_prompt(
         template=function_definition,
-        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(max_tokens=100),
+        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(service_id=service_id,max_tokens=100),
         function_name="kind_of_day",
     )
 
     print("--- Prompt Function Result ---")
     result = await kernel.invoke(kind_of_day)
     print(result)
-
-    # result = await kernel.run(plugin["Joke"], input_str="time travel to dinosaur age")
-    # print(result)
 
 
 if __name__ == "__main__":

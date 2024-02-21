@@ -28,17 +28,12 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
-
-def _prepare_input_chat(chat: ChatHistory):
-    return "".join([f"{msg.role}: {msg.content}\n" for msg in chat])
-
-
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.add_chat_service(
-    "chat",
+kernel.add_service(
     sk_oai.OpenAIChatCompletion(
+        service_id="chat",
         ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
     ),
@@ -47,7 +42,7 @@ kernel.add_chat_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
+kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin(MathPlugin(), plugin_name="math")
 
@@ -87,6 +82,7 @@ tools = [
 
 async def main():
     settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat")
+    settings.service_id = "chat"
     settings.tools = tools
     settings.tool_choice = "auto"
     settings.max_tokens = 2000
@@ -99,10 +95,11 @@ async def main():
         template_format="semantic-kernel",
         input_variables=[
             InputVariable(
-                name="user_input", description="The history of the conversation", is_required=True, default=""
+                name="user_input", description="The history of the conversation", is_required=True, default="",
+                name="chat_history", description="The history of the conversation", is_required=True,
             ),
         ],
-        execution_settings={"default": settings},
+        execution_settings=settings,
     )
 
     chat = ChatHistory(system_message=system_message)
@@ -113,9 +110,7 @@ async def main():
         plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
     )
 
-    chat.add_user_message("I want to find a hotel in Seattle with free wifi and a pool.")
-
-    response = kernel.invoke_stream(chat_function, KernelArguments(user_input=_prepare_input_chat(chat)))
+    response = kernel.invoke_stream(chat_function, KernelArguments(user_input="I want to find a hotel in Seattle with free wifi and a pool.", chat_history=chat))
     messages = []
     tool_call = None
     async for message in response:

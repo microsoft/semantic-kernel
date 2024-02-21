@@ -32,11 +32,11 @@ kernel = sk.Kernel()
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 api_version = "2023-12-01-preview"
-kernel.add_chat_service(
-    "default",
+kernel.add_service(
     sk_oai.AzureChatCompletion(
-        deployment_name,
-        endpoint,
+        service_id="chat",
+        deployment_name=deployment_name,
+        base_url=endpoint,
         api_key=api_key,
         api_version=api_version,
     ),
@@ -55,7 +55,7 @@ kernel.import_plugin(MathPlugin(), plugin_name="math")
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 execution_settings = sk_oai.AzureChatPromptExecutionSettings(
-    service_id="default",
+    service_id="chat",
     ai_model_id=deployment_name,
     max_tokens=2000,
     temperature=0.7,

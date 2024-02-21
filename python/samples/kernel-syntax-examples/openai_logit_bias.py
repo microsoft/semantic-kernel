@@ -38,8 +38,8 @@ def _prepare_input_chat(chat: ChatHistory):
 
 
 async def chat_request_example(kernel, api_key, org_id):
-    openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-    kernel.add_chat_service("chat_service", openai_chat_completion)
+    openai_chat_completion = sk_oai.OpenAIChatCompletion(service_id="chat_service", ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+    kernel.add_service(openai_chat_completion)
 
     # Spaces and capitalization affect the token ids.
     # The following is the token ids of basketball related words.
@@ -85,7 +85,7 @@ async def chat_request_example(kernel, api_key, org_id):
                 name="user_input", description="The history of the conversation", is_required=True, default=""
             ),
         ],
-        execution_settings={"default": settings},
+        execution_settings=settings,
     )
 
     chat = ChatHistory()
@@ -116,8 +116,8 @@ async def chat_request_example(kernel, api_key, org_id):
 
 
 async def text_complete_request_example(kernel, api_key, org_id):
-    openai_text_completion = sk_oai.OpenAITextCompletion("gpt-3.5-turbo-instruct", api_key, org_id)
-    kernel.add_text_completion_service("text_service", openai_text_completion)
+    openai_text_completion = sk_oai.OpenAITextCompletion(service_id="text_service",ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id)
+    kernel.add_service(openai_text_completion)
 
     # Spaces and capitalization affect the token ids.
     # The following is the token ids of pie related words.
@@ -172,7 +172,7 @@ async def text_complete_request_example(kernel, api_key, org_id):
                 name="user_input", description="The history of the conversation", is_required=True, default=""
             ),
         ],
-        execution_settings={"default": settings},
+        execution_settings=settings,
     )
 
     chat = ChatHistory()

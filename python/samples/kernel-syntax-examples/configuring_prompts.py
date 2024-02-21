@@ -21,9 +21,8 @@ async def main():
     service_id = model
 
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_chat_service(
-        service_id,
-        sk_oai.OpenAIChatCompletion(ai_model_id=model, api_key=api_key, org_id=org_id),
+    kernel.add_service(
+        sk_oai.OpenAIChatCompletion(service_id=service_id,ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
     kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversation_summary")
@@ -41,17 +40,17 @@ async def main():
         description="Chat with the assistant",
         template_format="semantic-kernel",
         input_variables=[
-            InputVariable(name="history", description="The conversation history", is_required=False, default=""),
+            InputVariable(name="chat_history", description="The conversation history", is_required=False, default=""),
             InputVariable(name="request", description="The user's request", is_required=True),
         ],
-        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(max_tokens=4000, temperature=0.2),
+        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(service_id=service_id,max_tokens=4000, temperature=0.2),
     )
 
     chat = kernel.create_function_from_prompt(
         prompt_template_config=prompt_template_config,
     )
 
-    history = ChatHistory()
+    chat_history = ChatHistory()
 
     print("User > ")
     while (user_input := input()) != "exit":
@@ -59,10 +58,13 @@ async def main():
             chat,
             KernelArguments(
                 request=user_input,
-                history="\n".join(f"{item['role']}: {item['content']}" for item in history),
+                history=chat_history,
             ),
         )
+        result = str(result)
         print(result)
+        chat_history.add_user_message(user_input)
+        chat_history.add_assistant_message(result)
 
 
 if __name__ == "__main__":
