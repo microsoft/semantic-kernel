@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -35,14 +34,8 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
 
         var json = JsonSerializer.Serialize(executionSettings);
         var huggingFacePromptExecutionSettings = JsonSerializer.Deserialize<HuggingFacePromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (huggingFacePromptExecutionSettings is not null)
-        {
-            return huggingFacePromptExecutionSettings;
-        }
 
-        throw new ArgumentException(
-            $"Invalid execution settings, cannot convert to {nameof(HuggingFacePromptExecutionSettings)}",
-            nameof(executionSettings));
+        return huggingFacePromptExecutionSettings!;
     }
 
     /// <summary>
