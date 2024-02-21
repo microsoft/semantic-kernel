@@ -44,6 +44,37 @@ internal static partial class OpenAIRestExtensions
     }
 
     /// <summary>
+    /// Create a new message.
+    /// </summary>
+    /// <param name="context">A context for accessing OpenAI REST endpoint</param>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="content">The message text</param>
+    /// <param name="fileIds">an array of up to 10 file ids</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>A message definition</returns>
+    public static Task<ThreadMessageModel> CreateUserTextMessageAsync(
+        this OpenAIRestContext context,
+        string threadId,
+        string content,
+        string[] fileIds,
+        CancellationToken cancellationToken = default)
+    {
+        var payload =
+            new
+            {
+                role = AuthorRole.User.Label,
+                fileIds = fileIds,
+                content
+            };
+
+        return
+            context.ExecutePostAsync<ThreadMessageModel>(
+                context.GetMessagesUrl(threadId),
+                payload,
+                cancellationToken);
+    }
+
+    /// <summary>
     /// Retrieve an message by identifier.
     /// </summary>
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>

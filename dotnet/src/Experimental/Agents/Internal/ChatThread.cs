@@ -64,6 +64,18 @@ internal sealed class ChatThread : IAgentThread
     }
 
     /// <inheritdoc/>
+    public async Task<IChatMessage> AddUserMessageAsync(string message, string[]? fileIds = null, CancellationToken cancellationToken = default)
+    {
+        this.ThrowIfDeleted();
+
+        var messagemodel = fileIds == null
+            ? await this._restContext.CreateUserTextMessageAsync(this.Id, message, cancellationToken).ConfigureAwait(false)
+            : await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds, cancellationToken).ConfigureAwait(false);
+
+        return new ChatMessage(messagemodel);
+    }
+
+    /// <inheritdoc/>
     public IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         return this.InvokeAsync(agent, string.Empty, arguments, cancellationToken);
