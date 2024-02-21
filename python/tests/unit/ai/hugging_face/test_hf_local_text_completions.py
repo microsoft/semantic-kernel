@@ -119,10 +119,8 @@ async def test_text_completion_stream(model_name, task, input_str):
         execution_settings=exec_settings,
     )
 
-    arguments = KernelArguments(input=input_str)
-
     summary = ""
-    async for text in kernel.invoke_stream(test_func, arguments):
+    async for text in kernel.invoke_stream(test_func, input=input_str):
         summary += str(text[0])
 
     output = str(summary).strip()

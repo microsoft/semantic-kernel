@@ -16,8 +16,6 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-from semantic_kernel.utils.chat import prepare_chat_history_for_request
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -38,20 +36,21 @@ class OllamaTextCompletion(TextCompletionClientBase):
 
     async def complete(
         self,
-        chat_history: ChatHistory,
+        prompt: str,
         settings: OllamaTextPromptExecutionSettings,
+        **kwargs,
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Arguments:
-            chat_history {ChatHistory} -- A chat history that contains the prompt to complete.
+            prompt {str} -- The prompt to send to the LLM.
             settings {OllamaTextPromptExecutionSettings} -- Settings for the request.
 
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
-        settings.prompt = prepare_chat_history_for_request(chat_history)[-1].get("content")
+        settings.prompt = prompt
         settings.stream = False
         async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
@@ -61,8 +60,9 @@ class OllamaTextCompletion(TextCompletionClientBase):
 
     async def complete_stream(
         self,
-        chat_history: ChatHistory,
+        prompt: str,
         settings: OllamaTextPromptExecutionSettings,
+        **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Ollama model.
@@ -70,13 +70,13 @@ class OllamaTextCompletion(TextCompletionClientBase):
         but the result will be a list anyway.
 
         Arguments:
-            chat_history {ChatHistory} -- A chat history that contains the prompt to complete.
+            prompt {str} -- Prompt to complete.
             settings {OllamaTextPromptExecutionSettings} -- Request settings.
 
         Yields:
             List[StreamingTextContent] -- Completion result.
         """
-        settings.prompt = prepare_chat_history_for_request(chat_history)[-1].get("content")
+        settings.prompt = prompt
         settings.stream = True
         async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=settings.prepare_settings_dict()) as response:

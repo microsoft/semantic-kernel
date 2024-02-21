@@ -40,7 +40,7 @@ class KernelPlugin(KernelBaseModel):
         Initialize a new instance of the KernelPlugin class
 
         Args:
-            name (str): The name of the plugin. It is normalized to lower case.
+            name (str): The name of the plugin.
             description (Optional[str]): The description of the plugin.
             functions (List[KernelFunction]): The functions in the plugin.
 

@@ -22,8 +22,8 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            chat_history {List[ChatMessage]} -- A list of chat chat_history, that can be rendered into a
-                set of chat_history, from system, user, assistant and function.
+            chat_history {ChatHistory} -- A list of chats in a chat_history object, that can be
+                rendered into messages from system, user, assistant and tools.
             settings {PromptExecutionSettings} -- Settings for the request.
 
         Returns:
@@ -41,7 +41,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 
         Arguments:
-            chat_history {List[ChatMessage]} -- A list of chat chat_history, that can be rendered into a
+            chat_history {ChatHistory} -- A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
 

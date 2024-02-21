@@ -23,7 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
-    # messages: List[ChatMessageT] = Field(default_factory=list)
+    # TODO Note this class will be removed after the auto function calling work is complete
 
     def __init__(
         self,

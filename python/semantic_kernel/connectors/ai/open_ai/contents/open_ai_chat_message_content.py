@@ -27,11 +27,11 @@ class OpenAIChatMessageContent(ChatMessageContent):
         __str__: Returns the content of the response.
     """
 
+    inner_content: ChatCompletion
+    function_call: Optional[FunctionCall] = None
+    tool_calls: Optional[List[ToolCall]] = None
+
     @staticmethod
     def ToolIdProperty():
         # Directly using the class name and the attribute name as strings
         return f"{ToolCall.__name__}.{ToolCall.id.__name__}"
-
-    inner_content: ChatCompletion
-    function_call: Optional[FunctionCall] = None
-    tool_calls: Optional[List[ToolCall]] = None

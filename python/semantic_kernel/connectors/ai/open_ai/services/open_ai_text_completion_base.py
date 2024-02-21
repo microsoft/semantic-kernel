@@ -17,8 +17,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import StreamingTextContent, TextContent
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-from semantic_kernel.utils.chat import prepare_chat_history_for_request
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -35,22 +33,22 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
     async def complete(
         self,
-        chat_history: ChatHistory,
+        prompt: str,
         settings: "OpenAIPromptExecutionSettings",
     ) -> List["TextContent"]:
         """Executes a completion request and returns the result.
 
         Arguments:
-            chat_history {ChatHistory} -- The chat history to use for the completion request.
+            prompt {str} -- The prompt to use for the completion request.
             settings {OpenAITextPromptExecutionSettings} -- The settings to use for the completion request.
 
         Returns:
             List["TextContent"] -- The completion result(s).
         """
         if isinstance(settings, OpenAITextPromptExecutionSettings):
-            settings.prompt = chat_history.messages[-1].content
+            settings.prompt = prompt
         else:
-            settings.messages = prepare_chat_history_for_request(chat_history)
+            settings.messages = [{"role": "user", "content": prompt}]
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_request(request_settings=settings)
@@ -76,7 +74,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
     async def complete_stream(
         self,
-        chat_history: ChatHistory,
+        prompt: str,
         settings: "OpenAIPromptExecutionSettings",
     ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
@@ -91,16 +89,12 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
         """
         if "prompt" in settings.model_fields:
-            settings.prompt = chat_history.messages[-1].content
+            settings.prompt = prompt
         if "messages" in settings.model_fields:
-            # if not settings.messages:
-            #     settings.messages = [{"role": "user", "content": prompt}]
-            # else:
-            #     settings.messages.append({"role": "user", "content": prompt})
             if not settings.messages:
-                settings.messages = prepare_chat_history_for_request(chat_history)
+                settings.messages = [{"role": "user", "content": prompt}]
             else:
-                settings.messages = prepare_chat_history_for_request(chat_history)
+                settings.messages.append({"role": "user", "content": prompt})
         settings.ai_model_id = self.ai_model_id
         settings.stream = True
         response = await self._send_request(request_settings=settings)

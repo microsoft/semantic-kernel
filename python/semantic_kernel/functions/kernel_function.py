@@ -308,12 +308,12 @@ class KernelFunction(KernelBaseModel):
 
             try:
                 if isinstance(service, TextCompletionClientBase):
-                    completions = await service.complete(chat_history, request_settings)
+                    completions = await service.complete(prompt, request_settings)
                     return FunctionResult(
                         function=function,
                         value=completions,
                         metadata={
-                            "messages": chat_history,
+                            "prompt": prompt,
                             "arguments": arguments,
                             "metadata": [completion.metadata for completion in completions],
                         },
@@ -350,7 +350,7 @@ class KernelFunction(KernelBaseModel):
                     ):
                         yield partial_content
                 elif isinstance(service, TextCompletionClientBase):
-                    async for partial_content in service.complete_stream(chat_history, request_settings):
+                    async for partial_content in service.complete_stream(prompt, request_settings):
                         yield partial_content
                 else:
                     raise ValueError(f"Service `{type(service)}` is not a valid AI service")
@@ -451,17 +451,22 @@ class KernelFunction(KernelBaseModel):
     async def invoke(
         self,
         kernel: "Kernel",
-        arguments: KernelArguments,
+        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ) -> "FunctionResult":
         """Invoke the function with the given arguments.
 
         Args:
             kernel (Kernel): The kernel
             arguments (KernelArguments): The Kernel arguments
+            kwargs (Dict[str, Any]): Additional keyword arguments that will be
+                added to the KernelArguments.
 
         Returns:
             FunctionResult: The result of the function
         """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
         function_arguments = self.gather_function_parameters(kernel, arguments)
         if self.is_prompt and self.CHAT_HISTORY_TAG not in function_arguments:
             function_arguments[self.CHAT_HISTORY_TAG] = ChatHistory()
@@ -484,13 +489,24 @@ class KernelFunction(KernelBaseModel):
     async def invoke_stream(
         self,
         kernel: "Kernel",
-        arguments: KernelArguments,
+        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
         """
+        Invoke a stream async function with the given arguments.
+
+        Args:
+            kernel (Kernel): The kernel
+            arguments (KernelArguments): The Kernel arguments
+            kwargs (Dict[str, Any]): Additional keyword arguments that will be
+                added to the KernelArguments.
+
         Yields:
             StreamingKernelContent or FunctionResult -- The results of the function, if
             there is an error a FunctionResult is yielded.
         """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
         if not self.stream_function:
             raise ValueError("Function does not support streaming")
         function_arguments = self.gather_function_parameters(kernel, arguments)

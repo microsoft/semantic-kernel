@@ -239,8 +239,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
     api_version = "2023-03-15-preview"
 
     prompt = "hello world"
-    messages = ChatHistory()
-    messages.add_user_message(prompt)
+    messages = [{"role": "user", "content": prompt}]
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
     stop = ["!"]
@@ -253,11 +252,11 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
         api_version=api_version,
     )
 
-    await azure_chat_completion.complete(chat_history=messages, settings=complete_prompt_execution_settings)
+    await azure_chat_completion.complete(prompt=prompt, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=prepare_chat_history_for_request(messages),
+        messages=messages,
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
         n=complete_prompt_execution_settings.number_of_responses,

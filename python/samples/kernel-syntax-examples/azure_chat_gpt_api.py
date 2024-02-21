@@ -92,11 +92,11 @@ async def chat() -> bool:
         return False
 
     stream = False
-    kwargs = {"request": user_input, KernelFunction.CHAT_HISTORY_TAG: history}
     if stream:
         answer = kernel.invoke_stream(
             chat_function,
-            KernelArguments(**kwargs),
+            request=user_input,
+            chat_history=history,
         )
         print("Mosscap:> ", end="")
         async for message in answer:
@@ -105,7 +105,8 @@ async def chat() -> bool:
         return True
     answer = await kernel.invoke(
         chat_function,
-        KernelArguments(**kwargs),
+        request=user_input,
+        chat_history=history,
     )
     print(f"Mosscap:> {answer}")
     history.add_user_message(user_input)

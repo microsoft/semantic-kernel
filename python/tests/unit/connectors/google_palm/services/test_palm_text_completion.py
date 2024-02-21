@@ -15,7 +15,6 @@ if sys.version_info >= (3, 9):
     from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
         GooglePalmTextCompletion,
     )
-    from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 
 pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")
@@ -62,14 +61,12 @@ async def test_google_palm_text_completion_complete_call_with_parameters() -> No
         ai_model_id = "test_model_id"
         api_key = "test_api_key"
         prompt = "hello world"
-        chat_history = ChatHistory()
-        chat_history.add_user_message(prompt)
         gp_text_completion = GooglePalmTextCompletion(
             ai_model_id=ai_model_id,
             api_key=api_key,
         )
         settings = GooglePalmTextPromptExecutionSettings()
-        response = await gp_text_completion.complete(chat_history, settings)
+        response = await gp_text_completion.complete(prompt, settings)
         assert isinstance(response[0].text, str) and len(response) > 0
 
         mock_gp.generate_text.assert_called_once_with(

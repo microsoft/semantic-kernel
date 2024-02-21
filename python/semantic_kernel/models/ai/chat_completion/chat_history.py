@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from typing import Any, Iterator, List, Optional, Union
 
-from pydantic import Field
+from pydantic import Field, ValidationError
+from pydantic.json import pydantic_encoder
+from pydantic.tools import parse_obj_as
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -24,27 +27,53 @@ class ChatHistory(KernelBaseModel):
     messages: Optional[List[ChatMessageContent]] = Field(default_factory=list)
 
     def __init__(self, **data):
-        system_message = data.pop("system_message", None)
+        """
+        Initializes a new instance of the ChatHistory class, optionally incorporating a message and/or
+        a system message at the beginning of the chat history.
+
+        This constructor allows for flexible initialization with chat messages and an optional messages or a
+        system message. If both 'messages' (a list of ChatMessageContent instances) and 'system_message' are
+        provided, the 'system_message' is prepended to the list of messages, ensuring it appears as the first
+        message in the history. If only 'system_message' is provided without any 'messages', the chat history is
+        initialized with the 'system_message' as its first item. If 'messages' are provided without a
+        'system_message', the chat history is initialized with the provided messages as is.
+
+        Parameters:
+        - **data: Arbitrary keyword arguments. The constructor looks for two optional keys:
+            - 'messages': Optional[List[ChatMessageContent]], a list of chat messages to include in the history.
+            - 'system_message' Optional[str]: An optional string representing a system-generated message to be
+                included at the start of the chat history.
+
+        Note: The 'system_message' is not retained as part of the class's attributes; it's used during
+        initialization and then discarded. The rest of the keyword arguments are passed to the superclass
+        constructor and handled according to the Pydantic model's behavior.
+        """
+        system_message_content = data.pop("system_message", None)
+
+        if system_message_content:
+            system_message = ChatMessageContent(role=ChatRole.SYSTEM, content=system_message_content)
+
+            if "messages" in data:
+                data["messages"] = [system_message] + data["messages"]
+            else:
+                data["messages"] = [system_message]
 
         super().__init__(**data)
 
-        if system_message:
-            self.add_system_message(system_message)
-
     def add_system_message(self, content: str) -> None:
-        """Add a system message to the chat template."""
+        """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.SYSTEM, content))
 
     def add_user_message(self, content: str) -> None:
-        """Add a user message to the chat template."""
+        """Add a user message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.USER, content))
 
     def add_assistant_message(self, content: str) -> None:
-        """Add an assistant message to the chat template."""
+        """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content))
 
     def add_tool_message(self, content: str, metadata: Optional[dict[str, Any]] = None) -> None:
-        """Add a tool message to the chat template."""
+        """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content), metadata=metadata)
 
     def add_message(
@@ -138,15 +167,69 @@ class ChatHistory(KernelBaseModel):
 
         return self.messages == other.messages
 
-    # TODO Add restore?
-    # @classmethod
-    # def restore(
-    #     cls,
-    #     messages: List[Dict[str, str]],
-    #     template: str,
-    #     template_engine: PromptTemplatingEngine,
-    #     prompt_config: PromptTemplateConfig,
-    #     parse_chat_system_prompt: bool = False,
-    #     parse_messages: bool = False,
-    #     **kwargs: Any,
-    # )
+    def serialize(self) -> str:
+        """
+        Serializes the ChatHistory instance to a JSON string.
+
+        Returns:
+            str: A JSON string representation of the ChatHistory instance.
+
+        Raises:
+            ValueError: If the ChatHistory instance cannot be serialized to JSON.
+        """
+        try:
+            return json.dumps(self.model_dump(), indent=4, default=pydantic_encoder)
+        except TypeError as e:
+            raise ValueError(f"Unable to serialize ChatHistory to JSON: {e}")
+
+    @classmethod
+    def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
+        """
+        Restores a ChatHistory instance from a JSON string.
+
+        Args:
+            chat_history_json (str): The JSON string to deserialize
+                into a ChatHistory instance.
+
+        Returns:
+            ChatHistory: The deserialized ChatHistory instance.
+
+        Raises:
+            ValueError: If the JSON string is invalid or the deserialized data
+                fails validation.
+        """
+        try:
+            history_dict = json.loads(chat_history_json)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON format: {e}")
+
+        try:
+            return parse_obj_as(cls, history_dict)
+        except ValidationError as e:
+            raise ValueError(f"Data validation error during deserialization: {e}")
+
+    def store_chat_history_to_file(chat_history: "ChatHistory", file_path: str) -> None:
+        """
+        Stores the serialized ChatHistory to a file.
+
+        Args:
+            chat_history (ChatHistory): The ChatHistory instance to serialize and store.
+            file_path (str): The path to the file where the serialized data will be stored.
+        """
+        json_str = chat_history.serialize()
+        with open(file_path, "w") as file:
+            file.write(json_str)
+
+    def load_chat_history_from_file(file_path: str) -> "ChatHistory":
+        """
+        Loads the ChatHistory from a file.
+
+        Args:
+            file_path (str): The path to the file from which to load the ChatHistory.
+
+        Returns:
+            ChatHistory: The deserialized ChatHistory instance.
+        """
+        with open(file_path, "r") as file:
+            json_str = file.read()
+        return ChatHistory.restore_chat_history(json_str)

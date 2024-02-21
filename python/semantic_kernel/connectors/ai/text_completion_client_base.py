@@ -4,7 +4,6 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, AsyncIterable, List
 
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
@@ -18,14 +17,14 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
     @abstractmethod
     async def complete(
         self,
-        chat_history: ChatHistory,
+        prompt: str,
         settings: "PromptExecutionSettings",
     ) -> List["TextContent"]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Arguments:
-            chat_history {ChatHistory} -- The chat history to send to the LLM.
+            prompt {str} -- The prompt to send to the LLM.
             settings {PromptExecutionSettings} -- Settings for the request.
 
             Returns:
@@ -35,14 +34,14 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
     @abstractmethod
     async def complete_stream(
         self,
-        chat_history: ChatHistory,
+        prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 
         Arguments:
-            chat_history {ChatHistory} -- The chat history to send to the LLM.
+            prompt {str} -- The prompt to send to the LLM.
             settings {PromptExecutionSettings} -- Settings for the request.
 
         Yields:

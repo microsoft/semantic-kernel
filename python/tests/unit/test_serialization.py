@@ -40,6 +40,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 )
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
@@ -69,6 +70,9 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             return f"F({arguments['input']})"
 
         return KernelFunction.from_native_method(my_function, "plugin")
+
+    def create_chat_history() -> ChatHistory:
+        return ChatHistory()
 
     def create_plugin_collection() -> KernelPluginCollection:
         """Return a plugin collection."""
@@ -100,6 +104,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             is_prompt=True,
             is_asynchronous=False,
         ),
+        ChatHistory: create_chat_history(),
         KernelPluginCollection: create_plugin_collection(),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
@@ -151,6 +156,7 @@ PYDANTIC_MODELS = [
     KernelParameterMetadata,
     KernelFunctionMetadata,
     KernelPluginCollection,
+    ChatHistory,
     pytest.param(
         KernelFunction,
         marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),

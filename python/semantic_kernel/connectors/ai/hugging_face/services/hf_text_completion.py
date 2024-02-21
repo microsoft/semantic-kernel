@@ -16,7 +16,6 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -48,6 +47,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                                    -- None if using device_map instead. (If both device and device_map
                                       are specified, device overrides device_map. If unintended,
                                       it can lead to unexpected behavior.)
+            service_id {Optional[str]} -- Service ID for the AI service.
             task {Optional[str]} -- Model completion task type, options are:
                 - summarization: takes a long text and returns a shorter summary.
                 - text-generation: takes incomplete text and returns a set of completion candidates.
@@ -79,21 +79,24 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
     async def complete(
         self,
-        chat_history: ChatHistory,
+        prompt: str,
         settings: HuggingFacePromptExecutionSettings,
+        **kwargs,
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Arguments:
-            chat_history {ChatHistory} -- Chat history object.
+            prompt {str} -- The prompt to send to the LLM.
             settings {HuggingFacePromptExecutionSettings} -- Settings for the request.
 
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
-            results = self.generator(chat_history.messages[-1].content, **settings.prepare_settings_dict())
+            results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
         if isinstance(results, list):
@@ -109,20 +112,23 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
     async def complete_stream(
         self,
-        chat_history: ChatHistory,
+        prompt: str,
         settings: HuggingFacePromptExecutionSettings,
+        **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Hugging Face model.
         Note that this method does not support multiple responses.
 
         Arguments:
-            chat_history {ChatHistory} -- Chat history object.
+            prompt {str} -- Prompt to complete.
             settings {HuggingFacePromptExecutionSettings} -- Request settings.
 
         Yields:
             List[StreamingTextContent] -- List of StreamingTextContent objects.
         """
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if settings.num_return_sequences > 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
@@ -133,9 +139,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             streamer = TextIteratorStreamer(AutoTokenizer.from_pretrained(self.ai_model_id))
             # See https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py#L159
             thread = Thread(
-                target=self.generator,
-                args={chat_history.messages[-1].content},
-                kwargs=settings.prepare_settings_dict(streamer=streamer),
+                target=self.generator, args={prompt}, kwargs=settings.prepare_settings_dict(streamer=streamer)
             )
             thread.start()
 

@@ -15,7 +15,6 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
     AzureTextCompletion,
 )
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 
 def test_azure_text_completion_init() -> None:
@@ -134,8 +133,6 @@ async def test_azure_text_completion_call_with_parameters(mock_create) -> None:
     api_version = "2023-03-15-preview"
 
     prompt = "hello world"
-    chat_history = ChatHistory()
-    chat_history.add_user_message(prompt)
     complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
     azure_text_completion = AzureTextCompletion(
         deployment_name=deployment_name,
@@ -144,7 +141,7 @@ async def test_azure_text_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
     )
 
-    await azure_text_completion.complete(chat_history, complete_prompt_execution_settings)
+    await azure_text_completion.complete(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -172,8 +169,6 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
     api_version = "2023-03-15-preview"
 
     prompt = "hello world"
-    chat_history = ChatHistory()
-    chat_history.add_user_message(prompt)
     complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
 
     token_bias = {"200": 100}
@@ -186,7 +181,7 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
         api_version=api_version,
     )
 
-    await azure_text_completion.complete(chat_history, complete_prompt_execution_settings)
+    await azure_text_completion.complete(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
