@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAITextClassificationService : ITextClassificationService
 {
     private readonly Dictionary<string, object?> _attributes = new();
-    private readonly IOpenAIModerationClient _client;
+    private readonly OpenAIModerationClient _client;
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
