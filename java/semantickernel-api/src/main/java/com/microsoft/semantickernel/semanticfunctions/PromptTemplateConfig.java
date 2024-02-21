@@ -41,6 +41,7 @@ public class PromptTemplateConfig implements Buildable {
 
     @Nullable
     private final String name;
+    @Nullable
     private final String template;
     private final String templateFormat;
     @Nullable
@@ -83,7 +84,7 @@ public class PromptTemplateConfig implements Buildable {
     public PromptTemplateConfig(
         @JsonProperty("schema") int schema,
         @Nullable @JsonProperty("name") String name,
-        @JsonProperty("template") String template,
+        @Nullable @JsonProperty("template") String template,
         @Nullable @JsonProperty(value = "template_format", defaultValue = SEMANTIC_KERNEL_TEMPLATE_FORMAT) String templateFormat,
         @Nullable @JsonProperty("description") String description,
         @Nullable @JsonProperty("input_variables") List<InputVariable> inputVariables,
@@ -122,7 +123,7 @@ public class PromptTemplateConfig implements Buildable {
      */
     public PromptTemplateConfig(
         @Nullable String name,
-        String template,
+        @Nullable String template,
         @Nullable String templateFormat,
         @Nullable String description,
         @Nullable List<InputVariable> inputVariables,
@@ -239,6 +240,7 @@ public class PromptTemplateConfig implements Buildable {
      *
      * @return The template of the prompt template config.
      */
+    @Nullable
     public String getTemplate() {
         return template;
     }
@@ -428,9 +430,6 @@ public class PromptTemplateConfig implements Buildable {
          * @return The prompt template config.
          */
         public PromptTemplateConfig build() {
-            if (template == null) {
-                throw new SKException("Template is required");
-            }
             return new PromptTemplateConfig(
                 name,
                 template,

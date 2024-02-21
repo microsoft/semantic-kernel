@@ -7,6 +7,7 @@ import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.ValueResolver;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
@@ -54,6 +55,10 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         Kernel kernel,
         @Nullable KernelFunctionArguments arguments,
         @Nullable InvocationContext context) {
+        String template = promptTemplate.getTemplate();
+        if (template == null) {
+            return Mono.error(new SKException("The prompt template is null."));
+        }
         HandleBarsPromptTemplateHandler handler = new HandleBarsPromptTemplateHandler(kernel,
             promptTemplate.getTemplate());
 

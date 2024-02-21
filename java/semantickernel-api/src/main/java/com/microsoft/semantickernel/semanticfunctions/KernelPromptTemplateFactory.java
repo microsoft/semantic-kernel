@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.semanticfunctions;
 import static com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory.HANDLEBARS_TEMPLATE_FORMAT;
 import static com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
 
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.DefaultPromptTemplate;
 import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.util.Locale;
@@ -17,6 +18,10 @@ public class KernelPromptTemplateFactory implements PromptTemplateFactory {
 
     @Override
     public PromptTemplate tryCreate(@Nonnull PromptTemplateConfig templateConfig) {
+        if (templateConfig.getTemplate() == null) {
+            throw new SKException("The prompt template is null.");
+        }
+
         switch (templateConfig.getTemplateFormat().toLowerCase(Locale.ROOT)) {
             case SEMANTIC_KERNEL_TEMPLATE_FORMAT:
                 return DefaultPromptTemplate.build(templateConfig);

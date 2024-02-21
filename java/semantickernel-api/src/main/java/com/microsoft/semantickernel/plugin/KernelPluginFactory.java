@@ -243,6 +243,8 @@ public class KernelPluginFactory {
         String template) {
         PromptTemplate promptTemplate;
 
+        config = config.copy().withTemplate(template).build();
+
         if (promptTemplateFactory != null) {
             promptTemplate = promptTemplateFactory.tryCreate(config);
         } else {
