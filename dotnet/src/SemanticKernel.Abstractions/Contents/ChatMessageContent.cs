@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -23,24 +21,15 @@ public class ChatMessageContent : KernelContent
     public AuthorRole Role { get; set; }
 
     /// <summary>
-    /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection.
+    /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection of <see cref="TextContent"/> type.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public string? Content
     {
         get
         {
-            if (this.Items.Count == 0)
-            {
-                return null;
-            }
-
-            if (this.Items[0] is TextContent textContent)
-            {
-                return textContent.Text;
-            }
-
-            throw new InvalidOperationException($"Cannot get the text content of the item of type {this.Items[0].GetType()}.");
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            return textContent?.Text;
         }
         set
         {
@@ -49,7 +38,13 @@ public class ChatMessageContent : KernelContent
                 return;
             }
 
-            if (this.Items.Count == 0)
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            if (textContent is not null)
+            {
+                textContent.Text = value;
+                textContent.Encoding = this.Encoding;
+            }
+            else
             {
                 this.Items.Add(new TextContent(
                     text: value,
@@ -58,17 +53,7 @@ public class ChatMessageContent : KernelContent
                     encoding: this.Encoding,
                     metadata: this.Metadata
                 ));
-                return;
             }
-
-            if (this.Items[0] is TextContent textContent)
-            {
-                textContent.Text = value;
-                textContent.Encoding = this.Encoding;
-                return;
-            }
-
-            throw new InvalidOperationException($"Cannot set text content for the item of type {this.Items[0].GetType()}");
         }
     }
 
@@ -77,13 +62,8 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     public ChatMessageContentItemCollection Items
     {
-        get
-        {
-            return this._items ??
-                Interlocked.CompareExchange(ref this._items, new ChatMessageContentItemCollection(), null) ??
-                this._items;
-        }
-        set { this._items = value ?? new ChatMessageContentItemCollection(); }
+        get => this._items ??= new ChatMessageContentItemCollection();
+        set => this._items = value;
     }
 
     /// <summary>
@@ -94,7 +74,8 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            if (this.Items.FirstOrDefault() is TextContent textContent)
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            if (textContent is not null)
             {
                 return textContent.Encoding;
             }
@@ -105,7 +86,8 @@ public class ChatMessageContent : KernelContent
         {
             this._encoding = value;
 
-            if (this.Items.FirstOrDefault() is TextContent textContent)
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            if (textContent is not null)
             {
                 textContent.Encoding = value;
             }
@@ -168,16 +150,7 @@ public class ChatMessageContent : KernelContent
     /// <inheritdoc/>
     public override string ToString()
     {
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
-        {
-            return this.Content ?? string.Empty;
-        }
-        catch
-        {
-            return string.Empty;
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
+        return this.Content ?? string.Empty;
     }
 
     private ChatMessageContentItemCollection? _items;
