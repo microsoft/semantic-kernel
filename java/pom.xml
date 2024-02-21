@@ -662,11 +662,11 @@
                                     <style>AOSP</style>
                                     <reflowLongStrings>true</reflowLongStrings>
                                 </googleJavaFormat>
+                                -->
                                 <licenseHeader>
                                     <content>// Copyright (c) Microsoft. All rights reserved.</content>
                                 </licenseHeader>
                                 <toggleOffOn />
-                                -->
                             </java>
                         </configuration>
                     </plugin>

@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.contextvariables.converters;
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;

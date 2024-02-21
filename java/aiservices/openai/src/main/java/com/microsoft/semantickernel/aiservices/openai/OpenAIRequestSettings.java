@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.openai;
 
 import com.azure.core.http.HttpHeaderName;

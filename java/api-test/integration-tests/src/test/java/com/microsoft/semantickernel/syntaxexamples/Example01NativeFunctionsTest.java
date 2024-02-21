@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-
 package com.microsoft.semantickernel.syntaxexamples;
 
 import com.microsoft.semantickernel.plugins.text.TextPlugin;

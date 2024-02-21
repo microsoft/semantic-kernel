@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
 import static com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.BlockTypes.NAMED_ARG;
