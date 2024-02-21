@@ -40,7 +40,7 @@ internal sealed class ChatMessage : IChatMessage
         this.Annotations = content.Text!.Annotations.Select(a => new Annotation(a.Text, a.StartIndex, a.EndIndex, a.FileCitation?.FileId ?? a.FilePath!.FileId, a.FileCitation?.Quote)).ToArray();
 
         this.Id = model.Id;
-        this.AgentId = string.IsNullOrWhiteSpace(model.AgentId) ? null : model.AgentId;
+        this.AgentId = string.IsNullOrWhiteSpace(model.AssistantId) ? null : model.AssistantId;
         this.Role = model.Role;
         this.Content = text;
         this.Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
