@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
+namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
@@ -90,7 +90,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient:this._httpClient);
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());

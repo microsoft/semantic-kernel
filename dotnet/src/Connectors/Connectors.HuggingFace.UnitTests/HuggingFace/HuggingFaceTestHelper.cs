@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Moq;
 using Moq.Protected;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace;
+namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 /// <summary>
 /// Helper for HuggingFace test purposes.

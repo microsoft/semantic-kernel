@@ -11,7 +11,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextGeneration;
 
 /// <summary>
-/// Integration tests for <see cref="HuggingFaceTextGenerationServiceOld"/>.
+/// Integration tests for <see cref="HuggingFaceTextGenerationService"/>.
 /// </summary>
 public sealed class HuggingFaceTextGenerationTests
 {

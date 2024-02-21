@@ -199,7 +199,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
     private static List<TextContent> GetTextContentFromResponse(TextGenerationResponse response, string modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();
 
-    private void LogTextGenerationUsage(PromptExecutionSettings executionSettings)
+    private void LogTextGenerationUsage(PromptExecutionSettings? executionSettings)
     {
         this.Logger?.LogDebug(
             "HuggingFace text generation usage: ModelId: {ModelId}",

@@ -12,10 +12,10 @@ using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;
+namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="HuggingFaceTextGenerationServiceOld"/> class.
+/// Unit tests for <see cref="HuggingFaceTextGenerationService"/> class.
 /// </summary>
 public sealed class HuggingFaceTextGenerationTests : IDisposable
 {

@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.Connectors.UnitTests;
+namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 {
