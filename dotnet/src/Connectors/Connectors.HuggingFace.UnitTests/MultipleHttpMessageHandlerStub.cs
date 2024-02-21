@@ -9,31 +9,23 @@ using System.Threading.Tasks;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
+#pragma warning disable CA1812
+
 internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 {
     private int _callIteration = 0;
 
-    public List<HttpRequestHeaders?> RequestHeaders { get; private set; }
+    public List<HttpRequestHeaders?> RequestHeaders { get; private set; } = [];
 
-    public List<HttpContentHeaders?> ContentHeaders { get; private set; }
+    public List<HttpContentHeaders?> ContentHeaders { get; private set; } = [];
 
-    public List<byte[]?> RequestContents { get; private set; }
+    public List<byte[]?> RequestContents { get; private set; } = [];
 
-    public List<Uri?> RequestUris { get; private set; }
+    public List<Uri?> RequestUris { get; private set; } = [];
 
-    public List<HttpMethod?> Methods { get; private set; }
+    public List<HttpMethod?> Methods { get; private set; } = [];
 
-    public List<HttpResponseMessage> ResponsesToReturn { get; set; }
-
-    public MultipleHttpMessageHandlerStub()
-    {
-        this.RequestHeaders = [];
-        this.ContentHeaders = [];
-        this.RequestContents = [];
-        this.RequestUris = [];
-        this.Methods = [];
-        this.ResponsesToReturn = [];
-    }
+    public List<HttpResponseMessage> ResponsesToReturn { get; set; } = [];
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

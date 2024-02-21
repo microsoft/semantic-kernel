@@ -3,7 +3,7 @@
 using System;
 using Xunit;
 
-namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
+namespace SemanticKernel.UnitTests;
 
 internal static class AssertExtensions
 {
