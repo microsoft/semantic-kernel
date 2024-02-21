@@ -39,7 +39,7 @@ internal sealed class ThreadMessageModel
     public string ThreadId { get; set; } = string.Empty;
 
     /// <summary>
-    /// The entity that produced the message. One of "user" or "agent".
+    /// The entity that produced the message. One of "user" or "assistant".
     /// </summary>
     [JsonPropertyName("role")]
     public string Role { get; set; } = string.Empty;
@@ -57,10 +57,10 @@ internal sealed class ThreadMessageModel
     public List<string> FileIds { get; set; } = new List<string>();
 
     /// <summary>
-    /// If applicable, the ID of the agent that authored this message.
+    /// If applicable, the ID of the assistant that authored this message.
     /// </summary>
-    [JsonPropertyName("agent_id")]
-    public string AgentId { get; set; } = string.Empty;
+    [JsonPropertyName("assistant_id")]
+    public string AssistantId { get; set; } = string.Empty;
 
     /// <summary>
     /// If applicable, the ID of the run associated with the authoring of this message.

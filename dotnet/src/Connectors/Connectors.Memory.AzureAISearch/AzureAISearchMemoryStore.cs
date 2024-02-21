@@ -420,7 +420,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         {
             Diagnostics =
             {
-                ApplicationId = HttpHeaderValues.UserAgent,
+                ApplicationId = HttpHeaderConstant.Values.UserAgent,
             },
         };
     }
