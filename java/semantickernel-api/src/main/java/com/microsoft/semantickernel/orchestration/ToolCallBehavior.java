@@ -34,7 +34,7 @@ public class ToolCallBehavior {
      * Create a new instance of ToolCallBehavior with defaults.
      */
     public ToolCallBehavior(boolean kernelFunctionsEnabled, int maximumAutoInvokeAttempts,
-                            @Nullable Set<String> enabledFunctions, @Nullable KernelFunction<?> requiredFunction) {
+        @Nullable Set<String> enabledFunctions, @Nullable KernelFunction<?> requiredFunction) {
         this.kernelFunctionsEnabled = kernelFunctionsEnabled;
         this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
         this.requiredFunction = requiredFunction;
@@ -208,7 +208,7 @@ public class ToolCallBehavior {
         public Builder withMaximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
             if (maximumAutoInvokeAttempts < 0) {
                 throw new SKException(
-                        "The maximum auto-invoke attempts should be greater than or equal to zero.");
+                    "The maximum auto-invoke attempts should be greater than or equal to zero.");
             }
             if (requiredFunction == null) {
                 this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
@@ -228,8 +228,7 @@ public class ToolCallBehavior {
                 kernelFunctionsEnabled,
                 maximumAutoInvokeAttempts,
                 enabledFunctions,
-                requiredFunction
-            );
+                requiredFunction);
         }
     }
 }
