@@ -70,7 +70,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="model">The name of the Hugging Face model.</param>
-    /// <param name="apiKey">The API key required for accesing the Hugging Face service.</param>
+    /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
     /// <param name="endPoint">The endpoint for the text embedding generation service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
@@ -97,7 +97,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="model">The name of the Hugging Face model.</param>
-    /// <param name="apiKey">The API key required for accesing the Hugging Face service.</param>
+    /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
     /// <param name="endPoint">The endpoint for the text embedding generation service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
