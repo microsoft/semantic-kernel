@@ -9,7 +9,7 @@
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp",
     "editor.codeActionsOnSave": {
-      "source.fixAll": true
+      "source.fixAll": "explicit"
     }
   },
   "editor.bracketPairColorization.enabled": true,
@@ -78,7 +78,7 @@
     "editor.formatOnSave": false,
     "editor.tabSize": 4,
     "editor.codeActionsOnSave": {
-      "source.fixAll": false
+      "source.fixAll": "never"
     },
   },
   "emeraldwalk.runonsave": {
@@ -96,5 +96,11 @@
     "python/tests"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "[typescript][typescriptreact]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    }
+  }
 }
