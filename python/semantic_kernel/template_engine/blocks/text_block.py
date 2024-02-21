@@ -21,6 +21,7 @@ class TextBlock(Block):
     @field_validator("content", mode="before")
     @classmethod
     def content_strip(cls, content: str):
+        # overload strip method text blocks are not stripped.
         return content
 
     @classmethod
@@ -46,9 +47,6 @@ class TextBlock(Block):
             text = text[:stop_index]
 
         return cls(content=text)
-
-    def is_valid(self) -> Tuple[bool, str]:
-        return True, ""
 
     def render(self, *_: Tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
         return self.content

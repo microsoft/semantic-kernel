@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from re import match as re_match
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
+from re import compile
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
 
-from pydantic import Field
+from pydantic import model_validator
 
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.utils.validation import FULLY_QUALIFIED_FUNCTION_NAME, FUNCTION_NAME_REGEX
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -16,32 +16,50 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+FUNCTION_ID_BLOCK_REGEX = r"^((?P<plugin>[0-9A-Za-z_]+)[.])?(?P<function>[0-9A-Za-z_]+)$"
+
+FUNCTION_ID_BLOCK_MATCHER = compile(FUNCTION_ID_BLOCK_REGEX)
+
 
 class FunctionIdBlock(Block):
+    """Block to represent a function id. It can be used to call a function from a plugin.
+
+    The content is parsed using a regex, that returns either a plugin and
+    function name or just a function name, depending on the content.
+
+    Anything other then that and a ValueError is raised.
+
+    Args:
+        content (str): The content of the block.
+        function_name (Optional[str], optional): The function name.
+        plugin_name (Optional[str], optional): The plugin name.
+
+    Raises:
+        ValueError: If the content does not have valid syntax.
+    """
+
     type: ClassVar[BlockTypes] = BlockTypes.FUNCTION_ID
-    plugin_name: Optional[str] = Field("", init=False, exclude=True)
-    function_name: Optional[str] = Field("", init=False, exclude=True)
-    validated: bool = Field(True, init=False, exclude=True)
+    function_name: Optional[str] = ""
+    plugin_name: Optional[str] = None
 
-    def model_post_init(self, __context: Any):
-        if self.content.count(".") > 1:
-            raise ValueError("The content should not have more then 1 dot in it.")
-        names = re_match(FULLY_QUALIFIED_FUNCTION_NAME, self.content)
-        if names and (groups := names.groupdict()):
-            self.plugin_name = groups["plugin"]
-            self.function_name = groups["function"]
-            return
-        function_only = re_match(FUNCTION_NAME_REGEX, self.content)
-        if function_only:
-            self.plugin_name = ""
-            self.function_name = self.content
-            return
-        self.validated = False
+    @model_validator(mode="before")
+    @classmethod
+    def parse_content(cls, fields: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse the content of the function id block and extract the plugin and function name.
 
-    def is_valid(self) -> Tuple[bool, str]:
-        if self.validated:
-            return self.validated, ""
-        return self.validated, "Not a valid plugin and function name, should be one dot surrounded by the names."
+        If both are present in the fields, return the fields as is.
+        Otherwise use the regex to extract the plugin and function name.
+        """
+        if "plugin_name" in fields and "function_name" in fields:
+            return fields
+        content = fields.get("content", "").strip()
+        matches = FUNCTION_ID_BLOCK_MATCHER.match(content)
+        if not matches:
+            raise FunctionIdBlockSyntaxError(content=content)
+        if plugin := matches.groupdict().get("plugin"):
+            fields["plugin_name"] = plugin
+        fields["function_name"] = matches.group("function")
+        return fields
 
     def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
         return self.content

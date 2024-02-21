@@ -93,7 +93,7 @@ def test_init_native_function_from_kernel_function_decorator_defaults():
         pass
 
     assert decorated_function.__kernel_function__ is True
-    assert decorated_function.__kernel_function_description__ == None
+    assert decorated_function.__kernel_function_description__ is None
     assert decorated_function.__kernel_function_name__ == "decorated_function"
 
     native_function = KernelFunction.from_native_method(decorated_function, "MockPlugin")

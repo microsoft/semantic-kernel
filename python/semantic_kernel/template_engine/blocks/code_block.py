@@ -2,14 +2,15 @@
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import CodeBlockRenderError, CodeBlockTokenError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
@@ -20,72 +21,108 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+VALID_ARG_TYPES = [BlockTypes.VALUE, BlockTypes.VARIABLE, BlockTypes.NAMED_ARG]
+
 
 class CodeBlock(Block):
+    """Create a code block.
+
+    A code block is a block that usually contains functions to be executed by the kernel.
+    It consists of a list of tokens that can be either a function_id, value, a variable or a named argument.
+
+    If the first token is not a function_id but a variable or value, the rest of the tokens will be ignored.
+    Only the first argument for the function can be a variable or value, the rest of the tokens have be named arguments.
+
+    Args:
+        content: The content of the code block.
+        tokens: The list of tokens that compose the code block, if empty, will be created by the CodeTokenizer.
+
+    Raises:
+        CodeBlockTokenError: If the content does not contain at least one token.
+        CodeBlockTokenError: If the first token is a named argument.
+        CodeBlockTokenError: If the second token is not a value or variable.
+        CodeBlockTokenError: If a token is not a named argument after the second token.
+        CodeBlockRenderError: If the plugin collection is not set in the kernel.
+        CodeBlockRenderError: If the function is not found in the plugin collection.
+        CodeBlockRenderError: If the function does not take any arguments but it is being
+            called in the template with arguments.
+    """
+
     type: ClassVar[BlockTypes] = BlockTypes.CODE
     tokens: List[Block] = Field(default_factory=list)
-    validated: bool = Field(False, init=False, exclude=True)
 
-    def model_post_init(self, __context: Any):
-        if not self.tokens:
-            self.tokens = CodeTokenizer.tokenize(self.content)
+    @model_validator(mode="before")
+    @classmethod
+    def parse_content(cls, fields: Any) -> Any:
+        """Parse the content of the code block and tokenize it.
 
-    def is_valid(self) -> Tuple[bool, str]:
-        error_msg = ""
+        If tokens are already present, skip the tokenizing.
+        """
+        if isinstance(fields, Block) or "tokens" in fields:
+            return fields
+        content = fields.get("content", "").strip()
+        fields["tokens"] = CodeTokenizer.tokenize(content)
+        return fields
 
-        for token in self.tokens:
-            is_valid, error_msg = token.is_valid()
-            if not is_valid:
-                logger.error(error_msg)
-                return False, error_msg
+    @field_validator("tokens", mode="after")
+    def check_tokens(cls, tokens: List[Block]) -> List[Block]:
+        """Check the tokens in the list.
 
-        if len(self.tokens) > 1:
-            if self.tokens[0].type != BlockTypes.FUNCTION_ID:
-                error_msg = f"Unexpected second token found: {self.tokens[1].content}"
-                logger.error(error_msg)
-                return False, error_msg
+        If the first token is a value or variable, the rest of the tokens will be ignored.
+        If the first token is a function_id, then the next token can be a value,
+            variable or named_arg, the rest have to be named_args.
 
-            if self.tokens[1].type != BlockTypes.VALUE and self.tokens[1].type != BlockTypes.VARIABLE:
-                error_msg = "Functions support only one parameter"
-                logger.error(error_msg)
-                return False, error_msg
-
-        if len(self.tokens) > 2:
-            error_msg = f"Unexpected second token found: {self.tokens[1].content}"
-            logger.error(error_msg)
-            return False, error_msg
-
-        self.validated = True
-
-        return True, ""
+        Raises:
+            CodeBlockTokenError: If the content does not contain at least one token.
+            CodeBlockTokenError: If the first token is a named argument.
+            CodeBlockTokenError: If the second token is not a value or variable.
+            CodeBlockTokenError: If a token is not a named argument after the second token.
+        """
+        if not tokens:
+            raise CodeBlockTokenError("The content should contain at least one token.")
+        for index, token in enumerate(tokens):
+            if index == 0 and token.type == BlockTypes.NAMED_ARG:
+                raise CodeBlockTokenError(
+                    f"The first token needs to be a function_id, value or variable, got: {token.type}"
+                )
+            if index == 0 and token.type in [BlockTypes.VALUE, BlockTypes.VARIABLE]:
+                if len(tokens) > 1:
+                    logger.warning(
+                        "The first token is a value or variable, but there are more tokens in the content, \
+these will be ignored."
+                    )
+                return [token]
+            if index == 1 and token.type not in VALID_ARG_TYPES:
+                raise CodeBlockTokenError(
+                    f"Unexpected type for the second token type, should be variable, value or named_arg: {token.type}"
+                )
+            if index > 1 and token.type != BlockTypes.NAMED_ARG:
+                raise CodeBlockTokenError(
+                    f"Every argument for the function after the first has to be a named arg, instead: {token.type}"
+                )
+        return tokens
 
     async def render_code(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
-        if not self.validated:
-            is_valid, error = self.is_valid()
-            if not is_valid:
-                raise ValueError(error)
+        """Render the code block.
 
+        If the first token is a function_id, it will call the function from the plugin collection.
+        Otherwise it is a value or variable and those are then rendered directly.
+        """
         logger.debug(f"Rendering code: `{self.content}`")
-        if len(self.tokens) == 0:
-            raise ValueError("No tokens to render.")
-
-        if self.tokens[0].type in (BlockTypes.VALUE, BlockTypes.VARIABLE):
-            return self.tokens[0].render(kernel, arguments)
-
         if self.tokens[0].type == BlockTypes.FUNCTION_ID:
             return await self._render_function_call(kernel, arguments)
-
-        raise ValueError(f"Unexpected first token type: {self.tokens[0].type}")
+        # validated that if the first token is not a function_id, it is a value or variable
+        return self.tokens[0].render(kernel, arguments)
 
     async def _render_function_call(self, kernel: "Kernel", arguments: "KernelArguments"):
         if not kernel.plugins:
-            raise ValueError("Plugin collection not set")
+            raise CodeBlockRenderError("Plugin collection not set in kernel")
         function_block = self.tokens[0]
         function = self._get_function_from_plugin_collection(kernel.plugins, function_block)
         if not function:
             error_msg = f"Function `{function_block.content}` not found"
             logger.error(error_msg)
-            raise ValueError(error_msg)
+            raise CodeBlockRenderError(error_msg)
 
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:
@@ -93,7 +130,7 @@ class CodeBlock(Block):
 
         result = await function.invoke(kernel, arguments_clone)
         if exc := result.metadata.get("error", None):
-            raise ValueError("Function resulted in a error: %s", exc) from exc
+            raise CodeBlockRenderError(f"Error rendering function: {function.describe()} with error: {exc}") from exc
 
         return str(result) if result else ""
 
@@ -103,46 +140,18 @@ class CodeBlock(Block):
         arguments: "KernelArguments",
         function_metadata: KernelFunctionMetadata,
     ) -> "KernelArguments":
-        function_block: FunctionIdBlock = self.tokens[0]
-        # current templates only support 1 argument.
-        function_argument: Block = self.tokens[1]
-
         if not function_metadata.parameters:
-            raise ValueError(
-                f"Function {function_block.plugin_name}.{function_block.function_name} does not take any arguments "
+            raise CodeBlockRenderError(
+                f"Function {function_metadata.plugin_name}.{function_metadata.name} does not take any arguments "
                 f"but it is being called in the template with {len(self.tokens) - 1} arguments."
             )
-
-        # if function_argument.type != BlockTypes.NAMED_ARG:
-        logger.debug(f"Passing variable/value: `{self.tokens[1].content}`")
-        rendered_value = function_argument.render(kernel, arguments)
-        if function_argument.type == BlockTypes.VALUE:
-            arguments[function_metadata.parameters[0].name] = rendered_value
-        elif function_argument.type == BlockTypes.VARIABLE:
-            arguments[function_argument.name] = rendered_value
-        else:
-            raise ValueError("Unknown block type: %s", self.tokens[0].type)
-            # first_positional_parameter_name = function_metadata.parameters[0].name
-            # first_positional_input_value = function_argument.render(kernel, arguments)
-            # arguments[first_positional_parameter_name] = first_positional_input_value
-            # named_args_start_index += 1
-
-        # Commented out because not needed until ADR0009 is implemented
-        # for i in range(named_args_start_index, len(self.tokens)):
-        #     arg = self.tokens[i]
-        #     if arg.type != BlockTypes.NAMED_ARG:
-        #         error_msg = "Functions support up to one positional argument"
-        #         logger.error(error_msg)
-        #         raise Exception(f"Unexpected first token type: {arg.type}")
-
-        #     if first_positional_parameter_name and first_positional_parameter_name.lower() == arg.name.lower():
-        #         raise ValueError(
-        #             f"Ambiguity found as a named parameter '{arg.name}' cannot be set for the first parameter "
-        #             f"when there is also a positional value: '{first_positional_input_value}' provided. "
-        #             f"Function: {function_block.plugin_name}.{function_block.function_name}"
-        #         )
-
-        #     arguments[arg.name] = arg.get_value(arguments)
+        for index, token in enumerate(self.tokens[1:], start=1):
+            logger.debug(f"Parsing variable/value: `{self.tokens[1].content}`")
+            rendered_value = token.render(kernel, arguments)
+            if token.type != BlockTypes.NAMED_ARG and index == 1:
+                arguments[function_metadata.parameters[0].name] = rendered_value
+                continue
+            arguments[token.name] = rendered_value
 
         return arguments
 
