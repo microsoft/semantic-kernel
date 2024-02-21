@@ -98,7 +98,7 @@ async def main():
 
     api_key, org_id = sk.openai_settings_from_dot_env()
     kernel.add_service(
-        sk_oai.OpenAIChatCompletion(service_id=service_id,ai_model_id=model, api_key=api_key, org_id=org_id),
+        sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
     bing_api_key = sk.bing_search_settings_from_dot_env()

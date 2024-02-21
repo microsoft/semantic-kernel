@@ -25,7 +25,9 @@ ChatBot:>
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.add_service(sk_oai.OpenAIChatCompletion(service_id="chat-gpt",ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id))
+kernel.add_service(
+    sk_oai.OpenAIChatCompletion(service_id="chat-gpt", ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+)
 
 settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat-gpt")
 settings.max_tokens = 2000
@@ -38,8 +40,15 @@ prompt_template_config = PromptTemplateConfig(
     template_format="semantic-kernel",
     input_variables=[
         InputVariable(
-            name="user_input", description="The history of the conversation", is_required=True, default="",
-            name="chat_history", description="The history of the conversation", is_required=True,
+            name="user_input",
+            description="The history of the conversation",
+            is_required=True,
+            default="",
+        ),
+        InputVariable(
+            name="chat_history",
+            description="The history of the conversation",
+            is_required=True,
         ),
     ],
     execution_settings=settings,
@@ -52,6 +61,7 @@ chat.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out w
 chat_function = kernel.create_function_from_prompt(
     plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
 )
+
 
 async def chat() -> bool:
     try:

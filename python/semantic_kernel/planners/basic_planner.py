@@ -5,10 +5,10 @@ import json
 
 import regex
 
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 class Plan:
@@ -179,7 +179,7 @@ class BasicPlanner:
         """
         exec_settings = PromptExecutionSettings(
             service_id=self.service_id,
-            max_tokens=1000, 
+            max_tokens=1000,
             temperature=0.8,
         )
 
@@ -214,8 +214,8 @@ class BasicPlanner:
 
         # TODO: there is some silly escape chars affecting the result of plan.generated_plan.value
         # There should be \n only but they are showing up as \\n
-        encoded_bytes = generated_plan_string.encode('utf-8')
-        decoded_string = encoded_bytes.decode('unicode_escape')
+        encoded_bytes = generated_plan_string.encode("utf-8")
+        decoded_string = encoded_bytes.decode("unicode_escape")
 
         generated_plan = json.loads(decoded_string)
 

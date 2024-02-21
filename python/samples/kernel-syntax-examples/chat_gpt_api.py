@@ -24,7 +24,9 @@ flowery prose.
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.add_service(sk_oai.OpenAIChatCompletion(service_id="chat-gpt",ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id))
+kernel.add_service(
+    sk_oai.OpenAIChatCompletion(service_id="chat-gpt", ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+)
 
 settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat-gpt")
 settings.max_tokens = 2000
@@ -37,8 +39,15 @@ prompt_template_config = PromptTemplateConfig(
     template_format="semantic-kernel",
     input_variables=[
         InputVariable(
-            name="user_input", description="The history of the conversation", is_required=True, default="",
-            name="chat_history", description="The history of the conversation", is_required=True,
+            name="user_input",
+            description="The history of the conversation",
+            is_required=True,
+            default="",
+        ),
+        InputVariable(
+            name="chat_history",
+            description="The history of the conversation",
+            is_required=True,
         ),
     ],
     execution_settings=settings,
@@ -54,8 +63,8 @@ chat_function = kernel.create_function_from_prompt(
 
 chat.add_user_message("I want to find a hotel in Seattle with free wifi and a pool.")
 
-async def chat() -> bool:
 
+async def chat() -> bool:
     try:
         user_input = input("User:> ")
     except KeyboardInterrupt:

@@ -8,6 +8,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
+
 async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the semantic memory
     await kernel.memory.save_information("aboutMe", id="info1", text="My name is Andrea")
@@ -31,7 +32,8 @@ async def search_memory_examples(kernel: sk.Kernel) -> None:
         result = await kernel.memory.search("aboutMe", question)
         print(f"Answer: {result[0].text}\n")
 
-#TODO fix this ASAP
+
+# TODO fix this ASAP
 async def setup_chat_with_memory(
     kernel: sk.Kernel,
 ) -> Tuple[sk.KernelFunction, sk.KernelContext]:
@@ -96,8 +98,12 @@ async def main() -> None:
 
     api_key, org_id = sk.openai_settings_from_dot_env()
     service_id = "chat-gpt"
-    kernel.add_service(sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id))
-    embedding_gen =sk_oai.OpenAITextEmbedding(service_id="ada",ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id)
+    kernel.add_service(
+        sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+    )
+    embedding_gen = sk_oai.OpenAITextEmbedding(
+        service_id="ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id
+    )
     kernel.add_service(embedding_gen)
 
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)

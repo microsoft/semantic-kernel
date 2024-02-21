@@ -95,8 +95,15 @@ async def main():
         template_format="semantic-kernel",
         input_variables=[
             InputVariable(
-                name="user_input", description="The history of the conversation", is_required=True, default="",
-                name="chat_history", description="The history of the conversation", is_required=True,
+                name="user_input",
+                description="The history of the conversation",
+                is_required=True,
+                default="",
+            ),
+            InputVariable(
+                name="chat_history",
+                description="The history of the conversation",
+                is_required=True,
             ),
         ],
         execution_settings=settings,
@@ -110,7 +117,10 @@ async def main():
         plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
     )
 
-    response = kernel.invoke_stream(chat_function, KernelArguments(user_input="I want to find a hotel in Seattle with free wifi and a pool.", chat_history=chat))
+    response = kernel.invoke_stream(
+        chat_function,
+        KernelArguments(user_input="I want to find a hotel in Seattle with free wifi and a pool.", chat_history=chat),
+    )
     messages = []
     tool_call = None
     async for message in response:
