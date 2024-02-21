@@ -47,31 +47,20 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertySetterShouldUpdateContentOfTextContentItem()
-    {
-        // Arrange
-        var sut = new ChatMessageContent(AuthorRole.User, content: "initial-fake-content");
-
-        // Act
-        sut.Content = "fake-content";
-
-        // Assert
-        Assert.Single(sut.Items);
-        Assert.Equal("fake-content", ((TextContent)sut.Items[0]).Text);
-    }
-
-    [Fact]
-    public void ContentPropertySetterShouldRejectUpdatingContentIfThereIsMoreThanOneTextContentItem()
+    public void ContentPropertySetterShouldUpdateContentOfFirstTextContentItem()
     {
         // Arrange
         var items = new ChatMessageContentItemCollection();
+        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123")));
         items.Add(new TextContent("fake-content-1"));
         items.Add(new TextContent("fake-content-2"));
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items);
 
         // Act
-        Assert.Throws<InvalidOperationException>(() => sut.Content = "fake-content");
+        sut.Content = "fake-content-1-update";
+
+        Assert.Equal("fake-content-1-update", ((TextContent)sut.Items[1]).Text);
     }
 
     [Fact]
@@ -95,17 +84,18 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertyGetterShouldRejectReturningContentIfThereIsMoreThanOneTextContentItem()
+    public void ContentPropertyGetterShouldReturnContentOfTheFirstTextContentItem()
     {
         // Arrange
         var items = new ChatMessageContentItemCollection();
+        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123")));
         items.Add(new TextContent("fake-content-1"));
         items.Add(new TextContent("fake-content-2"));
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items);
 
         // Act and assert
-        Assert.Throws<InvalidOperationException>(() => sut.Content == "fake-content");
+        Assert.Equal("fake-content-1", sut.Content);
     }
 
     [Fact]

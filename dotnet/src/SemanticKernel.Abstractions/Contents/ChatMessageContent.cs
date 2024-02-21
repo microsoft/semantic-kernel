@@ -21,14 +21,14 @@ public class ChatMessageContent : KernelContent
     public AuthorRole Role { get; set; }
 
     /// <summary>
-    /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection.
+    /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection of <see cref="TextContent"/> type.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public string? Content
     {
         get
         {
-            var textContent = this.Items.OfType<TextContent>().SingleOrDefault();
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
             return textContent?.Text;
         }
         set
@@ -38,7 +38,7 @@ public class ChatMessageContent : KernelContent
                 return;
             }
 
-            var textContent = this.Items.OfType<TextContent>().SingleOrDefault();
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
             if (textContent is not null)
             {
                 textContent.Text = value;
@@ -74,7 +74,7 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            var textContent = this.Items.OfType<TextContent>().SingleOrDefault();
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
             if (textContent is not null)
             {
                 return textContent.Encoding;
@@ -86,7 +86,7 @@ public class ChatMessageContent : KernelContent
         {
             this._encoding = value;
 
-            var textContent = this.Items.OfType<TextContent>().SingleOrDefault();
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
             if (textContent is not null)
             {
                 textContent.Encoding = value;
@@ -150,16 +150,7 @@ public class ChatMessageContent : KernelContent
     /// <inheritdoc/>
     public override string ToString()
     {
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
-        {
-            return this.Content ?? string.Empty;
-        }
-        catch
-        {
-            return string.Empty;
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
+        return this.Content ?? string.Empty;
     }
 
     private ChatMessageContentItemCollection? _items;
