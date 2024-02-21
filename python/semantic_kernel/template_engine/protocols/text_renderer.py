@@ -20,4 +20,3 @@ class TextRenderer(Protocol):
         :param variables: Optional variables used to render the block
         :return: Rendered content
         """
-        ...

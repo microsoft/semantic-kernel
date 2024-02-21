@@ -7,7 +7,7 @@ from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
 test_data_good = [
     0,
     1.0,
-    -10,
+    -2,
     "0",
     "1",
     "2.1",

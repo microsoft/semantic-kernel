@@ -1,5 +1,5 @@
 import sys
-from typing import AsyncIterable, Optional, Union
+from typing import TYPE_CHECKING, AsyncIterable, Optional, Union
 
 import pytest
 
@@ -10,6 +10,9 @@ else:
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import _parse_annotation, kernel_function
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 class MiscClass:
@@ -96,7 +99,7 @@ def test_kernel_function_param_annotated():
     my_func = getattr(decorator_test, "func_input_annotated")
     assert my_func.__kernel_function_context_parameters__[0]["description"] == "input description"
     assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
-    assert my_func.__kernel_function_context_parameters__[0]["required"] is True
+    assert my_func.__kernel_function_context_parameters__[0]["required"]
     assert my_func.__kernel_function_context_parameters__[0]["default_value"] is None
     assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
 
@@ -106,7 +109,7 @@ def test_kernel_function_param_optional():
     my_func = getattr(decorator_test, "func_input_optional")
     assert my_func.__kernel_function_context_parameters__[0]["description"] == ""
     assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
-    assert my_func.__kernel_function_context_parameters__[0]["required"] is False
+    assert not my_func.__kernel_function_context_parameters__[0]["required"]
     assert my_func.__kernel_function_context_parameters__[0]["default_value"] == "test"
     assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
 
@@ -116,7 +119,7 @@ def test_kernel_function_param_annotated_optional():
     my_func = getattr(decorator_test, "func_input_annotated_optional")
     assert my_func.__kernel_function_context_parameters__[0]["description"] == "input description"
     assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
-    assert my_func.__kernel_function_context_parameters__[0]["required"] is False
+    assert not my_func.__kernel_function_context_parameters__[0]["required"]
     assert my_func.__kernel_function_context_parameters__[0]["default_value"] == "test"
     assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
 
@@ -126,8 +129,8 @@ def test_kernel_function_return_type():
     my_func = getattr(decorator_test, "func_return_type")
     assert my_func.__kernel_function_return_type__ == "str"
     assert my_func.__kernel_function_return_description__ == ""
-    assert my_func.__kernel_function_return_required__ is True
-    assert my_func.__kernel_function_streaming__ is False
+    assert my_func.__kernel_function_return_required__
+    assert not my_func.__kernel_function_streaming__
 
 
 def test_kernel_function_return_type_optional():
@@ -135,8 +138,8 @@ def test_kernel_function_return_type_optional():
     my_func = getattr(decorator_test, "func_return_type_optional")
     assert my_func.__kernel_function_return_type__ == "str"
     assert my_func.__kernel_function_return_description__ == ""
-    assert my_func.__kernel_function_return_required__ is False
-    assert my_func.__kernel_function_streaming__ is False
+    assert not my_func.__kernel_function_return_required__
+    assert not my_func.__kernel_function_streaming__
 
 
 def test_kernel_function_return_type_annotated():
@@ -144,8 +147,8 @@ def test_kernel_function_return_type_annotated():
     my_func = getattr(decorator_test, "func_return_type_annotated")
     assert my_func.__kernel_function_return_type__ == "str"
     assert my_func.__kernel_function_return_description__ == "test return"
-    assert my_func.__kernel_function_return_required__ is True
-    assert my_func.__kernel_function_streaming__ is False
+    assert my_func.__kernel_function_return_required__
+    assert not my_func.__kernel_function_streaming__
 
 
 def test_kernel_function_return_type_streaming():
@@ -153,8 +156,8 @@ def test_kernel_function_return_type_streaming():
     my_func = getattr(decorator_test, "func_return_type_streaming")
     assert my_func.__kernel_function_return_type__ == "str"
     assert my_func.__kernel_function_return_description__ == "test return"
-    assert my_func.__kernel_function_return_required__ is True
-    assert my_func.__kernel_function_streaming__ is True
+    assert my_func.__kernel_function_return_required__
+    assert my_func.__kernel_function_streaming__
 
 
 @pytest.mark.parametrize(

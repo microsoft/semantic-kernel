@@ -58,23 +58,24 @@ class KernelPromptTemplate(PromptTemplateBase):
                         # is a named arg block.
                         add_if_missing(code_block.var_block.name)
 
-    def extract_blocks(self, config: PromptTemplateConfig, validate: bool = True) -> List[Block]:
+    def extract_blocks(self, config: PromptTemplateConfig) -> List[Block]:
         """
         Given a prompt template string, extract all the blocks
         (text, variables, function calls).
 
+        Args:
+            template_text: Prompt template
+        
+        Returns:
+            A list of all the blocks, ie the template tokenized in
+            text, variables and function calls
         """
         template_text = config.template
         logger.debug(f"Extracting blocks from template: {template_text}")
-        blocks = self._tokenizer.tokenize(template_text)
-
-        if validate:
-            for block in blocks:
-                is_valid, error_message = block.is_valid()
-                if not is_valid:
-                    raise ValueError(error_message)
-
-        return blocks
+        if not template_text:
+            return []
+        logger.debug(f"Extracting blocks from template: {template_text}")
+        return TemplateTokenizer.tokenize(template_text)
 
     async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
         """
@@ -102,19 +103,16 @@ class KernelPromptTemplate(PromptTemplateBase):
         from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 
         logger.debug(f"Rendering list of {len(blocks)} blocks")
-        rendered_blocks = []
+        rendered_blocks: List[str] = []
         for block in blocks:
             if isinstance(block, TextRenderer):
                 rendered_blocks.append(block.render(kernel, arguments))
-            elif isinstance(block, CodeRenderer):
+                continue
+            if isinstance(block, CodeRenderer):
                 rendered_blocks.append(await block.render_code(kernel, arguments))
-            else:
-                error = "unexpected block type, the block doesn't have a rendering " "protocol assigned to it"
-                logger.error(error)
-                raise ValueError(error)
-
-        logger.debug(f"Rendered prompt: {''.join(rendered_blocks)}")
-        return "".join(rendered_blocks)
+        prompt = "".join(rendered_blocks)
+        logger.debug(f"Rendered prompt: {prompt}")
+        return prompt
 
     def render_variables(
         self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None
@@ -132,14 +130,12 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         logger.debug("Rendering variables")
 
-        rendered_blocks = []
+        rendered_blocks: List[Block] = []
         for block in blocks:
-            if block.type != BlockTypes.VARIABLE:
-                rendered_blocks.append(block)
+            if block.type == BlockTypes.VARIABLE:
+                rendered_blocks.append(TextBlock.from_text(block.render(kernel, arguments)))
                 continue
-            if not isinstance(block, TextRenderer):
-                raise ValueError("TextBlock must implement TextRenderer protocol")
-            rendered_blocks.append(TextBlock.from_text(block.render(kernel, arguments)))
+            rendered_blocks.append(block)
 
         return rendered_blocks
 
@@ -154,17 +150,14 @@ class KernelPromptTemplate(PromptTemplateBase):
             Text Blocks
         """
         from semantic_kernel.template_engine.blocks.text_block import TextBlock
-        from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
-
+        
         logger.debug("Rendering code")
 
-        rendered_blocks = []
+        rendered_blocks: List[Block] = []
         for block in blocks:
-            if block.type != BlockTypes.CODE:
-                rendered_blocks.append(block)
+            if block.type == BlockTypes.CODE:
+                rendered_blocks.append(TextBlock.from_text(await block.render_code(kernel, arguments)))
                 continue
-            if not isinstance(block, CodeRenderer):
-                raise ValueError("CodeBlock must implement CodeRenderer protocol")
-            rendered_blocks.append(TextBlock.from_text(await block.render_code(kernel, arguments)))
+            rendered_blocks.append(block)
 
         return rendered_blocks

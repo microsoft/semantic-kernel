@@ -150,6 +150,10 @@ class KernelFunction(KernelBaseModel):
             **kwargs,
         )
 
+    @property
+    def metadata(self) -> KernelFunctionMetadata:
+        return self.describe()
+
     @staticmethod
     def from_native_method(method: Callable[..., Any], plugin_name: str) -> "KernelFunction":
         """
@@ -502,8 +506,8 @@ class KernelFunction(KernelBaseModel):
                 added to the KernelArguments.
 
         Yields:
-            StreamingKernelContent or FunctionResult -- The results of the function, if
-            there is an error a FunctionResult is yielded.
+            StreamingKernelContent or FunctionResult -- The results of the function,
+                if there is an error a FunctionResult is yielded.
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
