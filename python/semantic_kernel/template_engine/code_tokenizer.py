@@ -4,6 +4,7 @@ import logging
 from typing import List
 
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
@@ -120,7 +121,7 @@ class CodeTokenizer:
 
             if current_token_type is None:
                 if not space_separator_found:
-                    raise ValueError("Tokens must be separated by one space least")
+                    raise CodeBlockSyntaxError("Tokens must be separated by one space least")
 
                 if current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
                     # A quoted value starts here
@@ -148,6 +149,6 @@ class CodeTokenizer:
             else:
                 blocks.append(FunctionIdBlock(content="".join(current_token_content)))
         else:
-            raise ValueError("Tokens must be separated by one space least")
+            raise CodeBlockSyntaxError("Tokens must be separated by one space least")
 
         return blocks

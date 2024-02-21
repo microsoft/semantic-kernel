@@ -3,6 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, List, Optional
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class PromptTemplateEngine:
+class PromptTemplateEngine(KernelBaseModel):
     def extract_blocks(self, template_text: Optional[str] = None) -> List[Block]:
         """
         Given a prompt template string, extract all the blocks

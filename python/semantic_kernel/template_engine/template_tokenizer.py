@@ -4,6 +4,14 @@ import logging
 from typing import List
 
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import (
+    CodeBlockSyntaxError,
+    CodeBlockTokenError,
+    FunctionIdBlockSyntaxError,
+    TemplateSyntaxError,
+    ValBlockSyntaxError,
+    VarBlockSyntaxError,
+)
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols
@@ -111,37 +119,24 @@ class TemplateTokenizer:
                         else:
                             try:
                                 code_blocks = code_tokenizer.tokenize(content_without_delimiters)
-                            except ValueError as e:
-                                logger.warning(f"Failed to tokenize code block: {content_without_delimiters}. {e}")
-                                raise e
-
-                            first_block_type = code_blocks[0].type
-
-                            if first_block_type == BlockTypes.VARIABLE:
-                                if len(code_blocks) > 1:
-                                    raise ValueError(
-                                        "Invalid token detected after the " f"variable: {content_without_delimiters}"
-                                    )
-
-                                blocks.append(code_blocks[0])
-                            elif first_block_type == BlockTypes.VALUE:
-                                if len(code_blocks) > 1:
-                                    raise ValueError(
-                                        "Invalid token detected after the " "value: {content_without_delimiters}"
-                                    )
-
-                                blocks.append(code_blocks[0])
-                            elif first_block_type == BlockTypes.FUNCTION_ID:
-                                blocks.append(
-                                    CodeBlock(
-                                        content=content_without_delimiters,
-                                        tokens=code_blocks,
-                                    )
-                                )
-                            else:
-                                raise ValueError(
-                                    "Code tokenizer returned an incorrect " f"first token type {first_block_type}"
-                                )
+                                if code_blocks[0].type in (
+                                    BlockTypes.VALUE,
+                                    BlockTypes.VARIABLE,
+                                    BlockTypes.TEXT,
+                                ):
+                                    blocks.append(code_blocks[0])
+                                else:
+                                    blocks.append(CodeBlock(content=content_without_delimiters, tokens=code_blocks))
+                            except (
+                                CodeBlockTokenError,
+                                CodeBlockSyntaxError,
+                                VarBlockSyntaxError,
+                                ValBlockSyntaxError,
+                                FunctionIdBlockSyntaxError,
+                            ) as e:
+                                msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"
+                                logger.warning(msg)
+                                raise TemplateSyntaxError(msg) from e
 
                         end_of_last_block = next_char_pos + 1
                         block_start_found = False

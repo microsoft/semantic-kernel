@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
 from pydantic import model_validator
 
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
 if TYPE_CHECKING:
@@ -14,10 +15,6 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-ERROR_MESSAGE = "The content should be a valid function id block. \
-This is either a function name or a plugin and function name, \
-separated by a dot. Examples: 'function', 'plugin.function'"
 
 FUNCTION_ID_BLOCK_REGEX = r"^((?P<plugin>[0-9A-Za-z_]+)[.])?(?P<function>[0-9A-Za-z_]+)$"
 
@@ -53,7 +50,7 @@ class FunctionIdBlock(Block):
         content = fields.get("content", "").strip()
         matches = FUNCTION_ID_BLOCK_MATCHER.match(content)
         if not matches:
-            raise ValueError(ERROR_MESSAGE)
+            raise FunctionIdBlockSyntaxError(content=content)
         if plugin := matches.groupdict().get("plugin"):
             fields["plugin_name"] = plugin
         fields["function_name"] = matches.group("function")

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 from pydantic import model_validator
 
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 
@@ -33,7 +34,7 @@ class VarBlock(Block):
         content = fields.get("content", "").strip()
         matches = VAR_BLOCK_MATCHER.match(content)
         if not matches:
-            raise ValueError("The content should be a valid variable block.")
+            raise VarBlockSyntaxError(content=content)
         if name := matches.groupdict().get("name"):
             fields["name"] = name
         return fields

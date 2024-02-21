@@ -33,6 +33,7 @@ from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
+from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
@@ -71,11 +72,12 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     cls_obj_map = {
         Block: Block(content="foo"),
         CodeBlock: CodeBlock(content="foo"),
-        FunctionIdBlock: FunctionIdBlock(content="bar"),
+        FunctionIdBlock: FunctionIdBlock(content="foo.bar"),
         TextBlock: TextBlock(content="baz"),
         ValBlock: ValBlock(content="'qux'"),
         VarBlock: VarBlock(content="$quux"),
         NamedArgBlock: NamedArgBlock(content="foo='bar'"),
+        PromptTemplateEngine: PromptTemplateEngine(),
         KernelParameterMetadata: KernelParameterMetadata(
             name="foo",
             description="bar",
@@ -119,6 +121,7 @@ BASE_CLASSES = [
 ]
 
 STATELESS_CLASSES = [
+    PromptTemplateEngine,
     NullMemory,
 ]
 

@@ -20,4 +20,3 @@ class CodeRenderer(Protocol):
         :param context: kernel execution context
         :return: Rendered content
         """
-        ...

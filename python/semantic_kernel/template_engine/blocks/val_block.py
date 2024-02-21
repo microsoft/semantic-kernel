@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
 from pydantic import model_validator
 
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import ValBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
 if TYPE_CHECKING:
@@ -34,7 +35,7 @@ class ValBlock(Block):
         content = fields.get("content", "").strip()
         matches = VAL_BLOCK_MATCHER.match(content)
         if not matches:
-            raise ValueError("The content should be a valid value block.")
+            raise ValBlockSyntaxError(content=content)
         if value := matches.groupdict().get("value"):
             fields["value"] = value
         if quote := matches.groupdict().get("quote"):

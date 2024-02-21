@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pytest import raises
+from pytest import mark, raises
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.template_engine.blocks.block_errors import ValBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 
@@ -24,6 +25,30 @@ def test_init_double_quote():
     assert val_block.type == BlockTypes.VALUE
 
 
+@mark.parametrize(
+    "content",
+    [
+        "test value",
+        "'test value",
+        "test value'",
+        '"test value',
+        'test value"',
+        "'test value\"",
+    ],
+    ids=[
+        "no_quotes",
+        "single_quote_start",
+        "single_quote_end",
+        "double_quote_start",
+        "double_quote_end",
+        "mixed_quote",
+    ],
+)
+def test_syntax_error(content):
+    with raises(ValBlockSyntaxError, match=rf".*{content}*"):
+        ValBlock(content=content)
+
+
 def test_render():
     val_block = ValBlock(content="'test value'")
     rendered_value = val_block.render(Kernel(), KernelArguments())
@@ -40,18 +65,3 @@ def test_escaping2():
     val_block = ValBlock(content=r"'f\'oo'")
     rendered_value = val_block.render(Kernel(), KernelArguments())
     assert rendered_value == r"f\'oo"
-
-
-def test_is_valid_mixed_quotes():
-    with raises(ValueError):
-        ValBlock(content="'test value\"")
-
-
-def test_is_valid_no_quotes():
-    with raises(ValueError):
-        ValBlock(content="test value")
-
-
-def test_is_valid_invalid_content():
-    with raises(ValueError):
-        ValBlock(content="!test value!")

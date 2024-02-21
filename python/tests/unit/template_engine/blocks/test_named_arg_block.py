@@ -2,10 +2,11 @@
 
 import logging
 
-from pytest import raises
+from pytest import mark, raises
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.template_engine.blocks.block_errors import NamedArgBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
@@ -18,8 +19,8 @@ def test_init_with_var():
     named_arg_block = NamedArgBlock(content="test=$test_var")
     assert named_arg_block.content == "test=$test_var"
     assert named_arg_block.name == "test"
-    assert named_arg_block.value.content == "$test_var"
-    assert isinstance(named_arg_block.value, VarBlock)
+    assert named_arg_block.variable.name == "test_var"
+    assert isinstance(named_arg_block.variable, VarBlock)
 
 
 def test_init_with_val():
@@ -35,14 +36,24 @@ def test_type_property():
     assert named_arg_block.type == BlockTypes.NAMED_ARG
 
 
-def test_is_valid_no_name():
-    with raises(ValueError):
-        NamedArgBlock(content="=$test_var")
-
-
-def test_is_valid_invalid_characters():
-    with raises(ValueError):
-        NamedArgBlock(content="test=$test-var")
+@mark.parametrize(
+    "content",
+    [
+        "=$test_var",
+        "test=$test-var",
+        "test='test_val\"",
+        "test=''",
+        "test=$",
+    ],
+    ids=["no_name", "invalid_var", "invalid_val", "empty_val", "empty_var"],
+)
+def test_syntax_error(content):
+    if "$" in content:
+        match = content.replace("$", r"\$")
+    else:
+        match = content
+    with raises(NamedArgBlockSyntaxError, match=rf".*{match}.*"):
+        NamedArgBlock(content=content)
 
 
 def test_render():
@@ -60,7 +71,7 @@ def test_render_variable_not_found():
 def test_init_minimal_var():
     block = NamedArgBlock(content="a=$a")
     assert block.name == "a"
-    assert block.value.name == "a"
+    assert block.variable.name == "a"
 
 
 def test_init_minimal_val():
@@ -70,7 +81,7 @@ def test_init_minimal_val():
 
 
 def test_init_empty():
-    with raises(ValueError):
+    with raises(NamedArgBlockSyntaxError, match=r".*"):
         NamedArgBlock(content="")
 
 
@@ -105,15 +116,3 @@ def test_it_renders_to_value():
     target = NamedArgBlock(content="  a='var' \n ")
     result = target.render(Kernel(), None)
     assert result == "var"
-
-
-def test_it_throws_if_the_var_name_is_empty():
-    with raises(ValueError):
-        target = NamedArgBlock(content=" a=$ ")
-        target.render(Kernel(), KernelArguments(foo="bar", var="able"))
-
-
-def test_it_throws_if_the_value_is_empty():
-    with raises(ValueError):
-        target = NamedArgBlock(content=" a=$ ")
-        target.render(Kernel(), KernelArguments(foo="bar", var="able"))

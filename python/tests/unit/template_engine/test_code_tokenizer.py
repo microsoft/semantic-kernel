@@ -2,6 +2,7 @@
 
 from pytest import mark, raises
 
+from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 
@@ -112,10 +113,10 @@ def test_it_throws_when_separators_are_missing():
     template1 = "call 'f\\\\'xy'"
     template2 = "call 'f\\\\'x"
 
-    with raises(ValueError):
+    with raises(CodeBlockSyntaxError):
         CodeTokenizer.tokenize(template1)
 
-    with raises(ValueError):
+    with raises(CodeBlockSyntaxError):
         CodeTokenizer.tokenize(template2)
 
 

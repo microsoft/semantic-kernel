@@ -2,6 +2,9 @@
 
 from pytest import mark, raises
 
+from semantic_kernel.template_engine.blocks.block_errors import (
+    TemplateSyntaxError,
+)
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
@@ -68,8 +71,6 @@ def test_it_parses_basic_blocks(text, block_type):
         (None, 1),
         ("", 1),
         ("}}{{a}} {{b}}x", 5),
-        # ("}}{{ -a}} {{b}}x", 5), # no longer valid
-        # ("}}{{ -a\n}} {{b}}x", 5),
         ("}}{{ -a\n} } {{b}}x", 3),
     ],
 )
@@ -77,6 +78,32 @@ def test_it_tokenizes_the_right_token_count(template, block_count):
     blocks = TemplateTokenizer.tokenize(template)
 
     assert len(blocks) == block_count
+
+
+@mark.parametrize(
+    "template, error",
+    [
+        ("}}{{{ {$a}}}} {{b}}x}}", TemplateSyntaxError),
+        ("}}{{ -a}} {{b}}x", TemplateSyntaxError),
+        ("}}{{ -a\n}} {{b}}x", TemplateSyntaxError),
+        ("{{ plugin.func $va-r }}", TemplateSyntaxError),
+        ("{{ plugin.func 'val' 'val' }}", TemplateSyntaxError),
+        ("{{ arg=$arg }}", TemplateSyntaxError),
+        ("{{ plugin.func 'var'arg=$arg }}", TemplateSyntaxError),
+    ],
+    ids=[
+        "invalid_function_id",
+        "invalid_function_id_2",
+        "invalid_function_id_3",
+        "invalid_var",
+        "invalid_code_blocks",
+        "invalid_named_arg",
+        "invalid_code_block_syntax",
+    ],
+)
+def test_invalid_syntax(template, error):
+    with raises(error):
+        TemplateTokenizer.tokenize(template)
 
 
 def test_it_tokenizes_edge_cases_correctly_1():
@@ -95,13 +122,6 @@ def test_it_tokenizes_edge_cases_correctly_1():
 
     assert blocks1[0].content == "{{"
     assert blocks1[1].content == "a"
-
-
-def test_it_tokenizes_edge_cases_correctly_2():
-    template = "}}{{{ {$a}}}} {{b}}x}}"
-
-    with raises(ValueError):
-        TemplateTokenizer.tokenize(template)
 
 
 def test_it_tokenizes_edge_cases_correctly_3():
@@ -130,14 +150,6 @@ def test_it_tokenizes_edge_cases_correctly_3():
 @mark.parametrize(
     "template",
     [
-        # ("{{a$}}"),
-        # ("{{a$a}}"),
-        # ("{{a''}}"),
-        # ('{{a""}}'),
-        # ("{{a'b'}}"),
-        # ('{{a"b"}}'),
-        # ("{{a'b'   }}"),
-        # ('{{a"b"    }}'),
         ("{{ asis 'f\\'oo' }}"),
     ],
 )
@@ -197,6 +209,6 @@ def test_it_tokenizes_a_named_args_prompt():
     assert block.tokens[3].type == BlockTypes.NAMED_ARG
 
     assert block.tokens[2].name == "arg1"
-    assert block.tokens[2].value.content == "$arg1"
+    assert block.tokens[2].variable.content == "$arg1"
     assert block.tokens[3].name == "arg2"
     assert block.tokens[3].value.content == '"arg2"'
