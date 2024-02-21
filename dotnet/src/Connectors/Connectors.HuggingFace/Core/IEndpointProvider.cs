@@ -6,5 +6,6 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal interface IEndpointProvider
 {
-    Uri TextGenerationEndpoint { get; }
+    Uri GetTextGenerationEndpoint(string modelId);
+    Uri GetEmbeddingGenerationEndpoint(string modelId);
 }

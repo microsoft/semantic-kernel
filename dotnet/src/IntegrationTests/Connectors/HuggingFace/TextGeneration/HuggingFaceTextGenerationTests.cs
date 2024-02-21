@@ -36,8 +36,8 @@ public sealed class HuggingFaceTextGenerationTests
         // Arrange
         const string Input = "This is test";
 
-        var huggingFaceLocal = new HuggingFaceTextGenerationServiceOld(Model, endpoint: Endpoint);
-        var huggingFaceRemote = new HuggingFaceTextGenerationServiceOld(Model, apiKey: this.GetApiKey());
+        var huggingFaceLocal = new HuggingFaceTextGenerationService(Model, endPoint: new Uri(Endpoint));
+        var huggingFaceRemote = new HuggingFaceTextGenerationService(Model, apiKey: this.GetApiKey());
 
         // Act
         var localResponse = await huggingFaceLocal.GetTextContentAsync(Input);
@@ -60,7 +60,7 @@ public sealed class HuggingFaceTextGenerationTests
         using var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri("https://api-inference.huggingface.co/models");
 
-        var huggingFaceRemote = new HuggingFaceTextGenerationServiceOld(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
+        var huggingFaceRemote = new HuggingFaceTextGenerationService(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
 
         // Act
         var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input);

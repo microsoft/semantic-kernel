@@ -12,7 +12,7 @@ internal sealed class HuggingFaceHttpRequestFactory : IHttpRequestFactory
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HuggingFaceTextGenerationServiceOld)));
+        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
         if (!string.IsNullOrEmpty(apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {apiKey}");

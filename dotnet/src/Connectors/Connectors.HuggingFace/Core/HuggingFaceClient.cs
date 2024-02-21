@@ -50,7 +50,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
 
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
     {
-        var endpoint = this.EndpointProvider.TextGenerationEndpoint;
+        var endpoint = this.EndpointProvider.GetTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint, this._apiKey);
 
@@ -70,7 +70,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var endpoint = this.EndpointProvider.TextGenerationEndpoint;
+        var endpoint = this.EndpointProvider.GetTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
@@ -81,10 +81,32 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
             .ConfigureAwait(false);
 
-        foreach (var streamingTextContent in this.ProcessTextResponseStream(responseStream))
+        foreach (var streamingTextContent in this.ProcessTextResponseStream(responseStream, executionSettings?.ModelId ?? this._modelId))
         {
             yield return streamingTextContent;
         }
+    }
+
+    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        var endpoint = this.EndpointProvider.GetEmbeddingGenerationEndpoint(this._modelId);
+
+        var request = new TextEmbeddingRequest()
+        {
+            Input = data
+        };
+
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint, this._apiKey);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = DeserializeResponse<TextEmbeddingResponse>(body);
+
+        return response?.Embeddings?.Select(l => l.Embedding).ToList()!;
     }
 
     private static void ValidateMaxTokens(int? maxTokens)
@@ -101,8 +123,10 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
     {
         using var response = await this.HttpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
+
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync()
             .ConfigureAwait(false);
+
         return body;
     }
 
@@ -115,20 +139,20 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         return response;
     }
 
-    private IEnumerable<StreamingTextContent> ProcessTextResponseStream(Stream stream)
+    private IEnumerable<StreamingTextContent> ProcessTextResponseStream(Stream stream, string modelId)
         => from response in this.ParseTextResponseStream(stream)
-           from textContent in this.GetTextStreamContentsFromResponse(response)
+           from textContent in this.GetTextStreamContentsFromResponse(response, modelId)
            select GetStreamingTextContentFromTextContent(textContent);
 
     private IEnumerable<TextGenerationStreamResponse> ParseTextResponseStream(Stream responseStream)
         => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<TextGenerationStreamResponse>);
 
-    private List<TextContent> GetTextStreamContentsFromResponse(TextGenerationStreamResponse response)
+    private List<TextContent> GetTextStreamContentsFromResponse(TextGenerationStreamResponse response, string modelId)
     {
         return new List<TextContent>
         {
             new(text: response.GeneratedText,
-                modelId: this._modelId,
+                modelId: modelId,
                 innerContent: response,
                 metadata: new TextGenerationStreamMetadata(response))
         };
@@ -177,8 +201,8 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
 
     private void LogTextGenerationUsage(PromptExecutionSettings executionSettings)
     {
-        this.Logger.LogDebug(
+        this.Logger?.LogDebug(
             "HuggingFace text generation usage: ModelId: {ModelId}",
-            executionSettings.ModelId ?? this._modelId);
+            executionSettings?.ModelId ?? this._modelId);
     }
 }

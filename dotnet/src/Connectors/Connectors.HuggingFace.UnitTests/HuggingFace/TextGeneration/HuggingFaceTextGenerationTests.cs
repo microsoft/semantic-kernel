@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
@@ -33,7 +34,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task SpecifiedModelShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -46,7 +47,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", apiKey: null, httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", apiKey: null, httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -59,7 +60,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", apiKey: "fake-api-key", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", apiKey: "fake-api-key", httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -77,7 +78,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -95,7 +96,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -110,7 +111,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         //Arrange
         this._httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
 
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -123,7 +124,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task DefaultAddressShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -136,20 +137,20 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
 
         //Assert
-        Assert.Equal("https://fake-random-test-host/fake-path/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+        Assert.Equal("https://fake-random-test-host/fake-path/models/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -165,7 +166,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         var contents = await sut.GetTextContentsAsync("fake-test");
@@ -183,7 +184,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task GetTextContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         var contents = await sut.GetTextContentsAsync("fake-test");
@@ -211,7 +212,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task GetStreamingTextContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationServiceOld("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         var contents = await sut.GetTextContentsAsync("fake-test");

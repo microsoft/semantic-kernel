@@ -6,12 +6,13 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
 /// HuggingFace text generation service.
@@ -19,6 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 {
     private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private HuggingFaceClient Client { get; }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
@@ -27,13 +29,13 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
     /// </summary>
     /// <param name="model">The HuggingFace model for the text generation service.</param>
-    /// <param name="baseUri">The base uri including the port where HuggingFace server is hosted</param>
+    /// <param name="endPoint">The uri endpoint including the port where HuggingFace server is hosted</param>
     /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public HuggingFaceTextGenerationService(
         string model,
-        Uri baseUri,
+        Uri? endPoint = null,
         string? apiKey = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
@@ -47,14 +49,12 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
-            endpointProvider: new HuggingFaceEndpointProvider(baseUri),
-            logger: loggerFactory?.CreateLogger(this.GetType())
+            endpointProvider: new HuggingFaceEndpointProvider(endPoint ?? httpClient?.BaseAddress),
+            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
         );
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
-
-    private HuggingFaceClient Client { get; }
 
     /// <inheritdoc />
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

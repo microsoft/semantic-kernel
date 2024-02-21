@@ -17,9 +17,9 @@ public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, ob
         this.Details = response.Details;
         this.Index = response.Index;
         this.GeneratedText = response.GeneratedText;
-        this.TokenId = response.Token.Id;
-        this.TokenLogProb = response.Token.LogProb;
-        this.TokenSpecial = response.Token.Special;
+        this.TokenId = response.Token?.Id;
+        this.TokenLogProb = response.Token?.LogProb;
+        this.TokenSpecial = response.Token?.Special;
     }
 
     /// <summary>
@@ -44,27 +44,27 @@ public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, ob
     /// <summary>
     /// Current token index of the response
     /// </summary>
-    public int Index
+    public int? Index
     {
-        get => this.GetValueFromDictionary() as int? ?? 0;
+        get => this.GetValueFromDictionary() as int?;
         internal init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
     /// Unique token idenfitier for the model
     /// </summary>
-    public int TokenId
+    public int? TokenId
     {
-        get => this.GetValueFromDictionary() as int? ?? 0;
+        get => this.GetValueFromDictionary() as int?;
         internal init => this.SetValueInDictionary(value);
     }
 
     /// <summary>
     /// Gets or sets the logarithm of the probability of a specific token given its context.
     /// </summary>
-    public double TokenLogProb
+    public double? TokenLogProb
     {
-        get => this.GetValueFromDictionary() as double? ?? 0;
+        get => this.GetValueFromDictionary() as double?;
         internal init => this.SetValueInDictionary(value);
     }
 
@@ -73,7 +73,7 @@ public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, ob
     /// </summary>
     public bool? TokenSpecial
     {
-        get => this.GetValueFromDictionary() as bool? ?? false;
+        get => this.GetValueFromDictionary() as bool?;
         internal init => this.SetValueInDictionary(value);
     }
 

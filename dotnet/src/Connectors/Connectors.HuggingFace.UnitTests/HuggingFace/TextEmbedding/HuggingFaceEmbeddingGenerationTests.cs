@@ -31,7 +31,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task SpecifiedModelShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -44,7 +44,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -62,7 +62,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -77,7 +77,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         //Arrange
         this._httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
 
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient);
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", httpClient: this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
@@ -90,20 +90,20 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, endpoint: "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient:this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());
 
         //Assert
-        Assert.Equal("https://fake-random-test-host/fake-path/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+        Assert.Equal("https://fake-random-test-host/fake-path/pipeline/feature-extraction/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]
     public async Task ShouldSendDataToServiceAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
         var data = new List<string>() { "test_string_1", "test_string_2", "test_string_3" };
 
         //Act
@@ -120,7 +120,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", this._httpClient, "https://fake-random-test-host/fake-path");
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         var embeddings = await sut.GenerateEmbeddingsAsync(new List<string>());

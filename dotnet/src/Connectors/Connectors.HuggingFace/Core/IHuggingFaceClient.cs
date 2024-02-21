@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,5 +31,17 @@ internal interface IHuggingFaceClient
     IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates an embedding from the given <paramref name="data"/>.
+    /// </summary>
+    /// <param name="data">List of strings to generate embeddings for</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>List of embeddings</returns>
+    Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 }
