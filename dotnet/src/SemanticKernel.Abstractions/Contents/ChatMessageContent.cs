@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -29,17 +28,8 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            if (this.Items.Count == 0)
-            {
-                return null;
-            }
-
-            if (this.Items[0] is TextContent textContent)
-            {
-                return textContent.Text;
-            }
-
-            throw new InvalidOperationException($"Cannot get the text content of the item of type {this.Items[0].GetType()}.");
+            var textContent = this.Items.OfType<TextContent>().SingleOrDefault();
+            return textContent?.Text;
         }
         set
         {
@@ -48,7 +38,13 @@ public class ChatMessageContent : KernelContent
                 return;
             }
 
-            if (this.Items.Count == 0)
+            var textContent = this.Items.OfType<TextContent>().SingleOrDefault();
+            if (textContent is not null)
+            {
+                textContent.Text = value;
+                textContent.Encoding = this.Encoding;
+            }
+            else
             {
                 this.Items.Add(new TextContent(
                     text: value,
@@ -57,17 +53,7 @@ public class ChatMessageContent : KernelContent
                     encoding: this.Encoding,
                     metadata: this.Metadata
                 ));
-                return;
             }
-
-            if (this.Items[0] is TextContent textContent)
-            {
-                textContent.Text = value;
-                textContent.Encoding = this.Encoding;
-                return;
-            }
-
-            throw new InvalidOperationException($"Cannot set text content for the item of type {this.Items[0].GetType()}");
         }
     }
 
@@ -76,13 +62,8 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     public ChatMessageContentItemCollection Items
     {
-        get
-        {
-            return this._items ??
-                Interlocked.CompareExchange(ref this._items, new ChatMessageContentItemCollection(), null) ??
-                this._items;
-        }
-        set { this._items = value ?? new ChatMessageContentItemCollection(); }
+        get => this._items ??= new ChatMessageContentItemCollection();
+        set => this._items = value;
     }
 
     /// <summary>
@@ -93,7 +74,8 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            if (this.Items.FirstOrDefault() is TextContent textContent)
+            var textContent = this.Items.OfType<TextContent>().SingleOrDefault();
+            if (textContent is not null)
             {
                 return textContent.Encoding;
             }
@@ -104,12 +86,19 @@ public class ChatMessageContent : KernelContent
         {
             this._encoding = value;
 
-            if (this.Items.FirstOrDefault() is TextContent textContent)
+            var textContent = this.Items.OfType<TextContent>().SingleOrDefault();
+            if (textContent is not null)
             {
                 textContent.Encoding = value;
             }
         }
     }
+
+    /// <summary>
+    /// The source of the message that generated it.
+    /// </summary>
+    [Experimental("SKEXP0101")]
+    public object? Source { get; set; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class

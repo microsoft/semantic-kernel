@@ -10,7 +10,7 @@ namespace SemanticKernel.UnitTests.Contents;
 public class ChatMessageContentTests
 {
     [Fact]
-    public void ConstructorShouldAddTextContentAsFirstItemIfContentProvided()
+    public void ConstructorShouldAddTextContentToItemsCollectionIfContentProvided()
     {
         // Arrange & act
         var sut = new ChatMessageContent(AuthorRole.User, "fake-content");
@@ -22,7 +22,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ConstructorShouldNodAddTextContentAsFirstItemIfNoContentProvided()
+    public void ConstructorShouldNodAddTextContentToItemsCollectionIfNoContentProvided()
     {
         // Arrange & act
         var sut = new ChatMessageContent(AuthorRole.User, content: null);
@@ -32,7 +32,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertySetterShouldAddTextContentAsFirstItemIfThereAreNoItems()
+    public void ContentPropertySetterShouldAddTextContentToItemsCollection()
     {
         // Arrange
         var sut = new ChatMessageContent(AuthorRole.User, content: null);
@@ -47,7 +47,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertySetterShouldUpdateContentOfFirstItemIfItIsOfTextContentType()
+    public void ContentPropertySetterShouldUpdateContentOfTextContentItem()
     {
         // Arrange
         var sut = new ChatMessageContent(AuthorRole.User, content: "initial-fake-content");
@@ -61,11 +61,12 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertySetterShouldRejectUpdatingContentOfFirstItemIfItIsNotOfTextContentType()
+    public void ContentPropertySetterShouldRejectUpdatingContentIfThereIsMoreThanOneTextContentItem()
     {
         // Arrange
         var items = new ChatMessageContentItemCollection();
-        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123")));
+        items.Add(new TextContent("fake-content-1"));
+        items.Add(new TextContent("fake-content-2"));
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items);
 
@@ -74,7 +75,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertyGetterShouldReturnNullIfThereAreNoItems()
+    public void ContentPropertyGetterShouldReturnNullIfThereAreNoTextContentItems()
     {
         // Arrange and act
         var sut = new ChatMessageContent(AuthorRole.User, content: null);
@@ -84,7 +85,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertyGetterShouldReturnContentOfFirstItemIfItIsOfTextContentType()
+    public void ContentPropertyGetterShouldReturnContentOfTextContentItem()
     {
         // Arrange
         var sut = new ChatMessageContent(AuthorRole.User, "fake-content");
@@ -94,11 +95,12 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertyGetterShouldRejectReturningContentOfFirstItemIfItIsNotOfTextContentType()
+    public void ContentPropertyGetterShouldRejectReturningContentIfThereIsMoreThanOneTextContentItem()
     {
         // Arrange
         var items = new ChatMessageContentItemCollection();
-        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123")));
+        items.Add(new TextContent("fake-content-1"));
+        items.Add(new TextContent("fake-content-2"));
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items);
 
@@ -121,7 +123,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void EncodingPropertySetterShouldUpdateEncodingOfFirstItemIfItIsOfTextContentType()
+    public void EncodingPropertySetterShouldUpdateEncodingTextContentItem()
     {
         // Arrange
         var sut = new ChatMessageContent(AuthorRole.User, content: "fake-content");
@@ -135,7 +137,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void EncodingPropertyGetterShouldReturnEncodingOfFirstItemIfItIsOfTextContentType()
+    public void EncodingPropertyGetterShouldReturnEncodingOfTextContentItem()
     {
         // Arrange
         var sut = new ChatMessageContent(AuthorRole.User, content: "fake-content");
