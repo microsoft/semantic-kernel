@@ -49,13 +49,6 @@ def test_type_property():
     assert text_block.type == BlockTypes.TEXT
 
 
-def test_is_valid():
-    text_block = TextBlock.from_text(text="test text")
-    is_valid, error_msg = text_block.is_valid()
-    assert is_valid
-    assert error_msg == ""
-
-
 def test_render():
     text_block = TextBlock.from_text(text="test text")
     rendered_value = text_block.render(Kernel(), KernelArguments())
@@ -78,25 +71,6 @@ def test_render():
 )
 def test_preserves_empty_values(input_, output):
     assert output == TextBlock.from_text(text=input_).content
-
-
-@pytest.mark.parametrize(
-    ("input_", "output"),
-    [
-        (None, (True, "")),
-        ("", (True, "")),
-        (" ", (True, "")),
-        ("  ", (True, "")),
-        ("   ", (True, "")),
-        (" \n", (True, "")),
-        (" \t", (True, "")),
-        (" \r", (True, "")),
-        ("test", (True, "")),
-        (" \nabc", (True, "")),
-    ],
-)
-def test_is_always_valid(input_, output):
-    assert TextBlock.from_text(text=input_).is_valid() == output
 
 
 @pytest.mark.parametrize(
