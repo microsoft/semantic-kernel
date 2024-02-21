@@ -128,7 +128,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// it is penalized to not be picked in successive generation passes.
     /// </summary>
     [JsonPropertyName("repetition_penalty")]
-    public double RepetitionPenalty
+    public double? RepetitionPenalty
     {
         get => this._repetitionPenalty;
 
@@ -214,7 +214,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     private int _resultsPerPrompt = 1;
     private double _temperature = 1;
     private double? _topP;
-    private double _repetitionPenalty;
+    private double? _repetitionPenalty;
     private int? _maxTokens;
     private double? _maxTime;
     private int? _topK;
