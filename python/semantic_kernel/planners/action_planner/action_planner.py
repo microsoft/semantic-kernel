@@ -78,11 +78,6 @@ class ActionPlanner:
             extension_data={"max_tokens": self.config.max_tokens, "stop_sequences": self._stop_sequence},
         )
 
-        # prompt_template_config = PromptTemplateConfig(
-        #     template=self._prompt_template,
-        #     execution_settings=execute_settings,
-        # )
-
         self._planner_function = kernel.create_function_from_prompt(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
             template=self._prompt_template,
