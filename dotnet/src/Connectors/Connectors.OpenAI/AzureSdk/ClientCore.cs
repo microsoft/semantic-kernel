@@ -13,11 +13,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
+using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
@@ -136,8 +136,8 @@ internal abstract class ClientCore
         }
 
         this.CaptureUsageDetails(responseData.Usage);
-        IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, metadata)).ToList();
+
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetChoiceMetadata(responseData, choice))).ToList();
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -154,37 +154,37 @@ internal abstract class ClientCore
 
         StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
-        IReadOnlyDictionary<string, object?>? metadata = null;
         await foreach (Completions completions in response)
         {
-            metadata ??= GetResponseMetadata(completions);
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, metadata);
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetChoiceMetadata(completions, choice));
             }
         }
     }
 
-    private static Dictionary<string, object?> GetResponseMetadata(Completions completions)
-    {
-        return new Dictionary<string, object?>(4)
-        {
-            { nameof(completions.Id), completions.Id },
-            { nameof(completions.Created), completions.Created },
-            { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
-            { nameof(completions.Usage), completions.Usage },
-        };
-    }
-
-    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions)
+    private static Dictionary<string, object?> GetChoiceMetadata(Completions completions, Choice choice)
     {
         return new Dictionary<string, object?>(5)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
+            { nameof(completions.Usage), completions.Usage },
+            { nameof(choice.ContentFilterResults), choice.ContentFilterResults },
+        };
+    }
+
+    private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice)
+    {
+        return new Dictionary<string, object?>(6)
+        {
+            { nameof(completions.Id), completions.Id },
+            { nameof(completions.Created), completions.Created },
+            { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
+            { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
         };
     }
 
@@ -303,13 +303,11 @@ internal abstract class ClientCore
                 throw new KernelException("Chat completions not found");
             }
 
-            IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
-
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, metadata)).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice))).ToList();
             }
 
             Debug.Assert(kernel is not null);
@@ -320,7 +318,7 @@ internal abstract class ClientCore
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
+            OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, resultChoice));
             if (result.ToolCalls.Count == 0)
             {
                 return new[] { result };
@@ -698,8 +696,9 @@ internal abstract class ClientCore
     {
         OpenAIClientOptions options = new()
         {
-            Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
+            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
         };
+        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
         {

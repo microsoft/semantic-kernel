@@ -31,7 +31,7 @@ snoop = "0.4.3"
 pytest-cov = "4.1.0"
 
 [tool.poetry.group.google_palm.dependencies]
-google-generativeai = { version = ">=0.1,<0.3", markers = "python_version >= '3.9'" }
+google-generativeai = { version = ">=0.1,<0.4", markers = "python_version >= '3.9'" }
 grpcio-status = { version = "^1.53.0", markers = "python_version >= '3.9'" }
 
 [tool.poetry.group.hugging_face.dependencies]
@@ -50,7 +50,7 @@ pymilvus = "2.2.16"
 milvus = "2.2.16"
 
 [tool.poetry.group.weaviate.dependencies]
-weaviate-client = "^3.18.0"
+weaviate-client = ">=3.18,<5.0"
 
 [tool.poetry.group.pinecone.dependencies]
 pinecone-client = "^2.2.2"
