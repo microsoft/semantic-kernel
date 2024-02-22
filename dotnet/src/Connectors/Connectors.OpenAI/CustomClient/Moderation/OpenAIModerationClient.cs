@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -14,6 +15,8 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerationClient
 {
+    private readonly Uri _moderationEndpoint = new("https://api.openai.com/v1/moderations");
+
     private readonly string _modelId;
 
     /// <summary>
@@ -22,18 +25,15 @@ internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerati
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting moderation endpoint</param>
     /// <param name="httpRequestFactory">Request factory</param>
-    /// <param name="endpointProvider">Endpoints provider</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public OpenAIModerationClient(
         HttpClient httpClient,
         string modelId,
         IHttpRequestFactory httpRequestFactory,
-        IEndpointProvider endpointProvider,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
             httpRequestFactory: httpRequestFactory,
-            endpointProvider: endpointProvider,
             logger: logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
@@ -49,9 +49,8 @@ internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerati
     {
         Verify.NotNullOrWhiteSpace(text);
 
-        var endpoint = this.EndpointProvider.ModerationEndpoint;
         var geminiRequest = this.CreateRequest(text);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, this._moderationEndpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);

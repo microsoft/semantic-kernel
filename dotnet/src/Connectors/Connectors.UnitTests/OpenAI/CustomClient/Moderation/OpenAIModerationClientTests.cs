@@ -41,22 +41,6 @@ public sealed class OpenAIModerationClientTests : IDisposable
     }
 
     [Fact]
-    public async Task ItUsesEndpointProviderToGetModerationEndpointAsync()
-    {
-        // Arrange
-        var endpointProviderMock = new Mock<IEndpointProvider>();
-        endpointProviderMock
-            .Setup(p => p.ModerationEndpoint).Returns(new Uri("https://example.com/"));
-        var sut = this.CreateOpenAIModerationClient(endpointProvider: endpointProviderMock.Object);
-
-        // Act
-        await sut.ClassifyTextAsync("text");
-
-        // Assert
-        endpointProviderMock.VerifyAll();
-    }
-
-    [Fact]
     public async Task ItCreatesRequestUsingHttpRequestFactoryAsync()
     {
         // Arrange
@@ -173,14 +157,12 @@ public sealed class OpenAIModerationClientTests : IDisposable
         HttpClient? httpClient = null,
         string modelId = "modelId",
         IHttpRequestFactory? httpRequestFactory = null,
-        IEndpointProvider? endpointProvider = null,
         ILogger? logger = null)
     {
         return new OpenAIModerationClient(
             httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            endpointProvider: endpointProvider ?? new FakeEndpointProvider(),
             logger: logger);
     }
 

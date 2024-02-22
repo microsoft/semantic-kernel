@@ -43,7 +43,6 @@ public sealed class OpenAITextClassificationService : ITextClassificationService
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             modelId: modelId,
             httpRequestFactory: new OpenAIHttpRequestFactory(apiKey, organization),
-            endpointProvider: new OpenAIEndpointProvider(),
             logger: loggerFactory?.CreateLogger<OpenAITextClassificationService>());
 
         this._attributes.Add(AIServiceExtensions.ModelIdKey, modelId);

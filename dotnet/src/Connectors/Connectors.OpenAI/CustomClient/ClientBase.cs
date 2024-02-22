@@ -13,19 +13,16 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal abstract class CustomClientBase
 {
     protected IHttpRequestFactory HttpRequestFactory { get; }
-    protected IEndpointProvider EndpointProvider { get; }
     protected HttpClient HttpClient { get; }
     protected ILogger Logger { get; }
 
     protected CustomClientBase(
         HttpClient httpClient,
         IHttpRequestFactory httpRequestFactory,
-        IEndpointProvider endpointProvider,
         ILogger? logger)
     {
         this.HttpClient = httpClient;
         this.HttpRequestFactory = httpRequestFactory;
-        this.EndpointProvider = endpointProvider;
         this.Logger = logger ?? NullLogger.Instance;
     }
 
