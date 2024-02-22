@@ -129,7 +129,7 @@ public class ToolCallBehavior {
 
     /**
      * Require a function. It will the only function to be passed to the model and be called.
-     * <p>
+     * Only one function can be required.
      *
      * @param function The function to require.
      * @return A new ToolCallBehavior instance with the required function.
