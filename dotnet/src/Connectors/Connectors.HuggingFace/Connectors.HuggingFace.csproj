@@ -19,10 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="TextGeneration\HuggingFaceTextGenerationServiceOld.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.HuggingFace.UnitTests" />
   </ItemGroup>
 
