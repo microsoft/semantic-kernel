@@ -121,7 +121,7 @@ public class ToolCallBehavior {
      * @param autoInvoke Enable or disable auto-invocation.
      *                   If auto-invocation is enabled, the model may request that the Semantic Kernel
      *                   invoke the kernel functions and return the value to the model.
-     * @return A new ToolCallBehavior instance with kernel functions enabled.
+     * @return A new ToolCallBehavior instance with all kernel functions enabled.
      */
     public static ToolCallBehavior enableKernelFunctions(boolean autoInvoke) {
         return new ToolCallBehavior(true, getAutoInvokeAttempts(autoInvoke), null, null);
