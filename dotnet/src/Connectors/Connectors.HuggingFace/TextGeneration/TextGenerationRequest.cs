@@ -32,7 +32,7 @@ internal sealed class TextGenerationRequest
     /// Options used by the model for generation.
     /// </summary>
     [JsonPropertyName("options")]
-    public HuggignFaceTextOptions? Options { get; set; }
+    public HuggingFaceTextOptions? Options { get; set; }
 
     /// <summary>
     /// Converts a <see cref="PromptExecutionSettings" /> object to a <see cref="TextGenerationRequest" /> object.
@@ -130,7 +130,7 @@ internal sealed class TextGenerationRequest
         public bool DoSample { get; set; } = true;
     }
 
-    internal sealed class HuggignFaceTextOptions
+    internal sealed class HuggingFaceTextOptions
     {
         /// <summary>
         /// (Default: true). Boolean. There is a cache layer on the inference API to speedup requests we have already seen.

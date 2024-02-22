@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +25,7 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="model">The HuggingFace model for the text generation service.</param>
     /// <param name="endpoint">The endpoint uri including the port where HuggingFace server is hosted</param>

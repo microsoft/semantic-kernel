@@ -17,7 +17,7 @@ using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
-internal sealed class HuggingFaceClient : IHuggingFaceClient
+internal sealed class HuggingFaceClient
 {
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
