@@ -22,7 +22,7 @@ public sealed class Example19_OpenAIModerationClassification : BaseTest
 
         if (string.IsNullOrEmpty(apiKey))
         {
-            this.Output.WriteLine("OpenAI API Key is not set. Skipping test.");
+            this.Output.WriteLine("OpenAI API Key is not set. Skipping example.");
             return;
         }
 
