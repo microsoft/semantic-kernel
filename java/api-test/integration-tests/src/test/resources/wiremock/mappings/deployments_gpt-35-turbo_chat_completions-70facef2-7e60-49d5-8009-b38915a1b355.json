@@ -1,23 +1,23 @@
 {
-   "id" : "70facef2-7e60-49d5-8009-b38915a1b355",
-   "insertionIndex" : 23,
-   "name" : "deployments_gpt-35-turbo_chat_completions",
-   "persistent" : true,
-   "request" : {
-      "bodyPatterns" : [
-         {
-            "equalToJson" : "{\"messages\":[{\"role\":\"assistant\",\"content\":\"You are a librarian, expert about books\"},{\"role\":\"user\",\"content\":\"Hi, I'm looking for book suggestions\"},{\"role\":\"assistant\",\"content\":\"Of course! I'd be happy to help you find some book suggestions. What genre or type of book are you interested in?\"},{\"role\":\"user\",\"content\":\"I love history and philosophy, I'd like to learn something new about Greece, any suggestion\"}],\"model\":\"gpt-35-turbo\"}",
-            "ignoreArrayOrder" : true,
-            "ignoreExtraElements" : true
-         }
-      ],
-      "method" : "POST",
-      "url" : "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
-   },
-   "response" : {
-      "body" : "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707253001,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"6fe0e3aa-5670-435c-9c90-976f97ce9c4c\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":79,\"completion_tokens\":276,\"total_tokens\":355}}",
-      "headers" : {},
-      "status" : 200
-   },
-   "uuid" : "70facef2-7e60-49d5-8009-b38915a1b355"
+  "id": "70facef2-7e60-49d5-8009-b38915a1b355",
+  "insertionIndex": 23,
+  "name": "deployments_gpt-35-turbo_chat_completions",
+  "persistent": true,
+  "request": {
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"messages\":[{\"role\":\"assistant\",\"content\":\"You are a librarian, expert about books\"},{\"role\":\"user\",\"content\":\"Hi, I'm looking for book suggestions\"},{\"role\":\"assistant\",\"content\":\"Of course! I'd be happy to help you find some book suggestions. What genre or type of book are you interested in?\"},{\"role\":\"user\",\"content\":\"I love history and philosophy, I'd like to learn something new about Greece, any suggestion\"}],\"model\":\"gpt-35-turbo\"}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ],
+    "method": "POST",
+    "url": "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
+  },
+  "response": {
+    "body": "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707253001,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"6fe0e3aa-5670-435c-9c90-976f97ce9c4c\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":79,\"completion_tokens\":276,\"total_tokens\":355}}",
+    "headers": {},
+    "status": 200
+  },
+  "uuid": "70facef2-7e60-49d5-8009-b38915a1b355"
 }

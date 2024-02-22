@@ -44,38 +44,6 @@ public class Example09_FunctionTypes {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "text-davinci-003");
 
-    private static class DateTimeContextVariableTypeConverter extends
-        ContextVariableTypeConverter<ZonedDateTime> {
-
-        private static final List<Converter<ZonedDateTime, ?>> converters = List.of(
-            new DefaultConverter<>(ZonedDateTime.class, Date.class) {
-                @Override
-                public Date toObject(ZonedDateTime zonedDateTime) {
-                    return new Date(zonedDateTime.toInstant().toEpochMilli());
-                }
-            },
-            new DefaultConverter<>(ZonedDateTime.class, String.class) {
-                @Override
-                public String toObject(ZonedDateTime zonedDateTime) {
-                    return zonedDateTime.format(DateTimeFormatter.ISO_DATE_TIME);
-                }
-            });
-
-        public DateTimeContextVariableTypeConverter() {
-            super(
-                ZonedDateTime.class,
-                (x) -> {
-                    if (x instanceof OffsetDateTime) {
-                        return ((OffsetDateTime) x).toZonedDateTime();
-                    }
-                    return convert(x, ZonedDateTime.class);
-                },
-                zonedDateTime -> zonedDateTime.format(DateTimeFormatter.ISO_DATE_TIME),
-                promptString -> ZonedDateTime.parse(promptString, DateTimeFormatter.ISO_DATE_TIME),
-                converters);
-        }
-    }
-
     public static void main(String[] args) throws InterruptedException {
 
         System.out.println("======== Method Function types ========");
@@ -336,6 +304,38 @@ public class Example09_FunctionTypes {
             .invokeAsync(
                 kernel.getFunction("Examples", "NoInputWithVoidResult"))
             .block();
+    }
+
+    private static class DateTimeContextVariableTypeConverter extends
+        ContextVariableTypeConverter<ZonedDateTime> {
+
+        private static final List<Converter<ZonedDateTime, ?>> converters = List.of(
+            new DefaultConverter<>(ZonedDateTime.class, Date.class) {
+                @Override
+                public Date toObject(ZonedDateTime zonedDateTime) {
+                    return new Date(zonedDateTime.toInstant().toEpochMilli());
+                }
+            },
+            new DefaultConverter<>(ZonedDateTime.class, String.class) {
+                @Override
+                public String toObject(ZonedDateTime zonedDateTime) {
+                    return zonedDateTime.format(DateTimeFormatter.ISO_DATE_TIME);
+                }
+            });
+
+        public DateTimeContextVariableTypeConverter() {
+            super(
+                ZonedDateTime.class,
+                (x) -> {
+                    if (x instanceof OffsetDateTime) {
+                        return ((OffsetDateTime) x).toZonedDateTime();
+                    }
+                    return convert(x, ZonedDateTime.class);
+                },
+                zonedDateTime -> zonedDateTime.format(DateTimeFormatter.ISO_DATE_TIME),
+                promptString -> ZonedDateTime.parse(promptString, DateTimeFormatter.ISO_DATE_TIME),
+                converters);
+        }
     }
 
     public static class LocalExamplePlugin {

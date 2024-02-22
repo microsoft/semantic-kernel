@@ -16,21 +16,6 @@ import org.junit.jupiter.api.TestFactory;
 
 public class ContextVariableTypeConverterTest {
 
-    private static class TestCase<T, U> {
-
-        private final String name;
-        private final Class<T> clazz;
-        private final Class<U> targetClazz;
-        private final T object;
-
-        private TestCase(String name, Class<T> clazz, Class<U> targetClazz, T object) {
-            this.name = name;
-            this.clazz = clazz;
-            this.targetClazz = targetClazz;
-            this.object = object;
-        }
-    }
-
     @TestFactory
     public Stream<DynamicTest> testConvertIntegerToString() {
         return Stream.of(
@@ -64,6 +49,21 @@ public class ContextVariableTypeConverterTest {
                 }
             }));
 
+    }
+
+    private static class TestCase<T, U> {
+
+        private final String name;
+        private final Class<T> clazz;
+        private final Class<U> targetClazz;
+        private final T object;
+
+        private TestCase(String name, Class<T> clazz, Class<U> targetClazz, T object) {
+            this.name = name;
+            this.clazz = clazz;
+            this.targetClazz = targetClazz;
+            this.object = object;
+        }
     }
 
 }

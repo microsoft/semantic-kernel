@@ -14,11 +14,6 @@ import java.util.Scanner;
  */
 public class RunAll {
 
-    public interface MainMethod {
-
-        void run(String[] args) throws Exception;
-    }
-
     public static void main(String[] args) {
         List<MainMethod> mains = Arrays.asList(
             Example01_NativeFunctions::main,
@@ -64,5 +59,10 @@ public class RunAll {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    public interface MainMethod {
+
+        void run(String[] args) throws Exception;
     }
 }
