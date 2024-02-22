@@ -49,12 +49,12 @@ public sealed class OpenAITextClassificationService : ITextClassificationService
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<ClassificationContent>> ClassifyTextAsync(
+    public Task<IReadOnlyList<ClassificationContent>> ClassifyTextsAsync(
         IEnumerable<string> texts,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._client.ClassifyTextAsync(texts, cancellationToken: cancellationToken);
+        return this._client.ClassifyTextsAsync(texts, cancellationToken: cancellationToken);
     }
 }

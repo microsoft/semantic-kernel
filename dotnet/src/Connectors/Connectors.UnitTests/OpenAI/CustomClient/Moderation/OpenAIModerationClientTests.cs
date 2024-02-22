@@ -51,7 +51,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient(httpRequestFactory: httpRequestFactoryMock.Object);
 
         // Act
-        await sut.ClassifyTextAsync(["text", "text2", "text3"]);
+        await sut.ClassifyTextsAsync(["text", "text2", "text3"]);
 
         // Assert
         httpRequestFactoryMock.VerifyAll();
@@ -67,7 +67,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act and Assert
-        await Assert.ThrowsAnyAsync<ArgumentException>(() => sut.ClassifyTextAsync([text]));
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => sut.ClassifyTextsAsync([text]));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient(modelId: modelId);
 
         // Act
-        await sut.ClassifyTextAsync(["text", "text2", "text3"]);
+        await sut.ClassifyTextsAsync(["text", "text2", "text3"]);
 
         // Assert
         var request = this.DeserializeRequestContent();
@@ -94,7 +94,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act
-        await sut.ClassifyTextAsync(texts);
+        await sut.ClassifyTextsAsync(texts);
 
         // Assert
         var request = this.DeserializeRequestContent();
@@ -109,7 +109,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act
-        var result = await sut.ClassifyTextAsync(["text", "text2", "text3"]);
+        var result = await sut.ClassifyTextsAsync(["text", "text2", "text3"]);
 
         // Assert
         var sampleResponse = await DeserializeSampleResponseAsync();
@@ -124,7 +124,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act
-        var result = await sut.ClassifyTextAsync(["text", "text2", "text3"]);
+        var result = await sut.ClassifyTextsAsync(["text", "text2", "text3"]);
 
         // Assert
         var sampleResponse = await DeserializeSampleResponseAsync();
@@ -139,7 +139,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act
-        var results = await sut.ClassifyTextAsync(["text", "text2", "text3"]);
+        var results = await sut.ClassifyTextsAsync(["text", "text2", "text3"]);
 
         // Assert
         var sampleResponse = await DeserializeSampleResponseAsync();

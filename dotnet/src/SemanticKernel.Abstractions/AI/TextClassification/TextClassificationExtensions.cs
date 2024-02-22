@@ -30,7 +30,7 @@ public static class TextClassificationExtensions
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var list = await service.ClassifyTextAsync(new[] { text }, executionSettings, kernel, cancellationToken)
+        var list = await service.ClassifyTextsAsync(new[] { text }, executionSettings, kernel, cancellationToken)
             .ConfigureAwait(false);
         return list.Single();
     }

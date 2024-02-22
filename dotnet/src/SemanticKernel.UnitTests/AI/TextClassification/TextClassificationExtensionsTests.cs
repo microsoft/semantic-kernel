@@ -15,11 +15,8 @@ public sealed class TextClassificationExtensionsTests
     public async Task ClassifyTextAsyncItReturnsClassificationContentAsync()
     {
         // Arrange
-        var serviceMock = new Mock<ITextClassificationService>();
         var text = "text";
-        var classificationContent = new ClassificationContent(null, text, new Dictionary<string, object?>());
-        serviceMock.Setup(x => x.ClassifyTextAsync(new[] { text }, null, null, default))
-            .ReturnsAsync(new List<ClassificationContent> { classificationContent });
+        var (serviceMock, classificationContent) = GetClassificationServiceMockAndClassificationContent(text);
 
         // Act
         var result = await TextClassificationExtensions.ClassifyTextAsync(serviceMock.Object, text);
@@ -32,16 +29,22 @@ public sealed class TextClassificationExtensionsTests
     public async Task ClassifyTextAsyncItUsesTextClassificationServiceAsync()
     {
         // Arrange
-        var serviceMock = new Mock<ITextClassificationService>();
         var text = "text";
-        var classificationContent = new ClassificationContent(null, text, new Dictionary<string, object?>());
-        serviceMock.Setup(x => x.ClassifyTextAsync(new[] { text }, null, null, default))
-            .ReturnsAsync(new List<ClassificationContent> { classificationContent });
+        var (serviceMock, _) = GetClassificationServiceMockAndClassificationContent(text);
 
         // Act
         await TextClassificationExtensions.ClassifyTextAsync(serviceMock.Object, text);
 
         // Assert
         serviceMock.VerifyAll();
+    }
+
+    private static (Mock<ITextClassificationService>, ClassificationContent) GetClassificationServiceMockAndClassificationContent(string text)
+    {
+        var serviceMock = new Mock<ITextClassificationService>();
+        ClassificationContent classificationContent = new(null, text, new Dictionary<string, object?>());
+        serviceMock.Setup(x => x.ClassifyTextsAsync(new[] { text }, null, null, default))
+            .ReturnsAsync(new List<ClassificationContent> { classificationContent });
+        return (serviceMock, classificationContent);
     }
 }

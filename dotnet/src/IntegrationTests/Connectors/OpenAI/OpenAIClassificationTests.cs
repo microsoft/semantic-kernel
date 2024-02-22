@@ -34,7 +34,7 @@ public sealed class OpenAIClassificationTests
             apiKey: this.ApiKey);
 
         // Act
-        var result = await connector.ClassifyTextAsync(new[] { "I am happy" });
+        var result = await connector.ClassifyTextsAsync(new[] { "I am happy" });
 
         // Assert
         Assert.NotNull(result);

@@ -48,7 +48,7 @@ internal sealed class OpenAIModerationClient : CustomClientBase
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The results of the classification.</returns>
-    public async Task<IReadOnlyList<ClassificationContent>> ClassifyTextAsync(
+    public async Task<IReadOnlyList<ClassificationContent>> ClassifyTextsAsync(
         IEnumerable<string> texts,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)

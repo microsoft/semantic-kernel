@@ -22,7 +22,7 @@ public interface ITextClassificationService : IAIService
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Classification of texts.</returns>
-    Task<IReadOnlyList<ClassificationContent>> ClassifyTextAsync(
+    Task<IReadOnlyList<ClassificationContent>> ClassifyTextsAsync(
         IEnumerable<string> texts,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
