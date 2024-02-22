@@ -26,8 +26,10 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
 from semantic_kernel.models.ai.chat_completion.finish_reason import FinishReason
+from semantic_kernel.utils.chat import prepare_chat_history_for_request
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -41,21 +43,20 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     async def complete_chat(
         self,
-        messages: List[Dict[str, str]],
+        chat_history: ChatHistory,
         settings: OpenAIPromptExecutionSettings,
     ) -> List[OpenAIChatMessageContent]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
-            messages {List[Dict[str,str]]} -- The messages to use for the chat completion.
+            chat_history {ChatHistory} -- The chat history to use for the chat completion.
             settings {OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings} -- The settings to use
                 for the chat completion request.
 
         Returns:
             List[OpenAIChatMessageContent | AzureChatMessageContent] -- The completion result(s).
         """
-        # TODO: replace messages with ChatHistory object with ChatMessageContent objects
-        settings.messages = messages
+        settings.messages = prepare_chat_history_for_request(chat_history)
         settings.stream = False
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -65,13 +66,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     async def complete_chat_stream(
         self,
-        messages: List[Dict[str, str]],
+        chat_history: ChatHistory,
         settings: OpenAIPromptExecutionSettings,
     ) -> AsyncIterable[List[OpenAIStreamingChatMessageContent]]:
         """Executes a streaming chat completion request and returns the result.
 
         Arguments:
-            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
+            chat_history {ChatHistory} -- The chat history to use for the chat completion.
             settings {OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings} -- The settings to use
                 for the chat completion request.
 
@@ -79,7 +80,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[OpenAIStreamingChatMessageContent | AzureStreamingChatMessageContent] -- A stream of
                 OpenAIStreamingChatMessages or AzureStreamingChatMessageContent when using Azure.
         """
-        settings.messages = messages
+        settings.messages = prepare_chat_history_for_request(chat_history)
         settings.stream = True
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -129,9 +130,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(choice.delta.role),
+            role=ChatRole(choice.delta.role) if choice.delta.role else None,
             content=choice.delta.content,
-            finish_reason=FinishReason(choice.finish_reason),
+            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
         )

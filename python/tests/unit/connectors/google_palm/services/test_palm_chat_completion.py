@@ -16,6 +16,8 @@ if sys.version_info >= (3, 9):
     from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
         GooglePalmChatCompletion,
     )
+    from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+    from semantic_kernel.utils.chat import prepare_chat_history_for_request
 
 
 pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")
@@ -56,7 +58,7 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
             return self
 
     gp_response = MockChatResponse()
-    gp_response.candidates = [MessageDict(content="Example response", author="assistant")]
+    gp_response.candidates = [MessageDict(content="Example response", author=3)]
     gp_response.filters = None
     mock_response = MagicMock()
     mock_response.last = asyncio.Future()
@@ -69,14 +71,13 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
     ):
         ai_model_id = "test_model_id"
         api_key = "test_api_key"
-        prompt = [{"role": "user", "content": "hello world"}]
-        rewritten_prompt = [{"author": "user", "content": "hello world"}]
+        chats = ChatHistory(system_message="hello word")
         gp_chat_completion = GooglePalmChatCompletion(
             ai_model_id=ai_model_id,
             api_key=api_key,
         )
         settings = GooglePalmChatPromptExecutionSettings()
-        response = await gp_chat_completion.complete_chat(prompt, settings)
+        response = await gp_chat_completion.complete_chat(chats, settings)
 
         assert isinstance(response[0].content, str) and len(response) > 0
         print(mock_gp.chat)
@@ -86,5 +87,5 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
             top_p=settings.top_p,
             top_k=settings.top_k,
             candidate_count=settings.candidate_count,
-            messages=rewritten_prompt,
+            messages=prepare_chat_history_for_request(chats, output_role_key="author", override_role="user"),
         )

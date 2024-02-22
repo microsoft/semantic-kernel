@@ -25,7 +25,7 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
     mock_function.describe.return_value = kernel_function_metadata
     mock_function.name = kernel_function_metadata.name
     mock_function.plugin_name = kernel_function_metadata.plugin_name
-    mock_function.is_semantic = kernel_function_metadata.is_semantic
+    mock_function.is_prompt = kernel_function_metadata.is_prompt
     mock_function.description = kernel_function_metadata.description
     mock_function.prompt_execution_settings = PromptExecutionSettings()
     return mock_function
@@ -51,13 +51,13 @@ async def test_it_can_create_plan(goal):
     functions_list = []
     kernel.plugins = KernelPluginCollection()
     mock_functions = []
-    for name, pluginName, description, isSemantic in input:
+    for name, pluginName, description, is_prompt in input:
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name=pluginName,
             description=description,
             parameters=[],
-            is_semantic=isSemantic,
+            is_prompt=is_prompt,
             is_asynchronous=True,
         )
         mock_function = create_mock_function(kernel_function_metadata)
@@ -85,14 +85,14 @@ async def test_it_can_create_plan(goal):
     mock_function_flow_function = Mock(spec=KernelFunction)
     mock_function_flow_function.invoke.return_value = FunctionResult(
         function=KernelFunctionMetadata(
-            name="func", plugin_name="plugin", description="", parameters=[], is_semantic=False
+            name="func", plugin_name="plugin", description="", parameters=[], is_prompt=False
         ),
         value=plan_string,
         metadata={},
     )
-    kernel.register_semantic_function.return_value = mock_function_flow_function
+    kernel.create_function_from_prompt.return_value = mock_function_flow_function
 
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(kernel, service_id="test")
 
     # Act
     plan = await planner.create_plan(goal)
@@ -111,7 +111,7 @@ async def test_empty_goal_throws():
     # Arrange
     kernel = Mock(spec=Kernel)
     kernel.prompt_template_engine = Mock()
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(kernel, service_id="test")
 
     # Act & Assert
     with pytest.raises(PlanningException):
@@ -133,7 +133,7 @@ async def test_invalid_xml_throws():
     plan_string = "<plan>notvalid<</plan>"
     function_result = FunctionResult(
         function=KernelFunctionMetadata(
-            name="func", plugin_name="plugin", description="", parameters=[], is_semantic=False
+            name="func", plugin_name="plugin", description="", parameters=[], is_prompt=False
         ),
         value=plan_string,
         metadata={},
@@ -143,9 +143,9 @@ async def test_invalid_xml_throws():
     mock_function_flow_function.invoke.return_value = function_result
 
     kernel.plugins = plugins
-    kernel.register_semantic_function.return_value = mock_function_flow_function
+    kernel.create_function_from_prompt.return_value = mock_function_flow_function
 
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(kernel, service_id="test")
 
     # Act & Assert
     with pytest.raises(PlanningException):

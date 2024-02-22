@@ -33,7 +33,7 @@ class Plan:
     _name: str = PrivateAttr()
     _plugin_name: str = PrivateAttr()
     _description: str = PrivateAttr()
-    _is_semantic: bool = PrivateAttr()
+    _is_prompt: bool = PrivateAttr()
     _prompt_execution_settings: PromptExecutionSettings = PrivateAttr()
     DEFAULT_RESULT_KEY: ClassVar[str] = "PLAN.RESULT"
 
@@ -66,15 +66,15 @@ class Plan:
         return self._parameters
 
     @property
-    def is_semantic(self) -> bool:
-        return self._is_semantic
+    def is_prompt(self) -> bool:
+        return self._is_prompt
 
     @property
     def is_native(self) -> bool:
-        if self._is_semantic is None:
+        if self._is_prompt is None:
             return None
         else:
-            return not self._is_semantic
+            return not self._is_prompt
 
     @property
     def prompt_execution_settings(self) -> PromptExecutionSettings:
@@ -110,7 +110,7 @@ class Plan:
         self._outputs = [] if outputs is None else outputs
         self._steps = [] if steps is None else steps
         self._has_next_step = len(self._steps) > 0
-        self._is_semantic = None
+        self._is_prompt = None
         self._function = function or None
         self._prompt_execution_settings = None
 
@@ -203,7 +203,7 @@ class Plan:
             plugin_name=self._plugin_name,
             parameters=[],
             description=self._description,
-            is_semantic=self._is_semantic or False,
+            is_prompt=self._is_prompt or False,
         )
 
     def set_available_functions(self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments") -> "Plan":
@@ -247,7 +247,7 @@ class Plan:
         self._name = function.name
         self._plugin_name = function.plugin_name
         self._description = function.description
-        self._is_semantic = function.is_semantic
+        self._is_prompt = function.is_prompt
         self._prompt_execution_settings = function.prompt_execution_settings
 
     async def run_next_step(

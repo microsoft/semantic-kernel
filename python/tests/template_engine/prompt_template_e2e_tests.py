@@ -6,7 +6,7 @@ from typing import List, Tuple
 from pytest import mark, raises
 
 from semantic_kernel import Kernel
-from semantic_kernel.plugin_definition import kernel_function
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 

@@ -23,7 +23,7 @@ async def test_complete(mock_post):
     mock_post.return_value = MockResponse(response="test_response")
     ollama = OllamaTextCompletion(ai_model_id="test_model")
     response = await ollama.complete(
-        "test_prompt",
+        "test prompt",
         OllamaTextPromptExecutionSettings(ai_model_id="test-model", options={"test": "test"}),
     )
     assert response[0].text == "test_response"

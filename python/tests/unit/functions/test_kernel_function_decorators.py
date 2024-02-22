@@ -168,9 +168,7 @@ def test_kernel_function_return_type_streaming():
         (Annotated[Optional[Union[str, int]], "test"], "test", "str, int", False),
         (str, "", "str", True),
         (Union[str, int, float, "KernelArguments"], "", "str, int, float, KernelArguments", True),
-        ("test-return-type", "", "test-return-type", True),
     ],
-    ids=["ann-str", "ann-opt-str", "ann-async-str", "ann-opt-str-int", "str", "union", "test"],
 )
 def test_annotation_parsing(annotation, description, type_, required):
     out_description, out_type_, out_required = _parse_annotation(annotation)

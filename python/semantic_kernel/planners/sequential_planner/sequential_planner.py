@@ -17,12 +17,8 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_extensions i
 from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
 )
-from semantic_kernel.prompt_template.prompt_template import PromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import (
     PromptTemplateConfig,
-)
-from semantic_kernel.prompt_template.semantic_function_config import (
-    SemanticFunctionConfig,
 )
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
@@ -48,7 +44,22 @@ class SequentialPlanner:
     _arguments: "KernelArguments"
     _function_flow_function: "KernelFunction"
 
-    def __init__(self, kernel: Kernel, config: SequentialPlannerConfig = None, prompt: str = None):
+    def __init__(
+        self,
+        kernel: Kernel,
+        service_id: str,
+        config: SequentialPlannerConfig = None,
+        prompt: str = None,
+    ) -> None:
+        """
+        Initializes a new instance of the SequentialPlanner class.
+
+        Args:
+            kernel (Kernel): The kernel instance to use for planning
+            service_id (str): The service id to use to get the AI service
+            config (SequentialPlannerConfig, optional): The configuration to use for planning. Defaults to None.
+            prompt (str, optional): The prompt to use for planning. Defaults to None.
+        """
         assert isinstance(kernel, Kernel)
         self.config = config or SequentialPlannerConfig()
 
@@ -56,24 +67,25 @@ class SequentialPlanner:
 
         self._kernel = kernel
         self._arguments = KernelArguments()
-        self._function_flow_function = self._init_flow_function(prompt)
+        self._function_flow_function = self._init_flow_function(prompt, service_id)
 
-    def _init_flow_function(self, prompt: str):
+    def _init_flow_function(self, prompt: str, service_id: str) -> "KernelFunction":
         prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
+
+        # TODO: fix when extension settings in PromptTemplateConfig are a dictonary
+        # While the extension settings are not, grab the value for the 'default' key
+        if "default" in prompt_config.execution_settings.extension_data:
+            prompt_config.execution_settings = prompt_config.execution_settings.extension_data["default"]
+
+        prompt_config.execution_settings.service_id = service_id
         prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
+        prompt_config.template = prompt_template
 
-        prompt_template = PromptTemplate(
-            template=prompt_template,
-            template_engine=self._kernel.prompt_template_engine,
-            prompt_config=prompt_config,
-        )
-        function_config = SemanticFunctionConfig(prompt_config, prompt_template)
-
-        return self._kernel.register_semantic_function(
+        return self._kernel.create_function_from_prompt(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
             function_name=self.RESTRICTED_PLUGIN_NAME,
-            function_config=function_config,
+            prompt_template_config=prompt_config,
         )
 
     async def create_plan(self, goal: str) -> Plan:

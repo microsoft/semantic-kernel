@@ -3,8 +3,10 @@
 import pytest
 
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 @pytest.mark.asyncio
@@ -41,15 +43,25 @@ async def test_text_completion(model_name, task, input_str):
         service=sk_hf.HuggingFaceTextCompletion(service_id=model_name, ai_model_id=model_name, task=task),
     )
 
-    # Define semantic function using SK prompt template language
-    sk_prompt = "{{$input}}"
-
-    # Create the semantic function
-    function = kernel.create_semantic_function(
-        sk_prompt, service_id=model_name, max_tokens=25, temperature=0.7, top_p=0.5
+    exec_settings = PromptExecutionSettings(
+        service_id=model_name, extension_data={"max_tokens": 25, "temperature": 0.7, "top_p": 0.5}
     )
 
-    summary = await kernel.invoke(function, input=input_str)
+    # Define semantic function using SK prompt template language
+    prompt = "{{$input}}"
+
+    prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings=exec_settings)
+
+    test_func = kernel.create_function_from_prompt(
+        prompt_template_config=prompt_template_config,
+        function_name="TestFunction",
+        plugin_name="TestPlugin",
+        execution_settings=exec_settings,
+    )
+
+    arguments = KernelArguments(input=input_str)
+
+    summary = await kernel.invoke(test_func, arguments)
 
     output = str(summary).strip()
     print(f"Completion using input string: '{output}'")
@@ -91,16 +103,24 @@ async def test_text_completion_stream(model_name, task, input_str):
         sk_hf.HuggingFaceTextCompletion(service_id=model_name, ai_model_id=model_name, task=task),
     )
 
-    # Define semantic function using SK prompt template language
-    sk_prompt = "{{$input}}"
+    exec_settings = PromptExecutionSettings(
+        service_id=model_name, extension_data={"max_tokens": 25, "temperature": 0.7, "top_p": 0.5}
+    )
 
-    # Create the semantic function
-    function = kernel.create_semantic_function(
-        sk_prompt, service_id=model_name, max_tokens=25, temperature=0.7, top_p=0.5
+    # Define semantic function using SK prompt template language
+    prompt = "{{$input}}"
+
+    prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings=exec_settings)
+
+    test_func = kernel.create_function_from_prompt(
+        prompt_template_config=prompt_template_config,
+        function_name="TestFunction",
+        plugin_name="TestPlugin",
+        execution_settings=exec_settings,
     )
 
     summary = ""
-    async for text in kernel.invoke_stream(function, arguments=KernelArguments(input=input_str)):
+    async for text in kernel.invoke_stream(test_func, input=input_str):
         summary += str(text[0])
 
     output = str(summary).strip()

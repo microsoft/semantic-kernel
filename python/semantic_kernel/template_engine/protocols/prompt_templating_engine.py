@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, List, Optional, Protocol, runtime_checkable
+from abc import ABC
+from typing import TYPE_CHECKING, List, Optional
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.template_engine.blocks.block import Block
 
 if TYPE_CHECKING:
@@ -9,10 +11,9 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
-@runtime_checkable
-class PromptTemplatingEngine(Protocol):
+class PromptTemplatingEngine(KernelBaseModel, ABC):
     """
-    Prompt templating engine protocol.
+    Prompt templating engine base class.
     """
 
     def extract_blocks(self, template_text: Optional[str] = None, validate: bool = True) -> List[Block]:
@@ -26,6 +27,7 @@ class PromptTemplatingEngine(Protocol):
         :return: A list of all the blocks, ie the template tokenized in
             text, variables and function calls
         """
+        pass
 
     async def render(self, template_text: str, kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
@@ -37,6 +39,7 @@ class PromptTemplatingEngine(Protocol):
         :param context: Access into the current kernel execution context
         :return: The prompt template ready to be used for an AI request
         """
+        pass
 
     async def render_blocks(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
@@ -46,6 +49,7 @@ class PromptTemplatingEngine(Protocol):
         :param context: Access into the current kernel execution context
         :return: The prompt template ready to be used for an AI request
         """
+        pass
 
     def render_variables(
         self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None
@@ -59,6 +63,7 @@ class PromptTemplatingEngine(Protocol):
         :return: An updated list of blocks where Variable Blocks have rendered to
             Text Blocks
         """
+        pass
 
     async def render_code(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> List[Block]:
         """
@@ -70,3 +75,4 @@ class PromptTemplatingEngine(Protocol):
         :return: An updated list of blocks where Code Blocks have rendered to
             Text Blocks
         """
+        pass

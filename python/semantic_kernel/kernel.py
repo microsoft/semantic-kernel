@@ -10,7 +10,6 @@ from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Ty
 
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -37,12 +36,11 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.prompt_template.prompt_template import PromptTemplate
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import (
     PromptTemplateConfig,
-)
-from semantic_kernel.prompt_template.semantic_function_config import (
-    SemanticFunctionConfig,
 )
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
@@ -153,6 +151,8 @@ class Kernel(KernelBaseModel):
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
+        if KernelFunction.CHAT_HISTORY_TAG not in arguments:
+            arguments[KernelFunction.CHAT_HISTORY_TAG] = ChatHistory()
         if isinstance(functions, KernelFunction):
             stream_function = functions
             results = []
@@ -195,7 +195,8 @@ class Kernel(KernelBaseModel):
             try:
                 async for stream_message in stream_function.invoke_stream(self, arguments):
                     if isinstance(stream_message, FunctionResult):
-                        raise stream_message.metadata.get("error", Exception("Error occurred in stream function"))
+                        err_msg = stream_message.metadata.get("error", None)
+                        raise KernelException(f"Error occurred in stream function: {err_msg}")
                     function_result.append(stream_message)
                     yield stream_message
             except Exception as exc:
@@ -269,6 +270,8 @@ class Kernel(KernelBaseModel):
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
+        if KernelFunction.CHAT_HISTORY_TAG not in arguments:
+            arguments[KernelFunction.CHAT_HISTORY_TAG] = ChatHistory()
         results = []
         pipeline_step = 0
         if not isinstance(functions, list):
@@ -442,7 +445,7 @@ class Kernel(KernelBaseModel):
             candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
         # Read every method from the plugin instance
         for _, candidate in candidates:
-            # If the method is a semantic function, register it
+            # If the method is a prompt function, register it
             if not hasattr(candidate, "__kernel_function__"):
                 continue
 
@@ -500,7 +503,17 @@ class Kernel(KernelBaseModel):
 
         return {}
 
-    def import_semantic_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
+    def import_plugin_from_prompt_directory(
+        self, service_id: str, parent_directory: str, plugin_directory_name: str
+    ) -> KernelPlugin:
+        """
+        Import a plugin from a directory containing prompt templates.
+
+        Args:
+            service_id (str): The service id
+            parent_directory (str): The parent directory
+            plugin_directory_name (str): The plugin directory name
+        """
         CONFIG_FILE = "config.json"
         PROMPT_FILE = "skprompt.txt"
 
@@ -526,16 +539,37 @@ class Kernel(KernelBaseModel):
 
             config_path = os.path.join(directory, CONFIG_FILE)
             with open(config_path, "r") as config_file:
-                config = PromptTemplateConfig.from_json(config_file.read())
+                prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
+            prompt_template_config.name = function_name
+
+            # TODO: remove this once the PromptTemplateConfig supports a dict of execution_settings
+            if (
+                prompt_template_config.execution_settings
+                and "default" in prompt_template_config.execution_settings.extension_data
+            ):
+                prompt_template_config.execution_settings.extension_data = (
+                    prompt_template_config.execution_settings.extension_data["default"]
+                )
+
+            prompt_template_config.execution_settings.service_id = service_id
 
             # Load Prompt Template
             with open(prompt_path, "r") as prompt_file:
-                template = PromptTemplate(prompt_file.read(), self.prompt_template_engine, config)
+                prompt = prompt_file.read()
+                prompt_template_config.template = prompt
 
-            # Prepare lambda wrapping AI logic
-            function_config = SemanticFunctionConfig(config, template)
+            kernel_prompt_template = KernelPromptTemplate(prompt_template_config)
 
-            functions += [self.register_semantic_function(plugin_directory_name, function_name, function_config)]
+            functions += [
+                self.create_function_from_prompt(
+                    plugin_name=plugin_directory_name,
+                    prompt_template=kernel_prompt_template,
+                    prompt_template_config=prompt_template_config,
+                    template_format="semantic-kernel",
+                    function_name=function_name,
+                    description=prompt_template_config.description,
+                )
+            ]
 
         plugin = KernelPlugin(name=plugin_directory_name, functions=functions)
 
@@ -551,81 +585,69 @@ class Kernel(KernelBaseModel):
             raise ValueError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
         return self.plugins[plugin_name][function_name]
 
-    def register_semantic_function(
+    def create_function_from_prompt(
         self,
-        plugin_name: Optional[str],
-        function_name: str,
-        function_config: SemanticFunctionConfig,
+        template: Optional[str] = None,
+        prompt_template_config: Optional[PromptTemplateConfig] = None,
+        execution_settings: Optional[PromptExecutionSettings] = None,
+        function_name: Optional[str] = None,
+        plugin_name: Optional[str] = None,
+        description: Optional[str] = None,
+        template_format: Optional[str] = None,
+        prompt_template: Optional[PromptTemplateBase] = None,
+        **kwargs: Any,
     ) -> KernelFunction:
         """
-        Creates a semantic function from the plugin name, function name and function config
+        Create a Kernel Function from a prompt.
 
         Args:
-            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
-            function_name (str): The name of the function
-            function_config (SemanticFunctionConfig): The function config
+            template (Optional[str]): The prompt template
+            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
+            execution_settings (Optional[PromptExecutionSettings]): The execution settings
+            function_name (Optional[str]): The name of the function
+            plugin_name (Optional[str]): The name of the plugin
+            description (Optional[str]): The description of the function
+            template_format (Optional[str]): The format of the prompt template
+            prompt_template (Optional[PromptTemplateBase]): The prompt template
+            kwargs (Any): Additional arguments
 
         Returns:
-            KernelFunction: The created semantic function
-
-        Raises:
-            ValueError: If the plugin name or function name are invalid
+            KernelFunction: The created Kernel Function
         """
-        if plugin_name is None or plugin_name == "":
+        if not plugin_name:
             plugin_name = f"p_{generate_random_ascii_name()}"
         assert plugin_name is not None  # for type checker
+
+        if not function_name:
+            function_name = f"f_{generate_random_ascii_name()}"
+        assert function_name is not None  # for type checker
 
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        function = self._create_semantic_function(plugin_name, function_name, function_config)
-        self.add_plugin(plugin_name, [function])
-        function.set_default_plugin_collection(self.plugins)
+        if not prompt_template_config.execution_settings:
+            if execution_settings:
+                prompt_template_config.execution_settings = execution_settings
+            else:
+                prompt_template_config.execution_settings = PromptExecutionSettings(extension_data=kwargs)
 
-        return function
-
-    def create_semantic_function(
-        self,
-        prompt_template: str,
-        function_name: Optional[str] = None,
-        plugin_name: Optional[str] = None,
-        description: Optional[str] = None,
-        **kwargs: Any,
-    ) -> "KernelFunction":
-        function_name = function_name if function_name is not None else f"f_{generate_random_ascii_name()}"
-
-        config = PromptTemplateConfig(
-            description=(description if description is not None else "Generic function, unknown purpose"),
-            type="completion",
-            execution_settings=PromptExecutionSettings(extension_data=kwargs),
+        function = KernelFunction.from_prompt(
+            prompt=template,
+            function_name=function_name,
+            plugin_name=plugin_name,
+            description=description,
+            template_format=template_format,
+            prompt_template=prompt_template,
+            prompt_template_config=prompt_template_config,
         )
 
-        validate_function_name(function_name)
-        if plugin_name is not None:
-            validate_plugin_name(plugin_name)
-
-        template = PromptTemplate(prompt_template, self.prompt_template_engine, config)
-        function_config = SemanticFunctionConfig(config, template)
-
-        return self.register_semantic_function(plugin_name, function_name, function_config)
-
-    def _create_semantic_function(
-        self,
-        plugin_name: str,
-        function_name: str,
-        function_config: SemanticFunctionConfig,
-    ) -> KernelFunction:
-        if not function_config.prompt_template_config.type == "completion":
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                f"Function type not supported: {function_config.prompt_template_config.type}",
-            )
-
-        function = KernelFunction.from_semantic_config(plugin_name, function_name, function_config)
-        if exec_settings := function_config.prompt_template_config.execution_settings:
+        if exec_settings := prompt_template_config.execution_settings:
             if exec_settings.service_id in function.prompt_execution_settings:
                 logger.warning("Overwriting execution settings for service_id: %s", exec_settings.service_id)
             function.prompt_execution_settings[exec_settings.service_id] = exec_settings
+
+        self.add_plugin(plugin_name, [function])
+        function.set_default_plugin_collection(self.plugins)
 
         return function
 

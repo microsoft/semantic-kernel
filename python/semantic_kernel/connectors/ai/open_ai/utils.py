@@ -1,21 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import json
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openai.types.chat import ChatCompletion
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
-from semantic_kernel.connectors.ai.open_ai.prompt_template.open_ai_chat_prompt_template import (
-    OpenAIChatPromptTemplate,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
                     for param in func_view.parameters
                     if param.expose
                 },
-                "required": [p.name for p in func_view.parameters if p.required],
+                "required": [p.name for p in func_view.parameters if p.required and p.expose],
             },
         },
     }
@@ -156,13 +155,13 @@ def get_function_calling_object(
     if include_function and exclude_function:
         raise ValueError("Cannot use both include_function and exclude_function at the same time.")
     if include_plugin:
-        include_plugin = [plugin.lower() for plugin in include_plugin]
+        include_plugin = [plugin for plugin in include_plugin]
     if exclude_plugin:
-        exclude_plugin = [plugin.lower() for plugin in exclude_plugin]
+        exclude_plugin = [plugin for plugin in exclude_plugin]
     if include_function:
-        include_function = [function.lower() for function in include_function]
+        include_function = [function for function in include_function]
     if exclude_function:
-        exclude_function = [function.lower() for function in exclude_function]
+        exclude_function = [function for function in exclude_function]
     result = []
     for (
         plugin_name,
@@ -182,14 +181,14 @@ async def execute(kernel: Kernel, func: KernelFunction, arguments: KernelArgumen
     """Execute a function and return the result.
 
     Args:
-        kernel (Kernel): the kernel to use.
-        func (KernelFunction): the function to execute.
-        input_vars (ContextVariables): the input variables.
+        kernel: the kernel to use.
+        func: the function to execute.
+        arguments: the arguments to pass to the function.
 
     Returns:
         str: the result of the execution.
     """
-    result = await kernel.invoke(func, arguments=arguments)
+    result = await kernel.invoke(functions=func, arguments=arguments)
     logger.info(f"Execution result: {result}")
     return result
 
@@ -222,10 +221,11 @@ async def execute_tool_call(kernel: Kernel, tool_call: ToolCall) -> FunctionResu
 
 async def chat_completion_with_tool_call(
     kernel: Kernel,
-    arguments: KernelArguments,
+    arguments: Optional[KernelArguments] = None,
     chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[KernelFunction] = None,
+    chat_history: Optional[ChatHistory] = None,
     **kwargs: Dict[str, Any],
 ) -> FunctionResult:
     """Perform a chat completion with auto-executing function calling.
@@ -246,6 +246,8 @@ async def chat_completion_with_tool_call(
         chat_function_name: the function name of the chat function.
         chat_function: the chat function, if not provided, it will be retrieved from the kernel.
             make sure to provide either the chat_function or the chat_plugin_name and chat_function_name.
+        chat_history: the chat history to use, if not provided, will attempt to retrieve from arguments
+            with key "chat_history".
 
         max_function_calls: the maximum number of function calls to execute, defaults to 5.
         current_call_count: the current number of function calls executed.
@@ -253,6 +255,9 @@ async def chat_completion_with_tool_call(
     returns:
         the FunctionResult with the result of the chat completion, just like a regular invoke/run_async.
     """
+
+    chat_history or arguments["chat_history"]
+
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
     current_call_count = kwargs.get("current_call_count", 0)
@@ -261,25 +266,47 @@ async def chat_completion_with_tool_call(
         if chat_plugin_name is None or chat_function_name is None:
             raise ValueError("Please provide either the chat_function or the chat_plugin_name and chat_function_name.")
         chat_function = kernel.func(plugin_name=chat_plugin_name, function_name=chat_function_name)
-    assert isinstance(
-        chat_function.chat_prompt_template, OpenAIChatPromptTemplate
+    assert issubclass(
+        type(chat_function.ai_service), Union[ChatCompletionClientBase, TextCompletionClientBase]
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
 
-    settings = chat_function.chat_prompt_template.prompt_config.execution_settings
+    settings = chat_function.prompt_execution_settings[chat_function.ai_service.service_id]
+
+    if not arguments:
+        arguments = KernelArguments()
     arguments.execution_settings[settings.service_id] = settings
+    arguments["user_input"] = ("\n").join([f"{msg.role}: {msg.content}" for msg in chat_history])
     if current_call_count >= max_function_calls:
-        # when the maximum number of function calls is reached, execute the chat function without Functions.
-        for settings in arguments.execution_settings.values():
-            settings.tool_choice = None
-    result = await chat_function.invoke(kernel=kernel, arguments=arguments)
-    if hasattr(result.value[0], "tool_message") and (tool_message := result.value[0].tool_message):
-        chat_function.chat_prompt_template.add_function_response_message(name="tool", content=tool_message)
-    if not (tool_calls := result.value[0].tool_calls):
-        chat_function.chat_prompt_template.add_assistant_message(message=str(result))
-        return result
-    await asyncio.gather(*[execute_and_store_tool_call(kernel, tool_call, chat_function) for tool_call in tool_calls])
-    return await chat_completion_with_tool_call(
+        settings.functions = []
+    result = await chat_function.invoke(
         kernel=kernel,
+        arguments=arguments,
+        # when the maximum number of function calls is reached, execute the chat function without Functions.
+    )
+    if not isinstance(result, FunctionResult) and result.value[0].tool_call is None:
+        return result
+    function_call = next(
+        (
+            fc
+            for fc in (result.value[0].function_call or result.value[0].tool_calls or [None])
+            if isinstance(fc, (FunctionCall, ToolCall))
+        ),
+        None,
+    )
+    if function_call:
+        execute_call = execute_tool_call if isinstance(function_call, ToolCall) else execute_function_call
+        result = await execute_call(kernel, function_call)
+        tool_call_id = function_call.id
+    else:
+        return result
+    # add the result to the chat prompt template
+    chat_history.add_tool_message()
+    chat_function.chat_prompt_template.add_function_response_message(
+        name=function_call.function.name, content=str(result), tool_call_id=tool_call_id
+    )
+    # request another completion
+    return await chat_completion_with_tool_call(
+        kernel,
         arguments=arguments,
         chat_function=chat_function,
         max_function_calls=max_function_calls,

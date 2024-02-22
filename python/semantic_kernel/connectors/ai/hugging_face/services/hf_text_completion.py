@@ -47,6 +47,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                                    -- None if using device_map instead. (If both device and device_map
                                       are specified, device overrides device_map. If unintended,
                                       it can lead to unexpected behavior.)
+            service_id {Optional[str]} -- Service ID for the AI service.
             task {Optional[str]} -- Model completion task type, options are:
                 - summarization: takes a long text and returns a shorter summary.
                 - text-generation: takes incomplete text and returns a set of completion candidates.

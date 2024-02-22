@@ -33,11 +33,25 @@ kernel = sk.Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
+kernel.add_service(
+    OpenAIChatCompletion(
+        service_id="chat-gpt",
+        ai_model_id="gpt-3.5-turbo",
+        api_key=api_key,
+        org_id=org_id
+    )
+)
 
 # Alternative using Azure:
 # deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-# kernel.add_chat_service("dv", AzureChatCompletion(deployment, endpoint, api_key))
+# kernel.add_service(
+#   AzureChatCompletion(
+#       service_id="dv",
+#       deployment_name=deployment,
+#       base_url=endpoint,
+#       api_key=api_key
+#   )
+# )
 
 # Wrap your prompt in a function
 prompt = kernel.create_semantic_function("""

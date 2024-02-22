@@ -18,9 +18,9 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
 
     kernel = Kernel()
     # Configure LLM service
-    kernel.add_text_completion_service(
-        "text_completion",
+    kernel.add_service(
         sk_oai.AzureChatCompletion(
+            service_id="text_completion",
             deployment_name=deployment_name,
             endpoint=endpoint,
             api_key=api_key,
@@ -43,7 +43,7 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_string,
         goal,
-        SequentialPlanParser.get_plugin_function(kernel.create_new_context()),
+        SequentialPlanParser.get_plugin_function(kernel),
     )
 
     assert plan is not None

@@ -6,7 +6,7 @@ import platform
 import sys
 from functools import wraps
 from inspect import isawaitable
-from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, ClassVar, Dict, List, Optional, Union
 
 from pydantic import Field, StringConstraints
 
@@ -30,10 +30,12 @@ from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.chat_prompt_template import ChatPromptTemplate
-from semantic_kernel.prompt_template.semantic_function_config import (
-    SemanticFunctionConfig,
-)
+from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
@@ -43,12 +45,11 @@ if TYPE_CHECKING:
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 def store_results(chat_prompt: ChatPromptTemplate, results: List["ChatMessageContent"]):
-    """Stores specific results in the chat prompt template."""
+    """Stores specific results in the context and chat prompt."""
     if hasattr(results[0], "tool_message") and results[0].tool_message is not None:
         chat_prompt.add_message(role="tool", message=results[0].tool_message)
     chat_prompt.add_message(
@@ -70,30 +71,34 @@ class KernelFunction(KernelBaseModel):
         description (Optional[str]): The description of the function.
         name (str): The name of the function. Must be upper/lower case letters and
             underscores with a minimum length of 1.
-        is_semantic (bool): Whether the function is semantic.
+        is_prompt (bool): Whether the function is semantic.
         stream_function (Optional[Callable[..., Any]]): The stream function for the function.
         parameters (List[KernelParameterMetadata]): The parameters for the function.
         return_parameter (Optional[KernelParameterMetadata]): The return parameter for the function.
-        delegate_type (DelegateTypes): The delegate type for the function.
         function (Callable[..., Any]): The function to call.
         plugins (Optional[KernelPluginCollection]): The collection of plugins.
-        ai_service (Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]]): The AI service.
-        ai_prompt_execution_settings (PromptExecutionSettings): The AI prompt execution settings.
-        chat_prompt_template (Optional[ChatPromptTemplate]): The chat prompt template.
+        prompt_execution_settings (PromptExecutionSettings): The AI prompt execution settings.
+        prompt_template_config (PromptTemplateConfig): The prompt template configuration.
+        metadata (Optional[KernelFunctionMetadata]): The metadata for the function.
+
+    Note: the CHAT_HISTORY_TAG is a class-level attribute that is used to tag the chat history in the
+        arguments of the function. Pydantic ignores this attribute when performing model validation.
     """
 
     plugin_name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
     description: Optional[str] = Field(default=None)
     name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
-    is_semantic: bool = Field(...)
+    is_prompt: bool = Field(...)
     stream_function: Optional[Callable[..., Any]] = Field(default=None)
     parameters: List[KernelParameterMetadata] = Field(...)
     return_parameter: Optional[KernelParameterMetadata] = None
     function: Callable[..., Any] = Field(...)
     plugins: Optional["KernelPluginCollection"] = Field(default=None)
-    # ai_service: Optional[Union[TextCompletionClientBase, ChatCompletionClientBase]] = Field(default=None)
     prompt_execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
-    chat_prompt_template: Optional[ChatPromptTemplate] = Field(default=None)
+    prompt_template_config: Optional[PromptTemplateConfig] = Field(default=PromptTemplateConfig)
+    metadata: Optional[KernelFunctionMetadata] = Field(default=KernelFunctionMetadata)
+
+    CHAT_HISTORY_TAG: ClassVar[str] = "chat_history"
 
     def __init__(
         self,
@@ -102,9 +107,10 @@ class KernelFunction(KernelBaseModel):
         description: str,
         plugin_name: str,
         function_name: str,
-        is_semantic: bool,
+        is_prompt: bool,
         return_parameter: Optional[KernelParameterMetadata] = None,
         stream_function: Optional[Callable[..., Any]] = None,
+        prompt_template_config: Optional[PromptTemplateConfig] = None,
         **kwargs: Dict[str, Any],
     ) -> None:
         """
@@ -116,11 +122,19 @@ class KernelFunction(KernelBaseModel):
             description (str): The description for the function
             plugin_name (str): The name of the plugin
             name (str): The name of the function
-            is_semantic (bool): Whether the function is semantic
+            is_prompt (bool): Whether the function is semantic
             delegate_stream_function (Optional[Callable[..., Any]]): The delegate stream function for the function
             kwargs (Dict[str, Any]): Additional keyword arguments
         """
-        chat_prompt_template = kwargs.pop("chat_prompt_template", None)
+
+        metadata = KernelFunctionMetadata(
+            name=function_name,
+            description=description,
+            parameters=parameters,
+            return_parameter=return_parameter,
+            is_prompt=is_prompt,
+            plugin_name=plugin_name,
+        )
 
         super().__init__(
             function=function,
@@ -129,9 +143,11 @@ class KernelFunction(KernelBaseModel):
             description=description,
             plugin_name=plugin_name,
             name=function_name,
-            is_semantic=is_semantic,
+            is_prompt=is_prompt,
             stream_function=stream_function,
-            chat_prompt_template=chat_prompt_template,
+            prompt_template_config=prompt_template_config,
+            metadata=metadata,
+            **kwargs,
         )
 
     @property
@@ -170,6 +186,7 @@ class KernelFunction(KernelBaseModel):
                         default_value=param["default_value"],
                         type=param.get("type", "str"),
                         required=param.get("required", False),
+                        expose=True,
                     )
                 )
         return_param = KernelParameterMetadata(
@@ -208,28 +225,55 @@ class KernelFunction(KernelBaseModel):
             parameters=parameters,
             return_parameter=return_param,
             stream_function=streaming_method,
-            is_semantic=False,
+            is_prompt=False,
         )
 
     @staticmethod
-    def from_semantic_config(
-        plugin_name: str,
-        function_name: str,
-        function_config: SemanticFunctionConfig,
+    def from_prompt(
+        prompt: str,
+        execution_settings: Optional[PromptExecutionSettings] = None,
+        plugin_name: Optional[str] = None,
+        function_name: Optional[str] = None,
+        description: Optional[str] = None,
+        template_format: Optional[str] = None,
+        prompt_template: Optional[PromptTemplateBase] = None,
+        prompt_template_config: Optional[PromptTemplateConfig] = None,
     ) -> "KernelFunction":
         """
-        Create a KernelFunction from a semantic configuration.
+        Create a Kernel Function from a prompt
 
         Args:
-            plugin_name (str): The name of the plugin
-            function_name (str): The name of the function
-            function_config (SemanticFunctionConfig): The function configuration
+            prompt (str): The prompt
+            execution_settings (Optional[PromptExecutionSettings]): The execution settings
+            plugin_name (Optional[str]): The name of the plugin
+            function_name (Optional[str]): The name of the function
+            description (Optional[str]): The description of the function
+            template_format (Optional[str]): The template format
+            prompt_template (Optional[PromptTemplateBase]): The prompt template
+            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
 
         Returns:
             KernelFunction: The kernel function
         """
-        if function_config is None:
-            raise ValueError("Function configuration cannot be `None`")
+
+        if prompt_template:
+            if not template_format:
+                raise ValueError(f"Template format cannot be `None` when providing a {prompt_template}")
+
+        if not plugin_name:
+            plugin_name = f"p_{generate_random_ascii_name()}"
+
+        if not prompt_template_config:
+            prompt_template_config = PromptTemplateConfig(
+                name=function_name,
+                template_format=template_format if template_format else "semantic-kernel",
+                description=description if description else "Generic function, unknown purpose",
+                template=prompt,
+                execution_settings=execution_settings if execution_settings else PromptExecutionSettings(),
+            )
+
+        if not prompt_template:
+            prompt_template = KernelPromptTemplate(prompt_template_config)
 
         async def _local_func(
             function: KernelFunctionMetadata,
@@ -237,45 +281,52 @@ class KernelFunction(KernelBaseModel):
             service: Union[TextCompletionClientBase, ChatCompletionClientBase],
             request_settings: PromptExecutionSettings,
             arguments: KernelArguments,
+            chat_history: Optional[ChatHistory] = None,
             **kwargs: Dict[str, Any],
         ) -> "FunctionResult":
             if service is None:
                 raise ValueError("AI LLM service cannot be `None`")
-            # from semantic_kernel.functions.kernel_function import KernelFunction  # noqa # pylint: disable=unused-import
 
-            # FunctionResult.model_rebuild()
+            prompt = await prompt_template.render(kernel, arguments)
 
-            if isinstance(service, ChatCompletionClientBase):
-                try:
-                    messages = await function_config.prompt_template.render_messages(kernel, arguments)
-                    completions = await service.complete_chat(messages, request_settings)
+            if not chat_history or len(chat_history) == 0:
+                chat_history = ChatHistory(system_message=prompt)
+            else:
+                chat_history.add_user_message(prompt)
+
+            try:
+                if isinstance(service, ChatCompletionClientBase):
+                    completions = await service.complete_chat(chat_history, request_settings)
                     return FunctionResult(
                         function=function,
                         value=completions,
                         metadata={
-                            "messages": messages,
+                            "messages": chat_history,
                             "arguments": arguments,
                             "metadata": [completion.metadata for completion in completions],
                         },
                     )
-                except Exception as exc:
-                    logger.error(f"Error occurred while invoking function {function.name}: {exc}")
-                    raise exc
+            except Exception as exc:
+                logger.error(f"Error occurred while invoking function {function.name}: {exc}")
+                raise exc
+
             try:
-                prompt = await function_config.prompt_template.render(kernel, arguments)
-                completions = await service.complete(prompt, request_settings)
-                return FunctionResult(
-                    function=function,
-                    value=completions,
-                    metadata={
-                        "prompt": prompt,
-                        "arguments": arguments,
-                        "metadata": [completion.metadata for completion in completions],
-                    },
-                )
+                if isinstance(service, TextCompletionClientBase):
+                    completions = await service.complete(prompt, request_settings)
+                    return FunctionResult(
+                        function=function,
+                        value=completions,
+                        metadata={
+                            "prompt": prompt,
+                            "arguments": arguments,
+                            "metadata": [completion.metadata for completion in completions],
+                        },
+                    )
             except Exception as e:
                 logger.error(f"Error occurred while invoking function {function.name}: {e}")
                 raise e
+
+            raise ValueError(f"Service `{type(service)}` is not a valid AI service")
 
         async def _local_stream_func(
             function: KernelFunctionMetadata,
@@ -283,23 +334,30 @@ class KernelFunction(KernelBaseModel):
             service: Union[TextCompletionClientBase, ChatCompletionClientBase],
             request_settings: PromptExecutionSettings,
             arguments: KernelArguments,
+            chat_history: Optional[ChatHistory] = None,
             **kwargs: Dict[str, Any],
         ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
             if service is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
+            prompt = await prompt_template.render(kernel, arguments)
+
+            if not chat_history or len(chat_history) == 0:
+                chat_history = ChatHistory(system_message=prompt)
+            else:
+                chat_history.add_user_message(prompt)
+
             try:
                 if isinstance(service, ChatCompletionClientBase):
-                    messages = await function_config.prompt_template.render_messages(kernel, arguments)
                     async for partial_content in service.complete_chat_stream(
-                        messages=messages, settings=request_settings
+                        chat_history=chat_history, settings=request_settings
                     ):
                         yield partial_content
-                else:
-                    prompt = await function_config.prompt_template.render(kernel, arguments)
+                elif isinstance(service, TextCompletionClientBase):
                     async for partial_content in service.complete_stream(prompt, request_settings):
                         yield partial_content
-
+                else:
+                    raise ValueError(f"Service `{type(service)}` is not a valid AI service")
             except Exception as e:
                 logger.error(f"Error occurred while invoking function {function.name}: {e}")
                 raise e
@@ -346,11 +404,11 @@ class KernelFunction(KernelBaseModel):
                 expose=False,
             ),
         ]
-        semantic_function_params.extend(function_config.prompt_template.get_parameters())
+        semantic_function_params.extend(prompt_template_config.get_kernel_parameter_metadata())
         return KernelFunction(
             function_name=function_name,
             plugin_name=plugin_name,
-            description=function_config.prompt_template_config.description,
+            description=description,
             function=_local_func,
             parameters=semantic_function_params,
             return_parameter=KernelParameterMetadata(
@@ -361,8 +419,8 @@ class KernelFunction(KernelBaseModel):
                 required=True,
             ),
             stream_function=_local_stream_func,
-            is_semantic=True,
-            chat_prompt_template=function_config.prompt_template if function_config.has_chat_prompt else None,
+            is_prompt=True,
+            prompt_template_config=prompt_template_config,
         )
 
     def set_default_plugin_collection(self, plugins: "KernelPluginCollection") -> "KernelFunction":
@@ -374,7 +432,7 @@ class KernelFunction(KernelBaseModel):
             name=self.name,
             plugin_name=self.plugin_name,
             description=self.description or "",
-            is_semantic=self.is_semantic,
+            is_prompt=self.is_prompt,
             parameters=self.parameters,
         )
 
@@ -384,7 +442,20 @@ class KernelFunction(KernelBaseModel):
         arguments: Optional[KernelArguments] = None,
         **kwargs: Dict[str, Any],
     ) -> "FunctionResult":
-        return await self.invoke(kernel, arguments, **kwargs)
+        """Invoke the function with the given arguments.
+
+        Args:
+            kernel (Kernel): The kernel
+            arguments (Optional[KernelArguments]): The Kernel arguments.
+                Optional, defaults to None.
+            kwargs (Dict[str, Any]): Additional keyword arguments that will be
+
+        Returns:
+            FunctionResult: The result of the function
+        """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
+        return await self.invoke(kernel, arguments)
 
     async def invoke(
         self,
@@ -392,9 +463,22 @@ class KernelFunction(KernelBaseModel):
         arguments: Optional[KernelArguments] = None,
         **kwargs: Dict[str, Any],
     ) -> "FunctionResult":
+        """Invoke the function with the given arguments.
+
+        Args:
+            kernel (Kernel): The kernel
+            arguments (KernelArguments): The Kernel arguments
+            kwargs (Dict[str, Any]): Additional keyword arguments that will be
+                added to the KernelArguments.
+
+        Returns:
+            FunctionResult: The result of the function
+        """
         if not arguments:
             arguments = KernelArguments(**kwargs)
         function_arguments = self.gather_function_parameters(kernel, arguments)
+        if self.is_prompt and self.CHAT_HISTORY_TAG not in function_arguments:
+            function_arguments[self.CHAT_HISTORY_TAG] = ChatHistory()
         logger.debug("Invoking %s with arguments: %s", self.name, function_arguments)
         try:
             result = self.function(**function_arguments)
@@ -418,6 +502,14 @@ class KernelFunction(KernelBaseModel):
         **kwargs: Dict[str, Any],
     ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
         """
+        Invoke a stream async function with the given arguments.
+
+        Args:
+            kernel (Kernel): The kernel
+            arguments (KernelArguments): The Kernel arguments
+            kwargs (Dict[str, Any]): Additional keyword arguments that will be
+                added to the KernelArguments.
+
         Yields:
             StreamingKernelContent or FunctionResult -- The results of the function,
                 if there is an error a FunctionResult is yielded.
@@ -427,6 +519,8 @@ class KernelFunction(KernelBaseModel):
         if not self.stream_function:
             raise ValueError("Function does not support streaming")
         function_arguments = self.gather_function_parameters(kernel, arguments)
+        if self.is_prompt and self.CHAT_HISTORY_TAG not in function_arguments:
+            function_arguments[self.CHAT_HISTORY_TAG] = ChatHistory()
         logger.debug("Invoking %s with arguments: %s", self.name, function_arguments)
         try:
             async for stream_msg in self.stream_function(**function_arguments):
@@ -438,6 +532,7 @@ class KernelFunction(KernelBaseModel):
             )
 
     def gather_function_parameters(self, kernel: "Kernel", arguments: "KernelArguments") -> Dict[str, Any]:
+        """Gathers the function parameters from the arguments."""
         function_arguments: Dict[str, Any] = {}
         for param in self.parameters:
             if param.name == "function":
@@ -455,7 +550,16 @@ class KernelFunction(KernelBaseModel):
             if param.name == "arguments":
                 function_arguments[param.name] = arguments
                 continue
-            if self.is_semantic:
+            if param.name == "prompt_template_config":
+                function_arguments[param.name] = self.prompt_template_config
+                continue
+            if param.name == self.CHAT_HISTORY_TAG:
+                chat = arguments.get(self.CHAT_HISTORY_TAG, ChatHistory())
+                if not isinstance(chat, ChatHistory):
+                    raise ValueError(f"Parameter {param.name} is not a valid ChatHistory object.")
+                function_arguments[param.name] = chat
+                continue
+            if self.is_prompt:
                 # a semantic function will use the arguments (KernelArguments) instead of named arguments
                 continue
             if param.name in arguments:
@@ -463,7 +567,13 @@ class KernelFunction(KernelBaseModel):
                 continue
             if param.required:
                 raise ValueError(f"Parameter {param.name} is required but not provided in the arguments.")
-            logger.debug(
-                f"Parameter {param.name} is not provided, using default value {param.default_value}"
-            )  # default value is not set here but in the functions
+            logger.debug(f"Parameter {param.name} is not provided, using default value {param.default_value}")
+        if self.prompt_template_config:
+            self.add_default_values(function_arguments, self.prompt_template_config)
         return function_arguments
+
+    def add_default_values(self, arguments: dict[str, Any], prompt_template_config: PromptTemplateConfig) -> None:
+        """Adds default values to the arguments."""
+        for parameter in prompt_template_config.input_variables:
+            if not arguments.get(parameter.name) and parameter.default not in {None, "", False, 0}:
+                arguments[parameter.name] = parameter.default

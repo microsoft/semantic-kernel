@@ -55,7 +55,7 @@ def enable_debug_mode():
     builtins.pr = snoop.pp
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def create_kernel(plugin: Optional[KernelPlugin] = None):
     kernel = Kernel()
     if plugin:

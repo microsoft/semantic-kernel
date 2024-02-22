@@ -96,6 +96,7 @@ def _parse_annotation(annotation: Parameter) -> Tuple[str, str, bool]:
 
 def _parse_internal_annotation(annotation: Parameter, required: bool) -> Tuple[str, bool]:
     logger.debug(f"Internal {annotation=}")
+    logger.debug(f"{annotation=}")
     if hasattr(annotation, "__forward_arg__"):
         return annotation.__forward_arg__, required
     if getattr(annotation, "__name__", None) == "Optional":

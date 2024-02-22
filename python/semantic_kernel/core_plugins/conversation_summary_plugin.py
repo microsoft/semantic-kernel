@@ -7,9 +7,11 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
+
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 class ConversationSummaryPlugin:
@@ -24,7 +26,7 @@ class ConversationSummaryPlugin:
 
     _summarize_conversation_prompt_template = (
         "BEGIN CONTENT TO SUMMARIZE:\n{{"
-        + "$INPUT"
+        + "$input"
         + "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
         " SUMMARIZE',            identifying main points of discussion and any"
         " conclusions that were reached.\nDo not incorporate other general"
@@ -32,15 +34,22 @@ class ConversationSummaryPlugin:
         " or tags.\n\nBEGIN SUMMARY:\n"
     )
 
-    def __init__(self, kernel: "Kernel", return_key: str = "summary"):
+    def __init__(
+        self, kernel: "Kernel", prompt_template_config: "PromptTemplateConfig", return_key: str = "summary"
+    ) -> None:
+        """
+        Initializes a new instance of the ConversationSummaryPlugin class.
+
+        :param kernel: The kernel instance.
+        :param prompt_template_config: The prompt template configuration.
+        :param return_key: The key to use for the return value.
+        """
         self.return_key = return_key
-        self._summarizeConversationFunction = kernel.create_semantic_function(
+        self._summarizeConversationFunction = kernel.create_function_from_prompt(
             ConversationSummaryPlugin._summarize_conversation_prompt_template,
             plugin_name=ConversationSummaryPlugin.__name__,
-            description=("Given a section of a conversation transcript, summarize the part of" " the conversation."),
-            max_tokens=ConversationSummaryPlugin._max_tokens,
-            temperature=0.1,
-            top_p=0.5,
+            function_name="SummarizeConversation",
+            prompt_template_config=prompt_template_config,
         )
 
     @kernel_function(

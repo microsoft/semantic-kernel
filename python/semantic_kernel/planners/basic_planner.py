@@ -5,8 +5,10 @@ import json
 
 import regex
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 class Plan:
@@ -128,6 +130,9 @@ class BasicPlanner:
     Basic JSON-based planner for the Semantic Kernel.
     """
 
+    def __init__(self, service_id: str) -> None:
+        self.service_id = service_id
+
     def _create_available_functions_string(self, kernel: Kernel) -> str:
         """
         Given an instance of the Kernel, create the [AVAILABLE FUNCTIONS]
@@ -172,9 +177,23 @@ class BasicPlanner:
         Creates a plan for the given goal based off the functions that
         are available in the kernel.
         """
+        exec_settings = PromptExecutionSettings(
+            service_id=self.service_id,
+            max_tokens=1000,
+            temperature=0.8,
+        )
 
-        # Create the semantic function for the planner with the given prompt
-        planner = kernel.create_semantic_function(prompt, max_tokens=1000, temperature=0.8)
+        prompt_template_config = PromptTemplateConfig(
+            template=prompt,
+            execution_settings=exec_settings,
+        )
+
+        # Create the prompt function for the planner with the given prompt
+        planner = kernel.create_function_from_prompt(
+            plugin_name="PlannerPlugin",
+            function_name="CreatePlan",
+            prompt_template_config=prompt_template_config,
+        )
 
         available_functions_string = self._create_available_functions_string(kernel)
 
@@ -191,8 +210,14 @@ class BasicPlanner:
 
         # Filter out good JSON from the result in case additional text is present
         json_regex = r"\{(?:[^{}]|(?R))*\}"
-        generated_plan_string = regex.search(json_regex, plan.generated_plan.result).group()
-        generated_plan = json.loads(generated_plan_string)
+        generated_plan_string = regex.search(json_regex, str(plan.generated_plan.value)).group()
+
+        # TODO: there is some silly escape chars affecting the result of plan.generated_plan.value
+        # There should be \n only but they are showing up as \\n
+        encoded_bytes = generated_plan_string.encode("utf-8")
+        decoded_string = encoded_bytes.decode("unicode_escape")
+
+        generated_plan = json.loads(decoded_string)
 
         arguments = KernelArguments(input=generated_plan["input"])
         subtasks = generated_plan["subtasks"]

@@ -25,6 +25,7 @@ from semantic_kernel.functions.kernel_plugin_collection import (
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -64,6 +65,9 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
         return KernelFunction.from_native_method(my_function, "plugin")
 
+    def create_chat_history() -> ChatHistory:
+        return ChatHistory()
+
     def create_plugin_collection() -> KernelPluginCollection:
         """Return a plugin collection."""
         # TODO: Add a few plugins to this collection.
@@ -90,9 +94,10 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             plugin_name="bar",
             description="baz",
             parameters=[KernelParameterMetadata(name="qux", description="bar", default_value="baz")],
-            is_semantic=True,
+            is_prompt=True,
             is_asynchronous=False,
         ),
+        ChatHistory: create_chat_history(),
         KernelPluginCollection: create_plugin_collection(),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
@@ -140,6 +145,7 @@ PYDANTIC_MODELS = [
     KernelParameterMetadata,
     KernelFunctionMetadata,
     KernelPluginCollection,
+    ChatHistory,
     pytest.param(
         KernelFunction,
         marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),

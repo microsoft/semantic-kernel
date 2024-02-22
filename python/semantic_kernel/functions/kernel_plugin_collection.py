@@ -1,16 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, TypeVar, Union
 
 from pydantic import Field
 
-from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 # To support Python 3.8, need to use TypeVar since Iterable is not scriptable
 KernelPluginType = TypeVar("KernelPluginType", bound=KernelPlugin)
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_function import KernelFunction
 
 
 class KernelPluginCollection(KernelBaseModel):
@@ -21,7 +23,7 @@ class KernelPluginCollection(KernelBaseModel):
         plugins (Dict[str, KernelPlugin]): The plugins in the collection, indexed by their name.
     """
 
-    plugins: Optional[Dict[str, KernelPlugin]] = Field(default_factory=dict)
+    plugins: Optional[Dict[str, "KernelPlugin"]] = Field(default_factory=dict)
 
     def __init__(self, plugins: Union[None, "KernelPluginCollection", Iterable[KernelPluginType]] = None):
         """
@@ -50,7 +52,7 @@ class KernelPluginCollection(KernelBaseModel):
         super().__init__(plugins=plugins)
 
     @staticmethod
-    def _process_plugins_iterable(plugins_input: Iterable[KernelPlugin]) -> Dict[str, KernelPlugin]:
+    def _process_plugins_iterable(plugins_input: Iterable[KernelPlugin]) -> Dict[str, "KernelPlugin"]:
         plugins_dict = {}
         for plugin in plugins_input:
             if plugin is None:
@@ -60,7 +62,7 @@ class KernelPluginCollection(KernelBaseModel):
             plugins_dict[plugin.name] = plugin
         return plugins_dict
 
-    def add(self, plugin: KernelPlugin) -> None:
+    def add(self, plugin: "KernelPlugin") -> None:
         """
         Add a single plugin to the collection
 
@@ -76,7 +78,7 @@ class KernelPluginCollection(KernelBaseModel):
             raise ValueError(f"Plugin with name {plugin.name} already exists")
         self.plugins[plugin.name] = plugin
 
-    def add_plugin_from_functions(self, plugin_name: str, functions: List[KernelFunction]) -> None:
+    def add_plugin_from_functions(self, plugin_name: str, functions: List["KernelFunction"]) -> None:
         """
         Add a function to a new plugin in the collection
 
@@ -95,7 +97,7 @@ class KernelPluginCollection(KernelBaseModel):
         plugin = KernelPlugin.from_functions(plugin_name=plugin_name, functions=functions)
         self.plugins[plugin_name] = plugin
 
-    def add_functions_to_plugin(self, functions: List[KernelFunction], plugin_name: str) -> None:
+    def add_functions_to_plugin(self, functions: List["KernelFunction"], plugin_name: str) -> None:
         """
         Add functions to a plugin in the collection
 
@@ -120,7 +122,7 @@ class KernelPluginCollection(KernelBaseModel):
                 raise ValueError(f"Function with name '{func.name}' already exists in plugin '{plugin_name}'")
             plugin.functions[func.name] = func
 
-    def add_list_of_plugins(self, plugins: List[KernelPlugin]) -> None:
+    def add_list_of_plugins(self, plugins: List["KernelPlugin"]) -> None:
         """
         Add a list of plugins to the collection
 
@@ -136,7 +138,7 @@ class KernelPluginCollection(KernelBaseModel):
         for plugin in plugins:
             self.add(plugin)
 
-    def remove(self, plugin: KernelPlugin) -> bool:
+    def remove(self, plugin: "KernelPlugin") -> bool:
         """
         Remove a plugin from the collection
 
@@ -185,13 +187,13 @@ class KernelPluginCollection(KernelBaseModel):
         self.plugins.clear()
 
     def get_list_of_function_metadata(
-        self, include_semantic: bool = True, include_native: bool = True
+        self, include_prompt: bool = True, include_native: bool = True
     ) -> List[KernelFunctionMetadata]:
         """
         Get a list of the function metadata in the plugin collection
 
         Args:
-            include_semantic (bool): Whether to include semantic functions in the list.
+            include_prompt (bool): Whether to include semantic functions in the list.
             include_native (bool): Whether to include native functions in the list.
 
         Returns:
@@ -203,7 +205,7 @@ class KernelPluginCollection(KernelBaseModel):
             func.describe()
             for plugin in self.plugins.values()
             for func in plugin.functions.values()
-            if (include_semantic and func.is_semantic) or (include_native and not func.is_semantic)
+            if (include_prompt and func.is_prompt) or (include_native and not func.is_prompt)
         ]
 
     def __iter__(self) -> Any:
