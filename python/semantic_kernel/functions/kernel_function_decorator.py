@@ -46,8 +46,10 @@ def kernel_function(
         func.__kernel_function_description__ = description or func.__doc__
         func.__kernel_function_name__ = name or func.__name__
         func.__kernel_function_streaming__ = isasyncgenfunction(func) or isgeneratorfunction(func)
+        logger.debug(f"Parsing decorator for function: {func.__kernel_function_name__}")
 
         func_sig = signature(func)
+        logger.debug(f"{func_sig=}")
         func.__kernel_function_context_parameters__ = [
             _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
         ]
@@ -65,11 +67,13 @@ def kernel_function(
 
 
 def _parse_parameter(param: Parameter):
+    logger.debug(f"Parsing param: {param}")
     param_description = ""
     type_ = "str"
     required = True
     if param != Parameter.empty:
         param_description, type_, required = _parse_annotation(param.annotation)
+    logger.debug(f"{param_description=}, {type_=}, {required=}")
     return {
         "name": param.name,
         "description": param_description,
@@ -80,17 +84,18 @@ def _parse_parameter(param: Parameter):
 
 
 def _parse_annotation(annotation: Parameter) -> Tuple[str, str, bool]:
+    logger.debug(f"Parsing annotation: {annotation}")
     if isinstance(annotation, str):
         return "", annotation, True
     logger.debug(f"{annotation=}")
     description = ""
-    if getattr(annotation, "__name__", None) == "Annotated":
+    if hasattr(annotation, "__metadata__") and annotation.__metadata__:
         description = annotation.__metadata__[0]
     return (description, *_parse_internal_annotation(annotation, True))
 
 
 def _parse_internal_annotation(annotation: Parameter, required: bool) -> Tuple[str, bool]:
-    logger.debug(f"{annotation=}")
+    logger.debug(f"Internal {annotation=}")
     if hasattr(annotation, "__forward_arg__"):
         return annotation.__forward_arg__, required
     if getattr(annotation, "__name__", None) == "Optional":
