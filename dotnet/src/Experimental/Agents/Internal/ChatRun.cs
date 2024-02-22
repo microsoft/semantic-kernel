@@ -22,7 +22,7 @@ internal sealed class ChatRun
     public string Id => this._model.Id;
 
     /// <inheritdoc/>
-    public string AgentId => this._model.AgentId;
+    public string AgentId => this._model.AssistantId;
 
     /// <inheritdoc/>
     public string ThreadId => this._model.ThreadId;
