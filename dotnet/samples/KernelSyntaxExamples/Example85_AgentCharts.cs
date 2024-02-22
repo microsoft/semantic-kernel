@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Xunit;
 using Xunit.Abstractions;
-using System.IO;
-using System;
-using System.Diagnostics;
 
 namespace Examples;
 
