@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.Connectors.UnitTests;
+namespace SemanticKernel.UnitTests;
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
@@ -35,7 +35,10 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
         this.RequestHeaders = request.Headers;
-        this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        if (request.Content is not null)
+        {
+            this.RequestContent = await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        }
         this.ContentHeaders = request.Content?.Headers;
 
         return await Task.FromResult(this.ResponseToReturn);
