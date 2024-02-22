@@ -38,7 +38,7 @@ public sealed class Example19_OpenAIModerationClassification : BaseTest
         ClassificationContent content = await textClassificationService.ClassifyTextAsync(input);
 
         OpenAIClassificationResult? openAIResult = content.Result as OpenAIClassificationResult;
-        this.Output.WriteLine($"Input: {input}");
+        this.Output.WriteLine($"Input: {content.ClassifiedContent}");
         this.Output.WriteLine($"Content flagged: {openAIResult!.Flagged}");
         foreach (OpenAIClassificationEntry entry in openAIResult.Entries)
         {
