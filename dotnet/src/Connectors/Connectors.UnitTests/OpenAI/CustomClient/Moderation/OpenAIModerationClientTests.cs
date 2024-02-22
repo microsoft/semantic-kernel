@@ -155,11 +155,11 @@ public sealed class OpenAIModerationClientTests : IDisposable
         // Assert
         var sampleResponse = await DeserializeSampleResponseAsync();
         Assert.NotNull(results);
-        Assert.All(results, (c, i) =>
+        Assert.All(results, (classificationContent, i) =>
         {
-            var openAIResult = c.Result as OpenAIClassificationResult;
+            var openAIResult = classificationContent.Result as OpenAIClassificationResult;
             Assert.NotNull(openAIResult);
-            Assert.Equal(inputs[i], results[i].ClassifiedContent);
+            Assert.Equal(inputs[i], classificationContent.ClassifiedContent);
             Assert.Equal(sampleResponse!.Results[i].Flagged, openAIResult.Flagged);
             Assert.Equivalent(sampleResponse.Results[i].CategoryFlags,
                 openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Flagged)));
