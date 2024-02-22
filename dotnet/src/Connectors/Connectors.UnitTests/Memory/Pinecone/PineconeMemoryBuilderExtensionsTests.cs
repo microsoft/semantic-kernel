@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
-using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Pinecone;
