@@ -157,7 +157,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         Assert.NotNull(results);
         Assert.All(results, (c, i) =>
         {
-            var openAIResult = results[i].Result as OpenAIClassificationResult;
+            var openAIResult = c.Result as OpenAIClassificationResult;
             Assert.NotNull(openAIResult);
             Assert.Equal(inputs[i], results[i].ClassifiedContent);
             Assert.Equal(sampleResponse!.Results[i].Flagged, openAIResult.Flagged);
