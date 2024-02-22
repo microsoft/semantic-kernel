@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 class ChatMessage(KernelBaseModel):
     """Class to hold chat messages."""
 
+    # TODO: remove class once ChatPromptTemplate is removed, has been replaced with ChatMessageContent
+
     role: Optional[str] = "assistant"
     fixed_content: Optional[str] = Field(default=None, init_var=False, serialization_alias="content")
     content_template: Optional[PromptTemplate] = Field(default=None, init_var=True, repr=False)

@@ -23,7 +23,7 @@ def test_plugin_can_be_imported():
     # import plugins
     plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_plugins")
     # path to plugins directory
-    plugin = kernel.import_plugin_from_prompt_directory(service_id, plugins_directory, "TestPlugin")
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
 
     assert plugin is not None
     assert len(plugin.functions) == 1

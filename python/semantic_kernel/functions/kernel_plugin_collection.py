@@ -198,7 +198,7 @@ class KernelPluginCollection(KernelBaseModel):
         if not self.plugins:
             return []
         return [
-            func.describe()
+            func.metadata
             for plugin in self.plugins.values()
             for func in plugin.functions.values()
             if (include_prompt and func.is_prompt) or (include_native and not func.is_prompt)

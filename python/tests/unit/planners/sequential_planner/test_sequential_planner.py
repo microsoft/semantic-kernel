@@ -22,7 +22,7 @@ from semantic_kernel.planners.sequential_planner.sequential_planner import (
 
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
     mock_function = Mock(spec=KernelFunction)
-    mock_function.describe.return_value = kernel_function_metadata
+    mock_function.metadata = kernel_function_metadata
     mock_function.name = kernel_function_metadata.name
     mock_function.plugin_name = kernel_function_metadata.plugin_name
     mock_function.is_prompt = kernel_function_metadata.is_prompt

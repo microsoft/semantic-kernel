@@ -3,7 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, List, Optional
 
-from pydantic import PrivateAttr
+from pydantic import Field
 
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
@@ -21,16 +21,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelPromptTemplate(PromptTemplateBase):
-    _tokenizer: TemplateTokenizer = PrivateAttr()
-    _blocks: List[Block] = PrivateAttr()
+    blocks: List[Block] = Field(default_factory=list)
 
     def __init__(self, prompt_config: PromptTemplateConfig):
-        super().__init__()
-        self._tokenizer = TemplateTokenizer()
-        self._blocks = self.extract_blocks(prompt_config)
-        self._add_missing_input_variables(self._blocks, prompt_config)
+        super().__init__(blocks=self.extract_blocks(prompt_config))
+        self._add_missing_input_variables(prompt_config)
 
-    def _add_missing_input_variables(self, blocks, config):
+    def _add_missing_input_variables(self, config: PromptTemplateConfig):
         # Add all of the existing input variables to our known set. We'll avoid adding any
         # dynamically discovered input variables with the same name.
         seen = {iv.name.lower() for iv in config.input_variables}
@@ -42,21 +39,23 @@ class KernelPromptTemplate(PromptTemplateBase):
                 config.input_variables.append(InputVariable(name=variable_name))
 
         # Enumerate every block in the template, adding any variables that are referenced.
-        for block in blocks:
+        for block in self.blocks:
             if block.type == BlockTypes.VARIABLE:
                 # Add all variables from variable blocks, e.g. "{{$a}}".
                 add_if_missing(block.name)
-            elif block.type == BlockTypes.CODE:
-                for code_block in block.tokens:
-                    if code_block.type == BlockTypes.VARIABLE:
+                continue
+            if block.type == BlockTypes.CODE:
+                for sub_block in block.tokens:
+                    if sub_block.type == BlockTypes.VARIABLE:
                         # Add all variables from code blocks, e.g. "{{p.bar $b}}".
-                        add_if_missing(code_block.name)
-                    elif code_block.type == BlockTypes.NAMED_ARG and getattr(code_block, "var_block", None):
+                        add_if_missing(sub_block.name)
+                        continue
+                    if sub_block.type == BlockTypes.NAMED_ARG and sub_block.variable:
                         # Add all variables from named arguments, e.g. "{{p.bar b = $b}}".
                         # represents a named argument for a function call.
-                        # For example, in the template {{ MyPlugin.MyFunction var1="foo" }}, var1="foo"
+                        # For example, in the template {{ MyPlugin.MyFunction var1=$boo }}, var1=$boo
                         # is a named arg block.
-                        add_if_missing(code_block.var_block.name)
+                        add_if_missing(sub_block.variable.name)
 
     def extract_blocks(self, config: PromptTemplateConfig) -> List[Block]:
         """
@@ -70,12 +69,10 @@ class KernelPromptTemplate(PromptTemplateBase):
             A list of all the blocks, ie the template tokenized in
             text, variables and function calls
         """
-        template_text = config.template
-        logger.debug(f"Extracting blocks from template: {template_text}")
-        if not template_text:
+        logger.debug(f"Extracting blocks from template: {config.template}")
+        if not config.template:
             return []
-        logger.debug(f"Extracting blocks from template: {template_text}")
-        return TemplateTokenizer.tokenize(template_text)
+        return TemplateTokenizer.tokenize(config.template)
 
     async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
         """
@@ -90,7 +87,9 @@ class KernelPromptTemplate(PromptTemplateBase):
         Returns:
             The prompt template ready to be used for an AI request
         """
-        return await self.render_blocks(self._blocks, kernel, arguments)
+        if not arguments:
+            arguments = KernelArguments()
+        return await self.render_blocks(self.blocks, kernel, arguments)
 
     async def render_blocks(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
         """

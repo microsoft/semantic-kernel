@@ -18,7 +18,7 @@ def test_prompt_template_config_initialization_minimal():
     assert config.description == ""
     assert config.template_format == "semantic-kernel"
     assert config.input_variables == []
-    assert config.execution_settings == PromptExecutionSettings()
+    assert config.execution_settings == {}
 
 
 def test_prompt_template_config_initialization_full():
@@ -32,22 +32,22 @@ def test_prompt_template_config_initialization_full():
         name="Test Config",
         description="Test Description",
         template="Example template",
-        template_format="custom-format",
+        template_format="semantic-kernel",
         input_variables=input_variables,
         execution_settings=execution_settings,
     )
     assert config.name == "Test Config"
     assert config.description == "Test Description"
-    assert config.template_format == "custom-format"
+    assert config.template_format == "semantic-kernel"
     assert len(config.input_variables) == 1
     assert config.execution_settings is not None
 
 
 def test_add_execution_settings():
     config = PromptTemplateConfig(template="Example template")
-    new_settings = PromptExecutionSettings(setting_value="new_value")
+    new_settings = PromptExecutionSettings(service_id="test", setting_value="new_value")
     config.add_execution_settings(new_settings)
-    assert config.execution_settings == new_settings
+    assert config.execution_settings["test"] == new_settings
 
 
 def test_get_kernel_parameter_metadata_empty():
@@ -84,7 +84,7 @@ def test_restore():
         description=description,
         template=template,
         input_variables=input_variables,
-        execution_settings=execution_settings,
+        execution_settings={"default": execution_settings},
     )
 
     assert restored_template.name == name, "The name attribute does not match the expected value."
@@ -94,5 +94,5 @@ def test_restore():
         restored_template.input_variables == input_variables
     ), "The input_variables attribute does not match the expected value."
     assert (
-        restored_template.execution_settings == execution_settings
+        restored_template.execution_settings["default"] == execution_settings
     ), "The execution_settings attribute does not match the expected value."

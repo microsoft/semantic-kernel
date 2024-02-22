@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from typing import Any, Iterator, List, Optional, Union
+import xml.etree.ElementTree as ET
+from typing import Any, Iterator, List, Optional, Tuple, Union
 
 from pydantic import Field, ValidationError
 from pydantic.json import pydantic_encoder
@@ -154,7 +155,9 @@ class ChatHistory(KernelBaseModel):
 
     def __str__(self) -> str:
         """Return a string representation of the history."""
-        return "\n".join([f"{msg.role}: {msg.content}" for msg in self.messages])
+        if not self.messages:
+            return "<>"
+        return "\n".join([msg.to_prompt() for msg in self.messages])
 
     def __iter__(self) -> Iterator[ChatMessageContent]:
         """Return an iterator over the messages in the history."""
@@ -166,6 +169,43 @@ class ChatHistory(KernelBaseModel):
             return False
 
         return self.messages == other.messages
+
+    @classmethod
+    def from_rendered_prompt(cls, rendered_prompt: str) -> "ChatHistory":
+        """
+        Create a ChatHistory instance from a rendered prompt.
+
+        Args:
+            rendered_prompt (str): The rendered prompt to convert to a ChatHistory instance.
+
+        Returns:
+            ChatHistory: The ChatHistory instance created from the rendered prompt.
+        """
+        messages: List[ChatMessageContent] = []
+        result, remainder = cls._render_remaining(rendered_prompt, True)
+        if result:
+            messages.append(result)
+        while remainder:
+            result, remainder = cls._render_remaining(remainder)
+            if result:
+                messages.append(result)
+        return cls(messages=messages)
+
+    @staticmethod
+    def _render_remaining(prompt: Optional[str], first: bool = False) -> Tuple[ChatMessageContent, Optional[str]]:
+        """Render the remaining messages in the history."""
+        if not prompt:
+            return None, None
+        prompt = prompt.strip()
+        start = prompt.find("<message")
+        end = prompt.find("</message>")
+        if start == -1 or end == -1:
+            return ChatMessageContent(role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt), None
+        if start > 0 and end > 0:
+            return ChatMessageContent(role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt[:start]), prompt[
+                start:
+            ]
+        return ChatMessageContent.from_element(ET.fromstring(prompt[start : end + 10])), prompt[end + 10 :]
 
     def serialize(self) -> str:
         """

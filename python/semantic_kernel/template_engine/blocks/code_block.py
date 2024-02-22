@@ -126,11 +126,11 @@ these will be ignored."
 
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:
-            arguments_clone = self._enrich_function_arguments(kernel, arguments_clone, function.describe())
+            arguments_clone = self._enrich_function_arguments(kernel, arguments_clone, function.metadata)
 
         result = await function.invoke(kernel, arguments_clone)
         if exc := result.metadata.get("error", None):
-            raise CodeBlockRenderError(f"Error rendering function: {function.describe()} with error: {exc}") from exc
+            raise CodeBlockRenderError(f"Error rendering function: {function.metadata} with error: {exc}") from exc
 
         return str(result) if result else ""
 

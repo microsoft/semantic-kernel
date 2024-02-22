@@ -27,7 +27,6 @@ class PromptTemplatingEngine(KernelBaseModel, ABC):
         :return: A list of all the blocks, ie the template tokenized in
             text, variables and function calls
         """
-        pass
 
     async def render(self, template_text: str, kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
@@ -39,7 +38,6 @@ class PromptTemplatingEngine(KernelBaseModel, ABC):
         :param context: Access into the current kernel execution context
         :return: The prompt template ready to be used for an AI request
         """
-        pass
 
     async def render_blocks(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
@@ -49,7 +47,6 @@ class PromptTemplatingEngine(KernelBaseModel, ABC):
         :param context: Access into the current kernel execution context
         :return: The prompt template ready to be used for an AI request
         """
-        pass
 
     def render_variables(
         self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None
@@ -63,7 +60,6 @@ class PromptTemplatingEngine(KernelBaseModel, ABC):
         :return: An updated list of blocks where Variable Blocks have rendered to
             Text Blocks
         """
-        pass
 
     async def render_code(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> List[Block]:
         """
@@ -75,4 +71,3 @@ class PromptTemplatingEngine(KernelBaseModel, ABC):
         :return: An updated list of blocks where Code Blocks have rendered to
             Text Blocks
         """
-        pass

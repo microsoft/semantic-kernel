@@ -36,7 +36,6 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import (
@@ -151,8 +150,6 @@ class Kernel(KernelBaseModel):
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
-        if KernelFunction.CHAT_HISTORY_TAG not in arguments:
-            arguments[KernelFunction.CHAT_HISTORY_TAG] = ChatHistory()
         if isinstance(functions, KernelFunction):
             stream_function = functions
             results = []
@@ -169,7 +166,7 @@ class Kernel(KernelBaseModel):
                 results = []
             pipeline_step = len(functions) - 1
         while True:
-            function_invoking_args = self.on_function_invoking(stream_function.describe(), arguments)
+            function_invoking_args = self.on_function_invoking(stream_function.metadata, arguments)
             if function_invoking_args.is_cancel_requested:
                 logger.info(
                     f"Execution was cancelled on function invoking event of pipeline step \
@@ -214,9 +211,9 @@ class Kernel(KernelBaseModel):
                         output_function_result.append(copy(choice))
                     else:
                         output_function_result[index] += choice
-            func_result = FunctionResult(function=stream_function.describe(), value=output_function_result)
+            func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
             function_invoked_args = self.on_function_invoked(
-                stream_function.describe(),
+                stream_function.metadata,
                 arguments,
                 func_result,
                 exception,
@@ -270,8 +267,6 @@ class Kernel(KernelBaseModel):
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
-        if KernelFunction.CHAT_HISTORY_TAG not in arguments:
-            arguments[KernelFunction.CHAT_HISTORY_TAG] = ChatHistory()
         results = []
         pipeline_step = 0
         if not isinstance(functions, list):
@@ -282,7 +277,7 @@ class Kernel(KernelBaseModel):
         for func in functions:
             # While loop is used to repeat the function invocation, if requested
             while True:
-                function_invoking_args = self.on_function_invoking(func.describe(), arguments)
+                function_invoking_args = self.on_function_invoking(func.metadata, arguments)
                 if function_invoking_args.is_cancel_requested:
                     logger.info(
                         f"Execution was cancelled on function invoking event of pipeline step \
@@ -313,7 +308,7 @@ class Kernel(KernelBaseModel):
                     exception = exc
 
                 # this allows a hook to alter the results before adding.
-                function_invoked_args = self.on_function_invoked(func.describe(), arguments, function_result, exception)
+                function_invoked_args = self.on_function_invoked(func.metadata, arguments, function_result, exception)
                 results.append(function_invoked_args.function_result)
 
                 if function_invoked_args.exception:
@@ -500,14 +495,11 @@ class Kernel(KernelBaseModel):
 
         return {}
 
-    def import_plugin_from_prompt_directory(
-        self, service_id: str, parent_directory: str, plugin_directory_name: str
-    ) -> KernelPlugin:
+    def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         """
         Import a plugin from a directory containing prompt templates.
 
         Args:
-            service_id (str): The service id
             parent_directory (str): The parent directory
             plugin_directory_name (str): The plugin directory name
         """
@@ -538,17 +530,6 @@ class Kernel(KernelBaseModel):
             with open(config_path, "r") as config_file:
                 prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
             prompt_template_config.name = function_name
-
-            # TODO: remove this once the PromptTemplateConfig supports a dict of execution_settings
-            if (
-                prompt_template_config.execution_settings
-                and "default" in prompt_template_config.execution_settings.extension_data
-            ):
-                prompt_template_config.execution_settings.extension_data = (
-                    prompt_template_config.execution_settings.extension_data["default"]
-                )
-
-            prompt_template_config.execution_settings.service_id = service_id
 
             # Load Prompt Template
             with open(prompt_path, "r") as prompt_file:
@@ -647,9 +628,10 @@ class Kernel(KernelBaseModel):
         )
 
         if exec_settings := prompt_template_config.execution_settings:
-            if exec_settings.service_id in function.prompt_execution_settings:
-                logger.warning("Overwriting execution settings for service_id: %s", exec_settings.service_id)
-            function.prompt_execution_settings[exec_settings.service_id] = exec_settings
+            for service_id, settings in exec_settings.items():
+                if service_id in function.prompt_execution_settings.keys():
+                    logger.warning("Overwriting execution settings for service_id: %s", service_id)
+                function.prompt_execution_settings[service_id] = settings
 
         self.add_plugin(plugin_name, [function])
         function.set_default_plugin_collection(self.plugins)

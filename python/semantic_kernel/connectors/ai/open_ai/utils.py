@@ -34,7 +34,7 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
 
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
-    func_view = function.describe()
+    func_view = function.metadata
     return {
         "type": "function",
         "function": {
@@ -70,7 +70,7 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
     """Create the object used for function_calling.
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
-    func_view = function.describe()
+    func_view = function.metadata
     return {
         "name": f"{func_view.plugin_name}-{func_view.name}",
         "description": func_view.description,

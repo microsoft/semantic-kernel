@@ -1,10 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+
 import pytest
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
+from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 
 def test_init_with_system_message_only():
@@ -171,3 +175,171 @@ def test_deserialize_invalid_json_raises_exception():
 
     with pytest.raises(ValueError):
         ChatHistory.restore_chat_history(invalid_json)
+
+
+def test_chat_history_to_prompt_empty():
+    chat_history = ChatHistory()
+    prompt = str(chat_history)
+    assert prompt == "<>"
+
+
+def test_chat_history_to_prompt():
+    chat_history = ChatHistory()
+    chat_history.add_system_message("I am an AI assistant")
+    chat_history.add_user_message("What can you do?")
+    prompt = str(chat_history)
+    assert (
+        prompt
+        == '<message role="system">I am an AI assistant</message>\n<message role="user">What can you do?</message>'
+    )
+
+
+def test_chat_history_from_rendered_prompt_empty():
+    rendered = ""
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages == []
+
+
+def test_chat_history_from_rendered_prompt():
+    rendered = '<message role="system">I am an AI assistant</message>\n<message role="user">What can you do?</message>'
+
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "I am an AI assistant"
+    assert chat_history.messages[0].role == ChatRole.SYSTEM
+    assert chat_history.messages[1].content == "What can you do?"
+    assert chat_history.messages[1].role == ChatRole.USER
+
+
+def test_chat_history_from_rendered_prompt_multi_line():
+    rendered = """<message role="system">I am an AI assistant
+and I can do 
+stuff</message>
+<message role="user">What can you do?</message>"""
+
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "I am an AI assistant\nand I can do \nstuff"
+    assert chat_history.messages[0].role == ChatRole.SYSTEM
+    assert chat_history.messages[1].content == "What can you do?"
+    assert chat_history.messages[1].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_template():
+    chat_history = ChatHistory()
+    chat_history.add_assistant_message("I am an AI assistant")
+
+    template = "system stuff{{$chat_history}}{{$input}}"
+    rendered = await PromptTemplateEngine().render(
+        template_text=template,
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
+    )
+    assert rendered == 'system stuff<message role="assistant">I am an AI assistant</message>What can you do?'
+
+    chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history_2.messages[0].content == "system stuff"
+    assert chat_history_2.messages[0].role == ChatRole.SYSTEM
+    assert chat_history_2.messages[1].content == "I am an AI assistant"
+    assert chat_history_2.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_2.messages[2].content == "What can you do?"
+    assert chat_history_2.messages[2].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_template_two_histories():
+    chat_history1 = ChatHistory()
+    chat_history1.add_assistant_message("I am an AI assistant")
+    chat_history2 = ChatHistory()
+    chat_history2.add_assistant_message("I like to be added later on")
+
+    template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
+    rendered = await PromptTemplateEngine().render(
+        template_text=template,
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
+    )
+    assert (
+        rendered
+        == 'system prompt<message role="assistant">I am an AI assistant</message>What can you do?<message role="assistant">I like to be added later on</message>'
+    )
+
+    chat_history_out = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history_out.messages[0].content == "system prompt"
+    assert chat_history_out.messages[0].role == ChatRole.SYSTEM
+    assert chat_history_out.messages[1].content == "I am an AI assistant"
+    assert chat_history_out.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_out.messages[2].content == "What can you do?"
+    assert chat_history_out.messages[2].role == ChatRole.USER
+    assert chat_history_out.messages[3].content == "I like to be added later on"
+    assert chat_history_out.messages[3].role == ChatRole.ASSISTANT
+
+
+@pytest.mark.asyncio
+async def test_template_two_histories_one_empty():
+    chat_history1 = ChatHistory()
+    chat_history1.add_assistant_message("I am an AI assistant")
+    chat_history2 = ChatHistory()
+
+    template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
+    rendered = await PromptTemplateEngine().render(
+        template_text=template,
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
+    )
+
+    chat_history_out = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history_out.messages[0].content == "system prompt"
+    assert chat_history_out.messages[0].role == ChatRole.SYSTEM
+    assert chat_history_out.messages[1].content == "I am an AI assistant"
+    assert chat_history_out.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_out.messages[2].content == "What can you do?"
+    assert chat_history_out.messages[2].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_template_history_only():
+    chat_history = ChatHistory()
+    chat_history.add_assistant_message("I am an AI assistant")
+
+    template = "{{$chat_history}}"
+    rendered = await PromptTemplateEngine().render(
+        template_text=template, kernel=Kernel(), arguments=KernelArguments(chat_history=chat_history)
+    )
+
+    chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history_2.messages[0].content == "I am an AI assistant"
+    assert chat_history_2.messages[0].role == ChatRole.ASSISTANT
+
+
+@pytest.mark.asyncio
+async def test_template_without_chat_history():
+    template = "{{$input}}"
+    rendered = await PromptTemplateEngine().render(
+        template_text=template, kernel=Kernel(), arguments=KernelArguments(input="What can you do?")
+    )
+    assert rendered == "What can you do?"
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "What can you do?"
+    assert chat_history.messages[0].role == ChatRole.SYSTEM
+
+
+@pytest.mark.asyncio
+async def test_handwritten_xml():
+    template = '<message role="user">test content</message>'
+    rendered = await PromptTemplateEngine().render(template_text=template, kernel=Kernel(), arguments=KernelArguments())
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "test content"
+    assert chat_history.messages[0].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_handwritten_xml_as_arg():
+    template = "{{$input}}"
+    rendered = await PromptTemplateEngine().render(
+        template_text=template,
+        kernel=Kernel(),
+        arguments=KernelArguments(input='<message role="user">test content</message>'),
+    )
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "test content"
+    assert chat_history.messages[0].role == ChatRole.USER
