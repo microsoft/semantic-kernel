@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHook;
@@ -248,8 +249,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @param typeConverter The type converter to supply to the function invocation.
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
-    public FunctionInvocation<T> withTypeConverter(ContextVariableType<?> typeConverter) {
-        contextVariableTypes.putConverter(typeConverter.getConverter());
+    public FunctionInvocation<T> withTypeConverter(ContextVariableTypeConverter<?> typeConverter) {
+        contextVariableTypes.putConverter(typeConverter);
         return this;
     }
 

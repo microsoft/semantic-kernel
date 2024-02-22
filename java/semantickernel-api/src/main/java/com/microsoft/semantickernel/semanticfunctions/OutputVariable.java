@@ -26,8 +26,11 @@ public class OutputVariable {
     public OutputVariable(
         @Nullable @JsonProperty("description") String description,
 
-        @JsonProperty("type") String type) {
+        @Nullable @JsonProperty(value = "type", defaultValue = "java.lang.String") String type) {
         this.description = description;
+        if (type == null || type.isEmpty()) {
+            type = "java.lang.String";
+        }
         this.type = type;
     }
 

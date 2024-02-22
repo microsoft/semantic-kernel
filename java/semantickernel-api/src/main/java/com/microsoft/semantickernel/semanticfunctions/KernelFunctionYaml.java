@@ -74,7 +74,7 @@ public class KernelFunctionYaml {
 
         PromptTemplate promptTemplate;
         if (promptTemplateFactory == null) {
-            promptTemplate = new HandlebarsPromptTemplate(functionModel);
+            promptTemplate = PromptTemplateFactory.build(functionModel);
         } else {
             promptTemplate = promptTemplateFactory.tryCreate(functionModel);
         }

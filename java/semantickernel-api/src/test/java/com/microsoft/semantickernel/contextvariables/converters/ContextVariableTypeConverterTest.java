@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
@@ -46,9 +47,9 @@ public class ContextVariableTypeConverterTest {
             new TestCase<>("IntegerToNumber", Integer.class, Number.class, 100),
 
             new TestCase<>("StringToDate", String.class, OffsetDateTime.class,
-                ZonedDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)),
+                ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE_TIME)),
             new TestCase<>("DateToString", OffsetDateTime.class, String.class,
-                OffsetDateTime.now()))
+                OffsetDateTime.now(ZoneId.systemDefault())))
             .map(s -> DynamicTest.dynamicTest(s.name, () -> {
                 Assertions.assertNotNull(ContextVariable.ofGlobalType(s.object));
                 Assertions.assertNotNull(ContextVariable.ofGlobalType(s.object).getValue());

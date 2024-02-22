@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.contextvariables.converters.DateTimeContextV
 import com.microsoft.semantickernel.contextvariables.converters.InstantContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.NumberVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.StringVariableContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.converters.TextContentVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.VoidVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.exceptions.SKException;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ public class ContextVariableTypes {
             new CharacterVariableContextVariableTypeConverter(),
             new BooleanVariableContextVariableTypeConverter(),
             new ChatHistoryVariableContextVariableTypeConverter(),
+            new TextContentVariableContextVariableTypeConverter(),
             new StringVariableContextVariableTypeConverter(),
             new VoidVariableContextVariableTypeConverter(),
             new ContextVariableTypeConverter<>(void.class, s -> null, s -> null, s -> null),

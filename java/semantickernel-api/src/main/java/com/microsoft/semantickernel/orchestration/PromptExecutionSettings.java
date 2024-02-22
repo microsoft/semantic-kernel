@@ -16,13 +16,13 @@ import javax.annotation.Nullable;
 public class PromptExecutionSettings {
 
     public static final String DEFAULT_SERVICE_ID = "default";
-    public static final int DEFAULT_MAX_TOKENS = 256;
-    public static final double DEFAULT_TEMPERATURE = 1.0;
-    public static final double DEFAULT_TOP_P = 1.0;
-    public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
-    public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
-    public static final int DEFAULT_BEST_OF = 1;
-    public static final int DEFAULT_RESULTS_PER_PROMPT = 1;
+    public static final Integer DEFAULT_MAX_TOKENS = 256;
+    public static final Double DEFAULT_TEMPERATURE = 1.0;
+    public static final Double DEFAULT_TOP_P = 1.0;
+    public static final Double DEFAULT_PRESENCE_PENALTY = 0.0;
+    public static final Double DEFAULT_FREQUENCY_PENALTY = 0.0;
+    public static final Integer DEFAULT_BEST_OF = 1;
+    public static final Integer DEFAULT_RESULTS_PER_PROMPT = 1;
 
     private static final String SERVICE_ID = "service_id";
     private static final String MODEL_ID = "model_id";
@@ -49,7 +49,7 @@ public class PromptExecutionSettings {
     private final String user;
     @Nullable
     private final List<String> stopSequences;
-    private Map<Integer, Integer> tokenSelectionBiases;
+    private final Map<Integer, Integer> tokenSelectionBiases;
 
     /**
      * Create a new instance of PromptExecutionSettings.
@@ -71,13 +71,13 @@ public class PromptExecutionSettings {
     public PromptExecutionSettings(
         @JsonProperty(SERVICE_ID) String serviceId,
         @JsonProperty(MODEL_ID) String modelId,
-        @JsonProperty(TEMPERATURE) double temperature,
-        @JsonProperty(TOP_P) double topP,
-        @JsonProperty(PRESENCE_PENALTY) double presencePenalty,
-        @JsonProperty(FREQUENCY_PENALTY) double frequencyPenalty,
-        @JsonProperty(MAX_TOKENS) int maxTokens,
-        @JsonProperty(RESULTS_PER_PROMPT) int resultsPerPrompt,
-        @JsonProperty(BEST_OF) int bestOf,
+        @JsonProperty(TEMPERATURE) Double temperature,
+        @JsonProperty(TOP_P) Double topP,
+        @JsonProperty(PRESENCE_PENALTY) Double presencePenalty,
+        @JsonProperty(FREQUENCY_PENALTY) Double frequencyPenalty,
+        @JsonProperty(MAX_TOKENS) Integer maxTokens,
+        @JsonProperty(RESULTS_PER_PROMPT) Integer resultsPerPrompt,
+        @JsonProperty(BEST_OF) Integer bestOf,
         @JsonProperty(USER) String user,
         @Nullable @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
         @Nullable @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
@@ -87,17 +87,17 @@ public class PromptExecutionSettings {
         this.topP = clamp(topP, 0d, 1d, DEFAULT_TOP_P);
         this.presencePenalty = clamp(presencePenalty, -2d, 2d, DEFAULT_PRESENCE_PENALTY);
         this.frequencyPenalty = clamp(frequencyPenalty, -2d, 2d, DEFAULT_FREQUENCY_PENALTY);
-        this.maxTokens = clamp(maxTokens, 1, Integer.MAX_VALUE);
-        this.resultsPerPrompt = clamp(resultsPerPrompt, 1, Integer.MAX_VALUE);
-        this.bestOf = clamp(bestOf, 1, Integer.MAX_VALUE);
-        ;
+        this.maxTokens = clamp(maxTokens, 1, Integer.MAX_VALUE, DEFAULT_MAX_TOKENS);
+        this.resultsPerPrompt = clamp(resultsPerPrompt, 1, Integer.MAX_VALUE,
+            DEFAULT_RESULTS_PER_PROMPT);
+        this.bestOf = clamp(bestOf, 1, Integer.MAX_VALUE, DEFAULT_BEST_OF);
         this.user = user;
         this.stopSequences = stopSequences != null ? new ArrayList<>(stopSequences)
             : Collections.emptyList();
         this.tokenSelectionBiases = tokenSelectionBiases != null
             ? new HashMap<>(tokenSelectionBiases)
             : Collections.emptyMap();
-        this.tokenSelectionBiases.replaceAll((k, v) -> clamp(v, -100, 100));
+        this.tokenSelectionBiases.replaceAll((k, v) -> clamp(v, -100, 100, 0));
     }
 
     /**
@@ -109,15 +109,17 @@ public class PromptExecutionSettings {
         return new Builder();
     }
 
-    private static double clamp(double value, double min, double max, double defaultValue) {
-        if (Double.isNaN(value)) {
+    private static <T extends Number> T clamp(T value, T min, T max, T defaultValue) {
+        if (value == null) {
             return defaultValue;
         }
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
+        if (value.doubleValue() < min.doubleValue()) {
+            return min;
+        }
+        if (value.doubleValue() > max.doubleValue()) {
+            return max;
+        }
+        return value;
     }
 
     /**
@@ -432,13 +434,13 @@ public class PromptExecutionSettings {
             return new PromptExecutionSettings(
                 (String) settings.getOrDefault(SERVICE_ID, ""),
                 (String) settings.getOrDefault(MODEL_ID, ""),
-                (double) settings.getOrDefault(TEMPERATURE, DEFAULT_TEMPERATURE),
-                (double) settings.getOrDefault(TOP_P, DEFAULT_TOP_P),
-                (double) settings.getOrDefault(PRESENCE_PENALTY, DEFAULT_PRESENCE_PENALTY),
-                (double) settings.getOrDefault(FREQUENCY_PENALTY, DEFAULT_FREQUENCY_PENALTY),
-                (int) settings.getOrDefault(MAX_TOKENS, DEFAULT_MAX_TOKENS),
-                (int) settings.getOrDefault(RESULTS_PER_PROMPT, DEFAULT_RESULTS_PER_PROMPT),
-                (int) settings.getOrDefault(BEST_OF, DEFAULT_BEST_OF),
+                (Double) settings.getOrDefault(TEMPERATURE, DEFAULT_TEMPERATURE),
+                (Double) settings.getOrDefault(TOP_P, DEFAULT_TOP_P),
+                (Double) settings.getOrDefault(PRESENCE_PENALTY, DEFAULT_PRESENCE_PENALTY),
+                (Double) settings.getOrDefault(FREQUENCY_PENALTY, DEFAULT_FREQUENCY_PENALTY),
+                (Integer) settings.getOrDefault(MAX_TOKENS, DEFAULT_MAX_TOKENS),
+                (Integer) settings.getOrDefault(RESULTS_PER_PROMPT, DEFAULT_RESULTS_PER_PROMPT),
+                (Integer) settings.getOrDefault(BEST_OF, DEFAULT_BEST_OF),
                 (String) settings.getOrDefault(USER, ""),
                 (List<String>) settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
                 (Map<Integer, Integer>) settings.getOrDefault(TOKEN_SELECTION_BIASES,

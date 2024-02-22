@@ -255,7 +255,6 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable KernelFunctionArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
-
         return invokeInternalAsync(kernel, arguments, variableType, invocationContext)
             .take(1).single();
     }
@@ -409,10 +408,6 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                     promptTemplate,
                     promptTemplateConfig,
                     executionSettings);
-            }
-
-            if (template == null) {
-                throw new IllegalStateException("Template must be provided");
             }
 
             PromptTemplateConfig config = new PromptTemplateConfig(

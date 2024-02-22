@@ -9,14 +9,14 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter.NoopConverter;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
@@ -162,7 +162,7 @@ public class Example09_FunctionTypes {
             .block();
         System.out.println(result.getResult());
 
-        kernel.invokeAsync(plugin.<String>get("MultipleInputsWithVoidResult"))
+        result = kernel.invokeAsync(plugin.<String>get("MultipleInputsWithVoidResult"))
             .withArguments(
                 KernelFunctionArguments
                     .builder()
@@ -171,7 +171,6 @@ public class Example09_FunctionTypes {
                     .withVariable("z", 1.5)
                     .build())
             .block();
-        System.out.println(result.getResult());
 
         result = kernel
             .invokeAsync(plugin.<String>get("ComplexInputWithStringResult"))
@@ -286,6 +285,15 @@ public class Example09_FunctionTypes {
             .block();
         System.out.println(result9.getResult());
 
+        result = kernel.invokeAsync(plugin.get("MultipleComplexInputsWithVoidResult"))
+            .withArguments(
+                KernelFunctionArguments
+                    .builder()
+                    .withVariable("x", OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC))
+                    .withVariable("y", OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC))
+                    .build())
+            .withTypeConverter(new DateTimeContextVariableTypeConverter())
+            .block();
         /*
          * TODO: support FunctionResult
          * kernel
@@ -293,7 +301,7 @@ public class Example09_FunctionTypes {
          * null,
          * Void.class)
          * .block();
-         * 
+         *
          */
 
         /*
@@ -320,7 +328,7 @@ public class Example09_FunctionTypes {
          * with Visual Basic's simplicity. It's ideal for a wide range of applications,
          * emphasizing type safety, modularity, and modern programming paradigms."
          * });
-         * 
+         *
          */
 
         // You can also use the kernel.Plugins collection to invoke a function
@@ -466,11 +474,21 @@ public class Example09_FunctionTypes {
             return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
+        @DefineKernelFunction(name = "MultipleComplexInputsWithVoidResult")
+        public void MultipleComplexInputsWithVoidResult(
+            @KernelFunctionParameter(name = "x", type = ZonedDateTime.class) ZonedDateTime x,
+
+            @KernelFunctionParameter(name = "y", type = ZonedDateTime.class) ZonedDateTime y) {
+            System.out.println(
+                "Running {nameof(this.MultipleComplexInputsWithVoidResult)} -> input: [x = {" + x
+                    + "}, y = {" + y + "}]");
+        }
+
         /*
          * /// <summary>
          * /// Example using a function to return the result of another inner function
          * /// </summary>
-         * 
+         *
          * @DefineKernelFunction(name = "InputStringTaskWithVoidResult")
          * public FunctionResult NoInputWithFunctionResult()
          * {
@@ -484,7 +502,7 @@ public class Example09_FunctionTypes {
          */
 
         /*
-         * 
+         *
          * /// <summary>
          * /// Example using a task function to return the result of another kernel function
          * /// </summary>
@@ -498,7 +516,7 @@ public class Example09_FunctionTypes {
          * );
          * return result;
          * }
-         * 
+         *
          * /// <summary>
          * /// Example how to inject Kernel in your function
          * /// This example uses the injected kernel to invoke a plugin from within another function
@@ -515,7 +533,7 @@ public class Example09_FunctionTypes {
          * );
          * return summary!;
          * }
-         * 
+         *
          * /// <summary>
          * /// Example how to inject the executing KernelFunction as a parameter
          * /// </summary>
@@ -530,7 +548,7 @@ public class Example09_FunctionTypes {
          * );
          * return result;
          * }
-         * 
+         *
          * /// <summary>
          * /// Example how to inject ILogger in your function
          * /// </summary>
@@ -544,7 +562,7 @@ public class Example09_FunctionTypes {
          * );
          * return Task.CompletedTask;
          * }
-         * 
+         *
          * /// <summary>
          * /// Example how to inject ILoggerFactory in your function
          * /// </summary>
@@ -555,13 +573,13 @@ public class Example09_FunctionTypes {
          * .CreateLogger<LocalExamplePlugin>()
          * .LogWarning("Running {FunctionName} -> Injected Logger",
          * nameof(this.TaskInjectingLoggerWithNoResult));
-         * 
+         *
          * Console.WriteLine(
          * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger"
          * );
          * return Task.CompletedTask;
          * }
-         * 
+         *
          * /// <summary>
          * /// Example how to inject a service selector in your function and use a specific service
          * /// </summary>
@@ -576,14 +594,14 @@ public class Example09_FunctionTypes {
          * chatMessageContent = await chatCompletion.GetChatMessageContentAsync(new
          * ChatHistory("How much is 5 + 5 ?"), executionSettings);
          * }
-         * 
+         *
          * var result = chatMessageContent?.Content;
          * Console.WriteLine(
          * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}"
          * );
          * return result ?? string.Empty;
          * }
-         * 
+         *
          * /// <summary>
          * /// Example how to inject CultureInfo or IFormatProvider in your function
          * /// </summary>
@@ -599,7 +617,7 @@ public class Example09_FunctionTypes {
          * );
          * return result;
          * }
-         * 
+         *
          * /// <summary>
          * /// Example how to inject current CancellationToken in your function
          * /// </summary>
@@ -613,12 +631,12 @@ public class Example09_FunctionTypes {
          * );
          * return result;
          * }
-         * 
+         *
          * public override string ToString()
          * {
          * return "Complex type result ToString override";
          * }
-         * 
+         *
          */
     }
 }

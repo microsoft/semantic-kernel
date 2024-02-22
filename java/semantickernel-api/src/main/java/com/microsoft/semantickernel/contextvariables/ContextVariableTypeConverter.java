@@ -114,6 +114,9 @@ public class ContextVariableTypeConverter<T> {
         if (s == null) {
             return null;
         }
+        if (s instanceof ContextVariable) {
+            return fromObject.apply(((ContextVariable<?>) s).getValue());
+        }
         return fromObject.apply(s);
     }
 
