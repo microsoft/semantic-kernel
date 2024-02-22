@@ -78,6 +78,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
+
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
             .ConfigureAwait(false);
 
@@ -151,7 +152,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
     {
         return new List<TextContent>
         {
-            new(text: response.GeneratedText,
+            new(text: response.Token?.Text,
                 modelId: modelId,
                 innerContent: response,
                 metadata: new TextGenerationStreamMetadata(response))
