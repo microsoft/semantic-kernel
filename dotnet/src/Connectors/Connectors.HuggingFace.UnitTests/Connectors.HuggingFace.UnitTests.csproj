@@ -14,11 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="HttpMessageHandlerStub.cs" />
-    <Compile Remove="MultipleHttpMessageHandlerStub.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- Use newest available compiler to permit LangVersion 12. -->
     <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
@@ -43,7 +38,6 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/HttpMessageHandlerStub.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

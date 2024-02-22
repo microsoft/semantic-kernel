@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
@@ -129,7 +128,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         //Assert
 
         Assert.NotNull(embeddings);
-        Assert.Equal(28, embeddings.Count);
+        Assert.Equal(3, embeddings.Count);
         Assert.Equal(768, embeddings.First().Length);
     }
 
