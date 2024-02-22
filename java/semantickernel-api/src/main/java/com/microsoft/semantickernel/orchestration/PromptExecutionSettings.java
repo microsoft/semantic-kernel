@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,13 +16,13 @@ import javax.annotation.Nullable;
 public class PromptExecutionSettings {
 
     public static final String DEFAULT_SERVICE_ID = "default";
-    public static final int DEFAULT_MAX_TOKENS = 256;
-    public static final double DEFAULT_TEMPERATURE = 1.0;
-    public static final double DEFAULT_TOP_P = 1.0;
-    public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
-    public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
-    public static final int DEFAULT_BEST_OF = 1;
-    public static final int DEFAULT_RESULTS_PER_PROMPT = 1;
+    public static final Integer DEFAULT_MAX_TOKENS = 256;
+    public static final Double DEFAULT_TEMPERATURE = 1.0;
+    public static final Double DEFAULT_TOP_P = 1.0;
+    public static final Double DEFAULT_PRESENCE_PENALTY = 0.0;
+    public static final Double DEFAULT_FREQUENCY_PENALTY = 0.0;
+    public static final Integer DEFAULT_BEST_OF = 1;
+    public static final Integer DEFAULT_RESULTS_PER_PROMPT = 1;
 
     private static final String SERVICE_ID = "service_id";
     private static final String MODEL_ID = "model_id";
@@ -48,34 +49,35 @@ public class PromptExecutionSettings {
     private final String user;
     @Nullable
     private final List<String> stopSequences;
-    private Map<Integer, Integer> tokenSelectionBiases;
+    private final Map<Integer, Integer> tokenSelectionBiases;
 
     /**
      * Create a new instance of PromptExecutionSettings.
-     * @param serviceId The id of the AI service to use for prompt execution.
-     * @param modelId The id of the model to use for prompt execution.
-     * @param temperature The temperature setting for prompt execution.
-     * @param topP The topP setting for prompt execution.
-     * @param presencePenalty The presence penalty setting for prompt execution.
-     * @param frequencyPenalty The frequency penalty setting for prompt execution.
-     * @param maxTokens The maximum number of tokens to generate in the output.
-     * @param resultsPerPrompt The number of results to generate for each prompt.
-     * @param bestOf The best of setting for prompt execution.
-     * @param user The user to associate with the prompt execution.
-     * @param stopSequences The stop sequences to use for prompt execution.
+     *
+     * @param serviceId            The id of the AI service to use for prompt execution.
+     * @param modelId              The id of the model to use for prompt execution.
+     * @param temperature          The temperature setting for prompt execution.
+     * @param topP                 The topP setting for prompt execution.
+     * @param presencePenalty      The presence penalty setting for prompt execution.
+     * @param frequencyPenalty     The frequency penalty setting for prompt execution.
+     * @param maxTokens            The maximum number of tokens to generate in the output.
+     * @param resultsPerPrompt     The number of results to generate for each prompt.
+     * @param bestOf               The best of setting for prompt execution.
+     * @param user                 The user to associate with the prompt execution.
+     * @param stopSequences        The stop sequences to use for prompt execution.
      * @param tokenSelectionBiases The token selection biases to use for prompt execution.
      */
     @JsonCreator
     public PromptExecutionSettings(
         @JsonProperty(SERVICE_ID) String serviceId,
         @JsonProperty(MODEL_ID) String modelId,
-        @JsonProperty(TEMPERATURE) double temperature,
-        @JsonProperty(TOP_P) double topP,
-        @JsonProperty(PRESENCE_PENALTY) double presencePenalty,
-        @JsonProperty(FREQUENCY_PENALTY) double frequencyPenalty,
-        @JsonProperty(MAX_TOKENS) int maxTokens,
-        @JsonProperty(RESULTS_PER_PROMPT) int resultsPerPrompt,
-        @JsonProperty(BEST_OF) int bestOf,
+        @JsonProperty(TEMPERATURE) Double temperature,
+        @JsonProperty(TOP_P) Double topP,
+        @JsonProperty(PRESENCE_PENALTY) Double presencePenalty,
+        @JsonProperty(FREQUENCY_PENALTY) Double frequencyPenalty,
+        @JsonProperty(MAX_TOKENS) Integer maxTokens,
+        @JsonProperty(RESULTS_PER_PROMPT) Integer resultsPerPrompt,
+        @JsonProperty(BEST_OF) Integer bestOf,
         @JsonProperty(USER) String user,
         @Nullable @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
         @Nullable @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
@@ -85,21 +87,44 @@ public class PromptExecutionSettings {
         this.topP = clamp(topP, 0d, 1d, DEFAULT_TOP_P);
         this.presencePenalty = clamp(presencePenalty, -2d, 2d, DEFAULT_PRESENCE_PENALTY);
         this.frequencyPenalty = clamp(frequencyPenalty, -2d, 2d, DEFAULT_FREQUENCY_PENALTY);
-        this.maxTokens = clamp(maxTokens, 1, Integer.MAX_VALUE);
-        this.resultsPerPrompt = clamp(resultsPerPrompt, 1, Integer.MAX_VALUE);
-        this.bestOf = clamp(bestOf, 1, Integer.MAX_VALUE);
-        ;
+        this.maxTokens = clamp(maxTokens, 1, Integer.MAX_VALUE, DEFAULT_MAX_TOKENS);
+        this.resultsPerPrompt = clamp(resultsPerPrompt, 1, Integer.MAX_VALUE,
+            DEFAULT_RESULTS_PER_PROMPT);
+        this.bestOf = clamp(bestOf, 1, Integer.MAX_VALUE, DEFAULT_BEST_OF);
         this.user = user;
         this.stopSequences = stopSequences != null ? new ArrayList<>(stopSequences)
             : Collections.emptyList();
         this.tokenSelectionBiases = tokenSelectionBiases != null
             ? new HashMap<>(tokenSelectionBiases)
             : Collections.emptyMap();
-        this.tokenSelectionBiases.replaceAll((k, v) -> clamp(v, -100, 100));
+        this.tokenSelectionBiases.replaceAll((k, v) -> clamp(v, -100, 100, 0));
+    }
+
+    /**
+     * Create a new builder for PromptExecutionSettings.
+     *
+     * @return A new builder for PromptExecutionSettings.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    private static <T extends Number> T clamp(T value, T min, T max, T defaultValue) {
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value.doubleValue() < min.doubleValue()) {
+            return min;
+        }
+        if (value.doubleValue() > max.doubleValue()) {
+            return max;
+        }
+        return value;
     }
 
     /**
      * Get the id of the AI service to use for prompt execution.
+     *
      * @return The id of the AI service to use for prompt execution.
      */
     @JsonProperty(SERVICE_ID)
@@ -109,6 +134,7 @@ public class PromptExecutionSettings {
 
     /**
      * Get the id of the model to use for prompt execution.
+     *
      * @return The id of the model to use for prompt execution.
      */
     @JsonProperty(MODEL_ID)
@@ -119,6 +145,7 @@ public class PromptExecutionSettings {
     /**
      * The temperature setting controls the randomness of the output. Lower values produce more
      * deterministic outputs, while higher values produce more random outputs.
+     *
      * @return The temperature setting.
      */
     @JsonProperty(TEMPERATURE)
@@ -132,6 +159,7 @@ public class PromptExecutionSettings {
      * tokens whose cumulative probability mass is greater than the threshold. For example, if the
      * value is 0.1, the model considers only the tokens that make up the top 10% of the cumulative
      * probability mass.
+     *
      * @return The topP setting.
      */
     @JsonProperty(TOP_P)
@@ -140,9 +168,10 @@ public class PromptExecutionSettings {
     }
 
     /**
-     * Presence penalty encourages the model to use a more or less diverse range of tokens in the output.
-     * A higher value means that the model will try to use a greater variety of tokens
-     * in the ouput.
+     * Presence penalty encourages the model to use a more or less diverse range of tokens in the
+     * output. A higher value means that the model will try to use a greater variety of tokens in
+     * the ouput.
+     *
      * @return The presence penalty setting.
      */
     @JsonProperty(PRESENCE_PENALTY)
@@ -151,9 +180,9 @@ public class PromptExecutionSettings {
     }
 
     /**
-     * Frequency penalty encourages the model to avoid repeating the same token in the output. 
-     * A higher value means that the model will be less likely to repeat a token.
-     * 
+     * Frequency penalty encourages the model to avoid repeating the same token in the output. A
+     * higher value means that the model will be less likely to repeat a token.
+     *
      * @return The frequency penalty setting.
      */
     @JsonProperty(FREQUENCY_PENALTY)
@@ -163,6 +192,7 @@ public class PromptExecutionSettings {
 
     /**
      * The maximum number of tokens to generate in the output.
+     *
      * @return The maximum number of tokens to generate in the output.
      */
     @JsonProperty(MAX_TOKENS)
@@ -171,7 +201,8 @@ public class PromptExecutionSettings {
     }
 
     /**
-     * The number of results to generate for each prompt. 
+     * The number of results to generate for each prompt.
+     *
      * @return The number of results to generate for each prompt.
      */
     @JsonProperty(RESULTS_PER_PROMPT)
@@ -180,7 +211,8 @@ public class PromptExecutionSettings {
     }
 
     /**
-     * The log probability threshold for a result to be considered. 
+     * The log probability threshold for a result to be considered.
+     *
      * @return The log probability threshold for a result to be considered.
      */
     @JsonProperty(BEST_OF)
@@ -191,6 +223,7 @@ public class PromptExecutionSettings {
 
     /**
      * The user to associate with the prompt execution.
+     *
      * @return The user to associate with the prompt execution.
      */
     @JsonProperty(USER)
@@ -200,6 +233,7 @@ public class PromptExecutionSettings {
 
     /**
      * The stop sequences to use for prompt execution.
+     *
      * @return The stop sequences to use for prompt execution.
      */
     @JsonProperty(STOP_SEQUENCES)
@@ -212,9 +246,10 @@ public class PromptExecutionSettings {
     }
 
     /**
-     * The token selection biases to use for prompt execution. The key is the token id 
-     * from the tokenizer, and the value is the bias. A negative bias will make the model less likely
-     * to use the token, and a positive bias will make the model more likely to use the token.
+     * The token selection biases to use for prompt execution. The key is the token id from the
+     * tokenizer, and the value is the bias. A negative bias will make the model less likely to use
+     * the token, and a positive bias will make the model more likely to use the token.
+     *
      * @return The token selection biases to use for prompt execution.
      */
     @JsonProperty(TOKEN_SELECTION_BIASES)
@@ -227,14 +262,6 @@ public class PromptExecutionSettings {
     }
 
     /**
-     * Create a new builder for PromptExecutionSettings.
-     * @return A new builder for PromptExecutionSettings.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
      * Builder for PromptExecutionSettings.
      */
     public static class Builder {
@@ -243,6 +270,7 @@ public class PromptExecutionSettings {
 
         /**
          * Set the id of the AI service to use for prompt execution.
+         *
          * @param serviceId The id of the AI service to use for prompt execution.
          * @return This builder.
          */
@@ -253,6 +281,7 @@ public class PromptExecutionSettings {
 
         /**
          * Set the id of the model to use for prompt execution.
+         *
          * @param modelId The id of the model to use for prompt execution.
          * @return This builder.
          */
@@ -262,8 +291,9 @@ public class PromptExecutionSettings {
         }
 
         /**
-         * Set the temperature setting for prompt execution. The value is
-         * clamped to the range [0.0, 2.0], and the default is 1.0.
+         * Set the temperature setting for prompt execution. The value is clamped to the range [0.0,
+         * 2.0], and the default is 1.0.
+         *
          * @param temperature The temperature setting for prompt execution.
          * @return This builder.
          */
@@ -277,6 +307,7 @@ public class PromptExecutionSettings {
         /**
          * Set the topP setting for prompt execution. The value is clamped to the range [0.0, 1.0],
          * and the default is 1.0.
+         *
          * @param topP The topP setting for prompt execution.
          * @return This builder.
          */
@@ -290,6 +321,7 @@ public class PromptExecutionSettings {
         /**
          * Set the presence penalty setting for prompt execution. The value is clamped to the range
          * [-2.0, 2.0], and the default is 0.0.
+         *
          * @param presencePenalty The presence penalty setting for prompt execution.
          * @return This builder.
          */
@@ -303,6 +335,7 @@ public class PromptExecutionSettings {
         /**
          * Set the frequency penalty setting for prompt execution. The value is clamped to the range
          * [-2.0, 2.0], and the default is 0.0.
+         *
          * @param frequencyPenalty The frequency penalty setting for prompt execution.
          * @return This builder.
          */
@@ -316,6 +349,7 @@ public class PromptExecutionSettings {
         /**
          * Set the maximum number of tokens to generate in the output. The value is clamped to the
          * range [1, Integer.MAX_VALUE], and the default is 256.
+         *
          * @param maxTokens The maximum number of tokens to generate in the output.
          * @return This builder.
          */
@@ -325,8 +359,9 @@ public class PromptExecutionSettings {
         }
 
         /**
-         * Set the number of results to generate for each prompt. The value is clamped to the
-         * range [1, Integer.MAX_VALUE], and the default is 1.
+         * Set the number of results to generate for each prompt. The value is clamped to the range
+         * [1, Integer.MAX_VALUE], and the default is 1.
+         *
          * @param resultsPerPrompt The number of results to generate for each prompt.
          * @return This builder.
          */
@@ -336,8 +371,9 @@ public class PromptExecutionSettings {
         }
 
         /**
-         * Set the best of setting for prompt execution. The value is clamped to the
-         * range [1, Integer.MAX_VALUE], and the default is 1.
+         * Set the best of setting for prompt execution. The value is clamped to the range [1,
+         * Integer.MAX_VALUE], and the default is 1.
+         *
          * @param bestOf The best of setting for prompt execution.
          * @return This builder.
          */
@@ -348,6 +384,7 @@ public class PromptExecutionSettings {
 
         /**
          * Set the user to associate with the prompt execution.
+         *
          * @param user The user to associate with the prompt execution.
          * @return This builder.
          */
@@ -358,6 +395,7 @@ public class PromptExecutionSettings {
 
         /**
          * Set the stop sequences to use for prompt execution.
+         *
          * @param stopSequences The stop sequences to use for prompt execution.
          * @return This builder.
          */
@@ -371,8 +409,9 @@ public class PromptExecutionSettings {
         }
 
         /**
-         * Set the token selection biases to use for prompt execution. The bias values
-         * are clamped to the range [-100, 100].
+         * Set the token selection biases to use for prompt execution. The bias values are clamped
+         * to the range [-100, 100].
+         *
          * @param tokenSelectionBiases The token selection biases to use for prompt execution.
          * @return This builder.
          */
@@ -387,6 +426,7 @@ public class PromptExecutionSettings {
 
         /**
          * Build the PromptExecutionSettings.
+         *
          * @return A new PromptExecutionSettings from this builder.
          */
         @SuppressWarnings("unchecked")
@@ -394,28 +434,17 @@ public class PromptExecutionSettings {
             return new PromptExecutionSettings(
                 (String) settings.getOrDefault(SERVICE_ID, ""),
                 (String) settings.getOrDefault(MODEL_ID, ""),
-                (double) settings.getOrDefault(TEMPERATURE, DEFAULT_TEMPERATURE),
-                (double) settings.getOrDefault(TOP_P, DEFAULT_TOP_P),
-                (double) settings.getOrDefault(PRESENCE_PENALTY, DEFAULT_PRESENCE_PENALTY),
-                (double) settings.getOrDefault(FREQUENCY_PENALTY, DEFAULT_FREQUENCY_PENALTY),
-                (int) settings.getOrDefault(MAX_TOKENS, DEFAULT_MAX_TOKENS),
-                (int) settings.getOrDefault(RESULTS_PER_PROMPT, DEFAULT_RESULTS_PER_PROMPT),
-                (int) settings.getOrDefault(BEST_OF, DEFAULT_BEST_OF),
+                (Double) settings.getOrDefault(TEMPERATURE, DEFAULT_TEMPERATURE),
+                (Double) settings.getOrDefault(TOP_P, DEFAULT_TOP_P),
+                (Double) settings.getOrDefault(PRESENCE_PENALTY, DEFAULT_PRESENCE_PENALTY),
+                (Double) settings.getOrDefault(FREQUENCY_PENALTY, DEFAULT_FREQUENCY_PENALTY),
+                (Integer) settings.getOrDefault(MAX_TOKENS, DEFAULT_MAX_TOKENS),
+                (Integer) settings.getOrDefault(RESULTS_PER_PROMPT, DEFAULT_RESULTS_PER_PROMPT),
+                (Integer) settings.getOrDefault(BEST_OF, DEFAULT_BEST_OF),
                 (String) settings.getOrDefault(USER, ""),
                 (List<String>) settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
                 (Map<Integer, Integer>) settings.getOrDefault(TOKEN_SELECTION_BIASES,
                     Collections.emptyMap()));
         }
-    }
-
-    private static double clamp(double value, double min, double max, double defaultValue) {
-        if (Double.isNaN(value)) {
-            return defaultValue;
-        }
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
 }

@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -5,12 +6,12 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -124,11 +125,14 @@ public class Example61_MultipleLLMs {
                         .build());
             });
 
-        var promptConfig = new PromptTemplateConfig(prompt);
-        promptConfig.setName("HelloAI");
-        promptConfig.setExecutionSettings(modelSettings);
+        var promptConfig = PromptTemplateConfig.defaultTemplateBuilder()
+            .withTemplate(prompt)
+            .withName("HelloAI")
+            .withExecutionSettings(modelSettings)
+            .build();
 
-        var function = KernelFunctionFromPrompt.create(promptConfig);
+        var function = KernelFunctionFromPrompt.builder().withPromptTemplateConfig(promptConfig)
+            .build();
 
         var result = kernel.invokeAsync(function)
             .withArguments(KernelFunctionArguments.builder().build())

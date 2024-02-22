@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -6,14 +7,14 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.plugins.text.TextPlugin;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
-import com.microsoft.semantickernel.plugins.text.TextPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -29,22 +30,6 @@ public class Example10_DescribeAllPluginsAndFunctions {
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "text-davinci-003");
-
-    public static class StaticTextPlugin {
-
-        @DefineKernelFunction(description = "Change all string chars to uppercase", name = "uppercase")
-        public static String uppercase(
-            @KernelFunctionParameter(description = "Text to uppercase", name = "input") String input) {
-            return input.toUpperCase(Locale.ROOT);
-        }
-
-        @DefineKernelFunction(description = "Append the day variable", name = "appendDay")
-        public String appendDay(
-            @KernelFunctionParameter(description = "Append the day variable", name = "appendDay") String input,
-            @KernelFunctionParameter(description = "Value of the day to append", name = "day") String day) {
-            return input + day;
-        }
-    }
 
     /// <summary>
     /// Print a list of all the functions imported into the kernel, including function descriptions,
@@ -142,5 +127,21 @@ public class Example10_DescribeAllPluginsAndFunctions {
         }
 
         System.out.println();
+    }
+
+    public static class StaticTextPlugin {
+
+        @DefineKernelFunction(description = "Change all string chars to uppercase", name = "uppercase")
+        public static String uppercase(
+            @KernelFunctionParameter(description = "Text to uppercase", name = "input") String input) {
+            return input.toUpperCase(Locale.ROOT);
+        }
+
+        @DefineKernelFunction(description = "Append the day variable", name = "appendDay")
+        public String appendDay(
+            @KernelFunctionParameter(description = "Append the day variable", name = "appendDay") String input,
+            @KernelFunctionParameter(description = "Value of the day to append", name = "day") String day) {
+            return input + day;
+        }
     }
 }

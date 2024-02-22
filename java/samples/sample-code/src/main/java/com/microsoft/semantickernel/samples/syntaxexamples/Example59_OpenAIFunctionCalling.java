@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -6,16 +7,16 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
-import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
-import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 
 public class Example59_OpenAIFunctionCalling {
 
@@ -26,33 +27,6 @@ public class Example59_OpenAIFunctionCalling {
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo-2");
-
-    public static class Plugin {
-        @DefineKernelFunction(name = "getLatitudeOfCity", description = "Gets the latitude of a given city")
-        public String getLatitudeOfCity(
-            @KernelFunctionParameter(name = "cityName", description = "City name") String cityName) {
-            return "1.0";
-        }
-
-        @DefineKernelFunction(name = "getLongitudeOfCity", description = "Gets the longitude of a given city")
-        public String getLongitudeOfCity(
-            @KernelFunctionParameter(name = "cityName", description = "City name") String cityName) {
-            return "2.0";
-        }
-
-        @DefineKernelFunction(name = "getsTheWeatherAtAGivenLocation", description = "Gets the current weather at a given longitude and latitude")
-        public String getWeatherForCityAtTime(
-            @KernelFunctionParameter(name = "latitude", description = "latitude of the location") String latitude,
-            @KernelFunctionParameter(name = "longitude", description = "longitude of the location") String longitude) {
-            return "61 and rainy";
-        }
-
-        @DefineKernelFunction(name = "getsTheWeatherForCity", description = "Gets the current weather at a city name")
-        public String getsTheWeatherForCity(
-            @KernelFunctionParameter(name = "cityName", description = "Name of the city") String cityName) {
-            return "80 and sunny";
-        }
-    }
 
     public static void main(String[] args) throws NoSuchMethodException {
         System.out.println("======== Open AI - Function calling ========");
@@ -155,5 +129,33 @@ public class Example59_OpenAIFunctionCalling {
             .block();
 
         System.out.println(result.getResult());
+    }
+
+    public static class Plugin {
+
+        @DefineKernelFunction(name = "getLatitudeOfCity", description = "Gets the latitude of a given city")
+        public String getLatitudeOfCity(
+            @KernelFunctionParameter(name = "cityName", description = "City name") String cityName) {
+            return "1.0";
+        }
+
+        @DefineKernelFunction(name = "getLongitudeOfCity", description = "Gets the longitude of a given city")
+        public String getLongitudeOfCity(
+            @KernelFunctionParameter(name = "cityName", description = "City name") String cityName) {
+            return "2.0";
+        }
+
+        @DefineKernelFunction(name = "getsTheWeatherAtAGivenLocation", description = "Gets the current weather at a given longitude and latitude")
+        public String getWeatherForCityAtTime(
+            @KernelFunctionParameter(name = "latitude", description = "latitude of the location") String latitude,
+            @KernelFunctionParameter(name = "longitude", description = "longitude of the location") String longitude) {
+            return "61 and rainy";
+        }
+
+        @DefineKernelFunction(name = "getsTheWeatherForCity", description = "Gets the current weather at a city name")
+        public String getsTheWeatherForCity(
+            @KernelFunctionParameter(name = "cityName", description = "Name of the city") String cityName) {
+            return "80 and sunny";
+        }
     }
 }

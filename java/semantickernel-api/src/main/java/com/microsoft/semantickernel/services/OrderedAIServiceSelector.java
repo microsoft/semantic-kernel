@@ -1,10 +1,11 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services;
 
-import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.implementation.Verify;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.util.List;
 import java.util.Map;
@@ -15,31 +16,53 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of {@link com.microsoft.semantickernel.services.AIServiceSelector} that 
- * selects the AI service based on the order of the execution settings.
- * Uses the service id or model id to select the preferred service provider and then 
- * returns the service and associated execution settings.
+ * Implementation of {@link com.microsoft.semantickernel.services.AIServiceSelector} that selects
+ * the AI service based on the order of the execution settings. Uses the service id or model id to
+ * select the preferred service provider and then returns the service and associated execution
+ * settings.
  */
 public class OrderedAIServiceSelector extends BaseAIServiceSelector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderedAIServiceSelector.class);
 
     /**
-     * Initializes a new instance of the {@link OrderedAIServiceSelector} 
-     * class with an empty collection of services.
+     * Initializes a new instance of the {@link OrderedAIServiceSelector} class with an empty
+     * collection of services.
      */
     public OrderedAIServiceSelector() {
         super(new AIServiceCollection());
     }
 
     /**
-     * Initializes a new instance of the {@link OrderedAIServiceSelector} 
-     * class with the specified services.
+     * Initializes a new instance of the {@link OrderedAIServiceSelector} class with the specified
+     * services.
      *
      * @param services The services to select from.
      */
     public OrderedAIServiceSelector(AIServiceCollection services) {
         super(services);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private static <T extends AIService> AIServiceSelection<T> castServiceSelection(
+        AIServiceSelection<?> selection) {
+        try {
+            // unchecked cast
+            return (AIServiceSelection<T>) selection;
+        } catch (ClassCastException e) {
+            LOGGER.debug("{}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
+        @Nullable KernelFunction function) {
+        if (function != null) {
+            return function.getExecutionSettings();
+        }
+        return null;
     }
 
     @Nullable
@@ -136,28 +159,6 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <T extends AIService> AIServiceSelection<T> castServiceSelection(
-        AIServiceSelection<?> selection) {
-        try {
-            // unchecked cast
-            return (AIServiceSelection<T>) selection;
-        } catch (ClassCastException e) {
-            LOGGER.debug("%s", e.getMessage());
-            return null;
-        }
-    }
-
-    @Nullable
-    private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
-        @Nullable KernelFunction function) {
-        if (function != null) {
-            return function.getExecutionSettings();
-        }
-        return null;
-    }
-
     private AIService getServiceByModelId(String modelId) {
         return services
             .values()
@@ -188,7 +189,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
      * Gets the service of the specified type.
      *
      * @param clazz The type of service to get.
-     * @param <T> The type of service to get.
+     * @param <T>   The type of service to get.
      * @return The service of the specified type, or {@code null} if no such service exists.
      */
     @Nullable

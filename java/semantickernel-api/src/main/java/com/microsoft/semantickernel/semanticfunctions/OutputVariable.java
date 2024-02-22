@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,13 +26,17 @@ public class OutputVariable {
     public OutputVariable(
         @Nullable @JsonProperty("description") String description,
 
-        @JsonProperty("type") String type) {
+        @Nullable @JsonProperty(value = "type", defaultValue = "java.lang.String") String type) {
         this.description = description;
+        if (type == null || type.isEmpty()) {
+            type = "java.lang.String";
+        }
         this.type = type;
     }
 
     /**
      * Get the description of the output variable.
+     *
      * @return The description of the output variable.
      */
     @Nullable
@@ -41,6 +46,7 @@ public class OutputVariable {
 
     /**
      * Get the type of the output variable.
+     *
      * @return The type of the output variable.
      */
     public Class<?> getType() {

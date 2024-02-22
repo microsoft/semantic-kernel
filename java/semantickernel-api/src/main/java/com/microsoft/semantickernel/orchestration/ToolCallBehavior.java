@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.exceptions.SKException;
@@ -13,20 +14,12 @@ public class ToolCallBehavior {
 
     private static final int DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS = 5;
     private static final String FUNCTION_NAME_SEPARATOR = "-";
-
-    static String getKey(@Nullable String pluginName, String functionName) {
-        if (pluginName == null) {
-            pluginName = "";
-        }
-        return String.format("%s%s%s", pluginName, FUNCTION_NAME_SEPARATOR, functionName);
-    }
-
+    private final Set<String> enabledFunctions = new HashSet<>();
     private int maximumAutoInvokeAttempts;
     private boolean kernelFunctionsEnabled;
 
     @Nullable
     private KernelFunction<?> requiredFunction;
-    private final Set<String> enabledFunctions = new HashSet<>();
 
     /**
      * Create a new instance of ToolCallBehavior with defaults.
@@ -47,6 +40,13 @@ public class ToolCallBehavior {
         kernelFunctionsEnabled = toolCallBehavior.kernelFunctionsEnabled;
         requiredFunction = toolCallBehavior.requiredFunction;
         enabledFunctions.addAll(toolCallBehavior.enabledFunctions);
+    }
+
+    static String getKey(@Nullable String pluginName, String functionName) {
+        if (pluginName == null) {
+            pluginName = "";
+        }
+        return String.format("%s%s%s", pluginName, FUNCTION_NAME_SEPARATOR, functionName);
     }
 
     /**
@@ -120,28 +120,6 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Set the maximum number of times that auto-invocation will be attempted. If auto-invocation is
-     * enabled, the model may request that the Semantic Kernel invoke functions and return the value
-     * to the model. If the maximum number of attempts is reached, the model will be notified that
-     * the function could not be invoked. The default maximum number of attempts is 5.
-     *
-     * @param maximumAutoInvokeAttempts The maximum number of attempts.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior setMaximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
-        if (maximumAutoInvokeAttempts < 0) {
-            throw new SKException(
-                "The maximum auto-invoke attempts should be greater than or equal to zero.");
-        }
-        if (requiredFunction == null) {
-            this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
-        } else {
-            this.maximumAutoInvokeAttempts = Math.min(1, maximumAutoInvokeAttempts);
-        }
-        return this;
-    }
-
-    /**
      * Check whether kernel functions are enabled.
      *
      * @return Whether kernel functions are enabled.
@@ -198,6 +176,28 @@ public class ToolCallBehavior {
      */
     public int getMaximumAutoInvokeAttempts() {
         return this.maximumAutoInvokeAttempts;
+    }
+
+    /**
+     * Set the maximum number of times that auto-invocation will be attempted. If auto-invocation is
+     * enabled, the model may request that the Semantic Kernel invoke functions and return the value
+     * to the model. If the maximum number of attempts is reached, the model will be notified that
+     * the function could not be invoked. The default maximum number of attempts is 5.
+     *
+     * @param maximumAutoInvokeAttempts The maximum number of attempts.
+     * @return This ToolCallBehavior.
+     */
+    public ToolCallBehavior setMaximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
+        if (maximumAutoInvokeAttempts < 0) {
+            throw new SKException(
+                "The maximum auto-invoke attempts should be greater than or equal to zero.");
+        }
+        if (requiredFunction == null) {
+            this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
+        } else {
+            this.maximumAutoInvokeAttempts = Math.min(1, maximumAutoInvokeAttempts);
+        }
+        return this;
     }
 
     /**

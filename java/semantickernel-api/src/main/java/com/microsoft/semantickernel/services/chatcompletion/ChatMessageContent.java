@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.chatcompletion;
 
-import com.microsoft.semantickernel.services.KernelContent;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
+import com.microsoft.semantickernel.services.KernelContent;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -12,16 +12,18 @@ import javax.annotation.Nullable;
 
 /**
  * Represents the content of a chat message
+ *
+ * @param <T> the type of the inner content within the messages
  */
 public class ChatMessageContent<T> extends KernelContent<T> {
 
-    private AuthorRole authorRole;
+    private final AuthorRole authorRole;
     @Nullable
-    private String content;
+    private final String content;
     @Nullable
-    private List<KernelContent<T>> items;
+    private final List<KernelContent<T>> items;
     @Nullable
-    private Charset encoding;
+    private final Charset encoding;
 
     /**
      * Creates a new instance of the {@link ChatMessageContent} class.
@@ -62,6 +64,7 @@ public class ChatMessageContent<T> extends KernelContent<T> {
         this.authorRole = authorRole;
         this.content = content;
         this.encoding = encoding != null ? encoding : StandardCharsets.UTF_8;
+        this.items = null;
     }
 
     /**
@@ -98,15 +101,6 @@ public class ChatMessageContent<T> extends KernelContent<T> {
     }
 
     /**
-     * Sets the author role that generated the content
-     *
-     * @param authorRole the author role that generated the content
-     */
-    public void setAuthorRole(AuthorRole authorRole) {
-        this.authorRole = authorRole;
-    }
-
-    /**
      * Gets the content
      *
      * @return the content, which may be {@code null}
@@ -115,15 +109,6 @@ public class ChatMessageContent<T> extends KernelContent<T> {
     @Override
     public String getContent() {
         return content;
-    }
-
-    /**
-     * Sets the content
-     *
-     * @param content the content
-     */
-    public void setContent(@Nullable String content) {
-        this.content = content;
     }
 
     /**
@@ -136,15 +121,6 @@ public class ChatMessageContent<T> extends KernelContent<T> {
     }
 
     /**
-     * Sets the {@code KernelContent} items that comprise the content.
-     *
-     * @param items the items
-     */
-    public void setItems(List<KernelContent<T>> items) {
-        this.items = new ArrayList<>(items);
-    }
-
-    /**
      * Gets the encoding of the content
      *
      * @return the encoding, which may be {@code null}
@@ -152,15 +128,6 @@ public class ChatMessageContent<T> extends KernelContent<T> {
     @Nullable
     public Charset getEncoding() {
         return encoding;
-    }
-
-    /**
-     * Sets the encoding of the content
-     *
-     * @param encoding the encoding
-     */
-    public void setEncoding(Charset encoding) {
-        this.encoding = encoding;
     }
 
     @Override

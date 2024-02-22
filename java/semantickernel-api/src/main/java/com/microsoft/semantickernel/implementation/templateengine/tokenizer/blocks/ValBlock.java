@@ -30,6 +30,12 @@ public final class ValBlock extends Block implements TextRendering {
         this.value = this.getContent().substring(1, this.getContent().length() - 1);
     }
 
+    public static boolean hasValPrefix(@Nullable String text) {
+        return text != null
+            && !text.isEmpty()
+            && (text.charAt(0) == Symbols.DblQuote || text.charAt(0) == Symbols.SglQuote);
+    }
+
     @Override
     @Nullable
     public String render(@Nullable KernelFunctionArguments variables) {
@@ -53,11 +59,5 @@ public final class ValBlock extends Block implements TextRendering {
         }
 
         return true;
-    }
-
-    public static boolean hasValPrefix(@Nullable String text) {
-        return text != null
-            && text.length() > 0
-            && (text.charAt(0) == Symbols.DblQuote || text.charAt(0) == Symbols.SglQuote);
     }
 }

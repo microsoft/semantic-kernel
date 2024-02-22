@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;

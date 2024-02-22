@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
 import java.util.ArrayList;
@@ -5,9 +6,8 @@ import java.util.List;
 import reactor.util.annotation.NonNull;
 
 /**
- * An collection of {@link PromptTemplateFactory} instances. The 
- * factory will try to create a {@link PromptTemplate} using each
- * factory in the collection until one is successful.
+ * An collection of {@link PromptTemplateFactory} instances. The factory will try to create a
+ * {@link PromptTemplate} using each factory in the collection until one is successful.
  */
 public class AggregatorPromptTemplateFactory implements PromptTemplateFactory {
 

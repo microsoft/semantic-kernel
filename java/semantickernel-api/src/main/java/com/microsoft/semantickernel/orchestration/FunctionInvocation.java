@@ -1,8 +1,10 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHook;
@@ -20,8 +22,9 @@ import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 
-/** 
+/**
  * {@code FunctionInvocation} supports fluent invocation of a function in the kernel.
+ *
  * @param <T> The type of the result of the function invocation.
  */
 public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
@@ -33,7 +36,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     protected final Kernel kernel;
     @Nullable
     protected final ContextVariableType<T> resultType;
-
+    protected final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
     @Nullable
     protected KernelFunctionArguments arguments;
     @Nullable
@@ -42,11 +45,11 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     protected PromptExecutionSettings promptExecutionSettings;
     @Nullable
     protected UnmodifiableToolCallBehavior toolCallBehavior;
-    protected final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
 
     /**
      * Create a new function invocation.
-     * @param kernel The kernel to invoke the function on.
+     *
+     * @param kernel   The kernel to invoke the function on.
      * @param function The function to invoke.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -61,8 +64,9 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
 
     /**
      * Create a new function invocation.
-     * @param kernel The kernel to invoke the function on.
-     * @param function The function to invoke.
+     *
+     * @param kernel     The kernel to invoke the function on.
+     * @param function   The function to invoke.
      * @param resultType The type of the result of the function invocation.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -77,145 +81,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             contextVariableTypes.putConverter(resultType.getConverter());
         }
         this.addKernelHooks(kernel.getGlobalKernelHooks());
-    }
-
-    /**
-     * Supply arguments to the function invocation.
-     * @param arguments The arguments to supply to the function invocation.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> withArguments(
-        @Nullable KernelFunctionArguments arguments) {
-        if (arguments == null) {
-            this.arguments = null;
-        } else {
-            this.arguments = new KernelFunctionArguments(arguments);
-        }
-        return this;
-    }
-
-    /**
-     * Supply the result type of function invocation.
-     * @param resultType The arguments to supply to the function invocation.
-     * @param <U> The type of the result of the function invocation.
-     * @return A new {@code FunctionInvocation} for fluent chaining.
-     */
-    public <U> FunctionInvocation<U> withResultType(ContextVariableType<U> resultType) {
-        return new FunctionInvocation<>(
-            kernel,
-            function,
-            resultType)
-            .withArguments(arguments)
-            .addKernelHooks(hooks)
-            .withPromptExecutionSettings(promptExecutionSettings)
-            .withToolCallBehavior(toolCallBehavior);
-    }
-
-    /**
-     * Add a kernel hook to the function invocation.
-     * @param hook The kernel hook to add.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> addKernelHook(@Nullable KernelHook<?> hook) {
-        if (hook == null) {
-            return this;
-        }
-        KernelHooks clone = new KernelHooks(this.hooks);
-        clone.addHook(hook);
-        this.hooks = unmodifiableClone(clone);
-        return this;
-    }
-
-    /**
-     * Add kernel hooks to the function invocation.
-     * @param hooks The kernel hooks to add.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> addKernelHooks(
-        @Nullable KernelHooks hooks) {
-        if (hooks == null) {
-            return this;
-        }
-        this.hooks = unmodifiableClone(new KernelHooks(this.hooks).addHooks(hooks));
-        return this;
-    }
-
-    /**
-     * Supply prompt execution settings to the function invocation.
-     * @param promptExecutionSettings The prompt execution settings to supply to the function invocation.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> withPromptExecutionSettings(
-        @Nullable PromptExecutionSettings promptExecutionSettings) {
-        this.promptExecutionSettings = promptExecutionSettings;
-        return this;
-    }
-
-    /**
-     * Supply tool call behavior to the function invocation.
-     * @param toolCallBehavior The tool call behavior to supply to the function invocation.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> withToolCallBehavior(@Nullable ToolCallBehavior toolCallBehavior) {
-        this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
-        return this;
-    }
-
-    /**
-     * Supply a type converter to the function invocation.
-     * @param typeConverter The type converter to supply to the function invocation.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> withTypeConverter(ContextVariableType<?> typeConverter) {
-        contextVariableTypes.putConverter(typeConverter.getConverter());
-        return this;
-    }
-
-    /**
-     * Supply a context variable type to the function invocation.
-     * @param contextVariableTypes The context variable types to supply to the function invocation.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> withTypes(ContextVariableTypes contextVariableTypes) {
-        this.contextVariableTypes.putConverters(contextVariableTypes);
-        return this;
-    }
-
-    /**
-     * Use an invocation context variable to supply the types, tool call behavior,
-     * prompt execution settings, and kernel hooks to the function invocation.
-     * @param invocationContext The invocation context to supply to the function invocation.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> withInvocationContext(
-        @Nullable InvocationContext invocationContext) {
-        if (invocationContext == null) {
-            return this;
-        }
-        withTypes(invocationContext.getContextVariableTypes());
-        withToolCallBehavior(invocationContext.getToolCallBehavior());
-        withPromptExecutionSettings(invocationContext.getPromptExecutionSettings());
-        addKernelHooks(invocationContext.getKernelHooks());
-        return this;
-    }
-
-    /**
-     * This method hanldes the reactive stream when the KernelFunciton is invoked. 
-     * @param coreSubscriber The subscriber to subscribe to the function invocation.
-     */
-    @Override
-    public void subscribe(CoreSubscriber<? super FunctionResult<T>> coreSubscriber) {
-        performSubscribe(
-            coreSubscriber,
-            kernel,
-            function,
-            arguments,
-            resultType,
-            new InvocationContext(
-                hooks,
-                promptExecutionSettings,
-                toolCallBehavior,
-                contextVariableTypes));
     }
 
     // Extracted to static to ensure mutable state is not used
@@ -287,6 +152,156 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Supply arguments to the function invocation.
+     *
+     * @param arguments The arguments to supply to the function invocation.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> withArguments(
+        @Nullable KernelFunctionArguments arguments) {
+        if (arguments == null) {
+            this.arguments = null;
+        } else {
+            this.arguments = new KernelFunctionArguments(arguments);
+        }
+        return this;
+    }
+
+    /**
+     * Supply the result type of function invocation.
+     *
+     * @param resultType The arguments to supply to the function invocation.
+     * @param <U>        The type of the result of the function invocation.
+     * @return A new {@code FunctionInvocation} for fluent chaining.
+     */
+    public <U> FunctionInvocation<U> withResultType(ContextVariableType<U> resultType) {
+        return new FunctionInvocation<>(
+            kernel,
+            function,
+            resultType)
+            .withArguments(arguments)
+            .addKernelHooks(hooks)
+            .withPromptExecutionSettings(promptExecutionSettings)
+            .withToolCallBehavior(toolCallBehavior);
+    }
+
+    /**
+     * Add a kernel hook to the function invocation.
+     *
+     * @param hook The kernel hook to add.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> addKernelHook(@Nullable KernelHook<?> hook) {
+        if (hook == null) {
+            return this;
+        }
+        KernelHooks clone = new KernelHooks(this.hooks);
+        clone.addHook(hook);
+        this.hooks = unmodifiableClone(clone);
+        return this;
+    }
+
+    /**
+     * Add kernel hooks to the function invocation.
+     *
+     * @param hooks The kernel hooks to add.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> addKernelHooks(
+        @Nullable KernelHooks hooks) {
+        if (hooks == null) {
+            return this;
+        }
+        this.hooks = unmodifiableClone(new KernelHooks(this.hooks).addHooks(hooks));
+        return this;
+    }
+
+    /**
+     * Supply prompt execution settings to the function invocation.
+     *
+     * @param promptExecutionSettings The prompt execution settings to supply to the function
+     *                                invocation.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> withPromptExecutionSettings(
+        @Nullable PromptExecutionSettings promptExecutionSettings) {
+        this.promptExecutionSettings = promptExecutionSettings;
+        return this;
+    }
+
+    /**
+     * Supply tool call behavior to the function invocation.
+     *
+     * @param toolCallBehavior The tool call behavior to supply to the function invocation.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> withToolCallBehavior(@Nullable ToolCallBehavior toolCallBehavior) {
+        this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+        return this;
+    }
+
+    /**
+     * Supply a type converter to the function invocation.
+     *
+     * @param typeConverter The type converter to supply to the function invocation.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> withTypeConverter(ContextVariableTypeConverter<?> typeConverter) {
+        contextVariableTypes.putConverter(typeConverter);
+        return this;
+    }
+
+    /**
+     * Supply a context variable type to the function invocation.
+     *
+     * @param contextVariableTypes The context variable types to supply to the function invocation.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> withTypes(ContextVariableTypes contextVariableTypes) {
+        this.contextVariableTypes.putConverters(contextVariableTypes);
+        return this;
+    }
+
+    /**
+     * Use an invocation context variable to supply the types, tool call behavior, prompt execution
+     * settings, and kernel hooks to the function invocation.
+     *
+     * @param invocationContext The invocation context to supply to the function invocation.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> withInvocationContext(
+        @Nullable InvocationContext invocationContext) {
+        if (invocationContext == null) {
+            return this;
+        }
+        withTypes(invocationContext.getContextVariableTypes());
+        withToolCallBehavior(invocationContext.getToolCallBehavior());
+        withPromptExecutionSettings(invocationContext.getPromptExecutionSettings());
+        addKernelHooks(invocationContext.getKernelHooks());
+        return this;
+    }
+
+    /**
+     * This method hanldes the reactive stream when the KernelFunciton is invoked.
+     *
+     * @param coreSubscriber The subscriber to subscribe to the function invocation.
+     */
+    @Override
+    public void subscribe(CoreSubscriber<? super FunctionResult<T>> coreSubscriber) {
+        performSubscribe(
+            coreSubscriber,
+            kernel,
+            function,
+            arguments,
+            resultType,
+            new InvocationContext(
+                hooks,
+                promptExecutionSettings,
+                toolCallBehavior,
+                contextVariableTypes));
     }
 
 }

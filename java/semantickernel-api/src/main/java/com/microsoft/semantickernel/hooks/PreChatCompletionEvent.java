@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.hooks;
 
 import com.azure.ai.openai.models.ChatCompletionsOptions;
@@ -11,6 +12,7 @@ public class PreChatCompletionEvent implements KernelHookEvent {
 
     /**
      * Creates a new instance of the {@link PreChatCompletionEvent} class.
+     *
      * @param options the chat completion options
      */
     public PreChatCompletionEvent(ChatCompletionsOptions options) {
@@ -19,6 +21,7 @@ public class PreChatCompletionEvent implements KernelHookEvent {
 
     /**
      * Gets the chat completion options.
+     *
      * @return the options
      */
     public ChatCompletionsOptions getOptions() {

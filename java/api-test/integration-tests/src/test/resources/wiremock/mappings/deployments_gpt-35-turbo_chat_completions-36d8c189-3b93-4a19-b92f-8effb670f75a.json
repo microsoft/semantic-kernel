@@ -1,23 +1,23 @@
 {
-   "id" : "36d8c189-3b93-4a19-b92f-8effb670f75a",
-   "insertionIndex" : 26,
-   "name" : "deployments_gpt-35-turbo_chat_completions",
-   "persistent" : true,
-   "request" : {
-      "bodyPatterns" : [
-         {
-            "equalToJson" : "{\"messages\":[{\"role\":\"assistant\",\"content\":\"You are a librarian, expert about books\"},{\"role\":\"user\",\"content\":\"Hi, I'm looking for book suggestions\"},{\"role\":\"assistant\",\"content\":\"Certainly! I'd be happy to help you find some book suggestions. Could you please provide me with more information about what kind of books you enjoy? For example, do you have any favorite genres or authors? Are you looking for fiction or non-fiction books? Any specific themes or topics you're interested in? The more details you can provide, the better I can assist you.\"},{\"role\":\"user\",\"content\":\"I love history and philosophy, I'd like to learn something new about Greece, any suggestion\"}],\"model\":\"gpt-35-turbo\"}",
-            "ignoreArrayOrder" : true,
-            "ignoreExtraElements" : true
-         }
-      ],
-      "method" : "POST",
-      "url" : "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
-   },
-   "response" : {
-      "body" : "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707252994,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"ace2c274-2932-4ba7-b132-6ec80ad55698\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":129,\"completion_tokens\":308,\"total_tokens\":437}}",
-      "headers" : {},
-      "status" : 200
-   },
-   "uuid" : "36d8c189-3b93-4a19-b92f-8effb670f75a"
+  "id": "36d8c189-3b93-4a19-b92f-8effb670f75a",
+  "insertionIndex": 26,
+  "name": "deployments_gpt-35-turbo_chat_completions",
+  "persistent": true,
+  "request": {
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"messages\":[{\"role\":\"assistant\",\"content\":\"You are a librarian, expert about books\"},{\"role\":\"user\",\"content\":\"Hi, I'm looking for book suggestions\"},{\"role\":\"assistant\",\"content\":\"Certainly! I'd be happy to help you find some book suggestions. Could you please provide me with more information about what kind of books you enjoy? For example, do you have any favorite genres or authors? Are you looking for fiction or non-fiction books? Any specific themes or topics you're interested in? The more details you can provide, the better I can assist you.\"},{\"role\":\"user\",\"content\":\"I love history and philosophy, I'd like to learn something new about Greece, any suggestion\"}],\"model\":\"gpt-35-turbo\"}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ],
+    "method": "POST",
+    "url": "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
+  },
+  "response": {
+    "body": "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707252994,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"ace2c274-2932-4ba7-b132-6ec80ad55698\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":129,\"completion_tokens\":308,\"total_tokens\":437}}",
+    "headers": {},
+    "status": 200
+  },
+  "uuid": "36d8c189-3b93-4a19-b92f-8effb670f75a"
 }

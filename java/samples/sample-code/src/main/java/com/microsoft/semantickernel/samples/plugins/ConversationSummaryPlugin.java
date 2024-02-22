@@ -1,10 +1,11 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.plugins;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.text.TextChunker;
@@ -60,6 +61,27 @@ public class ConversationSummaryPlugin {
             .build();
     }
 
+    private static Mono<String> processAsync(KernelFunction<String> func, String input,
+        Kernel kernel) {
+        List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
+        List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
+
+        return Flux.fromIterable(paragraphs)
+            .concatMap(paragraph -> {
+                // The first parameter is the input text.
+                return func.invokeAsync(kernel)
+                    .withArguments(
+                        new KernelFunctionArguments.Builder()
+                            .withInput(paragraph)
+                            .build())
+                    .withResultType(
+                        ContextVariableTypes.getGlobalVariableTypeForClass(String.class));
+            })
+            .reduce("", (acc, next) -> {
+                return acc + "\n" + next.getResult();
+            });
+    }
+
     /// <summary>
     /// Given a long conversation transcript, summarize the conversation.
     /// </summary>
@@ -95,26 +117,5 @@ public class ConversationSummaryPlugin {
         @KernelFunctionParameter(description = "A long conversation transcript.", name = "input") String input,
         Kernel kernel) {
         return processAsync(this.conversationTopicsFunction, input, kernel);
-    }
-
-    private static Mono<String> processAsync(KernelFunction<String> func, String input,
-        Kernel kernel) {
-        List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
-        List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
-
-        return Flux.fromIterable(paragraphs)
-            .concatMap(paragraph -> {
-                // The first parameter is the input text.
-                return func.invokeAsync(kernel)
-                    .withArguments(
-                        new KernelFunctionArguments.Builder()
-                            .withInput(paragraph)
-                            .build())
-                    .withResultType(
-                        ContextVariableTypes.getGlobalVariableTypeForClass(String.class));
-            })
-            .reduce("", (acc, next) -> {
-                return acc + "\n" + next.getResult();
-            });
     }
 }

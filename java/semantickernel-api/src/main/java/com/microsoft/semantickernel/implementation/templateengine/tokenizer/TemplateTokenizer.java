@@ -11,34 +11,50 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *  Simple tokenizer used for default SK template language.
- * 
- *  BNF parsed by TemplateTokenizer:
- *  [template]       ::= "" | [block] | [block] [template]
- *  [block]          ::= [sk-block] | [text-block]
- *  [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" | "{{" [function-call] "}}"
- *  [text-block]     ::= [any-char] | [any-char] [text-block]
- *  [any-char]       ::= any char
- * 
- *  BNF parsed by CodeTokenizer:
- *  [template]       ::= "" | [variable] " " [template] | [value] " " [template] | [function-call] "
- * 
- *  [variable]       ::= "$" [valid-name]
- *  [value]          ::= "'" [text] "'" | '"' [text] '"'
- *  [function-call]  ::= [function-id] | [function-id] [parameter]
- *  [parameter]      ::= [variable] | [value]
- * 
- *  BNF parsed by dedicated blocks
- *  [function-id]    ::= [valid-name] | [valid-name] "." [valid-name]
- *  [valid-name]     ::= [valid-symbol] | [valid-symbol] [valid-name]
- *  [valid-symbol]   ::= [letter] | [digit] | "_"
- *  [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
- *  [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+ * Simple tokenizer used for default SK template language.
+ * <p>
+ * BNF parsed by TemplateTokenizer: [template]       ::= "" | [block] | [block] [template] [block]
+ * ::= [sk-block] | [text-block] [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" |
+ * "{{" [function-call] "}}" [text-block]     ::= [any-char] | [any-char] [text-block] [any-char]
+ * ::= any char
+ * <p>
+ * BNF parsed by CodeTokenizer: [template]       ::= "" | [variable] " " [template] | [value] " "
+ * [template] | [function-call] "
+ * <p>
+ * [variable]       ::= "$" [valid-name] [value]          ::= "'" [text] "'" | '"' [text] '"'
+ * [function-call]  ::= [function-id] | [function-id] [parameter] [parameter]      ::= [variable] |
+ * [value]
+ * <p>
+ * BNF parsed by dedicated blocks [function-id]    ::= [valid-name] | [valid-name] "." [valid-name]
+ * [valid-name]     ::= [valid-symbol] | [valid-symbol] [valid-name] [valid-symbol]   ::= [letter] |
+ * [digit] | "_" [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z" [digit]          ::=
+ * "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  */
 public class TemplateTokenizer {
 
+    /*
+     * #region private
+     * ================================================================================
+     *
+     * private readonly ILogger _log;
+     */
+    private final CodeTokenizer codeTokenizer = new CodeTokenizer();
+
+    private static String subStr(String text, int startIndex, int stopIndex) {
+        return text.substring(startIndex, stopIndex);
+    }
+
+    private static boolean isQuote(char c) {
+        return c == Symbols.DblQuote || c == Symbols.SglQuote;
+    }
+
+    private static boolean canBeEscaped(char c) {
+        return c == Symbols.DblQuote || c == Symbols.SglQuote || c == Symbols.EscapeChar;
+    }
+
     /**
-     *  Extract blocks from the given text
+     * Extract blocks from the given text
+     *
      * @param text Text to parse
      * @return List of blocks found in the text
      */
@@ -126,7 +142,7 @@ public class TemplateTokenizer {
                             .substring(2, contentWithDelimiters.length() - 2)
                             .trim();
 
-                        if (contentWithoutDelimiters.length() == 0) {
+                        if (contentWithoutDelimiters.isEmpty()) {
                             // If what is left is empty, consider the raw block a Text Block
                             blocks.add(new TextBlock(contentWithDelimiters));
                         } else {
@@ -184,25 +200,5 @@ public class TemplateTokenizer {
         }
 
         return Collections.unmodifiableList(blocks);
-    }
-
-    /*
-     * #region private
-     * ================================================================================
-     * 
-     * private readonly ILogger _log;
-     */
-    private final CodeTokenizer codeTokenizer = new CodeTokenizer();
-
-    private static String subStr(String text, int startIndex, int stopIndex) {
-        return text.substring(startIndex, stopIndex);
-    }
-
-    private static boolean isQuote(char c) {
-        return c == Symbols.DblQuote || c == Symbols.SglQuote;
-    }
-
-    private static boolean canBeEscaped(char c) {
-        return c == Symbols.DblQuote || c == Symbols.SglQuote || c == Symbols.EscapeChar;
     }
 }

@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.contextvariables;
 
 import javax.annotation.Nullable;
@@ -16,7 +17,7 @@ public class ContextVariableType<T> {
      * Create a new context variable type.
      *
      * @param contextVariableTypeConverter The converter to convert objects to the type.
-     * @param clazz The class of the type
+     * @param clazz                        The class of the type
      */
     public ContextVariableType(ContextVariableTypeConverter<T> contextVariableTypeConverter,
         Class<T> clazz) {

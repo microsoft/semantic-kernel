@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
 import static com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
@@ -19,9 +20,11 @@ import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -63,41 +66,6 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
                 returnParameter),
             null);
         this.function = implementationFunc;
-    }
-
-    /**
-     * Concrete implementation of the abstract method in KernelFunction. {@inheritDoc}
-     */
-    @Override
-    public Mono<FunctionResult<T>> invokeAsync(
-        Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
-        @Nullable ContextVariableType<T> variableType,
-        @Nullable InvocationContext invocationContext) {
-        return function.invoke(kernel, this, arguments, variableType, invocationContext);
-    }
-
-    /**
-     * Concrete implementation of the abstract method in KernelFunction.
-     */
-    public interface ImplementationFunc<T> {
-
-        /**
-         * Invokes the function.
-         *
-         * @param kernel            the kernel to invoke the function on
-         * @param function          the function to invoke
-         * @param arguments         the arguments to the function
-         * @param variableType      the variable type of the function
-         * @param invocationContext the invocation context
-         * @return a {@link Mono} that emits the result of the function invocation
-         */
-        Mono<FunctionResult<T>> invoke(
-            Kernel kernel,
-            KernelFunction<T> function,
-            @Nullable KernelFunctionArguments arguments,
-            @Nullable ContextVariableType<T> variableType,
-            @Nullable InvocationContext invocationContext);
     }
 
     /**
@@ -292,7 +260,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
                 return type;
             } catch (ClassCastException | SKException e) {
                 // SKException is thrown from ContextVariableTypes.getDefaultVariableTypeForClass
-                // if there is no default variable type for the class. 
+                // if there is no default variable type for the class.
                 // Fallthrough. Let the caller handle a null return.
             }
         }
@@ -576,10 +544,54 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
             isRequired);
     }
 
+    /**
+     * A builder for {@link KernelFunction}.
+     *
+     * @param <T> the return type of the function
+     * @return a new instance of {@link Builder}
+     */
     public static <T> Builder<T> builder() {
         return new Builder<>();
     }
 
+    /**
+     * Concrete implementation of the abstract method in KernelFunction. {@inheritDoc}
+     */
+    @Override
+    public Mono<FunctionResult<T>> invokeAsync(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable InvocationContext invocationContext) {
+        return function.invoke(kernel, this, arguments, variableType, invocationContext);
+    }
+
+    /**
+     * Concrete implementation of the abstract method in KernelFunction.
+     */
+    public interface ImplementationFunc<T> {
+
+        /**
+         * Invokes the function.
+         *
+         * @param kernel            the kernel to invoke the function on
+         * @param function          the function to invoke
+         * @param arguments         the arguments to the function
+         * @param variableType      the variable type of the function
+         * @param invocationContext the invocation context
+         * @return a {@link Mono} that emits the result of the function invocation
+         */
+        Mono<FunctionResult<T>> invoke(
+            Kernel kernel,
+            KernelFunction<T> function,
+            @Nullable KernelFunctionArguments arguments,
+            @Nullable ContextVariableType<T> variableType,
+            @Nullable InvocationContext invocationContext);
+    }
+
+    /**
+     * A builder for {@link KernelFunction}.
+     */
     public static class Builder<T> {
 
         @Nullable
@@ -597,41 +609,89 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
         @Nullable
         private KernelReturnParameterMetadata<?> returnParameter;
 
+        /**
+         * Sets the method to use to build the function.
+         *
+         * @param method the method to use
+         * @return this instance of the {@link Builder} class
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder<T> withMethod(Method method) {
             this.method = method;
             return this;
         }
 
+        /**
+         * Sets the target to use to build the function.
+         *
+         * @param target the target to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withTarget(Object target) {
             this.target = target;
             return this;
         }
 
+        /**
+         * Sets the plugin name to use to build the function.
+         *
+         * @param pluginName the plugin name to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withPluginName(String pluginName) {
             this.pluginName = pluginName;
             return this;
         }
 
+        /**
+         * Sets the function name to use to build the function.
+         *
+         * @param functionName the function name to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withFunctionName(String functionName) {
             this.functionName = functionName;
             return this;
         }
 
+        /**
+         * Sets the description to use to build the function.
+         *
+         * @param description the description to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withDescription(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Sets the parameters to use to build the function.
+         *
+         * @param parameters the parameters to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withParameters(List<KernelParameterMetadata<?>> parameters) {
-            this.parameters = parameters;
+            this.parameters = new ArrayList<>(parameters);
             return this;
         }
 
+        /**
+         * Sets the return parameter to use to build the function.
+         *
+         * @param returnParameter the return parameter to use
+         * @return this instance of the {@link Builder} class
+         */
         public Builder<T> withReturnParameter(KernelReturnParameterMetadata<?> returnParameter) {
             this.returnParameter = returnParameter;
             return this;
         }
 
+        /**
+         * Builds a new instance of {@link KernelFunction}.
+         *
+         * @return a new instance of {@link KernelFunction}
+         */
         public KernelFunction<T> build() {
 
             if (method == null) {

@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -7,13 +8,13 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 
 public class Example06_TemplateLanguage {
@@ -25,19 +26,6 @@ public class Example06_TemplateLanguage {
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "text-davinci-003");
-
-    public static class Time {
-
-        @DefineKernelFunction(name = "date")
-        public String date() {
-            return "2021-09-01";
-        }
-
-        @DefineKernelFunction(name = "time")
-        public String time() {
-            return "12:00:00";
-        }
-    }
 
     public static void main(String[] args) throws ConfigurationException {
 
@@ -103,5 +91,18 @@ public class Example06_TemplateLanguage {
         System.out.println("--- Prompt Function result");
         var result = kernel.invokeAsync(kindOfDay).block();
         System.out.println(result.getResult());
+    }
+
+    public static class Time {
+
+        @DefineKernelFunction(name = "date")
+        public String date() {
+            return "2021-09-01";
+        }
+
+        @DefineKernelFunction(name = "time")
+        public String time() {
+            return "12:00:00";
+        }
     }
 }

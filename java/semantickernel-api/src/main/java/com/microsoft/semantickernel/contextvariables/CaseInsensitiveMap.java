@@ -11,12 +11,14 @@ import javax.annotation.Nullable;
 
 /**
  * A {@code java.util.HashMap} in which the keys are case-insensitive.
+ *
  * @param <T> the type of the value
  */
 public class CaseInsensitiveMap<T> extends HashMap<String, T> {
 
     /**
      * Creates a new instance of the {@link CaseInsensitiveMap} class.
+     *
      * @param kvMap the map
      */
     public CaseInsensitiveMap(Map<String, T> kvMap) {

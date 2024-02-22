@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.contextvariables;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A converter for a context variable type. This class is used to convert objects to and from a
  * prompt string, and to convert objects to the type of the context variable.
+ *
  * @param <T> the type of the context variable
  */
 public class ContextVariableTypeConverter<T> {
@@ -26,76 +28,11 @@ public class ContextVariableTypeConverter<T> {
     private final List<Converter<T, ?>> toObjects;
 
     /**
-     * A converter from one type to another.
-     * @param <T> the source type
-     * @param <U> the target type
-     */
-    public interface Converter<T, U> {
-
-        /**
-         * Convert the object to the target type.
-         * @param t the object to convert
-         * @return the converted object
-         */
-        U toObject(T t);
-
-        /**
-         * Get the class of the target type.
-         * @return the class of the target type
-         */
-        Class<U> getTargetType();
-    }
-
-    /**
-     * A converter that does no conversion. This converter is often used as a default when no
-     * other conveter can be found for the type. 
-     * @param <T> the type of the context variable
-     */
-    public static class NoopConverter<T> extends ContextVariableTypeConverter<T> {
-
-        /**
-         * Create a new noop converter.
-         * @param clazz the class of the type
-         */
-        public NoopConverter(Class<T> clazz) {
-            super(
-                clazz,
-                x -> {
-                    return (T) x;
-                },
-                x -> {
-                    throw new RuntimeException("Noop converter should not be called");
-                },
-                x -> {
-                    throw new RuntimeException("Noop converter should not be called");
-                });
-        }
-    }
-
-    /**
-     * A base class for concrete implementations of {@link ContextVariableTypeConverter.Converter}.
-     * @param <T> the source type
-     * @param <U> the target type
-     */
-    public static abstract class DefaultConverter<T, U> implements Converter<T, U> {
-
-        private final Class<U> targetType;
-
-        protected DefaultConverter(Class<T> sourceType, Class<U> targetType) {
-            this.targetType = targetType;
-        }
-
-        @Override
-        public Class<U> getTargetType() {
-            return targetType;
-        }
-    }
-
-    /**
      * Create a new context variable type converter.
-     * @param clazz the class of the type
-     * @param fromObject a function to convert an object to the type
-     * @param toPromptString a function to convert the type to a prompt string
+     *
+     * @param clazz            the class of the type
+     * @param fromObject       a function to convert an object to the type
+     * @param toPromptString   a function to convert the type to a prompt string
      * @param fromPromptString a function to convert a prompt string to the type
      */
     public ContextVariableTypeConverter(
@@ -108,11 +45,12 @@ public class ContextVariableTypeConverter<T> {
 
     /**
      * Create a new context variable type converter.
-     * @param clazz the class of the type
-     * @param fromObject a function to convert an object to the type
-     * @param toPromptString a function to convert the type to a prompt string
+     *
+     * @param clazz            the class of the type
+     * @param fromObject       a function to convert an object to the type
+     * @param toPromptString   a function to convert the type to a prompt string
      * @param fromPromptString a function to convert a prompt string to the type
-     * @param toObjects a list of converters to convert the type to other types
+     * @param toObjects        a list of converters to convert the type to other types
      */
     public ContextVariableTypeConverter(
         Class<T> clazz,
@@ -129,8 +67,9 @@ public class ContextVariableTypeConverter<T> {
 
     /**
      * Use this converter to convert the object to the type of the context variable.
-     * @param <U> the type to convert to
-     * @param t the object to convert
+     *
+     * @param <U>   the type to convert to
+     * @param t     the object to convert
      * @param clazz the class of the type to convert to
      * @return the converted object
      */
@@ -166,6 +105,7 @@ public class ContextVariableTypeConverter<T> {
     /**
      * Convert the object to the type of the context variable using the {@code fromObject} function
      * provided to the constructor.
+     *
      * @param s the object to convert
      * @return the converted object
      */
@@ -174,12 +114,16 @@ public class ContextVariableTypeConverter<T> {
         if (s == null) {
             return null;
         }
+        if (s instanceof ContextVariable) {
+            return fromObject.apply(((ContextVariable<?>) s).getValue());
+        }
         return fromObject.apply(s);
     }
 
     /**
      * Convert the type to a prompt string using the {@code toPromptString} function provided to the
      * constructor.
+     *
      * @param t the type to convert
      * @return the prompt string
      */
@@ -193,6 +137,7 @@ public class ContextVariableTypeConverter<T> {
     /**
      * Convert the prompt string to the type using the {@code fromPromptString} function provided to
      * the constructor.
+     *
      * @param t the prompt string to convert
      * @return the type
      */
@@ -206,9 +151,82 @@ public class ContextVariableTypeConverter<T> {
 
     /**
      * Get the class of the type.
+     *
      * @return the class of the type
      */
     public Class<T> getType() {
         return clazz;
+    }
+
+    /**
+     * A converter from one type to another.
+     *
+     * @param <T> the source type
+     * @param <U> the target type
+     */
+    public interface Converter<T, U> {
+
+        /**
+         * Convert the object to the target type.
+         *
+         * @param t the object to convert
+         * @return the converted object
+         */
+        U toObject(T t);
+
+        /**
+         * Get the class of the target type.
+         *
+         * @return the class of the target type
+         */
+        Class<U> getTargetType();
+    }
+
+    /**
+     * A converter that does no conversion. This converter is often used as a default when no other
+     * conveter can be found for the type.
+     *
+     * @param <T> the type of the context variable
+     */
+    public static class NoopConverter<T> extends ContextVariableTypeConverter<T> {
+
+        /**
+         * Create a new noop converter.
+         *
+         * @param clazz the class of the type
+         */
+        public NoopConverter(Class<T> clazz) {
+            super(
+                clazz,
+                x -> {
+                    return (T) x;
+                },
+                x -> {
+                    throw new RuntimeException("Noop converter should not be called");
+                },
+                x -> {
+                    throw new RuntimeException("Noop converter should not be called");
+                });
+        }
+    }
+
+    /**
+     * A base class for concrete implementations of {@link ContextVariableTypeConverter.Converter}.
+     *
+     * @param <T> the source type
+     * @param <U> the target type
+     */
+    public static abstract class DefaultConverter<T, U> implements Converter<T, U> {
+
+        private final Class<U> targetType;
+
+        protected DefaultConverter(Class<T> sourceType, Class<U> targetType) {
+            this.targetType = targetType;
+        }
+
+        @Override
+        public Class<U> getTargetType() {
+            return targetType;
+        }
     }
 }

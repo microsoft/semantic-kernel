@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import java.util.Arrays;
@@ -12,11 +13,6 @@ import java.util.Scanner;
  * README</a> for configuring your environment to run the examples.
  */
 public class RunAll {
-
-    public interface MainMethod {
-
-        void run(String[] args) throws Exception;
-    }
 
     public static void main(String[] args) {
         List<MainMethod> mains = Arrays.asList(
@@ -43,6 +39,7 @@ public class RunAll {
             Example56_TemplateMethodFunctionsWithMultipleArguments::main,
             Example57_KernelHooks::main,
             Example58_ConfigureExecutionSettings::main,
+            Example60_AdvancedMethodFunctions::main,
             Example61_MultipleLLMs::main,
             Example62_CustomAIServiceSelector::main,
             Example63_ChatCompletionPrompts::main,
@@ -62,5 +59,10 @@ public class RunAll {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    public interface MainMethod {
+
+        void run(String[] args) throws Exception;
     }
 }

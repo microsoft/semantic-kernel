@@ -10,6 +10,10 @@ public final class TextBlock extends Block implements TextRendering {
         super(text, BlockTypes.TEXT);
     }
 
+    public TextBlock(String text, int startIndex, int stopIndex) {
+        super(text.substring(startIndex, stopIndex), BlockTypes.TEXT);
+    }
+
     @Override
     public boolean isValid() {
         return true;
@@ -18,9 +22,5 @@ public final class TextBlock extends Block implements TextRendering {
     @Override
     public String render(@Nullable KernelFunctionArguments variables) {
         return super.getContent();
-    }
-
-    public TextBlock(String text, int startIndex, int stopIndex) {
-        super(text.substring(startIndex, stopIndex), BlockTypes.TEXT);
     }
 }

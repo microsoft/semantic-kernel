@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -10,7 +11,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.Kernel.Builder;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
-import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
@@ -21,11 +22,11 @@ import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -288,8 +289,10 @@ public class Example57_KernelHooks {
         System.out.println("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         // Initialize prompts
-        var firstFunction = KernelFunctionFromPrompt.create("Write a phrase with Invoke.");
-        var secondFunction = KernelFunctionFromPrompt.create("Write a phrase with Cancellation.");
+        var firstFunction = KernelFunctionFromPrompt.<String>builder()
+            .withTemplate("Write a phrase with Invoke.").build();
+        var secondFunction = KernelFunctionFromPrompt.<String>builder()
+            .withTemplate("Write a phrase with Cancellation.").build();
 
         AtomicInteger invokingCounter = new AtomicInteger(0);
         kernel.getGlobalKernelHooks().addHook((FunctionInvokingHook) event -> {

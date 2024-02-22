@@ -17,7 +17,7 @@ public class Plugin {
     /**
      * Creates a new instance of {@link Plugin}.
      *
-     * @param name the name of the plugin
+     * @param name      the name of the plugin
      * @param functions the functions of the plugin
      */
     public Plugin(String name, KernelFunction<?>... functions) {
@@ -29,7 +29,7 @@ public class Plugin {
     /**
      * Creates a new instance of {@link Plugin}.
      *
-     * @param name the name of the plugin
+     * @param name      the name of the plugin
      * @param functions the functions of the plugin
      */
     public Plugin(String name, List<KernelFunction<?>> functions) {

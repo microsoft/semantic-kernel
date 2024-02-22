@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
 import com.azure.ai.openai.models.CompletionsUsage;
@@ -13,13 +14,19 @@ import javax.annotation.Nullable;
  */
 public class FunctionResultMetadata {
 
-    /** The key for id metadata. */
+    /**
+     * The key for id metadata.
+     */
     public static final String ID = "id";
 
-    /** The key for usage metadata. */
+    /**
+     * The key for usage metadata.
+     */
     public static final String USAGE = "usage";
 
-    /** The key for createdAt metadata. */
+    /**
+     * The key for createdAt metadata.
+     */
     public static final String CREATED_AT = "createdAt";
 
     private final CaseInsensitiveMap<ContextVariable<?>> metadata;
@@ -43,8 +50,8 @@ public class FunctionResultMetadata {
     /**
      * Create a new instance of FunctionResultMetadata.
      *
-     * @param id       The id of the result of the function invocation.
-     * @param usage    The usage of the result of the function invocation.
+     * @param id        The id of the result of the function invocation.
+     * @param usage     The usage of the result of the function invocation.
      * @param createdAt The time the result was created.
      * @return A new instance of FunctionResultMetadata.
      */

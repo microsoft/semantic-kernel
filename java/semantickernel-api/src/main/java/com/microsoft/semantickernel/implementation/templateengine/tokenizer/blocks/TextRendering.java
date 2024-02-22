@@ -11,6 +11,7 @@ public interface TextRendering {
 
     /**
      * Render the block using only the given variables.
+     *
      * @param variables Optional variables used to render the block
      * @return Rendered content
      */

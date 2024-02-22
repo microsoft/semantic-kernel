@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.web.bing;
 
 import com.azure.core.http.HttpClient;

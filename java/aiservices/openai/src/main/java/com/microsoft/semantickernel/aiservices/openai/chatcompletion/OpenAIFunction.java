@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
 import com.azure.ai.openai.models.FunctionDefinition;
@@ -9,20 +10,32 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
 import com.microsoft.semantickernel.semanticfunctions.KernelParameterMetadata;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 class OpenAIFunction {
+
     private final String pluginName;
     private final String name;
     private final FunctionDefinition functionDefinition;
 
-    public OpenAIFunction(KernelFunctionMetadata<?> metadata, String pluginName) {
-        this.name = metadata.getName();
+    protected OpenAIFunction(
+        @Nonnull String name,
+        @Nonnull String pluginName,
+        @Nonnull FunctionDefinition functionDefinition) {
+        this.name = name;
         this.pluginName = pluginName;
-        this.functionDefinition = toFunctionDefinition(metadata, pluginName);
+        this.functionDefinition = functionDefinition;
+    }
+
+    public static OpenAIFunction build(KernelFunctionMetadata<?> metadata, String pluginName) {
+        String name = metadata.getName();
+        FunctionDefinition functionDefinition = toFunctionDefinition(metadata, pluginName);
+        return new OpenAIFunction(name, pluginName, functionDefinition);
     }
 
     public String getName() {
@@ -38,7 +51,8 @@ class OpenAIFunction {
     }
 
     /**
-     * Gets the separator used between the plugin name and the function name, if a plugin name is present.
+     * Gets the separator used between the plugin name and the function name, if a plugin name is
+     * present.
      *
      * @return The separator used between the plugin name and the function name.
      */
@@ -58,7 +72,8 @@ class OpenAIFunction {
     }
 
     /**
-     * Converts a KernelFunctionMetadata representation to the SDK's FunctionDefinition representation.
+     * Converts a KernelFunctionMetadata representation to the SDK's FunctionDefinition
+     * representation.
      *
      * @return A FunctionDefinition containing all the function information.
      */
@@ -97,6 +112,7 @@ class OpenAIFunction {
     }
 
     private static class OpenAIFunctionParameter {
+
         @JsonProperty("type")
         private String type;
         @JsonProperty("required")
@@ -104,17 +120,32 @@ class OpenAIFunction {
         @JsonProperty("properties")
         private Map<String, JsonNode> properties;
 
-        public OpenAIFunctionParameter(String type, List<String> required,
+        public OpenAIFunctionParameter(
+            String type,
+            List<String> required,
             Map<String, JsonNode> properties) {
             this.type = type;
-            this.required = required;
-            this.properties = properties;
+            this.required = Collections.unmodifiableList(required);
+            this.properties = Collections.unmodifiableMap(properties);
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public List<String> getRequired() {
+            return required;
+        }
+
+        public Map<String, JsonNode> getProperties() {
+            return properties;
         }
     }
 
     private static String getSchemaForFunctionParameter(@Nullable String description) {
-        if (description == null)
+        if (description == null) {
             return "{\"type\":\"string\"}";
+        }
         return String.format("{\"type\":\"string\", \"description\":\"%s\"}", description);
     }
 }

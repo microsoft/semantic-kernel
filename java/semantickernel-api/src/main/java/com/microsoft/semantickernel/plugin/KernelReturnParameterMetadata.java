@@ -1,7 +1,7 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.plugin;
 
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-
 import javax.annotation.Nullable;
 
 /**
@@ -18,7 +18,7 @@ public class KernelReturnParameterMetadata<T> {
     /**
      * Creates a new instance of {@link KernelReturnParameterMetadata}.
      *
-     * @param description the description of the return parameter
+     * @param description   the description of the return parameter
      * @param parameterType the type of the return parameter
      */
     public KernelReturnParameterMetadata(

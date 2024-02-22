@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.contextvariables.converters;
 
 import com.azure.ai.openai.models.CompletionsUsage;
@@ -5,10 +6,10 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverte
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 
 /**
- * A {@link ContextVariableTypeConverter}
- * for {@code com.azure.ai.openai.models.CompletionsUsage} variables. Use
- * {@code ContextVariableTypes.getGlobalVariableTypeForClass(CompletionsUsage.class)} 
+ * A {@link ContextVariableTypeConverter} for {@code com.azure.ai.openai.models.CompletionsUsage}
+ * variables. Use {@code ContextVariableTypes.getGlobalVariableTypeForClass(CompletionsUsage.class)}
  * to get an instance of this class.
+ *
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class CompletionUsageContextVariableTypeConverter extends

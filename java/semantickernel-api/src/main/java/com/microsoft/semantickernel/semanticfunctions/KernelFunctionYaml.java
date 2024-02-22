@@ -1,13 +1,8 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,15 +11,18 @@ import java.nio.file.Path;
 import javax.annotation.Nullable;
 
 /**
- * A class for creating a {@link KernelFunction} instance from a YAML representation of a prompt function.
+ * A class for creating a {@link KernelFunction} instance from a YAML representation of a prompt
+ * function.
  */
 public class KernelFunctionYaml {
 
     /**
      * Create a KernelFunction instance for a prompt function using the specified markdown text.
-     * @param yaml YAML representation of the PromptTemplateConfig to use to create the prompt function
+     *
+     * @param yaml                  YAML representation of the PromptTemplateConfig to use to create
+     *                              the prompt function
      * @param promptTemplateFactory Prompt template factory.
-     * @param <T> The return type of the function.
+     * @param <T>                   The return type of the function.
      * @return The created KernelFunction.
      * @throws IOException If an error occurs while reading the YAML.
      */
@@ -37,8 +35,10 @@ public class KernelFunctionYaml {
 
     /**
      * Create a KernelFunction instance for a prompt function using the specified markdown text.
-     * @param yaml YAML representation of the PromptTemplateConfig to use to create the prompt function
-     * @param <T> The return type of the function.
+     *
+     * @param yaml YAML representation of the PromptTemplateConfig to use to create the prompt
+     *             function
+     * @param <T>  The return type of the function.
      * @return The created KernelFunction.
      * @throws IOException If an error occurs while reading the YAML.
      */
@@ -50,8 +50,10 @@ public class KernelFunctionYaml {
 
     /**
      * Create a KernelFunction instance for a prompt function using the specified markdown text.
-     * @param filePath Path to the YAML representation of the PromptTemplateConfig to use to create the prompt function
-     * @param <T> The return type of the function.
+     *
+     * @param filePath Path to the YAML representation of the PromptTemplateConfig to use to create
+     *                 the prompt function
+     * @param <T>      The return type of the function.
      * @return The created KernelFunction.
      * @throws IOException If an error occurs while reading the YAML.
      */
@@ -71,7 +73,7 @@ public class KernelFunctionYaml {
 
         PromptTemplate promptTemplate;
         if (promptTemplateFactory == null) {
-            promptTemplate = new HandlebarsPromptTemplate(functionModel);
+            promptTemplate = PromptTemplateFactory.build(functionModel);
         } else {
             promptTemplate = promptTemplateFactory.tryCreate(functionModel);
         }

@@ -3,14 +3,17 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionInvocation;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.AIServiceSelector;
-import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -35,9 +38,13 @@ public class Kernel implements Buildable {
 
     /**
      * Initializes a new instance of {@code Kernel}.
-     * @param serviceSelector The {@code AIServiceSelector} used to query for services available through the kernel.
-     * @param plugins The collection of plugins available through the kernel. If {@code null}, an empty collection will be used.
-     * @param globalKernelHooks The global hooks to be used throughout the kernel. If {@code null}, an empty collection will be used.
+     *
+     * @param serviceSelector   The {@code AIServiceSelector} used to query for services available
+     *                          through the kernel.
+     * @param plugins           The collection of plugins available through the kernel. If
+     *                          {@code null}, an empty collection will be used.
+     * @param globalKernelHooks The global hooks to be used throughout the kernel. If {@code null},
+     *                          an empty collection will be used.
      */
     public Kernel(
         AIServiceSelector serviceSelector,
@@ -54,9 +61,19 @@ public class Kernel implements Buildable {
     }
 
     /**
+     * Get the fluent builder for creating a new instance of {@code Kernel}.
+     *
+     * @return The fluent builder for creating a new instance of {@code Kernel}.
+     */
+    public static Kernel.Builder builder() {
+        return new Kernel.Builder();
+    }
+
+    /**
      * Invokes a {@code KernelFunction} function by name.
-     * @param <T> The return type of the function.
-     * @param pluginName The name of the plugin containing the function.
+     *
+     * @param <T>          The return type of the function.
+     * @param pluginName   The name of the plugin containing the function.
      * @param functionName The name of the function to invoke.
      * @return The result of the function invocation.
      * @throws IllegalArgumentException if the plugin or function is not found.
@@ -73,7 +90,8 @@ public class Kernel implements Buildable {
 
     /**
      * Invokes a {@code KernelFunction}.
-     * @param <T> The return type of the function.
+     *
+     * @param <T>      The return type of the function.
      * @param function The function to invoke.
      * @return The result of the function invocation.
      * @see KernelFunction#invokeAsync(Kernel)
@@ -83,8 +101,9 @@ public class Kernel implements Buildable {
     }
 
     /**
-     * This method is used to add plugins to the kernel after it has been created.
-     * If a plugin with the same name already exists, it will be replaced.
+     * This method is used to add plugins to the kernel after it has been created. If a plugin with
+     * the same name already exists, it will be replaced.
+     *
      * @param plugin The plugin to add.
      * @return {@code this} kernel with the plugin added.
      */
@@ -95,6 +114,7 @@ public class Kernel implements Buildable {
 
     /**
      * Gets the plugin with the specified name.
+     *
      * @param pluginName The name of the plugin to get.
      * @return The plugin with the specified name, or {@code null} if no such plugin exists.
      */
@@ -105,6 +125,7 @@ public class Kernel implements Buildable {
 
     /**
      * Gets the plugins that were added to the kernel.
+     *
      * @return The plugins available through the kernel (unmodifiable list).
      * @see Kernel#getPlugins()
      */
@@ -114,8 +135,9 @@ public class Kernel implements Buildable {
 
     /**
      * Gets the function with the specified name from the plugin with the specified name.
-     * @param <T> The return type of the function.
-     * @param pluginName The name of the plugin containing the function.
+     *
+     * @param <T>          The return type of the function.
+     * @param pluginName   The name of the plugin containing the function.
      * @param functionName The name of the function to get.
      * @return The function with the specified name from the plugin with the specified name.
      * @throws IllegalArgumentException if the plugin or function is not found.
@@ -128,7 +150,8 @@ public class Kernel implements Buildable {
 
     /**
      * Gets the functions available through the kernel. Functions are collected from all plugins
-     * available through the kernel. 
+     * available through the kernel.
+     *
      * @return The functions available through the kernel.
      * @see Kernel#getPlugins()
      * @see Kernel.Builder#withPlugin(KernelPlugin)
@@ -138,10 +161,12 @@ public class Kernel implements Buildable {
     }
 
     /**
-     * Get the {@code KernelHooks} used throughout the kernel. 
-     * These {@code KernelHooks} are used in addition to any hooks provided to a function.
+     * Get the {@code KernelHooks} used throughout the kernel. These {@code KernelHooks} are used in
+     * addition to any hooks provided to a function.
+     *
      * @return The {@code KernelHooks} used throughout the kernel.
-     * @see KernelFunction#invokeAsync(Kernel, KernelFunctionArguments, ContextVariableType, InvocationContext)
+     * @see KernelFunction#invokeAsync(Kernel, KernelFunctionArguments, ContextVariableType,
+     * InvocationContext)
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public KernelHooks getGlobalKernelHooks() {
@@ -150,6 +175,7 @@ public class Kernel implements Buildable {
 
     /**
      * Get the AIServiceSelector used to query for services available through the kernel.
+     *
      * @return The AIServiceSelector used to query for services available through the kernel.
      */
     public AIServiceSelector getServiceSelector() {
@@ -158,11 +184,13 @@ public class Kernel implements Buildable {
 
     /**
      * Get the service of the specified type from the kernel.
-     * @param <T> The type of the service to get.
+     *
+     * @param <T>   The type of the service to get.
      * @param clazz The class of the service to get.
      * @return The service of the specified type from the kernel.
      * @throws ServiceNotFoundException if the service is not found.
-     * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class, KernelFunction, KernelFunctionArguments)
+     * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class,
+     * KernelFunction, com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments)
      */
     public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
         AIServiceSelection<T> selector = serviceSelector
@@ -179,14 +207,6 @@ public class Kernel implements Buildable {
     }
 
     /**
-     * Get the fluent builder for creating a new instance of {@code Kernel}.
-     * @return The fluent builder for creating a new instance of {@code Kernel}.
-     */
-    public static Kernel.Builder builder() {
-        return new Kernel.Builder();
-    }
-
-    /**
      * A fluent builder for creating a new instance of {@code Kernel}.
      */
     public static class Builder implements SemanticKernelBuilder<Kernel> {
@@ -198,8 +218,9 @@ public class Kernel implements Buildable {
 
         /**
          * Adds a service to the kernel.
-         * @param <T> The type of the service to add.
-         * @param clazz The class of the service to add.
+         *
+         * @param <T>       The type of the service to add.
+         * @param clazz     The class of the service to add.
          * @param aiService The service to add.
          * @return {@code this} builder with the service added.
          */
@@ -210,6 +231,7 @@ public class Kernel implements Buildable {
 
         /**
          * Adds a plugin to the kernel.
+         *
          * @param plugin The plugin to add.
          * @return {@code this} builder with the plugin added.
          */
@@ -220,6 +242,7 @@ public class Kernel implements Buildable {
 
         /**
          * Sets the service selector provider for the kernel.
+         *
          * @param serviceSelector The service selector provider for the kernel.
          * @return {@code this} builder with the service selector provider set.
          */
@@ -231,6 +254,7 @@ public class Kernel implements Buildable {
 
         /**
          * Builds a new instance of {@code Kernel} with the services and plugins provided.
+         *
          * @return A new instance of {@code Kernel}.
          */
         @Override

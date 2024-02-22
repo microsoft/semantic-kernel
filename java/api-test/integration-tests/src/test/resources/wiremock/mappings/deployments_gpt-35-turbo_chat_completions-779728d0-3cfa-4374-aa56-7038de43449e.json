@@ -1,25 +1,25 @@
 {
-   "id" : "779728d0-3cfa-4374-aa56-7038de43449e",
-   "insertionIndex" : 24,
-   "name" : "deployments_gpt-35-turbo_chat_completions",
-   "persistent" : true,
-   "request" : {
-      "bodyPatterns" : [
-         {
-            "equalToJson" : "{\"messages\":[{\"role\":\"assistant\",\"content\":\"You are a librarian, expert about books\"},{\"role\":\"user\",\"content\":\"Hi, I'm looking for book suggestions\"}],\"model\":\"gpt-35-turbo\"}",
-            "ignoreArrayOrder" : true,
-            "ignoreExtraElements" : true
-         }
-      ],
-      "method" : "POST",
-      "url" : "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
-   },
-   "requiredScenarioState" : "scenario-6-deployments-gpt-35-turbo-chat-completions-2",
-   "response" : {
-      "body" : "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707253000,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"4772ff60-75e0-46bc-8224-6ec8ba5b9be1\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":27,\"completion_tokens\":26,\"total_tokens\":53}}",
-      "headers" : {},
-      "status" : 200
-   },
-   "scenarioName" : "scenario-6-deployments-gpt-35-turbo-chat-completions",
-   "uuid" : "779728d0-3cfa-4374-aa56-7038de43449e"
+  "id": "779728d0-3cfa-4374-aa56-7038de43449e",
+  "insertionIndex": 24,
+  "name": "deployments_gpt-35-turbo_chat_completions",
+  "persistent": true,
+  "request": {
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"messages\":[{\"role\":\"assistant\",\"content\":\"You are a librarian, expert about books\"},{\"role\":\"user\",\"content\":\"Hi, I'm looking for book suggestions\"}],\"model\":\"gpt-35-turbo\"}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ],
+    "method": "POST",
+    "url": "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
+  },
+  "requiredScenarioState": "scenario-6-deployments-gpt-35-turbo-chat-completions-2",
+  "response": {
+    "body": "{\"id\":\"chatcmpl-xxx\",\"object\":\"chat.completion\",\"created\":1707253000,\"model\":\"gpt-35-turbo\",\"prompt_filter_results\":[{\"prompt_index\":0,\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"4772ff60-75e0-46bc-8224-6ec8ba5b9be1\"},\"content_filter_results\":{\"hate\":{\"filtered\":false,\"severity\":\"safe\"},\"self_harm\":{\"filtered\":false,\"severity\":\"safe\"},\"sexual\":{\"filtered\":false,\"severity\":\"safe\"},\"violence\":{\"filtered\":false,\"severity\":\"safe\"}}}],\"usage\":{\"prompt_tokens\":27,\"completion_tokens\":26,\"total_tokens\":53}}",
+    "headers": {},
+    "status": 200
+  },
+  "scenarioName": "scenario-6-deployments-gpt-35-turbo-chat-completions",
+  "uuid": "779728d0-3cfa-4374-aa56-7038de43449e"
 }

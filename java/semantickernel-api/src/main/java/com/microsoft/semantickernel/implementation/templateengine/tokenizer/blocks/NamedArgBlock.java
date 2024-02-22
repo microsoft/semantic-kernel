@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
 import static com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.BlockTypes.NAMED_ARG;
@@ -79,6 +80,31 @@ public class NamedArgBlock extends Block implements TextRendering {
         return new NamedArgBlock(content, name, value, argNameAsVarBlock, varBlock, valBlock);
     }
 
+    @Nullable
+    public static String tryGetName(String text) {
+        return splitAndGetPart(text, 0);
+    }
+
+    @Nullable
+    public static String tryGetValue(String text) {
+        return splitAndGetPart(text, 1);
+    }
+
+    @SuppressWarnings("StringSplitter")
+    @Nullable
+    private static String splitAndGetPart(String text, int x) {
+        if (Verify.isNullOrEmpty(text)) {
+            return null;
+        }
+
+        String[] argBlockParts = text.split(String.valueOf(Symbols.NamedArgBlockSeparator));
+
+        if (argBlockParts.length == 2) {
+            return argBlockParts[x].trim();
+        }
+        return null;
+    }
+
     @Override
     public boolean isValid() {
         if (Verify.isNullOrEmpty(this.name)) {
@@ -106,6 +132,14 @@ public class NamedArgBlock extends Block implements TextRendering {
         return getContent();
     }
 
+    /// <summary>
+    /// Attempts to extract the name and value of a named argument block from a string
+    /// </summary>
+    /// <param name="text">String from which to extract a name and value</param>
+    /// <param name="name">Name extracted from argument block, when successful. Empty string otherwise.</param>
+    /// <param name="value">Value extracted from argument block, when successful. Empty string otherwise.</param>
+    /// <returns>true when a name and value are successfully extracted from the given text, false otherwise</returns>
+
     @Nullable
     public VarBlock getVarBlock() {
         return varBlock;
@@ -129,38 +163,5 @@ public class NamedArgBlock extends Block implements TextRendering {
         }
 
         return "";
-    }
-
-    /// <summary>
-    /// Attempts to extract the name and value of a named argument block from a string
-    /// </summary>
-    /// <param name="text">String from which to extract a name and value</param>
-    /// <param name="name">Name extracted from argument block, when successful. Empty string otherwise.</param>
-    /// <param name="value">Value extracted from argument block, when successful. Empty string otherwise.</param>
-    /// <returns>true when a name and value are successfully extracted from the given text, false otherwise</returns>
-
-    @Nullable
-    public static String tryGetName(String text) {
-        return splitAndGetPart(text, 0);
-    }
-
-    @Nullable
-    public static String tryGetValue(String text) {
-        return splitAndGetPart(text, 1);
-    }
-
-    @SuppressWarnings("StringSplitter")
-    @Nullable
-    private static String splitAndGetPart(String text, int x) {
-        if (Verify.isNullOrEmpty(text)) {
-            return null;
-        }
-
-        String[] argBlockParts = text.split(String.valueOf(Symbols.NamedArgBlockSeparator));
-
-        if (argBlockParts.length == 2) {
-            return argBlockParts[x].trim();
-        }
-        return null;
     }
 }
