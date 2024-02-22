@@ -36,7 +36,7 @@ public sealed class TextClassificationExtensionsTests
         await TextClassificationExtensions.ClassifyTextAsync(serviceMock.Object, text);
 
         // Assert
-        serviceMock.VerifyAll();
+        serviceMock.Verify(x => x.ClassifyTextsAsync(new[] { text }, null, null, default), Times.Once);
     }
 
     private static (Mock<ITextClassificationService>, ClassificationContent) GetClassificationServiceMockAndClassificationContent(string text)
