@@ -95,9 +95,14 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
     {
         var endpoint = this.EndpointProvider.GetEmbeddingGenerationEndpoint(this._modelId);
 
-        var request = new TextEmbeddingRequest()
+        if (data.Count > 1)
         {
-            Input = data
+            throw new NotSupportedException("Currently this interface does not support multiple embeddings results per data item, use only one data item");
+        }
+
+        var request = new TextEmbeddingRequest
+        {
+            Inputs = data
         };
 
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint, this._apiKey);
@@ -107,7 +112,8 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
 
         var response = DeserializeResponse<TextEmbeddingResponse>(body);
 
-        return response?.Embeddings?.Select(l => l.Embedding).ToList()!;
+        // Currently only one embedding per data is supported
+        return response[0][0].ToList()!;
     }
 
     private static void ValidateMaxTokens(int? maxTokens)

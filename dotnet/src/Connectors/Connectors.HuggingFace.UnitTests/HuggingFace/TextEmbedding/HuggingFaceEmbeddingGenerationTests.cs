@@ -22,7 +22,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public HuggingFaceEmbeddingGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("embeddings_test_response.json"));
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("embeddings_test_response_feature_extraction.json"));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
@@ -104,7 +104,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     {
         //Arrange
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
-        var data = new List<string>() { "test_string_1", "test_string_2", "test_string_3" };
+        var data = new List<string>() { "test_string_1" };
 
         //Act
         await sut.GenerateEmbeddingsAsync(data);
@@ -113,7 +113,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var requestPayload = JsonSerializer.Deserialize<TextEmbeddingRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
 
-        Assert.Equivalent(data, requestPayload.Input);
+        Assert.Equivalent(data, requestPayload.Inputs);
     }
 
     [Fact]
@@ -123,13 +123,13 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
-        var embeddings = await sut.GenerateEmbeddingsAsync(new List<string>());
+        var embeddings = await sut.GenerateEmbeddingsAsync(new List<string>() { "something" });
 
         //Assert
 
         Assert.NotNull(embeddings);
-        Assert.Single(embeddings);
-        Assert.Equal(8, embeddings.First().Length);
+        Assert.Equal(28, embeddings.Count);
+        Assert.Equal(768, embeddings.First().Length);
     }
 
     public void Dispose()

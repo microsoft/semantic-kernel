@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// <summary>
 /// Represents the response from the Hugging Face text embedding API.
 /// </summary>
-public sealed class TextEmbeddingResponse
+public sealed class TextEmbeddingResponse2
 {
     /// <summary>
     /// Represents the embedding vector for a given text.
@@ -30,4 +30,11 @@ public sealed class TextEmbeddingResponse
     /// </summary>
     [JsonPropertyName("data")]
     public IList<EmbeddingVector>? Embeddings { get; set; }
+}
+
+/// <summary>
+/// Represents the response from the Hugging Face text embedding API.
+/// </summary>
+public sealed class TextEmbeddingResponse : List<List<List<ReadOnlyMemory<float>>>>
+{
 }
