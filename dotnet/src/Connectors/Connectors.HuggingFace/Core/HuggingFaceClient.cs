@@ -22,37 +22,40 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
     private readonly string? _apiKey;
+    private readonly Uri? _endpoint;
+    private readonly string _separator;
 
-    private IHttpRequestFactory HttpRequestFactory { get; }
-    private IEndpointProvider EndpointProvider { get; }
     private HttpClient HttpClient { get; }
     private ILogger Logger { get; }
 
     internal HuggingFaceClient(
         string modelId,
         HttpClient httpClient,
-        IHttpRequestFactory httpRequestFactory,
-        IEndpointProvider endpointProvider,
+        Uri? endpoint = null,
         string? apiKey = null,
         IStreamJsonParser? streamJsonParser = null,
         ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
 
+        endpoint ??= new Uri("https://api-inference.huggingface.co");
+        this._separator = endpoint.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture) ? string.Empty : "/";
+        this._endpoint = endpoint;
         this._modelId = modelId;
         this._apiKey = apiKey;
         this.HttpClient = httpClient;
-        this.HttpRequestFactory = httpRequestFactory;
-        this.EndpointProvider = endpointProvider;
         this.Logger = logger ?? NullLogger.Instance;
         this._streamJsonParser = streamJsonParser ?? new TextGenerationStreamJsonParser();
     }
 
-    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings,
+        CancellationToken cancellationToken)
     {
-        var endpoint = this.EndpointProvider.GetTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
+        var endpoint = this.GetTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint, this._apiKey);
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -67,14 +70,14 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
 
     public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
-        PromptExecutionSettings? executionSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        PromptExecutionSettings? executionSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var endpoint = this.EndpointProvider.GetTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
+        var endpoint = this.GetTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint, this._apiKey);
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -90,10 +93,10 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
 
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
+        Kernel? kernel,
+        CancellationToken cancellationToken)
     {
-        var endpoint = this.EndpointProvider.GetEmbeddingGenerationEndpoint(this._modelId);
+        var endpoint = this.GetEmbeddingGenerationEndpoint(this._modelId);
 
         if (data.Count > 1)
         {
@@ -105,7 +108,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
             Inputs = data
         };
 
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint, this._apiKey);
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -211,5 +214,24 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         this.Logger?.LogDebug(
             "HuggingFace text generation usage: ModelId: {ModelId}",
             executionSettings?.ModelId ?? this._modelId);
+    }
+
+    private Uri GetTextGenerationEndpoint(string modelId)
+        => new($"{this._endpoint}{this._separator}models/{modelId}");
+
+    private Uri GetEmbeddingGenerationEndpoint(string modelId)
+        => new($"{this._endpoint}{this._separator}pipeline/feature-extraction/{modelId}");
+
+    private HttpRequestMessage CreatePost(object requestData, Uri endpoint, string? apiKey)
+    {
+        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
+        if (!string.IsNullOrEmpty(apiKey))
+        {
+            httpRequestMessage.Headers.Add("Authorization", $"Bearer {apiKey}");
+        }
+
+        return httpRequestMessage;
     }
 }
