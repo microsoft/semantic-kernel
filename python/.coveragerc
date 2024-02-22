@@ -1,6 +1,5 @@
 [run]
 source = semantic_kernel
-relative_files = true
 omit = 
     semantic_kernel/connectors/memory/*
     semantic_kernel/connectors/openapi/*
