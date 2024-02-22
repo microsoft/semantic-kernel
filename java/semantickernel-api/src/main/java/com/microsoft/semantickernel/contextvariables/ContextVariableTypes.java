@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.contextvariables;
 import com.microsoft.semantickernel.contextvariables.converters.BooleanVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.CharacterVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.ChatHistoryVariableContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.converters.CollectionVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.CompletionUsageContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.DateTimeContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.InstantContextVariableTypeConverter;
@@ -32,6 +33,7 @@ public class ContextVariableTypes {
             new ChatHistoryVariableContextVariableTypeConverter(),
             new TextContentVariableContextVariableTypeConverter(),
             new StringVariableContextVariableTypeConverter(),
+            new CollectionVariableContextVariableTypeConverter(),
             new VoidVariableContextVariableTypeConverter(),
             new ContextVariableTypeConverter<>(void.class, s -> null, s -> null, s -> null),
             new DateTimeContextVariableTypeConverter(),

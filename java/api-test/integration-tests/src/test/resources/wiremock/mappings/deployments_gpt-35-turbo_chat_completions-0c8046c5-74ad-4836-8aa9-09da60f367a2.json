@@ -4,13 +4,6 @@
   "name": "deployments_gpt-35-turbo_chat_completions",
   "persistent": true,
   "request": {
-    "bodyPatterns": [
-      {
-        "equalToJson": "{\"messages\":[{\"role\":\"user\",\"content\":\"Write a paragraph about hats\"},{\"role\":\"system\",\"content\":\"Use upper case text when responding to the prompt.\"}],\"model\":\"gpt-35-turbo\"}",
-        "ignoreArrayOrder": true,
-        "ignoreExtraElements": true
-      }
-    ],
     "method": "POST",
     "url": "//openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-12-01-preview"
   },

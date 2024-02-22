@@ -31,13 +31,14 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+import com.microsoft.semantickernel.samples.syntaxexamples.java.KernelFunctionYaml_Example;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
 public class WiremockExamplesIT {
 
     public static List<Class<?>> mains = Arrays.asList(
-
+        KernelFunctionYaml_Example.class,
         Example01_NativeFunctions.class,
         Example03_Arguments.class,
         Example05_InlineFunctionDefinition.class,
