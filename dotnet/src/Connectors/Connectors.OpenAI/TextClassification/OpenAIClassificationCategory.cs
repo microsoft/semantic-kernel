@@ -96,9 +96,10 @@ public readonly struct OpenAIClassificationCategory : IEquatable<OpenAIClassific
     /// An enumerable collection of OpenAIClassificationCategory.
     /// </summary>
     public static IEnumerable<OpenAIClassificationCategory> GetAll() =>
-        typeof(OpenAIClassificationCategory).GetFields(BindingFlags.Public |
-                                                       BindingFlags.Static |
-                                                       BindingFlags.DeclaredOnly)
+        typeof(OpenAIClassificationCategory)
+            .GetFields(BindingFlags.Public |
+                       BindingFlags.Static |
+                       BindingFlags.DeclaredOnly)
             .Select(f => f.GetValue(null))
             .Cast<OpenAIClassificationCategory>();
 
