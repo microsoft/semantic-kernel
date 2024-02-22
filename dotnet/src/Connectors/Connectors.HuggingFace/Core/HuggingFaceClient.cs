@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -12,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.ImageToText;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 using Microsoft.SemanticKernel.Http;
 
@@ -208,6 +210,9 @@ internal sealed class HuggingFaceClient
     private static List<TextContent> GetTextContentFromResponse(TextGenerationResponse response, string modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();
 
+    private static List<TextContent> GetTextContentFromResponse(ImageToTextGenerationResponse response, string modelId)
+        => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();
+
     private void LogTextGenerationUsage(PromptExecutionSettings? executionSettings)
     {
         this._logger?.LogDebug(
@@ -233,4 +238,35 @@ internal sealed class HuggingFaceClient
 
         return httpRequestMessage;
     }
+
+    public async Task<IReadOnlyList<TextContent>> GenerateTextFromImageAsync(ImageContent content, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+    {
+        using var httpRequestMessage = this.CreateImageToTextRequest(content, executionSettings);
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = DeserializeResponse<ImageToTextGenerationResponse>(body);
+        var textContents = GetTextContentFromResponse(response, executionSettings?.ModelId ?? this._modelId);
+
+        return textContents;
+    }
+
+    private HttpRequestMessage CreateImageToTextRequest(ImageContent content, PromptExecutionSettings? executionSettings)
+    {
+        var endpoint = this.GetImageToTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
+
+        // Read the file into a byte array
+        var imageContent = new ByteArrayContent(content.Data?.ToArray());
+        imageContent.Headers.ContentType = new(content.Data?.MediaType);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+        {
+            Content = imageContent
+        };
+
+        return request;
+    }
+
+    private Uri GetImageToTextGenerationEndpoint(string modelId)
+        => new($"{this._endpoint}{this._separator}models/{modelId}");
 }
