@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Represents a client for interacting with the openai moderation models.
 /// </summary>
-internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerationClient
+internal sealed class OpenAIModerationClient : CustomClientBase
 {
     private readonly Uri _moderationEndpoint = new("https://api.openai.com/v1/moderations");
 
@@ -41,7 +41,13 @@ internal sealed class OpenAIModerationClient : CustomClientBase, IOpenAIModerati
         this._modelId = modelId;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Classifies the given text using the openai moderation models.
+    /// </summary>
+    /// <param name="text">The text to classify.</param>
+    /// <param name="executionSettings">Optional prompt execution settings.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The result of the classification.</returns>
     public async Task<ClassificationContent> ClassifyTextAsync(
         string text,
         PromptExecutionSettings? executionSettings = null,
