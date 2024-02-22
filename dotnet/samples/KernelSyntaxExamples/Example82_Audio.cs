@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.TextToAudio;
 using Xunit;
 using Xunit.Abstractions;

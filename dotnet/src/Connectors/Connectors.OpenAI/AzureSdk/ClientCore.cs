@@ -18,7 +18,6 @@ using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly

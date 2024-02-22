@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Contents;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents audio content.
