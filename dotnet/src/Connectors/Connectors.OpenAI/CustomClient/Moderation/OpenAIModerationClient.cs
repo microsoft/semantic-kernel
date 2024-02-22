@@ -73,8 +73,17 @@ internal sealed class OpenAIModerationClient : CustomClientBase
         OpenAIModerationResponse response,
         List<string> contents)
     {
+        ThrowIfResultsIsEmpty(response);
         return response.Results.Select((record, i)
             => GetClassificationContentFromResponseResult(response, record, contents[i])).ToList();
+    }
+
+    private static void ThrowIfResultsIsEmpty(OpenAIModerationResponse response)
+    {
+        if (response.Results.Count == 0)
+        {
+            throw new KernelException("No results returned from the OpenAI server.");
+        }
     }
 
     private static ClassificationContent GetClassificationContentFromResponseResult(

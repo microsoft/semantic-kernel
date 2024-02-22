@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
@@ -166,6 +167,24 @@ public sealed class OpenAIModerationClientTests : IDisposable
             Assert.Equivalent(sampleResponse.Results[i].CategoryScores,
                 openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Score)));
         });
+    }
+
+    [Fact]
+    public async Task ItThrowsKernelExceptionWhenResultsIsEmptyAsync()
+    {
+        // Arrange
+        var sut = this.CreateOpenAIModerationClient();
+        this._messageHandlerStub.ResponseToReturn.Content =
+            new StringContent("""
+                              {
+                                "id": "54556",
+                                "model": "text-moderation-007",
+                                "results": []
+                              }
+                              """);
+
+        // Act and Assert
+        await Assert.ThrowsAsync<KernelException>(() => sut.ClassifyTextsAsync(["text"]));
     }
 
     private OpenAIModerationClient CreateOpenAIModerationClient(
