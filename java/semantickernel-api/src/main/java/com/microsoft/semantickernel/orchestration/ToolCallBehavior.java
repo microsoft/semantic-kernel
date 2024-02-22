@@ -33,7 +33,8 @@ public class ToolCallBehavior {
      * Create a new instance of ToolCallBehavior with defaults.
      */
     private ToolCallBehavior(boolean kernelFunctionsEnabled, int maximumAutoInvokeAttempts,
-        @Nullable List<KernelFunction<?>> enabledFunctions, @Nullable KernelFunction<?> requiredFunction) {
+        @Nullable List<KernelFunction<?>> enabledFunctions,
+        @Nullable KernelFunction<?> requiredFunction) {
         this.kernelFunctionsEnabled = kernelFunctionsEnabled;
         this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
         this.requiredFunction = requiredFunction;
@@ -114,7 +115,6 @@ public class ToolCallBehavior {
         return autoInvoke ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0;
     }
 
-
     /**
      * Enable kernel functions. All Kernel functions will be passed to the model.
      *
@@ -146,7 +146,8 @@ public class ToolCallBehavior {
      * @param functions The functions to enable.
      * @return A new ToolCallBehavior instance with the enabled functions.
      */
-    public static ToolCallBehavior enableFunctions(boolean autoInvoke, List<KernelFunction<?>> functions) {
+    public static ToolCallBehavior enableFunctions(boolean autoInvoke,
+        List<KernelFunction<?>> functions) {
         return new ToolCallBehavior(false, getAutoInvokeAttempts(autoInvoke), functions, null);
     }
 
@@ -158,7 +159,8 @@ public class ToolCallBehavior {
      * @param functions The functions to enable.
      * @return A new ToolCallBehavior instance with the enabled functions.
      */
-    public static ToolCallBehavior enableFunctions(boolean autoInvoke, KernelFunction<?>... functions) {
+    public static ToolCallBehavior enableFunctions(boolean autoInvoke,
+        KernelFunction<?>... functions) {
         return enableFunctions(autoInvoke, Arrays.asList(functions));
     }
 }
