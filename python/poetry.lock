@@ -1442,6 +1442,21 @@ files = [
 protobuf = ["grpcio-tools (>=1.58.0)"]
 
 [[package]]
+name = "grpcio-health-checking"
+version = "1.58.0"
+description = "Standard Health Checking Service for gRPC"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "grpcio-health-checking-1.58.0.tar.gz", hash = "sha256:07d58623f27becf186c862cbae7dfd7a54bd63f4b37594c77c8b8fc933f11c2f"},
+    {file = "grpcio_health_checking-1.58.0-py3-none-any.whl", hash = "sha256:ac7c268654df114ab32be5395fdbfd0d2c4510e7b7ef50189777b39de979249b"},
+]
+
+[package.dependencies]
+grpcio = ">=1.58.0"
+protobuf = ">=4.21.6"
+
+[[package]]
 name = "grpcio-status"
 version = "1.58.0"
 description = "Status proto mapping for gRPC"
@@ -1624,13 +1639,13 @@ test = ["Cython (>=0.29.24,<0.30.0)"]
 
 [[package]]
 name = "httpx"
-version = "0.25.2"
+version = "0.26.0"
 description = "The next generation HTTP client."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "httpx-0.25.2-py3-none-any.whl", hash = "sha256:a05d3d052d9b2dfce0e3896636467f8a5342fb2b902c819428e1ac65413ca118"},
-    {file = "httpx-0.25.2.tar.gz", hash = "sha256:8b8fcaa0c8ea7b05edd69a094e63a2094c4efcb48129fb757361bc423c0ad9e8"},
+    {file = "httpx-0.26.0-py3-none-any.whl", hash = "sha256:8915f5a3627c4d47b73e8202457cb28f1266982d1159bd5779d86a80c0eab1cd"},
+    {file = "httpx-0.26.0.tar.gz", hash = "sha256:451b55c30d5185ea6b23c2c793abf9bb237d2a7dfb901ced6ff69ad37ec1dfaf"},
 ]
 
 [package.dependencies]
@@ -5763,22 +5778,24 @@ files = [
 
 [[package]]
 name = "weaviate-client"
-version = "3.25.3"
+version = "4.4.4"
 description = "A python native Weaviate client"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "weaviate-client-3.25.3.tar.gz", hash = "sha256:894df700fc1f0a932fa370029f644af4062f8718026fda5ad07647d357d95167"},
-    {file = "weaviate_client-3.25.3-py3-none-any.whl", hash = "sha256:cb049ed7b710088ff9038d27b97f28c80206ce9e4d12d622c3597da5790b2be0"},
+    {file = "weaviate-client-4.4.4.tar.gz", hash = "sha256:572f98edc5aecb83be818540903e5cb632351bfbfa9da30717a527396238c7fb"},
+    {file = "weaviate_client-4.4.4-py3-none-any.whl", hash = "sha256:77ca7c382ef5652a176e044c7fedf292f91cc8e58d747dda361de3a3cc221962"},
 ]
 
 [package.dependencies]
 authlib = ">=1.2.1,<2.0.0"
+grpcio = ">=1.57.0,<2.0.0"
+grpcio-health-checking = ">=1.57.0,<2.0.0"
+grpcio-tools = ">=1.57.0,<2.0.0"
+httpx = "0.26.0"
+pydantic = ">=2.5.0,<3.0.0"
 requests = ">=2.30.0,<3.0.0"
-validators = ">=0.21.2,<1.0.0"
-
-[package.extras]
-grpc = ["grpcio (>=1.57.0,<2.0.0)", "grpcio-tools (>=1.57.0,<2.0.0)"]
+validators = "0.22.0"
 
 [[package]]
 name = "websockets"
@@ -6013,4 +6030,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "b68e3d6e7932d2eaa28fb1bc1bf4c900ef6a6c22bce0ddc81456ed219ace47ca"
+content-hash = "d8ca639fb24021f9d9415c181eb49d0fa13b18656292a6585ce50ba28e2ea3a8"
