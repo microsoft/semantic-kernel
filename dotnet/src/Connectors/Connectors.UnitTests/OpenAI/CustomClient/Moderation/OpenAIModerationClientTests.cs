@@ -51,7 +51,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient(httpRequestFactory: httpRequestFactoryMock.Object);
 
         // Act
-        await sut.ClassifyTextAsync("text");
+        await sut.ClassifyTextAsync(["text", "text2", "text3"]);
 
         // Assert
         httpRequestFactoryMock.VerifyAll();
@@ -67,7 +67,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act and Assert
-        await Assert.ThrowsAnyAsync<ArgumentException>(() => sut.ClassifyTextAsync(text!));
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => sut.ClassifyTextAsync([text]));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient(modelId: modelId);
 
         // Act
-        await sut.ClassifyTextAsync("text");
+        await sut.ClassifyTextAsync(["text", "text2", "text3"]);
 
         // Assert
         var request = this.DeserializeRequestContent();
@@ -87,19 +87,19 @@ public sealed class OpenAIModerationClientTests : IDisposable
     }
 
     [Fact]
-    public async Task ItSendRequestWithTextInBodyAsync()
+    public async Task ItSendRequestWithTextsInBodyAsync()
     {
         // Arrange
-        string text = "sample-text";
+        List<string> texts = ["text", "text2", "text3"];
         var sut = this.CreateOpenAIModerationClient();
 
         // Act
-        await sut.ClassifyTextAsync(text);
+        await sut.ClassifyTextAsync(texts);
 
         // Assert
         var request = this.DeserializeRequestContent();
         Assert.NotNull(request);
-        Assert.Equal(text, request.Input);
+        Assert.Equal(texts, request.Input);
     }
 
     [Fact]
@@ -109,12 +109,12 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act
-        var result = await sut.ClassifyTextAsync("text");
+        var result = await sut.ClassifyTextAsync(["text", "text2", "text3"]);
 
         // Assert
         var sampleResponse = await DeserializeSampleResponseAsync();
         Assert.NotNull(result);
-        Assert.Equal(sampleResponse!.ModelId, result.ModelId);
+        Assert.All(result, r => Assert.Equal(sampleResponse!.ModelId, r.ModelId));
     }
 
     [Fact]
@@ -124,12 +124,12 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act
-        var result = await sut.ClassifyTextAsync("text");
+        var result = await sut.ClassifyTextAsync(["text", "text2", "text3"]);
 
         // Assert
         var sampleResponse = await DeserializeSampleResponseAsync();
         Assert.NotNull(result);
-        Assert.Equal(sampleResponse!.Id, result.Metadata!["Id"]);
+        Assert.All(result, r => Assert.Equal(sampleResponse!.Id, r.Metadata!["Id"]));
     }
 
     [Fact]
@@ -139,18 +139,21 @@ public sealed class OpenAIModerationClientTests : IDisposable
         var sut = this.CreateOpenAIModerationClient();
 
         // Act
-        var result = await sut.ClassifyTextAsync("text");
+        var results = await sut.ClassifyTextAsync(["text", "text2", "text3"]);
 
         // Assert
         var sampleResponse = await DeserializeSampleResponseAsync();
-        Assert.NotNull(result);
-        var openAIResult = result.Result as OpenAIClassificationResult;
-        Assert.NotNull(openAIResult);
-        Assert.Equal(sampleResponse!.Results[0].Flagged, openAIResult.Flagged);
-        Assert.Equivalent(sampleResponse.Results[0].CategoryFlags,
-            openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Flagged)));
-        Assert.Equivalent(sampleResponse.Results[0].CategoryScores,
-            openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Score)));
+        Assert.NotNull(results);
+        for (int i = 0; i < results.Count; i++)
+        {
+            var openAIResult = results[i].Result as OpenAIClassificationResult;
+            Assert.NotNull(openAIResult);
+            Assert.Equal(sampleResponse!.Results[i].Flagged, openAIResult.Flagged);
+            Assert.Equivalent(sampleResponse.Results[i].CategoryFlags,
+                openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Flagged)));
+            Assert.Equivalent(sampleResponse.Results[i].CategoryScores,
+                openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Score)));
+        }
     }
 
     private OpenAIModerationClient CreateOpenAIModerationClient(

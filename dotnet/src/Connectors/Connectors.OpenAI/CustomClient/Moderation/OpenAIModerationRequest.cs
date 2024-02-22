@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -7,10 +8,10 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal sealed class OpenAIModerationRequest
 {
     /// <summary>
-    /// The input text to classify.
+    /// The input texts to classify.
     /// </summary>
     [JsonPropertyName("input")]
-    public string Input { get; set; } = string.Empty;
+    public IList<string> Input { get; set; } = null!;
 
     /// <summary>
     /// Optional. Defaults to text-moderation-latest.
@@ -18,11 +19,11 @@ internal sealed class OpenAIModerationRequest
     [JsonPropertyName("model")]
     public string? Model { get; set; }
 
-    public static OpenAIModerationRequest FromText(string text, string modelId)
+    public static OpenAIModerationRequest FromTexts(IList<string> texts, string modelId)
     {
         return new OpenAIModerationRequest
         {
-            Input = text,
+            Input = texts,
             Model = modelId
         };
     }

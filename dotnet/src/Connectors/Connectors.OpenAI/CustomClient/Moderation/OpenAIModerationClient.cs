@@ -44,37 +44,49 @@ internal sealed class OpenAIModerationClient : CustomClientBase
     /// <summary>
     /// Classifies the given text using the openai moderation models.
     /// </summary>
-    /// <param name="text">The text to classify.</param>
+    /// <param name="texts">Texts to classify.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
-    /// <returns>The result of the classification.</returns>
-    public async Task<ClassificationContent> ClassifyTextAsync(
-        string text,
+    /// <returns>The results of the classification.</returns>
+    public async Task<IReadOnlyList<ClassificationContent>> ClassifyTextAsync(
+        IEnumerable<string> texts,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(text);
+        Verify.NotNull(texts);
 
-        var geminiRequest = this.CreateRequest(text);
+        var contents = texts.ToList();
+        var geminiRequest = this.CreateRequest(contents);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, this._moderationEndpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
 
-        return ParseAndProcessClassificationResponse(body);
+        return ParseAndProcessClassificationResponse(body, contents);
     }
 
-    private static ClassificationContent ParseAndProcessClassificationResponse(string body)
-        => GetClassificationContentFromResponse(DeserializeResponse<OpenAIModerationResponse>(body));
+    private static List<ClassificationContent> ParseAndProcessClassificationResponse(string body, List<string> contents)
+        => GetClassificationContentFromResponse(DeserializeResponse<OpenAIModerationResponse>(body), contents);
 
-    private static ClassificationContent GetClassificationContentFromResponse(OpenAIModerationResponse response)
+    private static List<ClassificationContent> GetClassificationContentFromResponse(
+        OpenAIModerationResponse response,
+        List<string> contents)
     {
-        var moderationResult = response.Results[0];
+        return response.Results.Select((record, i)
+            => GetClassificationContentFromResponseResult(response, record, contents[i])).ToList();
+    }
+
+    private static ClassificationContent GetClassificationContentFromResponseResult(
+        OpenAIModerationResponse response,
+        OpenAIModerationResponse.ModerationResult result,
+        string content)
+    {
         var classificationResult = new OpenAIClassificationResult(
-            flagged: moderationResult.Flagged,
-            entries: GetClassificationEntriesFromModerationResult(moderationResult));
+            flagged: result.Flagged,
+            entries: GetClassificationEntriesFromModerationResult(result));
         return new ClassificationContent(
             innerContent: response,
+            classifiedContent: content,
             result: classificationResult,
             modelId: response.ModelId,
             metadata: GetMetadataFromResponse(response));
@@ -96,6 +108,6 @@ internal sealed class OpenAIModerationClient : CustomClientBase
         return classificationEntries.ToList();
     }
 
-    private OpenAIModerationRequest CreateRequest(string text)
-        => OpenAIModerationRequest.FromText(text, this._modelId);
+    private OpenAIModerationRequest CreateRequest(List<string> texts)
+        => OpenAIModerationRequest.FromTexts(texts, this._modelId);
 }

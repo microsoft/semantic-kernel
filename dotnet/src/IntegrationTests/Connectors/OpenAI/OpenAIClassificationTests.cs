@@ -34,11 +34,11 @@ public sealed class OpenAIClassificationTests
             apiKey: this.ApiKey);
 
         // Act
-        var result = await connector.ClassifyTextAsync("I am happy");
+        var result = await connector.ClassifyTextAsync(new[] { "I am happy" });
 
         // Assert
         Assert.NotNull(result);
-        var openAIClassificationResult = result.Result as OpenAIClassificationResult;
+        var openAIClassificationResult = result[0].Result as OpenAIClassificationResult;
         Assert.NotEmpty(openAIClassificationResult!.Entries);
 
         this._output.WriteLine($"Content flagged: {openAIClassificationResult.Flagged}");

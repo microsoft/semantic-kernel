@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
@@ -11,14 +12,14 @@ public sealed class OpenAIModerationRequestTests
     public void FromTextAndModelIdItReturnsOpenAIModerationRequest()
     {
         // Arrange
-        var text = "text-sample";
+        List<string> texts = ["killing people", "something illegal", "normal text"];
         var modelId = "modelId-sample";
 
         // Act
-        var result = OpenAIModerationRequest.FromText(text, modelId);
+        var result = OpenAIModerationRequest.FromTexts(texts, modelId);
 
         // Assert
-        Assert.Equal(text, result.Input);
+        Assert.Equal(texts, result.Input);
         Assert.Equal(modelId, result.Model);
     }
 }
