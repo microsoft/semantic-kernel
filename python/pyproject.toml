@@ -29,7 +29,6 @@ pytest = "7.4.3"
 pytest-asyncio = "0.23.2"
 snoop = "0.4.3"
 pytest-cov = "4.1.0"
-coverage = "^7.4.1"
 
 [tool.poetry.group.google_palm.dependencies]
 google-generativeai = { version = ">=0.1,<0.4", markers = "python_version >= '3.9'" }
