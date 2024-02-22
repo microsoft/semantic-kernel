@@ -52,7 +52,8 @@ internal sealed class HuggingFaceClient
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
-        var endpoint = this.GetTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
+        string modelId = executionSettings?.ModelId ?? this._modelId;
+        var endpoint = this.GetTextGenerationEndpoint(modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
         using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey);
 
@@ -60,7 +61,7 @@ internal sealed class HuggingFaceClient
             .ConfigureAwait(false);
 
         var response = DeserializeResponse<TextGenerationResponse>(body);
-        var textContents = GetTextContentFromResponse(response, executionSettings?.ModelId ?? this._modelId);
+        var textContents = GetTextContentFromResponse(response, modelId);
 
         this.LogTextGenerationUsage(executionSettings);
 
