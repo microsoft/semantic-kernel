@@ -121,6 +121,21 @@ You can also run all the tests together under the [tests](tests/) folder.
 
 ## Tools and scripts
 
+### Pre-commit Hooks
+
+As their name suggests, pre-commit hooks run before the commit process and it is a great way to make sure your code is ready to be committed.
+
+To install pre-commit hook, you can check [the installation guide](https://pre-commit.com/#install) for platform-specific instructions.
+
+The pre-commit configuration file for this SDK locates in the `.conf` folder and it depends on GitHub's out-of-box [pre-commit hooks](https://github.com/pre-commit/pre-commit-hooks), [black](https://github.com/psf/black) and [ruff](https://github.com/astral-sh/ruff-pre-commit).
+
+To config pre-commit to use the configuration file:
+
+```
+cd .conf
+pre-commit install
+```
+
 ## Implementation Decisions 
 
 ### Asynchronous programming
