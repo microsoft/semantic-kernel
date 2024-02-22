@@ -5,7 +5,13 @@ import json
 import logging
 import os
 import re
-from typing import TYPE_CHECKING, Annotated, Dict, List, Optional
+import sys
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
