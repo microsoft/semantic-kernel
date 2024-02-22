@@ -38,7 +38,6 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
-        **kwargs,
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -62,7 +61,6 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
-        **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Ollama model.

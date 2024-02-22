@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import sys
 from typing import Union
 
 import pytest
@@ -80,6 +83,13 @@ def test_get_service_with_type(kernel_with_service: Kernel):
 
 
 def test_get_service_with_multiple_types(kernel_with_service: Kernel):
+    service_get = kernel_with_service.get_service("service", type=(AIServiceClientBase, ChatCompletionClientBase))
+    assert service_get == kernel_with_service.services["service"]
+
+
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="This is valid syntax only in python 3.10+.")
+def test_get_service_with_multiple_types_union(kernel_with_service: Kernel):
+    """This is valid syntax only in python 3.10+. It is skipped for older versions."""
     service_get = kernel_with_service.get_service("service", type=Union[AIServiceClientBase, ChatCompletionClientBase])
     assert service_get == kernel_with_service.services["service"]
 

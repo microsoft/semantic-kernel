@@ -44,7 +44,7 @@ class FunctionIdBlockSyntaxError(BlockSyntaxError):
     def __init__(self, content: str) -> None:
         super().__init__(
             f"A FunctionIdBlock is composed of either a plugin name and \
-function name seperated by a single dot, or just a function name. \
+function name separated by a single dot, or just a function name. \
 Both plugin and function names can only contain letters, numbers and underscores. \
 The content provided was: {content}",
         )

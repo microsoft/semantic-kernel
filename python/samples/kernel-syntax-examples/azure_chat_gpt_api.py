@@ -91,7 +91,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = False
+    stream = True
     if stream:
         answer = kernel.invoke_stream(
             chat_function,

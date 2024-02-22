@@ -19,12 +19,14 @@ async def main():
     if useAzureOpenAI:
         deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
         kernel.add_service(
-            sk_oai.AzureTextCompletion(service_id=service_id,deployment_name=model, api_key=api_key, endpoint=endpoint),
+            sk_oai.AzureTextCompletion(
+                service_id=service_id, deployment_name=model, api_key=api_key, endpoint=endpoint
+            ),
         )
     else:
         api_key, org_id = sk.openai_settings_from_dot_env()
         kernel.add_service(
-            sk_oai.OpenAITextCompletion(service_id=service_id,ai_model_id=model, api_key=api_key, org_id=org_id),
+            sk_oai.OpenAITextCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
         )
 
     # note: using plugins from the samples folder

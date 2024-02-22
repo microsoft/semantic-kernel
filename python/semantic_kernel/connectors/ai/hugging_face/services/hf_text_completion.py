@@ -81,7 +81,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-        **kwargs,
     ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -93,8 +92,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         try:
             results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
@@ -114,7 +111,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-        **kwargs,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
         Streams a text completion using a Hugging Face model.
@@ -127,8 +123,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Yields:
             List[StreamingTextContent] -- List of StreamingTextContent objects.
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if settings.num_return_sequences > 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
