@@ -33,7 +33,7 @@ class AIServiceSelector:
             if id not in execution_settings_dict:
                 execution_settings_dict[id] = settings
         for service_id, settings in execution_settings_dict.items():
-            service = kernel.get_service(service_id, type=Union[TextCompletionClientBase, ChatCompletionClientBase])
+            service = kernel.get_service(service_id, type=(TextCompletionClientBase, ChatCompletionClientBase))
             if service:
                 service_settings = service.get_prompt_execution_settings_from_settings(settings)
                 return service, service_settings
