@@ -50,7 +50,7 @@ pymilvus = "2.2.16"
 milvus = "2.2.16"
 
 [tool.poetry.group.weaviate.dependencies]
-weaviate-client = "^3.18.0"
+weaviate-client = ">=3.18,<5.0"
 
 [tool.poetry.group.pinecone.dependencies]
 pinecone-client = "^2.2.2"
