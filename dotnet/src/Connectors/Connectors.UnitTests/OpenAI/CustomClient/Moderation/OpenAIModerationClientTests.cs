@@ -147,23 +147,25 @@ public sealed class OpenAIModerationClientTests : IDisposable
     {
         // Arrange
         var sut = this.CreateOpenAIModerationClient();
+        List<string> inputs = ["text", "text2", "text3"];
 
         // Act
-        var results = await sut.ClassifyTextsAsync(["text", "text2", "text3"]);
+        var results = await sut.ClassifyTextsAsync(inputs);
 
         // Assert
         var sampleResponse = await DeserializeSampleResponseAsync();
         Assert.NotNull(results);
-        for (int i = 0; i < results.Count; i++)
+        Assert.All(results, (c, i) =>
         {
             var openAIResult = results[i].Result as OpenAIClassificationResult;
             Assert.NotNull(openAIResult);
+            Assert.Equal(inputs[i], results[i].ClassifiedContent);
             Assert.Equal(sampleResponse!.Results[i].Flagged, openAIResult.Flagged);
             Assert.Equivalent(sampleResponse.Results[i].CategoryFlags,
                 openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Flagged)));
             Assert.Equivalent(sampleResponse.Results[i].CategoryScores,
                 openAIResult.Entries.Select(entry => KeyValuePair.Create(entry.Category.Label, entry.Score)));
-        }
+        });
     }
 
     private OpenAIModerationClient CreateOpenAIModerationClient(
