@@ -57,12 +57,16 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0052: Memory plugins
 - SKEXP0053: Microsoft 365 plugins
 - SKEXP0054: Web plugins
-- SKEXP0055: Text chunkcer plugin
+- SKEXP0055: Text chunker plugin
 
 ## Planners
 
 - SKEXP0060: Handlebars planner
 - SKEXP0061: OpenAI Stepwise planner
+
+## GoogleAI and VertexAI services
+- SKEXP0070: Gemini Text & Chat services
+- SKEXP0071: GoogleAI/VertexAI Embeddings services
 
 ## Experiments
 

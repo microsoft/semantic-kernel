@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Experimental("SKEXP0070")]
     public static IKernelBuilder AddVertexAIGeminiTextGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -63,6 +65,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
+    [Experimental("SKEXP0070")]
     public static IServiceCollection AddVertexAIGeminiTextGeneration(
         this IServiceCollection services,
         string modelId,
@@ -98,6 +101,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Experimental("SKEXP0070")]
     public static IKernelBuilder AddVertexAIGeminiChatCompletion(
         this IKernelBuilder builder,
         string modelId,
@@ -134,6 +138,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
+    [Experimental("SKEXP0070")]
     public static IServiceCollection AddVertexAIGeminiChatCompletion(
         this IServiceCollection services,
         string modelId,
@@ -170,6 +175,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Experimental("SKEXP0071")]
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -206,6 +212,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
+    [Experimental("SKEXP0071")]
     public static IServiceCollection AddVertexAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,

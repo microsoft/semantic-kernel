@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a chat completion service using Vertex AI Gemini API.
 /// </summary>
+[Experimental("SKEXP0070")]
 public sealed class VertexAIGeminiChatCompletionService : GeminiChatCompletionServiceBase
 {
     /// <summary>

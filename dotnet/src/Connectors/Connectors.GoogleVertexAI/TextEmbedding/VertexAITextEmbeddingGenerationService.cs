@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a service for generating text embeddings using the Vertex AI Gemini API.
 /// </summary>
+[Experimental("SKEXP0071")]
 public sealed class VertexAITextEmbeddingGenerationService : TextEmbeddingGenerationServiceBase
 {
     /// <summary>
