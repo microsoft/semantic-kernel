@@ -44,7 +44,7 @@ However, renaming `OpenAIAudioToTextService` to `OpenAISpeechToTextService` migh
 
 Keep the naming as it is for now (`IAudioToTextService`, `ITextToAudioService`) and use these interfaces for all audio-related connectors, until we see that some specific audio conversion won't fit into existing interface signature.
 
-The main question for this option would be - could there be any possibility that it will be required to differentiate between audio convertion types (transcription, translation etc.) in business logic and/or Kernel itself?
+The main question for this option would be - could there be any possibility that it will be required to differentiate between audio conversion types (transcription, translation etc.) in business logic and/or Kernel itself?
 
 Probably yes, when the application wants to use both `transcription` and `translation` in the logic. It won't be clear which audio interface should be injected to perform concrete conversion.
 
