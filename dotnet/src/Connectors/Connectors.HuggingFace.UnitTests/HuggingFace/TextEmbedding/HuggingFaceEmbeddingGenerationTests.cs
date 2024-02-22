@@ -91,7 +91,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", endPoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string>());

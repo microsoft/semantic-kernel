@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,26 +30,26 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
     /// </summary>
     /// <param name="model">The HuggingFace model for the text generation service.</param>
-    /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
     /// <param name="endpoint">The uri endpoint including the port where HuggingFace server is hosted</param>
+    /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public HuggingFaceTextGenerationService(
         string model,
-        string? apiKey = null,
         Uri? endpoint = null,
+        string? apiKey = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(model);
 
         this.Client = new HuggingFaceClient(
-            modelId: model,
+        modelId: model,
+            endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
-            endpoint: endpoint,
-#pragma warning disable CA2000
+#pragma warning disable CA2000 // Dispose objects before losing scope
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-#pragma warning restore CA2000
+#pragma warning restore CA2000 // Dispose objects before losing scope
             logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
         );
 

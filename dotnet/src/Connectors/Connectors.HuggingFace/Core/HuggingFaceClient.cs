@@ -24,9 +24,8 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
     private readonly string? _apiKey;
     private readonly Uri? _endpoint;
     private readonly string _separator;
-
-    private HttpClient HttpClient { get; }
-    private ILogger Logger { get; }
+    private readonly HttpClient _httpClient;
+    private readonly ILogger _logger;
 
     internal HuggingFaceClient(
         string modelId,
@@ -43,8 +42,8 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         this._endpoint = endpoint;
         this._modelId = modelId;
         this._apiKey = apiKey;
-        this.HttpClient = httpClient;
-        this.Logger = logger ?? NullLogger.Instance;
+        this._httpClient = httpClient;
+        this._logger = logger ?? NullLogger.Instance;
         this._streamJsonParser = streamJsonParser ?? new TextGenerationStreamJsonParser();
     }
 
@@ -131,7 +130,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
     {
-        using var response = await this.HttpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken)
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync()
@@ -144,7 +143,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
     {
-        var response = await this.HttpClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+        var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         return response;
     }
@@ -211,7 +210,7 @@ internal sealed class HuggingFaceClient : IHuggingFaceClient
 
     private void LogTextGenerationUsage(PromptExecutionSettings? executionSettings)
     {
-        this.Logger?.LogDebug(
+        this._logger?.LogDebug(
             "HuggingFace text generation usage: ModelId: {ModelId}",
             executionSettings?.ModelId ?? this._modelId);
     }
