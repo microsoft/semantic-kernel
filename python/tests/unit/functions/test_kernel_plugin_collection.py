@@ -96,3 +96,13 @@ def test_configure_plugins_on_object_creation():
     plugin = KernelPlugin(name="TestPlugin")
     collection = KernelPluginCollection(plugins=[plugin])
     assert len(collection) == 1
+
+
+def test_overwrite_plugin_with_same_name_succeeds():
+    plugin = KernelPlugin(name="TestPluginOne")
+    collection = KernelPluginCollection(plugins=[plugin])
+
+    plugin2 = KernelPlugin(name="TestPluginOne")
+    collection.add(plugin2)
+
+    assert len(collection) == 1

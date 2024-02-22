@@ -466,9 +466,6 @@ class Kernel(KernelBaseModel):
             func.set_default_plugin_collection(self.plugins)
 
         plugin = KernelPlugin(name=plugin_name, functions=functions)
-        # TODO: we shouldn't have to be adding functions to a plugin after the fact
-        # This isn't done in dotnet, and needs to be revisited as we move to v1.0
-        # This is to support the current state of the code
         if plugin_name in self.plugins:
             self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
         else:
@@ -601,7 +598,7 @@ class Kernel(KernelBaseModel):
         Create a Kernel Function from a prompt.
 
         Args:
-            template (Optional[str]): The prompt template
+            template (Optional[str]): The prompt template. If not provided, defaults to {{$user_input}}.
             prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
             execution_settings (Optional[PromptExecutionSettings]): The execution settings
             function_name (Optional[str]): The name of the function
@@ -625,11 +622,19 @@ class Kernel(KernelBaseModel):
         validate_plugin_name(plugin_name)
         validate_function_name(function_name)
 
-        if not prompt_template_config.execution_settings:
-            if execution_settings:
-                prompt_template_config.execution_settings = execution_settings
-            else:
-                prompt_template_config.execution_settings = PromptExecutionSettings(extension_data=kwargs)
+        if prompt_template_config:
+            if not prompt_template_config.execution_settings:
+                prompt_template_config.execution_settings = execution_settings or PromptExecutionSettings(
+                    extension_data=kwargs
+                )
+        else:
+            prompt_template_config = PromptTemplateConfig(
+                name=function_name,
+                template_format=template_format if template_format else "semantic-kernel",
+                description=description if description else "Generic function, unknown purpose",
+                template=template if template else "{{$user_input}}",
+                execution_settings=execution_settings if execution_settings else PromptExecutionSettings(),
+            )
 
         function = KernelFunction.from_prompt(
             prompt=template,

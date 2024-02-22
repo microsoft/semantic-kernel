@@ -74,8 +74,6 @@ class KernelPluginCollection(KernelBaseModel):
         """
         if plugin is None:
             raise ValueError("Plugin must not be None")
-        if plugin.name in self.plugins:
-            raise ValueError(f"Plugin with name {plugin.name} already exists")
         self.plugins[plugin.name] = plugin
 
     def add_plugin_from_functions(self, plugin_name: str, functions: List["KernelFunction"]) -> None:
@@ -91,8 +89,6 @@ class KernelPluginCollection(KernelBaseModel):
         """
         if not functions or not plugin_name:
             raise ValueError("Functions or plugin_name must not be None or empty")
-        if plugin_name in self.plugins:
-            raise ValueError(f"Plugin with name {plugin_name} already exists")
 
         plugin = KernelPlugin.from_functions(plugin_name=plugin_name, functions=functions)
         self.plugins[plugin_name] = plugin

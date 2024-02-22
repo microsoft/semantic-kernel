@@ -13,8 +13,9 @@ from semantic_kernel.planners import ActionPlanner
 async def main():
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
+    service_id = "chat-gpt"
     kernel.add_service(
-        OpenAIChatCompletion(service_id="chat-gpt", ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
     )
 
     kernel.import_plugin(MathPlugin(), "math")
@@ -22,7 +23,7 @@ async def main():
     kernel.import_plugin(TextPlugin(), "text")
 
     # create an instance of action planner.
-    planner = ActionPlanner(kernel)
+    planner = ActionPlanner(kernel, service_id)
 
     # the ask for which the action planner is going to find a relevant function.
     ask = "What is the sum of 110 and 990?"

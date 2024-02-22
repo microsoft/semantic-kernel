@@ -11,22 +11,22 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
-async def example1(kernel: sk.Kernel, search_plugin_name):
+async def example1(kernel: sk.Kernel, search_plugin_name: str):
     print("======== Bing and Google Search Plugins ========")
 
     question = "What's the largest building in the world?"
     function = kernel.plugins[search_plugin_name]["search"]
-    result = await kernel.invoke(function, KernelArguments(query=question))
+    result = await kernel.invoke(function, query=question)
 
     print(question)
     print(f"----{search_plugin_name}----")
     print(result)
 
 
-async def example2(kernel: sk.Kernel):
-    print("======== Use Search Plugin to answer user questions ========")
+async def example2(kernel: sk.Kernel, service_id: str):
+    print("======== Use the Search Plugin to Answer User Questions ========")
 
-    semantic_function = """
+    prompt = """
     Answer questions only when you know the facts or the information is provided.
     When you don't have sufficient information you reply with a list of commands to find the information needed.
     When answering multiple questions, use a bullet point list.
@@ -64,12 +64,13 @@ async def example2(kernel: sk.Kernel):
     print(question)
 
     oracle = kernel.create_function_from_prompt(
-        template=semantic_function,
-        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(max_tokens=150, temperature=0, top_p=1),
+        template=prompt,
+        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(service_id=service_id,max_tokens=150, temperature=0, top_p=1),
     )
     answer = await kernel.invoke(
         oracle,
-        KernelArguments(question=question, externalInformation=""),
+        question=question, 
+        externalInformation="",
     )
 
     result = str(answer)
@@ -83,8 +84,8 @@ async def example2(kernel: sk.Kernel):
         print("Information found:\n")
         print(information)
 
-        answer = await kernel.invoke(oracle, KernelArguments(question=question, externalInformation=information))
-        print("---- Oracle's Answer ----:\n")
+        answer = await kernel.invoke(oracle, question=question, externalInformation=information)
+        print("\n---- Oracle's Answer ----:\n")
         print(answer)
     else:
         print("AI had all of the information, there was no need to query Bing.")
@@ -109,7 +110,7 @@ async def main():
     kernel.import_plugin(bing, "bing")
 
     await example1(kernel, "bing")
-    await example2(kernel)
+    await example2(kernel, service_id)
 
 
 if __name__ == "__main__":

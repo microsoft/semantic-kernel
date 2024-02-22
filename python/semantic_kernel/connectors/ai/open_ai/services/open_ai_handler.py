@@ -21,18 +21,19 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAIHandler(ABC):
+class OpenAIHandler(KernelBaseModel, ABC):
     """Internal class for calls to OpenAI API's."""
 
     client: AsyncOpenAI
     ai_model_type: OpenAIModelTypes = OpenAIModelTypes.CHAT
-    prompt_tokens: int = Field(0, init=False)
-    completion_tokens: int = Field(0, init=False)
-    total_tokens: int = Field(0, init=False)
+    prompt_tokens: int = Field(0, json_schema_extra={'init': False})
+    completion_tokens: int = Field(0, json_schema_extra={'init': False})
+    total_tokens: int = Field(0, json_schema_extra={'init': False})
 
     async def _send_request(
         self,
