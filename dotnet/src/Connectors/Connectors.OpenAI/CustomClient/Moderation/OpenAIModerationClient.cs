@@ -54,8 +54,9 @@ internal sealed class OpenAIModerationClient : CustomClientBase
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(texts);
-
         var contents = texts.ToList();
+        VerifyTextsAreNotNullOrWhiteSpace(contents);
+
         var geminiRequest = this.CreateRequest(contents);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, this._moderationEndpoint);
 
@@ -110,4 +111,12 @@ internal sealed class OpenAIModerationClient : CustomClientBase
 
     private OpenAIModerationRequest CreateRequest(List<string> texts)
         => OpenAIModerationRequest.FromTexts(texts, this._modelId);
+
+    private static void VerifyTextsAreNotNullOrWhiteSpace(List<string> contents)
+    {
+        if (contents.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new ArgumentException("Texts cannot be null or empty or whitespace");
+        }
+    }
 }

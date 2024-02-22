@@ -57,17 +57,27 @@ public sealed class OpenAIModerationClientTests : IDisposable
         httpRequestFactoryMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task WhenTextIsNullOrWhiteSpaceThrowsArgumentExceptionAsync(string? text)
+    [Fact]
+    public async Task WhenTextsCollectionIsNullThrowsArgumentNullExceptionAsync()
     {
         // Arrange
         var sut = this.CreateOpenAIModerationClient();
 
         // Act and Assert
-        await Assert.ThrowsAnyAsync<ArgumentException>(() => sut.ClassifyTextsAsync([text]));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => sut.ClassifyTextsAsync(null!));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task WhenTextsValuesAreNullOrWhiteSpaceThrowsArgumentExceptionAsync(string? text)
+    {
+        // Arrange
+        var sut = this.CreateOpenAIModerationClient();
+
+        // Act and Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => sut.ClassifyTextsAsync([text]));
     }
 
     [Fact]
