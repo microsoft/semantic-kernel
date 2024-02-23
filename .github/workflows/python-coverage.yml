@@ -1,26 +1,31 @@
-name: Python SDK post coverage comment
+name: Python post coverage comment
 
-# on:
-#   workflow_run:
-#     workflows: ["CI"]
-#     types:
-#       - completed
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
 
 jobs:
-  test:
-    name: Run tests & display coverage
+  post_coverage_comment:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     permissions:
+      contents: read
       pull-requests: write
-      contents: write
       actions: read
+
     steps:
-      - name: Post comment
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download coverage report artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage-report
+
+      - name: Post coverage comment
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
           GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          GITHUB_PR_RUN_ID: ${{ github.event.workflow_run.id }}
+
