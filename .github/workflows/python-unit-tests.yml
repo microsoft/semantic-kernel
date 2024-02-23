@@ -10,14 +10,14 @@ on:
 jobs:
   python-unit-tests:
     runs-on: ${{ matrix.os }}
+    permissions:
+      pull-requests: write
+      contents: write
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, windows-latest, macos-latest]
-    permissions:
-      pull-requests: write
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
