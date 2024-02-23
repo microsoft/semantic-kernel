@@ -1,28 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, List
 
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
+from semantic_kernel.contents.chat_history import ChatHistory
+
+if TYPE_CHECKING:
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 
-def prepare_chat_history_for_request(
-    chat_history: ChatHistory,
-    output_role_key: str = "role",  # Default to "role", change to "author" as needed
-    override_role: Optional[str] = None,  # Default to None, change to "user" as needed
-) -> List[Dict[str, str]]:
-    """
-    Prepare the chat history for a request, allowing customization of the key names for role/author,
-    and optionally overriding the role.
-
-    OpenAI requires the structure: [{"role": "user", "content": <message>}]
-    Google Palm requires the structure: [{"author": "user", "content": <message>}]
-
-    :param chat_history: ChatHistory object containing the chat messages.
-    :param output_role_key: The key name to use for the role/author field in the output.
-    :param override_role: Optional string to override the role in all messages. If None, use the original role.
-    :return: A list of message dictionaries formatted as per the specified keys and optional role override.
-    """
-    return [
-        {output_role_key: override_role if override_role else message.role, "content": message.content}
-        for message in chat_history.messages
-    ]
+def store_results(chat_history: ChatHistory, results: List["ChatMessageContent"]):
+    """Stores specific results in the context and chat prompt."""
+    for message in results:
+        if isinstance(message, AzureChatMessageContent) and message.tool_message is not None:
+            chat_history.add_tool_message(content=message.tool_message)
+        chat_history.add_message(message=message)
+    return chat_history

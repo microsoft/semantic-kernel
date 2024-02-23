@@ -30,14 +30,14 @@ async def test_aggregate_results():
         input_variables=[
             InputVariable(name="request", description="The user input", is_required=True),
         ],
-        execution_settings=req_settings,
+        execution_settings={req_settings.service_id: req_settings},
     )
 
     func = kernel.create_function_from_prompt(
         prompt_template_config=prompt_template_config,
     )
 
-    func.function = lambda function, kernel, arguments, service, request_settings, chat_history: FunctionResult(
+    func.function = lambda function, kernel, arguments, service, execution_settings: FunctionResult(
         function=function, value=arguments["input"], metadata={}
     )
 

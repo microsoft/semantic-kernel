@@ -8,8 +8,8 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatCompletion,
     OpenAITextEmbedding,
 )
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import KernelFunction
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 
 kernel = sk.Kernel()

@@ -18,6 +18,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.utils.naming import generate_random_ascii_name
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -100,9 +101,8 @@ class Plan:
         steps: Optional[List["Plan"]] = None,
         function: Optional[KernelFunction] = None,
     ) -> None:
-        super().__init__()
-        self._name = "" if name is None else name
-        self._plugin_name = "" if plugin_name is None else plugin_name
+        self._name = f"plan_{generate_random_ascii_name()}" if name is None else name
+        self._plugin_name = f"p_{generate_random_ascii_name()}" if plugin_name is None else plugin_name
         self._description = "" if description is None else description
         self._next_step_index = 0 if next_step_index is None else next_step_index
         self._state = KernelArguments() if state is None else state
@@ -182,7 +182,7 @@ class Plan:
 
             result_string = str(partial_results[-1]) if len(partial_results) > 0 else ""
 
-            return FunctionResult(function=self.describe(), value=result_string, metadata={"results": partial_results})
+            return FunctionResult(function=self.metadata, value=result_string, metadata={"results": partial_results})
 
     def set_ai_configuration(
         self,
@@ -195,9 +195,10 @@ class Plan:
         if self._function is not None:
             self._function.set_ai_service(service)
 
-    def describe(self) -> KernelFunctionMetadata:
+    @property
+    def metadata(self) -> KernelFunctionMetadata:
         if self._function is not None:
-            return self._function.describe()
+            return self._function.metadata
         return KernelFunctionMetadata(
             name=self._name or "Plan",
             plugin_name=self._plugin_name,
@@ -337,7 +338,7 @@ class Plan:
         # - Function Parameters (pull from variables or state by a key value)
         # - Step Parameters (pull from variables or state by a key value)
         # - All other variables. These are carried over in case the function wants access to the ambient content.
-        function_params = step.describe()
+        function_params = step.metadata
         if function_params:
             logger.debug(f"Function parameters: {function_params.parameters}")
             for param in function_params.parameters:

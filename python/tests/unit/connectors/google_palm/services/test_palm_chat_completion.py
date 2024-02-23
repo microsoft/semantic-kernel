@@ -16,8 +16,7 @@ if sys.version_info >= (3, 9):
     from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
         GooglePalmChatCompletion,
     )
-    from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-    from semantic_kernel.utils.chat import prepare_chat_history_for_request
+    from semantic_kernel.contents.chat_history import ChatHistory
 
 
 pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")
@@ -71,7 +70,8 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
     ):
         ai_model_id = "test_model_id"
         api_key = "test_api_key"
-        chats = ChatHistory(system_message="hello word")
+        chats = ChatHistory()
+        chats.add_user_message("Hello word")
         gp_chat_completion = GooglePalmChatCompletion(
             ai_model_id=ai_model_id,
             api_key=api_key,
@@ -87,5 +87,5 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
             top_p=settings.top_p,
             top_k=settings.top_k,
             candidate_count=settings.candidate_count,
-            messages=prepare_chat_history_for_request(chats, output_role_key="author", override_role="user"),
+            messages=gp_chat_completion._prepare_chat_history_for_request(chats),
         )

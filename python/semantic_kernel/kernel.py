@@ -8,8 +8,9 @@ import os
 from copy import copy
 from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -36,7 +37,6 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import (
@@ -48,13 +48,7 @@ from semantic_kernel.reliability.pass_through_without_retry import (
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
-from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
-from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
-    PromptTemplatingEngine,
-)
-from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import (
-    validate_function_name,
     validate_plugin_name,
 )
 
@@ -73,7 +67,6 @@ class Kernel(KernelBaseModel):
     Attributes:
         plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
         services (Dict[str, AIServiceClientBase]): The services to be used by the kernel
-        prompt_template_engine (Optional[PromptTemplatingEngine]): The prompt template engine to be used by the kernel
         memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
         retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
         function_invoking_handlers (Dict): The function invoking handlers
@@ -84,18 +77,22 @@ class Kernel(KernelBaseModel):
 
     plugins: KernelPluginCollection = Field(default_factory=KernelPluginCollection)
     services: Dict[str, AIServiceClientBase] = Field(default_factory=dict)
-    prompt_template_engine: PromptTemplatingEngine = Field(default_factory=PromptTemplateEngine)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
-    memory: Optional[SemanticTextMemoryBase] = Field(default_factory=SemanticTextMemory)
+    memory: Optional[SemanticTextMemoryBase] = Field(default_factory=NullMemory)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
-    function_invoking_handlers: Dict = Field(default_factory=dict)
-    function_invoked_handlers: Dict = Field(default_factory=dict)
+    function_invoking_handlers: Dict[
+        int, Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
+    ] = Field(default_factory=dict)
+    function_invoked_handlers: Dict[
+        int, Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]
+    ] = Field(default_factory=dict)
 
     def __init__(
         self,
         plugins: Optional[KernelPluginCollection] = None,
-        services: Optional[List[AIServiceClientBase]] = None,
-        prompt_template_engine: Optional[PromptTemplatingEngine] = None,
+        services: Optional[
+            Union[AIServiceClientBase, List[AIServiceClientBase], Dict[str, AIServiceClientBase]]
+        ] = None,
         ai_service_selector: Optional[AIServiceSelector] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs: Any,
@@ -105,27 +102,47 @@ class Kernel(KernelBaseModel):
 
         Args:
             plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
-            prompt_template_engine (Optional[PromptTemplatingEngine]): The prompt template engine to be
-                used by the kernel
+            services (
+                Optional[Union[AIServiceClientBase, List[AIServiceClientBase], Dict[str, AIServiceClientBase]]]):
+                The services to be used by the kernel,
+                will be rewritten to a dict with service_id as key
+            ai_service_selector (Optional[AIServiceSelector]): The AI service selector to be used by the kernel,
+                default is based on order of execution settings.
             memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
-            **kwargs (Any): Additional fields to be passed to the Kernel model
+            **kwargs (Any): Additional fields to be passed to the Kernel model,
+                these are limited to retry_mechanism and function_invoking_handlers
+                and function_invoked_handlers, the best way to add function_invoking_handlers
+                and function_invoked_handlers is to use the add_function_invoking_handler
+                and add_function_invoked_handler methods.
         """
-        services = {service.service_id: service for service in services} if services else {}
-        memory = memory if memory else NullMemory()
-
         args = {
             "services": services,
-            "memory": memory,
             **kwargs,
         }
+        if memory:
+            args["memory"] = memory
         if ai_service_selector:
             args["ai_service_selector"] = ai_service_selector
-        if prompt_template_engine:
-            args["prompt_template_engine"] = prompt_template_engine
         if plugins:
             args["plugins"] = plugins
-
         super().__init__(**args)
+
+    @field_validator("services", mode="before")
+    @classmethod
+    def rewrite_services(
+        cls,
+        services: Optional[
+            Union[AIServiceClientBase, List[AIServiceClientBase], Dict[str, AIServiceClientBase]]
+        ] = None,
+    ) -> Dict[str, AIServiceClientBase]:
+        """Rewrite services to a dictionary."""
+        if not services:
+            return {}
+        if isinstance(services, AIServiceClientBase):
+            return {services.service_id or "default": services}
+        if isinstance(services, list):
+            return {s.service_id or "default": s for s in services}
+        return services
 
     # endregion
     # region Invoke Functions
@@ -135,7 +152,7 @@ class Kernel(KernelBaseModel):
         functions: Union[KernelFunction, List[KernelFunction]],
         arguments: Optional[KernelArguments] = None,
         **kwargs: Dict[str, Any],
-    ) -> AsyncIterable[List["StreamingKernelContent"]]:
+    ) -> AsyncIterable[Union[List["StreamingKernelContent"], List[FunctionResult]]]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
@@ -151,11 +168,9 @@ class Kernel(KernelBaseModel):
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
-        if KernelFunction.CHAT_HISTORY_TAG not in arguments:
-            arguments[KernelFunction.CHAT_HISTORY_TAG] = ChatHistory()
+        results: List[FunctionResult] = []
         if isinstance(functions, KernelFunction):
             stream_function = functions
-            results = []
             pipeline_step = 0
         else:
             stream_function = functions[-1]
@@ -163,13 +178,16 @@ class Kernel(KernelBaseModel):
                 pipeline_functions = functions[:-1]
                 # run pipeline functions
                 results = await self.invoke(pipeline_functions, arguments)
+                # if invoke is called with one function, the result is not a list.
+                if isinstance(results, FunctionResult):
+                    results = [results]
             else:
                 raise ValueError("No functions passed to run")
             if not results:
                 results = []
             pipeline_step = len(functions) - 1
         while True:
-            function_invoking_args = self.on_function_invoking(stream_function.describe(), arguments)
+            function_invoking_args = self.on_function_invoking(stream_function.metadata, arguments)
             if function_invoking_args.is_cancel_requested:
                 logger.info(
                     f"Execution was cancelled on function invoking event of pipeline step \
@@ -192,21 +210,14 @@ class Kernel(KernelBaseModel):
                 # might need to be done as part of the invoked_handler
             function_result = []
             exception = None
-            try:
-                async for stream_message in stream_function.invoke_stream(self, arguments):
-                    if isinstance(stream_message, FunctionResult):
-                        err_msg = stream_message.metadata.get("error", None)
-                        raise KernelException(f"Error occurred in stream function: {err_msg}")
-                    function_result.append(stream_message)
-                    yield stream_message
-            except Exception as exc:
-                logger.error(
-                    "Something went wrong in stream function. During function invocation:"
-                    f" '{stream_function.plugin_name}.{stream_function.name}'. Error"
-                    f" description: '{str(exc)}'"
-                )
-                exception = exc
-            # TODO: process function_result list to FunctionResult
+            async for stream_message in stream_function.invoke_stream(self, arguments):
+                if isinstance(stream_message, FunctionResult):
+                    exception = stream_message.metadata.get("exception", None)
+                    if exception:
+                        break
+                function_result.append(stream_message)
+                yield stream_message
+
             output_function_result = []
             for result in function_result:
                 for index, choice in enumerate(result):
@@ -214,21 +225,23 @@ class Kernel(KernelBaseModel):
                         output_function_result.append(copy(choice))
                     else:
                         output_function_result[index] += choice
-            func_result = FunctionResult(function=stream_function.describe(), value=output_function_result)
+            func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
             function_invoked_args = self.on_function_invoked(
-                stream_function.describe(),
+                stream_function.metadata,
                 arguments,
                 func_result,
                 exception,
             )
-            results.append(function_invoked_args.function_result)
             if function_invoked_args.exception:
-                raise KernelException(
-                    KernelException.ErrorCodes.FunctionInvokeError,
-                    "Error occurred while invoking stream function",
-                    function_invoked_args.exception,
+                raise AIException(
+                    error_code=AIException.ErrorCodes.InvalidRequest,
+                    message=f"Something went wrong in stream function. \
+During function invocation:'{stream_function.plugin_name}.{stream_function.name}'. \
+Error description: '{str(function_invoked_args.exception)}'",
+                    inner_exception=function_invoked_args.exception,
                 ) from function_invoked_args.exception
 
+            results.append(function_invoked_args.function_result)
             if function_invoked_args.is_cancel_requested:
                 logger.info(
                     f"Execution was cancelled on function invoked event of pipeline step \
@@ -248,6 +261,7 @@ class Kernel(KernelBaseModel):
                 )
                 continue
             break
+        yield results
 
     async def invoke(
         self,
@@ -270,8 +284,6 @@ class Kernel(KernelBaseModel):
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
-        if KernelFunction.CHAT_HISTORY_TAG not in arguments:
-            arguments[KernelFunction.CHAT_HISTORY_TAG] = ChatHistory()
         results = []
         pipeline_step = 0
         if not isinstance(functions, list):
@@ -282,7 +294,7 @@ class Kernel(KernelBaseModel):
         for func in functions:
             # While loop is used to repeat the function invocation, if requested
             while True:
-                function_invoking_args = self.on_function_invoking(func.describe(), arguments)
+                function_invoking_args = self.on_function_invoking(func.metadata, arguments)
                 if function_invoking_args.is_cancel_requested:
                     logger.info(
                         f"Execution was cancelled on function invoking event of pipeline step \
@@ -313,7 +325,7 @@ class Kernel(KernelBaseModel):
                     exception = exc
 
                 # this allows a hook to alter the results before adding.
-                function_invoked_args = self.on_function_invoked(func.describe(), arguments, function_result, exception)
+                function_invoked_args = self.on_function_invoked(func.metadata, arguments, function_result, exception)
                 results.append(function_invoked_args.function_result)
 
                 if function_invoked_args.exception:
@@ -346,12 +358,6 @@ class Kernel(KernelBaseModel):
 
         return results if number_of_steps > 1 else results[0]
 
-    def select_ai_service(
-        self, function: KernelFunction, arguments: KernelArguments
-    ) -> Tuple[ALL_SERVICE_TYPES, PromptExecutionSettings]:
-        """Uses the AI service selector to select a service for the function."""
-        return self.ai_service_selector.select_ai_service(self, function, arguments)
-
     # endregion
     # region Function Invoking/Invoked Events
 
@@ -380,7 +386,7 @@ class Kernel(KernelBaseModel):
         self.function_invoking_handlers[id(handler)] = handler
 
     def add_function_invoked_handler(
-        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokedEventArgs]
+        self, handler: Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]
     ) -> None:
         self.function_invoked_handlers[id(handler)] = handler
 
@@ -461,15 +467,8 @@ class Kernel(KernelBaseModel):
                 ("Overloaded functions are not supported, " "please differentiate function names."),
             )
 
-        # This is legacy - figure out why we're setting all plugins on each function?
-        for func in functions:
-            func.set_default_plugin_collection(self.plugins)
-
         plugin = KernelPlugin(name=plugin_name, functions=functions)
-        if plugin_name in self.plugins:
-            self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
-        else:
-            self.plugins.add(plugin)
+        self.plugins.add(plugin)
 
         return plugin
 
@@ -500,14 +499,11 @@ class Kernel(KernelBaseModel):
 
         return {}
 
-    def import_plugin_from_prompt_directory(
-        self, service_id: str, parent_directory: str, plugin_directory_name: str
-    ) -> KernelPlugin:
+    def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         """
         Import a plugin from a directory containing prompt templates.
 
         Args:
-            service_id (str): The service id
             parent_directory (str): The parent directory
             plugin_directory_name (str): The plugin directory name
         """
@@ -539,23 +535,12 @@ class Kernel(KernelBaseModel):
                 prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
             prompt_template_config.name = function_name
 
-            # TODO: remove this once the PromptTemplateConfig supports a dict of execution_settings
-            if (
-                prompt_template_config.execution_settings
-                and "default" in prompt_template_config.execution_settings.extension_data
-            ):
-                prompt_template_config.execution_settings.extension_data = (
-                    prompt_template_config.execution_settings.extension_data["default"]
-                )
-
-            prompt_template_config.execution_settings.service_id = service_id
-
             # Load Prompt Template
             with open(prompt_path, "r") as prompt_file:
                 prompt = prompt_file.read()
                 prompt_template_config.template = prompt
 
-            kernel_prompt_template = KernelPromptTemplate(prompt_template_config)
+            kernel_prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
 
             functions += [
                 self.create_function_from_prompt(
@@ -586,7 +571,7 @@ class Kernel(KernelBaseModel):
         self,
         template: Optional[str] = None,
         prompt_template_config: Optional[PromptTemplateConfig] = None,
-        execution_settings: Optional[PromptExecutionSettings] = None,
+        prompt_execution_settings: Optional[PromptExecutionSettings] = None,
         function_name: Optional[str] = None,
         plugin_name: Optional[str] = None,
         description: Optional[str] = None,
@@ -611,48 +596,21 @@ class Kernel(KernelBaseModel):
         Returns:
             KernelFunction: The created Kernel Function
         """
-        if not plugin_name:
-            plugin_name = f"p_{generate_random_ascii_name()}"
-        assert plugin_name is not None  # for type checker
-
-        if not function_name:
-            function_name = f"f_{generate_random_ascii_name()}"
-        assert function_name is not None  # for type checker
-
-        validate_plugin_name(plugin_name)
-        validate_function_name(function_name)
-
-        if prompt_template_config:
-            if not prompt_template_config.execution_settings:
-                prompt_template_config.execution_settings = execution_settings or PromptExecutionSettings(
-                    extension_data=kwargs
-                )
-        else:
-            prompt_template_config = PromptTemplateConfig(
-                name=function_name,
-                template_format=template_format if template_format else "semantic-kernel",
-                description=description if description else "Generic function, unknown purpose",
-                template=template if template else "{{$user_input}}",
-                execution_settings=execution_settings if execution_settings else PromptExecutionSettings(),
-            )
+        if not prompt_execution_settings and not prompt_template_config.execution_settings:
+            prompt_execution_settings = PromptExecutionSettings(extension_data=kwargs)
 
         function = KernelFunction.from_prompt(
-            prompt=template,
+            prompt=template or prompt_template_config.template,
             function_name=function_name,
             plugin_name=plugin_name,
             description=description,
             template_format=template_format,
             prompt_template=prompt_template,
             prompt_template_config=prompt_template_config,
+            prompt_execution_settings=prompt_execution_settings,
         )
 
-        if exec_settings := prompt_template_config.execution_settings:
-            if exec_settings.service_id in function.prompt_execution_settings:
-                logger.warning("Overwriting execution settings for service_id: %s", exec_settings.service_id)
-            function.prompt_execution_settings[exec_settings.service_id] = exec_settings
-
-        self.add_plugin(plugin_name, [function])
-        function.set_default_plugin_collection(self.plugins)
+        self.add_plugin(plugin_name or function.plugin_name, [function])
 
         return function
 
@@ -676,39 +634,20 @@ class Kernel(KernelBaseModel):
                 KernelException.ErrorCodes.InvalidFunctionType,
                 "kernel_function argument must be decorated with @kernel_function",
             )
-        function_name = kernel_function.__kernel_function_name__
-
-        if plugin_name is None or plugin_name == "":
-            plugin_name = f"p_{generate_random_ascii_name()}"
-        assert plugin_name is not None  # for type checker
-
-        validate_plugin_name(plugin_name)
-        validate_function_name(function_name)
-
-        if plugin_name in self.plugins and function_name in self.plugins[plugin_name]:
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                "Overloaded functions are not supported, " "please differentiate function names.",
-            )
 
         function = KernelFunction.from_native_method(kernel_function, plugin_name)
-        self.add_plugin(plugin_name, [function])
-        function.set_default_plugin_collection(self.plugins)
+        self.add_plugin(plugin_name or function.plugin_name, [function])
 
         return function
 
     # endregion
     # region Services
 
-    def get_prompt_execution_settings_from_service_id(
-        self, service_id: str, type: Optional[Type[T]] = None
-    ) -> PromptExecutionSettings:
-        """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
-        service = self.get_service(service_id, type=type)
-        return service.instantiate_prompt_execution_settings(
-            service_id=service_id,
-            extension_data={"ai_model_id": service.ai_model_id},
-        )
+    def select_ai_service(
+        self, function: KernelFunction, arguments: KernelArguments
+    ) -> Tuple[ALL_SERVICE_TYPES, PromptExecutionSettings]:
+        """Uses the AI service selector to select a service for the function."""
+        return self.ai_service_selector.select_ai_service(self, function, arguments)
 
     def get_service(
         self,
@@ -725,18 +664,49 @@ class Kernel(KernelBaseModel):
             by using Union[TextCompletionClientBase, ChatCompletionClientBase].
 
         If type and service_id are both None, the first service is returned.
+
+        Args:
+            service_id (Optional[str]): The service id,
+                if None, the default service is returned or the first service is returned.
+            type (Optional[Type[ALL_SERVICE_TYPES]]): The type of the service, if None, no checks are done.
+
+        Returns:
+            ALL_SERVICE_TYPES: The service.
+
+        Raises:
+            ValueError: If no service is found that matches the type.
+
         """
-        if not service_id and not type:
-            return list(self.services.values())[0]
-        if service_id not in self.services:
+        if not service_id:
+            if not type:
+                if default_service := self.services.get("default"):
+                    return default_service
+                return list(self.services.values())[0]
+            if default_service := self.services.get("default"):
+                if isinstance(default_service, type):
+                    return default_service
+            for service in self.services.values():
+                if isinstance(service, type):
+                    return service
+            raise ValueError(f"No service found of type {type}")
+        if not (service := self.services.get(service_id)):
             raise ValueError(f"Service with service_id '{service_id}' does not exist")
-        service = self.services[service_id]
         if type and not isinstance(service, type):
-            raise ValueError(f"Service with service_id '{service_id}' is not of type {type.__name__}")
+            raise ValueError(f"Service with service_id '{service_id}' is not of type {type}")
         return service
 
     def get_services_by_type(self, type: Type[T]) -> Dict[str, T]:
         return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
+
+    def get_prompt_execution_settings_from_service_id(
+        self, service_id: str, type: Optional[Type[T]] = None
+    ) -> PromptExecutionSettings:
+        """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
+        service = self.get_service(service_id, type=type)
+        return service.instantiate_prompt_execution_settings(
+            service_id=service_id,
+            extension_data={"ai_model_id": service.ai_model_id},
+        )
 
     def add_service(self, service: AIServiceClientBase, overwrite: bool = False) -> None:
         if service.service_id not in self.services or overwrite:

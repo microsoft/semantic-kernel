@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
-from typing import Generic, List, Optional, TypeVar
+from typing import Dict, List, Optional, TypeVar, Union
 
-from pydantic import Field
+from pydantic import Field, field_validator
+from typing_extensions import Literal
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
@@ -15,29 +16,36 @@ PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecu
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
-    name: Optional[str] = Field(default="", alias="name")
-    description: Optional[str] = Field(default="", alias="description")
-    template: Optional[str] = Field(None, alias="template")
-    template_format: Optional[str] = Field(default="semantic-kernel", alias="template_format")
-    input_variables: Optional[List[InputVariable]] = Field(default_factory=list, alias="input_variables")
-    execution_settings: Optional[PromptExecutionSettings] = Field(
-        default_factory=PromptExecutionSettings, alias="execution_settings"
-    )  # TODO Make this a dict
+class PromptTemplateConfig(KernelBaseModel):
+    name: Optional[str] = ""
+    description: Optional[str] = ""
+    template: Optional[str] = None
+    template_format: Optional[str] = "semantic-kernel"
+    input_variables: List[InputVariable] = Field(default_factory=list)
+    execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
-    def __init__(self, **kwargs) -> None:
-        """Create a new PromptTemplateConfig instance.
-
-        Args:
-            **kwargs: The data to initialize the instance with.
-        """
-        super().__init__(**kwargs)
+    @field_validator("execution_settings", mode="before")
+    @classmethod
+    def rewrite_execution_settings(
+        cls,
+        settings: Optional[
+            Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
+        ],
+    ) -> Dict[str, PromptExecutionSettings]:
+        """Rewrite execution settings to a dictionary."""
+        if not settings:
+            return {}
+        if isinstance(settings, PromptExecutionSettings):
+            return {settings.service_id or "default": settings}
+        if isinstance(settings, list):
+            return {s.service_id or "default": s for s in settings}
+        return settings
 
     def add_execution_settings(self, settings: PromptExecutionSettings, overwrite: bool = True) -> None:
         """Add execution settings to the prompt template."""
-        if overwrite:
-            self.execution_settings = settings
+        if settings.service_id in self.execution_settings and not overwrite:
             return
+        self.execution_settings[settings.service_id or "default"] = settings
         logger.warning("Execution settings already exist and overwrite is set to False")
 
     def get_kernel_parameter_metadata(self) -> List[KernelParameterMetadata]:
@@ -82,8 +90,9 @@ class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
         name: str,
         description: str,
         template: str,
-        input_variables: List[InputVariable],
-        execution_settings: PromptExecutionSettings,
+        template_format: Literal["semantic-kernel"] = "semantic-kernel",
+        input_variables: List[InputVariable] = [],
+        execution_settings: Dict[str, PromptExecutionSettings] = {},
     ) -> "PromptTemplateConfig":
         """Restore a PromptTemplateConfig instance from the specified parameters.
 
@@ -101,6 +110,7 @@ class PromptTemplateConfig(KernelBaseModel, Generic[PromptExecutionSettingsT]):
             name=name,
             description=description,
             template=template,
+            template_format=template_format,
             input_variables=input_variables,
             execution_settings=execution_settings,
         )

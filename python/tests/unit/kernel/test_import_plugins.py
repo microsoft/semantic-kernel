@@ -23,7 +23,7 @@ def test_plugin_can_be_imported():
     # import plugins
     plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_plugins")
     # path to plugins directory
-    plugin = kernel.import_plugin_from_prompt_directory(service_id, plugins_directory, "TestPlugin")
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
 
     assert plugin is not None
     assert len(plugin.functions) == 1
@@ -71,7 +71,7 @@ def test_create_function_from_prompt_succeeds():
             return f"{first_name}, {second_name}"
 
     # import plugins
-    _ = kernel.import_plugin(GenerateNamesPlugin(), plugin_name="GenerateNames")
+    kernel.import_plugin(GenerateNamesPlugin(), plugin_name="GenerateNames")
 
     prompt = """
     Write a short story about two Corgis on an adventure.
@@ -92,12 +92,9 @@ def test_create_function_from_prompt_succeeds():
         template=prompt, description="Write a short story.", execution_settings={"default": exec_settings}
     )
 
-    test_func = kernel.create_function_from_prompt(
+    kernel.create_function_from_prompt(
         prompt_template_config=prompt_template_config,
         function_name="TestFunction",
         plugin_name="TestPlugin",
         description="Write a short story.",
     )
-
-    assert len(test_func.plugins) > 0
-    assert test_func.plugins["GenerateNames"] is not None

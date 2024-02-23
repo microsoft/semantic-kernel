@@ -2,6 +2,7 @@
 
 import os
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -72,14 +73,14 @@ class SequentialPlanner:
     def _init_flow_function(self, prompt: str, service_id: str) -> "KernelFunction":
         prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
-
-        # TODO: fix when extension settings in PromptTemplateConfig are a dictonary
-        # While the extension settings are not, grab the value for the 'default' key
-        if "default" in prompt_config.execution_settings.extension_data:
-            prompt_config.execution_settings = prompt_config.execution_settings.extension_data["default"]
-
-        prompt_config.execution_settings.service_id = service_id
-        prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
+        if service_id in prompt_config.execution_settings:
+            prompt_config.execution_settings[service_id].extension_data["max_tokens"] = self.config.max_tokens
+        elif "default" in prompt_config.execution_settings:
+            prompt_config.execution_settings["default"].extension_data["max_tokens"] = self.config.max_tokens
+        else:
+            prompt_config.execution_settings[service_id] = PromptExecutionSettings(
+                service_id=service_id, max_tokens=self.config.max_tokens
+            )
         prompt_config.template = prompt_template
 
         return self._kernel.create_function_from_prompt(

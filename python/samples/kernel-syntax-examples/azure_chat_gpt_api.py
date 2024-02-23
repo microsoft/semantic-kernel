@@ -7,8 +7,7 @@ from dotenv import load_dotenv
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
@@ -53,21 +52,17 @@ req_settings.top_p = 0.8
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
 prompt_template_config = sk.PromptTemplateConfig(
-    template="""Answer the following request: {{$request}}.
-                Additionally summarize the on-going chat history: {{$chat_history}}""",
+    template=system_message
+    + """ Summarize the on-going chat history: {{$chat_history}} and respond to this statement: {{$request}}""",
     name="chat",
     input_variables=[
         InputVariable(name="request", description="The user input", is_required=True),
-        InputVariable(
-            name=KernelFunction.CHAT_HISTORY_TAG, description="The history of the conversation", is_required=True
-        ),
+        InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
     ],
     execution_settings=req_settings,
 )
 
 history = ChatHistory()
-
-history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 

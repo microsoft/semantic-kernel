@@ -11,10 +11,10 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
 
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
-    func_view = function.describe()
+    func_view = function.metadata
     return {
         "type": "function",
         "function": {
@@ -70,7 +70,7 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
     """Create the object used for function_calling.
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
-    func_view = function.describe()
+    func_view = function.metadata
     return {
         "name": f"{func_view.plugin_name}-{func_view.name}",
         "description": func_view.description,

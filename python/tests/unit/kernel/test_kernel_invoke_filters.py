@@ -24,7 +24,7 @@ def create_mock_function(name) -> KernelFunction:
         is_asynchronous=True,
     )
     mock_function = Mock(spec=KernelFunction)
-    mock_function.describe.return_value = kernel_function_metadata
+    mock_function.metadata = kernel_function_metadata
     mock_function.name = kernel_function_metadata.name
     mock_function.plugin_name = kernel_function_metadata.plugin_name
     mock_function.description = kernel_function_metadata.description
@@ -39,7 +39,7 @@ async def test_invoke_handles_pre_invocation(pipeline_count):
     kernel = Kernel()
 
     mock_function = create_mock_function("test_function")
-    result = FunctionResult(function=mock_function.describe(), value="test", metadata={})
+    result = FunctionResult(function=mock_function.metadata, value="test", metadata={})
     mock_function.invoke.return_value = result
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
 
@@ -67,10 +67,10 @@ async def test_invoke_pre_invocation_skip_dont_trigger_invoked_handler():
     kernel = Kernel()
 
     mock_function1 = create_mock_function(name="SkipMe")
-    result1 = FunctionResult(function=mock_function1.describe(), value="test", metadata={})
+    result1 = FunctionResult(function=mock_function1.metadata, value="test", metadata={})
     mock_function1.invoke.return_value = result1
     mock_function2 = create_mock_function(name="DontSkipMe")
-    result2 = FunctionResult(function=mock_function2.describe(), value="test", metadata={})
+    result2 = FunctionResult(function=mock_function2.metadata, value="test", metadata={})
     mock_function2.invoke.return_value = result2
     invoked = 0
     invoking = 0
@@ -107,7 +107,7 @@ async def test_invoke_handles_post_invocation(pipeline_count):
     kernel = Kernel()
 
     mock_function = create_mock_function("test_function")
-    result = FunctionResult(function=mock_function.describe(), value="test", metadata={})
+    result = FunctionResult(function=mock_function.metadata, value="test", metadata={})
     mock_function.invoke.return_value = result
     invoked = 0
 
@@ -134,7 +134,7 @@ async def test_invoke_post_invocation_repeat_is_working():
     kernel = Kernel()
 
     mock_function = create_mock_function(name="RepeatMe")
-    result = FunctionResult(function=mock_function.describe(), value="test", metadata={})
+    result = FunctionResult(function=mock_function.metadata, value="test", metadata={})
     mock_function.invoke.return_value = result
 
     invoked = 0
@@ -168,7 +168,7 @@ async def test_invoke_change_variable_invoking_handler():
     new_input = "Problems"
 
     mock_function = create_mock_function("test_function")
-    result = FunctionResult(function=mock_function.describe(), value=new_input, metadata={})
+    result = FunctionResult(function=mock_function.metadata, value=new_input, metadata={})
     mock_function.invoke.return_value = result
 
     def invoking_handler(sender, e: FunctionInvokingEventArgs):
@@ -195,7 +195,7 @@ async def test_invoke_change_variable_invoked_handler():
     new_input = "Problems"
 
     mock_function = create_mock_function("test_function")
-    result = FunctionResult(function=mock_function.describe(), value=new_input, metadata={})
+    result = FunctionResult(function=mock_function.metadata, value=new_input, metadata={})
     mock_function.invoke.return_value = result
 
     def invoked_handler(sender, e: FunctionInvokedEventArgs):

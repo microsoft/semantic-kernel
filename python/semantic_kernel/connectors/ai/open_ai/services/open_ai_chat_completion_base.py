@@ -26,10 +26,10 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
-from semantic_kernel.models.ai.chat_completion.finish_reason import FinishReason
-from semantic_kernel.utils.chat import prepare_chat_history_for_request
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.finish_reason import FinishReason
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -40,6 +40,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
+
+    def get_chat_message_content_class(self) -> type[ChatMessageContent]:
+        """Get the chat message content types used by a class, default is ChatMessageContent."""
+        return OpenAIChatMessageContent
 
     async def complete_chat(
         self,
@@ -56,7 +60,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             List[OpenAIChatMessageContent | AzureChatMessageContent] -- The completion result(s).
         """
-        settings.messages = prepare_chat_history_for_request(chat_history)
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = False
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -80,7 +84,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[OpenAIStreamingChatMessageContent | AzureStreamingChatMessageContent] -- A stream of
                 OpenAIStreamingChatMessages or AzureStreamingChatMessageContent when using Azure.
         """
-        settings.messages = prepare_chat_history_for_request(chat_history)
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = True
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id

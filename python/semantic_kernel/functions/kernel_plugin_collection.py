@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, TypeVar, Union
-
-from pydantic import Field
+import logging
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, TypeVar, Union
 
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -14,6 +13,8 @@ KernelPluginType = TypeVar("KernelPluginType", bound=KernelPlugin)
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
 
+logger = logging.getLogger(__name__)
+
 
 class KernelPluginCollection(KernelBaseModel):
     """
@@ -23,7 +24,7 @@ class KernelPluginCollection(KernelBaseModel):
         plugins (Dict[str, KernelPlugin]): The plugins in the collection, indexed by their name.
     """
 
-    plugins: Optional[Dict[str, "KernelPlugin"]] = Field(default_factory=dict)
+    plugins: Dict[str, "KernelPlugin"]
 
     def __init__(self, plugins: Union[None, "KernelPluginCollection", Iterable[KernelPluginType]] = None):
         """
@@ -72,8 +73,8 @@ class KernelPluginCollection(KernelBaseModel):
         Raises:
             ValueError: If the plugin or plugin.name is None.
         """
-        if plugin is None:
-            raise ValueError("Plugin must not be None")
+        if plugin.name in self.plugins.keys():
+            logger.warning(f'Overwriting plugin "{plugin.name}" in collection')
         self.plugins[plugin.name] = plugin
 
     def add_plugin_from_functions(self, plugin_name: str, functions: List["KernelFunction"]) -> None:
@@ -109,14 +110,13 @@ class KernelPluginCollection(KernelBaseModel):
             raise ValueError("Functions and plugin_name must not be None or empty")
 
         if plugin_name not in self.plugins:
-            self.plugins.add(KernelPlugin(name=plugin_name, functions=functions))
+            self.plugins[plugin_name] = KernelPlugin(name=plugin_name, functions=functions)
             return
 
-        plugin = self.plugins[plugin_name]
         for func in functions:
-            if func.name in plugin.functions:
+            if func.name in self.plugins[plugin_name].functions:
                 raise ValueError(f"Function with name '{func.name}' already exists in plugin '{plugin_name}'")
-            plugin.functions[func.name] = func
+            self.plugins[plugin_name].functions[func.name] = func
 
     def add_list_of_plugins(self, plugins: List["KernelPlugin"]) -> None:
         """
@@ -198,7 +198,7 @@ class KernelPluginCollection(KernelBaseModel):
         if not self.plugins:
             return []
         return [
-            func.describe()
+            func.metadata
             for plugin in self.plugins.values()
             for func in plugin.functions.values()
             if (include_prompt and func.is_prompt) or (include_native and not func.is_prompt)

@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 from typing import Optional
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
+from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
 
 
 class ChatMessageContent(KernelContent):
@@ -30,4 +32,29 @@ class ChatMessageContent(KernelContent):
     encoding: Optional[str] = None
 
     def __str__(self) -> str:
-        return self.content
+        return self.content or ""
+
+    def to_prompt(self, root_key: str) -> str:
+        """Convert the ChatMessageContent to a prompt.
+
+        Returns:
+            str - The prompt from the ChatMessageContent.
+        """
+
+        root = Element(root_key)
+        root.set("role", self.role.value)
+        root.text = self.content or ""
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode")
+
+    @classmethod
+    def from_element(cls, element: Element) -> "ChatMessageContent":
+        """Create a new instance of ChatMessageContent from a prompt.
+
+        Args:
+            prompt: str - The prompt to create the ChatMessageContent from.
+
+        Returns:
+            ChatMessageContent - The new instance of ChatMessageContent.
+        """
+        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        return cls(**args)

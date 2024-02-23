@@ -1,13 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from pytest import mark, raises
 
 from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
-from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.template_engine.blocks.block_errors import TemplateSyntaxError
 
 
 def _get_template_language_tests() -> List[Tuple[str, str]]:
@@ -39,14 +42,11 @@ class MyPlugin:
         return "123 ok" if input == "123" else f"{input} != 123"
 
     @kernel_function()
-    def asis(self, input: str) -> str:
-        return input
+    def asis(self, input: Optional[str] = None) -> str:
+        return input or ""
 
 
 class TestPromptTemplateEngine:
-    def setup_method(self):
-        self.target = PromptTemplateEngine()
-
     @mark.asyncio
     async def test_it_supports_variables(self):
         # Arrange
@@ -55,13 +55,11 @@ class TestPromptTemplateEngine:
         template = "And the winner\n of {{$input}} \nis: {{  $winner }}!"
 
         kernel = Kernel()
-        context = kernel.create_new_context()
-        context["input"] = input
-        context["winner"] = winner
-
+        arguments = KernelArguments(input=input, winner=winner)
         # Act
-        result = await self.target.render(template, context)
-
+        result = await KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        ).render(kernel, arguments)
         # Assert
         expected = template.replace("{{$input}}", input).replace("{{  $winner }}", winner)
         assert expected == result
@@ -73,10 +71,10 @@ class TestPromptTemplateEngine:
         expected = "And the winner\n of template\ntests \nis: SK!"
 
         kernel = Kernel()
-        context = kernel.create_new_context()
-
         # Act
-        result = await self.target.render(template, context)
+        result = await KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        ).render(kernel, None)
 
         # Assert
         assert expected == result
@@ -87,11 +85,12 @@ class TestPromptTemplateEngine:
         template = "== {{my.check123 $call}} =="
         kernel = Kernel()
         kernel.import_plugin(MyPlugin(), "my")
-        context = kernel.create_new_context()
-        context["call"] = "123"
 
+        arguments = KernelArguments(call="123")
         # Act
-        result = await self.target.render(template, context)
+        result = await KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        ).render(kernel, arguments)
 
         # Assert
         assert "== 123 ok ==" == result
@@ -102,10 +101,11 @@ class TestPromptTemplateEngine:
         template = "== {{my.check123 '234'}} =="
         kernel = Kernel()
         kernel.import_plugin(MyPlugin(), "my")
-        context = kernel.create_new_context()
 
         # Act
-        result = await self.target.render(template, context)
+        result = await KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        ).render(kernel, None)
 
         # Assert
         assert "== 234 != 123 ==" == result
@@ -116,10 +116,10 @@ class TestPromptTemplateEngine:
         template = "== {{my.check123 'a\\'b'}} =="
         kernel = Kernel()
         kernel.import_plugin(MyPlugin(), "my")
-        context = kernel.create_new_context()
-
         # Act
-        result = await self.target.render(template, context)
+        result = await KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        ).render(kernel, None)
 
         # Assert
         assert "== a'b != 123 ==" == result
@@ -130,10 +130,11 @@ class TestPromptTemplateEngine:
         template = '== {{my.check123 "a\\"b"}} =='
         kernel = Kernel()
         kernel.import_plugin(MyPlugin(), "my")
-        context = kernel.create_new_context()
 
         # Act
-        result = await self.target.render(template, context)
+        result = await KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        ).render(kernel, None)
 
         # Assert
         assert '== a"b != 123 ==' == result
@@ -144,14 +145,17 @@ class TestPromptTemplateEngine:
         # Arrange
         kernel = Kernel()
         kernel.import_plugin(MyPlugin(), "my_plugin")
-        context = kernel.create_new_context()
 
         # Act
         if expected_result.startswith("ERROR"):
-            with raises(ValueError):
-                await self.target.render(template, context)
+            with raises(TemplateSyntaxError):
+                await KernelPromptTemplate(
+                    prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+                ).render(kernel, KernelArguments())
         else:
-            result = await self.target.render(template, context)
+            result = await KernelPromptTemplate(
+                prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+            ).render(kernel, KernelArguments())
 
             # Assert
             assert expected_result == result

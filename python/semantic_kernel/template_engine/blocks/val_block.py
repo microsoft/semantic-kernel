@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from re import compile
+from re import S, compile
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
 
 from pydantic import model_validator
@@ -18,7 +18,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 VAL_BLOCK_REGEX = r"^(?P<quote>[\"'])(?P<value>.*)(?P=quote)$"
 
-VAL_BLOCK_MATCHER = compile(VAL_BLOCK_REGEX)
+VAL_BLOCK_MATCHER = compile(VAL_BLOCK_REGEX, flags=S)
 
 
 class ValBlock(Block):

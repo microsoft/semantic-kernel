@@ -9,9 +9,9 @@ from semantic_kernel.planners import Plan
 def test_create_empty_plan():
     plan = Plan()
     assert plan is not None
-    assert plan.name == ""
+    assert plan.name.startswith("plan_")
     assert type(plan.state) is KernelArguments
-    assert plan.plugin_name == ""
+    assert plan.plugin_name.startswith("p_")
     assert plan.description == ""
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
@@ -28,7 +28,7 @@ def test_create_plan_with_name():
     assert plan is not None
     assert plan.name == "test"
     assert type(plan.state) is KernelArguments
-    assert plan.plugin_name == ""
+    assert plan.plugin_name.startswith("p_")
     assert plan.description == ""
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
@@ -45,7 +45,7 @@ def test_create_plan_with_name_and_description():
     assert plan is not None
     assert plan.name == "test"
     assert type(plan.state) is KernelArguments
-    assert plan.plugin_name == ""
+    assert plan.plugin_name.startswith("p_")
     assert plan.description == "test description"
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
@@ -62,7 +62,7 @@ def test_create_plan_with_state_and_parameters():
     assert plan is not None
     assert plan.name == "test"
     assert plan.state.get("input", "") == ""
-    assert plan.plugin_name == ""
+    assert plan.plugin_name.startswith("p_")
     assert plan.description == ""
     assert plan.function is None
     assert plan.parameters["test_param"] == "test_param_val"
@@ -117,7 +117,7 @@ def test_create_multistep_plan_with_functions():
     assert plan is not None
     assert plan.name == "multistep_test"
     assert type(plan.state) is KernelArguments
-    assert plan.plugin_name == ""
+    assert plan.plugin_name.startswith("p_")
     assert plan.description == ""
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments
@@ -148,7 +148,7 @@ def test_create_multistep_plan_with_plans():
     assert plan is not None
     assert plan.name == "multistep_test"
     assert type(plan.state) is KernelArguments
-    assert plan.plugin_name == ""
+    assert plan.plugin_name.startswith("p_")
     assert plan.description == ""
     assert plan.function is None
     assert type(plan.parameters) is KernelArguments

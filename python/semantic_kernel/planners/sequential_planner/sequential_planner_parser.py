@@ -91,7 +91,7 @@ class SequentialPlanParser:
                             function_outputs = []
                             function_results = []
 
-                            view = plugin_function.describe()
+                            view = plugin_function.metadata
                             for p in view.parameters:
                                 function_variables[p.name] = p.default_value
 

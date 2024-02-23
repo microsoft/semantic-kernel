@@ -86,7 +86,8 @@ class StepwisePlanner:
         if prompt_user_config is None:
             prompt_config = PromptTemplateConfig.from_json(read_file(PROMPT_CONFIG_FILE_PATH))
 
-        prompt_config.execution_settings.extension_data["max_tokens"] = self.config.max_tokens
+        for service in prompt_config.execution_settings.values():
+            service.extension_data["max_tokens"] = self.config.max_tokens
         prompt_config.template = prompt_template
 
         self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)
@@ -94,7 +95,8 @@ class StepwisePlanner:
 
         self._context = KernelArguments()
 
-    def describe(self) -> KernelFunctionMetadata:
+    @property
+    def metadata(self) -> KernelFunctionMetadata:
         return KernelFunctionMetadata(
             name="StepwisePlanner",
             plugin_name="planners",
@@ -167,7 +169,7 @@ class StepwisePlanner:
                     self.add_execution_stats_to_arguments(steps_taken, self._arguments)
 
                     return FunctionResult(
-                        function=self.describe(),
+                        function=self.metadata,
                         value=next_step.final_answer,
                         metadata={"arguments": self._arguments},
                     )
@@ -206,7 +208,7 @@ class StepwisePlanner:
             self._arguments["input"] = "Question not found."
 
         return FunctionResult(
-            function=self.describe(),
+            function=self.metadata,
             value=self._arguments["input"],
             metadata={"arguments": self._arguments},
         )

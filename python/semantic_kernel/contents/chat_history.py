@@ -1,15 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from typing import Any, Iterator, List, Optional, Union
-
-from pydantic import Field, ValidationError
-from pydantic.json import pydantic_encoder
-from pydantic.tools import parse_obj_as
+import logging
+import xml.etree.ElementTree as ET
+from typing import Any, Dict, Final, Iterator, List, Optional, Tuple, Type, Union
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
+
+logger = logging.getLogger(__name__)
+
+ROOT_KEY_MESSAGE: Final[str] = "message"
 
 
 class ChatHistory(KernelBaseModel):
@@ -24,9 +26,9 @@ class ChatHistory(KernelBaseModel):
         messages (List[ChatMessageContent]): The list of chat messages in the history.
     """
 
-    messages: Optional[List[ChatMessageContent]] = Field(default_factory=list)
+    messages: List[ChatMessageContent]
 
-    def __init__(self, **data):
+    def __init__(self, **data: Any):
         """
         Initializes a new instance of the ChatHistory class, optionally incorporating a message and/or
         a system message at the beginning of the chat history.
@@ -57,7 +59,8 @@ class ChatHistory(KernelBaseModel):
                 data["messages"] = [system_message] + data["messages"]
             else:
                 data["messages"] = [system_message]
-
+        if "messages" not in data:
+            data["messages"] = []
         super().__init__(**data)
 
     def add_system_message(self, content: str) -> None:
@@ -72,15 +75,15 @@ class ChatHistory(KernelBaseModel):
         """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content))
 
-    def add_tool_message(self, content: str, metadata: Optional[dict[str, Any]] = None) -> None:
+    def add_tool_message(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content), metadata=metadata)
 
     def add_message(
         self,
-        message: Union[ChatMessageContent, dict],
+        message: Union[ChatMessageContent, Dict[str, Any]],
         encoding: Optional[str] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Add a message to the history.
 
@@ -94,18 +97,15 @@ class ChatHistory(KernelBaseModel):
             metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
         """
         if isinstance(message, ChatMessageContent):
-            chat_message = message
-        elif isinstance(message, dict):
-            required_keys = {"role", "content"}
-            if not required_keys.issubset(message.keys()):
-                raise ValueError(f"Dictionary must contain the following keys: {required_keys}")
-            chat_message = ChatMessageContent(
-                role=message["role"], content=message["content"], encoding=encoding, metadata=metadata
-            )
-        else:
-            raise TypeError("message must be an instance of ChatMessageContent or a dictionary")
-
-        self.messages.append(chat_message)
+            self.messages.append(message)
+            return
+        if "role" not in message:
+            raise ValueError(f"Dictionary must contain at least the role. Got: {message}")
+        if encoding:
+            message["encoding"] = encoding
+        if metadata:
+            message["metadata"] = metadata
+        self.messages.append(ChatMessageContent(**message))
 
     def _prepare_for_add(self, role: ChatRole, content: str) -> dict[str, str]:
         """Prepare a message to be added to the history."""
@@ -154,7 +154,9 @@ class ChatHistory(KernelBaseModel):
 
     def __str__(self) -> str:
         """Return a string representation of the history."""
-        return "\n".join([f"{msg.role}: {msg.content}" for msg in self.messages])
+        if not self.messages:
+            return ""
+        return "\n".join([msg.to_prompt(root_key=ROOT_KEY_MESSAGE) for msg in self.messages])
 
     def __iter__(self) -> Iterator[ChatMessageContent]:
         """Return an iterator over the messages in the history."""
@@ -167,6 +169,65 @@ class ChatHistory(KernelBaseModel):
 
         return self.messages == other.messages
 
+    @classmethod
+    def from_rendered_prompt(
+        cls, rendered_prompt: str, chat_message_content_type: Type[ChatMessageContent] = ChatMessageContent
+    ) -> "ChatHistory":
+        """
+        Create a ChatHistory instance from a rendered prompt.
+
+        Args:
+            rendered_prompt (str): The rendered prompt to convert to a ChatHistory instance.
+
+        Returns:
+            ChatHistory: The ChatHistory instance created from the rendered prompt.
+        """
+        messages: List[chat_message_content_type] = []
+        result, remainder = cls._render_remaining(rendered_prompt, chat_message_content_type, True)
+        if result:
+            messages.append(result)
+        while remainder:
+            result, remainder = cls._render_remaining(remainder, chat_message_content_type)
+            if result:
+                messages.append(result)
+        return cls(messages=messages)
+
+    @staticmethod
+    def _render_remaining(
+        prompt: Optional[str],
+        chat_message_content_type: Type[ChatMessageContent] = ChatMessageContent,
+        first: bool = False,
+    ) -> Tuple[Optional[ChatMessageContent], Optional[str]]:
+        """Render the remaining messages in the history."""
+        if not prompt:
+            return None, None
+        prompt = prompt.strip()
+        start = prompt.find(f"<{ROOT_KEY_MESSAGE}")
+        end_tag = f"</{ROOT_KEY_MESSAGE}>"
+        single_item_end_tag = "/>"
+        end = prompt.find(end_tag)
+        end_of_tag = end + len(end_tag)
+        if end == -1:
+            end = prompt.find(single_item_end_tag)
+            end_of_tag = end + len(single_item_end_tag)
+        if start == -1 or end == -1:
+            return chat_message_content_type(role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt), None
+        if start > 0 and end > 0:
+            return (
+                chat_message_content_type(role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt[:start]),
+                prompt[start:],
+            )
+        try:
+            return chat_message_content_type.from_element(ET.fromstring(prompt[start:end_of_tag])), prompt[end_of_tag:]
+        except ET.ParseError:
+            logger.warning(f"Unable to parse prompt: {prompt[start:end_of_tag]}, returning as content")
+            return (
+                chat_message_content_type(
+                    role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt[start:end_of_tag]
+                ),
+                prompt[end_of_tag:],
+            )
+
     def serialize(self) -> str:
         """
         Serializes the ChatHistory instance to a JSON string.
@@ -178,7 +239,7 @@ class ChatHistory(KernelBaseModel):
             ValueError: If the ChatHistory instance cannot be serialized to JSON.
         """
         try:
-            return json.dumps(self.model_dump(), indent=4, default=pydantic_encoder)
+            return self.model_dump_json(indent=4)
         except TypeError as e:
             raise ValueError(f"Unable to serialize ChatHistory to JSON: {e}")
 
@@ -199,14 +260,9 @@ class ChatHistory(KernelBaseModel):
                 fails validation.
         """
         try:
-            history_dict = json.loads(chat_history_json)
+            return ChatHistory.model_validate_json(chat_history_json)
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON format: {e}")
-
-        try:
-            return parse_obj_as(cls, history_dict)
-        except ValidationError as e:
-            raise ValueError(f"Data validation error during deserialization: {e}")
 
     def store_chat_history_to_file(chat_history: "ChatHistory", file_path: str) -> None:
         """

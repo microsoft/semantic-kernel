@@ -18,7 +18,7 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_parser impor
 
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> KernelFunction:
     mock_function = Mock(spec=KernelFunction)
-    mock_function.describe.return_value = kernel_function_metadata
+    mock_function.metadata = kernel_function_metadata
     mock_function.name = kernel_function_metadata.name
     mock_function.plugin_name = kernel_function_metadata.plugin_name
     mock_function.description = kernel_function_metadata.description
@@ -195,7 +195,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
         assert plan._steps[0].description == "Echo an input"
 
         assert plan._steps[1].plugin_name == plan.__class__.__name__
-        assert plan._steps[1].name == ""
+        assert plan._steps[1].name.startswith("plan_")
         assert plan._steps[1].description == "MockPlugin.DoesNotExist"
     else:
         with pytest.raises(PlanningException):
