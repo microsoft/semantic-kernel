@@ -193,20 +193,20 @@ class Kernel(KernelBaseModel):
             function_invoking_args = self.on_function_invoking(stream_function.metadata, arguments)
             if function_invoking_args.is_cancel_requested:
                 logger.info(
-                    f"Execution was cancelled on function invoking event of pipeline step \
-{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
+                    f"Execution was cancelled on function invoking event of pipeline step "
+                    f"{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
                 )
                 return
             if function_invoking_args.updated_arguments:
                 logger.info(
-                    f"Arguments updated by function_invoking_handler in pipeline step: \
-{pipeline_step}, new arguments: {function_invoking_args.arguments}"
+                    f"Arguments updated by function_invoking_handler in pipeline step: "
+                    f"{pipeline_step}, new arguments: {function_invoking_args.arguments}"
                 )
                 arguments = function_invoking_args.arguments
             if function_invoking_args.is_skip_requested:
                 logger.info(
-                    f"Execution was skipped on function invoking event of pipeline step \
-{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
+                    f"Execution was skipped on function invoking event of pipeline step "
+                    f"{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
                 )
                 return
                 # TODO: decide how to put results into kernelarguments,
@@ -238,29 +238,31 @@ class Kernel(KernelBaseModel):
             if function_invoked_args.exception:
                 raise AIException(
                     error_code=AIException.ErrorCodes.InvalidRequest,
-                    message=f"Something went wrong in stream function. \
-During function invocation:'{stream_function.plugin_name}.{stream_function.name}'. \
-Error description: '{str(function_invoked_args.exception)}'",
+                    message=(
+                        f"Something went wrong in stream function. "
+                        f"During function invocation:'{stream_function.plugin_name}.{stream_function.name}'. "
+                        f"Error description: '{str(function_invoked_args.exception)}'"
+                    ),
                     inner_exception=function_invoked_args.exception,
                 ) from function_invoked_args.exception
             if return_function_results:
                 results.append(function_invoked_args.function_result)
             if function_invoked_args.is_cancel_requested:
                 logger.info(
-                    f"Execution was cancelled on function invoked event of pipeline step \
-{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
+                    f"Execution was cancelled on function invoked event of pipeline step "
+                    f"{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
                 )
                 return
             if function_invoked_args.updated_arguments:
                 logger.info(
-                    f"Arguments updated by function_invoked_handler in pipeline step: \
-{pipeline_step}, new arguments: {function_invoked_args.arguments}"
+                    f"Arguments updated by function_invoked_handler in pipeline step: "
+                    f"{pipeline_step}, new arguments: {function_invoked_args.arguments}"
                 )
                 arguments = function_invoked_args.arguments
             if function_invoked_args.is_repeat_requested:
                 logger.info(
-                    f"Execution was repeated on function invoked event of pipeline step \
-{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
+                    f"Execution was repeated on function invoked event of pipeline step "
+                    f"{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
                 )
                 continue
             break
@@ -301,20 +303,20 @@ Error description: '{str(function_invoked_args.exception)}'",
                 function_invoking_args = self.on_function_invoking(func.metadata, arguments)
                 if function_invoking_args.is_cancel_requested:
                     logger.info(
-                        f"Execution was cancelled on function invoking event of pipeline step \
-{pipeline_step}: {func.plugin_name}.{func.name}."
+                        f"Execution was cancelled on function invoking event of pipeline step "
+                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
                     )
                     return results if results else None
                 if function_invoking_args.updated_arguments:
                     logger.info(
-                        f"Arguments updated by function_invoking_handler in pipeline step: \
-{pipeline_step}, new arguments: {function_invoking_args.arguments}"
+                        f"Arguments updated by function_invoking_handler in pipeline step: "
+                        f"{pipeline_step}, new arguments: {function_invoking_args.arguments}"
                     )
                     arguments = function_invoking_args.arguments
                 if function_invoking_args.is_skip_requested:
                     logger.info(
-                        f"Execution was skipped on function invoking event of pipeline step \
-{pipeline_step}: {func.plugin_name}.{func.name}."
+                        f"Execution was skipped on function invoking event of pipeline step "
+                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
                     )
                     break
                 function_result = None
@@ -340,20 +342,20 @@ Error description: '{str(function_invoked_args.exception)}'",
                     ) from function_invoked_args.exception
                 if function_invoked_args.is_cancel_requested:
                     logger.info(
-                        f"Execution was cancelled on function invoked event of pipeline step \
-{pipeline_step}: {func.plugin_name}.{func.name}."
+                        f"Execution was cancelled on function invoked event of pipeline step "
+                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
                     )
                     return results if results else None
                 if function_invoked_args.updated_arguments:
                     logger.info(
-                        f"Arguments updated by function_invoked_handler in pipeline step: \
-{pipeline_step}, new arguments: {function_invoked_args.arguments}"
+                        f"Arguments updated by function_invoked_handler in pipeline step: "
+                        f"{pipeline_step}, new arguments: {function_invoked_args.arguments}"
                     )
                     arguments = function_invoked_args.arguments
                 if function_invoked_args.is_repeat_requested:
                     logger.info(
-                        f"Execution was repeated on function invoked event of pipeline step \
-{pipeline_step}: {func.plugin_name}.{func.name}."
+                        f"Execution was repeated on function invoked event of pipeline step "
+                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
                     )
                     continue
                 break
