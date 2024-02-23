@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -16,137 +16,45 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// <summary>
 /// HuggingFace embedding generation service.
 /// </summary>
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGenerationService
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
-    private readonly string _model;
-    private readonly string? _endpoint;
-    private readonly HttpClient _httpClient;
-    private readonly Dictionary<string, object?> _attributes = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private HuggingFaceClient Client { get; }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
-    /// Using default <see cref="HttpClientHandler"/> implementation.
-    /// </summary>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="model">Model to use for service API call.</param>
-    public HuggingFaceTextEmbeddingGenerationService(Uri endpoint, string model)
-    {
-        Verify.NotNull(endpoint);
-        Verify.NotNullOrWhiteSpace(model);
-
-        this._model = model;
-        this._endpoint = endpoint.AbsoluteUri;
-        this._attributes.Add(AIServiceExtensions.ModelIdKey, this._model);
-        this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint);
-        this._httpClient = HttpClientProvider.GetHttpClient();
-    }
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
     /// </summary>
-    /// <param name="model">Model to use for service API call.</param>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    public HuggingFaceTextEmbeddingGenerationService(string model, string endpoint)
+    /// <param name="model">The HuggingFace model for the text generation service.</param>
+    /// <param name="endpoint">The endpoint uri including the port where HuggingFace server is hosted</param>
+    /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public HuggingFaceTextEmbeddingGenerationService(
+        string model,
+        Uri? endpoint = null,
+        string? apiKey = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(model);
-        Verify.NotNullOrWhiteSpace(endpoint);
 
-        this._model = model;
-        this._endpoint = endpoint;
-        this._attributes.Add(AIServiceExtensions.ModelIdKey, this._model);
-        this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint);
-        this._httpClient = HttpClientProvider.GetHttpClient();
-    }
+        this.Client = new HuggingFaceClient(
+        modelId: model,
+            endpoint: endpoint ?? httpClient?.BaseAddress,
+            apiKey: apiKey,
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            logger: loggerFactory?.CreateLogger(this.GetType())
+        );
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
-    /// </summary>
-    /// <param name="model">Model to use for service API call.</param>
-    /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
-    /// <param name="endpoint">Endpoint for service API call. If not specified, the base address of the HTTP client is used.</param>
-    public HuggingFaceTextEmbeddingGenerationService(string model, HttpClient httpClient, string? endpoint = null)
-    {
-        Verify.NotNullOrWhiteSpace(model);
-        Verify.NotNull(httpClient);
-        if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
-        {
-            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
-        }
-
-        this._model = model;
-        this._endpoint = endpoint;
-        this._httpClient = httpClient;
-        this._attributes.Add(AIServiceExtensions.ModelIdKey, model);
-        this._attributes.Add(AIServiceExtensions.EndpointKey, endpoint ?? httpClient.BaseAddress!.ToString());
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
-
-    /// <inheritdoc/>
-    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
-        IList<string> data,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
-    {
-        return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
-    }
-
-    #region private ================================================================================
-
-    /// <summary>
-    /// Performs HTTP request to given endpoint for embedding generation.
-    /// </summary>
-    /// <param name="data">Data to embed.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>List of generated embeddings.</returns>
-    private async Task<IList<ReadOnlyMemory<float>>> ExecuteEmbeddingRequestAsync(IList<string> data, CancellationToken cancellationToken)
-    {
-        var embeddingRequest = new TextEmbeddingRequest
-        {
-            Input = data
-        };
-
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
-
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HuggingFaceTextEmbeddingGenerationService)));
-
-        var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-
-        var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
-
-        return embeddingResponse?.Embeddings?.Select(l => l.Embedding).ToList()!;
-    }
-
-    /// <summary>
-    /// Retrieves the request URI based on the provided endpoint and model information.
-    /// </summary>
-    /// <returns>
-    /// A <see cref="Uri"/> object representing the request URI.
-    /// </returns>
-    private Uri GetRequestUri()
-    {
-        string? baseUrl = null;
-
-        if (!string.IsNullOrEmpty(this._endpoint))
-        {
-            baseUrl = this._endpoint;
-        }
-        else if (this._httpClient.BaseAddress?.AbsoluteUri != null)
-        {
-            baseUrl = this._httpClient.BaseAddress!.AbsoluteUri;
-        }
-        else
-        {
-            throw new KernelException("No endpoint or HTTP client base address has been provided");
-        }
-
-        return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
-    }
-
-    #endregion
+    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.Client.GenerateEmbeddingsAsync(data, kernel, cancellationToken);
 }

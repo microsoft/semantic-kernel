@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
-    <RootNamespace>SemanticKernel.Connectors.UnitTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Connectors.HuggingFace.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Connectors.HuggingFace.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>12</LangVersion>
     <RollForward>LatestMajor</RollForward>
@@ -43,21 +43,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
-    <ProjectReference Include="..\Connectors.OpenAI\Connectors.OpenAI.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="TestData\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="OpenAI\TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

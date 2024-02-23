@@ -8,10 +8,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;
+namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextGenerationService"/> class.
@@ -95,7 +96,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -136,13 +137,13 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
 
         //Assert
-        Assert.Equal("https://fake-random-test-host/fake-path/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+        Assert.Equal("https://fake-random-test-host/fake-path/models/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]
@@ -158,14 +159,14 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         var requestPayload = JsonSerializer.Deserialize<TextGenerationRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
 
-        Assert.Equal("fake-text", requestPayload.Input);
+        Assert.Equal("fake-text", requestPayload.Inputs);
     }
 
     [Fact]
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         var contents = await sut.GetTextContentsAsync("fake-test");
@@ -183,7 +184,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task GetTextContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         var contents = await sut.GetTextContentsAsync("fake-test");
@@ -211,7 +212,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public async Task GetStreamingTextContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
 
         //Act
         var contents = await sut.GetTextContentsAsync("fake-test");

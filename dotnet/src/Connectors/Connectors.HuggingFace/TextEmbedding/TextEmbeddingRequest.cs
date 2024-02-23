@@ -14,5 +14,5 @@ public sealed class TextEmbeddingRequest
     /// Data to embed.
     /// </summary>
     [JsonPropertyName("inputs")]
-    public IList<string> Input { get; set; } = new List<string>();
+    public IList<string> Inputs { get; set; } = new List<string>();
 }

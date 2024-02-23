@@ -36,7 +36,7 @@ public sealed class HuggingFaceTextGenerationTests
         // Arrange
         const string Input = "This is test";
 
-        var huggingFaceLocal = new HuggingFaceTextGenerationService(Model, endpoint: Endpoint);
+        var huggingFaceLocal = new HuggingFaceTextGenerationService(Model, endpoint: new Uri(Endpoint));
         var huggingFaceRemote = new HuggingFaceTextGenerationService(Model, apiKey: this.GetApiKey());
 
         // Act

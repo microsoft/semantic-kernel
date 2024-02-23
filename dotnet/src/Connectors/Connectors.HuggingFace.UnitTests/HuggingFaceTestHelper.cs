@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Moq;
 using Moq.Protected;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace;
+namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 /// <summary>
 /// Helper for HuggingFace test purposes.
@@ -20,7 +20,7 @@ internal static class HuggingFaceTestHelper
     /// <param name="fileName">Name of the file with test response.</param>
     internal static string GetTestResponse(string fileName)
     {
-        return File.ReadAllText($"./HuggingFace/TestData/{fileName}");
+        return File.ReadAllText($"./TestData/{fileName}");
     }
 
     /// <summary>

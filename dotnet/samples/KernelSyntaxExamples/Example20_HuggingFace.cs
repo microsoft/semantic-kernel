@@ -2,8 +2,12 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Embeddings;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
+
+#pragma warning disable CA1861 // Avoid constant arrays as arguments
 
 namespace Examples;
 
@@ -30,6 +34,25 @@ public class Example20_HuggingFace : BaseTest
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         WriteLine(result.GetValue<string>());
+    }
+
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task RunInferenceApiEmbeddingAsync()
+    {
+        this.WriteLine("\n======= Hugging Face Inference API - Embedding Example ========\n");
+
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddHuggingFaceTextEmbeddingGeneration(
+                               model: TestConfiguration.HuggingFace.EmbeddingModelId,
+                               apiKey: TestConfiguration.HuggingFace.ApiKey)
+            .Build();
+
+        var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+
+        // Generate embeddings for each chunk.
+        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(new[] { "John: Hello, how are you?\nRoger: Hey, I'm Roger!" });
+
+        this.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
     }
 
     /// <summary>
