@@ -19,5 +19,5 @@ jobs:
       - name: Post comment
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           GITHUB_PR_RUN_ID: ${{ github.event.workflow_run.id }}
