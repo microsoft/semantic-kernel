@@ -62,13 +62,13 @@ internal abstract class ClientBase
     {
         try
         {
-            T? geminiResponse = JsonSerializer.Deserialize<T>(body);
-            if (geminiResponse is null)
+            T? response = JsonSerializer.Deserialize<T>(body);
+            if (response is null)
             {
                 throw new JsonException("Response is null");
             }
 
-            return geminiResponse;
+            return response;
         }
         catch (JsonException exc)
         {
