@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -23,6 +24,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private int? _candidateCount;
     private IList<string>? _stopSequences;
     private IList<GeminiSafetySetting>? _safetySettings;
+    private ToolCallBehavior? _toolCallBehavior;
 
     /// <summary>
     /// Default max tokens for a text generation.
@@ -129,6 +131,43 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._safetySettings = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the behavior for how tool calls are handled.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>To disable all tool calling, set the property to null (the default).</item>
+    /// <item>
+    /// To allow the model to request one of any number of functions, set the property to an
+    /// instance returned from <see cref="ToolCallBehavior.EnableFunctions"/>, called with
+    /// a list of the functions available.
+    /// </item>
+    /// <item>
+    /// To allow the model to request one of any of the functions in the supplied <see cref="Kernel"/>,
+    /// set the property to <see cref="ToolCallBehavior.EnableKernelFunctions"/> if the client should simply
+    /// send the information about the functions and not handle the response in any special manner, or
+    /// <see cref="ToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
+    /// invoke the function and send the result back to the service.
+    /// </item>
+    /// </list>
+    /// For all options where an instance is provided, auto-invoke behavior may be selected. If the service
+    /// sends a request for a function call, if auto-invoke has been requested, the client will attempt to
+    /// resolve that function from the functions available in the <see cref="Kernel"/>, and if found, rather
+    /// than returning the response back to the caller, it will handle the request automatically, invoking
+    /// the function, and sending back the result. The intermediate messages will be retained in the
+    /// <see cref="ChatHistory"/> if an instance was provided.
+    /// </remarks>
+    public ToolCallBehavior? ToolCallBehavior
+    {
+        get => this._toolCallBehavior;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._toolCallBehavior = value;
         }
     }
 

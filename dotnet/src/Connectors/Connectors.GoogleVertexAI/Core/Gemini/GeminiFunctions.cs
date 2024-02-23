@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -34,9 +34,11 @@ internal sealed class GeminiTool
 internal sealed class GeminiFunctionDeclaration
 {
     /// <summary>
-    /// Required. Name of function.<br />
-    /// Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
+    /// Required. Name of function.
     /// </summary>
+    /// <remarks>
+    /// Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
+    /// </remarks>
     [JsonPropertyName("name")]
     public string Name { get; set; }
 
@@ -53,88 +55,5 @@ internal sealed class GeminiFunctionDeclaration
     /// </summary>
     [JsonPropertyName("schema")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiFunctionSchema? Schema { get; set; }
-}
-
-/// <summary>
-/// The Schema object allows the definition of input and output data types.
-/// These types can be objects, but also primitives and arrays.
-/// Represents a select subset of an OpenAPI 3.0 schema object.
-/// </summary>
-internal sealed class GeminiFunctionSchema
-{
-    /// <summary>
-    /// Required. Data type.
-    /// </summary>
-    [JsonPropertyName("type")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public GeminiFunctionType Type { get; set; }
-
-    /// <summary>
-    /// Optional. The format of the data. This is used only for primitive datatypes.
-    /// Supported formats: for NUMBER type: float, double for INTEGER type: int32, int64
-    /// </summary>
-    [JsonPropertyName("format")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Format { get; set; }
-
-    /// <summary>
-    /// Optional. A brief description of the parameter. This could contain examples of use.
-    /// </summary>
-    [JsonPropertyName("description")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// Optional. Indicates if the value may be null.
-    /// </summary>
-    [JsonPropertyName("nullable")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public bool? Nullable { get; set; }
-
-    /// <summary>
-    /// Optional. Possible values of the element of Type.STRING with enum format.
-    /// </summary>
-    [JsonPropertyName("enum")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ISet<string>? Enum { get; set; }
-
-    /// <summary>
-    /// Optional. Properties of Type.OBJECT. An object containing a list of "key": value pairs.
-    /// </summary>
-    [JsonPropertyName("properties")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IDictionary<string, GeminiFunctionSchema>? Properties { get; set; }
-
-    /// <summary>
-    /// Optional. Required properties of Type.OBJECT.
-    /// </summary>
-    [JsonPropertyName("required")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<string>? Required { get; set; }
-
-    /// <summary>
-    /// Optional. Schema of the elements of Type.ARRAY.
-    /// </summary>
-    [JsonPropertyName("items")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiFunctionSchema? Items { get; set; }
-}
-
-/// <summary>
-/// Type contains the list of OpenAPI data types as defined by https://spec.openapis.org/oas/v3.0.3#data-types
-/// </summary>
-[SuppressMessage("ReSharper", "InconsistentNaming")]
-internal enum GeminiFunctionType
-{
-    /// <summary>
-    /// Not specified, should not be used.
-    /// </summary>
-    TYPE_UNSPECIFIED,
-    STRING,
-    NUMBER,
-    INTEGER,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
+    public BinaryData? ResultParameters { get; set; }
 }
