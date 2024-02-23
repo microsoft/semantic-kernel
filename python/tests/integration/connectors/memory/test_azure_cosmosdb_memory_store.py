@@ -38,11 +38,6 @@ pytest_mark = pytest.mark.skipif(
     reason="Azure CosmosDB Memory Store is not installed",
 )
 
-# Apply skip condition to all test functions in the file
-pytest_mark_conn_str_skip = pytest.mark.skipif(
-    skip_test, reason="Skipping all tests because YOUR_ENV_VARIABLE is not set"
-)
-
 
 def create_embedding(non_zero_pos: int) -> np.ndarray:
     # Create a NumPy array with a single non-zero value of dimension 1546
@@ -108,6 +103,7 @@ async def azurecosmosdb_memorystore() -> MemoryStoreBase:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_create_get_drop_exists_collection():
     store = await azurecosmosdb_memorystore()
     test_collection = "test_collection"
@@ -124,6 +120,7 @@ async def test_create_get_drop_exists_collection():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_upsert_and_get_and_remove(
     memory_record1: MemoryRecord,
 ):
@@ -141,6 +138,7 @@ async def test_upsert_and_get_and_remove(
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_upsert_batch_and_get_batch_remove_batch(memory_record2: MemoryRecord, memory_record3: MemoryRecord):
     store = await azurecosmosdb_memorystore()
     doc_ids = await store.upsert_batch(str(), [memory_record2, memory_record3])
@@ -156,6 +154,7 @@ async def test_upsert_batch_and_get_batch_remove_batch(memory_record2: MemoryRec
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: MemoryRecord):
     store = await azurecosmosdb_memorystore()
     await store.upsert_batch(str(), [memory_record1, memory_record2])
@@ -174,6 +173,7 @@ async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: M
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because AZCOSMOS_CONNSTR is not set")
 async def test_get_nearest_matches(
     memory_record1: MemoryRecord,
     memory_record2: MemoryRecord,
