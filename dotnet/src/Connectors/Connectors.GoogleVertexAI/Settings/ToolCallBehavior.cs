@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -95,11 +94,11 @@ public abstract class ToolCallBehavior
     /// false if a request needs to be validated against an allow list.</value>
     internal virtual bool AllowAnyRequestedKernelFunction => false;
 
-    /// <summary>Configures the <paramref name="options"/> with any tools this <see cref="ToolCallBehavior"/> provides.</summary>
+    /// <summary>Configures the <paramref name="request"/> with any tools this <see cref="ToolCallBehavior"/> provides.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> used for the operation.
-    /// This can be queried to determine what tools to provide into the <paramref name="options"/>.</param>
-    /// <param name="options">The destination <see cref="ChatCompletionsOptions"/> to configure.</param>
-    internal abstract void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options);
+    /// This can be queried to determine what tools to provide into the <paramref name="request"/>.</param>
+    /// <param name="request">The destination <see cref="GeminiRequest"/> to configure.</param>
+    internal abstract void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request);
 
     /// <summary>
     /// Represents a <see cref="ToolCallBehavior"/> that will provide to the model all available functions from a
@@ -111,20 +110,21 @@ public abstract class ToolCallBehavior
 
         public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request)
         {
             // If no kernel is provided, we don't have any tools to provide.
-            if (kernel is not null)
+            if (kernel is null)
             {
-                // Provide all functions from the kernel.
-                IList<KernelFunctionMetadata> functions = kernel.Plugins.GetFunctionsMetadata();
-                if (functions.Count > 0)
+                return;
+            }
+
+            // Provide all functions from the kernel.
+            IList<KernelFunctionMetadata> functions = kernel.Plugins.GetFunctionsMetadata();
+            if (functions.Count > 0)
+            {
+                foreach (var functionMetadata in functions)
                 {
-                    options.ToolChoice = ChatCompletionsToolChoice.Auto;
-                    for (int i = 0; i < functions.Count; i++)
-                    {
-                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].ToGeminiFunction().ToFunctionDeclaration()));
-                    }
+                    request.AddFunction(functionMetadata.ToGeminiFunction());
                 }
             }
         }
@@ -137,61 +137,50 @@ public abstract class ToolCallBehavior
     /// </summary>
     internal sealed class EnabledFunctions : ToolCallBehavior
     {
-        private readonly GeminiFunction[] _geminiFunctions;
-        private readonly ChatCompletionsFunctionToolDefinition[] _functions;
+        private readonly GeminiFunction[] _functions;
 
         public EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : base(autoInvoke)
         {
-            this._geminiFunctions = functions.ToArray();
-
-            var defs = new ChatCompletionsFunctionToolDefinition[this._geminiFunctions.Length];
-            for (int i = 0; i < defs.Length; i++)
-            {
-                defs[i] = new ChatCompletionsFunctionToolDefinition(this._geminiFunctions[i].ToFunctionDeclaration());
-            }
-
-            this._functions = defs;
+            this._functions = functions.ToArray();
         }
 
-        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.Name))}";
+        public override string ToString() =>
+            $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): " +
+            $"{string.Join(", ", this._functions.Select(f => f.FunctionName))}";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request)
         {
-            GeminiFunction[] geminiFunctions = this._geminiFunctions;
-            ChatCompletionsFunctionToolDefinition[] functions = this._functions;
-            Debug.Assert(geminiFunctions.Length == functions.Length);
-
-            if (geminiFunctions.Length > 0)
+            if (this._functions.Length == 0)
             {
-                bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
+                return;
+            }
 
-                // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
-                // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
-                // and then fail to do so, so we fail before we get to that point. This is an error
-                // on the consumers behalf: if they specify auto-invocation with any functions, they must
-                // specify the kernel and the kernel must contain those functions.
-                if (autoInvoke && kernel is null)
-                {
-                    throw new KernelException($"Auto-invocation with {nameof(EnabledFunctions)} is not supported when no kernel is provided.");
-                }
+            bool autoInvoke = this.MaximumAutoInvokeAttempts > 0;
 
-                options.ToolChoice = ChatCompletionsToolChoice.Auto;
-                for (int i = 0; i < geminiFunctions.Length; i++)
+            // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
+            // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
+            // and then fail to do so, so we fail before we get to that point. This is an error
+            // on the consumers behalf: if they specify auto-invocation with any functions, they must
+            // specify the kernel and the kernel must contain those functions.
+            if (autoInvoke && kernel is null)
+            {
+                throw new KernelException($"Auto-invocation with {nameof(EnabledFunctions)} is not supported when no kernel is provided.");
+            }
+
+            foreach (var func in this._functions)
+            {
+                // Make sure that if auto-invocation is specified, every enabled function can be found in the kernel.
+                if (autoInvoke)
                 {
-                    // Make sure that if auto-invocation is specified, every enabled function can be found in the kernel.
-                    if (autoInvoke)
+                    if (!kernel!.Plugins.TryGetFunction(func.PluginName, func.FunctionName, out _))
                     {
-                        Debug.Assert(kernel is not null);
-                        GeminiFunction f = geminiFunctions[i];
-                        if (!kernel!.Plugins.TryGetFunction(f.PluginName, f.FunctionName, out _))
-                        {
-                            throw new KernelException($"The specified {nameof(EnabledFunctions)} function {f.FullyQualifiedName} is not available in the kernel.");
-                        }
+                        throw new KernelException(
+                            $"The specified {nameof(EnabledFunctions)} function {func.FullyQualifiedName} is not available in the kernel.");
                     }
-
-                    // Add the function.
-                    options.Tools.Add(functions[i]);
                 }
+
+                // Add the function.
+                request.AddFunction(func);
             }
         }
     }

@@ -22,9 +22,8 @@ internal sealed class GeminiTool
     /// [FunctionCall][content.part.function_call] in the response. The next conversation turn may contain
     /// a [FunctionResponse][content.part.function_response] with the [content.role] "function" generation context for the next model turn.
     /// </remarks>
-    [JsonRequired]
     [JsonPropertyName("functionDeclarations")]
-    public IList<FunctionDeclaration> Functions { get; set; }
+    public IList<FunctionDeclaration> Functions { get; set; } = new List<FunctionDeclaration>();
 
     /// <summary>
     /// Structured representation of a function declaration as defined by the OpenAPI 3.03 specification.
@@ -40,14 +39,12 @@ internal sealed class GeminiTool
         /// Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
         /// </remarks>
         [JsonPropertyName("name")]
-        [JsonRequired]
         public string Name { get; set; }
 
         /// <summary>
         /// Required. A brief description of the function.
         /// </summary>
         [JsonPropertyName("description")]
-        [JsonRequired]
         public string Description { get; set; }
 
         /// <summary>

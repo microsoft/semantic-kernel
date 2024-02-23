@@ -21,8 +21,24 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ConfigurationElement? Configuration { get; set; }
 
+    [JsonPropertyName("tools")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IList<GeminiTool>? Tools { get; set; }
+
+    public void AddFunction(GeminiFunction function)
+    {
+        // NOTE: Currently gemini only supports one tool i.e. function calling.
+        this.Tools ??= new List<GeminiTool>();
+        if (this.Tools.Count == 0)
+        {
+            this.Tools.Add(new GeminiTool());
+        }
+
+        this.Tools[0].Functions.Add(function.ToFunctionDeclaration());
+    }
+
     /// <summary>
-    /// Creates a <see cref="GeminiRequest"/> object from the given prompt and execution settings.
+    /// Creates a <see cref="GeminiRequest"/> object from the given prompt and <see cref="GeminiPromptExecutionSettings"/>.
     /// </summary>
     /// <param name="prompt">The prompt to be assigned to the GeminiRequest.</param>
     /// <param name="executionSettings">The execution settings to be applied to the GeminiRequest.</param>
@@ -37,13 +53,19 @@ internal sealed class GeminiRequest
         return obj;
     }
 
+    /// <summary>
+    /// Creates a <see cref="GeminiRequest"/> object from the given <see cref="ChatHistory"/> and <see cref="GeminiPromptExecutionSettings"/>.
+    /// </summary>
+    /// <param name="chatHistory">The chat history to be assigned to the GeminiRequest.</param>
+    /// <param name="executionSettings">The execution settings to be applied to the GeminiRequest.</param>
+    /// <returns>A new instance of <see cref="GeminiRequest"/>.</returns>
     public static GeminiRequest FromChatHistoryAndExecutionSettings(
         ChatHistory chatHistory,
-        GeminiPromptExecutionSettings promptExecutionSettings)
+        GeminiPromptExecutionSettings executionSettings)
     {
         GeminiRequest obj = CreateGeminiRequest(chatHistory);
-        AddSafetySettings(promptExecutionSettings, obj);
-        AddConfiguration(promptExecutionSettings, obj);
+        AddSafetySettings(executionSettings, obj);
+        AddConfiguration(executionSettings, obj);
         return obj;
     }
 
@@ -114,9 +136,9 @@ internal sealed class GeminiRequest
         return imageContent.Metadata[key]!.ToString();
     }
 
-    private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest obj)
+    private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
-        obj.Configuration = new ConfigurationElement
+        request.Configuration = new ConfigurationElement
         {
             Temperature = executionSettings.Temperature,
             TopP = executionSettings.TopP,
@@ -127,9 +149,9 @@ internal sealed class GeminiRequest
         };
     }
 
-    private static void AddSafetySettings(GeminiPromptExecutionSettings executionSettings, GeminiRequest obj)
+    private static void AddSafetySettings(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
-        obj.SafetySettings = executionSettings.SafetySettings?.Select(s
+        request.SafetySettings = executionSettings.SafetySettings?.Select(s
             => new GeminiSafetySetting(s.Category, s.Threshold)).ToList();
     }
 
