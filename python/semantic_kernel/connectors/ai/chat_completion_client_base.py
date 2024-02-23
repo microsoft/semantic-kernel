@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, AsyncIterable, Dict, List, Optional
+from typing import TYPE_CHECKING, AsyncIterable, Dict, List, Optional, Type
 
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
@@ -10,9 +10,6 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents import StreamingChatMessageContent
     from semantic_kernel.contents.chat_history import ChatHistory
-    from typing import Type
-else:
-    Type = type # fallback for Python <3.9
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
