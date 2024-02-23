@@ -107,7 +107,7 @@ class ChatHistory(KernelBaseModel):
             message["metadata"] = metadata
         self.messages.append(ChatMessageContent(**message))
 
-    def _prepare_for_add(self, role: ChatRole, content: str) -> dict[str, str]:
+    def _prepare_for_add(self, role: ChatRole, content: str) -> Dict[str, str]:
         """Prepare a message to be added to the history."""
         return {"role": role, "content": content}
 
