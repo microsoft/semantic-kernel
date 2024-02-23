@@ -74,34 +74,49 @@ public sealed class HandlebarsPlanner
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        // Get CreatePlan prompt template
-        var functionsMetadata = await kernel.Plugins.GetFunctionsAsync(this._options, null, null, cancellationToken).ConfigureAwait(false);
-        var availableFunctions = this.GetAvailableFunctionsManual(functionsMetadata, out var complexParameterTypes, out var complexParameterSchemas);
-        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, arguments, availableFunctions, complexParameterTypes, complexParameterSchemas, cancellationToken).ConfigureAwait(false);
-        ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
+        string? createPlanPrompt = null;
+        ChatMessageContent? modelResults = null;
 
-        // Get the chat completion results
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        // Regex breakdown:
-        // (```\s*handlebars){1}\s*: Opening backticks, starting boundary for HB template
-        // ((([^`]|`(?!``))+): Any non-backtick character or one backtick character not followed by 2 more consecutive backticks
-        // (\s*```){1}: Closing backticks, closing boundary for HB template
-        MatchCollection matches = Regex.Matches(completionResults.Content, @"(```\s*handlebars){1}\s*(([^`]|`(?!``))+)(\s*```){1}", RegexOptions.Multiline);
-        if (matches.Count < 1)
+        try
         {
-            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results. Additional helpers or input may be required.\n\nPlanner output:\n{completionResults}");
+            // Get CreatePlan prompt template
+            var functionsMetadata = await kernel.Plugins.GetFunctionsAsync(this._options, null, null, cancellationToken).ConfigureAwait(false);
+            var availableFunctions = this.GetAvailableFunctionsManual(functionsMetadata, out var complexParameterTypes, out var complexParameterSchemas);
+            createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, arguments, availableFunctions, complexParameterTypes, complexParameterSchemas, cancellationToken).ConfigureAwait(false);
+            ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
+
+            // Get the chat completion results
+            var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+            modelResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            // Regex breakdown:
+            // (```\s*handlebars){1}\s*: Opening backticks, starting boundary for HB template
+            // ((([^`]|`(?!``))+): Any non-backtick character or one backtick character not followed by 2 more consecutive backticks
+            // (\s*```){1}: Closing backticks, closing boundary for HB template
+            MatchCollection matches = Regex.Matches(modelResults.Content, @"(```\s*handlebars){1}\s*(([^`]|`(?!``))+)(\s*```){1}", RegexOptions.Multiline);
+            if (matches.Count < 1)
+            {
+                throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results. Additional helpers or input may be required.\n\nPlanner output:\n{modelResults.Content}");
+            }
+            else if (matches.Count > 1)
+            {
+                throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Identified multiple Handlebars templates in model response. Please try again.\n\nPlanner output:\n{modelResults.Content}");
+            }
+
+            var planTemplate = matches[0].Groups[2].Value.Trim();
+            planTemplate = MinifyHandlebarsTemplate(planTemplate);
+
+            return new HandlebarsPlan(planTemplate, createPlanPrompt);
         }
-        else if (matches.Count > 1)
+        catch (KernelException ex)
         {
-            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Identified multiple Handlebars templates in model response. Please try again.\n\nPlanner output:\n{completionResults}");
+            throw new PlanCreationException(
+                "CreatePlan failed. See inner exception for details.",
+                createPlanPrompt,
+                modelResults,
+                ex
+            );
         }
-
-        var planTemplate = matches[0].Groups[2].Value.Trim();
-        planTemplate = MinifyHandlebarsTemplate(planTemplate);
-
-        return new HandlebarsPlan(planTemplate, createPlanPrompt);
     }
 
     private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
