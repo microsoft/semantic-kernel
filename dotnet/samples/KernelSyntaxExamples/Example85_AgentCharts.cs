@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Xunit;
 using Xunit.Abstractions;
-using System.IO;
-using System;
-using System.Diagnostics;
 
 namespace Examples;
 
@@ -65,6 +64,7 @@ Others    23   373     156  552
 Sum      426  1622     856 2904
 ");
             await InvokeAgentAsync(thread, "2-colors", "Can you regenerate this same chart using the category names as the bar colors?");
+            await InvokeAgentAsync(thread, "3-line", "Can you regenerate this as a line chart?");
         }
         finally
         {
