@@ -453,9 +453,11 @@ public class Example65_HandlebarsPlanner : BaseTest
         };
 
         var goal = "I just watched the movie 'Inception' and I loved it! I want to leave a 5 star review. Can you help me?";
-        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt, false, "WriterPlugin");
 
+        // Note that since the custom prompt inputs a unique Helpers section with helpers not actually registered with the kernel,
+        // any plan created using this prompt will fail execution; thus, we will skip the InvokePlan call in this example.
         // For a simpler example, see `ItOverridesPromptAsync` in the dotnet\src\Planners\Planners.Handlebars.UnitTests\Handlebars\HandlebarsPlannerTests.cs file.
+        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt, shouldInvokePlan: false, "WriterPlugin");
     }
 
     public Example65_HandlebarsPlanner(ITestOutputHelper output) : base(output)
