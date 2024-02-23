@@ -74,26 +74,41 @@ public sealed class HandlebarsPlanner
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        // Get CreatePlan prompt template
-        var functionsMetadata = await kernel.Plugins.GetFunctionsAsync(this._options, null, null, cancellationToken).ConfigureAwait(false);
-        var availableFunctions = this.GetAvailableFunctionsManual(functionsMetadata, out var complexParameterTypes, out var complexParameterSchemas);
-        var createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, arguments, availableFunctions, complexParameterTypes, complexParameterSchemas, cancellationToken).ConfigureAwait(false);
-        ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
+        string? createPlanPrompt = null;
+        ChatMessageContent? modelResults = null;
 
-        // Get the chat completion results
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var completionResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
-        if (!match.Success)
+        try
         {
-            throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results. Additional helpers or input may be required.\n\nPlanner output:\n{completionResults}");
+            // Get CreatePlan prompt template
+            var functionsMetadata = await kernel.Plugins.GetFunctionsAsync(this._options, null, null, cancellationToken).ConfigureAwait(false);
+            var availableFunctions = this.GetAvailableFunctionsManual(functionsMetadata, out var complexParameterTypes, out var complexParameterSchemas);
+            createPlanPrompt = await this.GetHandlebarsTemplateAsync(kernel, goal, arguments, availableFunctions, complexParameterTypes, complexParameterSchemas, cancellationToken).ConfigureAwait(false);
+            ChatHistory chatMessages = this.GetChatHistoryFromPrompt(createPlanPrompt);
+
+            // Get the chat completion results
+            var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+            modelResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            Match match = Regex.Match(modelResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+            if (!match.Success)
+            {
+                throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results.");
+            }
+
+            var planTemplate = match.Groups[2].Value.Trim();
+            planTemplate = MinifyHandlebarsTemplate(planTemplate);
+
+            return new HandlebarsPlan(planTemplate, createPlanPrompt);
         }
-
-        var planTemplate = match.Groups[2].Value.Trim();
-        planTemplate = MinifyHandlebarsTemplate(planTemplate);
-
-        return new HandlebarsPlan(planTemplate, createPlanPrompt);
+        catch (KernelException ex)
+        {
+            throw new PlanCreationException(
+                "CreatePlan failed. See inner exception for details.",
+                createPlanPrompt,
+                modelResults,
+                ex
+            );
+        }
     }
 
     private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
