@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Gemini.FunctionCalling;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;
 
 public sealed class GeminiFunctionTests
 {
@@ -69,7 +69,7 @@ public sealed class GeminiFunctionTests
         var result = sut.ToFunctionDeclaration();
 
         // Assert
-        Assert.Equal("""{"type":"object","required":[],"properties":{}}""", result.ResultParameters!.ToString());
+        Assert.Null(result.ResultParameters);
     }
 
     [Fact]
@@ -160,14 +160,11 @@ public sealed class GeminiFunctionTests
 
         // Act
         GeminiTool.FunctionDeclaration result = f.ToFunctionDeclaration();
-        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.ResultParameters!.ToString())!;
 
         // Assert
-        Assert.NotNull(pd.Properties);
-        Assert.Single(pd.Properties);
         Assert.Equal(
-            JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string" }""")),
-            JsonSerializer.Serialize(pd.Properties.First().Value.RootElement));
+            """{"type":"object","required":[],"properties":{"param1":{"type":"string"}}}""",
+            result.ResultParameters!.ToString());
     }
 
     [Fact]
@@ -180,22 +177,10 @@ public sealed class GeminiFunctionTests
 
         // Act
         GeminiTool.FunctionDeclaration result = f.ToFunctionDeclaration();
-        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.ResultParameters!.ToString())!;
 
         // Assert
-        Assert.NotNull(pd.Properties);
-        Assert.Single(pd.Properties);
         Assert.Equal(
-            JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string", "description":"something neat" }""")),
-            JsonSerializer.Serialize(pd.Properties.First().Value.RootElement));
+            """{"type":"object","required":[],"properties":{"param1":{"type":"string","description":"something neat"}}}""",
+            result.ResultParameters!.ToString());
     }
-
-#pragma warning disable CA1812 // uninstantiated internal class
-    private sealed class ParametersData
-    {
-        public string? Type { get; set; }
-        public string[]? Required { get; set; }
-        public Dictionary<string, KernelJsonSchema>? Properties { get; set; }
-    }
-#pragma warning restore CA1812
 }

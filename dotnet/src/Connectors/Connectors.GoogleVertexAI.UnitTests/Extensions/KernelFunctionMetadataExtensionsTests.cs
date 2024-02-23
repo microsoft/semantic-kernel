@@ -179,7 +179,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     }
 
     [Fact]
-    public void ItCanCreateValidOpenAIFunctionManualForPlugin()
+    public void ItCanCreateValidGeminiFunctionManualForPlugin()
     {
         // Arrange
         var kernel = new Kernel();
@@ -195,19 +195,13 @@ public sealed class KernelFunctionMetadataExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            """
-            {"type":"object","required":["parameter1","parameter2","parameter3"],
-            "properties":{
-            "parameter1":{"type":"string","description":"String parameter"},
-            "parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"},
-            "parameter3":{"type":"string","format":"date-time","description":"DateTime parameter"}}}
-            """,
+            """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"},"parameter3":{"type":"string","format":"date-time","description":"DateTime parameter"}}}""",
             result.ResultParameters!.ToString()
         );
     }
 
     [Fact]
-    public void ItCanCreateValidOpenAIFunctionManualForPrompt()
+    public void ItCanCreateValidGeminiFunctionManualForPrompt()
     {
         // Arrange
         var promptTemplateConfig = new PromptTemplateConfig("Hello AI")
@@ -236,13 +230,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            """
-            {"type":"object",
-            "required":["parameter1","parameter2"],
-            "properties":{
-            "parameter1":{"type":"string","description":"String parameter"},
-            "parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}
-            """,
+            """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
             result.ResultParameters!.ToString()
         );
     }
