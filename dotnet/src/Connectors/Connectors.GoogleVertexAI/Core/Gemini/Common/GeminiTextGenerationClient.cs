@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for interacting with the text generation gemini model.
 /// </summary>
-internal class GeminiTextGenerationClient : IGeminiTextGenerationClient
+internal sealed class GeminiTextGenerationClient : IGeminiTextGenerationClient
 {
     private readonly IGeminiChatCompletionClient _chatCompletionClient;
 
@@ -26,7 +26,7 @@ internal class GeminiTextGenerationClient : IGeminiTextGenerationClient
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
+    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
@@ -43,7 +43,7 @@ internal class GeminiTextGenerationClient : IGeminiTextGenerationClient
     }
 
     /// <inheritdoc/>
-    public virtual async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
+    public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
