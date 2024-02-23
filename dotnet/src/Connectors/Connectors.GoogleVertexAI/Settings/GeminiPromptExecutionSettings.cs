@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -15,7 +14,6 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// Represents the settings for executing a prompt with the Gemini model.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-[Experimental("SKEXP0033")]
 public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 {
     private double? _temperature;

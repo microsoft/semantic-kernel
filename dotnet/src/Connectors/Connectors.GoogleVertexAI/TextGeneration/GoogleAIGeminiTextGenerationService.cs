@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
@@ -11,7 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a service for generating text using the Google AI Gemini API.
 /// </summary>
-[Experimental("SKEXP0033")]
 public sealed class GoogleAIGeminiTextGenerationService : GeminiTextGenerationServiceBase
 {
     /// <summary>
