@@ -136,7 +136,7 @@ Python notebooks:
 - [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
 - [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
 - [Creating Prompt Functions at runtime (i.e. inline functions)](./notebooks/03-prompt-function-inline.ipynb)
-- [Using Context Variables to Build a Chat Experience](./notebooks/04-context-variables-chat.ipynb)
+- [Using Context Variables to Build a Chat Experience](./notebooks/04-kernel-arguments-chat.ipynb)
 - [Introduction to planners](./notebooks/05-using-the-planner.ipynb)
 - [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
 - [Using Hugging Face for Plugins](./notebooks/07-hugging-face-for-plugins.ipynb)
