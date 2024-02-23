@@ -8,7 +8,6 @@ from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
-from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
@@ -31,9 +30,9 @@ class OpenAIHandler(KernelBaseModel, ABC):
 
     client: AsyncOpenAI
     ai_model_type: OpenAIModelTypes = OpenAIModelTypes.CHAT
-    prompt_tokens: int = Field(0, json_schema_extra={'init': False})
-    completion_tokens: int = Field(0, json_schema_extra={'init': False})
-    total_tokens: int = Field(0, json_schema_extra={'init': False})
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
 
     async def _send_request(
         self,

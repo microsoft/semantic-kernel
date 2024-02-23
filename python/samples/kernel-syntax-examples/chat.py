@@ -8,7 +8,6 @@ from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
-
 prompt = """
 ChatBot can have a conversation with you about any topic.
 It can give explicit instructions or say 'I don't know'
@@ -23,7 +22,7 @@ ChatBot:>
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-service_id="chat-gpt"
+service_id = "chat-gpt"
 kernel.add_service(
     sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo-1106", api_key=api_key, org_id=org_id)
 )

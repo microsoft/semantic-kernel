@@ -65,11 +65,13 @@ async def example2(kernel: sk.Kernel, service_id: str):
 
     oracle = kernel.create_function_from_prompt(
         template=prompt,
-        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(service_id=service_id,max_tokens=150, temperature=0, top_p=1),
+        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(
+            service_id=service_id, max_tokens=150, temperature=0, top_p=1
+        ),
     )
     answer = await kernel.invoke(
         oracle,
-        question=question, 
+        question=question,
         externalInformation="",
     )
 

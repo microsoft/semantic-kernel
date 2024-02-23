@@ -15,7 +15,7 @@ load_dotenv()
 async def main():
     kernel = sk.Kernel()
     deployment, key, endpoint, api_version = sk.azure_openai_settings_from_dot_env(include_api_version=True)
-    service_id="chat-gpt"
+    service_id = "chat-gpt"
     kernel.add_service(
         AzureChatCompletion(
             service_id=service_id,
@@ -56,7 +56,7 @@ async def main():
         execution_settings=req_settings,
     )
 
-    question="What is Semantic Kernel?"
+    question = "What is Semantic Kernel?"
     qna = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
     result = await qna.invoke(kernel, question=question, num_results=10, offset=0)
 

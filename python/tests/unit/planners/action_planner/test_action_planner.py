@@ -131,7 +131,7 @@ def plugins_input():
 def test_available_functions(plugins_input, mock_kernel):
     goal = "Translate Happy birthday to German."
 
-    planner = ActionPlanner(mock_kernel,service_id="test")
+    planner = ActionPlanner(mock_kernel, service_id="test")
     result = planner.list_of_functions(goal=goal)
 
     expected_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input[1:]]

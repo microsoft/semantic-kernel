@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -28,7 +27,7 @@ flowery prose.
 
 kernel = sk.Kernel()
 
-service_id="chat-gpt"
+service_id = "chat-gpt"
 chat_service = sk_oai.AzureChatCompletion(
     service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
@@ -72,9 +71,8 @@ history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-chat_function = kernel.create_function_from_prompt(
-    prompt_template_config=prompt_template_config
-)
+chat_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+
 
 async def chat() -> bool:
     try:
