@@ -4,9 +4,6 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.core_plugins import (
-    ConversationSummaryPlugin,
-)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -25,10 +22,11 @@ async def main():
         sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
-    kernel.import_plugin(ConversationSummaryPlugin(kernel), "conversation_summary")
-
     template = """
-    {{ConversationSummaryPlugin.SummarizeConversation $history}}
+
+    Previous information from chat:
+    {{$chat_history}}
+    
     User: {{$request}}
     Assistant: 
     """
@@ -60,7 +58,7 @@ async def main():
             chat,
             KernelArguments(
                 request=user_input,
-                history=chat_history,
+                chat_history=chat_history,
             ),
         )
         result = str(result)

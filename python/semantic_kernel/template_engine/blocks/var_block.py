@@ -71,7 +71,7 @@ class VarBlock(Block):
         if arguments is None:
             return ""
         value = arguments.get(self.name, None)
-        if not value:
+        if value is None:
             logger.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found in the KernelArguments")
 
         return str(value) if value else ""

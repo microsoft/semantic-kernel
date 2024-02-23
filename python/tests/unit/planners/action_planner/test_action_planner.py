@@ -35,7 +35,7 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Mo
 
 def test_throw_without_kernel():
     with pytest.raises(PlanningException):
-        ActionPlanner(None)
+        ActionPlanner(None, None)
 
 
 @pytest.fixture
@@ -108,7 +108,7 @@ async def test_plan_creation():
 
     kernel.create_function_from_prompt.return_value = mock_function
 
-    planner = ActionPlanner(kernel)
+    planner = ActionPlanner(kernel, service_id="test")
     plan = await planner.create_plan(goal)
 
     assert plan is not None
@@ -131,7 +131,7 @@ def plugins_input():
 def test_available_functions(plugins_input, mock_kernel):
     goal = "Translate Happy birthday to German."
 
-    planner = ActionPlanner(mock_kernel)
+    planner = ActionPlanner(mock_kernel, service_id="test")
     result = planner.list_of_functions(goal=goal)
 
     expected_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input[1:]]
@@ -146,7 +146,7 @@ def test_exclude_plugins(plugins_input, mock_kernel):
     excluded_plugin_name = "email"
 
     planner_config = ActionPlannerConfig(excluded_plugins=[excluded_plugin_name])
-    planner = ActionPlanner(mock_kernel, config=planner_config)
+    planner = ActionPlanner(mock_kernel, service_id="test", config=planner_config)
     result = planner.list_of_functions(goal=goal)
 
     all_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input]
@@ -163,7 +163,7 @@ def test_exclude_functions(plugins_input, mock_kernel):
     excluded_function_name = "SendEmail"
 
     planner_config = ActionPlannerConfig(excluded_functions=[excluded_function_name])
-    planner = ActionPlanner(mock_kernel, config=planner_config)
+    planner = ActionPlanner(mock_kernel, service_id="test", config=planner_config)
     result = planner.list_of_functions(goal=goal)
 
     all_plugins = [f"{val[1]}.{val[0]}" for val in plugins_input]
@@ -193,7 +193,7 @@ async def test_empty_goal_throw():
     mock_function = create_mock_function(kernel_function_metadata)
     kernel.plugins.__getitem__.return_value = MagicMock(__getitem__=MagicMock(return_value=mock_function))
 
-    planner = ActionPlanner(kernel)
+    planner = ActionPlanner(kernel, service_id="test")
 
     with pytest.raises(PlanningException):
         await planner.create_plan(goal)
@@ -226,7 +226,7 @@ async def test_invalid_json_throw():
 
     kernel.create_function_from_prompt.return_value = mock_function
 
-    planner = ActionPlanner(kernel)
+    planner = ActionPlanner(kernel, service_id="test")
 
     with pytest.raises(PlanningException):
         await planner.create_plan(goal)

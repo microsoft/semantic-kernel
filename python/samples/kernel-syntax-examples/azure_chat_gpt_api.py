@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -28,8 +27,9 @@ flowery prose.
 
 kernel = sk.Kernel()
 
+service_id = "chat-gpt"
 chat_service = sk_oai.AzureChatCompletion(
-    service_id="chat-gpt", **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+    service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
 kernel.add_service(chat_service)
 
@@ -46,7 +46,7 @@ kernel.add_service(chat_service)
 
 ## The second method is useful when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
 ## 3. create the request settings from the kernel based on the registered service class: # noqa: E266
-req_settings = kernel.get_service("chat-gpt").get_prompt_execution_settings_class()(service_id="chat-gpt")
+req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
@@ -56,7 +56,6 @@ prompt_template_config = sk.PromptTemplateConfig(
     template="""Answer the following request: {{$request}}.
                 Additionally summarize the on-going chat history: {{$chat_history}}""",
     name="chat",
-    template_format="semantic-kernel",
     input_variables=[
         InputVariable(name="request", description="The user input", is_required=True),
         InputVariable(
@@ -71,8 +70,6 @@ history = ChatHistory()
 history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
-
-arguments = KernelArguments()
 
 chat_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
