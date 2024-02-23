@@ -293,7 +293,7 @@ class KernelFunction(KernelBaseModel):
             )
 
         if not prompt_template:
-            prompt_template = KernelPromptTemplate(prompt_template_config)
+            prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
 
         async def _local_func(
             function: KernelFunctionMetadata,

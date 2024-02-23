@@ -281,7 +281,7 @@ async def test_template():
 
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
@@ -306,7 +306,7 @@ async def test_template_two_histories():  # ignore: E501
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
@@ -336,7 +336,7 @@ async def test_template_two_histories_one_empty():
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
@@ -358,7 +358,7 @@ async def test_template_history_only():
 
     template = "{{$chat_history}}"
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(kernel=Kernel(), arguments=KernelArguments(chat_history=chat_history))
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
@@ -370,7 +370,7 @@ async def test_template_history_only():
 async def test_template_without_chat_history():
     template = "{{$input}}"
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(kernel=Kernel(), arguments=KernelArguments(input="What can you do?"))
     assert rendered == "What can you do?"
     chat_history = ChatHistory.from_rendered_prompt(rendered)
@@ -382,7 +382,7 @@ async def test_template_without_chat_history():
 async def test_handwritten_xml():
     template = '<message role="user">test content</message>'
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(kernel=Kernel(), arguments=KernelArguments())
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
@@ -393,7 +393,7 @@ async def test_handwritten_xml():
 async def test_handwritten_xml_invalid():
     template = '<message role="user"test content</message>'
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(kernel=Kernel(), arguments=KernelArguments())
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == '<message role="user"test content</message>'
@@ -404,7 +404,7 @@ async def test_handwritten_xml_invalid():
 async def test_handwritten_xml_as_arg():
     template = "{{$input}}"
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(input='<message role="user">test content</message>'),
@@ -426,7 +426,7 @@ async def test_history_openai_cmc():
     )
     template = "{{$chat_history}}"
     rendered = await KernelPromptTemplate(
-        PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history1),

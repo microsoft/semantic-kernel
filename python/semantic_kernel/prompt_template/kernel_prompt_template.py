@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from pydantic import PrivateAttr
 
@@ -21,44 +21,41 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelPromptTemplate(PromptTemplateBase):
+    prompt_template_config: PromptTemplateConfig
     _blocks: List[Block] = PrivateAttr(default_factory=list)
 
-    def __init__(self, prompt_config: PromptTemplateConfig):
-        super().__init__()
-        self._blocks = self.extract_blocks(prompt_config)
-        self._add_missing_input_variables(prompt_config)
-
-    def _add_missing_input_variables(self, config: PromptTemplateConfig):
+    def model_post_init(self, __context: Any) -> None:
+        self._blocks = self.extract_blocks()
         # Add all of the existing input variables to our known set. We'll avoid adding any
         # dynamically discovered input variables with the same name.
-        seen = {iv.name.lower() for iv in config.input_variables}
-
-        def add_if_missing(variable_name):
-            # Convert variable_name to lower case to handle case-insensitivity
-            if variable_name and variable_name.lower() not in seen:
-                seen.add(variable_name.lower())
-                config.input_variables.append(InputVariable(name=variable_name))
+        seen = {iv.name.lower() for iv in self.prompt_template_config.input_variables}
 
         # Enumerate every block in the template, adding any variables that are referenced.
         for block in self._blocks:
             if block.type == BlockTypes.VARIABLE:
                 # Add all variables from variable blocks, e.g. "{{$a}}".
-                add_if_missing(block.name)
+                self._add_if_missing(block.name, seen)
                 continue
             if block.type == BlockTypes.CODE:
                 for sub_block in block.tokens:
                     if sub_block.type == BlockTypes.VARIABLE:
                         # Add all variables from code blocks, e.g. "{{p.bar $b}}".
-                        add_if_missing(sub_block.name)
+                        self._add_if_missing(sub_block.name, seen)
                         continue
                     if sub_block.type == BlockTypes.NAMED_ARG and sub_block.variable:
                         # Add all variables from named arguments, e.g. "{{p.bar b = $b}}".
                         # represents a named argument for a function call.
                         # For example, in the template {{ MyPlugin.MyFunction var1=$boo }}, var1=$boo
                         # is a named arg block.
-                        add_if_missing(sub_block.variable.name)
+                        self._add_if_missing(sub_block.variable.name, seen)
 
-    def extract_blocks(self, config: PromptTemplateConfig) -> List[Block]:
+    def _add_if_missing(self, variable_name: str, seen: Optional[set] = None):
+        # Convert variable_name to lower case to handle case-insensitivity
+        if variable_name and variable_name.lower() not in seen:
+            seen.add(variable_name.lower())
+            self.prompt_template_config.input_variables.append(InputVariable(name=variable_name))
+
+    def extract_blocks(self) -> List[Block]:
         """
         Given a prompt template string, extract all the blocks
         (text, variables, function calls).
@@ -70,10 +67,10 @@ class KernelPromptTemplate(PromptTemplateBase):
             A list of all the blocks, ie the template tokenized in
             text, variables and function calls
         """
-        logger.debug(f"Extracting blocks from template: {config.template}")
-        if not config.template:
+        logger.debug(f"Extracting blocks from template: {self.prompt_template_config.template}")
+        if not self.prompt_template_config.template:
             return []
-        return TemplateTokenizer.tokenize(config.template)
+        return TemplateTokenizer.tokenize(self.prompt_template_config.template)
 
     async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
         """

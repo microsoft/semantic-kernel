@@ -540,7 +540,7 @@ Error description: '{str(function_invoked_args.exception)}'",
                 prompt = prompt_file.read()
                 prompt_template_config.template = prompt
 
-            kernel_prompt_template = KernelPromptTemplate(prompt_template_config)
+            kernel_prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
 
             functions += [
                 self.create_function_from_prompt(
