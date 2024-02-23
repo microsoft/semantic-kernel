@@ -3,8 +3,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
@@ -77,7 +75,7 @@ public sealed class AzureOpenAIWithDataChatMessageContentTests
         // Arrange
         var choice = new ChatWithDataChoice
         {
-            Messages = [ new() { Content = "Assistant content", Role = "assistant" } ]
+            Messages = [new() { Content = "Assistant content", Role = "assistant" }]
         };
 
         var metadata = new ReadOnlyInternalDictionary(new Dictionary<string, object?>() { ["Extra"] = "Data" });
@@ -93,7 +91,7 @@ public sealed class AzureOpenAIWithDataChatMessageContentTests
         Assert.Equal("Data", content.Metadata["Extra"]);
     }
 
-    private class ReadOnlyInternalDictionary : IReadOnlyDictionary<string, object?>
+    private sealed class ReadOnlyInternalDictionary : IReadOnlyDictionary<string, object?>
     {
         public ReadOnlyInternalDictionary(IDictionary<string, object?> initializingData)
         {
@@ -113,7 +111,7 @@ public sealed class AzureOpenAIWithDataChatMessageContentTests
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() => this._internalDictionary.GetEnumerator();
 
-        public bool TryGetValue(string key, out object? value) => this._internalDictionary.TryGetValue(key, out value); 
+        public bool TryGetValue(string key, out object? value) => this._internalDictionary.TryGetValue(key, out value);
 
         IEnumerator IEnumerable.GetEnumerator() => this._internalDictionary.GetEnumerator();
     }
