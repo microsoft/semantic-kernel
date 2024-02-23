@@ -6,6 +6,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Type,
     Union,
 )
 
@@ -41,7 +42,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
 
-    def get_chat_message_content_class(self) -> type[ChatMessageContent]:
+    def get_chat_message_content_class(self) -> Type[ChatMessageContent]:
         """Get the chat message content types used by a class, default is ChatMessageContent."""
         return OpenAIChatMessageContent
 
