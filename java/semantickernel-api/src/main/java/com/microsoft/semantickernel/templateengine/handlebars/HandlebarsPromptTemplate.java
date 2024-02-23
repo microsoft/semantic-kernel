@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
@@ -256,7 +257,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         String functionName = kernelFunction.getName();
                         String pluginName = plugin.getName();
                         handlebars.registerHelper(
-                            pluginName + "-" + functionName,
+                            ToolCallBehavior.formFullFunctionName(pluginName, functionName),
                             functionInvokeHelper(kernel, kernelFunction));
                     });
 

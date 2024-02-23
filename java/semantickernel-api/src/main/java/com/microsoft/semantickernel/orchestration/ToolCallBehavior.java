@@ -42,7 +42,7 @@ public class ToolCallBehavior {
         enabledFunctions.addAll(toolCallBehavior.enabledFunctions);
     }
 
-    static String getKey(@Nullable String pluginName, String functionName) {
+    public static String formFullFunctionName(@Nullable String pluginName, String functionName) {
         if (pluginName == null) {
             pluginName = "";
         }
@@ -109,7 +109,7 @@ public class ToolCallBehavior {
      */
     public ToolCallBehavior enableFunction(KernelFunction<?> function, boolean enable) {
         if (function != null) {
-            String key = getKey(function.getPluginName(), function.getName());
+            String key = formFullFunctionName(function.getPluginName(), function.getName());
             if (enable) {
                 enabledFunctions.add(key);
             } else {
@@ -165,7 +165,7 @@ public class ToolCallBehavior {
      * @return Whether the function is enabled.
      */
     public boolean functionEnabled(@Nullable String pluginName, String functionName) {
-        String key = getKey(pluginName, functionName);
+        String key = formFullFunctionName(pluginName, functionName);
         return enabledFunctions.contains(key);
     }
 
