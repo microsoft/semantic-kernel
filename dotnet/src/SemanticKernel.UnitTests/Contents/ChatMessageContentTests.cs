@@ -33,6 +33,10 @@ public class ChatMessageContentTests
         {
             ["metadata-key-4"] = "metadata-value-4"
         }));
+        items.Add(new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", metadata: new Dictionary<string, object?>()
+        {
+            ["metadata-key-5"] = "metadata-value-5"
+        }));
 #pragma warning disable SKEXP0005
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
@@ -55,7 +59,7 @@ public class ChatMessageContentTests
         Assert.Equal("message-metadata-value-1", sut.Metadata["message-metadata-key-1"]?.ToString());
 
         Assert.NotNull(deserializedMessage?.Items);
-        Assert.Equal(4, deserializedMessage.Items.Count);
+        Assert.Equal(5, deserializedMessage.Items.Count);
 
         var textContent = deserializedMessage.Items[0] as TextContent;
         Assert.NotNull(textContent);
@@ -88,5 +92,13 @@ public class ChatMessageContentTests
         Assert.NotNull(audioContent.Metadata);
         Assert.Single(audioContent.Metadata);
         Assert.Equal("metadata-value-4", audioContent.Metadata["metadata-key-4"]?.ToString());
+
+        imageContent = deserializedMessage.Items[4] as ImageContent;
+        Assert.NotNull(imageContent);
+        Assert.True(imageContent.Data?.ToArray().SequenceEqual(new BinaryData(new[] { 2, 1, 3 }).ToArray()));
+        Assert.Equal("model-5", imageContent.ModelId);
+        Assert.NotNull(imageContent.Metadata);
+        Assert.Single(imageContent.Metadata);
+        Assert.Equal("metadata-value-5", imageContent.Metadata["metadata-key-5"]?.ToString());
     }
 }
