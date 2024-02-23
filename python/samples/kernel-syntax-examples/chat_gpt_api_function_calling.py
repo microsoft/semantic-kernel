@@ -9,9 +9,9 @@ from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_tool_call,
     get_tool_call_object,
 )
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 
 system_message = """

@@ -6,12 +6,12 @@ from pydantic import Field
 
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX
+from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX, PLUGIN_NAME_REGEX
 
 
 class KernelFunctionMetadata(KernelBaseModel):
     name: str = Field(pattern=FUNCTION_NAME_REGEX)
-    plugin_name: str
+    plugin_name: str = Field(pattern=PLUGIN_NAME_REGEX)
     description: Optional[str] = Field(default=None)
     parameters: List[KernelParameterMetadata] = Field(default_factory=list)
     is_prompt: bool

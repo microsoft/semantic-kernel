@@ -51,5 +51,5 @@ def test_register_overloaded_native_function():
 
     kernel.register_native_function("TestPlugin", decorated_native_function)
 
-    with pytest.raises(KernelException):
+    with pytest.raises(ValueError):
         kernel.register_native_function("TestPlugin", decorated_native_function)

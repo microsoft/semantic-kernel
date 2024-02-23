@@ -1,17 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, AsyncIterable, List
+from typing import TYPE_CHECKING, AsyncIterable, Dict, List, Optional
 
+from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.contents import ChatMessageContent, StreamingChatMessageContent
-    from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+    from semantic_kernel.contents import StreamingChatMessageContent
+    from semantic_kernel.contents.chat_history import ChatHistory
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
+    def get_chat_message_content_class(self) -> type[ChatMessageContent]:
+        """Get the chat message content types used by a class, default is ChatMessageContent."""
+        return ChatMessageContent
+
     @abstractmethod
     async def complete_chat(
         self,
@@ -49,3 +54,15 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             A stream representing the response(s) from the LLM.
         """
         pass
+
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: "ChatHistory",
+    ) -> List[Dict[str, Optional[str]]]:
+        """
+        Prepare the chat history for a request, allowing customization of the key names for role/author,
+        and optionally overriding the role.
+        """
+        return [
+            message.model_dump(exclude_none=True, exclude=["metadata", "encoding"]) for message in chat_history.messages
+        ]

@@ -3,8 +3,9 @@
 import logging
 from typing import TYPE_CHECKING, List, Optional
 
-from pydantic import Field
+from pydantic import PrivateAttr
 
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -14,17 +15,17 @@ from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelPromptTemplate(PromptTemplateBase):
-    blocks: List[Block] = Field(default_factory=list)
+    _blocks: List[Block] = PrivateAttr(default_factory=list)
 
     def __init__(self, prompt_config: PromptTemplateConfig):
-        super().__init__(blocks=self.extract_blocks(prompt_config))
+        super().__init__()
+        self._blocks = self.extract_blocks(prompt_config)
         self._add_missing_input_variables(prompt_config)
 
     def _add_missing_input_variables(self, config: PromptTemplateConfig):
@@ -39,7 +40,7 @@ class KernelPromptTemplate(PromptTemplateBase):
                 config.input_variables.append(InputVariable(name=variable_name))
 
         # Enumerate every block in the template, adding any variables that are referenced.
-        for block in self.blocks:
+        for block in self._blocks:
             if block.type == BlockTypes.VARIABLE:
                 # Add all variables from variable blocks, e.g. "{{$a}}".
                 add_if_missing(block.name)
@@ -89,7 +90,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         """
         if not arguments:
             arguments = KernelArguments()
-        return await self.render_blocks(self.blocks, kernel, arguments)
+        return await self.render_blocks(self._blocks, kernel, arguments)
 
     async def render_blocks(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
         """

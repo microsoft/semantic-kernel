@@ -20,7 +20,7 @@ class PromptTemplateConfig(KernelBaseModel):
     name: Optional[str] = ""
     description: Optional[str] = ""
     template: Optional[str] = None
-    template_format: Literal["semantic-kernel"] = "semantic-kernel"
+    template_format: Optional[str] = "semantic-kernel"
     input_variables: List[InputVariable] = Field(default_factory=list)
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
@@ -70,17 +70,6 @@ class PromptTemplateConfig(KernelBaseModel):
 
         try:
             parsed_json = json.loads(json_str)
-            if "default_services" in parsed_json:
-                if "completion" in parsed_json:
-                    execution_settings = {
-                        service_id: parsed_json["completion"] for service_id in parsed_json["default_services"]
-                    }
-                    parsed_json["execution_settings"] = execution_settings
-                    del parsed_json["completion"]
-                del parsed_json["default_services"]
-            elif "completion" in parsed_json:
-                parsed_json["execution_settings"] = {"default": parsed_json["completion"]}
-                del parsed_json["completion"]
             config = PromptTemplateConfig(**parsed_json)
         except Exception as e:
             raise ValueError(

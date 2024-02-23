@@ -3,12 +3,15 @@
 
 import pytest
 
+from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
-from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
+from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 def test_init_with_system_message_only():
@@ -89,6 +92,20 @@ def test_add_message():
     assert chat_history.messages[-1].encoding == encoding
 
 
+def test_add_message_invalid_message():
+    chat_history = ChatHistory()
+    content = "Test message"
+    with pytest.raises(ValueError):
+        chat_history.add_message(message={"content": content})
+
+
+def test_add_message_invalid_type():
+    chat_history = ChatHistory()
+    content = "Test message"
+    with pytest.raises(ValueError):
+        chat_history.add_message(message=content)
+
+
 def test_remove_message():
     chat_history = ChatHistory()
     content = "Message to remove"
@@ -98,6 +115,16 @@ def test_remove_message():
     chat_history.messages.append(message)
     assert chat_history.remove_message(message) is True
     assert message not in chat_history.messages
+
+
+def test_remove_message_invalid():
+    chat_history = ChatHistory()
+    content = "Message to remove"
+    role = ChatRole.USER
+    encoding = "utf-8"
+    message = ChatMessageContent(role=role, content=content, encoding=encoding)
+    chat_history.messages.append(message)
+    assert chat_history.remove_message("random") is False
 
 
 def test_len():
@@ -153,12 +180,36 @@ def test_eq():
     assert chat_history1 != chat_history2
 
 
-def test_serialize():
+def test_eq_invalid():
+    # Create two instances of ChatHistory
+    chat_history1 = ChatHistory()
+
+    # Populate both instances with the same set of messages
+    messages = [("Message 1", ChatRole.USER), ("Message 2", ChatRole.ASSISTANT)]
+    for content, role in messages:
+        chat_history1.add_message({"role": role, "content": content})
+
+    assert chat_history1 != "other"
+
+
+def test_serialize():  # ignore: E501
     system_msg = "a test system prompt"
-    msgs = [ChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)]
-    chat_history = ChatHistory(messages=msgs, system_message=system_msg)
+    chat_history = ChatHistory(
+        messages=[ChatMessageContent(role=ChatRole.USER, content="Message")], system_message=system_msg
+    )
     json_str = chat_history.serialize()
     assert json_str is not None
+    assert (
+        json_str
+        == '{\n    "messages": [\n        {\n            \
+"inner_content": null,\n            "ai_model_id": null,\n            \
+"metadata": {},\n            "role": "system",\n            \
+"content": "a test system prompt",\n            "encoding": null\n        },\
+\n        {\n            "inner_content": null,\n            \
+"ai_model_id": null,\n            "metadata": {},\n            \
+"role": "user",\n            "content": "Message",\n            \
+"encoding": null\n        }\n    ]\n}'
+    )
 
 
 def test_serialize_and_deserialize_to_chat_history():
@@ -180,7 +231,7 @@ def test_deserialize_invalid_json_raises_exception():
 def test_chat_history_to_prompt_empty():
     chat_history = ChatHistory()
     prompt = str(chat_history)
-    assert prompt == "<>"
+    assert prompt == ""
 
 
 def test_chat_history_to_prompt():
@@ -229,8 +280,9 @@ async def test_template():
     chat_history.add_assistant_message("I am an AI assistant")
 
     template = "system stuff{{$chat_history}}{{$input}}"
-    rendered = await PromptTemplateEngine().render(
-        template_text=template,
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
     )
@@ -246,21 +298,23 @@ async def test_template():
 
 
 @pytest.mark.asyncio
-async def test_template_two_histories():
+async def test_template_two_histories():  # ignore: E501
     chat_history1 = ChatHistory()
     chat_history1.add_assistant_message("I am an AI assistant")
     chat_history2 = ChatHistory()
     chat_history2.add_assistant_message("I like to be added later on")
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
-    rendered = await PromptTemplateEngine().render(
-        template_text=template,
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
     )
     assert (
         rendered
-        == 'system prompt<message role="assistant">I am an AI assistant</message>What can you do?<message role="assistant">I like to be added later on</message>'
+        == 'system prompt<message role="assistant">I am an AI assistant</message>\
+What can you do?<message role="assistant">I like to be added later on</message>'
     )
 
     chat_history_out = ChatHistory.from_rendered_prompt(rendered)
@@ -281,8 +335,9 @@ async def test_template_two_histories_one_empty():
     chat_history2 = ChatHistory()
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
-    rendered = await PromptTemplateEngine().render(
-        template_text=template,
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
     )
@@ -302,9 +357,9 @@ async def test_template_history_only():
     chat_history.add_assistant_message("I am an AI assistant")
 
     template = "{{$chat_history}}"
-    rendered = await PromptTemplateEngine().render(
-        template_text=template, kernel=Kernel(), arguments=KernelArguments(chat_history=chat_history)
-    )
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments(chat_history=chat_history))
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history_2.messages[0].content == "I am an AI assistant"
@@ -314,9 +369,9 @@ async def test_template_history_only():
 @pytest.mark.asyncio
 async def test_template_without_chat_history():
     template = "{{$input}}"
-    rendered = await PromptTemplateEngine().render(
-        template_text=template, kernel=Kernel(), arguments=KernelArguments(input="What can you do?")
-    )
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments(input="What can you do?"))
     assert rendered == "What can you do?"
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "What can you do?"
@@ -326,20 +381,57 @@ async def test_template_without_chat_history():
 @pytest.mark.asyncio
 async def test_handwritten_xml():
     template = '<message role="user">test content</message>'
-    rendered = await PromptTemplateEngine().render(template_text=template, kernel=Kernel(), arguments=KernelArguments())
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments())
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
     assert chat_history.messages[0].role == ChatRole.USER
 
 
 @pytest.mark.asyncio
+async def test_handwritten_xml_invalid():
+    template = '<message role="user"test content</message>'
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments())
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == '<message role="user"test content</message>'
+    assert chat_history.messages[0].role == ChatRole.SYSTEM
+
+
+@pytest.mark.asyncio
 async def test_handwritten_xml_as_arg():
     template = "{{$input}}"
-    rendered = await PromptTemplateEngine().render(
-        template_text=template,
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
         kernel=Kernel(),
         arguments=KernelArguments(input='<message role="user">test content</message>'),
     )
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
     assert chat_history.messages[0].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_history_openai_cmc():
+    chat_history1 = ChatHistory()
+    chat_history1.add_message(
+        message=OpenAIChatMessageContent(
+            inner_content=None,
+            role=ChatRole.ASSISTANT,
+            function_call=FunctionCall(name="test-test", arguments='{"input": "test"}'),
+        )
+    )
+    template = "{{$chat_history}}"
+    rendered = await KernelPromptTemplate(
+        PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history=chat_history1),
+    )
+    chat_history = ChatHistory.from_rendered_prompt(rendered, chat_message_content_type=OpenAIChatMessageContent)
+
+    assert chat_history.messages[0].role == ChatRole.ASSISTANT
+    assert chat_history.messages[0].function_call.name == "test-test"

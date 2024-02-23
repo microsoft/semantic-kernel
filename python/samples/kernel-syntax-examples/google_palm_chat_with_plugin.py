@@ -4,7 +4,7 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.google_palm as sk_gp
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 
 """

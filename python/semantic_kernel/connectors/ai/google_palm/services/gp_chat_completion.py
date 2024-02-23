@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -28,9 +28,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
-from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
-from semantic_kernel.utils.chat import prepare_chat_history_for_request
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_role import ChatRole
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -80,7 +79,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
-        settings.messages = prepare_chat_history_for_request(messages, output_role_key="author", override_role="user")
+        settings.messages = self._prepare_chat_history_for_request(messages)
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
@@ -234,3 +233,16 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return GooglePalmChatPromptExecutionSettings
+
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: ChatHistory,
+    ) -> List[Dict[str, Optional[str]]]:
+        """
+        Prepare the chat history for a request, allowing customization of the key names for role/author,
+        and optionally overriding the role.
+        """
+        standard_out = super()._prepare_chat_history_for_request(chat_history)
+        for message in standard_out:
+            message["author"] = message.pop("role")
+        return standard_out

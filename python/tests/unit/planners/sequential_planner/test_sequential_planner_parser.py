@@ -195,7 +195,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
         assert plan._steps[0].description == "Echo an input"
 
         assert plan._steps[1].plugin_name == plan.__class__.__name__
-        assert plan._steps[1].name == ""
+        assert plan._steps[1].name.startswith("plan_")
         assert plan._steps[1].description == "MockPlugin.DoesNotExist"
     else:
         with pytest.raises(PlanningException):

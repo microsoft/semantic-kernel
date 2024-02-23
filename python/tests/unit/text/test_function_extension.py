@@ -37,7 +37,7 @@ async def test_aggregate_results():
         prompt_template_config=prompt_template_config,
     )
 
-    func.function = lambda function, kernel, arguments, service, request_settings: FunctionResult(
+    func.function = lambda function, kernel, arguments, service, execution_settings: FunctionResult(
         function=function, value=arguments["input"], metadata={}
     )
 

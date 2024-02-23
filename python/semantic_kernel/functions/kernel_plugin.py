@@ -3,6 +3,8 @@
 import sys
 from typing import TYPE_CHECKING, Dict, List, Optional
 
+from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -29,7 +31,7 @@ class KernelPlugin(KernelBaseModel):
             indexed by their name.
     """
 
-    name: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_]+$", min_length=1)]
+    name: Annotated[str, StringConstraints(pattern=PLUGIN_NAME_REGEX, min_length=1)]
     description: Optional[str] = Field(default=None)
     functions: Optional[Dict[str, "KernelFunction"]] = Field(default_factory=dict)
 
@@ -118,15 +120,4 @@ class KernelPlugin(KernelBaseModel):
         Returns:
             A list of KernelFunctionMetadata instances.
         """
-        return [
-            KernelFunctionMetadata(
-                name=func.name,
-                plugin_name=self.name,
-                description=func.description,
-                parameters=func.parameters,
-                is_prompt=func.is_prompt,
-                is_asynchronous=func.is_asynchronous,
-                return_parameter=func.return_parameter,
-            )
-            for func in self.functions.values()
-        ]
+        return [func.metadata for func in self.functions.values()]

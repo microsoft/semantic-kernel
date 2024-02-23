@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 from typing import Optional
 
+from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
-from semantic_kernel.models.ai.chat_completion.chat_role import ChatRole
-from semantic_kernel.models.ai.chat_completion.finish_reason import FinishReason
 
 
 class StreamingChatMessageContent(StreamingKernelContent):

@@ -23,16 +23,19 @@ try:
         AzureCognitiveSearchMemoryStore,
     )
 
-    if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_COGNITIVE_SEARCH_ADMIN_KEY"):
-        azure_cognitive_search_installed = True
-    else:
-        azure_cognitive_search_installed = False
+    azure_ai_search_installed = True
+
 except ImportError:
-    azure_cognitive_search_installed = False
+    azure_ai_search_installed = False
+
+if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_COGNITIVE_SEARCH_ADMIN_KEY"):
+    azure_ai_search_settings = True
+else:
+    azure_ai_search_settings = False
 
 pytestmark = pytest.mark.skipif(
-    not azure_cognitive_search_installed,
-    reason="Azure Cognitive Search is not installed",
+    not (azure_ai_search_installed and azure_ai_search_settings),
+    reason="Azure AI Search is not installed",
 )
 
 

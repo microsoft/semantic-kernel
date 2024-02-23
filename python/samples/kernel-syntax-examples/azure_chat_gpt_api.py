@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.models.ai.chat_completion.chat_history import ChatHistory
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 

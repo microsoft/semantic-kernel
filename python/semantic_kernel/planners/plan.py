@@ -18,6 +18,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.utils.naming import generate_random_ascii_name
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -100,9 +101,8 @@ class Plan:
         steps: Optional[List["Plan"]] = None,
         function: Optional[KernelFunction] = None,
     ) -> None:
-        super().__init__()
-        self._name = "" if name is None else name
-        self._plugin_name = "" if plugin_name is None else plugin_name
+        self._name = f"plan_{generate_random_ascii_name()}" if name is None else name
+        self._plugin_name = f"p_{generate_random_ascii_name()}" if plugin_name is None else plugin_name
         self._description = "" if description is None else description
         self._next_step_index = 0 if next_step_index is None else next_step_index
         self._state = KernelArguments() if state is None else state
