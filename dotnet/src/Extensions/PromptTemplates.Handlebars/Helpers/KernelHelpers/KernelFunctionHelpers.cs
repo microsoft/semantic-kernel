@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -211,7 +212,7 @@ internal static class KernelFunctionHelpers
         if (resultAsObject is RestApiOperationResponse restApiOperationResponse)
         {
             // Deserialize any JSON content or return the content as a string
-            if (string.Equals(restApiOperationResponse.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            if (restApiOperationResponse.ContentType.IndexOf("application/json", StringComparison.OrdinalIgnoreCase) > 0)
             {
                 var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
                 return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
