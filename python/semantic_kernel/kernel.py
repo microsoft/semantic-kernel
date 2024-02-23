@@ -162,7 +162,7 @@ class Kernel(KernelBaseModel):
         Arguments:
             functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute
             arguments (KernelArguments): The arguments to pass to the function(s), optional
-            return_function_results (Optional[bool]): If True, the function results are returned in addition to 
+            return_function_results (Optional[bool]): If True, the function results are returned in addition to
                 the streaming content, otherwise only the streaming content is returned.
             kwargs (Dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
