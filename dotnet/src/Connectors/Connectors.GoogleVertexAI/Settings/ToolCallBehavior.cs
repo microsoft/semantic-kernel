@@ -119,13 +119,9 @@ public abstract class ToolCallBehavior
             }
 
             // Provide all functions from the kernel.
-            IList<KernelFunctionMetadata> functions = kernel.Plugins.GetFunctionsMetadata();
-            if (functions.Count > 0)
+            foreach (var functionMetadata in kernel.Plugins.GetFunctionsMetadata())
             {
-                foreach (var functionMetadata in functions)
-                {
-                    request.AddFunction(functionMetadata.ToGeminiFunction());
-                }
+                request.AddFunction(functionMetadata.ToGeminiFunction());
             }
         }
 

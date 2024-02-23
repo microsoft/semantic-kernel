@@ -202,6 +202,42 @@ public sealed class GeminiRequestTests
         Assert.Throws<NotSupportedException>(Act);
     }
 
+    [Fact]
+    public void AddFunctionItAddsFunctionToGeminiRequest()
+    {
+        // Arrange
+        var request = new GeminiRequest();
+        var function = new GeminiFunction("function-name", "function-description", "desc", null, null);
+
+        // Act
+        request.AddFunction(function);
+
+        // Assert
+        Assert.Collection(request.Tools!.Single().Functions,
+            func => Assert.Equivalent(function.ToFunctionDeclaration(), func, strict: true));
+    }
+
+    [Fact]
+    public void AddMultipleFunctionsItAddsFunctionsToGeminiRequest()
+    {
+        // Arrange
+        var request = new GeminiRequest();
+        var functions = new[]
+        {
+            new GeminiFunction("function-name", "function-description", "desc", null, null),
+            new GeminiFunction("function-name2", "function-description2", "desc2", null, null)
+        };
+
+        // Act
+        request.AddFunction(functions[0]);
+        request.AddFunction(functions[1]);
+
+        // Assert
+        Assert.Collection(request.Tools!.Single().Functions,
+            func => Assert.Equivalent(functions[0].ToFunctionDeclaration(), func, strict: true),
+            func => Assert.Equivalent(functions[1].ToFunctionDeclaration(), func, strict: true));
+    }
+
     private sealed class DummyContent : KernelContent
     {
         public DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
