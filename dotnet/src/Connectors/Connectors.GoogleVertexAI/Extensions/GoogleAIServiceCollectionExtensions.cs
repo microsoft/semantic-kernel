@@ -26,7 +26,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
-    [Experimental("SKEXP0070")]
+    [Experimental("SKEXP0033")]
     public static IKernelBuilder AddGoogleAIGeminiTextGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -55,7 +55,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
-    [Experimental("SKEXP0070")]
+    [Experimental("SKEXP0033")]
     public static IServiceCollection AddGoogleAIGeminiTextGeneration(
         this IServiceCollection services,
         string modelId,
@@ -83,7 +83,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
-    [Experimental("SKEXP0070")]
+    [Experimental("SKEXP0033")]
     public static IKernelBuilder AddGoogleAIGeminiChatCompletion(
         this IKernelBuilder builder,
         string modelId,
@@ -112,7 +112,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
-    [Experimental("SKEXP0070")]
+    [Experimental("SKEXP0033")]
     public static IServiceCollection AddGoogleAIGeminiChatCompletion(
         this IServiceCollection services,
         string modelId,
@@ -141,7 +141,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
-    [Experimental("SKEXP0071")]
+    [Experimental("SKEXP0033")]
     public static IKernelBuilder AddGoogleAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -170,7 +170,7 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
-    [Experimental("SKEXP0071")]
+    [Experimental("SKEXP0033")]
     public static IServiceCollection AddGoogleAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,

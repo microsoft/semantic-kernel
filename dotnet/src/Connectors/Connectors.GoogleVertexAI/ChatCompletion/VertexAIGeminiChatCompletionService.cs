@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a chat completion service using Vertex AI Gemini API.
 /// </summary>
-[Experimental("SKEXP0070")]
+[Experimental("SKEXP0033")]
 public sealed class VertexAIGeminiChatCompletionService : GeminiChatCompletionServiceBase
 {
     /// <summary>

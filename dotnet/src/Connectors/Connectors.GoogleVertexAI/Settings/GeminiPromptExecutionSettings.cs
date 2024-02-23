@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// Represents the settings for executing a prompt with the Gemini model.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-[Experimental("SKEXP0070")]
+[Experimental("SKEXP0033")]
 public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 {
     private double? _temperature;

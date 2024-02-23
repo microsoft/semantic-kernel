@@ -6,7 +6,7 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <VersionSuffix>alpha</VersionSuffix>
-    <NoWarn>SKEXP0001,SKEXP0070,SKEXP0071</NoWarn>
+    <NoWarn>SKEXP0001,SKEXP0033,SKEXP0033</NoWarn>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->

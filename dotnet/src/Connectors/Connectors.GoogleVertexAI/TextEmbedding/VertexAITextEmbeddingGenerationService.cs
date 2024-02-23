@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a service for generating text embeddings using the Vertex AI Gemini API.
 /// </summary>
-[Experimental("SKEXP0071")]
+[Experimental("SKEXP0033")]
 public sealed class VertexAITextEmbeddingGenerationService : TextEmbeddingGenerationServiceBase
 {
     /// <summary>
