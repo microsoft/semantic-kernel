@@ -83,6 +83,13 @@ class SequentialPlanner:
             )
         prompt_config.template = prompt_template
 
+        # if a service_id is provided, use it instead of the default
+        if service_id and service_id not in prompt_config.execution_settings:
+            # Move 'default' settings to this service_id if 'default' exists
+            if "default" in prompt_config.execution_settings:
+                settings = prompt_config.execution_settings.pop("default")
+                prompt_config.execution_settings[service_id] = settings
+
         return self._kernel.create_function_from_prompt(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
             function_name=self.RESTRICTED_PLUGIN_NAME,

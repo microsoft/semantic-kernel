@@ -245,4 +245,6 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         standard_out = super()._prepare_chat_history_for_request(chat_history)
         for message in standard_out:
             message["author"] = message.pop("role")
+        # The last message should always be from the user
+        standard_out[-1]["author"] = "user"
         return standard_out

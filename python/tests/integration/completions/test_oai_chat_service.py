@@ -9,6 +9,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.functions.function_result import FunctionResult
 
 
 @pytest.mark.asyncio
@@ -36,9 +37,7 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     # Create the semantic function
     tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
-    arguments = KernelArguments(input=text_to_summarize)
-
-    summary = await retry(lambda: kernel.invoke(tldr_function, arguments))
+    summary = await retry(lambda: kernel.invoke(tldr_function, input=text_to_summarize))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
@@ -80,9 +79,7 @@ async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_fun
     # Create the semantic function
     tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
-    arguments = KernelArguments(input=text_to_summarize)
-
-    summary = await retry(lambda: kernel.invoke(tldr_function, arguments))
+    summary = await retry(lambda: kernel.invoke(tldr_function, input=text_to_summarize))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
@@ -120,13 +117,11 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
         template=prompt, description="Write a short story.", execution_settings=exec_settings
     )
 
-    # Create the semantic function
+    # Create the prompt function
     tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
-    arguments = KernelArguments(input=text_to_summarize)
-
     result = None
-    async for message in kernel.invoke_stream(tldr_function, arguments):
+    async for message in kernel.invoke_stream(tldr_function, input=text_to_summarize):
         result = message[0] if not result else result + message[0]
     output = str(result)
 

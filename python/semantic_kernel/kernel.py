@@ -151,6 +151,7 @@ class Kernel(KernelBaseModel):
         self,
         functions: Union[KernelFunction, List[KernelFunction]],
         arguments: Optional[KernelArguments] = None,
+        return_function_results: Optional[bool] = False,
         **kwargs: Dict[str, Any],
     ) -> AsyncIterable[Union[List["StreamingKernelContent"], List[FunctionResult]]]:
         """Execute one or more stream functions.
@@ -161,6 +162,8 @@ class Kernel(KernelBaseModel):
         Arguments:
             functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute
             arguments (KernelArguments): The arguments to pass to the function(s), optional
+            return_function_results (Optional[bool]): If True, the function results are returned in addition to 
+                the streaming content, otherwise only the streaming content is returned.
             kwargs (Dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Yields:
@@ -240,8 +243,8 @@ During function invocation:'{stream_function.plugin_name}.{stream_function.name}
 Error description: '{str(function_invoked_args.exception)}'",
                     inner_exception=function_invoked_args.exception,
                 ) from function_invoked_args.exception
-
-            results.append(function_invoked_args.function_result)
+            if return_function_results:
+                results.append(function_invoked_args.function_result)
             if function_invoked_args.is_cancel_requested:
                 logger.info(
                     f"Execution was cancelled on function invoked event of pipeline step \
@@ -261,7 +264,8 @@ Error description: '{str(function_invoked_args.exception)}'",
                 )
                 continue
             break
-        yield results
+        if return_function_results:
+            yield results
 
     async def invoke(
         self,
