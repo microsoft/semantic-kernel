@@ -8,7 +8,7 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    HnswVectorSearchAlgorithmConfiguration,
+    HnswAlgorithmConfiguration,
     SearchIndex,
     SearchResourceEncryptionKey,
     VectorSearch,
@@ -83,14 +83,14 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
+        vector_config: Optional[HnswAlgorithmConfiguration] = None,
         search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
             collection_name {str}                              -- The name of the collection to create.
-            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
+            vector_config {HnswAlgorithmConfiguration} -- Optional search algorithm configuration
                                                                       (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
             search_resource_encryption_key {SearchResourceEncryptionKey}            -- Optional Search Encryption Key
@@ -105,7 +105,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         else:
             vector_search = VectorSearch(
                 algorithm_configurations=[
-                    HnswVectorSearchAlgorithmConfiguration(
+                    HnswAlgorithmConfiguration(
                         name="az-vector-config",
                         kind="hnsw",
                         hnsw_parameters={
