@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+import os
 from datetime import datetime
 
 import numpy as np
 import pytest
+from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 try:
     from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import (
@@ -14,8 +16,11 @@ try:
 except AssertionError:
     azure_cosmosdb_memory_store_installed = False
 
-from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+ENV_VAR_COSMOS_CONN_STR = "AZCOSMOS_CONNSTR"
+if not os.getenv(ENV_VAR_COSMOS_CONN_STR):
+    skip_test = True
+else:
+    skip_test = False
 
 # Either add your azure connection string here, or set it in the environment variable AZCOSMOS_CONNSTR.
 cosmos_connstr = ""
@@ -27,9 +32,14 @@ similarity = "COS"
 collection_name = "sk_test_collection"
 database_name = "sk_test_database"
 
-pytestmark = pytest.mark.skipif(
+pytest_mark = pytest.mark.skipif(
     not azure_cosmosdb_memory_store_installed,
     reason="Azure CosmosDB Memory Store is not installed",
+)
+
+# Apply skip condition to all test functions in the file
+pytest_mark_conn_str_skip = pytest.mark.skipif(
+    skip_test, reason="Skipping all tests because YOUR_ENV_VARIABLE is not set"
 )
 
 
