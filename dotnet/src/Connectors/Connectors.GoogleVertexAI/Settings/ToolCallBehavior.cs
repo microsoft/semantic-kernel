@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
@@ -60,7 +61,7 @@ public abstract class ToolCallBehavior
     /// The <see cref="ToolCallBehavior"/> that may be set into <see cref="ToolCallBehavior"/>
     /// to indicate that the specified functions should be made available to the model.
     /// </returns>
-    public static ToolCallBehavior EnableFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke = false)
+    public static ToolCallBehavior EnableFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke = false)
     {
         Verify.NotNull(functions);
         return new EnabledFunctions(functions, autoInvoke);
@@ -122,7 +123,7 @@ public abstract class ToolCallBehavior
                     options.ToolChoice = ChatCompletionsToolChoice.Auto;
                     for (int i = 0; i < functions.Count; i++)
                     {
-                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].ToOpenAIFunction().ToFunctionDefinition()));
+                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].ToGeminiFunction().ToFunctionDeclaration()));
                     }
                 }
             }
@@ -136,17 +137,17 @@ public abstract class ToolCallBehavior
     /// </summary>
     internal sealed class EnabledFunctions : ToolCallBehavior
     {
-        private readonly OpenAIFunction[] _openAIFunctions;
+        private readonly GeminiFunction[] _geminiFunctions;
         private readonly ChatCompletionsFunctionToolDefinition[] _functions;
 
-        public EnabledFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke) : base(autoInvoke)
+        public EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : base(autoInvoke)
         {
-            this._openAIFunctions = functions.ToArray();
+            this._geminiFunctions = functions.ToArray();
 
-            var defs = new ChatCompletionsFunctionToolDefinition[this._openAIFunctions.Length];
+            var defs = new ChatCompletionsFunctionToolDefinition[this._geminiFunctions.Length];
             for (int i = 0; i < defs.Length; i++)
             {
-                defs[i] = new ChatCompletionsFunctionToolDefinition(this._openAIFunctions[i].ToFunctionDefinition());
+                defs[i] = new ChatCompletionsFunctionToolDefinition(this._geminiFunctions[i].ToFunctionDeclaration());
             }
 
             this._functions = defs;
@@ -156,11 +157,11 @@ public abstract class ToolCallBehavior
 
         internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
         {
-            OpenAIFunction[] openAIFunctions = this._openAIFunctions;
+            GeminiFunction[] geminiFunctions = this._geminiFunctions;
             ChatCompletionsFunctionToolDefinition[] functions = this._functions;
-            Debug.Assert(openAIFunctions.Length == functions.Length);
+            Debug.Assert(geminiFunctions.Length == functions.Length);
 
-            if (openAIFunctions.Length > 0)
+            if (geminiFunctions.Length > 0)
             {
                 bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
 
@@ -175,13 +176,13 @@ public abstract class ToolCallBehavior
                 }
 
                 options.ToolChoice = ChatCompletionsToolChoice.Auto;
-                for (int i = 0; i < openAIFunctions.Length; i++)
+                for (int i = 0; i < geminiFunctions.Length; i++)
                 {
                     // Make sure that if auto-invocation is specified, every enabled function can be found in the kernel.
                     if (autoInvoke)
                     {
                         Debug.Assert(kernel is not null);
-                        OpenAIFunction f = openAIFunctions[i];
+                        GeminiFunction f = geminiFunctions[i];
                         if (!kernel!.Plugins.TryGetFunction(f.PluginName, f.FunctionName, out _))
                         {
                             throw new KernelException($"The specified {nameof(EnabledFunctions)} function {f.FullyQualifiedName} is not available in the kernel.");

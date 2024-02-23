@@ -129,10 +129,10 @@ public sealed class GeminiFunction
 
     /// <summary>
     /// Converts the <see cref="GeminiFunction"/> representation to the Gemini API's
-    /// <see cref="GeminiFunctionDeclaration"/> representation.
+    /// <see cref="GeminiTool.FunctionDeclaration"/> representation.
     /// </summary>
-    /// <returns>A <see cref="GeminiFunctionDeclaration"/> containing all the function information.</returns>
-    internal GeminiFunctionDeclaration ToGeminiFunctionDeclaration()
+    /// <returns>A <see cref="GeminiTool.FunctionDeclaration"/> containing all the function information.</returns>
+    internal GeminiTool.FunctionDeclaration ToFunctionDeclaration()
     {
         BinaryData? resultParameters = null;
 
@@ -158,10 +158,11 @@ public sealed class GeminiFunction
             });
         }
 
-        return new GeminiFunctionDeclaration
+        return new GeminiTool.FunctionDeclaration
         {
             Name = this.FullyQualifiedName,
-            Description = this.Description ?? throw new InvalidOperationException("Function description is required."),
+            Description = this.Description ?? throw new InvalidOperationException(
+                $"Function description is required. Please provide a description for the function {this.FullyQualifiedName}."),
             ResultParameters = resultParameters,
         };
     }
