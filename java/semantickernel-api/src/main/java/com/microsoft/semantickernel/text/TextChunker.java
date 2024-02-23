@@ -89,7 +89,7 @@ public class TextChunker {
         List<String> lines,
         int maxTokensPerParagraph,
         Function<String, List<String>> longLinesSplitter) {
-        if (lines.size() == 0) {
+        if (lines.isEmpty()) {
             return new ArrayList<>();
         }
 
@@ -128,11 +128,11 @@ public class TextChunker {
 
             if (TokenCount(lastParagraph.length()) < maxTokensPerParagraph / 4) {
                 List<String> lastParagraphTokens = Arrays.stream(lastParagraph.split(s_spaceChar))
-                    .filter(it -> it.length() != 0)
+                    .filter(it -> !it.isEmpty())
                     .collect(Collectors.toList());
                 List<String> secondLastParagraphTokens = Arrays
                     .stream(secondLastParagraph.split(s_spaceChar))
-                    .filter(it -> it.length() != 0)
+                    .filter(it -> !it.isEmpty())
                     .collect(Collectors.toList());
 
                 int lastParagraphTokensCount = lastParagraphTokens.size();
@@ -164,17 +164,6 @@ public class TextChunker {
         }
 
         return paragraphs;
-    }
-
-    private static class SplitString {
-
-        public final boolean inputWasSplit;
-        public final List<String> result;
-
-        private SplitString(boolean inputWasSplit, List<String> result) {
-            this.inputWasSplit = inputWasSplit;
-            this.result = result;
-        }
     }
 
     private static List<String> internalSplitLines(
@@ -289,5 +278,16 @@ public class TextChunker {
         // strategies
         //       depending on the model to be called. For now, we use an extremely rough estimate.
         return inputLength / 4;
+    }
+
+    private static class SplitString {
+
+        public final boolean inputWasSplit;
+        public final List<String> result;
+
+        private SplitString(boolean inputWasSplit, List<String> result) {
+            this.inputWasSplit = inputWasSplit;
+            this.result = result;
+        }
     }
 }

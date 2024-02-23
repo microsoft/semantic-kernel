@@ -6,18 +6,18 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugins.web.WebSearchEnginePlugin;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
@@ -96,7 +96,7 @@ public class Example07_BingAndGooglePlugins {
 
         /*
          * OUTPUT:
-         * 
+         *
          * What's the largest building in the world?
          * ----
          * The Aerium near Berlin, Germany is the largest uninterrupted volume in the world, while
@@ -202,11 +202,11 @@ public class Example07_BingAndGooglePlugins {
 
         /*
          * OUTPUT:
-         * 
+         *
          * Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?
          * ---- Fetching information from Bing...
          * Information found:
-         * 
+         *
          * Khaby Lame is the most-followed user on TikTok. This list contains the top 50 accounts by
          * number
          * of followers on the Chinese social media platform TikTok, which was merged with
@@ -220,7 +220,7 @@ public class Example07_BingAndGooglePlugins {
          * rate when sending money. Check send rates Convert Euro to US Dollar Convert US Dollar to
          * Euro..
          * ---- ANSWER:
-         * 
+         *
          * The most followed person on TikTok right now is Khaby Lame, with over 153 million
          * followers.
          * The exchange rate for EUR to USD is 1.1037097 US Dollars for 1 Euro.

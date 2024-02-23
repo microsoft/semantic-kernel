@@ -6,16 +6,17 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.ValueResolver;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.semanticfunctions.KernelParameterMetadata;
-import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.semanticfunctions.KernelParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,8 +55,14 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         Kernel kernel,
         @Nullable KernelFunctionArguments arguments,
         @Nullable InvocationContext context) {
+        String template = promptTemplate.getTemplate();
+        if (template == null) {
+            return Mono.error(new SKException(
+                String.format("No prompt template was provided for the prompt %s.",
+                    promptTemplate.getName())));
+        }
         HandleBarsPromptTemplateHandler handler = new HandleBarsPromptTemplateHandler(kernel,
-            promptTemplate.getTemplate());
+            template);
 
         if (arguments == null) {
             arguments = new KernelFunctionArguments();

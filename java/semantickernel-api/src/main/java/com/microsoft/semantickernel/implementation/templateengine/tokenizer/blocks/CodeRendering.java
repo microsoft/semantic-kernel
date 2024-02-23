@@ -17,8 +17,8 @@ public interface CodeRendering {
      *
      * @param kernel    Kernel to use for rendering
      * @param arguments Optional arguments used to render the block
-     * @param context   Optional context used to render the block, 
-     *                  typically used to pass {code KernelHooks} to the render method.
+     * @param context   Optional context used to render the block, typically used to pass {code
+     *                  KernelHooks} to the render method.
      * @return Rendered content
      * @see com.microsoft.semantickernel.hooks.KernelHooks
      */

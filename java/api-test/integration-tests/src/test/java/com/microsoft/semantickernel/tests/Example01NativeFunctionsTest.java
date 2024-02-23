@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-
-package com.microsoft.semantickernel.syntaxexamples;
+package com.microsoft.semantickernel.tests;
 
 import com.microsoft.semantickernel.plugins.text.TextPlugin;
 import org.junit.jupiter.api.Assertions;

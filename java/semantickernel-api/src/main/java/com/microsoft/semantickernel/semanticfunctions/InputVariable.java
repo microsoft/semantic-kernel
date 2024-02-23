@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,11 +35,11 @@ public class InputVariable {
     /**
      * Creates a new instance of {@link InputVariable}.
      *
-     * @param name the name of the input variable
-     * @param type the type of the input variable
-     * @param description the description of the input variable
+     * @param name         the name of the input variable
+     * @param type         the type of the input variable
+     * @param description  the description of the input variable
      * @param defaultValue the default value of the input variable
-     * @param isRequired whether the input variable is required
+     * @param isRequired   whether the input variable is required
      */
     @JsonCreator
     public InputVariable(
@@ -60,6 +61,7 @@ public class InputVariable {
 
     /**
      * Gets the name of the input variable.
+     *
      * @return the name of the input variable
      */
     public String getName() {
@@ -68,6 +70,7 @@ public class InputVariable {
 
     /**
      * Gets the type of the input variable.
+     *
      * @return the type of the input variable
      */
     public String getType() {
@@ -76,6 +79,7 @@ public class InputVariable {
 
     /**
      * Gets the description of the input variable.
+     *
      * @return the description of the input variable
      */
     @Nullable
@@ -85,6 +89,7 @@ public class InputVariable {
 
     /**
      * Gets the default value of the input variable.
+     *
      * @return the default value of the input variable
      */
     @Nullable
@@ -94,6 +99,7 @@ public class InputVariable {
 
     /**
      * Gets whether the input variable is required.
+     *
      * @return whether the input variable is required
      */
     public boolean isRequired() {
@@ -102,6 +108,7 @@ public class InputVariable {
 
     /**
      * Gets the class of the type of the input variable.
+     *
      * @return the class of the type of the input variable
      */
     public Class<?> getTypeClass() {

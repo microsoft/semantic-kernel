@@ -1,11 +1,12 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
 import javax.annotation.Nullable;
 
 /**
- * Metadata for a parameter to a kernel function. The Semantic Kernel creates
- * this metadata from the annotations on the method that defines the function,
- * or by introspection of a Java method. 
+ * Metadata for a parameter to a kernel function. The Semantic Kernel creates this metadata from the
+ * annotations on the method that defines the function, or by introspection of a Java method.
+ *
  * @param <T> The type of the parameter.
  */
 public class KernelParameterMetadata<T> {
@@ -20,11 +21,12 @@ public class KernelParameterMetadata<T> {
 
     /**
      * Creates a new instance of the {@link KernelParameterMetadata} class.
-     * @param name The name of the parameter.
-     * @param description The description of the parameter.
+     *
+     * @param name          The name of the parameter.
+     * @param description   The description of the parameter.
      * @param parameterType The type of the parameter.
-     * @param defaultValue The default value of the parameter.
-     * @param isRequired Whether the parameter is required.
+     * @param defaultValue  The default value of the parameter.
+     * @param isRequired    Whether the parameter is required.
      */
     public KernelParameterMetadata(
         String name,
@@ -41,6 +43,7 @@ public class KernelParameterMetadata<T> {
 
     /**
      * Gets the name of the parameter.
+     *
      * @return The name of the parameter.
      */
     public String getName() {
@@ -49,6 +52,7 @@ public class KernelParameterMetadata<T> {
 
     /**
      * Gets the description of the parameter.
+     *
      * @return The description of the parameter.
      */
     @Nullable
@@ -58,6 +62,7 @@ public class KernelParameterMetadata<T> {
 
     /**
      * Gets the default value of the parameter.
+     *
      * @return The default value of the parameter.
      */
     @Nullable
@@ -67,6 +72,7 @@ public class KernelParameterMetadata<T> {
 
     /**
      * Gets whether the parameter is required.
+     *
      * @return Whether the parameter is required.
      */
     public boolean isRequired() {
@@ -75,6 +81,7 @@ public class KernelParameterMetadata<T> {
 
     /**
      * Gets the type of the parameter.
+     *
      * @return The type of the parameter.
      */
     public Class<?> getType() {

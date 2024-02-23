@@ -10,6 +10,9 @@ import javax.annotation.Nullable;
  */
 public class TemplateException extends SKException {
 
+    /**
+     * Error code.
+     */
     @Nonnull
     private final ErrorCodes errorCode;
 
@@ -54,6 +57,7 @@ public class TemplateException extends SKException {
 
     /**
      * Gets the error code for this exception.
+     *
      * @return The error code.
      */
     //spotless:on
@@ -110,8 +114,10 @@ public class TemplateException extends SKException {
         }
 
         // spotless:off
+
         /**
          * Gets the message for the error code.
+         *
          * @return The error code message
          */
         //spotless:on

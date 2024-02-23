@@ -9,15 +9,16 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments.Builder;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments.Builder;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import reactor.core.publisher.Mono;
 
 /**
- * Demonstrate the {@see com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin} plugin.
+ * Demonstrate the {@see com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin}
+ * plugin.
  * <p>
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">

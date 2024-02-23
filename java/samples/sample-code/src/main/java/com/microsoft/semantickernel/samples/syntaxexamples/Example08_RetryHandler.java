@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -41,7 +42,9 @@ public class Example08_RetryHandler {
 
         String question = "How popular is the Polly library?";
 
-        KernelFunction<String> fuction = KernelFunctionFromPrompt.create(question);
+        KernelFunction<String> fuction = KernelFunctionFromPrompt.<String>builder()
+            .withTemplate(question)
+            .build();
 
         try {
             // Will retry 3 times with exponential backoff

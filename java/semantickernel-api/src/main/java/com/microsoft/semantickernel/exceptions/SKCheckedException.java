@@ -4,7 +4,9 @@ package com.microsoft.semantickernel.exceptions;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Provides the base exception from which all CHECKED Semantic Kernel exceptions derive. */
+/**
+ * Provides the base exception from which all CHECKED Semantic Kernel exceptions derive.
+ */
 public class SKCheckedException extends Exception {
 
     /**
@@ -29,7 +31,7 @@ public class SKCheckedException extends Exception {
      * {@code message}.
      *
      * @param message A string that describes the error.
-     * @param cause The exception that is the cause of the current exception.
+     * @param cause   The exception that is the cause of the current exception.
      */
     protected SKCheckedException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
@@ -39,7 +41,7 @@ public class SKCheckedException extends Exception {
      * Translate the error code into a default message format.
      *
      * @param errorMessage The error message from an error code
-     * @param message The message from the code which throws the exception
+     * @param message      The message from the code which throws the exception
      * @return A formatted message
      */
     protected static String formatDefaultMessage(

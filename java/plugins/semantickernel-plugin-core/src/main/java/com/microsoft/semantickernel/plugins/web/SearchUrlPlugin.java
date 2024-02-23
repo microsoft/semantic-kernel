@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.plugins.web;
 
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;

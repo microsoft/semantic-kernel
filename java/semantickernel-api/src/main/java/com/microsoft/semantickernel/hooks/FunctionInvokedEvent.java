@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.orchestration.FunctionResult;
@@ -8,6 +9,7 @@ import javax.annotation.Nullable;
 
 /**
  * Represents a KernelHookEvent that is raised after a function is invoked.
+ *
  * @param <T> The type of the function result
  */
 public class FunctionInvokedEvent<T> implements KernelHookEvent {
@@ -19,9 +21,10 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
 
     /**
      * Creates a new instance of the {@link FunctionInvokedEvent} class.
-     * @param function the function
+     *
+     * @param function  the function
      * @param arguments the arguments
-     * @param result the result
+     * @param result    the result
      */
     public FunctionInvokedEvent(
         KernelFunction<T> function,
@@ -35,6 +38,7 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
 
     /**
      * Gets the function that was invoked.
+     *
      * @return the function
      */
     public KernelFunction<T> getFunction() {
@@ -43,6 +47,7 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
 
     /**
      * Gets the arguments that were passed to the function.
+     *
      * @return the arguments
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
@@ -53,6 +58,7 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
 
     /**
      * Gets the result of the function invocation.
+     *
      * @return the result
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")

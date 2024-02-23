@@ -3,12 +3,12 @@ package com.microsoft.semantickernel.implementation.templateengine.tokenizer;
 
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.Verify;
-import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.ValBlock;
-import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.VarBlock;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.Block;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.FunctionIdBlock;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.NamedArgBlock;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.Symbols;
+import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.ValBlock;
+import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.VarBlock;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,36 +17,23 @@ import javax.annotation.Nullable;
 
 /**
  * Simple tokenizer used for default SK template code language.
- *
- * BNF parsed by TemplateTokenizer:
- * [template]       ::= "" | [block] | [block] [template]
- * [block]          ::= [sk-block] | [text-block]
- * [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" | "{{" [function-call] "}}"
- * [text-block]     ::= [any-char] | [any-char] [text-block]
- * [any-char]       ::= any char
- *
- * BNF parsed by CodeTokenizer:
- * [template]       ::= "" | [variable] " " [template] | [value] " " [template] | [function-call] "
- * [variable]       ::= "$" [valid-name]
- * [value]          ::= "'" [text] "'" | '"' [text] '"'
- * [function-call]  ::= [function-id] | [function-id] [parameter]
+ * <p>
+ * BNF parsed by TemplateTokenizer: [template]       ::= "" | [block] | [block] [template] [block]
+ * ::= [sk-block] | [text-block] [sk-block]       ::= "{{" [variable] "}}" | "{{" [value] "}}" |
+ * "{{" [function-call] "}}" [text-block]     ::= [any-char] | [any-char] [text-block] [any-char]
+ * ::= any char
+ * <p>
+ * BNF parsed by CodeTokenizer: [template]       ::= "" | [variable] " " [template] | [value] " "
+ * [template] | [function-call] " [variable]       ::= "$" [valid-name] [value]          ::= "'"
+ * [text] "'" | '"' [text] '"' [function-call]  ::= [function-id] | [function-id] [parameter]
  * [parameter]      ::= [variable] | [value]
- *
- * BNF parsed by dedicated blocks
- * [function-id]    ::= [valid-name] | [valid-name] "." [valid-name]
- * [valid-name]     ::= [valid-symbol] | [valid-symbol] [valid-name]
- * [valid-symbol]   ::= [letter] | [digit] | "_"
- * [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
- * [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+ * <p>
+ * BNF parsed by dedicated blocks [function-id]    ::= [valid-name] | [valid-name] "." [valid-name]
+ * [valid-name]     ::= [valid-symbol] | [valid-symbol] [valid-name] [valid-symbol]   ::= [letter] |
+ * [digit] | "_" [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z" [digit]          ::=
+ * "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  */
 public class CodeTokenizer {
-
-    private enum TokenTypes {
-        None(0), Value(1), Variable(2), FunctionId(3), NamedArg(4);
-
-        TokenTypes(int i) {
-        }
-    }
 
     /**
      * Initializes a new instance of the {@link CodeTokenizer} class.
@@ -54,8 +41,43 @@ public class CodeTokenizer {
     public CodeTokenizer() {
     }
 
+    private static boolean isVarPrefix(char c) {
+        return (c == Symbols.VarPrefix);
+    }
+
+    private static boolean IsBlankSpace(char c) {
+        return Character.isWhitespace(c);
+    }
+
+    private static boolean isQuote(char c) {
+        return c == Symbols.DblQuote || c == Symbols.SglQuote;
+    }
+
+    private static boolean CanBeEscaped(char c) {
+        return c == Symbols.DblQuote || c == Symbols.SglQuote || c == Symbols.EscapeChar;
+    }
+
+    @SuppressWarnings("NullAway")
+    @Nullable
+    private static NamedArgBlock getNamedArg(String tokenContent) {
+
+        String name = NamedArgBlock.tryGetName(tokenContent);
+        String value = NamedArgBlock.tryGetValue(tokenContent);
+
+        if (Verify.isNullOrEmpty(name) || Verify.isNullOrEmpty(value)) {
+            return null;
+        }
+        NamedArgBlock block = new NamedArgBlock(tokenContent, name, value);
+        if (block.isValid()) {
+            return block;
+        }
+
+        return null;
+    }
+
     /**
      * Tokenize a code block, without checking for syntax errors
+     *
      * @param text Text to parse
      * @return A list of blocks
      */
@@ -288,37 +310,10 @@ public class CodeTokenizer {
         return blocks;
     }
 
-    private static boolean isVarPrefix(char c) {
-        return (c == Symbols.VarPrefix);
-    }
+    private enum TokenTypes {
+        None(0), Value(1), Variable(2), FunctionId(3), NamedArg(4);
 
-    private static boolean IsBlankSpace(char c) {
-        return Character.isWhitespace(c);
-    }
-
-    private static boolean isQuote(char c) {
-        return c == Symbols.DblQuote || c == Symbols.SglQuote;
-    }
-
-    private static boolean CanBeEscaped(char c) {
-        return c == Symbols.DblQuote || c == Symbols.SglQuote || c == Symbols.EscapeChar;
-    }
-
-    @SuppressWarnings("NullAway")
-    @Nullable
-    private static NamedArgBlock getNamedArg(String tokenContent) {
-
-        String name = NamedArgBlock.tryGetName(tokenContent);
-        String value = NamedArgBlock.tryGetValue(tokenContent);
-
-        if (Verify.isNullOrEmpty(name) || Verify.isNullOrEmpty(value)) {
-            return null;
+        TokenTypes(int i) {
         }
-        NamedArgBlock block = new NamedArgBlock(tokenContent, name, value);
-        if (block.isValid()) {
-            return block;
-        }
-
-        return null;
     }
 }

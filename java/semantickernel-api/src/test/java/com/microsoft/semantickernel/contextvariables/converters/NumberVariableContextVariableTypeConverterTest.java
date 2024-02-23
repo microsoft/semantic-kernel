@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.contextvariables.converters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

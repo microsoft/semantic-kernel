@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
  * Represents a function identifier block.
  */
 public final class FunctionIdBlock extends Block implements TextRendering {
+
     private final String skillName;
 
     private final String functionName;
@@ -37,6 +38,14 @@ public final class FunctionIdBlock extends Block implements TextRendering {
         this.skillName = "";
     }
 
+    private static boolean hasMoreThanOneDot(String value) {
+        if (value == null || value.length() < 2) {
+            return false;
+        }
+
+        return value.matches("^.*\\..*\\..*$");
+    }
+
     @Override
     @Nullable
     public String render(@Nullable KernelFunctionArguments variables) {
@@ -58,14 +67,6 @@ public final class FunctionIdBlock extends Block implements TextRendering {
 
         // errorMsg = "";
         return true;
-    }
-
-    private static boolean hasMoreThanOneDot(String value) {
-        if (value == null || value.length() < 2) {
-            return false;
-        }
-
-        return value.matches("^.*\\..*\\..*$");
     }
 
     /**

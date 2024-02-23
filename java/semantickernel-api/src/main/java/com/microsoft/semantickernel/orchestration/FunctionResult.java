@@ -1,6 +1,8 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import javax.annotation.Nullable;
 
 /**
@@ -39,10 +41,10 @@ public class FunctionResult<T> {
     }
 
     /**
-     * Get the result of the function invocation. 
-     * <em>NOTE: If you get a ClassCastException from this method, 
-     * try adding a result type with 
-     * {@link FunctionInvocation#withResultType(ContextVariableType)}</em>
+     * Get the result of the function invocation.
+     * <em>NOTE: If you get a ClassCastException from this method,
+     * try adding a result type with {@link FunctionInvocation#withResultType(ContextVariableType)}
+     * )}</em>
      *
      * @return The result of the function invocation.
      * @throws ClassCastException If the result is not of the expected type.

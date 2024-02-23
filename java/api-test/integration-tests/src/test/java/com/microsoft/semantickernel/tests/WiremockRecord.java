@@ -1,4 +1,5 @@
-package com.microsoft.semantickernel.syntaxexamples;
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.tests;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

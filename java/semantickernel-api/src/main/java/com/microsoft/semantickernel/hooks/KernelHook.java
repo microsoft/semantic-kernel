@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.hooks;
 
 import com.azure.ai.openai.models.ChatCompletionsOptions;
@@ -8,8 +9,9 @@ import java.util.function.Predicate;
 
 /**
  * Represents a hook that can be used to intercept and modify arguments to {@code KernelFunction}s.
- * A {@code KernelHook} implements a {@code Predicate} that determines if the hook is interested 
- * in a particular event, and a {@code Function} that can be used to modify the event. The 
+ * A {@code KernelHook} implements a {@code Predicate} that determines if the hook is interested in
+ * a particular event, and a {@code Function} that can be used to modify the event. The
+ *
  * @param <T> The type of the event that the hook is interested in
  */
 public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelHookEvent>,
@@ -17,8 +19,8 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
 
     /**
      * The priority of the hook. The default priority is 50. The priority is used to determine the
-     * order in which hooks that accept the same event type are executed, lower priorities are executed first. No ordering is
-     * guaranteed for hooks with the same priority.
+     * order in which hooks that accept the same event type are executed, lower priorities are
+     * executed first. No ordering is guaranteed for hooks with the same priority.
      *
      * @return the priority of the hook
      */
@@ -27,7 +29,7 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
     }
 
     /**
-     * A hook that accepts {@link FunctionInvokingEvent} 
+     * A hook that accepts {@link FunctionInvokingEvent}
      */
     interface FunctionInvokingHook extends KernelHook<FunctionInvokingEvent<?>> {
 
@@ -38,7 +40,7 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
     }
 
     /**
-     * A hook that accepts {@link FunctionInvokedEvent} 
+     * A hook that accepts {@link FunctionInvokedEvent}
      */
     interface FunctionInvokedHook extends KernelHook<FunctionInvokedEvent<?>> {
 
@@ -49,7 +51,7 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
     }
 
     /**
-     * A hook that accepts {@link PromptRenderingEvent} 
+     * A hook that accepts {@link PromptRenderingEvent}
      */
     interface PromptRenderingHook extends KernelHook<PromptRenderingEvent> {
 
@@ -60,7 +62,7 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
     }
 
     /**
-     * A hook that accepts {@link PromptRenderedEvent} 
+     * A hook that accepts {@link PromptRenderedEvent}
      */
     interface PromptRenderedHook extends KernelHook<PromptRenderedEvent> {
 
@@ -71,18 +73,14 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
     }
 
     /**
-     * A hook that accepts {@link PreChatCompletionEvent} 
+     * A hook that accepts {@link PreChatCompletionEvent}
      */
     interface PreChatCompletionHook extends KernelHook<PreChatCompletionEvent> {
 
-        @Override
-        default boolean test(KernelHookEvent arguments) {
-            return PreChatCompletionEvent.class.isAssignableFrom(arguments.getClass());
-        }
-
         /**
          * A convenience method to clone the options with the messages from the event.
-         * @param options the options to clone
+         *
+         * @param options  the options to clone
          * @param messages the messages to use
          * @return the new options
          */
@@ -113,6 +111,11 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
                 newOptions = newOptions.setFunctionCall(options.getFunctionCall());
             }
             return newOptions;
+        }
+
+        @Override
+        default boolean test(KernelHookEvent arguments) {
+            return PreChatCompletionEvent.class.isAssignableFrom(arguments.getClass());
         }
     }
 }

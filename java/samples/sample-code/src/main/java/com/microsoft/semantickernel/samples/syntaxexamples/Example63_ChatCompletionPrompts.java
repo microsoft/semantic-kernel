@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -5,8 +6,8 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import java.util.concurrent.CountDownLatch;
 
 public class Example63_ChatCompletionPrompts {
@@ -49,7 +50,8 @@ public class Example63_ChatCompletionPrompts {
             <message role="system">Respond with JSON.</message>
             """.stripIndent();
 
-        var chatSemanticFunction = KernelFunctionFromPrompt.create(chatPrompt);
+        var chatSemanticFunction = KernelFunctionFromPrompt.<String>builder()
+            .withTemplate(chatPrompt).build();
         var chatPromptResult = kernel.invokeAsync(chatSemanticFunction).block();
 
         System.out.println("Chat Prompt:");

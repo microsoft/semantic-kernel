@@ -1,18 +1,19 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.hooks.KernelHooks;
-import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
 /**
- * Context passed to a Kernel or KernelFunction invoke. This class is primarily for
- * internal use. The preferred way to supply a context is to use the discrete "with" 
- * methods in {@link FunctionInvocation}.  
+ * Context passed to a Kernel or KernelFunction invoke. This class is primarily for internal use.
+ * The preferred way to supply a context is to use the discrete "with" methods in
+ * {@link FunctionInvocation}.
  */
 public class InvocationContext implements Buildable {
 
@@ -77,44 +78,8 @@ public class InvocationContext implements Buildable {
     }
 
     /**
-     * Get the hooks to use for the invocation.
-     * @return The hooks to use for the invocation.
-     */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns UnmodifiableKernelHooks")
-    @Nullable
-    public UnmodifiableKernelHooks getKernelHooks() {
-        return hooks;
-    }
-
-    /**
-     * Get the settings for prompt execution.
-     * @return The settings for prompt execution.
-     */
-    @Nullable
-    public PromptExecutionSettings getPromptExecutionSettings() {
-        return promptExecutionSettings;
-    }
-
-    /**
-     * Get the behavior for tool calls.
-     * @return The behavior for tool calls.
-     */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns ToolCallBehavior")
-    @Nullable
-    public ToolCallBehavior getToolCallBehavior() {
-        return toolCallBehavior;
-    }
-
-    /**
-     * Get the types of context variables.
-     * @return The types of context variables.
-     */
-    public ContextVariableTypes getContextVariableTypes() {
-        return new ContextVariableTypes(contextVariableTypes);
-    }
-
-    /**
      * Create a new {@link Builder} for building an instance of {@code InvocationContext}.
+     *
      * @return the new Builder.
      */
     public static Builder builder() {
@@ -134,23 +99,61 @@ public class InvocationContext implements Buildable {
     }
 
     /**
+     * Get the hooks to use for the invocation.
+     *
+     * @return The hooks to use for the invocation.
+     */
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns UnmodifiableKernelHooks")
+    @Nullable
+    public UnmodifiableKernelHooks getKernelHooks() {
+        return hooks;
+    }
+
+    /**
+     * Get the settings for prompt execution.
+     *
+     * @return The settings for prompt execution.
+     */
+    @Nullable
+    public PromptExecutionSettings getPromptExecutionSettings() {
+        return promptExecutionSettings;
+    }
+
+    /**
+     * Get the behavior for tool calls.
+     *
+     * @return The behavior for tool calls.
+     */
+    @Nullable
+    public ToolCallBehavior getToolCallBehavior() {
+        return toolCallBehavior;
+    }
+
+    /**
+     * Get the types of context variables.
+     *
+     * @return The types of context variables.
+     */
+    public ContextVariableTypes getContextVariableTypes() {
+        return new ContextVariableTypes(contextVariableTypes);
+    }
+
+    /**
      * Builder for {@link InvocationContext}.
      */
     public static class Builder implements SemanticKernelBuilder<InvocationContext> {
 
+        private final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
         @Nullable
         private UnmodifiableKernelHooks hooks;
-
         @Nullable
         private PromptExecutionSettings promptExecutionSettings;
-
         @Nullable
         private ToolCallBehavior toolCallBehavior;
 
-        private final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
-
         /**
          * Add kernel hooks to the builder.
+         *
          * @param hooks the hooks to add.
          * @return this {@link Builder}
          */
@@ -162,6 +165,7 @@ public class InvocationContext implements Buildable {
 
         /**
          * Add prompt execution settings to the builder.
+         *
          * @param promptExecutionSettings the settings to add.
          * @return this {@link Builder}
          */
@@ -173,6 +177,7 @@ public class InvocationContext implements Buildable {
 
         /**
          * Add tool call behavior to the builder.
+         *
          * @param toolCallBehavior the behavior to add.
          * @return this {@link Builder}
          */
@@ -184,6 +189,7 @@ public class InvocationContext implements Buildable {
 
         /**
          * Add a context variable type converter to the builder.
+         *
          * @param converter the converter to add.
          * @return this {@link Builder}
          */

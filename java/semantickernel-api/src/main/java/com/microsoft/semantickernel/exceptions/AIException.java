@@ -4,9 +4,14 @@ package com.microsoft.semantickernel.exceptions;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** AI logic exception */
+/**
+ * AI logic exception
+ */
 public class AIException extends SKException {
 
+    /**
+     * Error code
+     */
     @Nonnull
     private final ErrorCodes errorCode;
 
@@ -23,7 +28,7 @@ public class AIException extends SKException {
      * Initializes a new instance of the {@link AIException} class.
      *
      * @param errorCode The error code.
-     * @param message The message.
+     * @param message   The message.
      */
     public AIException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
         this(errorCode, message, null);
@@ -32,8 +37,8 @@ public class AIException extends SKException {
     /**
      * Initializes a new instance of the {@link AIException} class.
      *
-     * @param errorCode The error code.
-     * @param message The message.
+     * @param errorCode      The error code.
+     * @param message        The message.
      * @param innerException The cause of the exception.
      */
     public AIException(
@@ -53,35 +58,59 @@ public class AIException extends SKException {
         return errorCode;
     }
 
-    /** Error codes */
+    /**
+     * Error codes
+     */
     public enum ErrorCodes {
-        /** Unknown error. */
+        /**
+         * Unknown error.
+         */
         UNKNOWN_ERROR("Unknown error"),
 
-        /** No response. */
+        /**
+         * No response.
+         */
         NO_RESPONSE("No response"),
-        /** Access denied. */
+        /**
+         * Access denied.
+         */
         ACCESS_DENIED("Access is denied"),
 
-        /** Invalid request. */
+        /**
+         * Invalid request.
+         */
         INVALID_REQUEST("The request was invalid"),
-        /** Invalid response. */
+        /**
+         * Invalid response.
+         */
         INVALID_RESPONSE_CONTENT("The content of the response was invalid"),
 
-        /** Throttling. */
+        /**
+         * Throttling.
+         */
         THROTTLING("The request was throttled"),
-        /** Request timeout. */
+        /**
+         * Request timeout.
+         */
         REQUEST_TIMEOUT("The request timed out"),
 
-        /** Service error. */
+        /**
+         * Service error.
+         */
         SERVICE_ERROR("There was an error in the service"),
 
-        /** Model not available. */
+        /**
+         * Model not available.
+         */
         MODEL_NOT_AVAILABLE("The requested model is not available"),
 
-        /** Invalid configuration. */
+        /**
+         * Invalid configuration.
+         */
         INVALID_CONFIGURATION("The supplied configuration was invalid"),
-        /** Function type not supported. */
+        /**
+         * Function type not supported.
+         */
         FUNCTION_TYPE_NOT_SUPPORTED("The function is not supported");
 
         private final String message;

@@ -1,18 +1,18 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.contextvariables.converters;
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
-
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 
 /**
- * A {@link ContextVariableTypeConverter}
- * for {@code java.time.OffsetDateTime} variables. Use
- * {@code ContextVariableTypes.getGlobalVariableTypeForClass(OffsetDateTime.class)} 
- * to get an instance of this class.
+ * A {@link ContextVariableTypeConverter} for {@code java.time.OffsetDateTime} variables. Use
+ * {@code ContextVariableTypes.getGlobalVariableTypeForClass(OffsetDateTime.class)} to get an
+ * instance of this class.
+ *
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class DateTimeContextVariableTypeConverter extends
