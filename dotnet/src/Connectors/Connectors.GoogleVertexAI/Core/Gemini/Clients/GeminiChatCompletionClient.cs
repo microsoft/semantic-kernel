@@ -190,11 +190,13 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
 
     private static GeminiRequest CreateGeminiRequest(
         ChatHistory chatHistory,
-        PromptExecutionSettings? promptExecutionSettings)
+        PromptExecutionSettings? promptExecutionSettings,
+        Kernel? kernel)
     {
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
         var geminiRequest = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, geminiExecutionSettings);
+        geminiExecutionSettings.ToolCallBehavior?.ConfigureGeminiRequest(kernel, geminiRequest);
         return geminiRequest;
     }
 

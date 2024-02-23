@@ -54,6 +54,6 @@ internal sealed class GeminiTool
         /// </summary>
         [JsonPropertyName("schema")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public BinaryData? ResultParameters { get; set; }
+        public BinaryData? Parameters { get; set; }
     }
 }

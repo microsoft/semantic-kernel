@@ -206,6 +206,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             CandidateCount = this.CandidateCount,
             StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
             SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).ToList(),
+            ToolCallBehavior = this.ToolCallBehavior,
         };
     }
 

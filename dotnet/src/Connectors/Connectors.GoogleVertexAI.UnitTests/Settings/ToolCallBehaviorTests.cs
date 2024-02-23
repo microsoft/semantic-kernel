@@ -184,6 +184,6 @@ public sealed class ToolCallBehaviorTests
         Assert.Equal("MyPlugin-MyFunction", function.Name);
         Assert.Equal("Test Function", function.Description);
         Assert.Equal("""{"type":"object","required":[],"properties":{"parameter1":{"type":"string"},"parameter2":{"type":"string"}}}""",
-            function.ResultParameters!.ToString());
+            function.Parameters!.ToString());
     }
 }
