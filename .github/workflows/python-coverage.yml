@@ -9,11 +9,14 @@ on:
 jobs:
   post_coverage_comment:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    # This job runs if the triggering workflow was for a pull_request event and concluded successfully.
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'java-development')
     permissions:
       contents: read
       pull-requests: write
-      actions: read
 
     steps:
       - name: Checkout code
@@ -28,4 +31,3 @@ jobs:
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
           GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-
