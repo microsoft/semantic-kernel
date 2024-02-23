@@ -4,6 +4,7 @@ from datetime import datetime
 
 import numpy as np
 import pytest
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
