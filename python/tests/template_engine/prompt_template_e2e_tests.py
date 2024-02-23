@@ -154,7 +154,7 @@ class TestPromptTemplateEngine:
         else:
             result = await KernelPromptTemplate(
                 PromptTemplateConfig(name="test", description="test", template=template)
-            ).render(kernel, arguments)
+            ).render(kernel, None)
 
             # Assert
             assert expected_result == result

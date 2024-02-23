@@ -666,7 +666,8 @@ Error description: '{str(function_invoked_args.exception)}'",
         If type and service_id are both None, the first service is returned.
 
         Args:
-            service_id (Optional[str]): The service id, if None, the default service is returned or the first service is returned.
+            service_id (Optional[str]): The service id,
+                if None, the default service is returned or the first service is returned.
             type (Optional[Type[ALL_SERVICE_TYPES]]): The type of the service, if None, no checks are done.
 
         Returns:

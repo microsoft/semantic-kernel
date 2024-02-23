@@ -2,7 +2,6 @@
 
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, TypeVar, Union
-from venv import logger
 
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin

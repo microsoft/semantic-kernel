@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 from typing import Any, Dict, Final, Iterator, List, Optional, Tuple, Type, Union
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
