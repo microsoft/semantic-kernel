@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for interacting with the text generation gemini model.
 /// </summary>
-internal sealed class GeminiTextGenerationClient : IGeminiTextGenerationClient
+internal sealed class GeminiTextGenerationClient
 {
     private readonly IGeminiChatCompletionClient _chatCompletionClient;
 
@@ -25,7 +25,13 @@ internal sealed class GeminiTextGenerationClient : IGeminiTextGenerationClient
         this._chatCompletionClient = chatCompletionClient;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Generates text based on the given prompt asynchronously.
+    /// </summary>
+    /// <param name="prompt">The prompt for generating text content.</param>
+    /// <param name="executionSettings">The prompt execution settings (optional).</param>
+    /// <param name="cancellationToken">The cancellation token (optional).</param>
+    /// <returns>A list of text content generated based on the prompt.</returns>
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
@@ -42,7 +48,13 @@ internal sealed class GeminiTextGenerationClient : IGeminiTextGenerationClient
         return ConvertChatMessagesToTextContents(resultMessages);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Streams the generated text content asynchronously.
+    /// </summary>
+    /// <param name="prompt">The prompt for generating text content.</param>
+    /// <param name="executionSettings">The prompt execution settings (optional).</param>
+    /// <param name="cancellationToken">The cancellation token (optional).</param>
+    /// <returns>An asynchronous enumerable of <see cref="StreamingTextContent"/> streaming text contents.</returns>
     public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
