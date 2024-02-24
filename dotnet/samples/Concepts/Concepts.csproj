@@ -44,6 +44,7 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\..\src\Agents\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
