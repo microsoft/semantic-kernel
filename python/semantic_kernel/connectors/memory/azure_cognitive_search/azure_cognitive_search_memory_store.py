@@ -13,7 +13,7 @@ from azure.search.documents.indexes.models import (
     SearchResourceEncryptionKey,
     VectorSearch,
 )
-from azure.search.documents.models import Vector
+from azure.search.documents.models import VectorQuery
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
@@ -391,7 +391,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
 
-        vector = Vector(value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING)
+        vector = VectorQuery(value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING)
 
         search_results = await search_client.search(
             search_text="*",
