@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Response from the model supporting multiple candidates.
 /// </summary>
-public sealed class GeminiResponse
+internal sealed class GeminiResponse
 {
     /// <summary>
     /// Candidate responses from the model.
@@ -31,7 +31,7 @@ public sealed class GeminiResponse
     /// <summary>
     /// Represents the usage metadata of a Gemini response.
     /// </summary>
-    public sealed class UsageMetadataElement
+    internal sealed class UsageMetadataElement
     {
         /// <summary>
         /// Gets the number of used tokens by prompt.
@@ -55,7 +55,7 @@ public sealed class GeminiResponse
     /// <summary>
     /// Feedback for the prompt.
     /// </summary>
-    public sealed class PromptFeedbackElement
+    internal sealed class PromptFeedbackElement
     {
         /// <summary>
         /// Optional. If set, the prompt was blocked and no candidates are returned. Rephrase your prompt.

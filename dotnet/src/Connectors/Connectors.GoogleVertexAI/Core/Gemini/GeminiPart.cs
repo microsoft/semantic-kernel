@@ -137,7 +137,13 @@ public sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("args")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IList<JsonNode>? Arguments { get; set; }
+        public BinaryData? Arguments { get; set; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"FunctionName={this.FunctionName}, Arguments={this.Arguments}";
+        }
     }
 
     /// <summary>

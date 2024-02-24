@@ -23,6 +23,27 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     private readonly string _modelId;
 
     /// <summary>
+    /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
+    /// asynchronous chain of execution.
+    /// </summary>
+    /// <remarks>
+    /// This is a fail-safe mechanism. If someone accidentally manages to set up execution settings in such a way that
+    /// auto-invocation is invoked recursively, and in particular where a prompt function is able to auto-invoke itself,
+    /// we could end up in an infinite loop. This const is a backstop against that happening. We should never come close
+    /// to this limit, but if we do, auto-invoke will be disabled for the current flow in order to prevent runaway execution.
+    /// With the current setup, the way this could possibly happen is if a prompt function is configured with built-in
+    /// execution settings that opt-in to auto-invocation of everything in the kernel, in which case the invocation of that
+    /// prompt function could advertise itself as a candidate for auto-invocation. We don't want to outright block that,
+    /// if that's something a developer has asked to do (e.g. it might be invoked with different arguments than its parent
+    /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
+    /// configurable should need arise.
+    /// </remarks>
+    private const int MaxInflightAutoInvokes = 5;
+
+    /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
+    private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
+
+    /// <summary>
     /// Represents a client for interacting with the chat completion gemini model.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
@@ -57,16 +78,63 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        ValidateAndPrepareChatHistory(ref chatHistory);
+        var chatHistoryCopy = new ChatHistory(chatHistory);
+        ValidateAndPrepareChatHistory(chatHistoryCopy);
 
         var endpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
-        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings, kernel);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        bool autoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings);
+        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+        ValidateAutoInvoke(autoInvoke, geminiExecutionSettings.CandidateCount ?? 1);
+
+        for (int iteration = 1;; iteration++)
+        {
+            var geminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel);
+            var geminiResponse = await this.SendRequestAndReturnValidResponseAsync(endpoint, geminiRequest, cancellationToken)
+                .ConfigureAwait(false);
+
+            var chatMessagesContents = this.ProcessChatResponse(geminiResponse);
+
+            // If we don't want to attempt to invoke any functions, just return the result.
+            // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
+            if (!autoInvoke || geminiResponse.Candidates!.Count != 1)
+            {
+                return chatMessagesContents;
+            }
+
+            var responsePart = geminiResponse.Candidates[0].Content!.Parts[0];
+            if (responsePart.FunctionCall is null)
+            {
+                return chatMessagesContents;
+            }
+
+            chatHistory.Add(chatMessagesContents[0]);
+            chatHistoryCopy.Add(chatMessagesContents[0]);
+
+            this.Logger.LogDebug("Tool requests: {Requests}", 1);
+            this.Logger.LogTrace("Function call requests: {FunctionCall}", responsePart.FunctionCall.ToString());
+        }
+    }
+
+    private async Task<GeminiResponse> SendRequestAndReturnValidResponseAsync(
+        Uri endpoint,
+        GeminiRequest geminiRequest,
+        CancellationToken cancellationToken)
+    {
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
+        var geminiResponse = DeserializeResponse<GeminiResponse>(body);
+        ValidateGeminiResponse(geminiResponse);
+        return geminiResponse;
+    }
 
-        return this.ParseAndProcessChatResponse(body);
+    private static bool CheckAutoInvokeCondition(Kernel? kernel, GeminiPromptExecutionSettings geminiExecutionSettings)
+    {
+        return kernel is not null
+               && geminiExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0
+               && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
     }
 
     /// <inheritdoc/>
@@ -79,7 +147,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         ValidateAndPrepareChatHistory(ref chatHistory);
 
         var endpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
-        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings, kernel);
+        var geminiRequest = CreateRequest(chatHistory, executionSettings, kernel);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
@@ -93,11 +161,9 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         }
     }
 
-    private static void ValidateAndPrepareChatHistory(ref ChatHistory chatHistory)
+    private static void ValidateAndPrepareChatHistory(ChatHistory chatHistory)
     {
         Verify.NotNullOrEmpty(chatHistory);
-
-        chatHistory = new ChatHistory(chatHistory);
 
         if (chatHistory.Where(message => message.Role == AuthorRole.System).ToList() is { Count: > 0 } systemMessages)
         {
@@ -158,10 +224,16 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     private IEnumerable<GeminiResponse> ParseResponseStream(Stream responseStream)
         => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<GeminiResponse>);
 
-    private List<ChatMessageContent> ParseAndProcessChatResponse(string body)
-        => this.ProcessChatResponse(DeserializeResponse<GeminiResponse>(body));
+    private List<GeminiChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
+    {
+        ValidateGeminiResponse(geminiResponse);
 
-    private List<ChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
+        var chatMessageContents = this.GetChatMessageContentsFromResponse(geminiResponse);
+        this.LogUsage(chatMessageContents);
+        return chatMessageContents;
+    }
+
+    private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
         if (geminiResponse.Candidates == null || !geminiResponse.Candidates.Any())
         {
@@ -173,30 +245,28 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
 
             throw new KernelException("Gemini API doesn't return any data.");
         }
-
-        var chatMessageContents = this.GetChatMessageContentsFromResponse(geminiResponse);
-        this.LogUsage(chatMessageContents);
-        return chatMessageContents;
     }
 
     private void LogUsage(IReadOnlyList<ChatMessageContent> chatMessageContents)
         => this.LogUsageMetadata((GeminiMetadata)chatMessageContents[0].Metadata!);
 
-    private List<ChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
-        => geminiResponse.Candidates!.Select(candidate => new ChatMessageContent(
-            role: candidate.Content?.Role ?? AuthorRole.Assistant,
-            content: candidate.Content?.Parts[0].Text ?? string.Empty,
-            modelId: this._modelId,
-            innerContent: candidate,
-            metadata: GetResponseMetadata(geminiResponse, candidate))).ToList();
+    private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
+        => geminiResponse.Candidates!.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 
-    private static GeminiRequest CreateGeminiRequest(
+    private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
+    {
+        return new GeminiChatMessageContent(
+            role: candidate.Content?.Role ?? AuthorRole.Assistant,
+            content: candidate.Content?.Parts[0].Text,
+            modelId: this._modelId,
+            metadata: GetResponseMetadata(geminiResponse, candidate));
+    }
+
+    private static GeminiRequest CreateRequest(
         ChatHistory chatHistory,
-        PromptExecutionSettings? promptExecutionSettings,
+        GeminiPromptExecutionSettings geminiExecutionSettings,
         Kernel? kernel)
     {
-        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
-        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
         var geminiRequest = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, geminiExecutionSettings);
         geminiExecutionSettings.ToolCallBehavior?.ConfigureGeminiRequest(kernel, geminiRequest);
         return geminiRequest;
@@ -210,4 +280,15 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             innerContent: chatMessageContent.InnerContent,
             metadata: chatMessageContent.Metadata,
             choiceIndex: ((GeminiMetadata)chatMessageContent.Metadata!).Index);
+
+    private static void ValidateAutoInvoke(bool autoInvoke, int resultsPerPrompt)
+    {
+        if (autoInvoke && resultsPerPrompt != 1)
+        {
+            // We can remove this restriction in the future if valuable. However, multiple results per prompt is rare,
+            // and limiting this significantly curtails the complexity of the implementation.
+            throw new ArgumentException(
+                $"Auto-invocation of tool calls may only be used with a {nameof(GeminiPromptExecutionSettings.CandidateCount)} of 1.");
+        }
+    }
 }

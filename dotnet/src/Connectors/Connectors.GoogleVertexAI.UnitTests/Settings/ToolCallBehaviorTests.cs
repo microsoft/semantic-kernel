@@ -164,15 +164,15 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
-        var enabledFunctions = new ToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
+        var toolcallbehavior = new ToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
 
         // Act
-        var clone = enabledFunctions.Clone();
+        var clone = toolcallbehavior.Clone();
 
         // Assert
         Assert.IsType<ToolCallBehavior.EnabledFunctions>(clone);
-        Assert.NotSame(enabledFunctions, clone);
-        Assert.Equivalent(enabledFunctions, clone, strict: true);
+        Assert.NotSame(toolcallbehavior, clone);
+        Assert.Equivalent(toolcallbehavior, clone, strict: true);
     }
 
     [Fact]
@@ -180,15 +180,15 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
-        var enabledFunctions = new ToolCallBehavior.KernelFunctions(autoInvoke: true);
+        var toolcallbehavior = new ToolCallBehavior.KernelFunctions(autoInvoke: true);
 
         // Act
-        var clone = enabledFunctions.Clone();
+        var clone = toolcallbehavior.Clone();
 
         // Assert
         Assert.IsType<ToolCallBehavior.KernelFunctions>(clone);
-        Assert.NotSame(enabledFunctions, clone);
-        Assert.Equivalent(enabledFunctions, clone, strict: true);
+        Assert.NotSame(toolcallbehavior, clone);
+        Assert.Equivalent(toolcallbehavior, clone, strict: true);
     }
 
     private static KernelPlugin GetTestPlugin()
