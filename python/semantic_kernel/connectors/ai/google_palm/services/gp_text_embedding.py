@@ -13,13 +13,12 @@ from numpy import array, ndarray
 from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
 
 
-class GooglePalmTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
+class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
     def __init__(self, ai_model_id: str, api_key: str) -> None:

@@ -9,13 +9,13 @@ def test_can_be_instantiated():
 def test_can_be_imported():
     kernel = sk.Kernel()
     assert kernel.import_plugin(TextPlugin(), "text_plugin")
-    assert not kernel.plugins["text_plugin"]["trim"].is_semantic
+    assert not kernel.plugins["text_plugin"]["trim"].is_prompt
 
 
 def test_can_be_imported_with_name():
     kernel = sk.Kernel()
     assert kernel.import_plugin(TextPlugin(), "text")
-    assert not kernel.plugins["text"]["trim"].is_semantic
+    assert not kernel.plugins["text"]["trim"].is_prompt
 
 
 def test_can_trim():

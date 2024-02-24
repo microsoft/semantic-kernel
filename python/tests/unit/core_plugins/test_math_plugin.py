@@ -3,8 +3,8 @@
 import pytest
 
 from semantic_kernel import Kernel
-from semantic_kernel.core_plugins import MathPlugin
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 def test_can_be_instantiated():
@@ -22,59 +22,57 @@ def test_can_be_imported():
 
 
 @pytest.mark.parametrize(
-    "initial_Value, amount, expectedResult",
+    "initial_value, amount, expected_result",
     [
-        ("10", "10", "20"),
-        ("0", "10", "10"),
-        ("0", "-10", "-10"),
-        ("10", "0", "10"),
-        ("-1", "10", "9"),
-        ("-10", "10", "0"),
-        ("-192", "13", "-179"),
-        ("-192", "-13", "-205"),
+        (10, 10, 20),
+        (0, 10, 10),
+        (0, -10, -10),
+        (10, 0, 10),
+        (-1, 10, 9),
+        (-10, 10, 0),
+        (-192, 13, -179),
+        (-192, -13, -205),
     ],
 )
-def test_add_when_valid_parameters_should_succeed(initial_Value, amount, expectedResult):
+def test_add_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
     # Arrange
-    context = ContextVariables()
-    context["Amount"] = amount
     plugin = MathPlugin()
+    arguments = KernelArguments(input=initial_value, amount=amount)
 
     # Act
-    result = plugin.add(initial_Value, context)
+    result = plugin.add(**arguments)
 
     # Assert
-    assert result == expectedResult
+    assert result == expected_result
 
 
 @pytest.mark.parametrize(
-    "initial_Value, amount, expectedResult",
+    "initial_value, amount, expected_result",
     [
-        ("10", "10", "0"),
-        ("0", "10", "-10"),
-        ("10", "0", "10"),
-        ("100", "-10", "110"),
-        ("100", "102", "-2"),
-        ("-1", "10", "-11"),
-        ("-10", "10", "-20"),
-        ("-192", "13", "-205"),
+        (10, 10, 0),
+        (0, 10, -10),
+        (10, 0, 10),
+        (100, -10, 110),
+        (100, 102, -2),
+        (-1, 10, -11),
+        (-10, 10, -20),
+        (-192, -13, -179),
     ],
 )
-def test_subtract_when_valid_parameters_should_succeed(initial_Value, amount, expectedResult):
+def test_subtract_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
     # Arrange
-    context = ContextVariables()
-    context["Amount"] = amount
     plugin = MathPlugin()
+    arguments = KernelArguments(input=initial_value, amount=amount)
 
     # Act
-    result = plugin.subtract(initial_Value, context)
+    result = plugin.subtract(**arguments)
 
     # Assert
-    assert result == expectedResult
+    assert result == expected_result
 
 
 @pytest.mark.parametrize(
-    "initial_Value",
+    "initial_value",
     [
         "$0",
         "one hundred",
@@ -89,18 +87,16 @@ def test_subtract_when_valid_parameters_should_succeed(initial_Value, amount, ex
         "1 banana",
     ],
 )
-def test_add_when_invalid_initial_value_should_throw(initial_Value):
+def test_add_when_invalid_initial_value_should_throw(initial_value):
     # Arrange
-    context = ContextVariables()
-    context["Amount"] = "1"
     plugin = MathPlugin()
+    arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act
     with pytest.raises(ValueError) as exception:
-        plugin.add(initial_Value, context)
+        plugin.add(**arguments)
 
     # Assert
-    assert str(exception.value) == f"Initial value provided is not in numeric format: {initial_Value}"
     assert exception.type == ValueError
 
 
@@ -122,15 +118,13 @@ def test_add_when_invalid_initial_value_should_throw(initial_Value):
 )
 def test_add_when_invalid_amount_should_throw(amount):
     # Arrange
-    context = ContextVariables()
-    context["Amount"] = amount
     plugin = MathPlugin()
+    arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
     with pytest.raises(ValueError) as exception:
-        plugin.add("1", context)
+        plugin.add(**arguments)
 
-    assert str(exception.value) == f"Context amount provided is not in numeric format: {amount}"
     assert exception.type == ValueError
 
 
@@ -152,16 +146,14 @@ def test_add_when_invalid_amount_should_throw(amount):
 )
 def test_subtract_when_invalid_initial_value_should_throw(initial_value):
     # Arrange
-    context = ContextVariables()
-    context["Amount"] = "1"
     plugin = MathPlugin()
+    arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act / Assert
     with pytest.raises(ValueError) as exception:
-        plugin.subtract(initial_value, context)
+        plugin.subtract(**arguments)
 
     # Assert
-    assert str(exception.value) == f"Initial value provided is not in numeric format: {initial_value}"
     assert exception.type == ValueError
 
 
@@ -183,14 +175,12 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
 )
 def test_subtract_when_invalid_amount_should_throw(amount):
     # Arrange
-    context = ContextVariables()
-    context["Amount"] = amount
     plugin = MathPlugin()
+    arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
     with pytest.raises(ValueError) as exception:
-        plugin.subtract("1", context)
+        plugin.subtract(**arguments)
 
     # Assert
-    assert str(exception.value) == f"Context amount provided is not in numeric format: {amount}"
     assert exception.type == ValueError

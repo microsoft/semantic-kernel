@@ -4,6 +4,8 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.google_palm as sk_gp
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.prompt_template.input_variable import InputVariable
 
 """
 System messages prime the assistant with different personalities or behaviors.
@@ -28,23 +30,39 @@ Bartholomew "Blackbeard" Thorne.
 
 kernel = sk.Kernel()
 api_key = sk.google_palm_settings_from_dot_env()
-palm_chat_completion = sk_gp.GooglePalmChatCompletion("models/chat-bison-001", api_key)
-kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
-prompt_config = sk.PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
-prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
-prompt_template.add_system_message(system_message)  # Add the system message for context
-prompt_template.add_user_message("Hi there, my name is Andrea, who are you?")  # Include a chat history
-prompt_template.add_assistant_message("I am Blackbeard.")
-function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-chat_function = kernel.register_semantic_function("PiratePlugin", "Chat", function_config)
+service_id = "models/chat-bison-001"
+palm_chat_completion = sk_gp.GooglePalmChatCompletion(service_id, api_key)
+kernel.add_service(palm_chat_completion)
+
+req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
+req_settings.max_tokens = 2000
+req_settings.temperature = 0.7
+req_settings.top_p = 0.8
+
+prompt_template_config = sk.PromptTemplateConfig(
+    template="{{$user_input}}",
+    name="chat",
+    template_format="semantic-kernel",
+    input_variables=[
+        InputVariable(name="user_input", description="The user input", is_required=True),
+        InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
+    ],
+    execution_settings=req_settings,
+)
+
+chat_func = kernel.create_function_from_prompt(
+    plugin_name="PiratePlugin", function_name="Chat", prompt_template_config=prompt_template_config
+)
+
+chat_history = ChatHistory()
+chat_history.add_system_message(system_message)
+chat_history.add_user_message("Hi there, who are you?")
+chat_history.add_assistant_message("I am Blackbeard.")
 
 
 async def chat() -> bool:
-    context_vars = sk.ContextVariables()
-
     try:
         user_input = input("User:> ")
-        context_vars["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
         return False
@@ -56,8 +74,10 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run(chat_function, input_vars=context_vars)
+    answer = await kernel.invoke(chat_func, user_input=user_input, chat_history=chat_history)
     print(f"Blackbeard:> {answer}")
+    chat_history.add_user_message(user_input)
+    chat_history.add_assistant_message(str(answer))
     return True
 
 

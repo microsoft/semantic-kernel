@@ -192,7 +192,7 @@ def bing_search_settings_from_dot_env() -> str:
     """Reads the Bing Search API key from the .env file.
 
     Returns:
-        Tuple[str, str]: The Bing Search API key, the Bing Search endpoint
+        str: The Bing Search API key
     """
 
     api_key = None

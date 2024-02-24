@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from pytest import raises
+import pytest
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 
@@ -24,7 +25,7 @@ def test_init_with_just_stop_index():
 
 
 def test_init_with_start_index_greater_than_stop_index():
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         TextBlock.from_text(text="test text", start_index=2, stop_index=1)
 
 
@@ -34,7 +35,7 @@ def test_init_with_start_stop_indices():
 
 
 def test_init_with_start_index_less_than_zero():
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         TextBlock.from_text(text="test text", start_index=-1, stop_index=1)
 
 
@@ -48,51 +49,47 @@ def test_type_property():
     assert text_block.type == BlockTypes.TEXT
 
 
-def test_is_valid():
-    text_block = TextBlock.from_text(text="test text")
-    is_valid, error_msg = text_block.is_valid()
-    assert is_valid
-    assert error_msg == ""
-
-
 def test_render():
     text_block = TextBlock.from_text(text="test text")
-    rendered_value = text_block.render(ContextVariables())
+    rendered_value = text_block.render(Kernel(), KernelArguments())
     assert rendered_value == "test text"
 
 
-def test_preserves_empty_values():
-    assert "" == TextBlock.from_text(text=None).content
-    assert "" == TextBlock.from_text(text="").content
-    assert " " == TextBlock.from_text(text=" ").content
-    assert "  " == TextBlock.from_text(text="  ").content
-    assert " \n" == TextBlock.from_text(text=" \n").content
-    assert " \t" == TextBlock.from_text(text=" \t").content
-    assert " \r" == TextBlock.from_text(text=" \r").content
+@pytest.mark.parametrize(
+    ("input_", "output"),
+    [
+        (None, ""),
+        ("", ""),
+        (" ", " "),
+        ("  ", "  "),
+        ("   ", "   "),
+        (" \n", " \n"),
+        (" \t", " \t"),
+        (" \r", " \r"),
+    ],
+    ids=["None", "empty", "space", "two_spaces", "three_spaces", "space_newline", "space_tab", "space_carriage_return"],
+)
+def test_preserves_empty_values(input_, output):
+    assert output == TextBlock.from_text(text=input_).content
 
 
-def test_is_always_valid():
-    assert TextBlock.from_text(text=None).is_valid() == (True, "")
-    assert TextBlock.from_text(text="").is_valid() == (True, "")
-    assert TextBlock.from_text(text=" ").is_valid() == (True, "")
-    assert TextBlock.from_text(text="  ").is_valid() == (True, "")
-    assert TextBlock.from_text(text=" \n").is_valid() == (True, "")
-    assert TextBlock.from_text(text=" \t").is_valid() == (True, "")
-    assert TextBlock.from_text(text=" \r").is_valid() == (True, "")
-    assert TextBlock.from_text(text="test").is_valid() == (True, "")
-    assert TextBlock.from_text(text=" \nabc").is_valid() == (True, "")
-
-
-def test_renders_the_content_as_it():
-    assert TextBlock.from_text(text=None).render() == ""
-    assert TextBlock.from_text(text="").render() == ""
-    assert TextBlock.from_text(text=" ").render() == " "
-    assert TextBlock.from_text(text="  ").render() == "  "
-    assert TextBlock.from_text(text=" \n").render() == " \n"
-    assert TextBlock.from_text(text=" \t").render() == " \t"
-    assert TextBlock.from_text(text=" \r").render() == " \r"
-    assert TextBlock.from_text(text="test").render() == "test"
-    assert TextBlock.from_text(text=" \nabc").render() == " \nabc"
-    assert TextBlock.from_text(text="'x'").render() == "'x'"
-    assert TextBlock.from_text(text='"x"').render() == '"x"'
-    assert TextBlock.from_text(text="\"'x'\"").render() == "\"'x'\""
+@pytest.mark.parametrize(
+    ("input_", "output"),
+    [
+        (None, ""),
+        ("", ""),
+        (" ", " "),
+        ("  ", "  "),
+        ("   ", "   "),
+        (" \n", " \n"),
+        (" \t", " \t"),
+        (" \r", " \r"),
+        ("test", "test"),
+        (" \nabc", " \nabc"),
+        ("'x'", "'x'"),
+        ('"x"', '"x"'),
+        ("\"'x'\"", "\"'x'\""),
+    ],
+)
+def test_renders_the_content_as_it(input_, output):
+    assert TextBlock.from_text(text=input_).render() == output

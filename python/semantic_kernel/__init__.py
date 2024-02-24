@@ -1,17 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel import core_plugins, memory
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-from semantic_kernel.semantic_functions.prompt_template_config import (
+from semantic_kernel.prompt_template.prompt_template_config import (
     PromptTemplateConfig,
-)
-from semantic_kernel.semantic_functions.semantic_function_config import (
-    SemanticFunctionConfig,
 )
 from semantic_kernel.utils.logging import setup_logging
 from semantic_kernel.utils.null_logger import NullLogger
@@ -46,12 +39,7 @@ __all__ = [
     "google_palm_settings_from_dot_env",
     "redis_settings_from_dot_env",
     "PromptTemplateConfig",
-    "PromptTemplate",
-    "ChatPromptTemplate",
-    "SemanticFunctionConfig",
-    "ContextVariables",
-    "KernelFunction",
-    "KernelContext",
+    "KernelArguments",
     "memory",
     "core_plugins",
     "setup_logging",

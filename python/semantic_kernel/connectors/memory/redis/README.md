@@ -1,6 +1,6 @@
 # semantic_kernel.connectors.memory.redis
 
-This connector uses Redis to implement Semantic Memory. It requires the [RediSearch](https://redis.io/docs/interact/search-and-query/) module to be enabled on Redis to implement vector similarity search. 
+This connector uses Redis to implement Semantic Memory. It requires the [RediSearch](https://redis.io/docs/interact/search-and-query/) module to be enabled on Redis to implement vector similarity search.
 
 See the [.net README](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Connectors/Connectors.Memory.Redis/README.md) for more information.
 
@@ -22,10 +22,10 @@ docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:la
     kernel = sk.Kernel()
 
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_text_completion_service("dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id))
-    kernel.add_text_embedding_generation_service("ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id))
+    kernel.add_service(sk_oai.OpenAITextCompletion(service_id="dv", ai_model_id="text-davinci-003", api_key=api_key, org_id=org_id))
+    embedding_generator = sk_oai.OpenAITextEmbedding(service_id="ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id)
+    kernel.add_service(embedding_generator)
 
     redis_connection_string = sk.redis_settings_from_dot_env()
-    kernel.register_memory_store(memory_store=RedisMemoryStore(connection_string=redis_connection_string))
+    kernel.use_memory(storage=RedisMemoryStore(connection_string=redis_connection_string), embeddings_generator=embedding_generator)
 ```
-

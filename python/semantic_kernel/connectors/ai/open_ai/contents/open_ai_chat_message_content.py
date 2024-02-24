@@ -1,11 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 from typing import List, Optional
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 from openai.types.chat import ChatCompletion
 
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
-from semantic_kernel.models.contents import ChatMessageContent
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from semantic_kernel.contents import ChatMessageContent
+from semantic_kernel.contents.chat_role import ChatRole
 
 
 class OpenAIChatMessageContent(ChatMessageContent):
@@ -27,6 +30,44 @@ class OpenAIChatMessageContent(ChatMessageContent):
         __str__: Returns the content of the response.
     """
 
-    inner_content: ChatCompletion
+    inner_content: Optional[ChatCompletion] = None
     function_call: Optional[FunctionCall] = None
     tool_calls: Optional[List[ToolCall]] = None
+
+    @staticmethod
+    def ToolIdProperty():
+        # Directly using the class name and the attribute name as strings
+        return f"{ToolCall.__name__}.{ToolCall.id.__name__}"
+
+    def to_prompt(self, root_key: str) -> str:
+        """Convert the OpenAIChatMessageContent to a prompt.
+
+        Returns:
+            str - The prompt from the ChatMessageContent.
+        """
+
+        root = Element(root_key)
+        root.set("role", self.role.value)
+        if self.function_call:
+            root.set("function_call", self.function_call.model_dump_json(exclude_none=True))
+        if self.tool_calls:
+            root.set("tool_calls", ",".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
+        root.text = self.content or ""
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode")
+
+    @classmethod
+    def from_element(cls, element: Element) -> "ChatMessageContent":
+        """Create a new instance of OpenAIChatMessageContent from a prompt.
+
+        Args:
+            prompt: str - The prompt to create the ChatMessageContent from.
+
+        Returns:
+            ChatMessageContent - The new instance of ChatMessageContent.
+        """
+        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        if function_call := element.get("function_call"):
+            args["function_call"] = FunctionCall.model_validate_json(function_call)
+        if tool_calls := element.get("tool_calls"):
+            args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split(",")]
+        return cls(**args)

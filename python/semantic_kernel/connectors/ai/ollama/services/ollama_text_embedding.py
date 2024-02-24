@@ -7,7 +7,6 @@ import aiohttp
 from numpy import array, ndarray
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
@@ -16,7 +15,7 @@ from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OllamaTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
+class OllamaTextEmbedding(EmbeddingGeneratorBase):
     """Ollama embeddings client.
 
     Make sure to have the ollama service running either locally or remotely.

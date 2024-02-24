@@ -13,11 +13,12 @@ async def test_oai_embedding_service(create_kernel, get_oai_config):
 
     api_key, org_id = get_oai_config
 
-    kernel.add_text_embedding_generation_service(
-        "oai-ada",
-        sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id=org_id),
+    embedding_gen = sk_oai.OpenAITextEmbedding(
+        service_id="oai-ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id
     )
-    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
+
+    kernel.add_service(embedding_gen)
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
 
     await kernel.memory.save_information("test", id="info1", text="this is a test")
     await kernel.memory.save_reference(
@@ -39,14 +40,12 @@ async def test_oai_embedding_service_with_provided_client(create_kernel, get_oai
         organization=org_id,
     )
 
-    kernel.add_text_embedding_generation_service(
-        "oai-ada-2",
-        sk_oai.OpenAITextEmbedding(
-            ai_model_id="text-embedding-ada-002",
-            async_client=client,
-        ),
+    embedding_gen = sk_oai.OpenAITextEmbedding(
+        service_id="oai-ada", ai_model_id="text-embedding-ada-002", async_client=client
     )
-    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
+
+    kernel.add_service(embedding_gen)
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
 
     await kernel.memory.save_information("test", id="info1", text="this is a test")
     await kernel.memory.save_reference(

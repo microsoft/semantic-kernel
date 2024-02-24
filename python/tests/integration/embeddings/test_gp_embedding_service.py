@@ -26,8 +26,8 @@ async def test_gp_embedding_service(create_kernel, get_gp_config):
     api_key = get_gp_config
 
     palm_text_embed = sk_gp.GooglePalmTextEmbedding("models/embedding-gecko-001", api_key)
-    kernel.add_text_embedding_generation_service("gecko", palm_text_embed)
-    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
+    kernel.add_service(palm_text_embed)
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=palm_text_embed)
 
     await kernel.memory.save_information("test", id="info1", text="this is a test")
     await kernel.memory.save_reference(

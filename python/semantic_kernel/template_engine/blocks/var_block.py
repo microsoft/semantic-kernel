@@ -1,85 +1,77 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from re import match as re_match
-from typing import Any, Optional, Tuple
+from re import compile
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
-import pydantic as pdt
+from pydantic import model_validator
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.kernel import Kernel
+
 logger: logging.Logger = logging.getLogger(__name__)
+
+VAR_BLOCK_REGEX = r"^[${1}](?P<name>[0-9A-Za-z_]+)$"
+
+VAR_BLOCK_MATCHER = compile(VAR_BLOCK_REGEX)
 
 
 class VarBlock(Block):
-    _name: str = pdt.PrivateAttr()
+    """Create a variable block.
 
-    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
-        super().__init__(content=content and content.strip())
+    A variable block is used to add a variable to a template.
+    It get's rendered from KernelArguments, if the variable is not found
+    a warning is logged and an empty string is returned.
+    The variable must start with $ and be followed by a valid variable name.
+    A valid variable name is a string of letters, numbers and underscores.
 
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+    Examples:
+        $var
+        $test_var
 
-        if len(self.content) < 2:
-            err = "The variable name is empty"
-            logger.error(err)
-            self._name = ""
-            return
+    Args:
+        content - str : The content of the variable block, the name of the variable.
+        name - str: The name of the variable.
 
-        self._name = self.content[1:]
+    Raises:
+        VarBlockSyntaxError: If the content does not match the variable syntax.
 
-    @property
-    def type(self) -> BlockTypes:
-        return BlockTypes.VARIABLE
+    """
 
-    @property
-    def name(self) -> str:
-        return self._name
+    type: ClassVar[BlockTypes] = BlockTypes.VARIABLE
+    name: Optional[str] = ""
 
-    @name.setter
-    def name(self, value: str) -> None:
-        self._name = value
+    @model_validator(mode="before")
+    @classmethod
+    def parse_content(cls, fields: Any) -> Any:
+        """Parse the content and extract the name.
 
-    def is_valid(self) -> Tuple[bool, str]:
-        if not self.content:
-            error_msg = f"A variable must start with the symbol {Symbols.VAR_PREFIX} " "and have a name"
-            logger.error(error_msg)
-            return False, error_msg
+        The parsing is based on a regex that returns the name.
+        if the 'name' is already present then the parsing is skipped.
+        """
+        if isinstance(fields, Block) or "name" in fields:
+            return fields
+        content = fields.get("content", "").strip()
+        matches = VAR_BLOCK_MATCHER.match(content)
+        if not matches:
+            raise VarBlockSyntaxError(content=content)
+        if name := matches.groupdict().get("name"):
+            fields["name"] = name
+        return fields
 
-        if self.content[0] != Symbols.VAR_PREFIX:
-            error_msg = f"A variable must start with the symbol {Symbols.VAR_PREFIX}"
-            logger.error(error_msg)
-            return False, error_msg
-
-        if len(self.content) < 2:
-            error_msg = "The variable name is empty"
-            logger.error(error_msg)
-            return False, error_msg
-
-        if not re_match(r"^[a-zA-Z0-9_]*$", self.name):
-            error_msg = (
-                f"The variable name '{self.name}' contains invalid characters. "
-                "Only alphanumeric chars and underscore are allowed."
-            )
-            logger.error(error_msg)
-            return False, error_msg
-
-        return True, ""
-
-    def render(self, variables: Optional[ContextVariables] = None) -> str:
-        if variables is None:
+    def render(self, _: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+        """Render the variable block with the given arguments.
+        If the variable is not found in the arguments, return an empty string."""
+        if arguments is None:
             return ""
+        value = arguments.get(self.name, None)
+        if value is None:
+            logger.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found in the KernelArguments")
 
-        if not self.name:
-            error_msg = "Variable rendering failed, the variable name is empty"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        value = variables.get(self.name, None)
-        if not value:
-            logger.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found")
-
-        return value or ""
+        return str(value) if value else ""

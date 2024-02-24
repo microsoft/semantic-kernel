@@ -2,7 +2,7 @@
 
 
 import logging
-from typing import Any, Dict, Mapping, Optional, overload
+from typing import Dict, Mapping, Optional, overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -29,7 +29,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
-        log: Optional[Any] = None,
+        service_id: Optional[str] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -41,7 +41,6 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
-            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     def __init__(
@@ -49,13 +48,12 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         deployment_name: str,
         endpoint: Optional[str] = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
+        service_id: Optional[str] = None,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Any] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
-        **kwargs,
     ) -> None:
         """
         Initialize an AzureTextEmbedding service.
@@ -81,19 +79,14 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             (Optional) The default value is False.
         :param default_headers: The default headers mapping of string keys to
             string values for HTTP requests. (Optional)
-        :param log: The logger instance to use. (Optional) (Deprecated)
-        :param logger: Deprecated, please use log instead. (Optional)
         :param async_client: An existing client to use. (Optional)
 
         """
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        if kwargs.get("logger"):
-            logger.warning("The 'logger' argument is deprecated.")
         super().__init__(
             deployment_name=deployment_name,
             endpoint=endpoint,
             api_version=api_version,
+            service_id=service_id,
             api_key=api_key,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
@@ -117,6 +110,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             endpoint=settings["endpoint"],
             api_key=settings["api_key"],
             api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
+            service_id=settings.get("service_id"),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),

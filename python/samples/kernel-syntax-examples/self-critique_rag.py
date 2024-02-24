@@ -13,7 +13,6 @@ from semantic_kernel.connectors.memory.azure_cognitive_search import (
     AzureCognitiveSearchMemoryStore,
 )
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
-from semantic_kernel.orchestration.context_variables import ContextVariables
 
 COLLECTION_NAME = "generic"
 
@@ -45,19 +44,19 @@ async def main() -> None:
     vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding
-    kernel.add_text_completion_service(
-        "dv",
+    kernel.add_service(
         AzureTextCompletion(
             # Note: text-davinci-003 is deprecated and will be replaced by
             # AzureOpenAI's gpt-35-turbo-instruct model.
+            service_id="dv",
             deployment_name="gpt-35-turbo-instruct",
             endpoint=AZURE_OPENAI_ENDPOINT,
             api_key=AZURE_OPENAI_API_KEY,
         ),
     )
-    kernel.add_text_embedding_generation_service(
-        "ada",
+    kernel.add_service(
         AzureTextEmbedding(
+            service_id="ada",
             deployment_name="text-embedding-ada-002",
             endpoint=AZURE_OPENAI_ENDPOINT,
             api_key=AZURE_OPENAI_API_KEY,
@@ -99,15 +98,8 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
     chat_func = kernel.create_semantic_function(sk_prompt_rag, max_tokens=1000, temperature=0.5)
     self_critique_func = kernel.create_semantic_function(sk_prompt_rag_sc, max_tokens=4, temperature=0.0)
 
-    answer = await kernel.run(
+    answer = await kernel.invoke(
         chat_func,
-        input_vars=ContextVariables(
-            variables={
-                "user_input": user_input,
-                "collection": COLLECTION_NAME,
-                "limit": "2",
-            }
-        ),
     )
     print(f"Answer: {str(answer).strip()}")
     check = await kernel.run(self_critique_func, input_context=answer)

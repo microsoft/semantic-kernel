@@ -2,7 +2,6 @@
 
 import logging
 from typing import (
-    Any,
     Dict,
     Mapping,
     Optional,
@@ -31,7 +30,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         self,
         ai_model_id: str,
         async_client: AsyncOpenAI,
-        log: Optional[Any] = None,
+        service_id: Optional[str] = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -40,7 +39,6 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
             async_client {AsyncOpenAI} -- An existing client to use.
-            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     @overload
@@ -49,8 +47,8 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         ai_model_id: str,
         api_key: Optional[str] = None,
         org_id: Optional[str] = None,
+        service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -65,7 +63,6 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
                 account belongs to multiple organizations.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log  -- The logger instance to use. (Optional) (Deprecated)
         """
 
     @overload
@@ -73,8 +70,8 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         self,
         ai_model_id: str,
         api_key: Optional[str] = None,
+        service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -86,7 +83,6 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
                 https://platform.openai.com/account/api-keys
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log  -- The logger instance to use. (Optional) (Deprecated)
         """
 
     def __init__(
@@ -94,9 +90,9 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         ai_model_id: str,
         api_key: Optional[str] = None,
         org_id: Optional[str] = None,
+        service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
-        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -112,14 +108,12 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
-            log  -- The logger instance to use. (Optional) (Deprecated)
         """
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,
             org_id=org_id,
+            service_id=service_id,
             ai_model_type=OpenAIModelTypes.CHAT,
             default_headers=default_headers,
             async_client=async_client,
@@ -138,5 +132,6 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             ai_model_id=settings["ai_model_id"],
             api_key=settings["api_key"],
             org_id=settings.get("org_id"),
+            service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),
         )

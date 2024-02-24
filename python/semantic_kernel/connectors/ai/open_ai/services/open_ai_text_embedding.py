@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Dict, Mapping, Optional, overload
+from typing import Dict, Mapping, Optional, overload
 
 from openai import AsyncOpenAI
 
@@ -26,7 +26,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         ai_model_id: str,
         async_client: AsyncOpenAI,
-        log: Optional[Any] = None,
+        service_id: Optional[str] = None,
     ) -> None:
         """
         Initialize an OpenAITextEmbedding service.
@@ -42,9 +42,9 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         ai_model_id: str,
         api_key: Optional[str] = None,
         org_id: Optional[str] = None,
+        service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
-        log: Optional[Any] = None,
     ) -> None:
         """
         Initializes a new instance of the OpenAITextCompletion class.
@@ -66,11 +66,10 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             api_key=api_key,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=org_id,
+            service_id=service_id,
             default_headers=default_headers,
             async_client=async_client,
         )
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
 
     @classmethod
     def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextEmbedding":
@@ -85,5 +84,6 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             ai_model_id=settings["ai_model_id"],
             api_key=settings["api_key"],
             org_id=settings.get("org_id"),
+            service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),
         )

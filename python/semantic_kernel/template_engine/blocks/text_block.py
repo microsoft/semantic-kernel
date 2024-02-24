@@ -1,26 +1,36 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Optional, Tuple
+from typing import TYPE_CHECKING, ClassVar, Optional, Tuple
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from pydantic import field_validator
+
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TextBlock(Block):
+    type: ClassVar[BlockTypes] = BlockTypes.TEXT
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def content_strip(cls, content: str):
+        # overload strip method text blocks are not stripped.
+        return content
+
     @classmethod
     def from_text(
         cls,
         text: Optional[str] = None,
         start_index: Optional[int] = None,
         stop_index: Optional[int] = None,
-        log: Optional[Any] = None,
     ):
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         if text is None:
             return cls(content="")
         if start_index is not None and stop_index is not None:
@@ -38,12 +48,5 @@ class TextBlock(Block):
 
         return cls(content=text)
 
-    @property
-    def type(self) -> BlockTypes:
-        return BlockTypes.TEXT
-
-    def is_valid(self) -> Tuple[bool, str]:
-        return True, ""
-
-    def render(self, _: Optional[ContextVariables] = None) -> str:
+    def render(self, *_: Tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
         return self.content

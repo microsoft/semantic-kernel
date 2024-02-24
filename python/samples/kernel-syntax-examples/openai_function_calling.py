@@ -5,10 +5,15 @@ import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import (
-    OpenAIChatMessage,
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
 )
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin
+from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.input_variable import InputVariable
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -26,9 +31,9 @@ you will return a full answer to me as soon as possible.
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.add_chat_service(
-    "gpt-3.5-turbo",
+kernel.add_service(
     sk_oai.OpenAIChatCompletion(
+        service_id="chat",
         ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
     ),
@@ -37,7 +42,7 @@ kernel.add_chat_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-kernel.import_semantic_plugin_from_directory(plugins_directory, "FunPlugin")
+kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin(MathPlugin(), plugin_name="math")
 
@@ -74,46 +79,69 @@ tools = [
     }
 ]
 
-prompt_config = sk.PromptTemplateConfig.from_execution_settings(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    tool_choice="auto",
-    tools=tools,
-)
-prompt_template = sk.ChatPromptTemplate[OpenAIChatMessage](
-    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
-prompt_template.add_system_message(system_message)
-prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
-# define the functions available
+async def main():
+    settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat")
+    settings.service_id = "chat"
+    settings.tools = tools
+    settings.tool_choice = "auto"
+    settings.max_tokens = 2000
+    settings.temperature = 0.7
+    settings.top_p = 0.8
 
+    prompt_template_config = PromptTemplateConfig(
+        template="{{$user_input}}",
+        name="chat",
+        template_format="semantic-kernel",
+        input_variables=[
+            InputVariable(
+                name="user_input",
+                description="The history of the conversation",
+                is_required=True,
+                default="",
+            ),
+            InputVariable(
+                name="chat_history",
+                description="The history of the conversation",
+                is_required=True,
+            ),
+        ],
+        execution_settings=settings,
+    )
 
-async def main() -> None:
-    context = kernel.create_new_context()
-    context.variables["user_input"] = "I want to find a hotel in Seattle with free wifi and a pool."
+    chat = ChatHistory(system_message=system_message)
+    chat.add_user_message("Hi there, who are you?")
+    chat.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
+
+    chat_function = kernel.create_function_from_prompt(
+        plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
+    )
+
+    response = kernel.invoke_stream(
+        chat_function,
+        KernelArguments(user_input="I want to find a hotel in Seattle with free wifi and a pool.", chat_history=chat),
+    )
     messages = []
     tool_call = None
-    response = chat_function.invoke_stream_async(context=context)
     async for message in response:
+        if isinstance(message, FunctionResult):
+            # There's been an error, so print it
+            print(message)
+            return
         current = message[0]
-        messages.append(current)
+        messages.append(str(current))
         if current.tool_calls:
             if tool_call is None:
                 tool_call = current.tool_calls[0]
             else:
                 tool_call += current.tool_calls[0]
-
     if tool_call:
         print(f"Function to be called: {tool_call.function.name}")
         print(f"Function parameters: \n{tool_call.function.parse_arguments()}")
         return
     print("No function was called")
-    print(f"Output was: {str(context)}")
+    output = "".join([msg for msg in messages])
+    print(f"Output was: {output}")
 
 
 if __name__ == "__main__":
