@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for token counting gemini model.
 /// </summary>
-internal sealed class GeminiTokenCounterClient : GeminiClient
+internal sealed class GeminiTokenCounterClient : ClientBase
 {
     private readonly string _modelId;
 
@@ -68,5 +68,15 @@ internal sealed class GeminiTokenCounterClient : GeminiClient
     {
         var node = DeserializeResponse<JsonNode>(body);
         return node["totalTokens"]?.GetValue<int>() ?? throw new KernelException("Invalid response from model");
+    }
+
+    private static GeminiRequest CreateGeminiRequest(
+        string prompt,
+        PromptExecutionSettings? promptExecutionSettings)
+    {
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+        var geminiRequest = GeminiRequest.FromPromptAndExecutionSettings(prompt, geminiExecutionSettings);
+        return geminiRequest;
     }
 }
