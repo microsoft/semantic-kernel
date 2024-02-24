@@ -67,8 +67,8 @@ def create_kernel(plugin: Optional[KernelPlugin] = None):
 def get_aoai_config():
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
-        api_key = os.environ["AzureOpenAI__ApiKey"]
-        endpoint = os.environ["AzureOpenAI__Endpoint"]
+        api_key = os.environ["AzureOpenAI_EastUS__ApiKey"]
+        endpoint = os.environ["AzureOpenAI_EastUS__Endpoint"]
     else:
         # Load credentials from .env file
         deployment_name, api_key, endpoint = azure_openai_settings_from_dot_env()
