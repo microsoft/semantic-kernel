@@ -12,11 +12,13 @@ internal interface IGeminiTextGenerationClient
     /// Generates text based on the given prompt asynchronously.
     /// </summary>
     /// <param name="prompt">The prompt for generating text content.</param>
+    /// <param name="kernel">A kernel instance.</param>
     /// <param name="executionSettings">The prompt execution settings (optional).</param>
     /// <param name="cancellationToken">The cancellation token (optional).</param>
     /// <returns>A list of text content generated based on the prompt.</returns>
     Task<IReadOnlyList<TextContent>> GenerateTextAsync(
         string prompt,
+        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
 
@@ -24,11 +26,13 @@ internal interface IGeminiTextGenerationClient
     /// Streams the generated text content asynchronously.
     /// </summary>
     /// <param name="prompt">The prompt for generating text content.</param>
+    /// <param name="kernel">A kernel instance.</param>
     /// <param name="executionSettings">The prompt execution settings (optional).</param>
     /// <param name="cancellationToken">The cancellation token (optional).</param>
     /// <returns>An asynchronous enumerable of <see cref="StreamingTextContent"/> streaming text contents.</returns>
     IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
+        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
 }

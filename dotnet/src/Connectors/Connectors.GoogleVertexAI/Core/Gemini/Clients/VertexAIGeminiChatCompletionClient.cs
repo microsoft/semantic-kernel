@@ -45,11 +45,12 @@ internal sealed class VertexAIGeminiChatCompletionClient : GeminiChatCompletionC
     /// <inheritdoc/>
     public override async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
+        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
         var contents =
-            await this.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken)
+            await this.StreamGenerateChatMessageAsync(chatHistory, kernel, executionSettings, cancellationToken)
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return (from @group in contents.GroupBy(s => s.ChoiceIndex)

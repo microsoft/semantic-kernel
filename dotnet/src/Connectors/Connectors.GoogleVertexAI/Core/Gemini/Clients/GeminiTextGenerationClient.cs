@@ -28,6 +28,7 @@ internal class GeminiTextGenerationClient : IGeminiTextGenerationClient
     /// <inheritdoc/>
     public virtual async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
         string prompt,
+        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
@@ -36,7 +37,7 @@ internal class GeminiTextGenerationClient : IGeminiTextGenerationClient
         ChatHistory history = new();
         history.AddUserMessage(prompt);
         var resultMessages = await this._chatCompletionClient
-            .GenerateChatMessageAsync(history, executionSettings, cancellationToken)
+            .GenerateChatMessageAsync(history, kernel, executionSettings, cancellationToken)
             .ConfigureAwait(false);
 
         return ConvertChatMessagesToTextContents(resultMessages);
@@ -45,6 +46,7 @@ internal class GeminiTextGenerationClient : IGeminiTextGenerationClient
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
+        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -53,7 +55,7 @@ internal class GeminiTextGenerationClient : IGeminiTextGenerationClient
         ChatHistory history = new();
         history.AddUserMessage(prompt);
         var resultMessages = this._chatCompletionClient
-            .StreamGenerateChatMessageAsync(history, executionSettings, cancellationToken)
+            .StreamGenerateChatMessageAsync(history, kernel, executionSettings, cancellationToken)
             .ConfigureAwait(false);
 
         await foreach (var chatMessage in resultMessages)

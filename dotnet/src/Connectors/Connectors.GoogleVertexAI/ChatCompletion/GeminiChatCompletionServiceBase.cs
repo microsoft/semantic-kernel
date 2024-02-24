@@ -28,7 +28,7 @@ public abstract class GeminiChatCompletionServiceBase : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.ChatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        return this.ChatCompletionClient.GenerateChatMessageAsync(chatHistory, kernel, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -38,6 +38,6 @@ public abstract class GeminiChatCompletionServiceBase : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.ChatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        return this.ChatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, kernel, executionSettings, cancellationToken);
     }
 }

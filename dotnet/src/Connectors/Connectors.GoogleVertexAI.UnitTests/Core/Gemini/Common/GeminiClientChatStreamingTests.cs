@@ -221,7 +221,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
         };
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings).ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings).ToListAsync();
 
         // Assert
         var geminiRequest = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -266,7 +266,7 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
-            async () => await client.StreamGenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings).ToListAsync());
+            async () => await client.StreamGenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings: executionSettings).ToListAsync());
     }
 
     [Fact]

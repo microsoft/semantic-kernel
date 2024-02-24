@@ -100,6 +100,11 @@ public abstract class ToolCallBehavior
     /// <param name="request">The destination <see cref="GeminiRequest"/> to configure.</param>
     internal abstract void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request);
 
+    internal ToolCallBehavior Clone()
+    {
+        return (ToolCallBehavior)this.MemberwiseClone();
+    }
+
     /// <summary>
     /// Represents a <see cref="ToolCallBehavior"/> that will provide to the model all available functions from a
     /// <see cref="Kernel"/> provided by the client.

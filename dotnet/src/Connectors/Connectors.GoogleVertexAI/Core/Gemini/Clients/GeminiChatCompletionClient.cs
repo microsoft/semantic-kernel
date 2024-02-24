@@ -53,13 +53,14 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     /// <inheritdoc/>
     public virtual async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
+        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
         ValidateAndPrepareChatHistory(ref chatHistory);
 
         var endpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
-        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
+        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings, kernel);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
@@ -71,13 +72,14 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
         ChatHistory chatHistory,
+        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ValidateAndPrepareChatHistory(ref chatHistory);
 
         var endpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
-        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings);
+        var geminiRequest = CreateGeminiRequest(chatHistory, executionSettings, kernel);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)

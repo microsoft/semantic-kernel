@@ -28,7 +28,7 @@ public abstract class GeminiTextGenerationServiceBase : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.TextGenerationClient.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this.TextGenerationClient.GenerateTextAsync(prompt, kernel, executionSettings, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -38,6 +38,6 @@ public abstract class GeminiTextGenerationServiceBase : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.TextGenerationClient.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this.TextGenerationClient.StreamGenerateTextAsync(prompt, kernel, executionSettings, cancellationToken);
     }
 }

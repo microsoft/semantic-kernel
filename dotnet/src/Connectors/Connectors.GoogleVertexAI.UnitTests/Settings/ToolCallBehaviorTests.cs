@@ -159,6 +159,38 @@ public sealed class ToolCallBehaviorTests
         AssertFunctions(geminiRequest);
     }
 
+    [Fact]
+    public void EnabledFunctionsCloneReturnsCorrectClone()
+    {
+        // Arrange
+        var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
+        var enabledFunctions = new ToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
+
+        // Act
+        var clone = enabledFunctions.Clone();
+
+        // Assert
+        Assert.IsType<ToolCallBehavior.EnabledFunctions>(clone);
+        Assert.NotSame(enabledFunctions, clone);
+        Assert.Equivalent(enabledFunctions, clone, strict: true);
+    }
+
+    [Fact]
+    public void KernelFunctionsCloneReturnsCorrectClone()
+    {
+        // Arrange
+        var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
+        var enabledFunctions = new ToolCallBehavior.KernelFunctions(autoInvoke: true);
+
+        // Act
+        var clone = enabledFunctions.Clone();
+
+        // Assert
+        Assert.IsType<ToolCallBehavior.KernelFunctions>(clone);
+        Assert.NotSame(enabledFunctions, clone);
+        Assert.Equivalent(enabledFunctions, clone, strict: true);
+    }
+
     private static KernelPlugin GetTestPlugin()
     {
         var function = KernelFunctionFactory.CreateFromMethod(
