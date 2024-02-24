@@ -16,7 +16,7 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
     _, api_key, endpoint = get_aoai_config
 
     if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
+        deployment_name = os.environ["AzureOpenAIEmbeddings_EastUS__DeploymentName"]
     else:
         deployment_name = "text-embedding-ada-002"
 
@@ -47,7 +47,7 @@ async def test_azure_text_embedding_service_with_provided_client(create_kernel, 
     _, api_key, endpoint = get_aoai_config
 
     if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
+        deployment_name = os.environ["AzureOpenAIEmbeddings_EastUS__DeploymentName"]
     else:
         deployment_name = "text-embedding-ada-002"
 
@@ -83,7 +83,7 @@ async def test_batch_azure_embeddings(get_aoai_config):
     _, api_key, endpoint = get_aoai_config
 
     if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
+        deployment_name = os.environ["AzureOpenAIEmbeddings_EastUS__DeploymentName"]
 
     else:
         deployment_name = "text-embedding-ada-002"
