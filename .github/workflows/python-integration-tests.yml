@@ -80,6 +80,8 @@ jobs:
           AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
           AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
           AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI_EastUS_Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
+          AzureOpenAI_EastUS_ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
@@ -145,6 +147,8 @@ jobs:
           AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAI_EastUS_Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
+          AzureOpenAI_EastUS_ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
