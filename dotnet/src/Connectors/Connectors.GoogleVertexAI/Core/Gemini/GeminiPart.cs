@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Union field data can be only one of properties in class GeminiPart
 /// </summary>
-public sealed class GeminiPart : IJsonOnDeserialized
+internal sealed class GeminiPart : IJsonOnDeserialized
 {
     /// <summary>
     /// Gets or sets the text data.
@@ -75,7 +75,7 @@ public sealed class GeminiPart : IJsonOnDeserialized
     /// <summary>
     /// Inline media bytes like image or video data.
     /// </summary>
-    public sealed class InlineDataPart
+    internal sealed class InlineDataPart
     {
         /// <summary>
         /// The IANA standard MIME type of the source data.
@@ -98,7 +98,7 @@ public sealed class GeminiPart : IJsonOnDeserialized
     /// <summary>
     /// File media bytes like image or video data.
     /// </summary>
-    public sealed class FileDataPart
+    internal sealed class FileDataPart
     {
         /// <summary>
         /// The IANA standard MIME type of the source data.
@@ -123,7 +123,7 @@ public sealed class GeminiPart : IJsonOnDeserialized
     /// A predicted FunctionCall returned from the model that contains a
     /// string representing the FunctionDeclaration.name with the arguments and their values.
     /// </summary>
-    public sealed class FunctionCallPart
+    internal sealed class FunctionCallPart
     {
         /// <summary>
         /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
@@ -150,7 +150,7 @@ public sealed class GeminiPart : IJsonOnDeserialized
     /// The result output of a FunctionCall that contains a string representing the FunctionDeclaration.name and
     /// a structured JSON object containing any output from the function is used as context to the model.
     /// </summary>
-    public sealed class FunctionResponsePart
+    internal sealed class FunctionResponsePart
     {
         /// <summary>
         /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.

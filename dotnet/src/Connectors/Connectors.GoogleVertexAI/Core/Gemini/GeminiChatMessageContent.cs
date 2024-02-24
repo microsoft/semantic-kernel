@@ -13,6 +13,11 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 public sealed class GeminiChatMessageContent : ChatMessageContent
 {
     /// <summary>
+    /// Gets the metadata key for the <see cref="GeminiFunctionToolCall.FullyQualifiedName"/> name property.
+    /// </summary>
+    public static string ToolFullNameProperty => $"{nameof(GeminiFunctionToolCall)}.{nameof(GeminiFunctionToolCall.FullyQualifiedName)}";
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class.
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
@@ -44,7 +49,7 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
         AuthorRole role,
         string? content,
         string modelId,
-        IReadOnlyList<GeminiPart.FunctionCallPart> toolCalls,
+        IEnumerable<GeminiPart.FunctionCallPart>? toolCalls,
         GeminiMetadata? metadata = null)
         : base(
             role: role,
@@ -54,23 +59,16 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
             encoding: Encoding.UTF8,
             metadata: metadata)
     {
-        this.ToolCalls = toolCalls;
+        this.ToolCalls = toolCalls?.Select(tool => new GeminiFunctionToolCall(tool)).ToList();
     }
 
     /// <summary>
     /// A list of the tools called by the model.
     /// </summary>
-    public IReadOnlyList<GeminiPart.FunctionCallPart>? ToolCalls { get; }
+    public IReadOnlyList<GeminiFunctionToolCall>? ToolCalls { get; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
     public new GeminiMetadata? Metadata => (GeminiMetadata?)base.Metadata;
-
-    /// <summary>
-    /// Retrieve the resulting function from the chat result.
-    /// </summary>
-    /// <returns>The <see cref="GeminiFunctionToolCall"/> or empty collection if no function was returned by the model.</returns>
-    public IReadOnlyList<GeminiFunctionToolCall> GetGeminiFunctionToolCalls()
-        => this.ToolCalls?.Select(functionCallPart => new GeminiFunctionToolCall(functionCallPart)).ToList() ?? new List<GeminiFunctionToolCall>();
 }

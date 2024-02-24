@@ -94,13 +94,26 @@ internal sealed class GeminiRequest
     {
         GeminiRequest obj = new()
         {
-            Contents = chatHistory.Select(c => new GeminiContent
-            {
-                Parts = CreateGeminiParts(c),
-                Role = c.Role
-            }).ToList()
+            Contents = chatHistory.Select(CreateGeminiContentFromChatMessage).ToList()
         };
         return obj;
+    }
+
+    private static GeminiContent CreateGeminiContentFromChatMessage(ChatMessageContent message)
+    {
+        return new GeminiContent
+        {
+            Parts = CreateGeminiParts(message),
+            Role = message.Role
+        };
+    }
+
+    public void AddChatMessageToRequest(ChatMessageContent message)
+    {
+        Verify.NotNull(this.Contents);
+        Verify.NotNull(message);
+
+        this.Contents.Add(CreateGeminiContentFromChatMessage(message));
     }
 
     private static List<GeminiPart> CreateGeminiParts(ChatMessageContent content)
