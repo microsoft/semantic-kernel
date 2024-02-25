@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -164,6 +162,6 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("response")]
         [JsonRequired]
-        public IList<JsonNode> Response { get; set; } = null!;
+        public BinaryData ResponseArguments { get; set; } = null!;
     }
 }

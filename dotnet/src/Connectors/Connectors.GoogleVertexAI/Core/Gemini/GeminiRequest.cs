@@ -118,27 +118,56 @@ internal sealed class GeminiRequest
 
     private static List<GeminiPart> CreateGeminiParts(ChatMessageContent content)
     {
-        var list = content.Items?.Select(item => item switch
+        List<GeminiPart> parts = new();
+        switch (content)
         {
-            TextContent textContent => new GeminiPart { Text = textContent.Text },
-            ImageContent imageContent => new GeminiPart
-            {
-                FileData = new GeminiPart.FileDataPart
+            case GeminiChatMessageContent { CalledTool: not null } contentWithCalledTool:
+                parts.Add(new GeminiPart
                 {
-                    MimeType = GetMimeTypeFromImageContent(imageContent),
-                    FileUri = imageContent.Uri ?? throw new InvalidOperationException("Image content URI is empty.")
-                }
-            },
-            _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
-        }).ToList() ?? new List<GeminiPart>();
-
-        if (list.Count == 0)
-        {
-            list.Add(new GeminiPart { Text = content.Content ?? string.Empty });
+                    FunctionResponse = new GeminiPart.FunctionResponsePart
+                    {
+                        FunctionName = contentWithCalledTool.CalledTool.FullyQualifiedName,
+                        ResponseArguments = new BinaryData(contentWithCalledTool.CalledTool.Arguments)
+                    }
+                });
+                break;
+            case GeminiChatMessageContent { ToolCalls: not null } contentWithToolCalls:
+                parts.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
+                    new GeminiPart
+                    {
+                        FunctionCall = new GeminiPart.FunctionCallPart
+                        {
+                            FunctionName = toolCall.FullyQualifiedName,
+                            Arguments = new BinaryData(toolCall.Arguments),
+                        }
+                    }));
+                break;
+            default:
+                parts.AddRange(content.Items?.Select(GetGeminiPartFromKernelContent) ?? Enumerable.Empty<GeminiPart>());
+                break;
         }
 
-        return list;
+        if (parts.Count == 0)
+        {
+            parts.Add(new GeminiPart { Text = content.Content ?? string.Empty });
+        }
+
+        return parts;
     }
+
+    private static GeminiPart GetGeminiPartFromKernelContent(KernelContent item) => item switch
+    {
+        TextContent textContent => new GeminiPart { Text = textContent.Text },
+        ImageContent imageContent => new GeminiPart
+        {
+            FileData = new GeminiPart.FileDataPart
+            {
+                MimeType = GetMimeTypeFromImageContent(imageContent),
+                FileUri = imageContent.Uri ?? throw new InvalidOperationException("Image content URI is empty.")
+            }
+        },
+        _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
+    };
 
     private static string GetMimeTypeFromImageContent(ImageContent imageContent)
     {

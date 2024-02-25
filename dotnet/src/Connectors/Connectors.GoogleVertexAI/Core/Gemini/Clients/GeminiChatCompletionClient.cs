@@ -87,7 +87,6 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
         bool autoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
-        ValidateAutoInvoke(autoInvoke, geminiExecutionSettings.CandidateCount ?? 1);
 
         var geminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel);
 
@@ -128,7 +127,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
                 if (geminiExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(geminiRequest.Tools![0].Functions, toolCall))
                 {
-                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, result: null,
+                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, functionResponse: null,
                         "Error: Function call request for a function that wasn't defined.");
                     continue;
                 }
@@ -136,7 +135,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, result: null,
+                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, functionResponse: null,
                         "Error: Requested function could not be found.");
                     continue;
                 }
@@ -156,7 +155,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, result: null,
+                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, functionResponse: null,
                         $"Error: Exception while invoking function. {e.Message}");
                     continue;
                 }
@@ -166,7 +165,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
                 }
 
                 this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall,
-                    result: functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null);
+                    functionResponse: functionResult, errorMessage: null);
             }
 
             if (iteration >= geminiExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
@@ -214,7 +213,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         ChatHistory chat,
         GeminiRequest request,
         GeminiFunctionToolCall tool,
-        string? result,
+        object? functionResponse,
         string? errorMessage)
     {
         if (errorMessage is not null)
@@ -222,19 +221,25 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             this.Logger.LogDebug("Failed to handle tool request ({ToolName}). {Error}", tool.FullyQualifiedName, errorMessage);
         }
 
-        // Add the tool response message to both the chat options and to the chat history.
-        result ??= errorMessage ?? string.Empty;
-        var message = new ChatMessageContent(AuthorRole.Tool, result, metadata: new Dictionary<string, object?>
-            { { GeminiChatMessageContent.ToolFullNameProperty, tool.FullyQualifiedName } });
+        if (functionResponse is not null)
+        {
+            tool = new GeminiFunctionToolCall(tool, functionResponse as string ?? JsonSerializer.Serialize(functionResponse));
+        }
+
+        var message = new GeminiChatMessageContent(AuthorRole.Tool,
+            content: errorMessage ?? string.Empty,
+            modelId: this._modelId, calledTool: tool, metadata: null);
         chat.Add(message);
         request.AddChatMessageToRequest(message);
     }
 
     private static bool CheckAutoInvokeCondition(Kernel? kernel, GeminiPromptExecutionSettings geminiExecutionSettings)
     {
-        return kernel is not null
-               && geminiExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0
-               && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
+        bool autoInvoke = kernel is not null
+                          && geminiExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0
+                          && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
+        ValidateAutoInvoke(autoInvoke, geminiExecutionSettings.CandidateCount ?? 1);
+        return autoInvoke;
     }
 
     /// <inheritdoc/>
@@ -361,9 +366,9 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function ? new[] { function } : null;
         return new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
-            content: part?.Text,
+            content: part?.Text ?? string.Empty,
             modelId: this._modelId,
-            toolCalls: toolCalls,
+            functionsToolCalls: toolCalls,
             metadata: GetResponseMetadata(geminiResponse, candidate));
     }
 

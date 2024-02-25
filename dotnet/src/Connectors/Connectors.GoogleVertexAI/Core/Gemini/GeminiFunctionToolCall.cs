@@ -40,6 +40,17 @@ public sealed class GeminiFunctionToolCall
         }
     }
 
+    internal GeminiFunctionToolCall(GeminiFunctionToolCall other, string? arguments)
+    {
+        this._fullyQualifiedFunctionName = other._fullyQualifiedFunctionName;
+        this.PluginName = other.PluginName;
+        this.FunctionName = other.FunctionName;
+        if (arguments != null)
+        {
+            this.Arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(arguments);
+        }
+    }
+
     /// <summary>Gets the name of the plugin with which this function is associated, if any.</summary>
     public string? PluginName { get; }
 

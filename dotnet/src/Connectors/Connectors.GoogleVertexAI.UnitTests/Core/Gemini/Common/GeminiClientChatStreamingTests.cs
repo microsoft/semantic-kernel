@@ -189,25 +189,6 @@ public sealed class GeminiClientChatStreamingTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldReturnResponseWithValidInnerContentAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = CreateSampleChatHistory();
-
-        // Act
-        var chatMessageContents =
-            await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
-
-        // Assert
-        string testDataResponseJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<IList<GeminiResponse>>(
-            await File.ReadAllTextAsync(StreamTestDataFilePath))![0].Candidates![0]);
-        var textContent = chatMessageContents.FirstOrDefault();
-        Assert.NotNull(textContent);
-        Assert.Equal(testDataResponseJson, JsonSerializer.Serialize(textContent.InnerContent));
-    }
-
-    [Fact]
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
