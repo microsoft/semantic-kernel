@@ -120,10 +120,8 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-            for (int i = 0; i < result.ToolCalls.Count; i++)
+            foreach (var toolCall in result.ToolCalls)
             {
-                var toolCall = result.ToolCalls[i];
-
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
@@ -143,7 +141,8 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
                     continue;
                 }
 
-                // Now, invoke the function, and add the resulting tool call message to the chat options.s_inflightAutoInvokes.Value++;
+                // Now, invoke the function, and add the resulting tool call message to the chat history.
+                s_inflightAutoInvokes.Value++;
                 object? functionResult;
                 try
                 {
@@ -172,7 +171,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
 
             if (iteration >= geminiExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
+                // Clear the tools
                 geminiRequest.Tools = null;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
