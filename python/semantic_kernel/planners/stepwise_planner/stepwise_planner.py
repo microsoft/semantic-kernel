@@ -91,7 +91,7 @@ class StepwisePlanner:
         prompt_config.template = prompt_template
 
         self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)
-        self._native_functions = self._kernel.import_plugin(self, RESTRICTED_PLUGIN_NAME)
+        self._native_functions = self._kernel.import_plugin_from_object(self, RESTRICTED_PLUGIN_NAME)
 
         self._context = KernelArguments()
 

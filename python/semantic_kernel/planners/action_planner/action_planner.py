@@ -83,7 +83,7 @@ class ActionPlanner:
             template=self._prompt_template,
             execution_settings=execute_settings,
         )
-        kernel.import_plugin(self, self.RESTRICTED_PLUGIN_NAME)
+        kernel.import_plugin_from_object(self, self.RESTRICTED_PLUGIN_NAME)
 
         self._kernel = kernel
         self._arguments = KernelArguments()
