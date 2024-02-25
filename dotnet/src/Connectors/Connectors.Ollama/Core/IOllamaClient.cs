@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,5 +56,15 @@ internal interface IOllamaClient
     IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates embedding vector for provided text asynchronously.
+    /// </summary>
+    /// <param name="text">Text string</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>Embedding vector</returns>
+    Task<ReadOnlyMemory<float>> GenerateTextEmbeddingAsync(
+        string text,
         CancellationToken cancellationToken = default);
 }

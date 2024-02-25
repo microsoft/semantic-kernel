@@ -10,4 +10,5 @@ internal interface IEndpointProvider
     Uri StreamTextGenerationEndpoint { get; }
     Uri ChatCompletionEndpoint { get; }
     Uri StreamChatCompletionEndpoint { get; }
+    Uri EmbeddingsGenerationEndpoint { get; }
 }

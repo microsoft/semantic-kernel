@@ -16,10 +16,12 @@ internal sealed class OllamaEndpointProvider : IEndpointProvider
         this.ChatCompletionEndpoint = new Uri($"{baseUri}api/chat");
         this.StreamChatCompletionEndpoint = new Uri($"{baseUri}api/chat");
         this.StreamTextGenerationEndpoint = new Uri($"{baseUri}api/generate");
+        this.EmbeddingsGenerationEndpoint = new Uri($"{baseUri}api/embeddings");
     }
 
     public Uri TextGenerationEndpoint { get; }
     public Uri StreamTextGenerationEndpoint { get; }
     public Uri ChatCompletionEndpoint { get; }
     public Uri StreamChatCompletionEndpoint { get; }
+    public Uri EmbeddingsGenerationEndpoint { get; }
 }
