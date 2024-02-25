@@ -2,7 +2,6 @@
 import json
 import logging
 import sys
-import typing as t
 from typing import ClassVar, Optional
 
 if sys.version_info >= (3, 9):
@@ -12,9 +11,6 @@ else:
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-
-if t.TYPE_CHECKING:
-    pass
 
 logger: logging.Logger = logging.getLogger(__name__)
 

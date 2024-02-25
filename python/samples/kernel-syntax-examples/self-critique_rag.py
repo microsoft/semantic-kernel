@@ -12,9 +12,9 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.memory.azure_cognitive_search import (
     AzureCognitiveSearchMemoryStore,
 )
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-from semantic_kernel.contents.chat_history import ChatHistory
 
 COLLECTION_NAME = "generic"
 
@@ -104,7 +104,9 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
     chat_history.add_user_message(user_input)
 
     answer = await kernel.invoke(
-        chat_func, user_input=user_input, chat_history=chat_history,
+        chat_func,
+        user_input=user_input,
+        chat_history=chat_history,
     )
     chat_history.add_assistant_message(str(answer))
     print(f"Answer: {str(answer).strip()}")
@@ -114,13 +116,17 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
     print("-" * 50)
     print("   Let's pretend the answer was wrong...")
     print(f"Answer: {str(answer).strip()}")
-    check = await kernel.invoke(self_critique_func, input=answer, user_input="Yes, you live in New York City.", chat_history=chat_history)
+    check = await kernel.invoke(
+        self_critique_func, input=answer, user_input="Yes, you live in New York City.", chat_history=chat_history
+    )
     print(f"The answer was {str(check).strip()}")
 
     print("-" * 50)
     print("   Let's pretend the answer is not related...")
     print(f"Answer: {str(answer).strip()}")
-    check = await kernel.invoke(self_critique_func, user_input=answer, input="Yes, the earth is not flat.", chat_history=chat_history)
+    check = await kernel.invoke(
+        self_critique_func, user_input=answer, input="Yes, the earth is not flat.", chat_history=chat_history
+    )
     print(f"The answer was {str(check).strip()}")
 
     await acs_connector.close()

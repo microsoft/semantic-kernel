@@ -66,7 +66,7 @@ async def main() -> None:
             api_key=AZURE_OPENAI_API_KEY,
         ),
     )
-    embedding_service_id = "ada",
+    embedding_service_id = ("ada",)
     embedding_gen = AzureTextEmbedding(
         service_id=embedding_service_id,
         deployment_name="text-embedding-ada-002",

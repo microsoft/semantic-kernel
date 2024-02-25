@@ -235,7 +235,8 @@ class VolatileMemoryStore(MemoryStoreBase):
         if collection_name not in self._store:
             logger.warning(
                 f"Collection '{collection_name}' does not exist in collections: "
-                f"{', '.join([collection for collection in await self.get_collections()])}")
+                f"{', '.join([collection for collection in await self.get_collections()])}"
+            )
             return []
 
         # Get all the records in the collection
