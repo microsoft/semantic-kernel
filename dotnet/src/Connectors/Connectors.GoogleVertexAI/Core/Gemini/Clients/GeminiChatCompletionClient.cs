@@ -244,10 +244,12 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ValidateAndPrepareChatHistory(ref chatHistory);
+        var chatHistoryCopy = new ChatHistory(chatHistory);
+        ValidateAndPrepareChatHistory(chatHistoryCopy);
 
         var endpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
-        var geminiRequest = CreateRequest(chatHistory, executionSettings, kernel);
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var geminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel);
         using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
