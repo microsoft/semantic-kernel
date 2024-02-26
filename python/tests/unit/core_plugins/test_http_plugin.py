@@ -5,8 +5,8 @@ from unittest.mock import patch
 import pytest
 
 from semantic_kernel import Kernel
-from semantic_kernel.core_plugins import HttpPlugin
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 @pytest.mark.asyncio
@@ -46,55 +46,49 @@ async def test_get_none_url():
 
 @patch("aiohttp.ClientSession.post")
 @pytest.mark.asyncio
-async def test_post(mock_post, context_factory):
+async def test_post(mock_post):
     mock_post.return_value.__aenter__.return_value.text.return_value = "Hello World !"
     mock_post.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
-    context_variables = ContextVariables()
-    context_variables.set("body", "{message: 'Hello, world!'}")
-    context = context_factory(context_variables)
-    response = await plugin.post("https://example.org/post", context)
+    arguments = KernelArguments(url="https://example.org/post", body="{message: 'Hello, world!'}")
+    response = await plugin.post(**arguments)
     assert response == "Hello World !"
 
 
 @patch("aiohttp.ClientSession.post")
 @pytest.mark.asyncio
-async def test_post_nobody(mock_post, context_factory):
+async def test_post_nobody(mock_post):
     mock_post.return_value.__aenter__.return_value.text.return_value = "Hello World !"
     mock_post.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
-    context_variables = ContextVariables()
-    context = context_factory(context_variables)
-    response = await plugin.post("https://example.org/post", context)
+    arguments = KernelArguments(url="https://example.org/post")
+    response = await plugin.post(**arguments)
     assert response == "Hello World !"
 
 
 @patch("aiohttp.ClientSession.put")
 @pytest.mark.asyncio
-async def test_put(mock_put, context_factory):
+async def test_put(mock_put):
     mock_put.return_value.__aenter__.return_value.text.return_value = "Hello World !"
     mock_put.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
-    context_variables = ContextVariables()
-    context_variables.set("body", "{message: 'Hello, world!'}")
-    context = context_factory(context_variables)
-    response = await plugin.put("https://example.org/put", context)
+    arguments = KernelArguments(url="https://example.org/put", body="{message: 'Hello, world!'}")
+    response = await plugin.put(**arguments)
     assert response == "Hello World !"
 
 
 @patch("aiohttp.ClientSession.put")
 @pytest.mark.asyncio
-async def test_put_nobody(mock_put, context_factory):
+async def test_put_nobody(mock_put):
     mock_put.return_value.__aenter__.return_value.text.return_value = "Hello World !"
     mock_put.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
-    context_variables = ContextVariables()
-    context = context_factory(context_variables)
-    response = await plugin.put("https://example.org/put", context)
+    arguments = KernelArguments(url="https://example.org/put")
+    response = await plugin.put(**arguments)
     assert response == "Hello World !"
 
 
@@ -105,5 +99,6 @@ async def test_delete(mock_delete):
     mock_delete.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
-    response = await plugin.delete("https://example.org/delete")
+    arguments = KernelArguments(url="https://example.org/delete")
+    response = await plugin.delete(**arguments)
     assert response == "Hello World !"
