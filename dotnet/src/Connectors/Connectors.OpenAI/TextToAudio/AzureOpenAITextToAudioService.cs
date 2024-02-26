@@ -54,10 +54,10 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     }
 
     /// <inheritdoc/>
-    public Task<AudioContent> GetAudioContentAsync(
+    public Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string text,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetAudioContentAsync(text, executionSettings, cancellationToken);
+        => this._client.GetAudioContentsAsync(text, executionSettings, cancellationToken);
 }

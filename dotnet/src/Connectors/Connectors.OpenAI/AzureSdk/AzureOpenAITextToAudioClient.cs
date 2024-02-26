@@ -62,7 +62,7 @@ internal sealed class AzureOpenAITextToAudioClient
         this._logger = logger ?? NullLogger.Instance;
     }
 
-    internal async Task<AudioContent> GetAudioContentAsync(
+    internal async Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string text,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
@@ -79,7 +79,7 @@ internal sealed class AzureOpenAITextToAudioClient
 
         var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        return new AudioContent(binaryData, modelId);
+        return new List<AudioContent> { new(binaryData, modelId) };
     }
 
     internal void AddAttribute(string key, string? value)

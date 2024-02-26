@@ -88,7 +88,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var exception = await Record.ExceptionAsync(() => service.GetTextContentAsync(new AudioContent(new BinaryData("data")), settings));
+        var exception = await Record.ExceptionAsync(() => service.GetTextContentsAsync(new AudioContent(new BinaryData("data")), settings));
 
         // Assert
         Assert.NotNull(exception);
@@ -106,11 +106,11 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(new BinaryData("data")), new OpenAIAudioToTextExecutionSettings("file.mp3"));
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data")), new OpenAIAudioToTextExecutionSettings("file.mp3"));
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test audio-to-text response", result.Text);
+        Assert.Equal("Test audio-to-text response", result[0].Text);
     }
 
     public void Dispose()

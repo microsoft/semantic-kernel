@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -40,7 +41,11 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIAudioToText").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        var service = new OpenAIAudioToTextService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIAudioToText(openAIConfiguration.ModelId, openAIConfiguration.ApiKey)
+            .Build();
+
+        var service = kernel.GetRequiredService<IAudioToTextService>();
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
         var audioData = await BinaryData.FromStreamAsync(audio);
@@ -61,10 +66,14 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIAudioToText").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var service = new AzureOpenAIAudioToTextService(
-            azureOpenAIConfiguration.DeploymentName,
-            azureOpenAIConfiguration.Endpoint,
-            azureOpenAIConfiguration.ApiKey);
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIAudioToText(
+                azureOpenAIConfiguration.DeploymentName,
+                azureOpenAIConfiguration.Endpoint,
+                azureOpenAIConfiguration.ApiKey)
+            .Build();
+
+        var service = kernel.GetRequiredService<IAudioToTextService>();
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
         var audioData = await BinaryData.FromStreamAsync(audio);

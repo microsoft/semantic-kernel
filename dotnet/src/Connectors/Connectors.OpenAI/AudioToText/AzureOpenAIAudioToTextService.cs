@@ -85,7 +85,7 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
     }
 
     /// <inheritdoc/>
-    public Task<TextContent> GetTextContentAsync(
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         AudioContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
