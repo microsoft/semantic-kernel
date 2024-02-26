@@ -142,26 +142,16 @@ public class Example65_HandlebarsPlanner : BaseTest
     {
         WriteSampleHeading("Plan Not Possible");
 
-        try
-        {
-            // Load additional plugins to enable planner but not enough for the given goal.
-            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, null, shouldPrintPrompt, true, "SummarizePlugin");
-        }
-        catch (KernelException ex) when (
-            ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal), StringComparison.CurrentCultureIgnoreCase)
-            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.HallucinatedHelpers), StringComparison.CurrentCultureIgnoreCase)
-            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InvalidTemplate), StringComparison.CurrentCultureIgnoreCase))
-        {
-            /*
-                [InsufficientFunctionsForGoal] Unable to create plan for goal with available functions.
-                Goal: Send Mary an email with the list of meetings I have scheduled today.
-                Available Functions: SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-Topics
-                Planner output:
-                As the available helpers do not contain any functionality to send an email or interact with meeting scheduling data, I cannot create a template to achieve the stated goal. 
-                Additional helpers or information may be required.
-            */
-            WriteLine($"\n{ex.Message}\n");
-        }
+        // Load additional plugins to enable planner but not enough for the given goal.
+        await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, null, shouldPrintPrompt, true, "SummarizePlugin");
+        /*
+            [InsufficientFunctionsForGoal] Unable to create plan for goal with available functions.
+            Goal: Send Mary an email with the list of meetings I have scheduled today.
+            Available Functions: SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-Topics
+            Planner output:
+            As the available helpers do not contain any functionality to send an email or interact with meeting scheduling data, I cannot create a template to achieve the stated goal. 
+            Additional helpers or information may be required.
+        */
     }
 
     [RetryTheory(typeof(HttpOperationException))]
@@ -453,9 +443,11 @@ public class Example65_HandlebarsPlanner : BaseTest
         };
 
         var goal = "I just watched the movie 'Inception' and I loved it! I want to leave a 5 star review. Can you help me?";
-        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt, false, "WriterPlugin");
 
+        // Note that since the custom prompt inputs a unique Helpers section with helpers not actually registered with the kernel,
+        // any plan created using this prompt will fail execution; thus, we will skip the InvokePlan call in this example.
         // For a simpler example, see `ItOverridesPromptAsync` in the dotnet\src\Planners\Planners.Handlebars.UnitTests\Handlebars\HandlebarsPlannerTests.cs file.
+        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt, shouldInvokePlan: false, "WriterPlugin");
     }
 
     public Example65_HandlebarsPlanner(ITestOutputHelper output) : base(output)
