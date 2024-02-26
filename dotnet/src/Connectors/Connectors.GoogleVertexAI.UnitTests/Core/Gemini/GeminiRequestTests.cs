@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -209,9 +208,9 @@ public sealed class GeminiRequestTests
         // Arrange
         ChatHistory chatHistory = [];
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
-        var expectedArgs = new Dictionary<string, string> { { kvp.Key, kvp.Value } };
+        var expectedArgs = new Dictionary<string, object?> { { kvp.Key, kvp.Value } };
         GeminiFunctionToolCall toolCall = new(new GeminiPart.FunctionCallPart
-            { FunctionName = "function-name", Arguments = new BinaryData(expectedArgs) });
+            { FunctionName = "function-name", Arguments = expectedArgs });
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, "tool-message", "model-id", toolCall));
         var executionSettings = new GeminiPromptExecutionSettings();
 
@@ -225,8 +224,8 @@ public sealed class GeminiRequestTests
             c => c.Parts[0].FunctionResponse != null);
         Assert.Single(request.Contents,
             c => string.Equals(c.Parts[0].FunctionResponse!.FunctionName, toolCall.FullyQualifiedName, StringComparison.Ordinal));
-        var args = JsonSerializer.Deserialize<Dictionary<string, string>>(request.Contents[0].Parts[0].FunctionResponse!.ResponseArguments);
-        Assert.Equal(expectedArgs, args);
+        var args = request.Contents[0].Parts[0].FunctionResponse!.ResponseArguments;
+        Assert.Equivalent(expectedArgs, args, strict: true);
     }
 
     [Fact]
@@ -235,11 +234,11 @@ public sealed class GeminiRequestTests
         // Arrange
         ChatHistory chatHistory = [];
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
-        var expectedArgs = new Dictionary<string, string> { { kvp.Key, kvp.Value } };
+        var expectedArgs = new Dictionary<string, object?> { { kvp.Key, kvp.Value } };
         var toolCallPart = new GeminiPart.FunctionCallPart
-            { FunctionName = "function-name", Arguments = new BinaryData(expectedArgs) };
+            { FunctionName = "function-name", Arguments = expectedArgs };
         var toolCallPart2 = new GeminiPart.FunctionCallPart
-            { FunctionName = "function2-name", Arguments = new BinaryData(expectedArgs) };
+            { FunctionName = "function2-name", Arguments = expectedArgs };
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message", "model-id", functionsToolCalls: [toolCallPart]));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message2", "model-id2", functionsToolCalls: [toolCallPart2]));
         var executionSettings = new GeminiPromptExecutionSettings();
@@ -258,10 +257,10 @@ public sealed class GeminiRequestTests
             c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart.FunctionName),
             c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart2.FunctionName));
         Assert.Collection(request.Contents,
-            c => Assert.Equal(expectedArgs,
-                JsonSerializer.Deserialize<Dictionary<string, string>>(c.Parts[0].FunctionCall!.Arguments!)),
-            c => Assert.Equal(expectedArgs,
-                JsonSerializer.Deserialize<Dictionary<string, string>>(c.Parts[0].FunctionCall!.Arguments!)));
+            c => Assert.Equivalent(expectedArgs,
+                c.Parts[0].FunctionCall!.Arguments, strict: true),
+            c => Assert.Equivalent(expectedArgs,
+                c.Parts[0].FunctionCall!.Arguments, strict: true));
     }
 
     [Fact]

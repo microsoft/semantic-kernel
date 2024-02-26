@@ -127,7 +127,7 @@ internal sealed class GeminiRequest
                     FunctionResponse = new GeminiPart.FunctionResponsePart
                     {
                         FunctionName = contentWithCalledTool.CalledTool.FullyQualifiedName,
-                        ResponseArguments = new BinaryData(contentWithCalledTool.CalledTool.Arguments)
+                        ResponseArguments = contentWithCalledTool.CalledTool.Arguments
                     }
                 });
                 break;
@@ -138,7 +138,7 @@ internal sealed class GeminiRequest
                         FunctionCall = new GeminiPart.FunctionCallPart
                         {
                             FunctionName = toolCall.FullyQualifiedName,
-                            Arguments = new BinaryData(toolCall.Arguments),
+                            Arguments = toolCall.Arguments,
                         }
                     }));
                 break;

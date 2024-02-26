@@ -115,7 +115,7 @@ public sealed class GeminiFunctionTests
         Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)),
-            JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
+            JsonSerializer.Serialize(functionDefinition.Parameters));
     }
 
     [Fact]
@@ -145,7 +145,8 @@ public sealed class GeminiFunctionTests
         Assert.NotNull(functionDefinition);
         Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)),
+            JsonSerializer.Serialize(functionDefinition.Parameters));
     }
 
     [Fact]
@@ -162,7 +163,7 @@ public sealed class GeminiFunctionTests
         // Assert
         Assert.Equal(
             """{"type":"object","required":[],"properties":{"param1":{"type":"string"}}}""",
-            result.Parameters!.ToString());
+            JsonSerializer.Serialize(result.Parameters));
     }
 
     [Fact]
@@ -179,6 +180,6 @@ public sealed class GeminiFunctionTests
         // Assert
         Assert.Equal(
             """{"type":"object","required":[],"properties":{"param1":{"type":"string","description":"something neat"}}}""",
-            result.Parameters!.ToString());
+            JsonSerializer.Serialize(result.Parameters));
     }
 }

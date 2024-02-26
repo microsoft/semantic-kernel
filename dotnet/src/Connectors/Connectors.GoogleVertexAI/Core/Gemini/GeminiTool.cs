@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -54,6 +53,6 @@ internal sealed class GeminiTool
         /// </summary>
         [JsonPropertyName("schema")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public BinaryData? Parameters { get; set; }
+        public IReadOnlyDictionary<string, object?>? Parameters { get; set; }
     }
 }

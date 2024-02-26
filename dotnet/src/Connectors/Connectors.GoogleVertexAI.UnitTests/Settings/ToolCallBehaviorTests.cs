@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
@@ -216,6 +217,6 @@ public sealed class ToolCallBehaviorTests
         Assert.Equal("MyPlugin-MyFunction", function.Name);
         Assert.Equal("Test Function", function.Description);
         Assert.Equal("""{"type":"object","required":[],"properties":{"parameter1":{"type":"string"},"parameter2":{"type":"string"}}}""",
-            function.Parameters!.ToString());
+            JsonSerializer.Serialize(function.Parameters));
     }
 }

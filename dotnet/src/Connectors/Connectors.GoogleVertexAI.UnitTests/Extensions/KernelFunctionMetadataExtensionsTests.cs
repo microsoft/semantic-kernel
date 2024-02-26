@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -196,7 +197,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result);
         Assert.Equal(
             """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"},"parameter3":{"type":"string","format":"date-time","description":"DateTime parameter"}}}""",
-            result.Parameters!.ToString()
+            JsonSerializer.Serialize(result.Parameters)
         );
     }
 
@@ -231,7 +232,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result);
         Assert.Equal(
             """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
-            result.Parameters!.ToString()
+            JsonSerializer.Serialize(result.Parameters)
         );
     }
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -135,7 +136,7 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("args")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public BinaryData? Arguments { get; set; }
+        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
 
         /// <inheritdoc />
         public override string ToString()
@@ -162,6 +163,6 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("response")]
         [JsonRequired]
-        public BinaryData ResponseArguments { get; set; } = null!;
+        public IReadOnlyDictionary<string, object?> ResponseArguments { get; set; } = null!;
     }
 }

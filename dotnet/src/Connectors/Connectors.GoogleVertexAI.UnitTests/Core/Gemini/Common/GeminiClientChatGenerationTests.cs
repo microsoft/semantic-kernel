@@ -43,8 +43,8 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         {
             KernelFunctionFactory.CreateFromMethod((string? format = null)
                 => DateTime.Now.Date.ToString(format, CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
-            KernelFunctionFactory.CreateFromMethod((string? format = null)
-                    => DateTime.Now.ToString(format, CultureInfo.InvariantCulture), "Now", "TimePlugin.Now",
+            KernelFunctionFactory.CreateFromMethod(()
+                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Now", "TimePlugin.Now",
                 parameters: [new KernelParameterMetadata("param1") { ParameterType = typeof(string), Description = "desc", IsRequired = false }]),
         });
         IList<KernelFunctionMetadata> functions = kernelPlugin.GetFunctionsMetadata();
@@ -397,9 +397,11 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
             item => Assert.Equal(this._timePluginNow.FullyQualifiedName, item.Name));
         Assert.Collection(request.Tools[0].Functions,
             item =>
-                Assert.True(item.Parameters!.ToArray().SequenceEqual(this._timePluginDate.ToFunctionDeclaration().Parameters!.ToArray())),
+                Assert.Equal(JsonSerializer.Serialize(this._timePluginDate.ToFunctionDeclaration().Parameters),
+                    JsonSerializer.Serialize(item.Parameters)),
             item =>
-                Assert.True(item.Parameters!.ToArray().SequenceEqual(this._timePluginNow.ToFunctionDeclaration().Parameters!.ToArray())));
+                Assert.Equal(JsonSerializer.Serialize(this._timePluginNow.ToFunctionDeclaration().Parameters),
+                    JsonSerializer.Serialize(item.Parameters)));
     }
 
     [Fact]
@@ -423,9 +425,9 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         Assert.NotNull(message);
         Assert.NotNull(message.ToolCalls);
         Assert.Single(message.ToolCalls,
-            item => item.FullyQualifiedName == this._timePluginDate.FullyQualifiedName);
+            item => item.FullyQualifiedName == this._timePluginNow.FullyQualifiedName);
         Assert.Single(message.ToolCalls,
-            item => item.Arguments!["param1"]!.Equals("hello"));
+            item => item.Arguments!["param1"]!.ToString()!.Equals("hello", StringComparison.Ordinal));
     }
 
     private static ChatHistory CreateSampleChatHistory()

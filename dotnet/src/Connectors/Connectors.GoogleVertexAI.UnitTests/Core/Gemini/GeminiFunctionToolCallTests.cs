@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
@@ -32,13 +33,11 @@ public sealed class GeminiFunctionToolCallTests
         var toolCallPart = new GeminiPart.FunctionCallPart
         {
             FunctionName = "MyPlugin_MyFunction",
-            Arguments = new BinaryData(
-                """
-                {
-                 "location": "San Diego",
-                 "max_price": 300
-                }
-                """)
+            Arguments = new Dictionary<string, object?>
+            {
+                { "location", "San Diego" },
+                { "max_price", 300 }
+            }
         };
         var functionToolCall = new GeminiFunctionToolCall(toolCallPart);
 
@@ -56,13 +55,11 @@ public sealed class GeminiFunctionToolCallTests
         var toolCallPart = new GeminiPart.FunctionCallPart
         {
             FunctionName = "MyPlugin_MyFunction",
-            Arguments = new BinaryData(
-                """
-                {
-                 "location": "San Diego",
-                 "max_price": 300
-                }
-                """)
+            Arguments = new Dictionary<string, object?>
+            {
+                { "location", "San Diego" },
+                { "max_price", 300 }
+            }
         };
         var functionToolCall = new GeminiFunctionToolCall(toolCallPart);
 

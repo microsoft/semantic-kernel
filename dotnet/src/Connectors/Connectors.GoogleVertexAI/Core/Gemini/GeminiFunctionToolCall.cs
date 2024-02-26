@@ -34,9 +34,9 @@ public sealed class GeminiFunctionToolCall
         this._fullyQualifiedFunctionName = fullyQualifiedFunctionName;
         this.PluginName = pluginName;
         this.FunctionName = functionName;
-        if (functionToolCall.Arguments is { IsEmpty: false })
+        if (functionToolCall.Arguments is { Count: > 0 })
         {
-            this.Arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(functionToolCall.Arguments);
+            this.Arguments = functionToolCall.Arguments;
         }
     }
 
@@ -58,7 +58,7 @@ public sealed class GeminiFunctionToolCall
     public string FunctionName { get; }
 
     /// <summary>Gets a name/value collection of the arguments to the function, if any.</summary>
-    public Dictionary<string, object?>? Arguments { get; }
+    public IReadOnlyDictionary<string, object?>? Arguments { get; }
 
     /// <summary>Gets the fully-qualified name of the function.</summary>
     /// <remarks>

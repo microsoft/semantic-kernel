@@ -134,7 +134,7 @@ public sealed class GeminiFunction
     /// <returns>A <see cref="GeminiTool.FunctionDeclaration"/> containing all the function information.</returns>
     internal GeminiTool.FunctionDeclaration ToFunctionDeclaration()
     {
-        BinaryData? resultParameters = null;
+        Dictionary<string, object?>? resultParameters = null;
 
         if (this.Parameters is { Count: > 0 })
         {
@@ -150,12 +150,12 @@ public sealed class GeminiFunction
                 }
             }
 
-            resultParameters = BinaryData.FromObjectAsJson(new
+            resultParameters = new Dictionary<string, object?>
             {
-                type = "object",
-                required,
-                properties,
-            });
+                { "type", "object" },
+                { "required", required },
+                { "properties", properties },
+            };
         }
 
         return new GeminiTool.FunctionDeclaration
