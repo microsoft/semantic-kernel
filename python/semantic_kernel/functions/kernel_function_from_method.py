@@ -2,7 +2,7 @@
 
 import logging
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
-from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
 
 from pydantic import ValidationError
 
@@ -114,7 +114,7 @@ class KernelFunctionFromMethod(KernelFunction):
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[List[StreamingKernelContent | Any]]:
+    ) -> AsyncIterable[Union[List[StreamingKernelContent], Any]]:
         if self.stream_method is None:
             raise NotImplementedError("Stream method not implemented")
         function_arguments = self.gather_function_parameters(kernel, arguments)
