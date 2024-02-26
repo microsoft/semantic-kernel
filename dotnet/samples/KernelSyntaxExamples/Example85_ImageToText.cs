@@ -14,7 +14,7 @@ namespace Examples;
 /// <summary>
 /// Represents a class that demonstrates audio processing functionality.
 /// </summary>
-public sealed class Example82_ImageToText : BaseTest
+public sealed class Example85_ImageToText : BaseTest
 {
     private const string ImageToTextModel = "Salesforce/blip-image-captioning-base";
     private const string ImageFilePath = "cat.jpg";
@@ -48,5 +48,5 @@ public sealed class Example82_ImageToText : BaseTest
         this.WriteLine(textContent.Text);
     }
 
-    public Example82_ImageToText(ITestOutputHelper output) : base(output) { }
+    public Example85_ImageToText(ITestOutputHelper output) : base(output) { }
 }

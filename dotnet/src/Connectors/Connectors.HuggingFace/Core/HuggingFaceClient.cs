@@ -232,12 +232,7 @@ internal sealed class HuggingFaceClient
     private HttpRequestMessage CreatePost(object requestData, Uri endpoint, string? apiKey)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
-        if (!string.IsNullOrEmpty(apiKey))
-        {
-            httpRequestMessage.Headers.Add("Authorization", $"Bearer {apiKey}");
-        }
+        this.SetRequestHeaders(httpRequestMessage);
 
         return httpRequestMessage;
     }
@@ -267,7 +262,19 @@ internal sealed class HuggingFaceClient
             Content = imageContent
         };
 
+        this.SetRequestHeaders(request);
+
         return request;
+    }
+
+    private void SetRequestHeaders(HttpRequestMessage request)
+    {
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
+        if (!string.IsNullOrEmpty(this._apiKey))
+        {
+            request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        }
     }
 
     private Uri GetImageToTextGenerationEndpoint(string modelId)
