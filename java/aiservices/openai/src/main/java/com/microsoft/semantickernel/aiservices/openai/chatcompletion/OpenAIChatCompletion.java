@@ -347,8 +347,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
 
         // If a specific function is required to be called
-        KernelFunction<?> toolChoice = toolCallBehavior.functionRequired();
-        if (toolChoice != null) {
+        if (toolCallBehavior instanceof ToolCallBehavior.RequiredKernelFunction) {
+            KernelFunction<?> toolChoice = ((ToolCallBehavior.RequiredKernelFunction) toolCallBehavior)
+                .getRequiredFunction();
             List<ChatCompletionsToolDefinition> toolDefinitions = new ArrayList<>();
 
             toolDefinitions.add(new ChatCompletionsFunctionToolDefinition(
@@ -370,14 +371,16 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             return;
         }
 
+        // If a set of functions are enabled to be called
+        ToolCallBehavior.EnabledKernelFunctions enabledKernelFunctions = (ToolCallBehavior.EnabledKernelFunctions) toolCallBehavior;
         List<ChatCompletionsToolDefinition> toolDefinitions = functions.stream()
             .filter(function -> {
-                // if kernel functions are enabled we send all tool definitions
-                if (toolCallBehavior.kernelFunctionsEnabled()) {
+                // check if all kernel functions are enabled
+                if (enabledKernelFunctions.isAllKernelFunctionsEnabled()) {
                     return true;
                 }
-                // otherwise, check if the function is enabled
-                return toolCallBehavior.functionEnabled(function.getPluginName(),
+                // otherwise, check for the specific function
+                return enabledKernelFunctions.functionEnabled(function.getPluginName(),
                     function.getName());
             })
             .map(OpenAIFunction::getFunctionDefinition)

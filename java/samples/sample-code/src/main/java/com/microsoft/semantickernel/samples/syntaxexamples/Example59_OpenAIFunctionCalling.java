@@ -80,7 +80,7 @@ public class Example59_OpenAIFunctionCalling {
     public static void kernelFunctions(Kernel kernel, KernelFunction<?> function) {
         System.out.println("======== Kernel functions ========");
 
-        var toolCallBehavior = ToolCallBehavior.enableKernelFunctions(true);
+        var toolCallBehavior = ToolCallBehavior.enableAllKernelFunctions(true);
 
         var result = kernel
             .invokeAsync(function)
@@ -96,7 +96,7 @@ public class Example59_OpenAIFunctionCalling {
         System.out.println("======== Enable functions ========");
 
         // Based on coordinates
-        var toolCallBehavior = ToolCallBehavior.enableFunctions(true,
+        var toolCallBehavior = ToolCallBehavior.enableKernelFunctions(true,
                         plugin.get("getLatitudeOfCity"),
                         plugin.get("getLongitudeOfCity"),
                         plugin.get("getsTheWeatherAtAGivenLocation"));
@@ -114,7 +114,7 @@ public class Example59_OpenAIFunctionCalling {
         KernelFunction<?> function) {
         System.out.println("======== Require a function ========");
 
-        var toolCallBehavior = ToolCallBehavior.requireFunction(plugin.get("getsTheWeatherForCity"));
+        var toolCallBehavior = ToolCallBehavior.requireKernelFunction(plugin.get("getsTheWeatherForCity"));
 
         var result = kernel
             .invokeAsync(function)
