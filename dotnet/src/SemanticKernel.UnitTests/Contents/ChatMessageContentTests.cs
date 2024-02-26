@@ -178,7 +178,7 @@ public class ChatMessageContentTests
         {
             ["message-metadata-key-1"] = "message-metadata-value-1"
         });
-        sut.Content = "content-1-override";    // Override the content of the first text content item that has the "content-1" content  
+        sut.Content = "content-1-override"; // Override the content of the first text content item that has the "content-1" content  
 
         // Act
         var chatMessageJson = JsonSerializer.Serialize(sut);

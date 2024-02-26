@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example85_ChatHistorySerialization : BaseTest
+public class Example86_ChatHistorySerialization : BaseTest
 {
     /// <summary>
     /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
