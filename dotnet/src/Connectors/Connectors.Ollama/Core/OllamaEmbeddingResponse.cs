@@ -4,6 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
+#pragma warning disable CA1812
+
 internal sealed class OllamaEmbeddingResponse : OllamaResponseBase
 {
     /// <summary>
