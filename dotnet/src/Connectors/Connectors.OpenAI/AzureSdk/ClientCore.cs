@@ -241,7 +241,7 @@ internal abstract class ClientCore
         return result;
     }
 
-    internal async Task<TextContent> GetTextContentFromAudioAsync(
+    internal async Task<IReadOnlyList<TextContent>> GetTextContentFromAudioAsync(
         AudioContent content,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
@@ -265,7 +265,7 @@ internal abstract class ClientCore
 
         AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioTranscriptionAsync(audioOptions, cancellationToken)).ConfigureAwait(false)).Value;
 
-        return new TextContent(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData));
+        return new List<TextContent> { new(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData)) };
     }
 
     /// <summary>
