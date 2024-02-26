@@ -14,7 +14,6 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.planners import ActionPlanner
 from semantic_kernel.planners.action_planner.action_planner_config import (
     ActionPlannerConfig,
@@ -87,10 +86,8 @@ async def test_plan_creation():
 
     kernel = Mock(spec=Kernel)
     mock_function = Mock(spec=KernelFunction)
-    memory = Mock(spec=SemanticTextMemoryBase)
     plugins = KernelPluginCollection()
     kernel.plugins = plugins
-    kernel.register_memory(memory)
 
     kernel_function_metadata = KernelFunctionMetadata(
         name="Translate",
@@ -205,10 +202,8 @@ async def test_invalid_json_throw():
     plan_str = '{"":{""function"": ""WriterPlugin.Translate""}}'
 
     kernel = Mock(spec=Kernel)
-    memory = Mock(spec=SemanticTextMemoryBase)
     plugins = MagicMock(spec=KernelPluginCollection)
     kernel.plugins = plugins
-    kernel.register_memory(memory)
 
     kernel_function_metadata = KernelFunctionMetadata(
         name="Translate",

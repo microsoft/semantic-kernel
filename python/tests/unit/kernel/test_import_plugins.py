@@ -71,7 +71,7 @@ def test_create_function_from_prompt_succeeds():
             return f"{first_name}, {second_name}"
 
     # import plugins
-    kernel.import_plugin(GenerateNamesPlugin(), plugin_name="GenerateNames")
+    kernel.import_plugin_from_object(GenerateNamesPlugin(), plugin_name="GenerateNames")
 
     prompt = """
     Write a short story about two Corgis on an adventure.

@@ -80,7 +80,7 @@ def test_create_plan_with_name_and_function():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
 
     test_function = plugin["Add"]
 
@@ -106,7 +106,7 @@ def test_create_multistep_plan_with_functions():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
 
     test_function1 = plugin["Add"]
     test_function2 = plugin["Subtract"]
@@ -135,7 +135,7 @@ def test_create_multistep_plan_with_plans():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
 
     test_function1 = plugin["Add"]
     test_function2 = plugin["Subtract"]
@@ -166,7 +166,7 @@ def test_add_step_to_plan():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
 
     test_function1 = plugin["Add"]
     test_function2 = plugin["Subtract"]

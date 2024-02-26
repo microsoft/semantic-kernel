@@ -9,7 +9,7 @@ class TextPlugin(KernelBaseModel):
     TextPlugin provides a set of functions to manipulate strings.
 
     Usage:
-        kernel.import_plugin(TextPlugin(), plugin_name="text")
+        kernel.import_plugin_from_object(TextPlugin(), plugin_name="text")
 
     Examples:
         KernelArguments["input"] = "  hello world  "
