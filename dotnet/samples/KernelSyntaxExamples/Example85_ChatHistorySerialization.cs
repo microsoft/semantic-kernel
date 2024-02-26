@@ -14,20 +14,11 @@ namespace Examples;
 public class Example85_ChatHistorySerialization : BaseTest
 {
     /// <summary>
-    /// Demonstrates two ways of serializing and deserializing <see cref="ChatHistory"/> class.
+    /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
+    /// with <see cref="ChatMessageContent"/> having SK various content types as items.
     /// </summary>
     [Fact]
-    public void Run()
-    {
-        SerializeChatHistoryWithSKContentTypes();
-
-        SerializeChatWithHistoryWithCustomContentType();
-    }
-
-    /// <summary>
-    /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class with <see cref="ChatMessageContent"/> having SK content types.
-    /// </summary>
-    private void SerializeChatHistoryWithSKContentTypes()
+    public void SerializeChatHistoryWithSKContentTypes()
     {
         var data = new[] { 1, 2, 3 };
 
@@ -63,9 +54,10 @@ public class Example85_ChatHistorySerialization : BaseTest
     }
 
     /// <summary>
-    /// Shows how to serialize and deserialize <see cref="ChatHistory"/> class with <see cref="ChatMessageContent"/> having custom content type.
+    /// Shows how to serialize and deserialize <see cref="ChatHistory"/> class with <see cref="ChatMessageContent"/> having custom content type as item.
     /// </summary>
-    private void SerializeChatWithHistoryWithCustomContentType()
+    [Fact]
+    public void SerializeChatWithHistoryWithCustomContentType()
     {
         var message = new ChatMessageContent(AuthorRole.User, "Describe the factors contributing to climate change.");
         message.Items = new ChatMessageContentItemCollection
