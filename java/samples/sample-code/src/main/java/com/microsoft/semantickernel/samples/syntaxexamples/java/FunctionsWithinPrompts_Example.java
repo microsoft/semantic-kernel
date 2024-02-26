@@ -18,6 +18,7 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionServic
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -32,6 +33,8 @@ public class FunctionsWithinPrompts_Example {
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-35-turbo-2");
+
+    public static InputStream INPUT = System.in;
 
     public static void main(String[] args) throws ConfigurationException, IOException {
 
@@ -114,7 +117,7 @@ public class FunctionsWithinPrompts_Example {
             """.stripIndent()).build();
         // </FunctionFromPrompt>
 
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(INPUT);
 
         ChatHistory history = new ChatHistory();
         // Start the chat loop

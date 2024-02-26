@@ -194,6 +194,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                             KernelFunction<?> function = functions.next();
                             sb.append(options.fn(function));
                         }
+                    } else {
+                        sb.append(options.fn(element));
                     }
                 }
                 return new Handlebars.SafeString(sb.toString());
