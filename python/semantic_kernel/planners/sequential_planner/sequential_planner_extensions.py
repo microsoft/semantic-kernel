@@ -16,7 +16,7 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_config impor
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class SequentialPlannerFunctionViewExtension:
+class SequentialPlannerFunctionExtension:
     @staticmethod
     def to_manual_string(function: KernelFunctionMetadata):
         inputs = [
@@ -26,7 +26,7 @@ class SequentialPlannerFunctionViewExtension:
         ]
 
         inputs = "\n".join(inputs)
-        qualified_name = SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function)
+        qualified_name = SequentialPlannerFunctionExtension.to_fully_qualified_name(function)
 
         return f"{qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
 
@@ -60,7 +60,7 @@ class SequentialPlannerKernelExtension:
         else:
             functions = await config.get_available_functions(config, semantic_query)
 
-        return "\n\n".join([SequentialPlannerFunctionViewExtension.to_manual_string(func) for func in functions])
+        return "\n\n".join([SequentialPlannerFunctionExtension.to_manual_string(func) for func in functions])
 
     @staticmethod
     async def get_available_functions(
@@ -133,7 +133,7 @@ class SequentialPlannerKernelExtension:
                 (
                     func
                     for func in available_functions
-                    if SequentialPlannerFunctionViewExtension.to_fully_qualified_name(func) == memory_entry.id
+                    if SequentialPlannerFunctionExtension.to_fully_qualified_name(func) == memory_entry.id
                 ),
                 None,
             )
@@ -141,7 +141,7 @@ class SequentialPlannerKernelExtension:
                 logger.debug(
                     "Found relevant function. Relevance Score: {0}, Function: {1}".format(
                         memory_entry.relevance,
-                        SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function),
+                        SequentialPlannerFunctionExtension.to_fully_qualified_name(function),
                     )
                 )
                 relevant_functions.append(function)
@@ -163,10 +163,10 @@ class SequentialPlannerKernelExtension:
             )
 
         for function in available_functions:
-            function_name = SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function)
+            function_name = SequentialPlannerFunctionExtension.to_fully_qualified_name(function)
             key = function_name
             description = function.description or function_name
-            text_to_embed = SequentialPlannerFunctionViewExtension.to_embedding_string(function)
+            text_to_embed = SequentialPlannerFunctionExtension.to_embedding_string(function)
 
             # It'd be nice if there were a saveIfNotExists method on the memory interface
             memory_entry = await kernel.memory.get(
