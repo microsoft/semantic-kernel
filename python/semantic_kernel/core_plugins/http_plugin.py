@@ -1,15 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-import typing as t
+import sys
+from typing import Any, Dict, Optional
 
 import aiohttp
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 
-if t.TYPE_CHECKING:
-    from semantic_kernel.orchestration.kernel_context import KernelContext
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class HttpPlugin(KernelBaseModel):
@@ -28,7 +31,7 @@ class HttpPlugin(KernelBaseModel):
     """
 
     @kernel_function(description="Makes a GET request to a uri", name="getAsync")
-    async def get(self, url: str) -> str:
+    async def get(self, url: Annotated[str, "The URI to send the request to."]) -> str:
         """
         Sends an HTTP GET request to the specified URI and returns
         the response body as a string.
@@ -45,21 +48,22 @@ class HttpPlugin(KernelBaseModel):
                 return await response.text()
 
     @kernel_function(description="Makes a POST request to a uri", name="postAsync")
-    @kernel_function_context_parameter(name="body", description="The body of the request")
-    async def post(self, url: str, context: "KernelContext") -> str:
+    async def post(
+        self,
+        url: Annotated[str, "The URI to send the request to."],
+        body: Annotated[Optional[Dict[str, Any]], "The body of the request"] = {},
+    ) -> str:
         """
         Sends an HTTP POST request to the specified URI and returns
         the response body as a string.
         params:
             url: The URI to send the request to.
-            context: Contains the body of the request
+            body: Contains the body of the request
         returns:
             The response body as a string.
         """
         if not url:
             raise ValueError("url cannot be `None` or empty")
-
-        body = context.variables.get("body")
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
@@ -68,8 +72,11 @@ class HttpPlugin(KernelBaseModel):
                 return await response.text()
 
     @kernel_function(description="Makes a PUT request to a uri", name="putAsync")
-    @kernel_function_context_parameter(name="body", description="The body of the request")
-    async def put(self, url: str, context: "KernelContext") -> str:
+    async def put(
+        self,
+        url: Annotated[str, "The URI to send the request to."],
+        body: Annotated[Optional[Dict[str, Any]], "The body of the request"] = {},
+    ) -> str:
         """
         Sends an HTTP PUT request to the specified URI and returns
         the response body as a string.
@@ -81,8 +88,6 @@ class HttpPlugin(KernelBaseModel):
         if not url:
             raise ValueError("url cannot be `None` or empty")
 
-        body = context.variables.get("body")
-
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
         async with aiohttp.ClientSession() as session:
@@ -90,7 +95,7 @@ class HttpPlugin(KernelBaseModel):
                 return await response.text()
 
     @kernel_function(description="Makes a DELETE request to a uri", name="deleteAsync")
-    async def delete(self, url: str) -> str:
+    async def delete(self, url: Annotated[str, "The URI to send the request to."]) -> str:
         """
         Sends an HTTP DELETE request to the specified URI and returns
         the response body as a string.

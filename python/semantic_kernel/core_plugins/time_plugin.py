@@ -2,8 +2,8 @@
 
 import datetime
 
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function
 
 
 class TimePlugin(KernelBaseModel):
