@@ -91,8 +91,26 @@ internal sealed class ThreadMessageModel
         /// <summary>
         /// Text context.
         /// </summary>
+        [JsonPropertyName("image_file")]
+        public ImageContentModel? Image { get; set; }
+
+        /// <summary>
+        /// Text context.
+        /// </summary>
         [JsonPropertyName("text")]
         public TextContentModel? Text { get; set; }
+    }
+
+    /// <summary>
+    /// Text content.
+    /// </summary>
+    public sealed class ImageContentModel
+    {
+        /// <summary>
+        /// The image file identifier.
+        /// </summary>
+        [JsonPropertyName("file_id")]
+        public string FileId { get; set; } = string.Empty;
     }
 
     /// <summary>
