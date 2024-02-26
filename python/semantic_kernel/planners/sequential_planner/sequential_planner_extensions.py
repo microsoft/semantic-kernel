@@ -15,9 +15,7 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_config impor
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class SequentialPlannerFunctionViewExtension:
-    # Note: this planner and its functions will be retired as we move to v1.0.0
-
+class SequentialPlannerFunctionExtension:
     @staticmethod
     def to_manual_string(function: KernelFunctionMetadata):
         inputs = [
@@ -27,7 +25,7 @@ class SequentialPlannerFunctionViewExtension:
         ]
 
         inputs = "\n".join(inputs)
-        qualified_name = SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function)
+        qualified_name = SequentialPlannerFunctionExtension.to_fully_qualified_name(function)
 
         return f"{qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
 
@@ -61,7 +59,7 @@ class SequentialPlannerKernelExtension:
         else:
             functions = await config.get_available_functions(config, semantic_query)
 
-        return "\n\n".join([SequentialPlannerFunctionViewExtension.to_manual_string(func) for func in functions])
+        return "\n\n".join([SequentialPlannerFunctionExtension.to_manual_string(func) for func in functions])
 
     @staticmethod
     async def get_available_functions(
@@ -90,9 +88,6 @@ class SequentialPlannerKernelExtension:
             # If no semantic query is provided, return all available functions.
             # If a Memory provider has not been registered, return all available functions.
             return available_functions
-
-        # Remember functions in memory so that they can be searched.
-        await SequentialPlannerKernelExtension.remember_functions(kernel, arguments, available_functions)
 
         # Add functions that were found in the search results.
         relevant_functions = await SequentialPlannerKernelExtension.get_relevant_functions(
@@ -124,7 +119,7 @@ class SequentialPlannerKernelExtension:
                 (
                     func
                     for func in available_functions
-                    if SequentialPlannerFunctionViewExtension.to_fully_qualified_name(func) == memory_entry.id
+                    if SequentialPlannerFunctionExtension.to_fully_qualified_name(func) == memory_entry.id
                 ),
                 None,
             )
@@ -132,20 +127,9 @@ class SequentialPlannerKernelExtension:
                 logger.debug(
                     "Found relevant function. Relevance Score: {0}, Function: {1}".format(
                         memory_entry.relevance,
-                        SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function),
+                        SequentialPlannerFunctionExtension.to_fully_qualified_name(function),
                     )
                 )
                 relevant_functions.append(function)
 
         return relevant_functions
-
-    @staticmethod
-    async def remember_functions(
-        kernel: Kernel, arguments: KernelArguments, available_functions: List[KernelFunctionMetadata]
-    ):
-        # Check if the functions have already been saved to memory.
-        if arguments.get(SequentialPlannerKernelExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED, False):
-            return
-
-        # Set a flag to indicate that the functions have been saved to memory.
-        arguments[SequentialPlannerKernelExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED] = True
