@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 [JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
 #pragma warning disable SKEXP0005
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
-#pragma warning disable SKEXP0005
+#pragma warning restore SKEXP0005
 public abstract class KernelContent
 {
     /// <summary>
