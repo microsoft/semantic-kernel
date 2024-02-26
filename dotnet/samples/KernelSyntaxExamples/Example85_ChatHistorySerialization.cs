@@ -30,7 +30,7 @@ public class Example85_ChatHistorySerialization : BaseTest
             new BinaryContent(new BinaryData(data)),
             #pragma warning disable SKEXP0005
             new AudioContent(new BinaryData(data))
-            #pragma warning disable SKEXP0005
+            #pragma warning restore SKEXP0005
         };
 
         var chatHistory = new ChatHistory(new[] { message });
