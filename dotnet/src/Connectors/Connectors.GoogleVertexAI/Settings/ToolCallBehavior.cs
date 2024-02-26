@@ -79,7 +79,7 @@ public abstract class ToolCallBehavior
     /// if this is 1, the first request will include the tools, but the subsequent response sending back the tool's result
     /// will not include the tools for further use.
     /// </remarks>
-    internal virtual int MaximumUseAttempts => int.MaxValue;
+    internal int MaximumUseAttempts => int.MaxValue;
 
     /// <summary>Gets how many tool call request/response roundtrips are supported with auto-invocation.</summary>
     /// <remarks>

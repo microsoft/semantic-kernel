@@ -108,7 +108,7 @@ internal sealed class GeminiRequest
         };
     }
 
-    public void AddChatMessageToRequest(ChatMessageContent message)
+    public void AddChatMessage(ChatMessageContent message)
     {
         Verify.NotNull(this.Contents);
         Verify.NotNull(message);

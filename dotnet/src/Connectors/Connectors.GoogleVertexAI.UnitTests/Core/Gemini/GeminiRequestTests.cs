@@ -309,7 +309,7 @@ public sealed class GeminiRequestTests
         var message = new GeminiChatMessageContent(AuthorRole.User, "user-message", "model-id");
 
         // Act
-        request.AddChatMessageToRequest(message);
+        request.AddChatMessage(message);
 
         // Assert
         Assert.Single(request.Contents,

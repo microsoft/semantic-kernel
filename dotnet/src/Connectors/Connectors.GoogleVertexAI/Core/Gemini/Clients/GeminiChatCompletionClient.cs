@@ -85,8 +85,8 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
         var endpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
 
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        bool autoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+        bool autoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings);
 
         var geminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel);
 
@@ -111,7 +111,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             }
 
             chatHistory.Add(result);
-            geminiRequest.AddChatMessageToRequest(result);
+            geminiRequest.AddChatMessage(result);
 
             this.Logger.LogDebug("Tool requests: {Requests}", result.ToolCalls.Count);
             this.Logger.LogTrace("Function call requests: {FunctionCall}",
@@ -172,21 +172,15 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             {
                 // Clear the tools
                 geminiRequest.Tools = null;
-                if (this.Logger.IsEnabled(LogLevel.Debug))
-                {
-                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.",
-                        geminiExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
-                }
+                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.",
+                    geminiExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
             }
 
             if (iteration >= geminiExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
-                if (this.Logger.IsEnabled(LogLevel.Debug))
-                {
-                    this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.",
-                        geminiExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
-                }
+                this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.",
+                    geminiExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
             }
         }
     }
@@ -230,7 +224,7 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             content: errorMessage ?? string.Empty,
             modelId: this._modelId, calledTool: tool, metadata: null);
         chat.Add(message);
-        request.AddChatMessageToRequest(message);
+        request.AddChatMessage(message);
     }
 
     private static bool CheckAutoInvokeCondition(Kernel? kernel, GeminiPromptExecutionSettings geminiExecutionSettings)
