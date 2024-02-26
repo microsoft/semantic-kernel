@@ -33,7 +33,9 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    tldr_function = kernel.create_function_from_prompt(
+        function_name="story", plugin_name="plugin", prompt_template_config=prompt_template_config
+    )
 
     summary = await retry(lambda: kernel.invoke(tldr_function, input=text_to_summarize))
     output = str(summary).strip()
