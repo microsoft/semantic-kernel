@@ -78,7 +78,7 @@ public sealed class Example82_Audio : BaseTest
         };
 
         // Read audio content from a file
-        var audioFileStream = EmbeddedResource.ReadStream(AudioFilename);
+        await using var audioFileStream = EmbeddedResource.ReadStream(AudioFilename);
         var audioFileBinaryData = await BinaryData.FromStreamAsync(audioFileStream!);
         AudioContent audioContent = new(audioFileBinaryData);
 
