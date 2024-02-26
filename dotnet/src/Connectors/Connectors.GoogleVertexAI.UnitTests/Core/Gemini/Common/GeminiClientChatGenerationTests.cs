@@ -3,11 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Moq;
@@ -19,16 +21,39 @@ namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
 public sealed class GeminiClientChatGenerationTests : IDisposable
 {
     private readonly HttpClient _httpClient;
+    private readonly string _responseContent;
+    private readonly string _responseContentWithFunction;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly GeminiFunction _timePluginDate, _timePluginNow;
+    private readonly Kernel _kernelWithFunctions;
     private const string ChatTestDataFilePath = "./TestData/chat_one_response.json";
+    private const string ChatTestDataWithFunctionFilePath = "./TestData/chat_one_function_response.json";
 
     public GeminiClientChatGenerationTests()
     {
+        this._responseContent = File.ReadAllText(ChatTestDataFilePath);
+        this._responseContentWithFunction = File.ReadAllText(ChatTestDataWithFunctionFilePath);
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
-            File.ReadAllText(ChatTestDataFilePath));
+            this._responseContent);
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+
+        var kernelPlugin = KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
+        {
+            KernelFunctionFactory.CreateFromMethod((string? format = null)
+                => DateTime.Now.Date.ToString(format, CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
+            KernelFunctionFactory.CreateFromMethod((string? format = null)
+                    => DateTime.Now.ToString(format, CultureInfo.InvariantCulture), "Now", "TimePlugin.Now",
+                parameters: [new KernelParameterMetadata("param1") { ParameterType = typeof(string), Description = "desc", IsRequired = false }]),
+        });
+        IList<KernelFunctionMetadata> functions = kernelPlugin.GetFunctionsMetadata();
+
+        this._timePluginDate = functions[0].ToGeminiFunction();
+        this._timePluginNow = functions[1].ToGeminiFunction();
+
+        this._kernelWithFunctions = new Kernel();
+        this._kernelWithFunctions.Plugins.Add(kernelPlugin);
     }
 
     [Fact]
@@ -347,6 +372,60 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
 
         // Assert
         requestFactoryMock.VerifyAll();
+    }
+
+    [Fact]
+    public async Task ShouldPassToolsToRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
+        };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+
+        // Assert
+        GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.NotNull(request.Tools);
+        Assert.Collection(request.Tools[0].Functions,
+            item => Assert.Equal(this._timePluginDate.FullyQualifiedName, item.Name),
+            item => Assert.Equal(this._timePluginNow.FullyQualifiedName, item.Name));
+        Assert.Collection(request.Tools[0].Functions,
+            item =>
+                Assert.True(item.Parameters!.ToArray().SequenceEqual(this._timePluginDate.ToFunctionDeclaration().Parameters!.ToArray())),
+            item =>
+                Assert.True(item.Parameters!.ToArray().SequenceEqual(this._timePluginNow.ToFunctionDeclaration().Parameters!.ToArray())));
+    }
+
+    [Fact]
+    public async Task ShouldReturnFunctionsCalledByModelAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(this._responseContentWithFunction);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
+        };
+
+        // Act
+        var chatMessageContents =
+            await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+
+        // Assert
+        var message = chatMessageContents.SingleOrDefault() as GeminiChatMessageContent;
+        Assert.NotNull(message);
+        Assert.NotNull(message.ToolCalls);
+        Assert.Single(message.ToolCalls,
+            item => item.FullyQualifiedName == this._timePluginDate.FullyQualifiedName);
+        Assert.Single(message.ToolCalls,
+            item => item.Arguments!["param1"]!.Equals("hello"));
     }
 
     private static ChatHistory CreateSampleChatHistory()
