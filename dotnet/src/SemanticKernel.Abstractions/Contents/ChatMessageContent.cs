@@ -98,6 +98,7 @@ public class ChatMessageContent : KernelContent
     /// The source of the message that generated it.
     /// </summary>
     [Experimental("SKEXP0101")]
+    [JsonIgnore]
     public object? Source { get; set; }
 
     /// <summary>
