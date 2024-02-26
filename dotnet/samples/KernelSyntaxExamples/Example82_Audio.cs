@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToAudio;
+using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,7 +19,7 @@ public sealed class Example82_Audio : BaseTest
 {
     private const string TextToAudioModel = "tts-1";
     private const string AudioToTextModel = "whisper-1";
-    private const string AudioFilePath = "audio.wav";
+    private const string AudioFilename = "test_audio.wav";
 
     [Fact(Skip = "Uncomment the line to write the audio file output before running this test.")]
     public async Task TextToAudioAsync()
@@ -66,7 +66,7 @@ public sealed class Example82_Audio : BaseTest
         var audioToTextService = kernel.GetRequiredService<IAudioToTextService>();
 
         // Set execution settings (optional)
-        OpenAIAudioToTextExecutionSettings executionSettings = new(AudioFilePath)
+        OpenAIAudioToTextExecutionSettings executionSettings = new(AudioFilename)
         {
             Language = "en", // The language of the audio data as two-letter ISO-639-1 language code (e.g. 'en' or 'es').
             Prompt = "sample prompt", // An optional text to guide the model's style or continue a previous audio segment.
@@ -78,8 +78,9 @@ public sealed class Example82_Audio : BaseTest
         };
 
         // Read audio content from a file
-        ReadOnlyMemory<byte> audioData = await File.ReadAllBytesAsync(AudioFilePath);
-        AudioContent audioContent = new(new BinaryData(audioData));
+        await using var audioFileStream = EmbeddedResource.ReadStream(AudioFilename);
+        var audioFileBinaryData = await BinaryData.FromStreamAsync(audioFileStream!);
+        AudioContent audioContent = new(audioFileBinaryData);
 
         // Convert audio to text
         var textContent = await audioToTextService.GetTextContentAsync(audioContent, executionSettings);
