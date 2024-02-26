@@ -58,9 +58,10 @@ def setup(use_azure: bool = False):
     # Configure AI service used by the kernel
     if useAzureOpenAI:
         deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-        kernel.add_chat_service(
-            "chat_completion",
+        service_id = ("chat_completion",)
+        kernel.add_service(
             AzureChatCompletion(
+                service_id=service_id,
                 deployment_name=deployment,
                 endpoint=endpoint,
                 api_key=api_key,
@@ -70,19 +71,18 @@ def setup(use_azure: bool = False):
         )
     else:
         api_key, org_id = sk.openai_settings_from_dot_env()
-        kernel.add_chat_service(
-            "chat-gpt",
-            OpenAIChatCompletion(ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
+        service_id = "chat-gpt"
+        kernel.add_service(
+            OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
         )
 
     # note: using plugins from the samples folder
     plugins_directory = "../samples/plugins/"
 
-    grounding_semantic_functions = kernel.import_semantic_plugin_from_directory(plugins_directory, "GroundingPlugin")
+    grounding_semantic_functions = kernel.import_plugin_from_prompt_directory(
+        service_id, plugins_directory, "GroundingPlugin"
+    )
 
-    # entity_extraction = grounding_semantic_functions["ExtractEntities"]
-    # reference_check = grounding_semantic_functions["ReferenceCheckEntities"]
-    # entity_excision = grounding_semantic_functions["ExciseEntities"]
     return kernel, grounding_semantic_functions
 
 
