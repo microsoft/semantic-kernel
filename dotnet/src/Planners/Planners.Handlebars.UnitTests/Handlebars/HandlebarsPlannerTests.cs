@@ -224,8 +224,8 @@ public sealed class HandlebarsPlannerTests
         var planner = new HandlebarsPlanner();
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
-        Assert.True(exception?.Message?.Contains("Identified multiple Handlebars templates in model response", StringComparison.InvariantCulture));
+        var exception = await Assert.ThrowsAsync<PlanCreationException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
+        Assert.True(exception?.InnerException?.Message?.Contains("Identified multiple Handlebars templates in model response", StringComparison.InvariantCulture));
     }
 
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)
