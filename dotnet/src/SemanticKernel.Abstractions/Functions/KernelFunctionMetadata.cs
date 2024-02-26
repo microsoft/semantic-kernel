@@ -15,6 +15,8 @@ public sealed class KernelFunctionMetadata
     private string _name = string.Empty;
     /// <summary>The description of the function.</summary>
     private string _description = string.Empty;
+    /// <summary>The name of the plugin containing the function.</summary>
+    private string? _pluginName;
     /// <summary>The function's parameters.</summary>
     private IReadOnlyList<KernelParameterMetadata> _parameters = Array.Empty<KernelParameterMetadata>();
     /// <summary>The function's return parameter.</summary>
@@ -58,7 +60,18 @@ public sealed class KernelFunctionMetadata
     }
 
     /// <summary>Gets the name of the plugin containing the function.</summary>
-    public string? PluginName { get; init; }
+    public string? PluginName
+    {
+        get => this._pluginName;
+        init
+        {
+            if (value is not null)
+            {
+                Verify.ValidPluginName(value);
+            }
+            this._pluginName = value;
+        }
+    }
 
     /// <summary>Gets a description of the function, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]
