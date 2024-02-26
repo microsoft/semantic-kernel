@@ -7,11 +7,14 @@ from openai import AsyncAzureOpenAI
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 @pytest.mark.asyncio
 async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai_models, get_aoai_config):
-    kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
+    kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     _, api_key, endpoint = get_aoai_config
 
@@ -25,19 +28,29 @@ async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai
     print(f"* Deployment: {deployment_name}")
 
     # Configure LLM service
-    kernel.add_text_completion_service(
-        "text_completion",
+    kernel.add_service(
         sk_oai.AzureTextCompletion(
+            service_id="text_completion",
             deployment_name=deployment_name,
             endpoint=endpoint,
             api_key=api_key,
         ),
     )
 
-    # Create the semantic function
-    tldr_function = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0, top_p=0.5)
+    exec_settings = PromptExecutionSettings(
+        service_id="text_completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
 
-    summary = await retry(lambda: kernel.run(tldr_function, input_str=text_to_summarize))
+    prompt_template_config = PromptTemplateConfig(
+        template=prompt, description="Write a short story.", execution_settings=exec_settings
+    )
+
+    # Create the semantic function
+    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+
+    arguments = KernelArguments(input=text_to_summarize)
+
+    summary = await retry(lambda: kernel.invoke(tldr_function, arguments))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
@@ -48,7 +61,7 @@ async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai
 async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
     setup_tldr_function_for_oai_models, get_aoai_config
 ):
-    kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
+    kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     _, api_key, endpoint = get_aoai_config
 
@@ -70,18 +83,29 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
     )
 
     # Configure LLM service
-    kernel.add_text_completion_service(
-        "text_completion",
+    kernel.add_service(
         sk_oai.AzureTextCompletion(
+            service_id="text_completion",
             deployment_name=deployment_name,
             async_client=client,
         ),
+        overwrite=True,  # Overwrite the service for the test if it already exists
+    )
+
+    exec_settings = PromptExecutionSettings(
+        service_id="text_completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+    )
+
+    prompt_template_config = PromptTemplateConfig(
+        template=prompt, description="Write a short story.", execution_settings=exec_settings
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0, top_p=0.5)
+    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
 
-    summary = await retry(lambda: kernel.run(tldr_function, input_str=text_to_summarize))
+    arguments = KernelArguments(input=text_to_summarize)
+
+    summary = await retry(lambda: kernel.invoke(tldr_function, arguments))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)

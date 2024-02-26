@@ -9,7 +9,6 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -86,7 +85,7 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
     }
 
     /// <inheritdoc/>
-    public Task<TextContent> GetTextContentAsync(
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         AudioContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
