@@ -16,7 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.models.contents import StreamingTextContent, TextContent
+from semantic_kernel.contents import StreamingTextContent, TextContent
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -35,7 +35,6 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-        **kwargs,
     ) -> List["TextContent"]:
         """Executes a completion request and returns the result.
 
@@ -77,7 +76,6 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-        **kwargs,
     ) -> AsyncIterable[List["StreamingTextContent"]]:
         """
         Executes a completion request and streams the result.

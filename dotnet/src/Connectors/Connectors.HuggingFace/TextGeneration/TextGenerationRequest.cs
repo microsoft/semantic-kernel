@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 internal sealed class TextGenerationRequest
 {
     /// <summary>
-    /// A string to be generated from.
+    /// The input string to generate text for.
     /// </summary>
     [JsonPropertyName("inputs")]
     public string? Inputs { get; set; }

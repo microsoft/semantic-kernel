@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="HuggingFace\TestData\*">
+    <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="OpenAI\TestData\*">

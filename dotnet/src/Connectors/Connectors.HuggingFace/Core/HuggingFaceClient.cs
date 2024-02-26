@@ -38,6 +38,7 @@ internal sealed class HuggingFaceClient
         ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(httpClient);
 
         endpoint ??= new Uri("https://api-inference.huggingface.co");
         this._separator = endpoint.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture) ? string.Empty : "/";
