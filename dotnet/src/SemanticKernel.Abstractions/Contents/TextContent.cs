@@ -31,6 +31,7 @@ public sealed class TextContent : KernelContent
     /// <param name="innerContent">Inner content</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Additional metadata</param>
+    [JsonConstructor]
     public TextContent(string? text, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
     {
         this.Text = text;
