@@ -38,11 +38,11 @@ public class Example82_OllamaTextEmbeddingGeneration : BaseTest
     {
         this.WriteLine("======== Text Embedding From Prompt ========");
 
-        const string prompt = "Describe what is GIT and why it is useful. Use simple words. Description should be long.";
+        const string Prompt = "Describe what is GIT and why it is useful. Use simple words. Description should be long.";
 
         var textEmbeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
-        var embeddings = await textEmbeddingService.GenerateEmbeddingsAsync(new List<string> { prompt });
+        var embeddings = await textEmbeddingService.GenerateEmbeddingsAsync(new List<string> { Prompt });
 
         this.WriteLine(string.Join(", ", embeddings[0].ToArray()));
     }

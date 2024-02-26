@@ -55,6 +55,7 @@ public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
+    /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         Kernel? kernel = null,
