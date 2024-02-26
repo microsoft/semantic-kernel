@@ -45,7 +45,7 @@ def test_default_kernel_plugin_construction_with_native_functions():
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     plugin = KernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
@@ -78,7 +78,7 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     plugin = KernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
@@ -172,7 +172,7 @@ def test_default_kernel_plugin_construction_with_both_function_types():
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     # Add both types to the default kernel plugin
     expected_plugin_description = "A unit test plugin"
@@ -234,7 +234,7 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     ]
 
     mock_method = mock_function
-    native_function = KernelFunction.from_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     with pytest.raises(ValueError):
         KernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])

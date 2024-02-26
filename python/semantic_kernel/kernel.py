@@ -492,7 +492,7 @@ class Kernel(KernelBaseModel):
             if not hasattr(candidate, "__kernel_function__"):
                 continue
 
-            functions.append(KernelFunction.from_method(candidate, plugin_name))
+            functions.append(KernelFunction.from_native_method(candidate, plugin_name))
 
         logger.debug(f"Methods imported: {len(functions)}")
 
@@ -672,7 +672,7 @@ class Kernel(KernelBaseModel):
                 "kernel_function argument must be decorated with @kernel_function",
             )
 
-        function = KernelFunction.from_method(kernel_function, plugin_name)
+        function = KernelFunction.from_native_method(kernel_function, plugin_name)
         self.add_plugin(plugin_name or function.plugin_name, [function])
 
         return function

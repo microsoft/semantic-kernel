@@ -64,7 +64,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         def my_function(arguments: KernelArguments) -> str:
             return f"F({arguments['input']})"
 
-        return KernelFunction.from_method(my_function, "plugin")
+        return KernelFunction.from_native_method(my_function, "plugin")
 
     def create_chat_history() -> ChatHistory:
         return ChatHistory()

@@ -21,7 +21,7 @@ def test_init_native_function_with_input_description():
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     assert native_function.function == mock_method
     assert native_function.parameters[0].name == "input"
@@ -55,7 +55,7 @@ def test_init_native_function_without_input_description():
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 
     assert native_function.function == mock_method
     assert native_function.parameters[0].name == "arguments"
@@ -77,7 +77,7 @@ def test_init_native_function_from_kernel_function_decorator():
     assert decorated_function.__kernel_function_description__ == "Test description"
     assert decorated_function.__kernel_function_name__ == "test_function"
 
-    native_function = KernelFunction.from_method(decorated_function, "MockPlugin")
+    native_function = KernelFunction.from_native_method(decorated_function, "MockPlugin")
 
     assert native_function.function == decorated_function
     assert native_function.parameters[0].name == "input"
@@ -96,7 +96,7 @@ def test_init_native_function_from_kernel_function_decorator_defaults():
     assert decorated_function.__kernel_function_description__ is None
     assert decorated_function.__kernel_function_name__ == "decorated_function"
 
-    native_function = KernelFunction.from_method(decorated_function, "MockPlugin")
+    native_function = KernelFunction.from_native_method(decorated_function, "MockPlugin")
 
     assert native_function.function == decorated_function
     assert len(native_function.parameters) == 0

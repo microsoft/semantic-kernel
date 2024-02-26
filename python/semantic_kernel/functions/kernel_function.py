@@ -177,7 +177,7 @@ class KernelFunction(KernelBaseModel):
         return self.metadata.return_parameter
 
     @staticmethod
-    def from_method(method: Callable[..., Any], plugin_name: str) -> "KernelFunction":
+    def from_native_method(method: Callable[..., Any], plugin_name: str) -> "KernelFunction":
         """
         Create a KernelFunction from a method.
 
