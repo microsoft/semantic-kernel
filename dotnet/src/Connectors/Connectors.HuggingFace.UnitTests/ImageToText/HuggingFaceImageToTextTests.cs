@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.ImageToText;
 using Microsoft.SemanticKernel.ImageToText;
 using Xunit;
 

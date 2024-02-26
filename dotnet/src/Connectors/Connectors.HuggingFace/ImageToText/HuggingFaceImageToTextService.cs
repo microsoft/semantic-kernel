@@ -11,15 +11,18 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.ImageToText;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.ImageToText;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
-internal class HuggingFaceImageToTextService : IImageToTextService
+/// <summary>
+/// HuggingFace image to text service
+/// </summary>
+public sealed class HuggingFaceImageToTextService : IImageToTextService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
-    private HuggingFaceClient Client { get; }
+    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly HuggingFaceClient _client;
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributesInternal;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceImageToTextService"/> class.
@@ -38,7 +41,7 @@ internal class HuggingFaceImageToTextService : IImageToTextService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new HuggingFaceClient(
+        this._client = new HuggingFaceClient(
             modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
@@ -48,10 +51,10 @@ internal class HuggingFaceImageToTextService : IImageToTextService
             logger: loggerFactory?.CreateLogger(this.GetType())
         );
 
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     /// <inheritdoc />
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(ImageContent content, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateTextFromImageAsync(content, executionSettings, kernel, cancellationToken);
+        => this._client.GenerateTextFromImageAsync(content, executionSettings, kernel, cancellationToken);
 }
