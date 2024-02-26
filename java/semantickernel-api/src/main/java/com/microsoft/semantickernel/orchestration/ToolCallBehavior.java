@@ -47,7 +47,7 @@ public class ToolCallBehavior {
      * @return A new ToolCallBehavior instance with the enabled functions.
      */
     public static ToolCallBehavior enableKernelFunctions(boolean autoInvoke,
-                                                   List<KernelFunction<?>> functions) {
+        List<KernelFunction<?>> functions) {
         return new EnabledKernelFunctions(false, autoInvoke, functions);
     }
 
@@ -60,27 +60,18 @@ public class ToolCallBehavior {
      * @return A new ToolCallBehavior instance with the enabled functions.
      */
     public static ToolCallBehavior enableKernelFunctions(boolean autoInvoke,
-                                                   KernelFunction<?>... functions) {
+        KernelFunction<?>... functions) {
         return enableKernelFunctions(autoInvoke, Arrays.asList(functions));
     }
 
     private static final int DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS = 5;
     private static final String FUNCTION_NAME_SEPARATOR = "-";
-
-    private int maximumAutoInvokeAttempts;
-
-    /**
-     * Create a new instance of ToolCallBehavior with defaults.
-     */
-    private ToolCallBehavior(boolean autoInvoke) {
-        setMaximumAutoInvokeAttempts(autoInvoke ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0);
-    }
+    private final int maximumAutoInvokeAttempts;
 
     /**
-     * Set maximum auto-invoke attempts
-     * @param maximumAutoInvokeAttempts Maximum auto-invoke attempts
+     * Create a new instance of ToolCallBehavior
      */
-    protected void setMaximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
+    private ToolCallBehavior(int maximumAutoInvokeAttempts) {
         this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
     }
 
@@ -130,9 +121,8 @@ public class ToolCallBehavior {
          * @param requiredFunction The function that is required.
          */
         public RequiredKernelFunction(KernelFunction<?> requiredFunction) {
-            super(true);
+            super(1);
             this.requiredFunction = requiredFunction;
-            this.setMaximumAutoInvokeAttempts(1);
         }
 
         public KernelFunction<?> getRequiredFunction() {
@@ -157,12 +147,14 @@ public class ToolCallBehavior {
          * @param autoInvoke                Whether auto-invocation is enabled.
          * @param enabledFunctions          A set of functions that are enabled.
          */
-        public EnabledKernelFunctions(boolean allKernelFunctionsEnabled, boolean autoInvoke, @Nullable List<KernelFunction<?>> enabledFunctions) {
-            super(autoInvoke);
+        public EnabledKernelFunctions(boolean allKernelFunctionsEnabled, boolean autoInvoke,
+            @Nullable List<KernelFunction<?>> enabledFunctions) {
+            super(autoInvoke ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0);
             this.allKernelFunctionsEnabled = allKernelFunctionsEnabled;
             this.enabledFunctions = new HashSet<>();
             if (enabledFunctions != null) {
-                enabledFunctions.stream().filter(Objects::nonNull).forEach(f -> this.enabledFunctions.add(getKey(f.getPluginName(), f.getName())));
+                enabledFunctions.stream().filter(Objects::nonNull).forEach(
+                    f -> this.enabledFunctions.add(getKey(f.getPluginName(), f.getName())));
             }
         }
 
