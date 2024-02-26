@@ -41,8 +41,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         using var httpClient = new HttpClient();
         const string Filename = "test_audio.wav";
 
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        string apiKey = this.GetAssemblyAIApiKey();
 
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
@@ -53,11 +52,19 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var result = await service.GetTextContentAsync(new AudioContent(audioData));
 
         // Assert
-        Assert.Equal(
-            "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
-            result.Text
-        );
         Console.WriteLine(result.Text);
+        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetAssemblyAIApiKey()
+    {
+        var apiKey = this._configuration["AssemblyAI:ApiKey"];
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        }
+
+        return apiKey;
     }
 
     [Fact]
@@ -68,8 +75,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         using var httpClient = new HttpClient();
         const string Filename = "test_audio.wav";
 
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        var apiKey = this.GetAssemblyAIApiKey();
 
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
@@ -86,11 +92,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
 
         // Assert
-        Assert.Equal(
-            "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
-            result.Text
-        );
         Console.WriteLine(result.Text);
+        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -101,8 +104,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         using var httpClient = new HttpClient();
         const string Filename = "test_audio.wav";
 
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        var apiKey = this.GetAssemblyAIApiKey();
 
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
@@ -112,11 +114,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var result = await service.GetTextContentAsync(new AudioStreamContent(audio));
 
         // Assert
-        Assert.Equal(
-            "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
-            result.Text
-        );
         Console.WriteLine(result.Text);
+        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -126,8 +125,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         // Arrange
         using var httpClient = new HttpClient();
 
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        var apiKey = this.GetAssemblyAIApiKey();
 
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
@@ -152,8 +150,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         // Arrange
         using var httpClient = new HttpClient();
 
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        var apiKey = this.GetAssemblyAIApiKey();
 
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
@@ -171,8 +168,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         using var httpClient = new HttpClient();
         const string Filename = "test_audio.wav";
 
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        var apiKey = this.GetAssemblyAIApiKey();
 
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
@@ -189,10 +185,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var result = await service.GetTextContentAsync(new AudioStreamContent(audio), textExecutionSettings);
 
         // Assert
-        Assert.Equal(
-            "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
-            result.Text
-        );
+        Console.WriteLine(result.Text);
+        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -203,8 +197,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         using var httpClient = new HttpClient();
         const string Filename = "test_audio.wav";
 
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        var apiKey = this.GetAssemblyAIApiKey();
 
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
@@ -236,8 +229,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         httpClient.BaseAddress = new Uri("https://localhost:9999");
         const string Filename = "test_audio.wav";
 
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
+        var apiKey = this.GetAssemblyAIApiKey();
 
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 

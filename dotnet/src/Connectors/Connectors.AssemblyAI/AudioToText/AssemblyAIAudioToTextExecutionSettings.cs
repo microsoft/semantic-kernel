@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
@@ -13,6 +14,7 @@ public class AssemblyAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// The time between each poll for the transcript status, until the status is completed.
     /// </summary>
+    [JsonPropertyName("polling_interval")]
     public TimeSpan PollingInterval
     {
         get => this._pollingInterval;

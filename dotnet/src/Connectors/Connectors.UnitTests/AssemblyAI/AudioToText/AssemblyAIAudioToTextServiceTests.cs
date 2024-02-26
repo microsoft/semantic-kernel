@@ -3,7 +3,9 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Microsoft.SemanticKernel.Contents;
 using Xunit;
@@ -15,12 +17,41 @@ namespace SemanticKernel.Connectors.UnitTests.AssemblyAI.AudioToText;
 /// </summary>
 public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 {
-    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private const string TranscriptGuid = "0D0446CE-5C41-476F-9642-61F425FEA477";
+
+    private const string UploadFileResponseContent =
+        """
+        {
+            "upload_url": "http://localhost/path/to/file.mp3"
+        }
+        """;
+
+    private const string CreateTranscriptResponseContent =
+        $$"""
+          {
+            "id": "{{TranscriptGuid}}",
+            "text": null,
+            "status": "queued"
+          }
+          """;
+
+    private const string TranscriptCompletedResponseContent =
+        $$"""
+          {
+            "id": "{{TranscriptGuid}}",
+            "text": "Test audio-to-text response",
+            "status": "completed"
+          }
+          """;
+
+    private const string ExpectedTranscriptText = "Test audio-to-text response";
+
+    private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
     public AssemblyAIAudioToTextServiceTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
+        this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
 
@@ -39,19 +70,27 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     {
         // Arrange
         var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent("Test audio-to-text response")
-        };
+        using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        uploadFileResponse.Content = new StringContent(UploadFileResponseContent);
+        using var transcribeResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        transcribeResponse.Content = new StringContent(CreateTranscriptResponseContent);
+        using var transcribedResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        transcribedResponse.Content = new StringContent(TranscriptCompletedResponseContent);
+        this._messageHandlerStub.ResponsesToReturn =
+        [
+            uploadFileResponse,
+            transcribeResponse,
+            transcribedResponse
+        ];
 
         // Act
         var result = await service.GetTextContentAsync(
-            new AudioContent(new BinaryData("data"))
+            new AudioContent(new BinaryData("data", "audio/wav"))
         );
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test audio-to-text response", result.Text);
+        Assert.Equal(ExpectedTranscriptText, result.Text);
     }
 
     [Fact]
@@ -59,10 +98,11 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     {
         // Arrange
         var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent("Test audio-to-text response")
-        };
+        using var transcribeResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        transcribeResponse.Content = new StringContent(CreateTranscriptResponseContent);
+        using var transcribedResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        transcribedResponse.Content = new StringContent(TranscriptCompletedResponseContent);
+        this._messageHandlerStub.ResponsesToReturn = [transcribeResponse, transcribedResponse];
 
         // Act
         var result = await service.GetTextContentAsync(
@@ -71,7 +111,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test audio-to-text response", result.Text);
+        Assert.Equal(ExpectedTranscriptText, result.Text);
     }
 
     [Fact]
@@ -79,12 +119,20 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     {
         // Arrange
         var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent("Test audio-to-text response")
-        };
+        using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        uploadFileResponse.Content = new StringContent(UploadFileResponseContent);
+        using var transcribeResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        transcribeResponse.Content = new StringContent(CreateTranscriptResponseContent);
+        using var transcribedResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        transcribedResponse.Content = new StringContent(TranscriptCompletedResponseContent);
+        this._messageHandlerStub.ResponsesToReturn =
+        [
+            uploadFileResponse,
+            transcribeResponse,
+            transcribedResponse
+        ];
 
-        using var ms = new MemoryStream();
+        await using var ms = new MemoryStream();
 
         // Act
         var result = await service.GetTextContentAsync(
@@ -93,7 +141,58 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test audio-to-text response", result.Text);
+        Assert.Equal(ExpectedTranscriptText, result.Text);
+    }
+
+    [Fact]
+    public async Task HttpErrorShouldThrowWithErrorMessageAsync()
+    {
+        // Arrange
+        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
+        this._messageHandlerStub.ResponsesToReturn =
+        [
+            uploadFileResponse
+        ];
+
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpOperationException>(
+            async () => await service.GetTextContentAsync(
+                new AudioContent(new BinaryData("data", "audio/wav"))
+            )
+        );
+    }
+
+    [Fact]
+    public async Task JsonErrorShouldThrowWithErrorMessageAsync()
+    {
+        // Arrange
+        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized);
+        const string ErrorMessage = "Bad API key";
+        uploadFileResponse.Content = new StringContent(
+            $$"""
+              {
+                  "error": "{{ErrorMessage}}"
+              }
+              """,
+            Encoding.UTF8,
+            "application/json"
+        );
+        this._messageHandlerStub.ResponsesToReturn =
+        [
+            uploadFileResponse
+        ];
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(
+            async () => await service.GetTextContentAsync(
+                new AudioContent(new BinaryData("data", "audio/wav"))
+            )
+        );
+
+        // Assert
+        Assert.Equal(ErrorMessage, exception.Message);
     }
 
     public void Dispose()

@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Contents;
 public class AudioContent : KernelContent
 {
     /// <summary>
-    /// URL to the audio file.
+    /// URI of audio file.
     /// </summary>
     public Uri? Uri { get; set; }
 
@@ -54,7 +54,7 @@ public class AudioContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
-    /// <param name="uri">URL to the audio file.</param>
+    /// <param name="uri">URI of audio file.</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="innerContent">Inner content,</param>
     /// <param name="metadata">Additional metadata</param>

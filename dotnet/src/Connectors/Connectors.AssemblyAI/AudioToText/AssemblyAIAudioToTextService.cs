@@ -52,8 +52,15 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(content);
+
         string uploadUrl;
-        if (content.Uri is not null)
+        if (content.Data is not null)
+        {
+            using var stream = content.Data!.ToStream();
+            uploadUrl = await this.UploadFileAsync(stream, cancellationToken).ConfigureAwait(false);
+        }
+        else if (content.Uri is not null)
         {
             // to prevent unintentional file uploads by injection attack
             if (content.Uri.IsFile)
@@ -62,11 +69,6 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             }
 
             uploadUrl = content.Uri.ToString();
-        }
-        else if (content.Data is not null)
-        {
-            using var stream = content.Data!.ToStream();
-            uploadUrl = await this.UploadFileAsync(stream, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -102,6 +104,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(content);
+
         string uploadUrl = await this.UploadFileAsync(content.Stream, cancellationToken).ConfigureAwait(false);
 
         var transcriptId = await this.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
@@ -248,27 +252,27 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
                 // to read the response content in the case of failure, that has to be
                 // done before calling EnsureSuccessStatusCode.
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                if (response.Content.Headers.ContentType.MediaType == "application/json")
+                {
+                    var json = JsonDocument.Parse(responseContent);
+                    if (json.RootElement.TryGetProperty("error", out var errorProperty))
+                    {
+                        throw new HttpOperationException(
+                            statusCode: response.StatusCode,
+                            responseContent: responseContent,
+                            message: errorProperty.GetString()!,
+                            innerException: null
+                        );
+                    }
+                }
+
+                response.EnsureSuccessStatusCode();
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not HttpOperationException)
             {
                 throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
             }
-
-            if (response.Content.Headers.ContentType.MediaType == "application/json")
-            {
-                var json = JsonDocument.Parse(responseContent);
-                if (json.RootElement.TryGetProperty("error", out var errorProperty))
-                {
-                    throw new HttpOperationException(
-                        statusCode: response.StatusCode,
-                        responseContent: responseContent,
-                        message: errorProperty.GetString()!,
-                        innerException: null
-                    );
-                }
-            }
-
-            response.EnsureSuccessStatusCode();
         }
 
         return response;

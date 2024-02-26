@@ -26,9 +26,6 @@
     <None Include="icon.png" Link="icon.png" Pack="true" PackagePath="."/>
     <None Include="NUGET.md" Link="NUGET.md" Pack="true" PackagePath="."/>
   </ItemGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Connectors.UnitTests"/>
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
