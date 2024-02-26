@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -136,7 +136,7 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("args")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
+        public JsonNode? Arguments { get; set; }
 
         /// <inheritdoc />
         public override string ToString()
@@ -163,6 +163,6 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("response")]
         [JsonRequired]
-        public IReadOnlyDictionary<string, object?> ResponseArguments { get; set; } = null!;
+        public JsonNode ResponseArguments { get; set; } = null!;
     }
 }

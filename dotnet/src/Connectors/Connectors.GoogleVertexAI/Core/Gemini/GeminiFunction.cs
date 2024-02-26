@@ -163,7 +163,7 @@ public sealed class GeminiFunction
             Name = this.FullyQualifiedName,
             Description = this.Description ?? throw new InvalidOperationException(
                 $"Function description is required. Please provide a description for the function {this.FullyQualifiedName}."),
-            Parameters = resultParameters,
+            Parameters = JsonSerializer.SerializeToNode(resultParameters),
         };
     }
 

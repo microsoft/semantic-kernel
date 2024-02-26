@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -127,7 +128,7 @@ internal sealed class GeminiRequest
                     FunctionResponse = new GeminiPart.FunctionResponsePart
                     {
                         FunctionName = contentWithCalledTool.CalledTool.FullyQualifiedName,
-                        ResponseArguments = contentWithCalledTool.CalledTool.Arguments
+                        ResponseArguments = JsonSerializer.SerializeToNode(contentWithCalledTool.CalledTool.Arguments)
                     }
                 });
                 break;
@@ -138,7 +139,7 @@ internal sealed class GeminiRequest
                         FunctionCall = new GeminiPart.FunctionCallPart
                         {
                             FunctionName = toolCall.FullyQualifiedName,
-                            Arguments = toolCall.Arguments,
+                            Arguments = JsonSerializer.SerializeToNode(toolCall.Arguments),
                         }
                     }));
                 break;

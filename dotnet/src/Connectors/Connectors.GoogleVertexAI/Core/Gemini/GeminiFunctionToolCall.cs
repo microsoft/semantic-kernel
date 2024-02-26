@@ -34,9 +34,9 @@ public sealed class GeminiFunctionToolCall
         this._fullyQualifiedFunctionName = fullyQualifiedFunctionName;
         this.PluginName = pluginName;
         this.FunctionName = functionName;
-        if (functionToolCall.Arguments is { Count: > 0 })
+        if (functionToolCall.Arguments is not null)
         {
-            this.Arguments = functionToolCall.Arguments;
+            this.Arguments = functionToolCall.Arguments.Deserialize<Dictionary<string, object?>>();
         }
     }
 

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -208,7 +209,7 @@ public sealed class GeminiRequestTests
         // Arrange
         ChatHistory chatHistory = [];
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
-        var expectedArgs = new Dictionary<string, object?> { { kvp.Key, kvp.Value } };
+        var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
         GeminiFunctionToolCall toolCall = new(new GeminiPart.FunctionCallPart
             { FunctionName = "function-name", Arguments = expectedArgs });
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, "tool-message", "model-id", toolCall));
@@ -225,7 +226,7 @@ public sealed class GeminiRequestTests
         Assert.Single(request.Contents,
             c => string.Equals(c.Parts[0].FunctionResponse!.FunctionName, toolCall.FullyQualifiedName, StringComparison.Ordinal));
         var args = request.Contents[0].Parts[0].FunctionResponse!.ResponseArguments;
-        Assert.Equivalent(expectedArgs, args, strict: true);
+        Assert.Equal(expectedArgs.ToJsonString(), args.ToJsonString());
     }
 
     [Fact]
@@ -234,7 +235,7 @@ public sealed class GeminiRequestTests
         // Arrange
         ChatHistory chatHistory = [];
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
-        var expectedArgs = new Dictionary<string, object?> { { kvp.Key, kvp.Value } };
+        var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
         var toolCallPart = new GeminiPart.FunctionCallPart
             { FunctionName = "function-name", Arguments = expectedArgs };
         var toolCallPart2 = new GeminiPart.FunctionCallPart
@@ -257,10 +258,10 @@ public sealed class GeminiRequestTests
             c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart.FunctionName),
             c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart2.FunctionName));
         Assert.Collection(request.Contents,
-            c => Assert.Equivalent(expectedArgs,
-                c.Parts[0].FunctionCall!.Arguments, strict: true),
-            c => Assert.Equivalent(expectedArgs,
-                c.Parts[0].FunctionCall!.Arguments, strict: true));
+            c => Assert.Equal(expectedArgs.ToJsonString(),
+                c.Parts[0].FunctionCall!.Arguments!.ToJsonString()),
+            c => Assert.Equal(expectedArgs.ToJsonString(),
+                c.Parts[0].FunctionCall!.Arguments!.ToJsonString()));
     }
 
     [Fact]

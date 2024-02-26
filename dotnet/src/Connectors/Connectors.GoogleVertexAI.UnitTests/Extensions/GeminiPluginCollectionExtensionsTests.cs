@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
@@ -55,11 +55,11 @@ public sealed class GeminiPluginCollectionExtensionsTests
         // Arrange
         var function = KernelFunctionFactory.CreateFromMethod(() => "Result", "MyFunction");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
-        Dictionary<string, object?> expectedArgs = new()
+        var expectedArgs = new JsonObject
         {
-            { "location", "San Diego" },
-            { "max_price", 300 },
-            { "null_argument", null }
+            ["location"] = "San Diego",
+            ["max_price"] = 300,
+            ["null_argument"] = null
         };
         var plugins = new KernelPluginCollection([plugin]);
         var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart
@@ -76,7 +76,8 @@ public sealed class GeminiPluginCollectionExtensionsTests
         Assert.Same(function, actualFunction);
 
         Assert.NotNull(actualArguments);
-
-        Assert.Equivalent(expectedArgs, actualArguments, strict: true);
+        Assert.Equal(expectedArgs["location"]!.ToString(), actualArguments["location"]!.ToString());
+        Assert.Equal(expectedArgs["max_price"]!.ToString(), actualArguments["max_price"]!.ToString());
+        Assert.Equal(expectedArgs["null_argument"], actualArguments["null_argument"]);
     }
 }

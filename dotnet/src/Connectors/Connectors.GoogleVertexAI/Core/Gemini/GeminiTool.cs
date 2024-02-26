@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -53,6 +54,6 @@ internal sealed class GeminiTool
         /// </summary>
         [JsonPropertyName("schema")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IReadOnlyDictionary<string, object?>? Parameters { get; set; }
+        public JsonNode? Parameters { get; set; }
     }
 }
