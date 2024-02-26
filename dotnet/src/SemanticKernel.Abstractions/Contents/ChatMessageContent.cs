@@ -95,8 +95,12 @@ public class ChatMessageContent : KernelContent
     }
 
     /// <summary>
-    /// The source of the message that generated it.
+    /// Represents the source of the message.
     /// </summary>
+    /// <remarks>
+    /// The source is corresponds to the entity that generated this message.
+    /// The property is intended to be used by agents to associate themselves with the messages they generate.
+    /// </remarks>
     [Experimental("SKEXP0101")]
     [JsonIgnore]
     public object? Source { get; set; }
