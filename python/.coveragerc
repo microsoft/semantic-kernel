@@ -2,10 +2,10 @@
 source = semantic_kernel
 omit = 
     semantic_kernel/connectors/memory/*
-    semantic_kernel/connectors/openapi/*
-    semantic_kernel/connectors/search_engine/*
-    semantic_kernel/connectors/ai/google_palm/*
-    semantic_kernel/connectors/ai/hugging_face/*
+    semantic_kernel/utils/settings.py
+    semantic_kernel/utils/null_logger.py
+    semantic_kernel/utils/logging.py
+
 
 
 [report]

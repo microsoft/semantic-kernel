@@ -1,9 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import sys
+from typing import Union
 
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function
 
 
 class WaitPlugin(KernelBaseModel):
@@ -14,13 +21,16 @@ class WaitPlugin(KernelBaseModel):
         kernel.import_plugin(WaitPlugin(), plugin_name="wait")
 
     Examples:
-        {{wait.seconds 5}} => Wait for 5 seconds
+        {{wait.wait 5}} => Wait for 5 seconds
     """
 
     @kernel_function(description="Wait for a certain number of seconds.")
-    async def wait(self, seconds_text: str) -> None:
-        try:
-            seconds = max(float(seconds_text), 0)
-        except ValueError:
-            raise ValueError("seconds text must be a number")
-        await asyncio.sleep(seconds)
+    async def wait(
+        self, input: Annotated[Union[float, str], "The number of seconds to wait, can be str or float."]
+    ) -> None:
+        if isinstance(input, str):
+            try:
+                input = float(input)
+            except ValueError as exc:
+                raise ValueError("seconds text must be a number") from exc
+        await asyncio.sleep(abs(input))
