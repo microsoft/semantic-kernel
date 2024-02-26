@@ -17,7 +17,7 @@ namespace Examples;
 public sealed class Example85_ImageToText : BaseTest
 {
     private const string ImageToTextModel = "Salesforce/blip-image-captioning-base";
-    private const string ImageFilePath = "cat.jpg";
+    private const string ImageFilePath = "test_image.jpg";
 
     [Fact]
     public async Task ImageToTextAsync()
