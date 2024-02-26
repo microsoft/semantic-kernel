@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.ImageToText;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.ImageToText;
+
 internal class HuggingFaceImageToTextService : IImageToTextService
 {
     private Dictionary<string, object?> AttributesInternal { get; } = new();
@@ -21,9 +22,9 @@ internal class HuggingFaceImageToTextService : IImageToTextService
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceImageToTextService"/> class.
     /// </summary>
-    /// <param name="model">The HuggingFace model for the text generation service.</param>
+    /// <param name="model">The HuggingFace model for image-to-text conversion.</param>
     /// <param name="endpoint">The endpoint uri including the port where HuggingFace server is hosted</param>
     /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>

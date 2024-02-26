@@ -14,13 +14,14 @@ using Xunit;
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="HuggingFaceTextGenerationService"/> class.
+/// Unit tests for <see cref="HuggingFaceImageToTextService"/> class.
 /// </summary>
 public sealed class HuggingFaceImageToTextTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly ImageContent _imageContentInput;
+
     public HuggingFaceImageToTextTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();

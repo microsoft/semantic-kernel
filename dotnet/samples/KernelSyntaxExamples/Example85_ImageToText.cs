@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// Represents a class that demonstrates audio processing functionality.
+/// Represents a class that demonstrates image-to-text functionality.
 /// </summary>
 public sealed class Example85_ImageToText : BaseTest
 {
@@ -22,7 +22,7 @@ public sealed class Example85_ImageToText : BaseTest
     [Fact]
     public async Task ImageToTextAsync()
     {
-        // Create a kernel with OpenAI text to audio service
+        // Create a kernel with HuggingFace image-to-text service
         var kernel = Kernel.CreateBuilder()
             .AddHuggingFaceImageToText(
                 model: ImageToTextModel,
@@ -37,14 +37,14 @@ public sealed class Example85_ImageToText : BaseTest
             MaxTokens = 500
         };
 
-        // Read audio content from a file
+        // Read image content from a file
         ReadOnlyMemory<byte> imageData = await EmbeddedResource.ReadAllAsync(ImageFilePath);
         ImageContent imageContent = new(new BinaryData(imageData, "image/jpeg"));
 
-        // Convert audio to text
+        // Convert image to text
         var textContent = await imageToText.GetTextContentAsync(imageContent, executionSettings);
 
-        // Output the transcribed text
+        // Output image description
         this.WriteLine(textContent.Text);
     }
 
