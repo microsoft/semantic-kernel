@@ -37,7 +37,7 @@ public class ChatMessageContentTests
         {
             ["metadata-key-5"] = "metadata-value-5"
         }));
-#pragma warning disable SKEXP0005
+#pragma warning restore SKEXP0005
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
         {
