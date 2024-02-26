@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -24,6 +25,7 @@ public class AudioContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="innerContent">Inner content,</param>
     /// <param name="metadata">Additional metadata</param>
+    [JsonConstructor]
     public AudioContent(
         BinaryData data,
         string? modelId = null,

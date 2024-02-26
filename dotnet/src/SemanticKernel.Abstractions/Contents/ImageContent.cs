@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -19,7 +19,7 @@ public sealed class ImageContent : KernelContent
     /// <summary>
     /// The image binary data.
     /// </summary>
-    public BinaryData? Data { get; }
+    public BinaryData? Data { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
@@ -27,13 +27,12 @@ public sealed class ImageContent : KernelContent
     /// <param name="uri">The URI of image.</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
-    /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Additional metadata</param>
+    [JsonConstructor]
     public ImageContent(
         Uri uri,
         string? modelId = null,
         object? innerContent = null,
-        Encoding? encoding = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
@@ -46,13 +45,11 @@ public sealed class ImageContent : KernelContent
     /// <param name="data">The Data used as DataUri for the image.</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
-    /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Additional metadata</param>
     public ImageContent(
         BinaryData data,
         string? modelId = null,
         object? innerContent = null,
-        Encoding? encoding = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
