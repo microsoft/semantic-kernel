@@ -96,31 +96,31 @@ def test_kernel_function_docstring_as_description():
 def test_kernel_function_param_annotated():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_annotated")
-    assert my_func.__kernel_function_context_parameters__[0]["description"] == "input description"
-    assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
-    assert my_func.__kernel_function_context_parameters__[0]["required"]
-    assert my_func.__kernel_function_context_parameters__[0]["default_value"] is None
-    assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
+    assert my_func.__kernel_function_parameters__[0]["description"] == "input description"
+    assert my_func.__kernel_function_parameters__[0]["type"] == "str"
+    assert my_func.__kernel_function_parameters__[0]["required"]
+    assert my_func.__kernel_function_parameters__[0]["default_value"] is None
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
 def test_kernel_function_param_optional():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_optional")
-    assert my_func.__kernel_function_context_parameters__[0]["description"] == ""
-    assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
-    assert not my_func.__kernel_function_context_parameters__[0]["required"]
-    assert my_func.__kernel_function_context_parameters__[0]["default_value"] == "test"
-    assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
+    assert my_func.__kernel_function_parameters__[0]["description"] == ""
+    assert my_func.__kernel_function_parameters__[0]["type"] == "str"
+    assert not my_func.__kernel_function_parameters__[0]["required"]
+    assert my_func.__kernel_function_parameters__[0]["default_value"] == "test"
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
 def test_kernel_function_param_annotated_optional():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_annotated_optional")
-    assert my_func.__kernel_function_context_parameters__[0]["description"] == "input description"
-    assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
-    assert not my_func.__kernel_function_context_parameters__[0]["required"]
-    assert my_func.__kernel_function_context_parameters__[0]["default_value"] == "test"
-    assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
+    assert my_func.__kernel_function_parameters__[0]["description"] == "input description"
+    assert my_func.__kernel_function_parameters__[0]["type"] == "str"
+    assert not my_func.__kernel_function_parameters__[0]["required"]
+    assert my_func.__kernel_function_parameters__[0]["default_value"] == "test"
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
 def test_kernel_function_return_type():
