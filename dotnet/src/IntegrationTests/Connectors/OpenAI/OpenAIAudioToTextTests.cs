@@ -46,10 +46,10 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(audioData), new OpenAIAudioToTextExecutionSettings(Filename));
+        var result = await service.GetTextContentsAsync(new AudioContent(audioData), new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
-        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -70,10 +70,10 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(audioData), new OpenAIAudioToTextExecutionSettings(Filename));
+        var result = await service.GetTextContentsAsync(new AudioContent(audioData), new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
-        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
     public void Dispose()

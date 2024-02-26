@@ -39,11 +39,11 @@ public sealed class OpenAITextToAudioTests : IDisposable
         var service = new OpenAITextToAudioService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
         // Act
-        var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
+        var result = await service.GetAudioContentsAsync("The sun rises in the east and sets in the west.");
 
         // Assert
-        Assert.NotNull(result?.Data);
-        Assert.False(result.Data.IsEmpty);
+        Assert.NotNull(result[0].Data);
+        Assert.False(result[0].Data!.IsEmpty);
     }
 
     [Fact]
@@ -59,11 +59,11 @@ public sealed class OpenAITextToAudioTests : IDisposable
             azureOpenAIConfiguration.ApiKey);
 
         // Act
-        var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
+        var result = await service.GetAudioContentsAsync("The sun rises in the east and sets in the west.");
 
         // Assert
-        Assert.NotNull(result?.Data);
-        Assert.False(result.Data.IsEmpty);
+        Assert.NotNull(result[0].Data);
+        Assert.False(result[0].Data!.IsEmpty);
     }
 
     public void Dispose()
