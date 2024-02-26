@@ -16,7 +16,7 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_config impor
     SequentialPlannerConfig,
 )
 from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerFunctionViewExtension,
+    SequentialPlannerFunctionExtension,
     SequentialPlannerKernelExtension,
 )
 
@@ -88,7 +88,7 @@ async def test_can_call_get_available_functions_with_functions():
 
     memory_query_result = MemoryQueryResult(
         is_reference=False,
-        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(kernel_function_metadata),
+        id=SequentialPlannerFunctionExtension.to_fully_qualified_name(kernel_function_metadata),
         text="text",
         description="description",
         external_source_name="sourceName",
@@ -128,7 +128,7 @@ async def test_can_call_get_available_functions_with_functions():
 
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_functions_and_relevancy():
-    # Arrange FunctionView
+    # Arrange KernelFunctionMetadata
     functions_list = []
     kernel_function_metadata = KernelFunctionMetadata(
         name="functionName",
@@ -152,7 +152,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy():
     # Arrange Mock Memory and Result
     memory_query_result = MemoryQueryResult(
         is_reference=False,
-        id=SequentialPlannerFunctionViewExtension.to_fully_qualified_name(kernel_function_metadata),
+        id=SequentialPlannerFunctionExtension.to_fully_qualified_name(kernel_function_metadata),
         text="text",
         description="description",
         external_source_name="sourceName",

@@ -34,12 +34,12 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
 
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
-    func_view = function.metadata
+    func_metadata = function.metadata
     return {
         "type": "function",
         "function": {
-            "name": f"{func_view.plugin_name}-{func_view.name}",
-            "description": func_view.description,
+            "name": f"{func_metadata.plugin_name}-{func_metadata.name}",
+            "description": func_metadata.description,
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -48,10 +48,10 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
                         "type": parse_param(param.type_),
                         **({"enum": param.enum} if hasattr(param, "enum") else {}),  # Added support for enum
                     }
-                    for param in func_view.parameters
+                    for param in func_metadata.parameters
                     if param.expose
                 },
-                "required": [p.name for p in func_view.parameters if p.required and p.expose],
+                "required": [p.name for p in func_metadata.parameters if p.required and p.expose],
             },
         },
     }
@@ -70,18 +70,18 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
     """Create the object used for function_calling.
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
-    func_view = function.metadata
+    func_metadata = function.metadata
     return {
-        "name": f"{func_view.plugin_name}-{func_view.name}",
-        "description": func_view.description,
+        "name": f"{func_metadata.plugin_name}-{func_metadata.name}",
+        "description": func_metadata.description,
         "parameters": {
             "type": "object",
             "properties": {
                 param.name: {"description": param.description, "type": param.type_}
-                for param in func_view.parameters
+                for param in func_metadata.parameters
                 if param.expose
             },
-            "required": [p.name for p in func_view.parameters if p.required],
+            "required": [p.name for p in func_metadata.parameters if p.required],
         },
     }
 
