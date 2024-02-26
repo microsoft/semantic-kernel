@@ -302,4 +302,4 @@ def register_openapi_plugin(
     for operation_id, operation in operations.items():
         logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation_id}")
         plugin[operation_id] = create_run_operation_function(openapi_runner, operation)
-    return kernel.import_plugin(plugin, plugin_name)
+    return kernel.import_plugin_from_object(plugin, plugin_name)

@@ -116,8 +116,8 @@ async def test_can_create_stepwise_plan(
     kernel = initialize_kernel(get_aoai_config, use_embeddings, use_chat_model)
     bing_connector = BingConnector(api_key=get_bing_config)
     web_search_engine_plugin = TempWebSearchEnginePlugin(bing_connector)
-    kernel.import_plugin(web_search_engine_plugin, "WebSearch")
-    kernel.import_plugin(TimePlugin(), "time")
+    kernel.import_plugin_from_object(web_search_engine_plugin, "WebSearch")
+    kernel.import_plugin_from_object(TimePlugin(), "time")
 
     planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000))
 
@@ -152,9 +152,9 @@ async def test_can_execute_stepwise_plan(
     kernel = initialize_kernel(get_aoai_config, use_embeddings, use_chat_model)
     bing_connector = BingConnector(api_key=get_bing_config)
     web_search_engine_plugin = TempWebSearchEnginePlugin(bing_connector)
-    kernel.import_plugin(web_search_engine_plugin, "WebSearch")
-    kernel.import_plugin(TimePlugin(), "time")
-    kernel.import_plugin(MathPlugin(), "math")
+    kernel.import_plugin_from_object(web_search_engine_plugin, "WebSearch")
+    kernel.import_plugin_from_object(TimePlugin(), "time")
+    kernel.import_plugin_from_object(MathPlugin(), "math")
 
     planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000))
 

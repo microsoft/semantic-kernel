@@ -179,7 +179,7 @@ class KernelFunction(KernelBaseModel):
     @staticmethod
     def from_native_method(method: Callable[..., Any], plugin_name: str) -> "KernelFunction":
         """
-        Create a KernelFunction from a native method.
+        Create a KernelFunction from a method.
 
         Args:
             method (Callable[..., Any]): The method to create the function from

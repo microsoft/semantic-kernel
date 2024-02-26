@@ -109,7 +109,7 @@ async def main():
 
     bing_connector = BingConnector(api_key=bing_api_key)
     bing = WebSearchEnginePlugin(bing_connector)
-    kernel.import_plugin(bing, "bing")
+    kernel.import_plugin_from_object(bing, "bing")
 
     await example1(kernel, "bing")
     await example2(kernel, service_id)

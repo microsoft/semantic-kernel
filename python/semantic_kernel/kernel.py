@@ -33,10 +33,6 @@ from semantic_kernel.functions.kernel_plugin_collection import (
 )
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import (
@@ -67,7 +63,6 @@ class Kernel(KernelBaseModel):
     Attributes:
         plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
         services (Dict[str, AIServiceClientBase]): The services to be used by the kernel
-        memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
         retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
         function_invoking_handlers (Dict): The function invoking handlers
         function_invoked_handlers (Dict): The function invoked handlers
@@ -78,7 +73,6 @@ class Kernel(KernelBaseModel):
     plugins: KernelPluginCollection = Field(default_factory=KernelPluginCollection)
     services: Dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
-    memory: Optional[SemanticTextMemoryBase] = Field(default_factory=NullMemory)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
     function_invoking_handlers: Dict[
         int, Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
@@ -94,7 +88,6 @@ class Kernel(KernelBaseModel):
             Union[AIServiceClientBase, List[AIServiceClientBase], Dict[str, AIServiceClientBase]]
         ] = None,
         ai_service_selector: Optional[AIServiceSelector] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -108,7 +101,6 @@ class Kernel(KernelBaseModel):
                 will be rewritten to a dict with service_id as key
             ai_service_selector (Optional[AIServiceSelector]): The AI service selector to be used by the kernel,
                 default is based on order of execution settings.
-            memory (Optional[SemanticTextMemoryBase]): The memory to be used by the kernel
             **kwargs (Any): Additional fields to be passed to the Kernel model,
                 these are limited to retry_mechanism and function_invoking_handlers
                 and function_invoked_handlers, the best way to add function_invoking_handlers
@@ -119,8 +111,6 @@ class Kernel(KernelBaseModel):
             "services": services,
             **kwargs,
         }
-        if memory:
-            args["memory"] = memory
         if ai_service_selector:
             args["ai_service_selector"] = ai_service_selector
         if plugins:
@@ -364,6 +354,38 @@ class Kernel(KernelBaseModel):
 
         return results if number_of_steps > 1 else results[0]
 
+    async def invoke_prompt(
+        self,
+        prompt: str,
+        arguments: Optional[KernelArguments] = None,
+        template_format: Optional[str] = None,
+        **kwargs: Dict[str, Any],
+    ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
+        """
+        Invoke a function from the provided prompt
+
+        Args:
+            prompt (str): The prompt to use
+            arguments (Optional[KernelArguments]): The arguments to pass to the function(s), optional
+            template_format (Optional[str]): The format of the prompt template
+            kwargs (Dict[str, Any]): arguments that can be used instead of supplying KernelArguments
+
+        Returns:
+            Optional[Union[FunctionResult, List[FunctionResult]]]: The result of the function(s)
+        """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
+        if not prompt:
+            raise AIException(
+                error_code=AIException.ErrorCodes.InvalidPrompt,
+                message="The prompt is either null or empty.",
+            )
+        function = KernelFunction.from_prompt(
+            prompt=prompt,
+            template_format=template_format,
+        )
+        return await self.invoke(function, arguments)
+
     # endregion
     # region Function Invoking/Invoked Events
 
@@ -383,6 +405,15 @@ class Kernel(KernelBaseModel):
         )
         if self.function_invoked_handlers:
             for handler in self.function_invoked_handlers.values():
+                handler(self, args)
+        return args
+
+    def on_function_invoking(
+        self, kernel_function_metadata: KernelFunctionMetadata, arguments: KernelArguments
+    ) -> FunctionInvokingEventArgs:
+        args = FunctionInvokingEventArgs(kernel_function_metadata=kernel_function_metadata, arguments=arguments)
+        if self.function_invoking_handlers:
+            for handler in self.function_invoking_handlers.values():
                 handler(self, args)
         return args
 
@@ -428,9 +459,9 @@ class Kernel(KernelBaseModel):
         else:
             self.plugins.add(plugin)
 
-    def import_plugin(self, plugin_instance: Union[Any, Dict[str, Any]], plugin_name: str) -> KernelPlugin:
+    def import_plugin_from_object(self, plugin_instance: Union[Any, Dict[str, Any]], plugin_name: str) -> KernelPlugin:
         """
-        Import a plugin into the kernel.
+        Creates a plugin that wraps the specified target object and imports it into the kernel's plugin collection
 
         Args:
             plugin_instance (Any | Dict[str, Any]): The plugin instance. This can be a custom class or a
@@ -501,7 +532,7 @@ class Kernel(KernelBaseModel):
         )
         if class_name:
             plugin_obj = getattr(module, class_name)()
-            return self.import_plugin(plugin_obj, plugin_name)
+            return self.import_plugin_from_object(plugin_obj, plugin_name)
 
         return {}
 
@@ -729,46 +760,5 @@ class Kernel(KernelBaseModel):
     def remove_all_services(self) -> None:
         """Removes the services from the Kernel, does not delete them."""
         self.services.clear()
-
-    # endregion
-    # region Memory
-
-    def use_memory(
-        self,
-        storage: MemoryStoreBase,
-        embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
-    ) -> None:
-        if embeddings_generator is None:
-            service_id = self.get_text_embedding_generation_service_id()
-            if not service_id:
-                raise ValueError("The embedding service id cannot be `None` or empty")
-
-            embeddings_service = self.get_ai_service(EmbeddingGeneratorBase, service_id)
-            if not embeddings_service:
-                raise ValueError(f"AI configuration is missing for: {service_id}")
-
-            embeddings_generator = embeddings_service(self)
-
-        if storage is None:
-            raise ValueError("The storage instance provided cannot be `None`")
-        if embeddings_generator is None:
-            raise ValueError("The embedding generator cannot be `None`")
-
-        self.register_memory(SemanticTextMemory(storage, embeddings_generator))
-
-    def register_memory(self, memory: SemanticTextMemoryBase) -> None:
-        self.memory = memory
-
-    def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
-        self.use_memory(memory_store)
-
-    def on_function_invoking(
-        self, kernel_function_metadata: KernelFunctionMetadata, arguments: KernelArguments
-    ) -> FunctionInvokingEventArgs:
-        args = FunctionInvokingEventArgs(kernel_function_metadata=kernel_function_metadata, arguments=arguments)
-        if self.function_invoking_handlers:
-            for handler in self.function_invoking_handlers.values():
-                handler(self, args)
-        return args
 
     # endregion

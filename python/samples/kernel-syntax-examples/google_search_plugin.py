@@ -36,7 +36,7 @@ async def main():
     )
 
     # Import the WebSearchEnginePlugin and pass the Google Connector to it.
-    web_plugin = kernel.import_plugin(WebSearchEnginePlugin(connector), "WebSearch")
+    web_plugin = kernel.import_plugin_from_object(WebSearchEnginePlugin(connector), "WebSearch")
 
     # The search query
     prompt = "Who is Leonardo DiCaprio's current girlfriend?"

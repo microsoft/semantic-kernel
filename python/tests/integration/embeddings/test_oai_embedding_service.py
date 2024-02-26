@@ -5,6 +5,7 @@ from openai import AsyncOpenAI
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 
 
 @pytest.mark.asyncio
@@ -18,10 +19,11 @@ async def test_oai_embedding_service(create_kernel, get_oai_config):
     )
 
     kernel.add_service(embedding_gen)
-    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
 
-    await kernel.memory.save_information("test", id="info1", text="this is a test")
-    await kernel.memory.save_reference(
+    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
+
+    await memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",
@@ -45,10 +47,10 @@ async def test_oai_embedding_service_with_provided_client(create_kernel, get_oai
     )
 
     kernel.add_service(embedding_gen)
-    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
-    await kernel.memory.save_information("test", id="info1", text="this is a test")
-    await kernel.memory.save_reference(
+    await memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",

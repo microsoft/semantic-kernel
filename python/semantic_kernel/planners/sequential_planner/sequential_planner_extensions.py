@@ -8,7 +8,6 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
-from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
@@ -85,30 +84,15 @@ class SequentialPlannerKernelExtension:
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
 
-        if (
-            semantic_query is None
-            or not kernel.memory
-            or isinstance(kernel.memory, NullMemory)
-            or config.relevancy_threshold is None
-        ):
+        if semantic_query is None or config.relevancy_threshold is None:
             # If no semantic query is provided, return all available functions.
             # If a Memory provider has not been registered, return all available functions.
             return available_functions
 
-        # Remember functions in memory so that they can be searched.
-        await SequentialPlannerKernelExtension.remember_functions(kernel, arguments, available_functions)
-
-        # Search for functions that match the semantic query.
-        memories = await kernel.memory.search(
-            SequentialPlannerKernelExtension.PLANNER_MEMORY_COLLECTION_NAME,
-            semantic_query,
-            config.max_relevant_functions,
-            config.relevancy_threshold,
-        )
-
         # Add functions that were found in the search results.
         relevant_functions = await SequentialPlannerKernelExtension.get_relevant_functions(
-            kernel, available_functions, memories
+            kernel,
+            available_functions,
         )
 
         # Add any missing functions that were included but not found in the search results.
@@ -124,10 +108,12 @@ class SequentialPlannerKernelExtension:
     async def get_relevant_functions(
         kernel: Kernel,
         available_functions: List[KernelFunctionMetadata],
-        memories: List[MemoryQueryResult],
+        memories: Optional[List[MemoryQueryResult]] = None,
     ) -> List[KernelFunctionMetadata]:
         relevant_functions = []
         # TODO: cancellation
+        if memories is None:
+            return relevant_functions
         for memory_entry in memories:
             function = next(
                 (
@@ -147,44 +133,3 @@ class SequentialPlannerKernelExtension:
                 relevant_functions.append(function)
 
         return relevant_functions
-
-    @staticmethod
-    async def remember_functions(
-        kernel: Kernel, arguments: KernelArguments, available_functions: List[KernelFunctionMetadata]
-    ):
-        # Check if the functions have already been saved to memory.
-        if arguments.get(SequentialPlannerKernelExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED, False):
-            return
-
-        if not kernel.memory or isinstance(kernel.memory, NullMemory):
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionNotAvailable,
-                "No memory registered in the kernel. Cannot remember functions.",
-            )
-
-        for function in available_functions:
-            function_name = SequentialPlannerFunctionExtension.to_fully_qualified_name(function)
-            key = function_name
-            description = function.description or function_name
-            text_to_embed = SequentialPlannerFunctionExtension.to_embedding_string(function)
-
-            # It'd be nice if there were a saveIfNotExists method on the memory interface
-            memory_entry = await kernel.memory.get(
-                collection=SequentialPlannerKernelExtension.PLANNER_MEMORY_COLLECTION_NAME,
-                key=key,
-                with_embedding=False,
-            )
-            if memory_entry is None:
-                # TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
-                # As folks may want to tune their functions to be more or less relevant.
-                # Memory now supports these such strategies.
-                await kernel.memory.save_information(
-                    collection=SequentialPlannerKernelExtension.PLANNER_MEMORY_COLLECTION_NAME,
-                    text=text_to_embed,
-                    id=key,
-                    description=description,
-                    additional_metadata="",
-                )
-
-        # Set a flag to indicate that the functions have been saved to memory.
-        arguments[SequentialPlannerKernelExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED] = True

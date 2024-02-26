@@ -18,9 +18,9 @@ async def main():
         OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
     )
 
-    kernel.import_plugin(MathPlugin(), "math")
-    kernel.import_plugin(TimePlugin(), "time")
-    kernel.import_plugin(TextPlugin(), "text")
+    kernel.import_plugin_from_object(MathPlugin(), "math")
+    kernel.import_plugin_from_object(TimePlugin(), "time")
+    kernel.import_plugin_from_object(TextPlugin(), "text")
 
     # create an instance of action planner.
     planner = ActionPlanner(kernel, service_id)
