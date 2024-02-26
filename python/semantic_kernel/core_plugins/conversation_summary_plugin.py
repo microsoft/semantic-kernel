@@ -46,7 +46,7 @@ class ConversationSummaryPlugin:
         """
         self.return_key = return_key
         self._summarizeConversationFunction = kernel.create_function_from_prompt(
-            ConversationSummaryPlugin._summarize_conversation_prompt_template,
+            prompt=ConversationSummaryPlugin._summarize_conversation_prompt_template,
             plugin_name=ConversationSummaryPlugin.__name__,
             function_name="SummarizeConversation",
             prompt_template_config=prompt_template_config,

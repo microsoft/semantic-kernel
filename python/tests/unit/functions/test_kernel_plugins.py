@@ -35,17 +35,20 @@ def test_default_kernel_plugin_construction_with_native_functions():
     mock_function.__kernel_function_description__ = "Mock description"
     mock_function.__kernel_function_input_description__ = "Mock input description"
     mock_function.__kernel_function_input_default_value__ = "default_input_value"
-    mock_function.__kernel_function_context_parameters__ = [
+    mock_function.__kernel_function_parameters__ = [
         {
             "name": "input",
             "description": "Param 1 description",
             "default_value": "default_param1_value",
         }
     ]
+    mock_function.__kernel_function_return_description__ = ""
+    mock_function.__kernel_function_return_required__ = True
+    mock_function.__kernel_function_return_type__ = "None"
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
 
     plugin = KernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
@@ -68,17 +71,20 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
     mock_function.__kernel_function_description__ = "Mock description"
     mock_function.__kernel_function_input_description__ = "Mock input description"
     mock_function.__kernel_function_input_default_value__ = "default_input_value"
-    mock_function.__kernel_function_context_parameters__ = [
+    mock_function.__kernel_function_parameters__ = [
         {
             "name": "param1",
             "description": "Param 1 description",
             "default_value": "default_param1_value",
         }
     ]
+    mock_function.__kernel_function_return_description__ = ""
+    mock_function.__kernel_function_return_required__ = True
+    mock_function.__kernel_function_return_type__ = "None"
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
 
     plugin = KernelPlugin(
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
@@ -162,17 +168,20 @@ def test_default_kernel_plugin_construction_with_both_function_types():
     mock_function.__kernel_function_description__ = "Mock description"
     mock_function.__kernel_function_input_description__ = "Mock input description"
     mock_function.__kernel_function_input_default_value__ = "default_input_value"
-    mock_function.__kernel_function_context_parameters__ = [
+    mock_function.__kernel_function_parameters__ = [
         {
             "name": "param1",
             "description": "Param 1 description",
             "default_value": "default_param1_value",
         }
     ]
+    mock_function.__kernel_function_return_description__ = ""
+    mock_function.__kernel_function_return_required__ = True
+    mock_function.__kernel_function_return_type__ = "None"
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
 
     # Add both types to the default kernel plugin
     expected_plugin_description = "A unit test plugin"
@@ -225,16 +234,19 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     mock_function.__kernel_function_description__ = "Mock description"
     mock_function.__kernel_function_input_description__ = "Mock input description"
     mock_function.__kernel_function_input_default_value__ = "default_input_value"
-    mock_function.__kernel_function_context_parameters__ = [
+    mock_function.__kernel_function_parameters__ = [
         {
             "name": "param1",
             "description": "Param 1 description",
             "default_value": "default_param1_value",
         }
     ]
+    mock_function.__kernel_function_return_description__ = ""
+    mock_function.__kernel_function_return_required__ = True
+    mock_function.__kernel_function_return_type__ = "None"
 
     mock_method = mock_function
-    native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
+    native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
 
     with pytest.raises(ValueError):
         KernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])

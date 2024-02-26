@@ -29,9 +29,10 @@ class AIServiceSelector:
         If the same service_id is in both, the one in the arguments will be used.
         """
         execution_settings_dict = arguments.execution_settings or {}
-        for id, settings in function.prompt_execution_settings.items():
-            if id not in execution_settings_dict:
-                execution_settings_dict[id] = settings
+        if func_exec_settings := getattr(function, "prompt_execution_settings", None):
+            for id, settings in func_exec_settings.items():
+                if id not in execution_settings_dict:
+                    execution_settings_dict[id] = settings
         for service_id, settings in execution_settings_dict.items():
             service = kernel.get_service(service_id, type=(TextCompletionClientBase, ChatCompletionClientBase))
             if service:

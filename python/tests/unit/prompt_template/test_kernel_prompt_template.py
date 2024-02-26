@@ -151,7 +151,7 @@ async def test_it_renders_code():
     def my_function(arguments: KernelArguments) -> str:
         return f"F({arguments.get('_a')}-{arguments.get('arg1')})"
 
-    func = KernelFunction.from_native_method(my_function, "test")
+    func = KernelFunction.from_method(my_function, "test")
     assert func is not None
     kernel.plugins.add_plugin_from_functions("test", [func])
 
@@ -177,7 +177,7 @@ async def test_it_renders_code_using_input():
     def my_function(arguments: KernelArguments) -> str:
         return f"F({arguments.get('input')})"
 
-    func = KernelFunction.from_native_method(my_function, "test")
+    func = KernelFunction.from_method(my_function, "test")
     assert func is not None
     kernel.plugins.add_plugin_from_functions("test", [func])
 
@@ -198,7 +198,7 @@ async def test_it_renders_code_using_variables():
     def my_function(myVar: str) -> str:
         return f"F({myVar})"
 
-    func = KernelFunction.from_native_method(my_function, "test")
+    func = KernelFunction.from_method(my_function, "test")
     assert func is not None
     kernel.plugins.add_plugin_from_functions("test", [func])
 
@@ -219,7 +219,7 @@ async def test_it_renders_code_using_variables_async():
     async def my_function(myVar: str) -> str:
         return myVar
 
-    func = KernelFunction.from_native_method(my_function, "test")
+    func = KernelFunction.from_method(my_function, "test")
     assert func is not None
     kernel.plugins.add_plugin_from_functions("test", [func])
 

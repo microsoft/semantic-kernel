@@ -10,9 +10,6 @@ from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -188,12 +185,7 @@ class Plan:
         self,
         settings: PromptExecutionSettings,
     ) -> None:
-        if self._function is not None:
-            self._function.set_ai_configuration(settings)
-
-    def set_ai_service(self, service: Callable[[], TextCompletionClientBase]) -> None:
-        if self._function is not None:
-            self._function.set_ai_service(service)
+        self._prompt_execution_settings = settings
 
     @property
     def metadata(self) -> KernelFunctionMetadata:
@@ -249,7 +241,8 @@ class Plan:
         self._plugin_name = function.plugin_name
         self._description = function.description
         self._is_prompt = function.is_prompt
-        self._prompt_execution_settings = function.prompt_execution_settings
+        if hasattr(function, "prompt_execution_settings"):
+            self._prompt_execution_settings = function.prompt_execution_settings
 
     async def run_next_step(
         self,
