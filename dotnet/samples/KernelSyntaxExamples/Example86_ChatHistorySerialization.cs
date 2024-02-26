@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example85_ChatHistorySerialization : BaseTest
+public class Example86_ChatHistorySerialization : BaseTest
 {
     /// <summary>
     /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
@@ -88,7 +88,7 @@ public class Example85_ChatHistorySerialization : BaseTest
         WriteLine($"Custom content: {(deserializedMessage.Items![1]! as CustomContent)!.Content}");
     }
 
-    public Example85_ChatHistorySerialization(ITestOutputHelper output) : base(output)
+    public Example86_ChatHistorySerialization(ITestOutputHelper output) : base(output)
     {
     }
 
