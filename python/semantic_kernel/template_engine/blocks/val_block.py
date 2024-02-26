@@ -1,66 +1,73 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Optional, Tuple
+from re import S, compile
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
 
-import pydantic as pdt
+from pydantic import model_validator
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import ValBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.blocks.symbols import Symbols
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+VAL_BLOCK_REGEX = r"^(?P<quote>[\"'])(?P<value>.*)(?P=quote)$"
+
+VAL_BLOCK_MATCHER = compile(VAL_BLOCK_REGEX, flags=S)
+
 
 class ValBlock(Block):
-    _first: str = pdt.PrivateAttr()
-    _last: str = pdt.PrivateAttr()
-    _value: str = pdt.PrivateAttr()
+    """Create a value block.
 
-    def __init__(self, content: Optional[str] = None, log: Optional[Any] = None):
-        super().__init__(content=content and content.strip())
+    A value block is used to represent a value in a template.
+    It can be used to represent any characters.
+    It needs to start and end with the same quote character,
+    can be both single or double quotes, as long as they are not mixed.
 
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
+    Examples:
+        'value'
+        "value"
+        'value with "quotes"'
+        "value with 'quotes'"
 
-        if len(self.content) < 2:
-            err = "A value must have single quotes or double quotes on both sides"
-            logger.error(err)
-            self._value = ""
-            self._first = "\0"
-            self._last = "\0"
-            return
+    Args:
+        content - str : The content of the value block.
+        value - str: The value of the block.
+        quote - str: The quote used to wrap the value.
 
-        self._first = self.content[0]
-        self._last = self.content[-1]
-        self._value = self.content[1:-1]
+    Raises:
+        ValBlockSyntaxError: If the content does not match the value block syntax.
 
-    @property
-    def type(self) -> BlockTypes:
-        return BlockTypes.VALUE
+    """
 
-    def is_valid(self) -> Tuple[bool, str]:
-        if len(self.content) < 2:
-            error_msg = "A value must have single quotes or double quotes on both sides"
-            logger.error(error_msg)
-            return False, error_msg
+    type: ClassVar[BlockTypes] = BlockTypes.VALUE
+    value: Optional[str] = ""
+    quote: Optional[str] = "'"
 
-        if self._first != Symbols.DBL_QUOTE and self._first != Symbols.SGL_QUOTE:
-            error_msg = "A value must be wrapped in either single quotes or double quotes"
-            logger.error(error_msg)
-            return False, error_msg
+    @model_validator(mode="before")
+    @classmethod
+    def parse_content(cls, fields: Any) -> Any:
+        """Parse the content and extract the value and quote.
 
-        if self._first != self._last:
-            error_msg = "A value must be defined using either single quotes or " "double quotes, not both"
-            logger.error(error_msg)
-            return False, error_msg
+        The parsing is based on a regex that returns the value and quote.
+        if the 'value' is already present then the parsing is skipped.
+        """
+        if isinstance(fields, Block) or "value" in fields:
+            return fields
+        content = fields.get("content", "").strip()
+        matches = VAL_BLOCK_MATCHER.match(content)
+        if not matches:
+            raise ValBlockSyntaxError(content=content)
+        if value := matches.groupdict().get("value"):
+            fields["value"] = value
+        if quote := matches.groupdict().get("quote"):
+            fields["quote"] = quote
+        return fields
 
-        return True, ""
-
-    def render(self, _: Optional[ContextVariables] = None) -> str:
-        return self._value
-
-    @staticmethod
-    def has_val_prefix(text: Optional[str]) -> bool:
-        return text is not None and len(text) > 0 and (text[0] == Symbols.DBL_QUOTE or text[0] == Symbols.SGL_QUOTE)
+    def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
+        return self.value
