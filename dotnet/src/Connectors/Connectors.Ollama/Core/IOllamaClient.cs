@@ -59,12 +59,13 @@ internal interface IOllamaClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Generates embedding vector for provided text asynchronously.
+    /// Generates embedding vectors for provided prompts of text asynchronously.
     /// </summary>
-    /// <param name="text">Text string</param>
+    /// <param name="prompts">List of prompt strings.</param>
+    /// <param name="executionSettings"></param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>Embedding vector</returns>
-    Task<ReadOnlyMemory<float>> GenerateTextEmbeddingAsync(
-        string text,
+    /// <returns>List of embedding vectors</returns>
+    Task<IList<ReadOnlyMemory<float>>> GenerateTextEmbeddingAsync(IList<string> prompts,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
 }
