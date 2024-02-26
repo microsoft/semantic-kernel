@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import Any, Dict, Mapping, Optional
+from typing import Dict, Mapping, Optional
 
 from openai import AsyncOpenAI
 from pydantic import Field, validate_call
@@ -30,9 +30,9 @@ class OpenAIConfigBase(OpenAIHandler):
         api_key: Optional[str] = Field(min_length=1),
         ai_model_type: Optional[OpenAIModelTypes] = OpenAIModelTypes.CHAT,
         org_id: Optional[str] = None,
+        service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
-        log: Optional[Any] = None,
     ) -> None:
         """Initialize a client for OpenAI services.
 
@@ -52,8 +52,6 @@ class OpenAIConfigBase(OpenAIHandler):
                 for HTTP requests. (Optional)
 
         """
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
@@ -70,12 +68,14 @@ class OpenAIConfigBase(OpenAIHandler):
                 organization=org_id,
                 default_headers=merged_headers,
             )
-
-        super().__init__(
-            ai_model_id=ai_model_id,
-            client=async_client,
-            ai_model_type=ai_model_type,
-        )
+        args = {
+            "ai_model_id": ai_model_id,
+            "client": async_client,
+            "ai_model_type": ai_model_type,
+        }
+        if service_id:
+            args["service_id"] = service_id
+        super().__init__(**args)
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -94,6 +94,7 @@ class OpenAIConfigBase(OpenAIHandler):
                 "total_tokens",
                 "api_type",
                 "ai_model_type",
+                "service_id",
                 "client",
             },
             by_alias=True,
