@@ -89,13 +89,21 @@ public sealed class HandlebarsPlanner
             var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
             modelResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            Match match = Regex.Match(modelResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
-            if (!match.Success)
+            // Regex breakdown:
+            // (```\s*handlebars){1}\s*: Opening backticks, starting boundary for HB template
+            // ((([^`]|`(?!``))+): Any non-backtick character or one backtick character not followed by 2 more consecutive backticks
+            // (\s*```){1}: Closing backticks, closing boundary for HB template
+            MatchCollection matches = Regex.Matches(modelResults.Content, @"(```\s*handlebars){1}\s*(([^`]|`(?!``))+)(\s*```){1}", RegexOptions.Multiline);
+            if (matches.Count < 1)
             {
-                throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results.");
+                throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results. Additional helpers or input may be required.\n\nPlanner output:\n{modelResults.Content}");
+            }
+            else if (matches.Count > 1)
+            {
+                throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Identified multiple Handlebars templates in model response. Please try again.\n\nPlanner output:\n{modelResults.Content}");
             }
 
-            var planTemplate = match.Groups[2].Value.Trim();
+            var planTemplate = matches[0].Groups[2].Value.Trim();
             planTemplate = MinifyHandlebarsTemplate(planTemplate);
 
             return new HandlebarsPlan(planTemplate, createPlanPrompt);
@@ -153,7 +161,26 @@ public sealed class HandlebarsPlanner
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         Dictionary<string, string> complexParameterSchemas)
     {
-        // TODO (@teresaqhoang): Handle case when schema and ParameterType can exist i.e., when ParameterType = RestApiResponse
+        if (parameter.Schema is not null)
+        {
+            // Class types will have a defined schema, but we want to handle those as built-in complex types below
+            if (parameter.ParameterType is not null && parameter.ParameterType!.IsClass)
+            {
+                parameter = new(parameter) { Schema = null };
+            }
+            else
+            {
+                // Parse the schema to extract any primitive types and set in ParameterType property instead
+                var parsedParameter = parameter.ParseJsonSchema();
+                if (parsedParameter.Schema is not null)
+                {
+                    complexParameterSchemas[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
+                }
+
+                return parsedParameter;
+            }
+        }
+
         if (parameter.ParameterType is not null)
         {
             // Async return type - need to extract the actual return type and override ParameterType property
@@ -164,17 +191,6 @@ public sealed class HandlebarsPlanner
             }
 
             complexParameterTypes.UnionWith(parameter.ParameterType!.ToHandlebarsParameterTypeMetadata());
-        }
-        else if (parameter.Schema is not null)
-        {
-            // Parse the schema to extract any primitive types and set in ParameterType property instead
-            var parsedParameter = parameter.ParseJsonSchema();
-            if (parsedParameter.Schema is not null)
-            {
-                complexParameterSchemas[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
-            }
-
-            parameter = parsedParameter;
         }
 
         return parameter;

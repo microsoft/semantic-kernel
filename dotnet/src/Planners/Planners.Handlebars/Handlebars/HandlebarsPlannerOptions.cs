@@ -28,7 +28,8 @@ public sealed class HandlebarsPlannerOptions : PlannerOptions
     /// Delegate that returns an override for the CreatePlan prompt.
     /// </summary>
     /// <remarks>
-    /// Handler will be used as a callback. The callback should return a valid Handlebars template string. If this is set, the planner will use this prompt instead of the default prompt.
+    /// Handler will be used as a callback. The callback should return a valid Handlebars template string in a ```handlebars codeblock.
+    /// If this is set, the planner will use this prompt instead of the default prompt.
     /// Devs can select any partial defined in Planners.Handlebars.CreatePlanPromptPartials namespace when constructing their own prompt.
     /// No partials are included by default; make sure to select partials such as "{{> UserGoal }}" or {{> AdditionalContext}} if needed.
     /// </remarks>
