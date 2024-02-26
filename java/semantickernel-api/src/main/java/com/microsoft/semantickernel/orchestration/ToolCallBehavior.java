@@ -28,8 +28,8 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Require a function. It will the only function to be passed to the model and be called.
-     * Only one function can be required.
+     * Require a function. The required function will be the only function passed to the model
+     * and forces the model to call the function. Only one function can be required.
      *
      * @param function The function to require.
      * @return A new ToolCallBehavior instance with the required function.
@@ -118,6 +118,8 @@ public class ToolCallBehavior {
 
     /**
      * A required kernel function.
+     * The required function will be the only function passed to the model and forces the model to call the function.
+     * Only one function can be required.
      */
     public static class RequiredKernelFunction extends ToolCallBehavior {
         private final KernelFunction<?> requiredFunction;
