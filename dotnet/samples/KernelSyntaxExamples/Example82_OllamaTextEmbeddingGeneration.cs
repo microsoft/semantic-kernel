@@ -18,11 +18,8 @@ public class Example82_OllamaTextEmbeddingGeneration : BaseTest
     {
         this.WriteLine("============= Ollama Text Embedding Generation =============");
 
-        // string modelId = TestConfiguration.Ollama.ModelId;
-        // Uri? baseUri = TestConfiguration.Ollama.BaseUri;
-
-        string modelId = "llama2:7b-chat-q4_K_M";
-        Uri? baseUri = new Uri("http://100.77.129.101:11434");
+        string modelId = TestConfiguration.Ollama.ModelId;
+        Uri? baseUri = TestConfiguration.Ollama.BaseUri;
 
         if (modelId is null || baseUri is null)
         {
@@ -47,7 +44,7 @@ public class Example82_OllamaTextEmbeddingGeneration : BaseTest
 
         var embeddings = await textEmbeddingService.GenerateEmbeddingsAsync(new List<string> { prompt });
 
-        this.WriteLine(embeddings[0]);
+        this.WriteLine(string.Join(", ", embeddings[0].ToArray()));
     }
 
     public Example82_OllamaTextEmbeddingGeneration(ITestOutputHelper output) : base(output)
