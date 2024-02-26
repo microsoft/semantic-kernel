@@ -2,20 +2,31 @@
 
 import json
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openai.types.chat import ChatCompletion
 
-from semantic_kernel import Kernel, KernelContext
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat.tool_calls import ToolCall
-from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
-    OpenAIChatPromptTemplate,
-)
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_function import KernelFunction
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+TYPE_MAPPER = {
+    "str": "string",
+    "int": "number",
+    "float": "number",
+    "bool": "boolean",
+    "list": "array",
+    "dict": "object",
+}
 
 
 def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
@@ -23,7 +34,7 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
 
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
-    func_view = function.describe()
+    func_view = function.metadata
     return {
         "type": "function",
         "function": {
@@ -34,29 +45,41 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
                 "properties": {
                     param.name: {
                         "description": param.description,
-                        "type": param.type_ if param.type_ else "string",
+                        "type": parse_param(param.type_),
                         **({"enum": param.enum} if hasattr(param, "enum") else {}),  # Added support for enum
                     }
                     for param in func_view.parameters
+                    if param.expose
                 },
-                "required": [p.name for p in func_view.parameters if p.required],
+                "required": [p.name for p in func_view.parameters if p.required and p.expose],
             },
         },
     }
+
+
+def parse_param(param_type: Optional[str]) -> str:
+    """Parse the parameter type."""
+    if not param_type:
+        return "string"
+    if "," in param_type:
+        param_type = param_type.split(",", maxsplit=1)[0]
+    return TYPE_MAPPER.get(param_type, "string")
 
 
 def _describe_function(function: KernelFunction) -> Dict[str, str]:
     """Create the object used for function_calling.
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
-    func_view = function.describe()
+    func_view = function.metadata
     return {
         "name": f"{func_view.plugin_name}-{func_view.name}",
         "description": func_view.description,
         "parameters": {
             "type": "object",
             "properties": {
-                param.name: {"description": param.description, "type": param.type_} for param in func_view.parameters
+                param.name: {"description": param.description, "type": param.type_}
+                for param in func_view.parameters
+                if param.expose
             },
             "required": [p.name for p in func_view.parameters if p.required],
         },
@@ -132,13 +155,13 @@ def get_function_calling_object(
     if include_function and exclude_function:
         raise ValueError("Cannot use both include_function and exclude_function at the same time.")
     if include_plugin:
-        include_plugin = [plugin.lower() for plugin in include_plugin]
+        include_plugin = [plugin for plugin in include_plugin]
     if exclude_plugin:
-        exclude_plugin = [plugin.lower() for plugin in exclude_plugin]
+        exclude_plugin = [plugin for plugin in exclude_plugin]
     if include_function:
-        include_function = [function.lower() for function in include_function]
+        include_function = [function for function in include_function]
     if exclude_function:
-        exclude_function = [function.lower() for function in exclude_function]
+        exclude_function = [function for function in exclude_function]
     result = []
     for (
         plugin_name,
@@ -154,44 +177,57 @@ def get_function_calling_object(
     return result
 
 
-async def execute(kernel: Kernel, func: KernelFunction, input_vars: ContextVariables) -> str:
+async def execute(kernel: Kernel, func: KernelFunction, arguments: KernelArguments) -> FunctionResult:
     """Execute a function and return the result.
 
     Args:
-        kernel (Kernel): the kernel to use.
-        func (KernelFunction): the function to execute.
-        input_vars (ContextVariables): the input variables.
+        kernel: the kernel to use.
+        func: the function to execute.
+        arguments: the arguments to pass to the function.
 
     Returns:
         str: the result of the execution.
     """
-    result = await kernel.run(func, input_vars=input_vars)
+    result = await kernel.invoke(functions=func, arguments=arguments)
     logger.info(f"Execution result: {result}")
-    return str(result)
+    return result
 
 
-async def execute_function_call(kernel: Kernel, function_call: FunctionCall) -> str:
+async def execute_function_call(kernel: Kernel, function_call: FunctionCall) -> FunctionResult:
     """Execute a function call and return the result."""
     func = kernel.func(**function_call.split_name_dict())
-    input_vars = function_call.to_context_variables()
-    return await execute(kernel, func, input_vars)
+    arguments = function_call.to_kernel_arguments()
+    return await execute(kernel, func, arguments)
 
 
-async def execute_tool_call(kernel: Kernel, tool_call: ToolCall) -> str:
+async def execute_and_store_tool_call(
+    kernel: Kernel,
+    tool_call: ToolCall,
+    chat_function: KernelFunction,
+):
+    """Execute a tool call and store the result in the chat prompt template."""
+    tool_call_result = await execute_tool_call(kernel, tool_call)
+    chat_function.chat_prompt_template.add_function_response_message(
+        name=tool_call.function.name, content=str(tool_call_result), tool_call_id=tool_call.id
+    )
+
+
+async def execute_tool_call(kernel: Kernel, tool_call: ToolCall) -> FunctionResult:
     """Execute a tool call and return the result."""
     func = kernel.func(**tool_call.function.split_name_dict())
-    input_vars = tool_call.function.to_context_variables()
-    return await execute(kernel, func, input_vars)
+    arguments = tool_call.function.to_kernel_arguments()
+    return await execute(kernel, func, arguments)
 
 
-async def chat_completion_with_function_call(
+async def chat_completion_with_tool_call(
     kernel: Kernel,
-    context: KernelContext,
+    arguments: Optional[KernelArguments] = None,
     chat_plugin_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[KernelFunction] = None,
+    chat_history: Optional[ChatHistory] = None,
     **kwargs: Dict[str, Any],
-) -> KernelContext:
+) -> FunctionResult:
     """Perform a chat completion with auto-executing function calling.
 
     This is a recursive function that will execute the chat function multiple times,
@@ -204,44 +240,55 @@ async def chat_completion_with_function_call(
 
     args:
         kernel: the kernel to use.
-        context: the context to use.
-        functions: the function calling object,
-            make sure to use get_tool_call_object method to create it.
-        Optional arguments:
-            chat_plugin_name: the plugin name of the chat function.
-            chat_function_name: the function name of the chat function.
-            chat_function: the chat function, if not provided, it will be retrieved from the kernel.
-                make sure to provide either the chat_function or the chat_plugin_name and chat_function_name.
+        arguments: the arguments to pass to the chat function.
+    Optional arguments:
+        chat_plugin_name: the plugin name of the chat function.
+        chat_function_name: the function name of the chat function.
+        chat_function: the chat function, if not provided, it will be retrieved from the kernel.
+            make sure to provide either the chat_function or the chat_plugin_name and chat_function_name.
+        chat_history: the chat history to use, if not provided, will attempt to retrieve from arguments
+            with key "chat_history".
 
-            max_function_calls: the maximum number of function calls to execute, defaults to 5.
-            current_call_count: the current number of function calls executed.
+        max_function_calls: the maximum number of function calls to execute, defaults to 5.
+        current_call_count: the current number of function calls executed.
 
     returns:
-        the context with the result of the chat completion, just like a regular invoke/run_async.
+        the FunctionResult with the result of the chat completion, just like a regular invoke/run_async.
     """
+
+    chat_history or arguments["chat_history"]
+
     # check the number of function calls
     max_function_calls = kwargs.get("max_function_calls", 5)
     current_call_count = kwargs.get("current_call_count", 0)
     # get the chat function
     if chat_function is None:
+        if chat_plugin_name is None or chat_function_name is None:
+            raise ValueError("Please provide either the chat_function or the chat_plugin_name and chat_function_name.")
         chat_function = kernel.func(plugin_name=chat_plugin_name, function_name=chat_function_name)
-    assert isinstance(
-        chat_function.chat_prompt_template, OpenAIChatPromptTemplate
+    assert issubclass(
+        type(chat_function.ai_service), Union[ChatCompletionClientBase, TextCompletionClientBase]
     ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
-    settings = chat_function.chat_prompt_template.prompt_config.execution_settings
+
+    settings = chat_function.prompt_execution_settings[chat_function.ai_service.service_id]
+
+    if not arguments:
+        arguments = KernelArguments()
+    arguments.execution_settings[settings.service_id] = settings
+    arguments["user_input"] = ("\n").join([f"{msg.role}: {msg.content}" for msg in chat_history])
     if current_call_count >= max_function_calls:
         settings.functions = []
-    context = await chat_function.invoke(
-        context=context,
+    result = await chat_function.invoke(
+        kernel=kernel,
+        arguments=arguments,
         # when the maximum number of function calls is reached, execute the chat function without Functions.
-        settings=settings,
     )
-    if not (results := context.objects.pop("results", None)):
-        return context
+    if not isinstance(result, FunctionResult) and result.value[0].tool_call is None:
+        return result
     function_call = next(
         (
             fc
-            for fc in (results[0].function_call or results[0].tool_calls or [None])
+            for fc in (result.value[0].function_call or result.value[0].tool_calls or [None])
             if isinstance(fc, (FunctionCall, ToolCall))
         ),
         None,
@@ -251,16 +298,17 @@ async def chat_completion_with_function_call(
         result = await execute_call(kernel, function_call)
         tool_call_id = function_call.id
     else:
-        return context
+        return result
     # add the result to the chat prompt template
+    chat_history.add_tool_message()
     chat_function.chat_prompt_template.add_function_response_message(
         name=function_call.function.name, content=str(result), tool_call_id=tool_call_id
     )
     # request another completion
-    return await chat_completion_with_function_call(
+    return await chat_completion_with_tool_call(
         kernel,
+        arguments=arguments,
         chat_function=chat_function,
-        context=context,
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,
     )

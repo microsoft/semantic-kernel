@@ -5,13 +5,11 @@ from typing import Any, Dict
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.input_variable import InputVariable
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 """
 Logit bias enables prioritizing certain tokens within a given output.
@@ -29,9 +27,16 @@ def _config_ban_tokens(settings: PromptExecutionSettings, keys: Dict[Any, Any]):
     return settings
 
 
+def _prepare_input_chat(chat: ChatHistory):
+    return "".join([f"{msg.role}: {msg.content}\n" for msg in chat])
+
+
 async def chat_request_example(kernel, api_key, org_id):
-    openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-    kernel.add_chat_service("chat_service", openai_chat_completion)
+    service_id = "chat_service"
+    openai_chat_completion = sk_oai.OpenAIChatCompletion(
+        service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
+    )
+    kernel.add_service(openai_chat_completion)
 
     # Spaces and capitalization affect the token ids.
     # The following is the token ids of basketball related words.
@@ -65,49 +70,53 @@ async def chat_request_example(kernel, api_key, org_id):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat_service")
+    settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
     settings = _config_ban_tokens(settings, keys)
 
-    prompt_config = sk.PromptTemplateConfig.from_execution_settings(max_tokens=2000, temperature=0.7, top_p=0.8)
-    prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
+    prompt_template_config = PromptTemplateConfig(
+        template="{{$user_input}}",
+        name="chat",
+        template_format="semantic-kernel",
+        input_variables=[
+            InputVariable(
+                name="user_input", description="The history of the conversation", is_required=True, default=""
+            ),
+        ],
+        execution_settings=settings,
+    )
 
-    # Setup chat with prompt
-    prompt_template.add_system_message("You are a basketball expert")
-    user_mssg = "I love the LA Lakers, tell me an interesting fact about LeBron James."
-    prompt_template.add_user_message(user_mssg)
-    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-    kernel.register_semantic_function("ChatBot", "Chat", function_config)
+    chat = ChatHistory()
 
-    chat_messages = []
-    messages = [{"role": "user", "content": user_mssg}]
+    chat.add_user_message("Hi there, who are you?")
+    chat.add_assistant_message("I am an AI assistant here to answer your questions.")
 
-    chat_messages.append(("user", user_mssg))
-    answer = await openai_chat_completion.complete_chat(messages=messages, settings=settings)
-    chat_messages.append(("assistant", str(answer[0])))
+    chat_function = kernel.create_function_from_prompt(
+        plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
+    )
 
-    user_mssg = "What are his best all-time stats?"
-    messages = [{"role": "user", "content": user_mssg}]
-    chat_messages.append(("user", user_mssg))
-    answer = await openai_chat_completion.complete_chat(messages=messages, settings=settings)
-    chat_messages.append(("assistant", str(answer[0])))
+    chat.add_system_message("You are a basketball expert")
+    chat.add_user_message("I love the LA Lakers, tell me an interesting fact about LeBron James.")
 
-    context_vars = sk.ContextVariables()
-    context_vars["chat_history"] = ""
-    context_vars["chat_bot_ans"] = ""
-    for role, mssg in chat_messages:
-        if role == "user":
-            context_vars["chat_history"] += f"User:> {mssg}\n"
-        elif role == "assistant":
-            context_vars["chat_history"] += f"ChatBot:> {mssg}\n"
-            context_vars["chat_bot_ans"] += f"{mssg}\n"
+    answer = await kernel.invoke(chat_function, KernelArguments(user_input=_prepare_input_chat(chat)))
+    chat.add_assistant_message(str(answer))
 
-    kernel.remove_chat_service("chat_service")
-    return context_vars, banned_words
+    chat.add_user_message("What are his best all-time stats?")
+    answer = await kernel.invoke(chat_function, KernelArguments(user_input=_prepare_input_chat(chat)))
+    chat.add_assistant_message(str(answer))
+
+    print(chat)
+
+    kernel.remove_all_services()
+
+    return chat, banned_words
 
 
 async def text_complete_request_example(kernel, api_key, org_id):
-    openai_text_completion = sk_oai.OpenAITextCompletion("gpt-3.5-turbo-instruct", api_key, org_id)
-    kernel.add_text_completion_service("text_service", openai_text_completion)
+    service_id = "text_service"
+    openai_text_completion = sk_oai.OpenAITextCompletion(
+        service_id=service_id, ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id
+    )
+    kernel.add_service(openai_text_completion)
 
     # Spaces and capitalization affect the token ids.
     # The following is the token ids of pie related words.
@@ -150,18 +159,37 @@ async def text_complete_request_example(kernel, api_key, org_id):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = kernel.get_prompt_execution_settings_from_service(TextCompletionClientBase, "text_service")
+    settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
     settings = _config_ban_tokens(settings, keys)
 
-    user_mssg = "The best pie flavor to have in autumn is"
-    answer = await openai_text_completion.complete(user_mssg, settings)
+    prompt_template_config = PromptTemplateConfig(
+        template="{{$user_input}}",
+        name="chat",
+        template_format="semantic-kernel",
+        input_variables=[
+            InputVariable(
+                name="user_input", description="The history of the conversation", is_required=True, default=""
+            ),
+        ],
+        execution_settings=settings,
+    )
 
-    context_vars = sk.ContextVariables()
-    context_vars["chat_history"] = f"User:> {user_mssg}\nChatBot:> {answer}\n"
-    context_vars["chat_bot_ans"] = str(answer)
+    chat = ChatHistory()
 
-    kernel.remove_text_completion_service("text_service")
-    return context_vars, banned_words
+    chat.add_user_message("The best pie flavor to have in autumn is")
+
+    text_function = kernel.create_function_from_prompt(
+        plugin_name="TextBot", function_name="TextCompletion", prompt_template_config=prompt_template_config
+    )
+
+    answer = await kernel.invoke(text_function, KernelArguments(user_input=_prepare_input_chat(chat)))
+    chat.add_assistant_message(str(answer))
+
+    print(chat)
+
+    kernel.remove_all_services()
+
+    return chat, banned_words
 
 
 def _check_banned_words(banned_list, actual_list) -> bool:
@@ -173,9 +201,9 @@ def _check_banned_words(banned_list, actual_list) -> bool:
     return passed
 
 
-def _format_output(context, banned_words) -> None:
-    print(context["chat_history"])
-    chat_bot_ans_words = context["chat_bot_ans"].split()
+def _format_output(chat, banned_words) -> None:
+    print("--- Checking for banned words ---")
+    chat_bot_ans_words = [word for msg in chat.messages if msg.role == "assistant" for word in msg.content.split()]
     if _check_banned_words(banned_words, chat_bot_ans_words):
         print("None of the banned words were found in the answer")
 
