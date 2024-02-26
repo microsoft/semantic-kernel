@@ -75,26 +75,6 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetTextContentByFileInfoWorksCorrectlyAsync()
-    {
-        // Arrange
-        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent("Test audio-to-text response")
-        };
-
-        // Act
-        var result = await service.GetTextContentAsync(
-            new AudioContent(new FileInfo("./AssemblyAI/TestData/test_audio.wav"))
-        );
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal("Test audio-to-text response", result.Text);
-    }
-
-    [Fact]
     public async Task GetTextContentByStreamWorksCorrectlyAsync()
     {
         // Arrange

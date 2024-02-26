@@ -40,11 +40,11 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     /// <param name="httpClient"></param>
     public AssemblyAIAudioToTextService(
         string apiKey,
-        HttpClient httpClient
+        HttpClient? httpClient = null
     )
     {
         this._apiKey = apiKey;
-        this._httpClient = httpClient;
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
     }
 
     /// <inheritdoc />
@@ -55,20 +55,15 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         CancellationToken cancellationToken = default)
     {
         string uploadUrl;
-        if (content.AudioUrl is not null)
+        if (content.Uri is not null)
         {
             // to prevent unintentional file uploads by injection attack
-            if (content.AudioUrl.IsFile)
+            if (content.Uri.IsFile)
             {
                 throw new ArgumentException("File URI is not allowed. Use `AudioContent.Stream` or `AudioContent.File` to transcribe a local file instead.");
             }
 
-            uploadUrl = content.AudioUrl.ToString();
-        }
-        else if (content.AudioFile is not null)
-        {
-            using var stream = content.AudioFile.OpenRead();
-            uploadUrl = await this.UploadFileAsync(stream, cancellationToken).ConfigureAwait(false);
+            uploadUrl = content.Uri.ToString();
         }
         else if (content.Data is not null)
         {
@@ -184,8 +179,9 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             pollingInterval = aaiSettings.PollingInterval;
         }
 
-        while (!ct.IsCancellationRequested)
+        while (true)
         {
+            ct.ThrowIfCancellationRequested();
             using var request = HttpRequest.CreateGetRequest(url);
             this.AddDefaultHeaders(request);
             using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
@@ -208,9 +204,6 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
                     throw new KernelException("Unexpected transcript status. This code shouldn't be reachable.");
             }
         }
-
-        ct.ThrowIfCancellationRequested();
-        throw new KernelException("This code is unreachable.");
     }
 
     /// <summary>
@@ -231,9 +224,13 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AssemblyAIAudioToTextService)));
     }
 
-    private async Task<HttpResponseMessage> SendWithSuccessCheckAsync(HttpClient client, HttpRequestMessage request, CancellationToken ct)
+    private async Task<HttpResponseMessage> SendWithSuccessCheckAsync(
+        HttpClient client,
+        HttpRequestMessage request,
+        CancellationToken ct
+    )
     {
-        HttpResponseMessage? response = null;
+        HttpResponseMessage? response;
         try
         {
             response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, ct).ConfigureAwait(false);
@@ -243,19 +240,22 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             throw new HttpOperationException(HttpStatusCode.BadRequest, null, e.Message, e);
         }
 
-        if (response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode)
         {
-            return response;
-        }
+            string? responseContent = null;
+            try
+            {
+                // On .NET Framework, EnsureSuccessStatusCode disposes of the response content;
+                // that was changed years ago in .NET Core, but for .NET Framework it means in order
+                // to read the response content in the case of failure, that has to be
+                // done before calling EnsureSuccessStatusCode.
+                responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            }
 
-        string? responseContent = null;
-        try
-        {
-            // On .NET Framework, EnsureSuccessStatusCode disposes of the response content;
-            // that was changed years ago in .NET Core, but for .NET Framework it means in order
-            // to read the response content in the case of failure, that has to be
-            // done before calling EnsureSuccessStatusCode.
-            responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (response.Content.Headers.ContentType.MediaType == "application/json")
             {
                 var json = JsonDocument.Parse(responseContent);
@@ -270,13 +270,9 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
                 }
             }
 
-            response.EnsureSuccessStatusCode(); // will always throw
-        }
-        catch (Exception e)
-        {
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            response.EnsureSuccessStatusCode();
         }
 
-        throw new KernelException("Unreachable code.");
+        return response;
     }
 }

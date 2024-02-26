@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 namespace Microsoft.SemanticKernel.Contents;
 
@@ -14,19 +13,14 @@ namespace Microsoft.SemanticKernel.Contents;
 public class AudioContent : KernelContent
 {
     /// <summary>
+    /// URL to the audio file.
+    /// </summary>
+    public Uri? Uri { get; set; }
+
+    /// <summary>
     /// The audio binary data.
     /// </summary>
     public BinaryData? Data { get; set; }
-
-    /// <summary>
-    /// URL to the audio file.
-    /// </summary>
-    public Uri? AudioUrl { get; set; }
-
-    /// <summary>
-    /// FileInfo for the local audio file.
-    /// </summary>
-    public FileInfo? AudioFile { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
@@ -42,40 +36,58 @@ public class AudioContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
+        Verify.NotNull(data, nameof(data));
+
+        if (data!.IsEmpty)
+        {
+            throw new ArgumentException("Data cannot be empty", nameof(data));
+        }
+
+        if (string.IsNullOrWhiteSpace(data!.MediaType))
+        {
+            throw new ArgumentException("MediaType is needed for DataUri Audio", nameof(data));
+        }
+
         this.Data = data;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
-    /// <param name="audioUrl">URL to the audio file.</param>
+    /// <param name="uri">URL to the audio file.</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="innerContent">Inner content,</param>
     /// <param name="metadata">Additional metadata</param>
     public AudioContent(
-        Uri audioUrl,
+        Uri uri,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.AudioUrl = audioUrl;
+        this.Uri = uri;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// Returns the string representation of the audio.
+    /// BinaryData audio will be represented as DataUri
+    /// Remote Uri audio will be represented as is
     /// </summary>
-    /// <param name="audioFile">FileInfo for the local audio file.</param>
-    /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content,</param>
-    /// <param name="metadata">Additional metadata</param>
-    public AudioContent(
-        FileInfo audioFile,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
+    /// <remarks>
+    /// When Data is provided it takes precedence over URI
+    /// </remarks>
+    public override string ToString()
     {
-        this.AudioFile = audioFile;
+        return this.BuildDataUri() ?? this.Uri?.ToString() ?? string.Empty;
+    }
+
+    private string? BuildDataUri()
+    {
+        if (this.Data is null)
+        {
+            return null;
+        }
+
+        return $"data:{this.Data.MediaType};base64,{Convert.ToBase64String(this.Data.ToArray())}";
     }
 }

@@ -47,7 +47,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await BinaryData.FromStreamAsync(audio);
+        var audioData = await BinaryData.FromStreamAsync(audio, "audio/wav");
 
         // Act
         var result = await service.GetTextContentAsync(new AudioContent(audioData));
@@ -74,7 +74,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await BinaryData.FromStreamAsync(audio);
+        var audioData = await BinaryData.FromStreamAsync(audio, "audio/wav");
 
         // Act
         var result = await service.GetTextContentAsync(
@@ -110,30 +110,6 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act
         var result = await service.GetTextContentAsync(new AudioStreamContent(audio));
-
-        // Assert
-        Assert.Equal(
-            "The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
-            result.Text
-        );
-        Console.WriteLine(result.Text);
-    }
-
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
-    public async Task AssemblyAIAudioToTextWithFileInfoTestAsync()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-        const string Filename = "test_audio.wav";
-
-        var apiKey = this._configuration["AssemblyAI:ApiKey"] ??
-                     throw new ArgumentException("'AssemblyAI:ApiKey' configuration is required.");
-
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
-
-        // Act
-        var result = await service.GetTextContentAsync(new AudioContent(new FileInfo($"./TestData/{Filename}")));
 
         // Assert
         Assert.Equal(
