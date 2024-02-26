@@ -3,16 +3,19 @@ package com.microsoft.semantickernel.templateengine.handlebars;
 
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.ValueResolver;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
-import com.microsoft.semantickernel.semanticfunctions.KernelParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -20,7 +23,6 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,6 +63,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 String.format("No prompt template was provided for the prompt %s.",
                     promptTemplate.getName())));
         }
+
         HandleBarsPromptTemplateHandler handler = new HandleBarsPromptTemplateHandler(kernel,
             template);
 
@@ -102,34 +105,6 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 result.put("content", ((ChatMessageContent) context).getContent());
                 return result.entrySet();
             }
-            return new HashSet<>();
-        }
-    }
-
-    private static class KernelPluginResolver implements ValueResolver {
-
-        @Override
-        public Object resolve(Object context, String name) {
-            if (context instanceof KernelFunction) {
-                KernelFunction<?> function = (KernelFunction<?>) context;
-                if ("pluginname".equalsIgnoreCase(name)) {
-                    if (function.getPluginName() != null) {
-                        return function.getPluginName();
-                    }
-                } else if ("name".equalsIgnoreCase(name)) {
-                    return function.getName();
-                }
-            }
-            return UNRESOLVED;
-        }
-
-        @Override
-        public Object resolve(Object context) {
-            return UNRESOLVED;
-        }
-
-        @Override
-        public Set<Entry<String, Object>> propertySet(Object context) {
             return new HashSet<>();
         }
     }
@@ -183,46 +158,18 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         private final Handlebars handlebars;
 
         @SuppressFBWarnings("CT_CONSTRUCTOR_THROW") // Think this is a false positive
-        public HandleBarsPromptTemplateHandler(Kernel kernel, String template) {
+        public HandleBarsPromptTemplateHandler(
+            Kernel kernel,
+            String template) {
             this.template = template;
             this.handlebars = new Handlebars();
             this.handlebars
                 .registerHelper("message", HandleBarsPromptTemplateHandler::handleMessage)
-                .registerHelper("each", HandleBarsPromptTemplateHandler::handleEach)
-                .registerHelper("functions", (context, options) -> handleFunctions(kernel, options))
-                .registerHelper("function",
-                    (context, options) -> handleFunction((KernelFunction<?>) context));
+                .registerHelper("each", HandleBarsPromptTemplateHandler::handleEach);
+
+            addFunctionHelpers(kernel, this.handlebars);
+
             // TODO: 1.0 Add more helpers
-        }
-
-        private static Handlebars.SafeString handleFunction(KernelFunction<?> context) {
-            KernelFunction<?> function = context;
-            String pluginName = function.getPluginName();
-            String functionName = function.getName();
-            String description = function.getDescription();
-            StringBuilder sb = new StringBuilder(
-                String.format(
-                    "<function pluginName=\"%s\" name=\"%s\" description=\"%s\">",
-                    pluginName, functionName, description));
-            List<KernelParameterMetadata<?>> parameters = function.getMetadata().getParameters();
-            parameters.forEach(p -> {
-                sb.append(String.format(
-                    "<parameter name=\"%s\" description=\"%s\" defaultValue=\"%s\" isRequired=\"%s\" type=\"%s\"/>",
-                    p.getName(), p.getDescription(), p.getDefaultValue(), p.isRequired(),
-                    p.getType()));
-            });
-            sb.append("</function>");
-            return new Handlebars.SafeString(sb.toString());
-        }
-
-        private static Handlebars.SafeString handleFunctions(Kernel kernel, Options options)
-            throws IOException {
-            StringBuilder sb = new StringBuilder("<functions>");
-            Collection<KernelPlugin> plugins = kernel.getPlugins();
-            sb.append(options.fn(plugins));
-            sb.append("</functions>");
-
-            return new Handlebars.SafeString(sb.toString());
         }
 
         private static CharSequence handleEach(Object context, Options options)
@@ -247,6 +194,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                             KernelFunction<?> function = functions.next();
                             sb.append(options.fn(function));
                         }
+                    } else {
+                        sb.append(options.fn(element));
                     }
                 }
                 return new Handlebars.SafeString(sb.toString());
@@ -282,7 +231,6 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             try {
                 ArrayList<ValueResolver> resolvers = new ArrayList<>();
                 resolvers.add(new MessageResolver());
-                resolvers.add(new KernelPluginResolver());
                 resolvers.add(new ContextVariableResolver());
 
                 // resolvers.addAll(ValueResolver.defaultValueResolvers());
@@ -298,5 +246,45 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @SuppressWarnings("StringSplitter")
+    private static void addFunctionHelpers(Kernel kernel, Handlebars handlebars) {
+        kernel
+            .getPlugins()
+            .forEach(plugin -> {
+                plugin
+                    .iterator()
+                    .forEachRemaining(kernelFunction -> {
+                        String functionName = kernelFunction.getName();
+                        String pluginName = plugin.getName();
+                        handlebars.registerHelper(
+                            ToolCallBehavior.formFullFunctionName(pluginName, functionName),
+                            functionInvokeHelper(kernel, kernelFunction));
+                    });
+
+            });
+    }
+
+    private static Helper<Object> functionInvokeHelper(Kernel kernel,
+        KernelFunction<?> kernelFunction) {
+        return (context, options) -> {
+
+            ContextVariableType converter = ContextVariableTypes
+                .getGlobalVariableTypeForClass(
+                    context.getClass());
+
+            String promptString = converter.getConverter().toPromptString(context);
+
+            // TODO Figure out if possible to do async render
+            return kernelFunction
+                .invokeAsync(kernel)
+                .withArguments(
+                    KernelFunctionArguments.builder()
+                        .withInput(promptString)
+                        .build())
+                .block()
+                .getResult();
+        };
     }
 }
