@@ -66,7 +66,9 @@ history = ChatHistory()
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-chat_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+chat_function = kernel.create_function_from_prompt(
+    function_name="chat", plugin_name="chat", prompt_template_config=prompt_template_config
+)
 
 
 async def chat() -> bool:

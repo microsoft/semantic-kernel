@@ -159,7 +159,7 @@ class Kernel(KernelBaseModel):
         Yields:
             StreamingKernelContent: The content of the stream of the last function provided.
         """
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments(**kwargs)
         results: List[FunctionResult] = []
         if isinstance(functions, KernelFunction):
@@ -278,7 +278,7 @@ class Kernel(KernelBaseModel):
             Optional[Union[FunctionResult, List[FunctionResult]]]: The result of the function(s)
 
         """
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments(**kwargs)
         results = []
         pipeline_step = 0
@@ -492,7 +492,7 @@ class Kernel(KernelBaseModel):
             if not hasattr(candidate, "__kernel_function__"):
                 continue
 
-            functions.append(KernelFunction.from_native_method(candidate, plugin_name))
+            functions.append(KernelFunction.from_method(plugin_name=plugin_name, method=candidate))
 
         logger.debug(f"Methods imported: {len(functions)}")
 
@@ -606,12 +606,12 @@ class Kernel(KernelBaseModel):
 
     def create_function_from_prompt(
         self,
-        template: Optional[str] = None,
+        function_name: str,
+        plugin_name: str,
+        description: Optional[str] = None,
+        prompt: Optional[str] = None,
         prompt_template_config: Optional[PromptTemplateConfig] = None,
         prompt_execution_settings: Optional[PromptExecutionSettings] = None,
-        function_name: Optional[str] = None,
-        plugin_name: Optional[str] = None,
-        description: Optional[str] = None,
         template_format: Optional[str] = None,
         prompt_template: Optional[PromptTemplateBase] = None,
         **kwargs: Any,
@@ -637,10 +637,10 @@ class Kernel(KernelBaseModel):
             prompt_execution_settings = PromptExecutionSettings(extension_data=kwargs)
 
         function = KernelFunction.from_prompt(
-            prompt=template or prompt_template_config.template,
             function_name=function_name,
             plugin_name=plugin_name,
             description=description,
+            prompt=prompt,
             template_format=template_format,
             prompt_template=prompt_template,
             prompt_template_config=prompt_template_config,
@@ -651,13 +651,13 @@ class Kernel(KernelBaseModel):
 
         return function
 
-    def register_native_function(
+    def register_function_from_method(
         self,
-        plugin_name: Optional[str],
-        kernel_function: Callable,
+        plugin_name: str,
+        method: Callable[..., Any],
     ) -> KernelFunction:
         """
-        Creates a native function from the plugin name and kernel function
+        Creates a native function from the plugin name and registers it with the kernel.
 
         Args:
             plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
@@ -666,13 +666,16 @@ class Kernel(KernelBaseModel):
         Returns:
             KernelFunction: The created native function
         """
-        if not hasattr(kernel_function, "__kernel_function__"):
+        if not hasattr(method, "__kernel_function__"):
             raise KernelException(
                 KernelException.ErrorCodes.InvalidFunctionType,
                 "kernel_function argument must be decorated with @kernel_function",
             )
 
-        function = KernelFunction.from_native_method(kernel_function, plugin_name)
+        function = KernelFunction.from_method(
+            method=method,
+            plugin_name=plugin_name,
+        )
         self.add_plugin(plugin_name or function.plugin_name, [function])
 
         return function

@@ -58,3 +58,13 @@ class KernelException(Exception):
             ErrorCodes -- The error code.
         """
         return self._error_code
+
+
+# TODO: replace exception classes with KernelException
+class KernelFunctionException(Exception):
+    pass
+
+
+class KernelFunctionInitializationException(Exception):
+    def __init__(self, message: str):
+        super().__init__("KernelFunction failed to initialize: " + message)
