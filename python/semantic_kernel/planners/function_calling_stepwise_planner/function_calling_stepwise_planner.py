@@ -53,7 +53,6 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     generate_plan_yaml: str
     step_prompt: str
 
-
     def __init__(self, service_id: str, options: Optional[FunctionCallingStepwisePlannerOptions] = None):
 
         options = options or FunctionCallingStepwisePlannerOptions()
@@ -105,7 +104,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         chat_completion: ChatCompletionClientBase,
         prompt_execution_settings: Any,
     ) -> ChatMessageContent:
-        pass
+        await 
 
     async def build_chat_history_for_step(
         self,
