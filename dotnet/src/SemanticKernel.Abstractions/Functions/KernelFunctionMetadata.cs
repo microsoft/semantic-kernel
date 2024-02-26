@@ -65,7 +65,7 @@ public sealed class KernelFunctionMetadata
         get => this._pluginName;
         init
         {
-            if (value is not null)
+            if (!string.IsNullOrEmpty(value))
             {
                 Verify.ValidPluginName(value);
             }
