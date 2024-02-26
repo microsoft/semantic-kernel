@@ -75,6 +75,16 @@ public class KernelPluginTests
     }
 
     [Fact]
+    public void ItThrowsInvalidOperationExceptionForFunctionReuse()
+    {
+        KernelFunction func1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("name1", "description", new[] { func1 }, true);
+
+        Assert.Throws<InvalidOperationException>(() => KernelPluginFactory.CreateFromFunctions("name2", "description", new[] { func1 }, true));
+    }
+
+    [Fact]
     public void ItContainsAddedFunctions()
     {
         KernelFunction func1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");

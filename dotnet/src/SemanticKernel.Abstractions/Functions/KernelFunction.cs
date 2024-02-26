@@ -66,10 +66,35 @@ public abstract class KernelFunction
     public string Description => this.Metadata.Description;
 
     /// <summary>
+    /// Gets or sets the name of the plugin containing the function.
+    /// </summary>
+    /// <remarks>
+    /// The plugin name can only be set once, and cannot be changed once it has been set.
+    /// To add the same function to multiple plugins you must create a new instance of the function for each plugin.
+    /// A <see cref="InvalidOperationException"/> will be thrown if the plugin name is set more than once.
+    /// </remarks>
+    public string? PluginName
+    {
+        get => this.Metadata.PluginName;
+
+        set
+        {
+            if (this.Metadata.PluginName is null)
+            {
+                this.Metadata = new KernelFunctionMetadata(this.Metadata) { PluginName = value };
+            }
+            else
+            {
+                throw new InvalidOperationException("The plugin name cannot be changed once it has been set.");
+            }
+        }
+    }
+
+    /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
     /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    public KernelFunctionMetadata Metadata { get; init; }
+    public KernelFunctionMetadata Metadata { get; private set; }
 
     /// <summary>
     /// Gets the prompt execution settings.

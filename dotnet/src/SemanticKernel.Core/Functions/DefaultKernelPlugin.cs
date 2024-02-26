@@ -18,11 +18,12 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
     /// <param name="name">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <param name="setPluginName">When true the plugin name will be set for each function which will prevent the function being added to another plugin.</param>
     /// <exception cref="ArgumentException"><paramref name="name"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="name"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    internal DefaultKernelPlugin(string name, string? description, IEnumerable<KernelFunction>? functions = null) : base(name, description)
+    internal DefaultKernelPlugin(string name, string? description, IEnumerable<KernelFunction>? functions = null, bool setPluginName = false) : base(name, description)
     {
         this._functions = new Dictionary<string, KernelFunction>(StringComparer.OrdinalIgnoreCase);
         if (functions is not null)
@@ -30,6 +31,11 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
             foreach (KernelFunction f in functions)
             {
                 Verify.NotNull(f, nameof(functions));
+                if (setPluginName)
+                {
+                    f.PluginName = name;
+                }
+
                 this._functions.Add(f.Name, f);
             }
         }

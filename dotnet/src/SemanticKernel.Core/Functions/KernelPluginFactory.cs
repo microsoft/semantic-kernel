@@ -94,11 +94,11 @@ public static class KernelPluginFactory
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
-    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <param name="setPluginName">When true the plugin name will be set for each function which will prevent the function being added to another plugin.</param>
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null) =>
-        new DefaultKernelPlugin(pluginName, description, functions);
+    public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null, bool setPluginName = false) =>
+        new DefaultKernelPlugin(pluginName, description, functions, setPluginName);
 }

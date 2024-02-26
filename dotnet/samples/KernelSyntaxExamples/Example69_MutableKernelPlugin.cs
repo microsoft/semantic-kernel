@@ -52,6 +52,7 @@ public class Example69_MutableKernelPlugin : BaseTest
                 foreach (KernelFunction f in functions)
                 {
                     ArgumentNullException.ThrowIfNull(f);
+                    f.PluginName = name;
                     this._functions.Add(f.Name, f);
                 }
             }
@@ -72,6 +73,7 @@ public class Example69_MutableKernelPlugin : BaseTest
         public void AddFunction(KernelFunction function)
         {
             ArgumentNullException.ThrowIfNull(function);
+            function.PluginName = this.Name;
             this._functions.Add(function.Name, function);
         }
 

@@ -290,6 +290,7 @@ internal sealed class Agent : IAgent
         {
             this.Agent = agent;
             this.FunctionAsk = functionAsk;
+            this.FunctionAsk.PluginName = agent.Name;
         }
 
         public override IEnumerator<KernelFunction> GetEnumerator()
