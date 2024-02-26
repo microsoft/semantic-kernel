@@ -45,7 +45,7 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
         ),
     )
 
-    conversationSummaryPlugin = kernel.import_plugin(
+    conversationSummaryPlugin = kernel.import_plugin_from_object(
         ConversationSummaryPlugin(kernel, prompt_template_config), "conversationSummary"
     )
 
@@ -92,7 +92,7 @@ async def test_oai_summarize_conversation_using_plugin(
         ),
     )
 
-    conversationSummaryPlugin = kernel.import_plugin(
+    conversationSummaryPlugin = kernel.import_plugin_from_object(
         ConversationSummaryPlugin(kernel, prompt_template_config), "conversationSummary"
     )
 

@@ -12,7 +12,7 @@ namespace SemanticKernel.UnitTests.AI.ChatCompletion;
 public class ChatHistoryTests
 {
     [Fact]
-    public void ItCanBeSerialised()
+    public void ItCanBeSerialized()
     {
         // Arrange
         var options = new JsonSerializerOptions();
@@ -29,7 +29,7 @@ public class ChatHistoryTests
     }
 
     [Fact]
-    public void ItCanBeDeserialised()
+    public void ItCanBeDeserialized()
     {
         // Arrange
         var options = new JsonSerializerOptions();
@@ -39,15 +39,15 @@ public class ChatHistoryTests
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, options);
 
         // Act
-        var chatHistoryDeserialised = JsonSerializer.Deserialize<ChatHistory>(chatHistoryJson, options);
+        var chatHistoryDeserialized = JsonSerializer.Deserialize<ChatHistory>(chatHistoryJson, options);
 
         // Assert
-        Assert.NotNull(chatHistoryDeserialised);
-        Assert.Equal(chatHistory.Count, chatHistoryDeserialised.Count);
+        Assert.NotNull(chatHistoryDeserialized);
+        Assert.Equal(chatHistory.Count, chatHistoryDeserialized.Count);
         for (var i = 0; i < chatHistory.Count; i++)
         {
-            Assert.Equal(chatHistory[i].Role.Label, chatHistoryDeserialised[i].Role.Label);
-            Assert.Equal(chatHistory[i].Content, chatHistoryDeserialised[i].Content);
+            Assert.Equal(chatHistory[i].Role.Label, chatHistoryDeserialized[i].Role.Label);
+            Assert.Equal(chatHistory[i].Content, chatHistoryDeserialized[i].Content);
         }
     }
 }

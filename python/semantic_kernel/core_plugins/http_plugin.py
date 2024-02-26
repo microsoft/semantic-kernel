@@ -20,7 +20,7 @@ class HttpPlugin(KernelBaseModel):
     A plugin that provides HTTP functionality.
 
     Usage:
-        kernel.import_plugin(HttpPlugin(), "http")
+        kernel.import_plugin_from_object(HttpPlugin(), "http")
 
     Examples:
 
