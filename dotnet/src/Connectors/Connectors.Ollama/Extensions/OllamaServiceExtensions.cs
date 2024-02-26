@@ -159,11 +159,10 @@ public static class OllamaServiceExtensions
     /// <summary>
     /// Add Ollama Text Embedding Generation services to the kernel builder.
     /// </summary>
-    /// <param name="builder">The kernel builder.</param>
+    /// <param name="services">The service collection to add the Ollama Text Generation service to.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="baseUri">The base uri to Ollama hosted service.</param>
-    /// <param name="serviceId">The optional service ID.</param>
-    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
     [Experimental("SKEXP0011")]
     public static IServiceCollection AddOllamaTextEmbeddingGeneration(
