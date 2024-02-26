@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Text.Json;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
@@ -12,24 +14,7 @@ namespace SemanticKernel.UnitTests.AI.ChatCompletion;
 public class ChatHistoryTests
 {
     [Fact]
-    public void ItCanBeSerialized()
-    {
-        // Arrange
-        var options = new JsonSerializerOptions();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.User, "Hello");
-        chatHistory.AddMessage(AuthorRole.Assistant, "Hi");
-
-        // Act
-        var chatHistoryJson = JsonSerializer.Serialize(chatHistory);
-
-        // Assert
-        Assert.NotNull(chatHistoryJson);
-        Assert.Equal("[{\"Role\":{\"Label\":\"user\"},\"Content\":\"Hello\",\"Items\":null,\"ModelId\":null,\"Metadata\":null},{\"Role\":{\"Label\":\"assistant\"},\"Content\":\"Hi\",\"Items\":null,\"ModelId\":null,\"Metadata\":null}]", chatHistoryJson);
-    }
-
-    [Fact]
-    public void ItCanBeDeserialized()
+    public void ItCanBeSerializedAndDeserialized()
     {
         // Arrange
         var options = new JsonSerializerOptions();
@@ -48,6 +33,10 @@ public class ChatHistoryTests
         {
             Assert.Equal(chatHistory[i].Role.Label, chatHistoryDeserialized[i].Role.Label);
             Assert.Equal(chatHistory[i].Content, chatHistoryDeserialized[i].Content);
+            Assert.Equal(chatHistory[i].Items.Count, chatHistoryDeserialized[i].Items.Count);
+            Assert.Equal(
+                chatHistory[i].Items.OfType<TextContent>().Single().Text,
+                chatHistoryDeserialized[i].Items.OfType<TextContent>().Single().Text);
         }
     }
 }
