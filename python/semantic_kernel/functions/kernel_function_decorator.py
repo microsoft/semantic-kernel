@@ -25,7 +25,7 @@ def kernel_function(
     To parse the type, first it checks if the parameter is annotated, and get's the description from there.
     After that it checks recursively until it reaches the lowest level, and it combines
     the types into a single comma-separated string, a forwardRef is also supported.
-    All of this is are stored in __kernel_function_context_parameters__.
+    All of this is are stored in __kernel_function_parameters__.
 
     The return type and description are parsed from the function signature,
     and that is stored in __kernel_function_return_type__, __kernel_function_return_description__
@@ -50,7 +50,7 @@ def kernel_function(
 
         func_sig = signature(func)
         logger.debug(f"{func_sig=}")
-        func.__kernel_function_context_parameters__ = [
+        func.__kernel_function_parameters__ = [
             _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
         ]
 
