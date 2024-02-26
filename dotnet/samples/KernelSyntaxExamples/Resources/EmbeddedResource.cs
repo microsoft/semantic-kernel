@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Graph;
 using RepoUtils;
 
 namespace Resources;
