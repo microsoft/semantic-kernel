@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
@@ -142,7 +141,7 @@ public class Example65_HandlebarsPlanner : BaseTest
     public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt)
     {
         WriteSampleHeading("Plan Not Possible");
-        
+
         // Load additional plugins to enable planner but not enough for the given goal.
         await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, null, shouldPrintPrompt, true, "SummarizePlugin");
         /*
