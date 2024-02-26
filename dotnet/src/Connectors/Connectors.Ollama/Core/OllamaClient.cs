@@ -127,6 +127,31 @@ internal sealed class OllamaClient : IOllamaClient
         }
     }
 
+    public async Task<IList<ReadOnlyMemory<float>>> GenerateTextEmbeddingAsync(IList<string> prompts,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        var endpoint = this.EndpointProvider.EmbeddingsGenerationEndpoint;
+
+        var result = new List<ReadOnlyMemory<float>>(prompts.Count);
+
+        foreach (string prompt in prompts)
+        {
+            var request = this.CreateEmbeddingRequest(prompt, executionSettings);
+            using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+
+            string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            var response = DeserializeResponse<OllamaEmbeddingResponse>(body);
+            var embedding = GetEmbeddingFromResponse(response);
+
+            result.Add(embedding);
+        }
+
+        return result;
+    }
+
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens is < 1)
@@ -194,6 +219,7 @@ internal sealed class OllamaClient : IOllamaClient
                 metadata: new OllamaMetadata(response))
         };
     }
+
     private static StreamingChatMessageContent GetStreamingChatContentFromChatContent(ChatMessageContent chatMessageContent)
         => new(
             role: chatMessageContent.Role,
@@ -229,6 +255,16 @@ internal sealed class OllamaClient : IOllamaClient
         return request;
     }
 
+    private OllamaEmbeddingRequest CreateEmbeddingRequest(
+        string prompt,
+        PromptExecutionSettings? promptExecutionSettings)
+    {
+        var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        ValidateMaxTokens(ollamaExecutionSettings.MaxTokens);
+        var request = OllamaEmbeddingRequest.FromPromptAndExecutionSettings(prompt, ollamaExecutionSettings, this._modelId);
+        return request;
+    }
+
     private static T DeserializeResponse<T>(string body)
     {
         try
@@ -255,6 +291,8 @@ internal sealed class OllamaClient : IOllamaClient
         {
             new(response.Response, response.Model, response, Encoding.UTF8, new OllamaMetadata(response))
         };
+
+    private static ReadOnlyMemory<float> GetEmbeddingFromResponse(OllamaEmbeddingResponse response) => new(response.Embedding);
 
     private void LogUsage(OllamaMetadata? metadata)
     {
