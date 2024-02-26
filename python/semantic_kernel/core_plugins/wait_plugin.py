@@ -18,7 +18,7 @@ class WaitPlugin(KernelBaseModel):
     WaitPlugin provides a set of functions to wait for a certain amount of time.
 
     Usage:
-        kernel.import_plugin(WaitPlugin(), plugin_name="wait")
+        kernel.import_plugin_from_object(WaitPlugin(), plugin_name="wait")
 
     Examples:
         {{wait.wait 5}} => Wait for 5 seconds

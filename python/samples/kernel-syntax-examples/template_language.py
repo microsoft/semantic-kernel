@@ -23,7 +23,7 @@ async def main():
         sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
-    kernel.import_plugin(TimePlugin(), "time")
+    kernel.import_plugin_from_object(TimePlugin(), "time")
 
     function_definition = """
     Today is: {{time.Date}}
