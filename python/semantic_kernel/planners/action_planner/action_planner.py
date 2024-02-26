@@ -182,7 +182,7 @@ class ActionPlanner:
         return dedent(
             """
             [EXAMPLE]
-            - List of functions:            
+            - List of functions:
             // Get the current time.
             TimePlugin.Time
             No parameters.
@@ -256,14 +256,15 @@ class ActionPlanner:
 
     def _create_function_string(self, function: KernelFunctionMetadata) -> str:
         """
-        Takes an instance of FunctionView and returns a string that consists of
+        Takes an instance of KernelFunctionMetadata and returns a string that consists of
         function name, function description and parameters in the following format
         // <function-description>
         <plugin-name>.<function-name>
         Parameter ""<parameter-name>"": <parameter-description> (default value: `default_value`)
         ...
 
-        :param function: An instance of FunctionView for which the string representation needs to be generated
+        :param function: An instance of KernelFunctionMetadata for which the string representation
+            needs to be generated
         :return: string representation of function
         """
 
