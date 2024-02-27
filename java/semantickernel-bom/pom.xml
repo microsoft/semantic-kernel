@@ -61,11 +61,6 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-connectors-web-bing</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>aiservices-azureopenai</artifactId>
                 <version>${project.version}</version>
             </dependency>
