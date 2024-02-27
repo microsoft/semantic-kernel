@@ -86,14 +86,7 @@ internal sealed class GeminiRequest
         var list = content.Items?.Select(item => item switch
         {
             TextContent textContent => new GeminiPart { Text = textContent.Text },
-            ImageContent imageContent => new GeminiPart
-            {
-                FileData = new GeminiPart.FileDataPart
-                {
-                    MimeType = GetMimeTypeFromImageContentForUri(imageContent),
-                    FileUri = imageContent.Uri ?? throw new InvalidOperationException("Image content URI is empty.")
-                }
-            },
+            ImageContent imageContent => CreateGeminiPartFromImage(imageContent),
             _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
         }).ToList() ?? new List<GeminiPart>();
 
@@ -105,20 +98,49 @@ internal sealed class GeminiRequest
         return list;
     }
 
-    private static string GetMimeTypeFromImageContentForUri(ImageContent imageContent)
+    private static GeminiPart CreateGeminiPartFromImage(ImageContent imageContent)
+    {
+        // Binary data takes precedence over URI as per the ImageContent.ToString() implementation.
+        if (imageContent.Data is { IsEmpty: false })
+        {
+            return new GeminiPart
+            {
+                InlineData = new GeminiPart.InlineDataPart
+                {
+                    MimeType = GetMimeTypeFromImageContentDataMediaType(imageContent),
+                    InlineData = Convert.ToBase64String(imageContent.Data.ToArray())
+                }
+            };
+        }
+
+        if (imageContent.Uri is not null)
+        {
+            return new GeminiPart
+            {
+                FileData = new GeminiPart.FileDataPart
+                {
+                    MimeType = GetMimeTypeFromImageContentMetadata(imageContent),
+                    FileUri = imageContent.Uri ?? throw new InvalidOperationException("Image content URI is empty.")
+                }
+            };
+        }
+
+        throw new InvalidOperationException("Image content does not contain any data or uri.");
+    }
+
+    private static string GetMimeTypeFromImageContentDataMediaType(ImageContent imageContent)
+    {
+        return imageContent.Data?.MediaType
+               ?? throw new InvalidOperationException("Image content Data.MediaType is empty.");
+    }
+
+    private static string GetMimeTypeFromImageContentMetadata(ImageContent imageContent)
     {
         var key = imageContent.Metadata?.Keys.SingleOrDefault(key =>
                       key.Equals("mimeType", StringComparison.OrdinalIgnoreCase)
                       || key.Equals("mime_type", StringComparison.OrdinalIgnoreCase))
                   ?? throw new InvalidOperationException("Mime type is not found in the image content metadata.");
         return imageContent.Metadata[key]!.ToString();
-    }
-
-    private static string GetMimeTypeFromImageContentForBinaryData(ImageContent imageContent)
-    {
-        return imageContent.Data?.MediaType
-               ?? throw new InvalidOperationException(
-                   $"Mime type is not found in the {nameof(ImageContent)}.{nameof(ImageContent.Data)}.{nameof(BinaryData.MediaType)}");
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest obj)
