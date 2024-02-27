@@ -35,8 +35,6 @@ from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
-# from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
-
 KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
 
@@ -64,7 +62,10 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         def my_function(arguments: KernelArguments) -> str:
             return f"F({arguments['input']})"
 
-        return KernelFunction.from_native_method(my_function, "plugin")
+        return KernelFunction.from_method(
+            plugin_name="plugin",
+            method=my_function,
+        )
 
     def create_chat_history() -> ChatHistory:
         return ChatHistory()
@@ -127,7 +128,6 @@ BASE_CLASSES = [
 ]
 
 STATELESS_CLASSES = [
-    # PromptTemplateEngine,
     NullMemory,
 ]
 
