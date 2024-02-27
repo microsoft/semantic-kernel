@@ -22,9 +22,9 @@ namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 /// </summary>
 public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 {
-    private const string BaseUrl = "https://api.assemblyai.com/";
-    private readonly string _apiKey;
-    private readonly HttpClient _httpClient;
+    private const string FallbackBaseUrl = "https://api.assemblyai.com/";
+    internal string ApiKey { get; }
+    internal HttpClient HttpClient { get; }
 
     /// <summary>
     /// Attributes is not used by AssemblyAIAudioToTextService.
@@ -41,8 +41,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         HttpClient? httpClient = null
     )
     {
-        this._apiKey = apiKey;
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        this.ApiKey = apiKey;
+        this.HttpClient = HttpClientProvider.GetHttpClient(httpClient);
     }
 
     /// <inheritdoc />
@@ -131,7 +131,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         this.AddDefaultHeaders(request);
         request.Content = content;
-        using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
+        using var response = await this.SendWithSuccessCheckAsync(this.HttpClient, request, ct).ConfigureAwait(false);
         var jsonStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         return json.RootElement.GetProperty("upload_url").GetString()
@@ -157,7 +157,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
         using var request = HttpRequest.CreatePostRequest(url, jsonRequest);
         this.AddDefaultHeaders(request);
-        using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
+        using var response = await this.SendWithSuccessCheckAsync(this.HttpClient, request, ct).ConfigureAwait(false);
         var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         if (json.RootElement.TryGetProperty("error", out var property))
@@ -186,7 +186,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             ct.ThrowIfCancellationRequested();
             using var request = HttpRequest.CreateGetRequest(url);
             this.AddDefaultHeaders(request);
-            using var response = await this.SendWithSuccessCheckAsync(this._httpClient, request, ct).ConfigureAwait(false);
+            using var response = await this.SendWithSuccessCheckAsync(this.HttpClient, request, ct).ConfigureAwait(false);
             var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
 
@@ -209,18 +209,18 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     }
 
     /// <summary>
-    /// Create a URL string that includes the default BaseUrl if the BaseAddress on _httpClient isn't set.
+    /// Create a URL string that includes the default BaseUrl if the BaseAddress on HttpClient isn't set.
     /// </summary>
     /// <param name="url">URL without base.</param>
     /// <returns>URL with or without BaseUrl.</returns>
     private string Url(string url)
     {
-        return this._httpClient.BaseAddress is null ? $"{BaseUrl}{url}" : url;
+        return this.HttpClient.BaseAddress is null ? $"{FallbackBaseUrl}{url}" : url;
     }
 
     private void AddDefaultHeaders(HttpRequestMessage request)
     {
-        request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
+        request.Headers.Authorization = new AuthenticationHeaderValue(this.ApiKey);
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AssemblyAIAudioToTextService)));

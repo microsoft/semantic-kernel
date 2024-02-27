@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Microsoft.SemanticKernel.Contents;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.AssemblyAI.AudioToText;
+namespace SemanticKernel.Connectors.AssemblyAI.UnitTests.AudioToText;
 
 /// <summary>
 /// Unit tests for <see cref="AssemblyAIAudioToTextService"/> class.
@@ -86,7 +86,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         // Act
         var result = await service.GetTextContentAsync(
             new AudioContent(new BinaryData("data", "audio/wav"))
-        );
+        ).ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(result);
@@ -107,7 +107,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         // Act
         var result = await service.GetTextContentAsync(
             new AudioContent(new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3"))
-        );
+        ).ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(result);
@@ -132,12 +132,12 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
             transcribedResponse
         ];
 
-        await using var ms = new MemoryStream();
+        using var ms = new MemoryStream();
 
         // Act
         var result = await service.GetTextContentAsync(
             new AudioStreamContent(ms)
-        );
+        ).ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(result);
@@ -159,8 +159,8 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentAsync(
                 new AudioContent(new BinaryData("data", "audio/wav"))
-            )
-        );
+            ).ConfigureAwait(true)
+        ).ConfigureAwait(true);
     }
 
     [Fact]
@@ -188,8 +188,8 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         var exception = await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentAsync(
                 new AudioContent(new BinaryData("data", "audio/wav"))
-            )
-        );
+            ).ConfigureAwait(true)
+        ).ConfigureAwait(true);
 
         // Assert
         Assert.Equal(ErrorMessage, exception.Message);

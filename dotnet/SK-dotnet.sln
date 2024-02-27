@@ -223,6 +223,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAISearch.Un
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AssemblyAI", "src\Connectors\Connectors.AssemblyAI\Connectors.AssemblyAI.csproj", "{FC1CA0B9-E96A-49FA-B18D-8197A3D7DEB1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AssemblyAI.UnitTests", "src\Connectors\Connectors.AssemblyAI.UnitTests\Connectors.AssemblyAI.UnitTests.csproj", "{69F9AFA7-85C3-45B7-8BCA-84F48E7C7D7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -516,6 +518,12 @@ Global
 		{FC1CA0B9-E96A-49FA-B18D-8197A3D7DEB1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{FC1CA0B9-E96A-49FA-B18D-8197A3D7DEB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC1CA0B9-E96A-49FA-B18D-8197A3D7DEB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69F9AFA7-85C3-45B7-8BCA-84F48E7C7D7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69F9AFA7-85C3-45B7-8BCA-84F48E7C7D7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69F9AFA7-85C3-45B7-8BCA-84F48E7C7D7F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{69F9AFA7-85C3-45B7-8BCA-84F48E7C7D7F}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{69F9AFA7-85C3-45B7-8BCA-84F48E7C7D7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69F9AFA7-85C3-45B7-8BCA-84F48E7C7D7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -591,6 +599,7 @@ Global
 		{607DD6FA-FA0D-45E6-80BA-22A373609E89} = {5C246969-D794-4EC3-8E8F-F90D4D166420}
 		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{FC1CA0B9-E96A-49FA-B18D-8197A3D7DEB1} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+		{69F9AFA7-85C3-45B7-8BCA-84F48E7C7D7F} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
