@@ -15,6 +15,14 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 internal static class KernelSystemHelpers
 {
     /// <summary>
+    /// The "NaN", "Infinity", and "-Infinity" String tokens can be read as floating-point constants, and the Single and Double values for these constants will be written as their corresponding JSON string representations.
+    /// </summary>
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    {
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
+    };
+
+    /// <summary>
     /// Register all (default) or specific categories of system helpers.
     /// </summary>
     /// <param name="handlebarsInstance">The <see cref="IHandlebars"/>-instance.</param>
@@ -91,11 +99,13 @@ internal static class KernelSystemHelpers
             var args = ProcessArguments(arguments, variables);
             object objectToSerialize = args[0];
 
-            return objectToSerialize switch
+            object v = objectToSerialize switch
             {
                 string stringObject => objectToSerialize,
-                _ => JsonSerializer.Serialize(objectToSerialize)
+                _ => JsonSerializer.Serialize(objectToSerialize, s_jsonSerializerOptions)
             };
+
+            return v;
         });
 
         handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
