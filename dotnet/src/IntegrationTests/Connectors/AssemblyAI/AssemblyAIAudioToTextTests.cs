@@ -84,7 +84,11 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act
         var result = await service.GetTextContentAsync(
-            new AudioContent(audioData)
+            new AudioContent(audioData),
+            new AssemblyAIAudioToTextExecutionSettings
+            {
+                PollingInterval = TimeSpan.FromMilliseconds(750)
+            }
         );
 
         // Assert
