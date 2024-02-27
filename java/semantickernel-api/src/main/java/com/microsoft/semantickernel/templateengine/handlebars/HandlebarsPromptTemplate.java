@@ -68,7 +68,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             template);
 
         if (arguments == null) {
-            arguments = new KernelFunctionArguments();
+            arguments = KernelFunctionArguments.builder().build();
         }
         return handler.render(arguments);
     }

@@ -101,7 +101,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         function
             .invokeAsync(
                 kernel,
-                new KernelFunctionArguments(arguments),
+                KernelFunctionArguments.builder().withVariables(arguments).build(),
                 null,
                 new InvocationContext(context))
             .handle(convertToType(variableType))
@@ -162,11 +162,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      */
     public FunctionInvocation<T> withArguments(
         @Nullable KernelFunctionArguments arguments) {
-        if (arguments == null) {
-            this.arguments = null;
-        } else {
-            this.arguments = new KernelFunctionArguments(arguments);
-        }
+        this.arguments = KernelFunctionArguments.builder().withVariables(arguments).build();
         return this;
     }
 

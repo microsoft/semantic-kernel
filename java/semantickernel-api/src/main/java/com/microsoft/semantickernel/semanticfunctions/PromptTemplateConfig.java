@@ -56,7 +56,7 @@ public class PromptTemplateConfig implements Buildable {
      *
      * @param template Template string
      */
-    public PromptTemplateConfig(String template) {
+    protected PromptTemplateConfig(String template) {
         this(
             CURRENT_SCHEMA,
             DEFAULT_CONFIG_NAME,
@@ -121,7 +121,7 @@ public class PromptTemplateConfig implements Buildable {
      * @param outputVariable    Output variable
      * @param executionSettings Execution settings
      */
-    public PromptTemplateConfig(
+    protected PromptTemplateConfig(
         @Nullable String name,
         @Nullable String template,
         @Nullable String templateFormat,

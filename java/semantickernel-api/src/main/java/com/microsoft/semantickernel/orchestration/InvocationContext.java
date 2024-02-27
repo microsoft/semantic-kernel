@@ -34,7 +34,7 @@ public class InvocationContext implements Buildable {
      * @param toolCallBehavior        The behavior for tool calls.
      * @param contextVariableTypes    The types of context variables.
      */
-    public InvocationContext(
+    protected InvocationContext(
         @Nullable KernelHooks hooks,
         @Nullable PromptExecutionSettings promptExecutionSettings,
         @Nullable ToolCallBehavior toolCallBehavior,
@@ -52,7 +52,7 @@ public class InvocationContext implements Buildable {
     /**
      * Create a new instance of InvocationContext.
      */
-    public InvocationContext() {
+    protected InvocationContext() {
         this.hooks = null;
         this.promptExecutionSettings = null;
         this.toolCallBehavior = null;
@@ -64,7 +64,7 @@ public class InvocationContext implements Buildable {
      *
      * @param context The context to copy.
      */
-    public InvocationContext(@Nullable InvocationContext context) {
+    protected InvocationContext(@Nullable InvocationContext context) {
         if (context == null) {
             this.hooks = null;
             this.promptExecutionSettings = null;

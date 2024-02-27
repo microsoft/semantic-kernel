@@ -62,13 +62,5 @@ public class Example42_KernelBuilder {
                 "ConversationSummaryPlugin"))
             .build();
 
-        /////////////////////////////////////////////////////////
-        // KernelBuilder provides a convenient API for creating Kernel instances. However, it is just a
-        // wrapper, ultimately constructing a Kernel
-        // using the public constructor that's available for anyone to use directly if desired.
-        Kernel kernel = new Kernel(
-            new OrderedAIServiceSelector(),
-            new ArrayList<>(),
-            null);
     }
 }

@@ -74,7 +74,10 @@ public class Example06_TemplateLanguage {
         System.out.println("--- Rendered Prompt");
 
         var promptTemplate = new KernelPromptTemplateFactory()
-            .tryCreate(new PromptTemplateConfig(functionDefinition));
+            .tryCreate(PromptTemplateConfig
+                .builder()
+                .withTemplate(functionDefinition)
+                .build());
 
         var renderedPrompt = promptTemplate.renderAsync(kernel, null, null).block();
         System.out.println(renderedPrompt);

@@ -95,7 +95,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         }
 
         if (context == null) {
-            context = new InvocationContext();
+            context = InvocationContext.builder().build();
         }
 
         // this.Log.LogTrace("Rendering code: `{0}`", this.Content);
@@ -138,9 +138,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         if (this.tokens.size() > 1) {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
             arguments = this.enrichFunctionArguments(kernel, fBlock,
-                arguments == null
-                    ? new KernelFunctionArguments()
-                    : new KernelFunctionArguments(arguments),
+                KernelFunctionArguments.builder().withVariables(arguments).build(),
                 context);
         }
 
