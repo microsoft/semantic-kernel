@@ -25,6 +25,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     private const string FallbackBaseUrl = "https://api.assemblyai.com/";
     internal string ApiKey { get; }
     internal HttpClient HttpClient { get; }
+    internal TimeSpan PollingInterval { get; } = TimeSpan.FromMilliseconds(500);
 
     /// <summary>
     /// Attributes is not used by AssemblyAIAudioToTextService.
@@ -35,13 +36,20 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     /// Creates an instance of the <see cref="AssemblyAIAudioToTextService"/> with an AssemblyAI API key.
     /// </summary>
     /// <param name="apiKey">OpenAI API Key</param>
+    /// <param name="pollingInterval">The time between each poll for the transcript status, until the status is completed.</param>
     /// <param name="httpClient"></param>
     public AssemblyAIAudioToTextService(
         string apiKey,
+        TimeSpan? pollingInterval = null,
         HttpClient? httpClient = null
     )
     {
         this.ApiKey = apiKey;
+        if (pollingInterval.HasValue)
+        {
+            this.PollingInterval = pollingInterval.Value;
+        }
+
         this.HttpClient = HttpClientProvider.GetHttpClient(httpClient);
     }
 
@@ -77,7 +85,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
         var transcriptId = await this.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
             .ConfigureAwait(false);
-        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
+        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, cancellationToken)
             .ConfigureAwait(false);
 
         return new TextContent(
@@ -110,7 +118,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
         var transcriptId = await this.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
             .ConfigureAwait(false);
-        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
+        var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, cancellationToken)
             .ConfigureAwait(false);
 
         return new TextContent(
@@ -170,16 +178,10 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
     private async Task<JsonDocument> WaitForTranscriptToProcessAsync(
         string transcriptId,
-        PromptExecutionSettings? executionSettings = null,
         CancellationToken ct = default
     )
     {
         var url = this.Url($"v2/transcript/{transcriptId}");
-        var pollingInterval = TimeSpan.FromSeconds(1);
-        if (executionSettings is AssemblyAIAudioToTextExecutionSettings aaiSettings)
-        {
-            pollingInterval = aaiSettings.PollingInterval;
-        }
 
         while (true)
         {
@@ -195,7 +197,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             {
                 case "processing":
                 case "queued":
-                    await Task.Delay(pollingInterval, ct).ConfigureAwait(false);
+                    await Task.Delay(this.PollingInterval, ct).ConfigureAwait(false);
                     break;
                 case "completed":
                     return json;

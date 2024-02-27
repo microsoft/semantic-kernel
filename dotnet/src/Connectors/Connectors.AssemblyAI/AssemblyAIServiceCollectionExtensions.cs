@@ -26,11 +26,10 @@ public static class AssemblyAIServiceCollectionExtensions
     public static IKernelBuilder AddAssemblyAIAudioToText(
         this IKernelBuilder builder,
         string apiKey,
-        string? endpoint = null,
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        AddAssemblyAIAudioToText(builder.Services, apiKey, endpoint, serviceId);
+        AddAssemblyAIAudioToText(builder.Services, apiKey, serviceId);
         return builder;
     }
 
@@ -45,7 +44,6 @@ public static class AssemblyAIServiceCollectionExtensions
     public static IServiceCollection AddAssemblyAIAudioToText(
         this IServiceCollection services,
         string apiKey,
-        string? endpoint = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -53,7 +51,6 @@ public static class AssemblyAIServiceCollectionExtensions
         optionsBuilder.Configure(options =>
         {
             options.ApiKey = apiKey;
-            options.Endpoint = endpoint;
         });
         ValidateOptions(optionsBuilder);
         AddService(services, serviceId);
@@ -188,6 +185,7 @@ public static class AssemblyAIServiceCollectionExtensions
 
                 var service = new AssemblyAIAudioToTextService(
                     options.ApiKey,
+                    options.PollingInterval,
                     httpClient
                 );
 

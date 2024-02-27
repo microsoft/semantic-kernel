@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.SemanticKernel;
@@ -17,6 +18,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
     private const string ApiKey = "Test123";
     private const string Endpoint = "http://localhost:1234/";
     private const string ServiceId = "AssemblyAI";
+    private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(500);
 
     [Fact]
     public void AddServiceWithParameters()
@@ -25,29 +27,41 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         var kernel = Kernel.CreateBuilder()
             .AddAssemblyAIAudioToText(
                 apiKey: ApiKey,
-                endpoint: Endpoint,
                 serviceId: ServiceId
             )
             .Build();
 
         // Assert
-        var service = kernel.GetRequiredService<IAudioToTextService>();
-        this.AssertService(service);
-
-        service = kernel.GetRequiredService<IAudioToTextService>(ServiceId);
-        this.AssertService(service);
+        this.AssertService(kernel);
     }
 
-    private void AssertService(IAudioToTextService service)
+    private void AssertService(
+        Kernel kernel,
+        string? endpoint = null,
+        TimeSpan? pollingInterval = null
+    )
     {
+        var service = kernel.GetRequiredService<IAudioToTextService>();
+        Assert.NotNull(service);
+        Assert.IsType<AssemblyAIAudioToTextService>(service);
+
+        service = kernel.GetRequiredService<IAudioToTextService>(ServiceId);
         Assert.NotNull(service);
         Assert.IsType<AssemblyAIAudioToTextService>(service);
 
         var aaiService = (AssemblyAIAudioToTextService)service;
         Assert.Equal(ApiKey, aaiService.ApiKey);
         Assert.NotNull(aaiService.HttpClient);
-        Assert.NotNull(aaiService.HttpClient.BaseAddress);
-        Assert.Equal(Endpoint, aaiService.HttpClient.BaseAddress!.ToString());
+        if (endpoint != null)
+        {
+            Assert.NotNull(aaiService.HttpClient.BaseAddress);
+            Assert.Equal(Endpoint, aaiService.HttpClient.BaseAddress!.ToString());
+        }
+
+        if (pollingInterval != null)
+        {
+            Assert.Equal(s_pollingInterval, aaiService.PollingInterval);
+        }
     }
 
     [Fact]
@@ -59,6 +73,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         ]);
         configuration["ApiKey"] = ApiKey;
         configuration["Endpoint"] = Endpoint;
+        configuration["PollingInterval"] = s_pollingInterval.ToString();
 
         // Act
         var kernel = Kernel.CreateBuilder()
@@ -69,11 +84,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
             .Build();
 
         // Assert
-        var service = kernel.GetRequiredService<IAudioToTextService>();
-        this.AssertService(service);
-
-        service = kernel.GetRequiredService<IAudioToTextService>(ServiceId);
-        this.AssertService(service);
+        this.AssertService(kernel, Endpoint, s_pollingInterval);
     }
 
     [Fact]
@@ -86,16 +97,13 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
                 {
                     options.ApiKey = ApiKey;
                     options.Endpoint = Endpoint;
+                    options.PollingInterval = s_pollingInterval;
                 },
                 serviceId: ServiceId
             )
             .Build();
 
         // Assert
-        var service = kernel.GetRequiredService<IAudioToTextService>();
-        this.AssertService(service);
-
-        service = kernel.GetRequiredService<IAudioToTextService>(ServiceId);
-        this.AssertService(service);
+        this.AssertService(kernel, Endpoint, s_pollingInterval);
     }
 }

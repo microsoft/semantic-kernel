@@ -43,7 +43,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         string apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
         var audioData = await BinaryData.FromStreamAsync(audio, "audio/wav");
@@ -77,18 +77,14 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
         var audioData = await BinaryData.FromStreamAsync(audio, "audio/wav");
 
         // Act
         var result = await service.GetTextContentAsync(
-            new AudioContent(audioData),
-            new AssemblyAIAudioToTextExecutionSettings
-            {
-                PollingInterval = TimeSpan.FromMilliseconds(500)
-            }
+            new AudioContent(audioData)
         );
 
         // Assert
@@ -106,7 +102,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
 
@@ -127,7 +123,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         // Act
         var result = await service.GetTextContentAsync(
@@ -152,7 +148,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
@@ -170,10 +166,10 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
-        var textExecutionSettings = new AssemblyAIAudioToTextExecutionSettings
+        var textExecutionSettings = new PromptExecutionSettings
         {
             ExtensionData = new Dictionary<string, object>
             {
@@ -199,10 +195,10 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
-        var textExecutionSettings = new AssemblyAIAudioToTextExecutionSettings
+        var textExecutionSettings = new PromptExecutionSettings()
         {
             ExtensionData = new Dictionary<string, object>
             {
@@ -231,7 +227,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient);
+        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
 

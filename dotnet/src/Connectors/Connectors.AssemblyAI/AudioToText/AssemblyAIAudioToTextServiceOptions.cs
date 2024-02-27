@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
 /// <summary>
@@ -16,4 +18,9 @@ public class AssemblyAIAudioToTextServiceOptions
     /// The endpoint URL to the AssemblyAI API. Leave empty to use default endpoint.
     /// </summary>
     public string? Endpoint { get; set; }
+
+    /// <summary>
+    /// The time between each poll for the transcript status, until the status is completed.
+    /// </summary>
+    public TimeSpan? PollingInterval { get; set; }
 }

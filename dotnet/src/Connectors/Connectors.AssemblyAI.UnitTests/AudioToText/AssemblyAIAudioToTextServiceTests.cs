@@ -59,7 +59,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     public void ConstructorWithHttpClientWorksCorrectly()
     {
         // Arrange & Act
-        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        var service = new AssemblyAIAudioToTextService("api-key", httpClient: this._httpClient);
 
         // Assert
         Assert.NotNull(service);
@@ -69,7 +69,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     public async Task GetTextContentByDefaultWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        var service = new AssemblyAIAudioToTextService("api-key", httpClient: this._httpClient);
         using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         uploadFileResponse.Content = new StringContent(UploadFileResponseContent);
         using var transcribeResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
@@ -97,7 +97,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     public async Task GetTextContentByUrlWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        var service = new AssemblyAIAudioToTextService("api-key", httpClient: this._httpClient);
         using var transcribeResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         transcribeResponse.Content = new StringContent(CreateTranscriptResponseContent);
         using var transcribedResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
@@ -118,7 +118,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     public async Task GetTextContentByStreamWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        var service = new AssemblyAIAudioToTextService("api-key", httpClient: this._httpClient);
         using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         uploadFileResponse.Content = new StringContent(UploadFileResponseContent);
         using var transcribeResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
@@ -148,7 +148,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     public async Task HttpErrorShouldThrowWithErrorMessageAsync()
     {
         // Arrange
-        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        var service = new AssemblyAIAudioToTextService("api-key", httpClient: this._httpClient);
         using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
         this._messageHandlerStub.ResponsesToReturn =
         [
@@ -167,7 +167,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
     public async Task JsonErrorShouldThrowWithErrorMessageAsync()
     {
         // Arrange
-        var service = new AssemblyAIAudioToTextService("api-key", this._httpClient);
+        var service = new AssemblyAIAudioToTextService("api-key", httpClient: this._httpClient);
         using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized);
         const string ErrorMessage = "Bad API key";
         uploadFileResponse.Content = new StringContent(
