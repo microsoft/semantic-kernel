@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for token counting gemini model.
 /// </summary>
-internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClient
+internal sealed class GeminiTokenCounterClient : ClientBase
 {
     private readonly string _modelId;
 
@@ -40,8 +40,14 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
         this._modelId = modelId;
     }
 
-    /// <inheritdoc/>
-    public virtual async Task<int> CountTokensAsync(
+    /// <summary>
+    /// Counts the number of tokens asynchronously.
+    /// </summary>
+    /// <param name="prompt">The prompt to count tokens from.</param>
+    /// <param name="executionSettings">Optional settings for prompt execution.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>The number of tokens.</returns>
+    public async Task<int> CountTokensAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
@@ -62,5 +68,15 @@ internal class GeminiTokenCounterClient : GeminiClient, IGeminiTokenCounterClien
     {
         var node = DeserializeResponse<JsonNode>(body);
         return node["totalTokens"]?.GetValue<int>() ?? throw new KernelException("Invalid response from model");
+    }
+
+    private static GeminiRequest CreateGeminiRequest(
+        string prompt,
+        PromptExecutionSettings? promptExecutionSettings)
+    {
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+        var geminiRequest = GeminiRequest.FromPromptAndExecutionSettings(prompt, geminiExecutionSettings);
+        return geminiRequest;
     }
 }
