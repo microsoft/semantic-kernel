@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -49,6 +50,31 @@ public sealed class ChatCompletionAgent : KernelAgent
             cancellationToken).ConfigureAwait(false);
 
         return chatMessageContent.Select(m => { m.Source = this; return m; }).ToArray();
+    }
+
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(IReadOnlyList<ChatMessageContent> messages, PromptExecutionSettings? executionSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(messages);
+
+        var chat = new ChatHistory(this._instructions);
+        chat.AddRange(messages);
+
+        // TODO: Use kernel.ServiceSelector after it has been refactored to not require function and kernel arguments.
+        var chatCompletionService = this._kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatMessageContent = chatCompletionService.GetStreamingChatMessageContentsAsync(
+            chat,
+            executionSettings ?? this._promptExecutionSettings,
+            this._kernel,
+            cancellationToken).ConfigureAwait(false);
+
+        await foreach (var chatMessage in chatMessageContent)
+        {
+            chatMessage.Source = this;
+
+            yield return chatMessage;
+        }
     }
 
     private readonly Kernel _kernel;

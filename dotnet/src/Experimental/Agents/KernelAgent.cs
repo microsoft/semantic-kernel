@@ -42,4 +42,14 @@ public abstract class KernelAgent
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to cancel the operation.</param>
     /// <returns>List of messages representing the agent's response.</returns>
     public abstract Task<IReadOnlyList<ChatMessageContent>> InvokeAsync(IReadOnlyList<ChatMessageContent> messages, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Invokes the agent to process the given messages and generate a response as a stream.
+    /// </summary>
+    /// <param name="messages">A list of the messages for the agent to process.</param>
+    /// <param name="executionSettings">The AI execution settings (optional).</param>
+    /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to cancel the operation.</param>
+    /// <returns>List of messages representing the agent's response.</returns>
+    /// <returns>Streaming list of content updates representing the agent's response.</returns>
+    public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(IReadOnlyList<ChatMessageContent> messages, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default);
 }

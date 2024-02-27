@@ -4,11 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Kusto.Cloud.Platform.Utils;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -43,6 +45,30 @@ public class Example79_ChatCompletionAgent : BaseTest
 
         var prompt = PrintPrompt("I need help with my investment portfolio. Please guide me.");
         PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
+    }
+
+    /// <summary>
+    /// This example demonstrates a chat with the chat completion agent that utilizes the SK ChatCompletion streaming API to communicate with LLM.
+    /// </summary>
+    [Fact]
+    public async Task ChatWithAgentWithStreamingAsync()
+    {
+        var agent = new ChatCompletionAgent(
+            kernel: this._kernel,
+            instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
+            description: "Financial Adviser",
+            executionSettings: new OpenAIPromptExecutionSettings
+            {
+                MaxTokens = 500,
+                Temperature = 0.7,
+                TopP = 1.0,
+                PresencePenalty = 0.0,
+                FrequencyPenalty = 0.0,
+            }
+         );
+
+        var prompt = PrintPrompt("I need help with my investment portfolio. Please guide me.");
+        await PrintConversationAsync(agent.InvokeStreamingAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
     }
 
     /// <summary>
@@ -195,6 +221,43 @@ public class Example79_ChatCompletionAgent : BaseTest
         PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
     }
 
+    /// <summary>
+    /// This example demonstrates the chat completion agent's registration in DI/ServiceCollection.
+    /// </summary>
+    [Fact]
+    public async Task AgentAndDIAsync()
+    {
+        var collection = new ServiceCollection();
+        collection.AddOpenAIChatCompletion("gpt-4-1106-preview", TestConfiguration.OpenAI.ApiKey);
+        collection.AddKeyedSingleton<KernelAgent>("FitnessTrainer", (sp, key) =>
+        {
+            var kernel = new Kernel(sp);
+            kernel.Plugins.AddFromType<CRM>();
+
+            return new ChatCompletionAgent(
+                kernel: kernel,
+                instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
+                description: "Financial Adviser",
+                executionSettings: new OpenAIPromptExecutionSettings
+                {
+                    MaxTokens = 500,
+                    Temperature = 0.7,
+                    TopP = 1.0,
+                    PresencePenalty = 0.0,
+                    FrequencyPenalty = 0.0,
+                }
+             );
+        });
+
+        var serviceProvider = collection.BuildServiceProvider();
+
+        var agent = serviceProvider.GetRequiredKeyedService<KernelAgent>("FitnessTrainer");
+
+        // Somewhere in the application job/controller
+        var prompt = PrintPrompt("I need help with my investment portfolio. Please guide me.");
+        PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
+    }
+
     private string PrintPrompt(string prompt)
     {
         this.WriteLine($"Prompt: {prompt}");
@@ -218,6 +281,14 @@ public class Example79_ChatCompletionAgent : BaseTest
         }
 
         this.WriteLine();
+    }
+
+    private async Task PrintConversationAsync(IAsyncEnumerable<StreamingChatMessageContent> messageContents)
+    {
+        await foreach (var content in messageContents)
+        {
+            this.Write(content.Content);
+        }
     }
 
     /// <summary>
@@ -266,16 +337,19 @@ public class Example79_ChatCompletionAgent : BaseTest
     {
         private readonly Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? _preProcessor;
         private readonly Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? _postProcessor;
+        private readonly Func<IAsyncEnumerable<StreamingChatMessageContent>, IAsyncEnumerable<StreamingChatMessageContent>>? _streamingPostProcessor;
         private readonly KernelAgent _agent;
 
         public AgentDecorator(
             KernelAgent agent,
             Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? preProcessor = null,
-            Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? postProcessor = null) : base(agent.Kernel, agent.Description)
+            Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? postProcessor = null,
+            Func<IAsyncEnumerable<StreamingChatMessageContent>, IAsyncEnumerable<StreamingChatMessageContent>>? streamingPostProcessor = null) : base(agent.Kernel, agent.Description)
         {
             this._agent = agent;
             this._preProcessor = preProcessor;
             this._postProcessor = postProcessor;
+            this._streamingPostProcessor = streamingPostProcessor;
         }
 
         public override async Task<IReadOnlyList<ChatMessageContent>> InvokeAsync(IReadOnlyList<ChatMessageContent> messages, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
@@ -293,6 +367,27 @@ public class Example79_ChatCompletionAgent : BaseTest
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(IReadOnlyList<ChatMessageContent> messages, PromptExecutionSettings? executionSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            if (this._preProcessor != null)
+            {
+                messages = await this._preProcessor(messages);
+            }
+
+            var result = this._agent.InvokeStreamingAsync(messages, executionSettings, cancellationToken);
+
+            if (this._streamingPostProcessor != null)
+            {
+                result = this._streamingPostProcessor(result);
+            }
+
+            await foreach (var message in result)
+            {
+                yield return message;
+            }
         }
     }
 

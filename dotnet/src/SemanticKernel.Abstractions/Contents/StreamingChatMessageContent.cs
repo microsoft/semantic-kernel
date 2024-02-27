@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -30,6 +31,17 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// </summary>
     [JsonIgnore]
     public Encoding Encoding { get; set; }
+
+    /// <summary>
+    /// Represents the source of the message.
+    /// </summary>
+    /// <remarks>
+    /// The source is corresponds to the entity that generated this message.
+    /// The property is intended to be used by agents to associate themselves with the messages they generate or by a user who created it.
+    /// </remarks>
+    [Experimental("SKEXP0101")]
+    [JsonIgnore]
+    public object? Source { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
