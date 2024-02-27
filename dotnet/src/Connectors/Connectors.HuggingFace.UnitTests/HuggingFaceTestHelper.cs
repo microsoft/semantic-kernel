@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -21,6 +22,11 @@ internal static class HuggingFaceTestHelper
     internal static string GetTestResponse(string fileName)
     {
         return File.ReadAllText($"./TestData/{fileName}");
+    }
+
+    internal static ReadOnlyMemory<byte> GetTestResponseBytes(string fileName)
+    {
+        return File.ReadAllBytes($"./TestData/{fileName}");
     }
 
     /// <summary>
