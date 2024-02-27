@@ -1,4 +1,5 @@
 """Class to hold chat messages."""
+
 from typing import Optional
 
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import (

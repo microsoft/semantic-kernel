@@ -79,11 +79,11 @@ class KernelFunctionFromMethod(KernelFunction):
         args: Dict[str, Any] = {
             "metadata": metadata,
             "method": method,
-            "stream_method": stream_method
-            if stream_method is not None
-            else method
-            if isasyncgenfunction(method) or isgeneratorfunction(method)
-            else None,
+            "stream_method": (
+                stream_method
+                if stream_method is not None
+                else method if isasyncgenfunction(method) or isgeneratorfunction(method) else None
+            ),
         }
 
         super().__init__(**args)
