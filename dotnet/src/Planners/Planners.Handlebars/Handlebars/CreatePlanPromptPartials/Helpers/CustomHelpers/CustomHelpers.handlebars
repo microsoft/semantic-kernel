@@ -12,9 +12,9 @@ Description: {{Description}}
 Inputs:
   {{#each Parameters}}
     - {{Name}}:
-    {{~#if ParameterType}} {{ParameterType.Name}} -
+    {{~#if Schema}} {{getSchemaTypeName this}} -
     {{~else}}
-        {{~#if Schema}} {{getSchemaTypeName this}} -{{/if}}
+        {{~#if ParameterType}} {{ParameterType.Name}} -{{/if}}
     {{~/if}}
     {{~#if Description}} {{Description}}{{/if}}
     {{~#if IsRequired}} (required){{else}} (optional){{/if}}

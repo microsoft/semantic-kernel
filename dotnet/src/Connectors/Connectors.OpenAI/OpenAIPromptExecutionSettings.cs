@@ -186,6 +186,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             {
                 value = DefaultChatSystemPrompt;
             }
+
             this._chatSystemPrompt = value;
         }
     }
@@ -263,12 +264,18 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <inheritdoc/>
     public override void Freeze()
     {
+        if (this.IsFrozen)
+        {
+            return;
+        }
+
         base.Freeze();
 
         if (this._stopSequences is not null)
         {
             this._stopSequences = new ReadOnlyCollection<string>(this._stopSequences);
         }
+
         if (this._tokenSelectionBiases is not null)
         {
             this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(this._tokenSelectionBiases);
