@@ -178,7 +178,7 @@ public class Example07_BingAndGooglePlugins {
         // If the answer contains commands, execute them using the prompt renderer.
         if (result.contains("bing.search")) {
             PromptTemplate promptTemplate = new KernelPromptTemplateFactory()
-                .tryCreate(new PromptTemplateConfig(result));
+                .tryCreate(PromptTemplateConfig.builder().withTemplate(result).build());
 
             System.out.println("---- Fetching information from Bing...");
             var information = promptTemplate.renderAsync(kernel, null, null).block();

@@ -22,7 +22,9 @@ public class Example60_AdvancedMethodFunctions {
             new FunctionsChainingPlugin(),
             FunctionsChainingPlugin.PluginName);
 
-        kernel.addPlugin(functions);
+        kernel = kernel.toBuilder()
+            .withPlugin(functions)
+            .build();
 
         ContextVariableTypeConverter<MyCustomType> type = new ContextVariableTypeConverter<>(
             MyCustomType.class,

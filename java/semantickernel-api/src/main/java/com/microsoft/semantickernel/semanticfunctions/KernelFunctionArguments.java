@@ -32,7 +32,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
      *
      * @param variables The variables to use for the function invocation.
      */
-    public KernelFunctionArguments(
+    protected KernelFunctionArguments(
         @Nullable Map<String, ContextVariable<?>> variables) {
         if (variables == null) {
             this.variables = new CaseInsensitiveMap<>();
@@ -46,7 +46,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
      *
      * @param content The content to use for the function invocation.
      */
-    public KernelFunctionArguments(@NonNull ContextVariable<?> content) {
+    protected KernelFunctionArguments(@NonNull ContextVariable<?> content) {
         this.variables = new CaseInsensitiveMap<>();
         this.variables.put(MAIN_KEY, content);
     }
@@ -54,7 +54,7 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
     /**
      * Create a new instance of KernelFunctionArguments.
      */
-    public KernelFunctionArguments() {
+    protected KernelFunctionArguments() {
         this.variables = new CaseInsensitiveMap<>();
     }
 
@@ -257,7 +257,10 @@ public class KernelFunctionArguments implements Buildable, Map<String, ContextVa
          * @param map Existing variables
          * @return {$code this} Builder for fluent coding
          */
-        public Builder withVariables(Map<String, ContextVariable<?>> map) {
+        public Builder withVariables(@Nullable Map<String, ContextVariable<?>> map) {
+            if (map == null) {
+                return this;
+            }
             variables.putAll(map);
             return this;
         }

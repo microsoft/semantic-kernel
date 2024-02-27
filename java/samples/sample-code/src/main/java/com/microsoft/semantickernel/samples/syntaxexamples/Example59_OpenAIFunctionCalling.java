@@ -54,9 +54,8 @@ public class Example59_OpenAIFunctionCalling {
 
         var kernel = Kernel.builder()
             .withAIService(ChatCompletionService.class, chat)
+            .withPlugin(plugin)
             .build();
-
-        kernel.addPlugin(plugin);
 
         var function = KernelFunctionFromPrompt.builder()
             .withTemplate(

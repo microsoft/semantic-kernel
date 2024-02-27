@@ -27,8 +27,7 @@ public class PromptRenderedEvent implements KernelHookEvent {
         @Nullable KernelFunctionArguments arguments,
         String prompt) {
         this.function = function;
-        this.arguments = arguments != null ? new KernelFunctionArguments(arguments)
-            : new KernelFunctionArguments();
+        this.arguments = KernelFunctionArguments.builder().withVariables(arguments).build();
         this.prompt = prompt;
     }
 

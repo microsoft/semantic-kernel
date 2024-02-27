@@ -46,6 +46,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     @Nullable
     protected UnmodifiableToolCallBehavior toolCallBehavior;
 
+    private boolean isSubscribed = false;
+
     /**
      * Create a new function invocation.
      *
@@ -101,7 +103,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         function
             .invokeAsync(
                 kernel,
-                new KernelFunctionArguments(arguments),
+                KernelFunctionArguments.builder().withVariables(arguments).build(),
                 null,
                 new InvocationContext(context))
             .handle(convertToType(variableType))
@@ -162,11 +164,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      */
     public FunctionInvocation<T> withArguments(
         @Nullable KernelFunctionArguments arguments) {
-        if (arguments == null) {
-            this.arguments = null;
-        } else {
-            this.arguments = new KernelFunctionArguments(arguments);
-        }
+        logSubscribeWarning();
+        this.arguments = KernelFunctionArguments.builder().withVariables(arguments).build();
         return this;
     }
 
@@ -178,6 +177,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return A new {@code FunctionInvocation} for fluent chaining.
      */
     public <U> FunctionInvocation<U> withResultType(ContextVariableType<U> resultType) {
+        logSubscribeWarning();
         return new FunctionInvocation<>(
             kernel,
             function,
@@ -198,6 +198,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         if (hook == null) {
             return this;
         }
+        logSubscribeWarning();
         KernelHooks clone = new KernelHooks(this.hooks);
         clone.addHook(hook);
         this.hooks = unmodifiableClone(clone);
@@ -215,6 +216,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         if (hooks == null) {
             return this;
         }
+        logSubscribeWarning();
         this.hooks = unmodifiableClone(new KernelHooks(this.hooks).addHooks(hooks));
         return this;
     }
@@ -228,6 +230,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      */
     public FunctionInvocation<T> withPromptExecutionSettings(
         @Nullable PromptExecutionSettings promptExecutionSettings) {
+        logSubscribeWarning();
         this.promptExecutionSettings = promptExecutionSettings;
         return this;
     }
@@ -239,6 +242,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
     public FunctionInvocation<T> withToolCallBehavior(@Nullable ToolCallBehavior toolCallBehavior) {
+        logSubscribeWarning();
         this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
         return this;
     }
@@ -250,6 +254,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
     public FunctionInvocation<T> withTypeConverter(ContextVariableTypeConverter<?> typeConverter) {
+        logSubscribeWarning();
         contextVariableTypes.putConverter(typeConverter);
         return this;
     }
@@ -261,6 +266,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
     public FunctionInvocation<T> withTypes(ContextVariableTypes contextVariableTypes) {
+        logSubscribeWarning();
         this.contextVariableTypes.putConverters(contextVariableTypes);
         return this;
     }
@@ -277,11 +283,20 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         if (invocationContext == null) {
             return this;
         }
+        logSubscribeWarning();
         withTypes(invocationContext.getContextVariableTypes());
         withToolCallBehavior(invocationContext.getToolCallBehavior());
         withPromptExecutionSettings(invocationContext.getPromptExecutionSettings());
         addKernelHooks(invocationContext.getKernelHooks());
         return this;
+    }
+
+    private void logSubscribeWarning() {
+        if (isSubscribed) {
+            LOGGER.warn(
+                "Attempting to modify function {}.{} after it has already been subscribed to. This is not necessarily an error but may be an unusual pattern and indicate a potential bug.",
+                function.getPluginName(), function.getName());
+        }
     }
 
     /**
@@ -291,6 +306,15 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      */
     @Override
     public void subscribe(CoreSubscriber<? super FunctionResult<T>> coreSubscriber) {
+
+        if (isSubscribed) {
+            LOGGER.warn(
+                "Function {}.{} has already been subscribed to. This is not necessarily an error but may be an unusual pattern.",
+                function.getPluginName(), function.getName());
+        }
+
+        isSubscribed = true;
+
         performSubscribe(
             coreSubscriber,
             kernel,

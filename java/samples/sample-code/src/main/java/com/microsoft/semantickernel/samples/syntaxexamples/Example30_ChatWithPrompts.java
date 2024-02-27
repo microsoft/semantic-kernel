@@ -77,7 +77,7 @@ public class Example30_ChatWithPrompts {
         // We could also use a variable, this is just to show that the prompt can invoke functions.
         KernelPlugin timePlugin = KernelPluginFactory.createFromObject(
             new TimePlugin(), "time");
-        kernel.addPlugin(timePlugin);
+        kernel = kernel.toBuilder().withPlugin(timePlugin).build();
 
         // Adding required arguments referenced by the prompt templates.
 
@@ -92,7 +92,7 @@ public class Example30_ChatWithPrompts {
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
         String systemMessage = PromptTemplateFactory
-            .build(new PromptTemplateConfig(systemPromptTemplate))
+            .build(PromptTemplateConfig.builder().withTemplate(systemPromptTemplate).build())
             .renderAsync(kernel, arguments, null)
             .block();
 
@@ -101,7 +101,7 @@ public class Example30_ChatWithPrompts {
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
         String userMessage = PromptTemplateFactory
-            .build(new PromptTemplateConfig(userPromptTemplate))
+            .build(PromptTemplateConfig.builder().withTemplate(userPromptTemplate).build())
             .renderAsync(kernel, arguments, null)
             .block();
 

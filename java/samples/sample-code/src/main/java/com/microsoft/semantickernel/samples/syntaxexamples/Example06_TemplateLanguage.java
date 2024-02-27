@@ -58,7 +58,9 @@ public class Example06_TemplateLanguage {
         KernelPlugin time = KernelPluginFactory.createFromObject(
             new Time(), "time");
 
-        kernel.addPlugin(time);
+        kernel = kernel.toBuilder()
+            .withPlugin(time)
+            .build();
 
         // Prompt Function invoking time.Date and time.Time method functions
         String functionDefinition = """
@@ -74,7 +76,10 @@ public class Example06_TemplateLanguage {
         System.out.println("--- Rendered Prompt");
 
         var promptTemplate = new KernelPromptTemplateFactory()
-            .tryCreate(new PromptTemplateConfig(functionDefinition));
+            .tryCreate(PromptTemplateConfig
+                .builder()
+                .withTemplate(functionDefinition)
+                .build());
 
         var renderedPrompt = promptTemplate.renderAsync(kernel, null, null).block();
         System.out.println(renderedPrompt);

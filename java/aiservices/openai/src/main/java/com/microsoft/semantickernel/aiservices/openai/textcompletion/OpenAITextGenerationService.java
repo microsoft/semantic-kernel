@@ -40,7 +40,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextGenerationService(
+    protected OpenAITextGenerationService(
         OpenAIAsyncClient client,
         String modelId,
         @Nullable String serviceId) {

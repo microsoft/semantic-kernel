@@ -59,7 +59,9 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
-        kernel.addPlugin(KernelPluginFactory.createFromObject(new TextPlugin(), "text"));
+        kernel = kernel.toBuilder()
+            .withPlugin(KernelPluginFactory.createFromObject(new TextPlugin(), "text"))
+            .build();
 
         // Prompt Function invoking text.Concat method function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         String functionDefinition = "Write a haiku about the following: {{text.Concat input='Harry' input2=$word2}}";
@@ -68,7 +70,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
         System.out.println("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.tryCreate(
-            new PromptTemplateConfig(functionDefinition));
+            PromptTemplateConfig.builder().withTemplate(functionDefinition).build());
         var renderedPrompt = promptTemplate.renderAsync(kernel, arguments, null).block();
         System.out.println(renderedPrompt);
 
