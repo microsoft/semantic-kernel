@@ -39,6 +39,7 @@ public class Kernel implements Buildable {
 
     // Only present so we can create a builder in copy method
     private final AIServiceCollection services;
+    @Nullable
     private final Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
 
     /**
@@ -54,7 +55,7 @@ public class Kernel implements Buildable {
      */
     public Kernel(
         AIServiceCollection services,
-        Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
+        @Nullable Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
         @Nullable List<KernelPlugin> plugins,
         @Nullable KernelHooks globalKernelHooks) {
 
