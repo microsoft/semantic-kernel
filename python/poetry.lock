@@ -2234,19 +2234,6 @@ files = [
 client = ["pymilvus (>=2.3.0b1,<2.4.0)"]
 
 [[package]]
-name = "milvus"
-version = "2.3.8"
-description = "Embeded Milvus"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "milvus-2.3.8-py3-none-macosx_12_0_arm64.whl", hash = "sha256:f86c1a5b00c8f3c6589affef8b04f45146496cf9c815a122e9a277698456cbb8"},
-]
-
-[package.extras]
-client = ["pymilvus (>=2.3.0b1,<2.4.0)"]
-
-[[package]]
 name = "minio"
 version = "7.2.0"
 description = "MinIO Python SDK for Amazon S3 Compatible Cloud Storage"
@@ -6184,4 +6171,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "01baf0a1fbac6722d4bd83441cff32c0ff078a2f79a633b94a5a103f3a0ccf1b"
+content-hash = "c7a389ff831602581148a3973793a9a86ef732af2cf341975c6bf70410a70c79"
