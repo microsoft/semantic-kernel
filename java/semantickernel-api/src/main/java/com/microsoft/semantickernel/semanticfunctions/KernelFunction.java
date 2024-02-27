@@ -193,6 +193,40 @@ public abstract class KernelFunction<T> implements Buildable {
 
     /**
      * Invokes this KernelFunction.
+     * <p>
+     * If the {@code variableType} parameter is provided, the {@link ContextVariableType} is used to
+     * convert the result of the function to the appropriate {@link FunctionResult}. The
+     * {@code variableType} is not required for converting well-known types such as {@link String}
+     * and {@link Integer} which have pre-defined {@code ContextVariableType}s.
+     * <p>
+     * The {@link InvocationContext} allows for customization of the behavior of function, including
+     * the ability to pass in {@link KernelHooks} {@link PromptExecutionSettings}, and
+     * {@link ToolCallBehavior}.
+     * <p>
+     * The difference between calling the {@code KernelFunction.invokeAsync} method directly and
+     * calling the {@code Kernel.invokeAsync} method is that the latter adds the global KernelHooks
+     * (if any) to the {@link InvocationContext}. Calling {@code KernelFunction.invokeAsync}
+     * directly does not add the global hooks.
+     *
+     * @param kernel            The Kernel containing services, plugins, and other state for use
+     *                          throughout the operation.
+     * @param arguments         The arguments to pass to the function's invocation
+     * @param variableType      The type of the {@link ContextVariable} returned in the
+     *                          {@link FunctionResult}
+     * @param invocationContext The arguments to pass to the function's invocation
+     * @return The result of the function's execution.
+     * @see FunctionResult#getResultVariable()
+     */
+    public FunctionResult<T> invoke(
+        Kernel kernel,
+        @Nullable KernelFunctionArguments arguments,
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable InvocationContext invocationContext) {
+        return invokeAsync(kernel, arguments, variableType, invocationContext).block();
+    }
+
+    /**
+     * Invokes this KernelFunction.
      *
      * @param kernel The Kernel containing services, plugins, and other state for use throughout the
      *               operation.
@@ -200,6 +234,17 @@ public abstract class KernelFunction<T> implements Buildable {
      */
     public FunctionInvocation<T> invokeAsync(Kernel kernel) {
         return new FunctionInvocation<>(kernel, this);
+    }
+
+    /**
+     * Invokes this KernelFunction.
+     *
+     * @param kernel The Kernel containing services, plugins, and other state for use throughout the
+     *               operation.
+     * @return The result of the function's execution.
+     */
+    public FunctionResult<T> invoke(Kernel kernel) {
+        return invokeAsync(kernel).block();
     }
 
     /**

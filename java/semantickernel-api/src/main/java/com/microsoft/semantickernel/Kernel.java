@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionInvocation;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
@@ -78,6 +79,15 @@ public class Kernel implements Buildable {
     }
 
     /**
+     * Get the fluent builder for creating a new instance of {@code Kernel}.
+     *
+     * @return The fluent builder for creating a new instance of {@code Kernel}.
+     */
+    public static Builder builder() {
+        return new Kernel.Builder();
+    }
+
+    /**
      * Creates a Builder that can create a copy of the current instance of {@code Kernel}. Use this
      * method if you wish to modify the state of the kernel such as adding new plugins or services.
      *
@@ -85,15 +95,6 @@ public class Kernel implements Buildable {
      */
     public Builder copy() {
         return new Builder(services, serviceSelectorProvider, plugins);
-    }
-
-    /**
-     * Get the fluent builder for creating a new instance of {@code Kernel}.
-     *
-     * @return The fluent builder for creating a new instance of {@code Kernel}.
-     */
-    public static Kernel.Builder builder() {
-        return new Kernel.Builder();
     }
 
     /**
@@ -116,6 +117,24 @@ public class Kernel implements Buildable {
     }
 
     /**
+     * Invokes a {@code KernelFunction} function by name.
+     *
+     * @param <T>          The return type of the function.
+     * @param pluginName   The name of the plugin containing the function.
+     * @param functionName The name of the function to invoke.
+     * @return The result of the function invocation.
+     * @throws IllegalArgumentException if the plugin or function is not found.
+     * @see KernelFunction#invokeAsync(Kernel)
+     * @see KernelPluginCollection#getFunction(String, String)
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public <T> FunctionResult<T> invoke(
+        String pluginName,
+        String functionName) {
+        return this.<T>invokeAsync(pluginName, functionName).block();
+    }
+
+    /**
      * Invokes a {@code KernelFunction}.
      *
      * @param <T>      The return type of the function.
@@ -125,6 +144,18 @@ public class Kernel implements Buildable {
      */
     public <T> FunctionInvocation<T> invokeAsync(KernelFunction<T> function) {
         return function.invokeAsync(this);
+    }
+
+    /**
+     * Invokes a {@code KernelFunction}.
+     *
+     * @param <T>      The return type of the function.
+     * @param function The function to invoke.
+     * @return The result of the function invocation.
+     * @see KernelFunction#invokeAsync(Kernel)
+     */
+    public <T> FunctionResult<T> invoke(KernelFunction<T> function) {
+        return invokeAsync(function).block();
     }
 
     /**

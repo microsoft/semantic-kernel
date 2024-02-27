@@ -563,7 +563,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
         @Nullable KernelFunctionArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
-        return function.invoke(kernel, this, arguments, variableType, invocationContext);
+        return function.invokeAsync(kernel, this, arguments, variableType, invocationContext);
     }
 
     /**
@@ -581,12 +581,32 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Bu
          * @param invocationContext the invocation context
          * @return a {@link Mono} that emits the result of the function invocation
          */
-        Mono<FunctionResult<T>> invoke(
+        Mono<FunctionResult<T>> invokeAsync(
             Kernel kernel,
             KernelFunction<T> function,
             @Nullable KernelFunctionArguments arguments,
             @Nullable ContextVariableType<T> variableType,
             @Nullable InvocationContext invocationContext);
+
+        /**
+         * Invokes the function.
+         *
+         * @param kernel            the kernel to invoke the function on
+         * @param function          the function to invoke
+         * @param arguments         the arguments to the function
+         * @param variableType      the variable type of the function
+         * @param invocationContext the invocation context
+         * @return a {@link Mono} that emits the result of the function invocation
+         */
+        default FunctionResult<T> invoke(
+            Kernel kernel,
+            KernelFunction<T> function,
+            @Nullable KernelFunctionArguments arguments,
+            @Nullable ContextVariableType<T> variableType,
+            @Nullable InvocationContext invocationContext) {
+            return invokeAsync(kernel, function, arguments, variableType,
+                invocationContext).block();
+        }
     }
 
     /**
