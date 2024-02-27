@@ -36,21 +36,38 @@ public class Kernel implements Buildable {
     private final KernelPluginCollection plugins;
     private final KernelHooks globalKernelHooks;
 
+    // Only present so we can create a builder in copy method
+    private final AIServiceCollection services;
+    private final Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
+
     /**
      * Initializes a new instance of {@code Kernel}.
      *
-     * @param serviceSelector   The {@code AIServiceSelector} used to query for services available
-     *                          through the kernel.
-     * @param plugins           The collection of plugins available through the kernel. If
-     *                          {@code null}, an empty collection will be used.
-     * @param globalKernelHooks The global hooks to be used throughout the kernel. If {@code null},
-     *                          an empty collection will be used.
+     * @param services                The collection of services available through the kernel.
+     * @param serviceSelectorProvider The service selector provider for the kernel. If {@code null},
+     *                                an ordered service selector will be used.
+     * @param plugins                 The collection of plugins available through the kernel. If
+     *                                {@code null}, an empty collection will be used.
+     * @param globalKernelHooks       The global hooks to be used throughout the kernel. If
+     *                                {@code null}, an empty collection will be used.
      */
     public Kernel(
-        AIServiceSelector serviceSelector,
+        AIServiceCollection services,
+        Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
         @Nullable List<KernelPlugin> plugins,
         @Nullable KernelHooks globalKernelHooks) {
+
+        this.services = services;
+        this.serviceSelectorProvider = serviceSelectorProvider;
+
+        AIServiceSelector serviceSelector;
+        if (serviceSelectorProvider == null) {
+            serviceSelector = new OrderedAIServiceSelector(services);
+        } else {
+            serviceSelector = serviceSelectorProvider.apply(services);
+        }
         this.serviceSelector = serviceSelector;
+
         if (plugins != null) {
             this.plugins = new KernelPluginCollection(plugins);
         } else {
@@ -58,6 +75,16 @@ public class Kernel implements Buildable {
         }
 
         this.globalKernelHooks = new KernelHooks(globalKernelHooks);
+    }
+
+    /**
+     * Creates a Builder that can create a copy of the current instance of {@code Kernel}. Use this
+     * method if you wish to modify the state of the kernel such as adding new plugins or services.
+     *
+     * @return A Builder that can create a copy of the current instance of {@code Kernel}.
+     */
+    public Builder copy() {
+        return new Builder(services, serviceSelectorProvider, plugins);
     }
 
     /**
@@ -98,18 +125,6 @@ public class Kernel implements Buildable {
      */
     public <T> FunctionInvocation<T> invokeAsync(KernelFunction<T> function) {
         return function.invokeAsync(this);
-    }
-
-    /**
-     * This method is used to add plugins to the kernel after it has been created. If a plugin with
-     * the same name already exists, it will be replaced.
-     *
-     * @param plugin The plugin to add.
-     * @return {@code this} kernel with the plugin added.
-     */
-    public Kernel addPlugin(KernelPlugin plugin) {
-        plugins.add(plugin);
-        return this;
     }
 
     /**
@@ -216,6 +231,18 @@ public class Kernel implements Buildable {
         @Nullable
         private Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
 
+        public Builder() {
+        }
+
+        private Builder(
+            AIServiceCollection services,
+            @Nullable Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
+            KernelPluginCollection plugins) {
+            this.services.putAll(services);
+            this.serviceSelectorProvider = serviceSelectorProvider;
+            this.plugins.addAll(plugins.getPlugins());
+        }
+
         /**
          * Adds a service to the kernel.
          *
@@ -259,16 +286,9 @@ public class Kernel implements Buildable {
          */
         @Override
         public Kernel build() {
-
-            AIServiceSelector serviceSelector;
-            if (serviceSelectorProvider == null) {
-                serviceSelector = new OrderedAIServiceSelector(services);
-            } else {
-                serviceSelector = serviceSelectorProvider.apply(services);
-            }
-
             return new Kernel(
-                serviceSelector,
+                services,
+                serviceSelectorProvider,
                 plugins,
                 null);
         }

@@ -58,7 +58,9 @@ public class Example06_TemplateLanguage {
         KernelPlugin time = KernelPluginFactory.createFromObject(
             new Time(), "time");
 
-        kernel.addPlugin(time);
+        kernel = kernel.copy()
+            .withPlugin(time)
+            .build();
 
         // Prompt Function invoking time.Date and time.Time method functions
         String functionDefinition = """

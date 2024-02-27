@@ -9,6 +9,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.Kernel.Builder;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -57,20 +58,19 @@ public class Example10_DescribeAllPluginsAndFunctions {
             .withModelId(MODEL_ID)
             .build();
 
-        Kernel kernel = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
-            .build();
+        Builder kernelBuilder = Kernel.builder()
+            .withAIService(TextGenerationService.class, textGenerationService);
 
-        kernel.addPlugin(
+        kernelBuilder.withPlugin(
             KernelPluginFactory.createFromObject(
                 new StaticTextPlugin(), "StaticTextPlugin"));
 
         // Import another native plugin
-        kernel.addPlugin(
+        kernelBuilder.withPlugin(
             KernelPluginFactory.createFromObject(
                 new TextPlugin(), "AnotherTextPlugin"));
 
-        kernel.addPlugin(
+        kernelBuilder.withPlugin(
             KernelPluginFactory
                 .importPluginFromDirectory(
                     Path.of(PLUGIN_DIR, "java/samples/sample-code/src/main/resources/Plugins"),
@@ -102,6 +102,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
         System.out.println("**********************************************");
         System.out.println();
 
+        Kernel kernel = kernelBuilder.build();
         kernel.getPlugins()
             .forEach(plugin -> {
                 System.out.println("Plugin: " + plugin.getName());
