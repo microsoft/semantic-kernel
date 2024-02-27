@@ -2352,6 +2352,22 @@ traitlets = "*"
 
 [[package]]
 name = "milvus"
+version = "2.2.16"
+description = "Embeded Milvus"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "milvus-2.2.16-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:ada1fef174aa42d5117b4a784a48f9106141df8e799bccd7092ad88f4a34f67c"},
+    {file = "milvus-2.2.16-py3-none-macosx_11_0_arm64.whl", hash = "sha256:8df249e791758a94a3e3b6606e6efa6cda136eadf718dd37053b58729173f64e"},
+    {file = "milvus-2.2.16-py3-none-manylinux2014_x86_64.whl", hash = "sha256:ea5bd32251b7bcad629d7e46c307414a586c96b4a50491d04a08db42fca8fba9"},
+    {file = "milvus-2.2.16-py3-none-win_amd64.whl", hash = "sha256:f906990a6d7bbb5955bb03541992d0072ed213f8665c1101b003cea995cb97d9"},
+]
+
+[package.extras]
+client = ["pymilvus (>=2.2.0,!=2.2.14,<2.3.0)"]
+
+[[package]]
+name = "milvus"
 version = "2.3.5"
 description = "Embeded Milvus"
 optional = false
@@ -3996,6 +4012,27 @@ ujson = ">=2.0.0"
 
 [[package]]
 name = "pymilvus"
+version = "2.2.17"
+description = "Python Sdk for Milvus"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pymilvus-2.2.17-py3-none-any.whl", hash = "sha256:5ec7ab8a990e3cf16dae1bd62d2c545040726e4c9b9e8c5feedd611b66fe1eb7"},
+    {file = "pymilvus-2.2.17.tar.gz", hash = "sha256:fadb4bb33a84a8edde45f692f86a0b8c5d309a0aeba56db3564f271df8496347"},
+]
+
+[package.dependencies]
+environs = "<=9.5.0"
+grpcio = ">=1.49.1,<=1.58.0"
+minio = "*"
+numpy = {version = "<1.25.0", markers = "python_version <= \"3.8\""}
+pandas = ">=1.2.4"
+protobuf = ">=3.20.0"
+requests = "*"
+ujson = ">=2.0.0"
+
+[[package]]
+name = "pymilvus"
 version = "2.3.6"
 description = "Python Sdk for Milvus"
 optional = false
@@ -4009,7 +4046,6 @@ files = [
 environs = "<=9.5.0"
 grpcio = ">=1.49.1,<=1.60.0"
 minio = ">=7.0.0"
-numpy = {version = "<1.25.0", markers = "python_version <= \"3.8\""}
 pandas = ">=1.2.4"
 protobuf = ">=3.20.0"
 pyarrow = ">=12.0.0"
@@ -6341,4 +6377,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "dee5a0f3a568230dc714fbc4fbac10ca86f8ad8fe9a373675e296101f0e177b7"
+content-hash = "7e216ec748074a042d41aa3abc496073b60263d3ea91ab071f10cbaa3cc6e8bd"
