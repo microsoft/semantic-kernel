@@ -9,9 +9,11 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     HnswAlgorithmConfiguration,
+    HnswParameters,
     SearchIndex,
     SearchResourceEncryptionKey,
     VectorSearch,
+    VectorSearchAlgorithmConfiguration
 )
 from azure.search.documents.models import VectorQuery
 from numpy import ndarray
@@ -101,23 +103,19 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         if vector_config:
-            vector_search = VectorSearch(algorithm_configurations=[vector_config])
+            vector_search = VectorSearch(algorithms=[vector_config])
         else:
             vector_search = VectorSearch(
-                algorithm_configurations=[
+                algorithms=[
                     HnswAlgorithmConfiguration(
                         name="az-vector-config",
                         kind="hnsw",
-                        hnsw_parameters={
-                            # Number of bi-directional links, 4 to 10
-                            "m": 4,
-                            # Size of nearest neighbors list during indexing, 100 to 1000
-                            "efConstruction": 400,
-                            # Size of nearest neighbors list during search, 100 to 1000
-                            "efSearch": 500,
-                            # cosine, dotProduct, euclidean
-                            "metric": "cosine",
-                        },
+                        parameters=HnswParameters(
+                            m=4,  # Number of bi-directional links, typically between 4 and 10
+                            ef_construction=400, # Size during indexing, range: 100-1000
+                            ef_search=500, # Size during search, range: 100-1000
+                            metric="cosine" # Can be "cosine", "dotProduct", or "euclidean"
+                        )
                     )
                 ]
             )
