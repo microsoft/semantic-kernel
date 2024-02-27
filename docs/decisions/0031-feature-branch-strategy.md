@@ -161,4 +161,4 @@ The merging of the main branch into the feature branch should only be done with 
 
 `git checkout <feature branch> && git merge main` without --squash
 
-Merge from the main should never be done by PR to feature branch, it will cause merging history of main merge with history of PR, and as a consequence it will generate strange confilts on subsequent merges of main and also make it difficult to analyze history of feature branch.
+Merge from the main should never be done by PR to feature branch, it will cause merging history of main merge with history of PR (becouse PR are merged with squash), and as a consequence it will generate strange confilts on subsequent merges of main and also make it difficult to analyze history of feature branch.
