@@ -266,7 +266,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         pipeline.append({"$set": {"score": {"$meta": "vectorSearchScore"}}})
 
         if min_relevance_score:
-            pipeline.append({"$match": {"$gte": ["$score", min_relevance_score]}})
+            pipeline.append({"$match": {"score": {"$gte": min_relevance_score}}})
 
         cursor: MotorCommandCursor = self.database[collection_name].aggregate(pipeline)
 
