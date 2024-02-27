@@ -266,3 +266,23 @@ async def test_invoke_defaults():
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
         assert str(result) == "test"
+
+
+def test_create_with_multiple_settings():
+    function = KernelFunctionFromPrompt(
+        function_name="test",
+        plugin_name="test",
+        prompt_template_config=PromptTemplateConfig(
+            template="test",
+            execution_settings=[
+                PromptExecutionSettings(service_id="test", temperature=0.0),
+                PromptExecutionSettings(service_id="test2", temperature=1.0),
+            ],
+        ),
+    )
+    assert (
+        function.prompt_template.prompt_template_config.execution_settings["test"].extension_data["temperature"] == 0.0
+    )
+    assert (
+        function.prompt_template.prompt_template_config.execution_settings["test2"].extension_data["temperature"] == 1.0
+    )
