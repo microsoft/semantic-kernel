@@ -53,7 +53,7 @@ milvus = "2.2.16"
 weaviate-client = ">=3.18,<5.0"
 
 [tool.poetry.group.pinecone.dependencies]
-pinecone-client = "^2.2.2"
+pinecone-client = ">=2.2.2,<4.0.0"
 
 [tool.poetry.group.postgres.dependencies]
 psycopg-pool = "^3.1.7"
