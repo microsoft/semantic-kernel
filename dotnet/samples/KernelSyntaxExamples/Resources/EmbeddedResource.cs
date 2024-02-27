@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using RepoUtils;
 
 namespace Resources;
@@ -48,5 +50,18 @@ internal static class EmbeddedResource
         // Resources are mapped like types, using the namespace and appending "." (dot) and the file name
         var resourceName = $"{s_namespace}." + fileName;
         return assembly.GetManifestResourceStream(resourceName);
+    }
+
+    internal async static Task<ReadOnlyMemory<byte>> ReadAllAsync(string fileName)
+    {
+        await using Stream? resourceStream = ReadStream(fileName);
+        using var memoryStream = new MemoryStream();
+
+        // Copy the resource stream to the memory stream
+        await resourceStream!.CopyToAsync(memoryStream);
+
+        // Convert the memory stream's buffer to ReadOnlyMemory<byte>
+        // Note: ToArray() creates a copy of the buffer, which is fine for converting to ReadOnlyMemory<byte>
+        return new ReadOnlyMemory<byte>(memoryStream.ToArray());
     }
 }

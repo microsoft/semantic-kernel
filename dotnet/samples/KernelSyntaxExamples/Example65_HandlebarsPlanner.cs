@@ -140,18 +140,25 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(false)]
     public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt)
     {
-        WriteSampleHeading("Plan Not Possible");
+        try
+        {
+            WriteSampleHeading("Plan Not Possible");
 
-        // Load additional plugins to enable planner but not enough for the given goal.
-        await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, null, shouldPrintPrompt, true, "SummarizePlugin");
-        /*
-            [InsufficientFunctionsForGoal] Unable to create plan for goal with available functions.
-            Goal: Send Mary an email with the list of meetings I have scheduled today.
-            Available Functions: SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-Topics
-            Planner output:
-            As the available helpers do not contain any functionality to send an email or interact with meeting scheduling data, I cannot create a template to achieve the stated goal. 
-            Additional helpers or information may be required.
-        */
+            // Load additional plugins to enable planner but not enough for the given goal.
+            await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, null, shouldPrintPrompt, true, "SummarizePlugin");
+            /*
+                [InsufficientFunctionsForGoal] Unable to create plan for goal with available functions.
+                Goal: Send Mary an email with the list of meetings I have scheduled today.
+                Available Functions: SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-Topics
+                Planner output:
+                As the available helpers do not contain any functionality to send an email or interact with meeting scheduling data, I cannot create a template to achieve the stated goal. 
+                Additional helpers or information may be required.
+            */
+        }
+        catch (Exception e)
+        {
+            WriteLine(e.InnerException?.Message);
+        }
     }
 
     [RetryTheory(typeof(HttpOperationException))]
@@ -325,11 +332,11 @@ public class Example65_HandlebarsPlanner : BaseTest
         return RunSampleAsync("Write a poem about the given person, then translate it into French.", null, initialArguments, shouldPrintPrompt, true, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
-            {{!-- Step 0: Set the given person --}}
-            {{set "person" "John Doe"}}
+            {{!-- Step 0: Extract key values --}}
+            {{set "personName" @root.person.name}}
 
             {{!-- Step 1: Generate a short poem about the person --}}
-            {{set "poem" (WriterPlugin-ShortPoem input=person)}}
+            {{set "poem" (WriterPlugin-ShortPoem input=personName)}}
 
             {{!-- Step 2: Translate the poem into French --}}
             {{set "translatedPoem" (WriterPlugin-Translate input=poem language="French")}}
