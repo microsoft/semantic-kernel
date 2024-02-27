@@ -2240,19 +2240,6 @@ files = [
 client = ["pymilvus (>=2.3.0b1,<2.4.0)"]
 
 [[package]]
-name = "milvus"
-version = "2.3.8"
-description = "Embeded Milvus"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "milvus-2.3.8-py3-none-macosx_12_0_arm64.whl", hash = "sha256:f86c1a5b00c8f3c6589affef8b04f45146496cf9c815a122e9a277698456cbb8"},
-]
-
-[package.extras]
-client = ["pymilvus (>=2.3.0b1,<2.4.0)"]
-
-[[package]]
 name = "minio"
 version = "7.2.5"
 description = "MinIO Python SDK for Amazon S3 Compatible Cloud Storage"
