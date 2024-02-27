@@ -46,7 +46,7 @@ public class WebSearchEnginePlugin {
     /// This method is marked as "unsafe." The usage of JavaScriptEncoder.UnsafeRelaxedJsonEscaping may introduce security risks.
     /// Only use this method if you are aware of the potential risks and have validated the input to prevent security vulnerabilities.
     /// </remarks>
-    @DefineKernelFunction(name = "search", description = "Searches the web for the given query")
+    @DefineKernelFunction(name = "search", description = "Searches the web for the given query", returnType="java.lang.String")
     public Mono<String> searchAsync(
         @KernelFunctionParameter(description = "The search query", name = "query", type = String.class) String query,
         @KernelFunctionParameter(description = "The number of results to return", name = "count", defaultValue = "1", type = int.class) int count,
