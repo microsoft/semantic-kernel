@@ -58,7 +58,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.1" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.9.2" />
     <PackageVersion Include="MongoDB.Driver" Version="2.23.1" />
