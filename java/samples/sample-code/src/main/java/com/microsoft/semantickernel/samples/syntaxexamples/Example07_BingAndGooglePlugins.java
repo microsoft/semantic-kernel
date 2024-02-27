@@ -10,7 +10,7 @@ import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.plugins.web.WebSearchEnginePlugin;
+import com.microsoft.semantickernel.samples.plugins.web.WebSearchEnginePlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
