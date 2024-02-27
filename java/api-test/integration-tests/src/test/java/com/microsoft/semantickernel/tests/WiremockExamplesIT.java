@@ -27,17 +27,25 @@ import com.microsoft.semantickernel.samples.syntaxexamples.Example62_CustomAISer
 import com.microsoft.semantickernel.samples.syntaxexamples.Example63_ChatCompletionPrompts;
 import com.microsoft.semantickernel.samples.syntaxexamples.Example64_MultiplePromptTemplates;
 import com.microsoft.semantickernel.samples.syntaxexamples.Example69_MutableKernelPlugin;
+import com.microsoft.semantickernel.samples.syntaxexamples.java.FunctionsWithinPrompts_Example;
+import com.microsoft.semantickernel.samples.syntaxexamples.java.KernelFunctionYaml_Example;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import org.mockito.Mockito;
 
 public class WiremockExamplesIT {
 
     public static List<Class<?>> mains = Arrays.asList(
-
+        FunctionsWithinPrompts_Example.class,
+        KernelFunctionYaml_Example.class,
         Example01_NativeFunctions.class,
         Example03_Arguments.class,
         Example05_InlineFunctionDefinition.class,
@@ -83,7 +91,9 @@ public class WiremockExamplesIT {
                 .usingFilesUnderDirectory(dir));
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        mockInputStream();
+
         new WiremockExamplesIT()
             .runSamplesTest()
             .forEach(it -> {
@@ -92,6 +102,30 @@ public class WiremockExamplesIT {
                 } catch (Throwable e) {
                     throw new RuntimeException(e);
                 }
+            });
+    }
+
+    private static void mockInputStream() throws IOException {
+        FunctionsWithinPrompts_Example.INPUT = Mockito.mock(InputStream.class);
+
+        Queue<String> messages = new ArrayDeque<>();
+
+        messages.addAll(Arrays.asList(
+            "Can you draft me an email to the marketing team?",
+            "Tell them to go ahead with the plan",
+            "That is all"));
+
+        Mockito
+            .when(FunctionsWithinPrompts_Example.INPUT.read(
+                Mockito.any(byte[].class),
+                Mockito.anyInt(),
+                Mockito.anyInt()))
+            .then(invocation -> {
+                String message = messages.poll() + "\n";
+                byte[] bytes = invocation.getArgument(0);
+                System.arraycopy(message.getBytes(), 0, bytes, 0, message.getBytes().length);
+
+                return message.getBytes().length;
             });
     }
 

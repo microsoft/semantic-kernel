@@ -7,6 +7,7 @@ import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.exceptions.SKException;
 import java.io.ByteArrayInputStream;
@@ -106,7 +107,8 @@ class XMLPromptParser {
                         String name = getAttributeValue(event, "name");
                         String description = getAttributeValue(event, "description");
                         // name has to match '^[a-zA-Z0-9_-]{1,64}$'
-                        functionDefinition = new FunctionDefinition(pluginName + "-" + name)
+                        functionDefinition = new FunctionDefinition(
+                            ToolCallBehavior.formFullFunctionName(pluginName, name))
                             .setDescription(description);
                     } else if (elementName.equals("parameter")) {
                         String name = getAttributeValue(event, "name");
