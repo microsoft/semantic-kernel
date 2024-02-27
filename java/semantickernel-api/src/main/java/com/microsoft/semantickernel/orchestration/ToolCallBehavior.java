@@ -16,15 +16,15 @@ import javax.annotation.Nullable;
 public class ToolCallBehavior {
 
     /**
-     * Enable all kernel functions. All Kernel functions will be passed to the model.
+     * Allow all kernel functions. All Kernel functions will be passed to the model.
      *
      * @param autoInvoke Enable or disable auto-invocation.
      *                   If auto-invocation is enabled, the model may request that the Semantic Kernel
      *                   invoke the kernel functions and return the value to the model.
-     * @return A new ToolCallBehavior instance with all kernel functions enabled.
+     * @return A new ToolCallBehavior instance with all kernel functions allowed.
      */
-    public static ToolCallBehavior enableAllKernelFunctions(boolean autoInvoke) {
-        return new EnabledKernelFunctions(true, autoInvoke, null);
+    public static ToolCallBehavior allowAllKernelFunctions(boolean autoInvoke) {
+        return new AllowedKernelFunctions(true, autoInvoke, null);
     }
 
     /**
@@ -39,29 +39,35 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Enable a set of kernel functions.
-     * If a function is enabled, it may be called. If it is not enabled, it will not be called.
-     * By default, all functions are disabled.
+     * Allow a set of kernel functions.
+     * If a function is allowed, it may be called. If it is not allowed, it will not be called.
+     * By default, all functions are not allowed.
      *
-     * @param functions The functions to enable.
-     * @return A new ToolCallBehavior instance with the enabled functions.
+     * @param autoInvoke Enable or disable auto-invocation.
+     *                   If auto-invocation is enabled, the model may request that the Semantic Kernel
+     *                   invoke the kernel functions and return the value to the model.
+     * @param functions The functions to allow.
+     * @return A new ToolCallBehavior instance with the allowed functions.
      */
-    public static ToolCallBehavior enableKernelFunctions(boolean autoInvoke,
+    public static ToolCallBehavior allowOnlyKernelFunctions(boolean autoInvoke,
         List<KernelFunction<?>> functions) {
-        return new EnabledKernelFunctions(false, autoInvoke, functions);
+        return new AllowedKernelFunctions(false, autoInvoke, functions);
     }
 
     /**
-     * Enable a set of kernel functions.
-     * If a function is enabled, it may be called. If it is not enabled, it will not be called.
-     * By default, all functions are disabled.
+     * Allow a set of kernel functions.
+     * If a function is allowed, it may be called. If it is not allowed, it will not be called.
+     * By default, all functions are not allowed.
      *
-     * @param functions The functions to enable.
-     * @return A new ToolCallBehavior instance with the enabled functions.
+     * @param autoInvoke Enable or disable auto-invocation.
+     *                   If auto-invocation is enabled, the model may request that the Semantic Kernel
+     *                   invoke the kernel functions and return the value to the model.
+     * @param functions The functions to allow.
+     * @return A new ToolCallBehavior instance with the allowed functions.
      */
-    public static ToolCallBehavior enableKernelFunctions(boolean autoInvoke,
+    public static ToolCallBehavior allowOnlyKernelFunctions(boolean autoInvoke,
         KernelFunction<?>... functions) {
-        return enableKernelFunctions(autoInvoke, Arrays.asList(functions));
+        return allowOnlyKernelFunctions(autoInvoke, Arrays.asList(functions));
     }
 
     private static final int DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS = 5;
@@ -80,7 +86,7 @@ public class ToolCallBehavior {
      *
      * @return Whether auto-invocation is enabled.
      */
-    public boolean autoInvokeEnabled() {
+    public boolean isAutoInvokeAllowed() {
         return maximumAutoInvokeAttempts > 0;
     }
 
@@ -94,13 +100,13 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Get the key for a function.
+     * Form the full function name.
      *
      * @param pluginName   The name of the plugin that the function is in.
      * @param functionName The name of the function.
      * @return The key for the function.
      */
-    protected String getKey(@Nullable String pluginName, String functionName) {
+    public static String formFullFunctionName(@Nullable String pluginName, String functionName) {
         if (pluginName == null) {
             pluginName = "";
         }
@@ -131,62 +137,63 @@ public class ToolCallBehavior {
     }
 
     /**
-     * A set of enabled kernel functions. All kernel functions are enabled if allKernelFunctionsEnabled is true.
-     * Otherwise, only the functions in enabledFunctions are enabled.
+     * A set of allowed kernel functions. All kernel functions are allowed if allKernelFunctionsAllowed is true.
+     * Otherwise, only the functions in allowedFunctions are allowed.
      * <p>
-     * If a function is enabled, it may be called. If it is not enabled, it will not be called.
+     * If a function is allowed, it may be called. If it is not allowed, it will not be called.
      */
-    public static class EnabledKernelFunctions extends ToolCallBehavior {
-        private final Set<String> enabledFunctions;
-        private final boolean allKernelFunctionsEnabled;
+    public static class AllowedKernelFunctions extends ToolCallBehavior {
+        private final Set<String> allowedFunctions;
+        private final boolean allKernelFunctionsAllowed;
 
         /**
-         * Create a new instance of EnabledKernelFunctions.
+         * Create a new instance of AllowedKernelFunctions.
          *
-         * @param allKernelFunctionsEnabled Whether all kernel functions are enabled.
+         * @param allKernelFunctionsAllowed Whether all kernel functions are allowed.
          * @param autoInvoke                Whether auto-invocation is enabled.
-         * @param enabledFunctions          A set of functions that are enabled.
+         * @param allowedFunctions          A set of functions that are allowed.
          */
-        public EnabledKernelFunctions(boolean allKernelFunctionsEnabled, boolean autoInvoke,
-            @Nullable List<KernelFunction<?>> enabledFunctions) {
+        public AllowedKernelFunctions(boolean allKernelFunctionsAllowed, boolean autoInvoke,
+            @Nullable List<KernelFunction<?>> allowedFunctions) {
             super(autoInvoke ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0);
-            this.allKernelFunctionsEnabled = allKernelFunctionsEnabled;
-            this.enabledFunctions = new HashSet<>();
-            if (enabledFunctions != null) {
-                enabledFunctions.stream().filter(Objects::nonNull).forEach(
-                    f -> this.enabledFunctions.add(getKey(f.getPluginName(), f.getName())));
+            this.allKernelFunctionsAllowed = allKernelFunctionsAllowed;
+            this.allowedFunctions = new HashSet<>();
+            if (allowedFunctions != null) {
+                allowedFunctions.stream().filter(Objects::nonNull).forEach(
+                    f -> this.allowedFunctions
+                        .add(formFullFunctionName(f.getPluginName(), f.getName())));
             }
         }
 
         /**
-         * Check whether the given function is enabled.
+         * Check whether the given function is allowed.
          *
          * @param function The function to check.
-         * @return Whether the function is enabled.
+         * @return Whether the function is allowed.
          */
-        public boolean functionEnabled(KernelFunction<?> function) {
-            return functionEnabled(function.getPluginName(), function.getName());
+        public boolean isFunctionAllowed(KernelFunction<?> function) {
+            return isFunctionAllowed(function.getPluginName(), function.getName());
         }
 
         /**
-         * Check whether the given function is enabled.
+         * Check whether the given function is allowed.
          *
          * @param pluginName   The name of the skill that the function is in.
          * @param functionName The name of the function.
-         * @return Whether the function is enabled.
+         * @return Whether the function is allowed.
          */
-        public boolean functionEnabled(@Nullable String pluginName, String functionName) {
-            String key = getKey(pluginName, functionName);
-            return enabledFunctions.contains(key);
+        public boolean isFunctionAllowed(@Nullable String pluginName, String functionName) {
+            String key = formFullFunctionName(pluginName, functionName);
+            return allowedFunctions.contains(key);
         }
 
         /**
-         * Check whether all kernel functions are enabled.
+         * Check whether all kernel functions are allowed.
          *
-         * @return Whether all kernel functions are enabled.
+         * @return Whether all kernel functions are allowed.
          */
-        public boolean isAllKernelFunctionsEnabled() {
-            return allKernelFunctionsEnabled;
+        public boolean isAllKernelFunctionsAllowed() {
+            return allKernelFunctionsAllowed;
         }
     }
 }

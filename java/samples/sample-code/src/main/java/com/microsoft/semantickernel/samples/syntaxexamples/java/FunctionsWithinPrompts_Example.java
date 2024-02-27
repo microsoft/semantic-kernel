@@ -136,9 +136,8 @@ public class FunctionsWithinPrompts_Example {
                         .withVariable("fewShotExamples", fewShotExamples)
                         .build())
                 .withToolCallBehavior(
-                    new ToolCallBehavior()
-                        .enableKernelFunctions(true)
-                        .enableFunction(plugin.get("SummarizeConversation"), true))
+                    ToolCallBehavior.allowOnlyKernelFunctions(true,
+                        plugin.get("SummarizeConversation")))
                 .block();
 
             // End the chat if the intent is "Stop"

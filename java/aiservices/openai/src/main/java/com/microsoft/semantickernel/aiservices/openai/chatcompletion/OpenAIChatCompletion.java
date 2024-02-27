@@ -373,15 +373,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
 
         // If a set of functions are enabled to be called
-        ToolCallBehavior.EnabledKernelFunctions enabledKernelFunctions = (ToolCallBehavior.EnabledKernelFunctions) toolCallBehavior;
+        ToolCallBehavior.AllowedKernelFunctions enabledKernelFunctions = (ToolCallBehavior.AllowedKernelFunctions) toolCallBehavior;
         List<ChatCompletionsToolDefinition> toolDefinitions = functions.stream()
             .filter(function -> {
                 // check if all kernel functions are enabled
-                if (enabledKernelFunctions.isAllKernelFunctionsEnabled()) {
+                if (enabledKernelFunctions.isAllKernelFunctionsAllowed()) {
                     return true;
                 }
                 // otherwise, check for the specific function
-                return enabledKernelFunctions.functionEnabled(function.getPluginName(),
+                return enabledKernelFunctions.isFunctionAllowed(function.getPluginName(),
                     function.getName());
             })
             .map(OpenAIFunction::getFunctionDefinition)
