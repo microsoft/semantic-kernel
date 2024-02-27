@@ -1,4 +1,9 @@
 repos:
+  - repo: https://github.com/floatingpurr/sync_with_poetry
+    rev: 1.1.0
+    hooks:
+      - id: sync_with_poetry
+        args: [--config=python/.conf/.pre-commit-config.yaml, --db=python/.conf/packages_list.json, python/poetry.lock]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
@@ -16,7 +21,7 @@ repos:
       - id: black
         files: \.py$
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.8
+    rev: v0.2.2
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
