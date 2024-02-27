@@ -90,7 +90,7 @@ internal sealed class GeminiRequest
             {
                 FileData = new GeminiPart.FileDataPart
                 {
-                    MimeType = GetMimeTypeFromImageContent(imageContent),
+                    MimeType = GetMimeTypeFromImageContentForUri(imageContent),
                     FileUri = imageContent.Uri ?? throw new InvalidOperationException("Image content URI is empty.")
                 }
             },
@@ -105,13 +105,20 @@ internal sealed class GeminiRequest
         return list;
     }
 
-    private static string GetMimeTypeFromImageContent(ImageContent imageContent)
+    private static string GetMimeTypeFromImageContentForUri(ImageContent imageContent)
     {
         var key = imageContent.Metadata?.Keys.SingleOrDefault(key =>
                       key.Equals("mimeType", StringComparison.OrdinalIgnoreCase)
                       || key.Equals("mime_type", StringComparison.OrdinalIgnoreCase))
                   ?? throw new InvalidOperationException("Mime type is not found in the image content metadata.");
         return imageContent.Metadata[key]!.ToString();
+    }
+
+    private static string GetMimeTypeFromImageContentForBinaryData(ImageContent imageContent)
+    {
+        return imageContent.Data?.MediaType
+               ?? throw new InvalidOperationException(
+                   $"Mime type is not found in the {nameof(ImageContent)}.{nameof(ImageContent.Data)}.{nameof(BinaryData.MediaType)}");
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest obj)
