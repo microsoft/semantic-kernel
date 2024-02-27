@@ -57,7 +57,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private final String serviceId;
     private final String modelId;
 
-    public OpenAIChatCompletion(
+    protected OpenAIChatCompletion(
         OpenAIAsyncClient client,
         String modelId,
         @Nullable String serviceId) {

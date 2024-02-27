@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.util;
+package com.microsoft.semantickernel.samples.util;
+
+import java.util.Locale;
 
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
-import java.util.Locale;
 
 /**
  * Locale parser to support Java 8 and Java 9+ due to JEP 252.

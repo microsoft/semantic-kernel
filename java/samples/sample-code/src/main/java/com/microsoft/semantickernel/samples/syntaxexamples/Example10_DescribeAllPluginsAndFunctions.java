@@ -1,23 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
+import java.nio.file.Path;
+import java.util.Locale;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.Kernel.Builder;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.plugins.text.TextPlugin;
+import com.microsoft.semantickernel.samples.plugins.text.TextPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
-import java.nio.file.Path;
-import java.util.Locale;
 
 public class Example10_DescribeAllPluginsAndFunctions {
 
@@ -56,20 +58,19 @@ public class Example10_DescribeAllPluginsAndFunctions {
             .withModelId(MODEL_ID)
             .build();
 
-        Kernel kernel = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
-            .build();
+        Builder kernelBuilder = Kernel.builder()
+            .withAIService(TextGenerationService.class, textGenerationService);
 
-        kernel.addPlugin(
+        kernelBuilder.withPlugin(
             KernelPluginFactory.createFromObject(
                 new StaticTextPlugin(), "StaticTextPlugin"));
 
         // Import another native plugin
-        kernel.addPlugin(
+        kernelBuilder.withPlugin(
             KernelPluginFactory.createFromObject(
                 new TextPlugin(), "AnotherTextPlugin"));
 
-        kernel.addPlugin(
+        kernelBuilder.withPlugin(
             KernelPluginFactory
                 .importPluginFromDirectory(
                     Path.of(PLUGIN_DIR, "java/samples/sample-code/src/main/resources/Plugins"),
@@ -101,6 +102,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
         System.out.println("**********************************************");
         System.out.println();
 
+        Kernel kernel = kernelBuilder.build();
         kernel.getPlugins()
             .forEach(plugin -> {
                 System.out.println("Plugin: " + plugin.getName());

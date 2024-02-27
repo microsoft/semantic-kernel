@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionInvocation;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
@@ -36,21 +37,38 @@ public class Kernel implements Buildable {
     private final KernelPluginCollection plugins;
     private final KernelHooks globalKernelHooks;
 
+    // Only present so we can create a builder in copy method
+    private final AIServiceCollection services;
+    private final Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
+
     /**
      * Initializes a new instance of {@code Kernel}.
      *
-     * @param serviceSelector   The {@code AIServiceSelector} used to query for services available
-     *                          through the kernel.
-     * @param plugins           The collection of plugins available through the kernel. If
-     *                          {@code null}, an empty collection will be used.
-     * @param globalKernelHooks The global hooks to be used throughout the kernel. If {@code null},
-     *                          an empty collection will be used.
+     * @param services                The collection of services available through the kernel.
+     * @param serviceSelectorProvider The service selector provider for the kernel. If {@code null},
+     *                                an ordered service selector will be used.
+     * @param plugins                 The collection of plugins available through the kernel. If
+     *                                {@code null}, an empty collection will be used.
+     * @param globalKernelHooks       The global hooks to be used throughout the kernel. If
+     *                                {@code null}, an empty collection will be used.
      */
     public Kernel(
-        AIServiceSelector serviceSelector,
+        AIServiceCollection services,
+        Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
         @Nullable List<KernelPlugin> plugins,
         @Nullable KernelHooks globalKernelHooks) {
+
+        this.services = services;
+        this.serviceSelectorProvider = serviceSelectorProvider;
+
+        AIServiceSelector serviceSelector;
+        if (serviceSelectorProvider == null) {
+            serviceSelector = new OrderedAIServiceSelector(services);
+        } else {
+            serviceSelector = serviceSelectorProvider.apply(services);
+        }
         this.serviceSelector = serviceSelector;
+
         if (plugins != null) {
             this.plugins = new KernelPluginCollection(plugins);
         } else {
@@ -65,8 +83,32 @@ public class Kernel implements Buildable {
      *
      * @return The fluent builder for creating a new instance of {@code Kernel}.
      */
-    public static Kernel.Builder builder() {
+    public static Builder builder() {
         return new Kernel.Builder();
+    }
+
+    /**
+     * Creates a Builder that can create a copy of the {@code Kernel}. Use this method if you wish
+     * to modify the state of the kernel such as adding new plugins or services.
+     *
+     * @param kernel The kernel to copy.
+     * @return A Builder that can create a copy of the instance of {@code Kernel}.
+     */
+    public static Builder from(Kernel kernel) {
+        return new Builder(
+            kernel.services,
+            kernel.serviceSelectorProvider,
+            kernel.plugins);
+    }
+
+    /**
+     * Creates a Builder that can create a copy of the current instance of {@code Kernel}. Use this
+     * method if you wish to modify the state of the kernel such as adding new plugins or services.
+     *
+     * @return A Builder that can create a copy of the current instance of {@code Kernel}.
+     */
+    public Builder toBuilder() {
+        return new Builder(services, serviceSelectorProvider, plugins);
     }
 
     /**
@@ -89,6 +131,24 @@ public class Kernel implements Buildable {
     }
 
     /**
+     * Invokes a {@code KernelFunction} function by name.
+     *
+     * @param <T>          The return type of the function.
+     * @param pluginName   The name of the plugin containing the function.
+     * @param functionName The name of the function to invoke.
+     * @return The result of the function invocation.
+     * @throws IllegalArgumentException if the plugin or function is not found.
+     * @see KernelFunction#invokeAsync(Kernel)
+     * @see KernelPluginCollection#getFunction(String, String)
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public <T> FunctionResult<T> invoke(
+        String pluginName,
+        String functionName) {
+        return this.<T>invokeAsync(pluginName, functionName).block();
+    }
+
+    /**
      * Invokes a {@code KernelFunction}.
      *
      * @param <T>      The return type of the function.
@@ -101,15 +161,15 @@ public class Kernel implements Buildable {
     }
 
     /**
-     * This method is used to add plugins to the kernel after it has been created. If a plugin with
-     * the same name already exists, it will be replaced.
+     * Invokes a {@code KernelFunction}.
      *
-     * @param plugin The plugin to add.
-     * @return {@code this} kernel with the plugin added.
+     * @param <T>      The return type of the function.
+     * @param function The function to invoke.
+     * @return The result of the function invocation.
+     * @see KernelFunction#invokeAsync(Kernel)
      */
-    public Kernel addPlugin(KernelPlugin plugin) {
-        plugins.add(plugin);
-        return this;
+    public <T> FunctionResult<T> invoke(KernelFunction<T> function) {
+        return invokeAsync(function).block();
     }
 
     /**
@@ -216,6 +276,18 @@ public class Kernel implements Buildable {
         @Nullable
         private Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
 
+        public Builder() {
+        }
+
+        private Builder(
+            AIServiceCollection services,
+            @Nullable Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
+            KernelPluginCollection plugins) {
+            this.services.putAll(services);
+            this.serviceSelectorProvider = serviceSelectorProvider;
+            this.plugins.addAll(plugins.getPlugins());
+        }
+
         /**
          * Adds a service to the kernel.
          *
@@ -259,16 +331,9 @@ public class Kernel implements Buildable {
          */
         @Override
         public Kernel build() {
-
-            AIServiceSelector serviceSelector;
-            if (serviceSelectorProvider == null) {
-                serviceSelector = new OrderedAIServiceSelector(services);
-            } else {
-                serviceSelector = serviceSelectorProvider.apply(services);
-            }
-
             return new Kernel(
-                serviceSelector,
+                services,
+                serviceSelectorProvider,
                 plugins,
                 null);
         }

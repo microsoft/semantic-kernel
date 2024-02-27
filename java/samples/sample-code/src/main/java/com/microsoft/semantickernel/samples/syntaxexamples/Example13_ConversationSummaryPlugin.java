@@ -166,7 +166,6 @@ public class Example13_ConversationSummaryPlugin {
                 new Builder()
                     .withInput(chatTranscript)
                     .build());
-
         System.out.println("Generated Action Items:");
         System.out.println(summary.block().getResult());
     }

@@ -10,7 +10,7 @@ import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.plugins.web.WebSearchEnginePlugin;
+import com.microsoft.semantickernel.samples.plugins.web.WebSearchEnginePlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
@@ -178,7 +178,7 @@ public class Example07_BingAndGooglePlugins {
         // If the answer contains commands, execute them using the prompt renderer.
         if (result.contains("bing.search")) {
             PromptTemplate promptTemplate = new KernelPromptTemplateFactory()
-                .tryCreate(new PromptTemplateConfig(result));
+                .tryCreate(PromptTemplateConfig.builder().withTemplate(result).build());
 
             System.out.println("---- Fetching information from Bing...");
             var information = promptTemplate.renderAsync(kernel, null, null).block();

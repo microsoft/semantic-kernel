@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.plugins.text;
+package com.microsoft.semantickernel.samples.plugins.text;
+
+import java.util.Locale;
 
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
-import java.util.Locale;
 
 /**
  * TextPlugin provides a set of functions to manipulate strings.

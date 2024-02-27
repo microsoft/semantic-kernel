@@ -48,7 +48,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
      * @param promptConfig      the configuration for the prompt
      * @param executionSettings the execution settings to use when invoking the function
      */
-    public KernelFunctionFromPrompt(
+    protected KernelFunctionFromPrompt(
         PromptTemplate template,
         PromptTemplateConfig promptConfig,
         @Nullable Map<String, PromptExecutionSettings> executionSettings) {

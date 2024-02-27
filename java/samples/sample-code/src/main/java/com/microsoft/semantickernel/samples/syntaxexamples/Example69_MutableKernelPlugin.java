@@ -23,9 +23,9 @@ public class Example69_MutableKernelPlugin {
             .withFunctionName("dateFunction")
             .build());
 
-        Kernel kernel = Kernel.builder().build();
-
-        kernel.addPlugin(plugin);
+        Kernel kernel = Kernel.builder()
+            .withPlugin(plugin)
+            .build();
 
         var result = kernel.invokeAsync(kernel.getFunction("Plugin", "dateFunction"))
             .block();
