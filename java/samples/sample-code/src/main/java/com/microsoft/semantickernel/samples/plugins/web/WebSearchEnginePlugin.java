@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.plugins.web;
+package com.microsoft.semantickernel.samples.plugins.web;
 
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector.WebPage;

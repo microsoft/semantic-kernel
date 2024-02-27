@@ -72,8 +72,6 @@
 
         <module>aiservices/openai</module>
 
-        <module>plugins/semantickernel-plugin-core</module>
-
         <module>semantickernel-api</module>
     </modules>
 
