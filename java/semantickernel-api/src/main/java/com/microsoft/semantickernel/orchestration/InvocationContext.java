@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverte
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
-import com.microsoft.semantickernel.orchestration.ToolCallBehavior.UnmodifiableToolCallBehavior;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
@@ -23,7 +22,7 @@ public class InvocationContext implements Buildable {
     @Nullable
     private final PromptExecutionSettings promptExecutionSettings;
     @Nullable
-    private final UnmodifiableToolCallBehavior toolCallBehavior;
+    private final ToolCallBehavior toolCallBehavior;
     private final ContextVariableTypes contextVariableTypes;
 
     /**
@@ -41,7 +40,7 @@ public class InvocationContext implements Buildable {
         @Nullable ContextVariableTypes contextVariableTypes) {
         this.hooks = unmodifiableClone(hooks);
         this.promptExecutionSettings = promptExecutionSettings;
-        this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+        this.toolCallBehavior = toolCallBehavior;
         if (contextVariableTypes == null) {
             this.contextVariableTypes = new ContextVariableTypes();
         } else {
@@ -88,18 +87,6 @@ public class InvocationContext implements Buildable {
     }
 
     @Nullable
-    private static UnmodifiableToolCallBehavior unmodifiableClone(
-        @Nullable ToolCallBehavior toolCallBehavior) {
-        if (toolCallBehavior instanceof UnmodifiableToolCallBehavior) {
-            return (UnmodifiableToolCallBehavior) toolCallBehavior;
-        } else if (toolCallBehavior != null) {
-            return toolCallBehavior.unmodifiableClone();
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
     private static UnmodifiableKernelHooks unmodifiableClone(
         @Nullable KernelHooks kernelHooks) {
         if (kernelHooks instanceof UnmodifiableKernelHooks) {
@@ -137,9 +124,8 @@ public class InvocationContext implements Buildable {
      *
      * @return The behavior for tool calls.
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "returns UnmodifiableToolCallBehavior")
     @Nullable
-    public UnmodifiableToolCallBehavior getToolCallBehavior() {
+    public ToolCallBehavior getToolCallBehavior() {
         return toolCallBehavior;
     }
 
@@ -163,7 +149,7 @@ public class InvocationContext implements Buildable {
         @Nullable
         private PromptExecutionSettings promptExecutionSettings;
         @Nullable
-        private UnmodifiableToolCallBehavior toolCallBehavior;
+        private ToolCallBehavior toolCallBehavior;
 
         /**
          * Add kernel hooks to the builder.
@@ -197,7 +183,7 @@ public class InvocationContext implements Buildable {
          */
         public Builder withToolCallBehavior(
             @Nullable ToolCallBehavior toolCallBehavior) {
-            this.toolCallBehavior = unmodifiableClone(toolCallBehavior);
+            this.toolCallBehavior = toolCallBehavior;
             return this;
         }
 

@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -12,120 +15,70 @@ import javax.annotation.Nullable;
  */
 public class ToolCallBehavior {
 
+    /**
+     * Allow all kernel functions. All Kernel functions will be passed to the model.
+     *
+     * @param autoInvoke Enable or disable auto-invocation.
+     *                   If auto-invocation is enabled, the model may request that the Semantic Kernel
+     *                   invoke the kernel functions and return the value to the model.
+     * @return A new ToolCallBehavior instance with all kernel functions allowed.
+     */
+    public static ToolCallBehavior allowAllKernelFunctions(boolean autoInvoke) {
+        return new AllowedKernelFunctions(true, autoInvoke, null);
+    }
+
+    /**
+     * Require a function. The required function will be the only function passed to the model
+     * and forces the model to call the function. Only one function can be required.
+     *
+     * @param function The function to require.
+     * @return A new ToolCallBehavior instance with the required function.
+     */
+    public static ToolCallBehavior requireKernelFunction(KernelFunction<?> function) {
+        return new RequiredKernelFunction(function);
+    }
+
+    /**
+     * Allow a set of kernel functions.
+     * If a function is allowed, it may be called. If it is not allowed, it will not be called.
+     * By default, all functions are not allowed.
+     *
+     * @param autoInvoke Enable or disable auto-invocation.
+     *                   If auto-invocation is enabled, the model may request that the Semantic Kernel
+     *                   invoke the kernel functions and return the value to the model.
+     * @param functions The functions to allow.
+     * @return A new ToolCallBehavior instance with the allowed functions.
+     */
+    public static ToolCallBehavior allowOnlyKernelFunctions(boolean autoInvoke,
+        List<KernelFunction<?>> functions) {
+        return new AllowedKernelFunctions(false, autoInvoke, functions);
+    }
+
+    /**
+     * Allow a set of kernel functions.
+     * If a function is allowed, it may be called. If it is not allowed, it will not be called.
+     * By default, all functions are not allowed.
+     *
+     * @param autoInvoke Enable or disable auto-invocation.
+     *                   If auto-invocation is enabled, the model may request that the Semantic Kernel
+     *                   invoke the kernel functions and return the value to the model.
+     * @param functions The functions to allow.
+     * @return A new ToolCallBehavior instance with the allowed functions.
+     */
+    public static ToolCallBehavior allowOnlyKernelFunctions(boolean autoInvoke,
+        KernelFunction<?>... functions) {
+        return allowOnlyKernelFunctions(autoInvoke, Arrays.asList(functions));
+    }
+
     private static final int DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS = 5;
     private static final String FUNCTION_NAME_SEPARATOR = "-";
-    private final Set<String> enabledFunctions = new HashSet<>();
-    private int maximumAutoInvokeAttempts;
-    private boolean kernelFunctionsEnabled;
-
-    @Nullable
-    private KernelFunction<?> requiredFunction;
+    private final int maximumAutoInvokeAttempts;
 
     /**
-     * Create a new instance of ToolCallBehavior with defaults.
+     * Create a new instance of ToolCallBehavior
      */
-    public ToolCallBehavior() {
-        this.maximumAutoInvokeAttempts = 0;
-        this.kernelFunctionsEnabled = false;
-        this.requiredFunction = null;
-    }
-
-    /**
-     * Create a copy of the other ToolCallBehavior.
-     *
-     * @param toolCallBehavior The behavior to copy.
-     */
-    public ToolCallBehavior(ToolCallBehavior toolCallBehavior) {
-        maximumAutoInvokeAttempts = toolCallBehavior.maximumAutoInvokeAttempts;
-        kernelFunctionsEnabled = toolCallBehavior.kernelFunctionsEnabled;
-        requiredFunction = toolCallBehavior.requiredFunction;
-        enabledFunctions.addAll(toolCallBehavior.enabledFunctions);
-    }
-
-    public static String formFullFunctionName(@Nullable String pluginName, String functionName) {
-        if (pluginName == null) {
-            pluginName = "";
-        }
-        return String.format("%s%s%s", pluginName, FUNCTION_NAME_SEPARATOR, functionName);
-    }
-
-    /**
-     * Create an unmodifiable copy of this ToolCallBehavior.
-     *
-     * @return An unmodifiable copy of this ToolCallBehavior.
-     */
-    public UnmodifiableToolCallBehavior unmodifiableClone() {
-        return new UnmodifiableToolCallBehavior(this);
-    }
-
-    /**
-     * Enable or disable kernel functions. If kernel functions are disabled, they will not be passed
-     * to the model. This is the default behavior.
-     *
-     * @param enable Whether to enable kernel functions.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior enableKernelFunctions(boolean enable) {
-        this.kernelFunctionsEnabled = enable;
-        return this;
-    }
-
-    /**
-     * Enable or disable auto-invocation. If auto-invocation is enabled, the model may request that
-     * the Semantic Kernel invoke functions and return the value to the model. The default behavior
-     * is to disable auto-invocation.
-     *
-     * @param enable Whether to enable auto-invocation.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior autoInvoke(boolean enable) {
-        setMaximumAutoInvokeAttempts(enable ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0);
-        return this;
-    }
-
-    /**
-     * Require or not require a function to be called. If a function is required, it will be called.
-     * If it is not required, it may be called if {@code auto-invcation} is enabled. Whether the
-     * functions are passed to the model is controlled by whether {@code kernelFunctions} is
-     * enabled. By default, no function is required.
-     *
-     * @param function The function to require or not require.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior requireFunction(KernelFunction<?> function) {
-        requiredFunction = function;
-        setMaximumAutoInvokeAttempts(1);
-        return this;
-    }
-
-    /**
-     * Enable or disable a function. If a function is enabled, it may be called. If it is not
-     * enabled, it will not be called. By default, all functions are enabled. Whether the functions
-     * are passed to the model is controlled by whether {@code kernelFunctions} is enabled.
-     *
-     * @param function The function to enable or disable.
-     * @param enable   Whether to enable the function.
-     * @return This ToolCallBehavior.
-     */
-    public ToolCallBehavior enableFunction(KernelFunction<?> function, boolean enable) {
-        if (function != null) {
-            String key = formFullFunctionName(function.getPluginName(), function.getName());
-            if (enable) {
-                enabledFunctions.add(key);
-            } else {
-                enabledFunctions.remove(key);
-            }
-        }
-        return this;
-    }
-
-    /**
-     * Check whether kernel functions are enabled.
-     *
-     * @return Whether kernel functions are enabled.
-     */
-    public boolean kernelFunctionsEnabled() {
-        return kernelFunctionsEnabled;
+    private ToolCallBehavior(int maximumAutoInvokeAttempts) {
+        this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
     }
 
     /**
@@ -133,40 +86,8 @@ public class ToolCallBehavior {
      *
      * @return Whether auto-invocation is enabled.
      */
-    public boolean autoInvokeEnabled() {
+    public boolean isAutoInvokeAllowed() {
         return maximumAutoInvokeAttempts > 0;
-    }
-
-    /**
-     * Return the required function, null if it has not been specified.
-     *
-     * @return The function required.
-     */
-    @Nullable
-    public KernelFunction<?> functionRequired() {
-        return requiredFunction;
-    }
-
-    /**
-     * Check whether the given function is enabled.
-     *
-     * @param function The function to check.
-     * @return Whether the function is enabled.
-     */
-    public boolean functionEnabled(KernelFunction<?> function) {
-        return functionEnabled(function.getPluginName(), function.getName());
-    }
-
-    /**
-     * Check whether the given function is enabled.
-     *
-     * @param pluginName   The name of the skill that the function is in.
-     * @param functionName The name of the function.
-     * @return Whether the function is enabled.
-     */
-    public boolean functionEnabled(@Nullable String pluginName, String functionName) {
-        String key = formFullFunctionName(pluginName, functionName);
-        return enabledFunctions.contains(key);
     }
 
     /**
@@ -179,55 +100,100 @@ public class ToolCallBehavior {
     }
 
     /**
-     * Set the maximum number of times that auto-invocation will be attempted. If auto-invocation is
-     * enabled, the model may request that the Semantic Kernel invoke functions and return the value
-     * to the model. If the maximum number of attempts is reached, the model will be notified that
-     * the function could not be invoked. The default maximum number of attempts is 5.
+     * Form the full function name.
      *
-     * @param maximumAutoInvokeAttempts The maximum number of attempts.
-     * @return This ToolCallBehavior.
+     * @param pluginName   The name of the plugin that the function is in.
+     * @param functionName The name of the function.
+     * @return The key for the function.
      */
-    public ToolCallBehavior setMaximumAutoInvokeAttempts(int maximumAutoInvokeAttempts) {
-        if (maximumAutoInvokeAttempts < 0) {
-            throw new SKException(
-                "The maximum auto-invoke attempts should be greater than or equal to zero.");
+    public static String formFullFunctionName(@Nullable String pluginName, String functionName) {
+        if (pluginName == null) {
+            pluginName = "";
         }
-        if (requiredFunction == null) {
-            this.maximumAutoInvokeAttempts = maximumAutoInvokeAttempts;
-        } else {
-            this.maximumAutoInvokeAttempts = Math.min(1, maximumAutoInvokeAttempts);
-        }
-        return this;
+        return String.format("%s%s%s", pluginName, FUNCTION_NAME_SEPARATOR, functionName);
     }
 
     /**
-     * An unmodifiable instance of ToolCallBehavior.
+     * A required kernel function.
+     * The required function will be the only function passed to the model and forces the model to call the function.
+     * Only one function can be required.
      */
-    public static class UnmodifiableToolCallBehavior extends ToolCallBehavior {
+    public static class RequiredKernelFunction extends ToolCallBehavior {
+        private final KernelFunction<?> requiredFunction;
 
-        protected UnmodifiableToolCallBehavior(ToolCallBehavior toolCallBehavior) {
-            super(toolCallBehavior);
+        /**
+         * Create a new instance of RequiredKernelFunction.
+         *
+         * @param requiredFunction The function that is required.
+         */
+        public RequiredKernelFunction(KernelFunction<?> requiredFunction) {
+            super(1);
+            this.requiredFunction = requiredFunction;
         }
 
-        @Override
-        public final ToolCallBehavior enableKernelFunctions(boolean enable) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
-
-        @Override
-        public final ToolCallBehavior autoInvoke(boolean enable) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
-
-        @Override
-        public final ToolCallBehavior requireFunction(KernelFunction<?> function) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
-        }
-
-        @Override
-        public final ToolCallBehavior enableFunction(KernelFunction<?> function, boolean enable) {
-            throw new UnsupportedOperationException("unmodifiable instance of ToolCallBehavior");
+        public KernelFunction<?> getRequiredFunction() {
+            return requiredFunction;
         }
     }
 
+    /**
+     * A set of allowed kernel functions. All kernel functions are allowed if allKernelFunctionsAllowed is true.
+     * Otherwise, only the functions in allowedFunctions are allowed.
+     * <p>
+     * If a function is allowed, it may be called. If it is not allowed, it will not be called.
+     */
+    public static class AllowedKernelFunctions extends ToolCallBehavior {
+        private final Set<String> allowedFunctions;
+        private final boolean allKernelFunctionsAllowed;
+
+        /**
+         * Create a new instance of AllowedKernelFunctions.
+         *
+         * @param allKernelFunctionsAllowed Whether all kernel functions are allowed.
+         * @param autoInvoke                Whether auto-invocation is enabled.
+         * @param allowedFunctions          A set of functions that are allowed.
+         */
+        public AllowedKernelFunctions(boolean allKernelFunctionsAllowed, boolean autoInvoke,
+            @Nullable List<KernelFunction<?>> allowedFunctions) {
+            super(autoInvoke ? DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS : 0);
+            this.allKernelFunctionsAllowed = allKernelFunctionsAllowed;
+            this.allowedFunctions = new HashSet<>();
+            if (allowedFunctions != null) {
+                allowedFunctions.stream().filter(Objects::nonNull).forEach(
+                    f -> this.allowedFunctions
+                        .add(formFullFunctionName(f.getPluginName(), f.getName())));
+            }
+        }
+
+        /**
+         * Check whether the given function is allowed.
+         *
+         * @param function The function to check.
+         * @return Whether the function is allowed.
+         */
+        public boolean isFunctionAllowed(KernelFunction<?> function) {
+            return isFunctionAllowed(function.getPluginName(), function.getName());
+        }
+
+        /**
+         * Check whether the given function is allowed.
+         *
+         * @param pluginName   The name of the skill that the function is in.
+         * @param functionName The name of the function.
+         * @return Whether the function is allowed.
+         */
+        public boolean isFunctionAllowed(@Nullable String pluginName, String functionName) {
+            String key = formFullFunctionName(pluginName, functionName);
+            return allowedFunctions.contains(key);
+        }
+
+        /**
+         * Check whether all kernel functions are allowed.
+         *
+         * @return Whether all kernel functions are allowed.
+         */
+        public boolean isAllKernelFunctionsAllowed() {
+            return allKernelFunctionsAllowed;
+        }
+    }
 }
