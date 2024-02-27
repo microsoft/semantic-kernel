@@ -193,14 +193,6 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-        var geminiExecutionSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (geminiExecutionSettings is not null)
-        {
-            return geminiExecutionSettings;
-        }
-
-        throw new ArgumentException(
-            $"Invalid execution settings, cannot convert to {nameof(GeminiPromptExecutionSettings)}",
-            nameof(executionSettings));
+        return JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
     }
 }

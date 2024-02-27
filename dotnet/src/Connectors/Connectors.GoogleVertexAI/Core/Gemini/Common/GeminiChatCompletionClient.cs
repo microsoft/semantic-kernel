@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for interacting with the chat completion gemini model.
 /// </summary>
-internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionClient
+internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionClient
 {
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
@@ -206,4 +206,28 @@ internal class GeminiChatCompletionClient : GeminiClient, IGeminiChatCompletionC
             innerContent: chatMessageContent.InnerContent,
             metadata: chatMessageContent.Metadata,
             choiceIndex: ((GeminiMetadata)chatMessageContent.Metadata!).Index);
+
+    private static GeminiMetadata GetResponseMetadata(
+        GeminiResponse geminiResponse,
+        GeminiResponseCandidate candidate) => new()
+        {
+            FinishReason = candidate.FinishReason,
+            Index = candidate.Index,
+            PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
+            CurrentCandidateTokenCount = candidate.TokenCount,
+            CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
+            TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
+            PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
+            PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
+            ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
+        };
+
+    private void LogUsageMetadata(GeminiMetadata metadata)
+    {
+        this.Logger.LogDebug(
+            "Gemini usage metadata: Candidates tokens: {CandidatesTokens}, Prompt tokens: {PromptTokens}, Total tokens: {TotalTokens}",
+            metadata.CandidatesTokenCount,
+            metadata.PromptTokenCount,
+            metadata.TotalTokenCount);
+    }
 }

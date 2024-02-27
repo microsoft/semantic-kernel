@@ -1,7 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -10,10 +15,13 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a service for generating text embeddings using the Vertex AI Gemini API.
 /// </summary>
-public sealed class VertexAITextEmbeddingGenerationService : TextEmbeddingGenerationServiceBase
+public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
+    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly VertexAIEmbeddingClient _embeddingClient;
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="GoogleAITextEmbeddingGenerationService"/> class.
+    /// Initializes a new instance of the <see cref="VertexAITextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="model">The model identifier.</param>
     /// <param name="apiKey">The API key.</param>
@@ -32,7 +40,7 @@ public sealed class VertexAITextEmbeddingGenerationService : TextEmbeddingGenera
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this.EmbeddingClient = new VertexAIEmbeddingClient(
+        this._embeddingClient = new VertexAIEmbeddingClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
@@ -40,12 +48,18 @@ public sealed class VertexAITextEmbeddingGenerationService : TextEmbeddingGenera
             httpRequestFactory: new VertexAIHttpRequestFactory(apiKey),
             endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
             logger: loggerFactory?.CreateLogger(typeof(VertexAITextEmbeddingGenerationService)));
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    internal VertexAITextEmbeddingGenerationService(IEmbeddingClient client, string embeddingModelId)
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributesInternal;
+
+    /// <inheritdoc />
+    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
-        this.EmbeddingClient = client;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, embeddingModelId);
+        return this._embeddingClient.GenerateEmbeddingsAsync(data, cancellationToken);
     }
 }
