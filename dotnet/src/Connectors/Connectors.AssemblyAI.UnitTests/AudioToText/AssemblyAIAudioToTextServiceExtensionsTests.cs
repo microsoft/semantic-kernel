@@ -32,10 +32,10 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
             .Build();
 
         // Assert
-        this.AssertService(kernel);
+        AssertService(kernel);
     }
 
-    private void AssertService(
+    private static void AssertService(
         Kernel kernel,
         string? endpoint = null,
         TimeSpan? pollingInterval = null
@@ -84,7 +84,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
             .Build();
 
         // Assert
-        this.AssertService(kernel, Endpoint, s_pollingInterval);
+        AssertService(kernel, Endpoint, s_pollingInterval);
     }
 
     [Fact]
@@ -104,6 +104,6 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
             .Build();
 
         // Assert
-        this.AssertService(kernel, Endpoint, s_pollingInterval);
+        AssertService(kernel, Endpoint, s_pollingInterval);
     }
 }

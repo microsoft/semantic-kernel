@@ -12,7 +12,7 @@ public class AssemblyAIAudioToTextServiceOptions
     /// <summary>
     /// AssemblyAI API key, <a href="https://www.assemblyai.com/dashboard">get your API key from the dashboard.</a>
     /// </summary>
-    public string ApiKey { get; set; }
+    public string? ApiKey { get; set; }
 
     /// <summary>
     /// The endpoint URL to the AssemblyAI API. Leave empty to use default endpoint.

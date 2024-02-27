@@ -198,7 +198,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
-        var textExecutionSettings = new PromptExecutionSettings()
+        var textExecutionSettings = new PromptExecutionSettings
         {
             ExtensionData = new Dictionary<string, object>
             {

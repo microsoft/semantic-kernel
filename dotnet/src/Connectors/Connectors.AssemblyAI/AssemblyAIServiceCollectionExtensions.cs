@@ -20,7 +20,6 @@ public static class AssemblyAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="apiKey">AssemblyAI API key, <a href="https://www.assemblyai.com/dashboard">get your API key from the dashboard.</a></param>
-    /// <param name="endpoint">The endpoint URL to the AssemblyAI API.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddAssemblyAIAudioToText(
@@ -38,7 +37,6 @@ public static class AssemblyAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="apiKey">AssemblyAI API key, <a href="https://www.assemblyai.com/dashboard">get your API key from the dashboard.</a></param>
-    /// <param name="endpoint">The endpoint URL to the AssemblyAI API.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAssemblyAIAudioToText(
@@ -184,7 +182,7 @@ public static class AssemblyAIServiceCollectionExtensions
                 }
 
                 var service = new AssemblyAIAudioToTextService(
-                    options.ApiKey,
+                    options.ApiKey!,
                     options.PollingInterval,
                     httpClient
                 );
