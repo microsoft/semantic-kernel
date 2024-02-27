@@ -59,7 +59,7 @@ pymilvus = [
 ]
 milvus = [
     { version = "^2.2", python = '3.8' },
-    { version = ">2.3", python = '>3.9' }
+    { version = ">2.3,<2.3.8", python = '>3.9' }
 ]
 
 [tool.poetry.group.weaviate.dependencies]

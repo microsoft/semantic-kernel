@@ -2226,6 +2226,21 @@ traitlets = "*"
 
 [[package]]
 name = "milvus"
+version = "2.3.5"
+description = "Embeded Milvus"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "milvus-2.3.5-py3-none-macosx_12_0_arm64.whl", hash = "sha256:328d2ba24fb04a595f47ab226abf5565691bfe242beb88e61b31326d0416bf1a"},
+    {file = "milvus-2.3.5-py3-none-macosx_12_0_x86_64.whl", hash = "sha256:e35a8d6397da1f0f685d0f55afad8654296ff3b3aea296439e53ce9980d1ad22"},
+    {file = "milvus-2.3.5-py3-none-manylinux2014_x86_64.whl", hash = "sha256:69515a0630ce29fd10e101fa442afea8ca1387b93a456cd9bd41fdf3deb93d04"},
+]
+
+[package.extras]
+client = ["pymilvus (>=2.3.0b1,<2.4.0)"]
+
+[[package]]
+name = "milvus"
 version = "2.3.8"
 description = "Embeded Milvus"
 optional = false
