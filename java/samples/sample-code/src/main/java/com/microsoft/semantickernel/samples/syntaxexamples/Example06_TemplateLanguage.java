@@ -58,7 +58,7 @@ public class Example06_TemplateLanguage {
         KernelPlugin time = KernelPluginFactory.createFromObject(
             new Time(), "time");
 
-        kernel = kernel.copy()
+        kernel = kernel.toBuilder()
             .withPlugin(time)
             .build();
 

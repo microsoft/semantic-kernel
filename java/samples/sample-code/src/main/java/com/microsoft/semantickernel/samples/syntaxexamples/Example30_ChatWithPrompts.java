@@ -77,7 +77,7 @@ public class Example30_ChatWithPrompts {
         // We could also use a variable, this is just to show that the prompt can invoke functions.
         KernelPlugin timePlugin = KernelPluginFactory.createFromObject(
             new TimePlugin(), "time");
-        kernel = kernel.copy().withPlugin(timePlugin).build();
+        kernel = kernel.toBuilder().withPlugin(timePlugin).build();
 
         // Adding required arguments referenced by the prompt templates.
 

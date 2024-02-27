@@ -88,12 +88,26 @@ public class Kernel implements Buildable {
     }
 
     /**
+     * Creates a Builder that can create a copy of the {@code Kernel}. Use this method if you wish
+     * to modify the state of the kernel such as adding new plugins or services.
+     *
+     * @param kernel The kernel to copy.
+     * @return A Builder that can create a copy of the instance of {@code Kernel}.
+     */
+    public static Builder from(Kernel kernel) {
+        return new Builder(
+            kernel.services,
+            kernel.serviceSelectorProvider,
+            kernel.plugins);
+    }
+
+    /**
      * Creates a Builder that can create a copy of the current instance of {@code Kernel}. Use this
      * method if you wish to modify the state of the kernel such as adding new plugins or services.
      *
      * @return A Builder that can create a copy of the current instance of {@code Kernel}.
      */
-    public Builder copy() {
+    public Builder toBuilder() {
         return new Builder(services, serviceSelectorProvider, plugins);
     }
 

@@ -22,7 +22,7 @@ public class Example60_AdvancedMethodFunctions {
             new FunctionsChainingPlugin(),
             FunctionsChainingPlugin.PluginName);
 
-        kernel = kernel.copy()
+        kernel = kernel.toBuilder()
             .withPlugin(functions)
             .build();
 

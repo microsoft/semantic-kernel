@@ -59,7 +59,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
-        kernel = kernel.copy()
+        kernel = kernel.toBuilder()
             .withPlugin(KernelPluginFactory.createFromObject(new TextPlugin(), "text"))
             .build();
 
