@@ -15,3 +15,4 @@ class KernelParameterMetadata(KernelBaseModel):
     default_value: Any
     type_: Optional[str] = Field(default="str", alias="type")
     required: Optional[bool] = False
+    expose: Optional[bool] = False

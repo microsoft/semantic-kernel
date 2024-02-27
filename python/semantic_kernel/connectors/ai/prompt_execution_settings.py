@@ -40,7 +40,12 @@ class PromptExecutionSettings(KernelBaseModel):
 
     def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
         return self.model_dump(
-            exclude={"service_id", "extension_data"},
+            exclude={
+                "service_id",
+                "extension_data",
+                "auto_invoke_kernel_functions",
+                "max_allowed_tool_calls",
+            },
             exclude_none=True,
             by_alias=True,
         )

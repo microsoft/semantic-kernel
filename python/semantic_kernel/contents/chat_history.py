@@ -7,6 +7,7 @@ from typing import Any, Dict, Final, Iterator, List, Optional, Tuple, Type, Unio
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ class ChatHistory(KernelBaseModel):
         """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content))
 
-    def add_tool_message(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> None:
+    def add_tool_message(self, content: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content), metadata=metadata)
 
@@ -96,7 +97,7 @@ class ChatHistory(KernelBaseModel):
             encoding (Optional[str]): The encoding of the message. Required if 'message' is a dict.
             metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
         """
-        if isinstance(message, ChatMessageContent):
+        if isinstance(message, ChatMessageContent) or isinstance(message, StreamingChatMessageContent):
             self.messages.append(message)
             return
         if "role" not in message:

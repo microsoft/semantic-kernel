@@ -5,13 +5,8 @@ import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin
-from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -42,7 +37,7 @@ kernel.add_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
+kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
 
@@ -81,7 +76,7 @@ tools = [
 
 
 async def main():
-    settings = kernel.get_prompt_execution_settings_from_service(ChatCompletionClientBase, "chat")
+    settings = kernel.get_service("chat").get_prompt_execution_settings_class()(service_id="chat")
     settings.service_id = "chat"
     settings.tools = tools
     settings.tool_choice = "auto"
@@ -96,7 +91,7 @@ async def main():
         input_variables=[
             InputVariable(
                 name="user_input",
-                description="The history of the conversation",
+                description="The user input",
                 is_required=True,
                 default="",
             ),
@@ -117,31 +112,36 @@ async def main():
         plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
     )
 
-    response = kernel.invoke_stream(
-        chat_function,
-        KernelArguments(user_input="I want to find a hotel in Seattle with free wifi and a pool.", chat_history=chat),
+    response = await kernel.invoke(
+        chat_function, user_input="I want to find a hotel in Seattle with free wifi and a pool.", chat_history=chat
     )
-    messages = []
-    tool_call = None
-    async for message in response:
-        if isinstance(message, FunctionResult):
-            # There's been an error, so print it
-            print(message)
-            return
-        current = message[0]
-        messages.append(str(current))
-        if current.tool_calls:
-            if tool_call is None:
-                tool_call = current.tool_calls[0]
-            else:
-                tool_call += current.tool_calls[0]
-    if tool_call:
-        print(f"Function to be called: {tool_call.function.name}")
-        print(f"Function parameters: \n{tool_call.function.parse_arguments()}")
-        return
-    print("No function was called")
-    output = "".join([msg for msg in messages])
-    print(f"Output was: {output}")
+    print(response)
+
+    # response = kernel.invoke_stream(
+    #     chat_function,
+    #     KernelArguments(user_input="I want to find a hotel in Seattle with free wifi and a pool.", chat_history=chat),
+    # )
+    # messages = []
+    # tool_call = None
+    # async for message in response:
+    #     if isinstance(message, FunctionResult):
+    #         # There's been an error, so print it
+    #         print(message)
+    #         return
+    #     current = message[0]
+    #     messages.append(str(current))
+    #     if current.tool_calls:
+    #         if tool_call is None:
+    #             tool_call = current.tool_calls[0]
+    #         else:
+    #             tool_call += current.tool_calls[0]
+    # if tool_call:
+    #     print(f"Function to be called: {tool_call.function.name}")
+    #     print(f"Function parameters: \n{tool_call.function.parse_arguments()}")
+    #     return
+    # print("No function was called")
+    # output = "".join([msg for msg in messages])
+    # print(f"Output was: {output}")
 
 
 if __name__ == "__main__":

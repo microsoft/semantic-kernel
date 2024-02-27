@@ -103,7 +103,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
             self._update_storages(contents, update_storage)
-            yield contents
+            yield contents, update_storage
 
     def _create_chat_message_content(
         self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
@@ -175,12 +175,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                     tool_call_ids_by_index[index] = content.tool_calls
                 else:
                     for tc_index, tool_call in enumerate(content.tool_calls):
-                        tool_call_ids_by_index[index][tc_index].update(tool_call)
+                        tool_call_ids_by_index[index][tc_index] += tool_call
             if content.function_call is not None:
                 if index not in function_call_by_index:
                     function_call_by_index[index] = content.function_call
                 else:
-                    function_call_by_index[index].update(content.function_call)
+                    function_call_by_index[index] += content.function_call
 
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> Dict[str, Any]:
         """Get metadata from a chat response."""

@@ -203,6 +203,7 @@ class Kernel(KernelBaseModel):
                 # might need to be done as part of the invoked_handler
             function_result = []
             exception = None
+
             async for stream_message in stream_function.invoke_stream(self, arguments):
                 if isinstance(stream_message, FunctionResult):
                     exception = stream_message.metadata.get("exception", None)

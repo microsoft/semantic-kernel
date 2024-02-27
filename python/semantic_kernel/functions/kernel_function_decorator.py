@@ -3,7 +3,7 @@
 
 import logging
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -66,11 +66,12 @@ def kernel_function(
     return decorator
 
 
-def _parse_parameter(param: Parameter):
+def _parse_parameter(param: Parameter) -> Dict[str, Any]:
     logger.debug(f"Parsing param: {param}")
     param_description = ""
     type_ = "str"
     required = True
+    expose = True
     if param != Parameter.empty:
         param_description, type_, required = _parse_annotation(param.annotation)
     logger.debug(f"{param_description=}, {type_=}, {required=}")
@@ -80,6 +81,7 @@ def _parse_parameter(param: Parameter):
         "default_value": param.default if param.default != Parameter.empty else None,
         "type": type_,
         "required": required,
+        "expose": expose,
     }
 
 
