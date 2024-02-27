@@ -46,7 +46,9 @@ async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    tldr_function = kernel.create_function_from_prompt(
+        function_name="story", plugin_name="plugin", prompt_template_config=prompt_template_config
+    )
 
     arguments = KernelArguments(input=text_to_summarize)
 
@@ -101,7 +103,9 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    tldr_function = kernel.create_function_from_prompt(
+        function_name="tldr", plugin_name="plugin", prompt_template_config=prompt_template_config
+    )
 
     arguments = KernelArguments(input=text_to_summarize)
 

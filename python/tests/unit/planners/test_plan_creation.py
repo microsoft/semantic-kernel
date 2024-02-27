@@ -74,13 +74,13 @@ def test_create_plan_with_state_and_parameters():
     assert plan._steps == []
 
 
-def test_create_plan_with_name_and_function():
+def test_create_plan_with_name_and_native_function():
     # create a kernel
     kernel = sk.Kernel()
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
 
     test_function = plugin["Add"]
 
@@ -94,7 +94,7 @@ def test_create_plan_with_name_and_function():
     assert type(plan.parameters) is KernelArguments
     assert plan.is_prompt is test_function.is_prompt
     assert plan.is_native is not test_function.is_prompt
-    assert plan.prompt_execution_settings == test_function.prompt_execution_settings
+    assert plan.prompt_execution_settings is None
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
     assert plan._steps == []
@@ -106,7 +106,7 @@ def test_create_multistep_plan_with_functions():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
 
     test_function1 = plugin["Add"]
     test_function2 = plugin["Subtract"]
@@ -135,7 +135,7 @@ def test_create_multistep_plan_with_plans():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
 
     test_function1 = plugin["Add"]
     test_function2 = plugin["Subtract"]
@@ -166,7 +166,7 @@ def test_add_step_to_plan():
 
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
 
     test_function1 = plugin["Add"]
     test_function2 = plugin["Subtract"]
@@ -182,7 +182,7 @@ def test_add_step_to_plan():
     assert type(plan.parameters) is KernelArguments
     assert plan.is_prompt is test_function1.is_prompt
     assert plan.is_native is not test_function1.is_prompt
-    assert plan.prompt_execution_settings == test_function1.prompt_execution_settings
+    assert plan.prompt_execution_settings is None
     assert plan.has_next_step is True
     assert plan.next_step_index == 0
     assert len(plan._steps) == 1

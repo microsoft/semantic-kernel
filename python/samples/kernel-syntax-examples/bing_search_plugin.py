@@ -26,7 +26,7 @@ async def main():
         ),
     )
     connector = BingConnector(api_key=os.getenv("BING_API_KEY"))
-    web_plugin = kernel.import_plugin(WebSearchEnginePlugin(connector), "WebSearch")
+    web_plugin = kernel.import_plugin_from_object(WebSearchEnginePlugin(connector), "WebSearch")
 
     print("---------------- Question 1 -----------------\n")
 

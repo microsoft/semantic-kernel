@@ -47,7 +47,7 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
-kernel.import_plugin(MathPlugin(), plugin_name="math")
+kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.

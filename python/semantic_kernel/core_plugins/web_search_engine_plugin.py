@@ -17,7 +17,7 @@ class WebSearchEnginePlugin:
 
     Usage:
         connector = BingConnector(bing_search_api_key)
-        kernel.import_plugin(WebSearchEnginePlugin(connector), plugin_name="WebSearch")
+        kernel.import_plugin_from_object(WebSearchEnginePlugin(connector), plugin_name="WebSearch")
 
     Examples:
         {{WebSearch.SearchAsync "What is semantic kernel?"}}
