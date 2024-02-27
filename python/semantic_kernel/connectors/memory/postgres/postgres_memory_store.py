@@ -262,9 +262,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise KeyError("Key not found")
                 return MemoryRecord.local_record(
                     id=result[0],
-                    embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
-                    if with_embedding
-                    else np.array([]),
+                    embedding=(
+                        np.fromstring(result[1].strip("[]"), dtype=float, sep=",") if with_embedding else np.array([])
+                    ),
                     text=result[2]["text"],
                     description=result[2]["description"],
                     additional_metadata=result[2]["additional_metadata"],
@@ -305,9 +305,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                 return [
                     MemoryRecord.local_record(
                         id=result[0],
-                        embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
-                        if with_embeddings
-                        else np.array([]),
+                        embedding=(
+                            np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
+                            if with_embeddings
+                            else np.array([])
+                        ),
                         text=result[2]["text"],
                         description=result[2]["description"],
                         additional_metadata=result[2]["additional_metadata"],
@@ -419,9 +421,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (
                         MemoryRecord.local_record(
                             id=result[0],
-                            embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
-                            if with_embeddings
-                            else np.array([]),
+                            embedding=(
+                                np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
+                                if with_embeddings
+                                else np.array([])
+                            ),
                             text=result[2]["text"],
                             description=result[2]["description"],
                             additional_metadata=result[2]["additional_metadata"],

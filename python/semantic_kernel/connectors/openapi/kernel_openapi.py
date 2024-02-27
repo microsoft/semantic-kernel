@@ -278,22 +278,20 @@ def register_openapi_plugin(
         ) -> str:
             response = await runner.run_operation(
                 operation,
-                path_params=json.loads(path_params)
-                if isinstance(path_params, str)
-                else path_params
-                if path_params
-                else None,
-                query_params=json.loads(query_params)
-                if isinstance(query_params, str)
-                else query_params
-                if query_params
-                else None,
+                path_params=(
+                    json.loads(path_params) if isinstance(path_params, str) else path_params if path_params else None
+                ),
+                query_params=(
+                    json.loads(query_params)
+                    if isinstance(query_params, str)
+                    else query_params if query_params else None
+                ),
                 headers=json.loads(headers) if isinstance(headers, str) else headers if headers else None,
-                request_body=json.loads(request_body)
-                if isinstance(request_body, str)
-                else request_body
-                if request_body
-                else None,
+                request_body=(
+                    json.loads(request_body)
+                    if isinstance(request_body, str)
+                    else request_body if request_body else None
+                ),
             )
             return response
 

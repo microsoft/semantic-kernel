@@ -8,12 +8,12 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    HnswVectorSearchAlgorithmConfiguration,
+    HnswAlgorithmConfiguration,
     SearchIndex,
     SearchResourceEncryptionKey,
     VectorSearch,
 )
-from azure.search.documents.models import Vector
+from azure.search.documents.models import VectorQuery
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
@@ -83,14 +83,14 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
+        vector_config: Optional[HnswAlgorithmConfiguration] = None,
         search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
             collection_name {str}                              -- The name of the collection to create.
-            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
+            vector_config {HnswAlgorithmConfiguration} -- Optional search algorithm configuration
                                                                       (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
             search_resource_encryption_key {SearchResourceEncryptionKey}            -- Optional Search Encryption Key
@@ -105,7 +105,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         else:
             vector_search = VectorSearch(
                 algorithm_configurations=[
-                    HnswVectorSearchAlgorithmConfiguration(
+                    HnswAlgorithmConfiguration(
                         name="az-vector-config",
                         kind="hnsw",
                         hnsw_parameters={
@@ -391,7 +391,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
 
-        vector = Vector(value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING)
+        vector = VectorQuery(value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING)
 
         search_results = await search_client.search(
             search_text="*",

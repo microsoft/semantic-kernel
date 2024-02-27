@@ -1,4 +1,5 @@
 """Class to hold chat messages."""
+
 import json
 from typing import Any, Dict, List, Optional
 
