@@ -17,9 +17,14 @@ public sealed class ImageContent : KernelContent
     public Uri? Uri { get; set; }
 
     /// <summary>
-    /// The image binary data.
+    /// The image media type.
     /// </summary>
-    public BinaryData? Data { get; set; }
+    public string? MediaType { get; set; }
+
+    /// <summary>
+    /// The image data.
+    /// </summary>
+    public ReadOnlyMemory<byte>? Data { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
@@ -43,34 +48,35 @@ public sealed class ImageContent : KernelContent
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
     /// <param name="data">The Data used as DataUri for the image.</param>
+    /// <param name="mediaType">The image media type</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
     public ImageContent(
-        BinaryData data,
+        ReadOnlyMemory<byte> data,
+        string mediaType,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        Verify.NotNull(data, nameof(data));
-
         if (data!.IsEmpty)
         {
             throw new ArgumentException("Data cannot be empty", nameof(data));
         }
 
-        if (string.IsNullOrWhiteSpace(data!.MediaType))
+        if (string.IsNullOrWhiteSpace(mediaType))
         {
-            throw new ArgumentException("MediaType is needed for DataUri Images", nameof(data));
+            throw new ArgumentException("MediaType is needed for DataUri Images", nameof(mediaType));
         }
 
         this.Data = data;
+        this.MediaType = mediaType;
     }
 
     /// <summary>
     /// Returns the string representation of the image.
-    /// BinaryData images will be represented as DataUri
+    /// In-memory images will be represented as DataUri
     /// Remote Uri images will be represented as is
     /// </summary>
     /// <remarks>
@@ -88,6 +94,6 @@ public sealed class ImageContent : KernelContent
             return null;
         }
 
-        return $"data:{this.Data.MediaType};base64,{Convert.ToBase64String(this.Data.ToArray())}";
+        return $"data:{this.MediaType};base64,{Convert.ToBase64String(this.Data.Value.ToArray())}";
     }
 }

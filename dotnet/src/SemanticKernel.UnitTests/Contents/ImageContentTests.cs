@@ -31,12 +31,12 @@ public sealed class ImageContentTests
     public void ToStringForDataUriReturnsDataUriString()
     {
         // Arrange
-        var data = BinaryData.FromString("this is a test", "text/plain");
-        var content1 = new ImageContent(data);
+        var data = BinaryData.FromString("this is a test");
+        var content1 = new ImageContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
-        var dataUriToExpect = $"data:{data.MediaType};base64,{Convert.ToBase64String(data.ToArray())}";
+        var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
         Assert.Equal(dataUriToExpect, result1);
@@ -46,13 +46,13 @@ public sealed class ImageContentTests
     public void ToStringForUriAndDataUriReturnsDataUriString()
     {
         // Arrange
-        var data = BinaryData.FromString("this is a test", "text/plain");
-        var content1 = new ImageContent(data);
+        var data = BinaryData.FromString("this is a test");
+        var content1 = new ImageContent(data, "text/plain");
         content1.Uri = new Uri("https://endpoint/");
 
         // Act
         var result1 = content1.ToString();
-        var dataUriToExpect = $"data:{data.MediaType};base64,{Convert.ToBase64String(data.ToArray())}";
+        var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
         Assert.Equal(dataUriToExpect, result1);
@@ -65,17 +65,10 @@ public sealed class ImageContentTests
     public void CreateForWithoutMediaTypeThrows(string? mediaType)
     {
         // Arrange
-        var data = BinaryData.FromString("this is a test", mediaType);
+        var data = BinaryData.FromString("this is a test");
 
         // Assert
-        Assert.Throws<ArgumentException>(() => new ImageContent(data!));
-    }
-
-    [Fact]
-    public void CreateForNullDataUriThrows()
-    {
-        // Assert
-        Assert.Throws<ArgumentNullException>(() => new ImageContent((BinaryData)null!));
+        Assert.Throws<ArgumentException>(() => new ImageContent(data!, mediaType!));
     }
 
     [Fact]
@@ -85,7 +78,7 @@ public sealed class ImageContentTests
         var data = BinaryData.Empty;
 
         // Assert
-        Assert.Throws<ArgumentException>(() => new ImageContent(data));
+        Assert.Throws<ArgumentException>(() => new ImageContent(data, "text/plain"));
     }
 
     [Fact]
@@ -93,12 +86,12 @@ public sealed class ImageContentTests
     {
         // Arrange
         var bytes = System.Text.Encoding.UTF8.GetBytes("this is a test");
-        var data = BinaryData.FromBytes(bytes, "text/plain");
-        var content1 = new ImageContent(data);
+        var data = BinaryData.FromBytes(bytes);
+        var content1 = new ImageContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
-        var dataUriToExpect = $"data:{data.MediaType};base64,{Convert.ToBase64String(data.ToArray())}";
+        var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
         Assert.Equal(dataUriToExpect, result1);
@@ -109,17 +102,17 @@ public sealed class ImageContentTests
     {
         // Arrange
         using var ms = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes("this is a test"));
-        var data = BinaryData.FromStream(ms, "text/plain");
-        var content1 = new ImageContent(data);
+        var data = BinaryData.FromStream(ms);
+        var content1 = new ImageContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
-        var dataUriToExpect = $"data:{data.MediaType};base64,{Convert.ToBase64String(data.ToArray())}";
+        var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
         Assert.Equal(dataUriToExpect, result1);
 
         // Assert throws if mediatype is null
-        Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms, null)));
+        Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms), null!));
     }
 }

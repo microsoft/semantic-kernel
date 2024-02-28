@@ -29,7 +29,7 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
 
         var expectedPayload = HuggingFaceTestHelper.GetTestResponseBytes("imagetotext_test_request.jpg");
-        this._imageContentInput = new ImageContent(new BinaryData(expectedPayload, "image/jpeg"), "model");
+        this._imageContentInput = new ImageContent(expectedPayload, "image/jpeg", "model");
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         var requestPayload = this._messageHandlerStub.RequestContent;
 
         Assert.NotNull(requestPayload);
-        Assert.Equal(this._imageContentInput.Data!.ToArray(), requestPayload);
+        Assert.Equal(this._imageContentInput.Data!.Value.ToArray(), requestPayload);
     }
 
     [Fact]
