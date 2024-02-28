@@ -29,7 +29,7 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
 
         var expectedPayload = HuggingFaceTestHelper.GetTestResponseBytes("imagetotext_test_request.jpg");
-        this._imageContentInput = new ImageContent(expectedPayload, "image/jpeg", "model");
+        this._imageContentInput = new ImageContent(expectedPayload, "model", mediaType: "image/jpeg");
     }
 
     [Fact]

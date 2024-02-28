@@ -151,7 +151,7 @@ public class ChatMessageContentTests
         {
             ["metadata-key-1"] = "metadata-value-1"
         }));
-        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123"), "model-2", metadata: new Dictionary<string, object?>()
+        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123"), "model-2", mediaType: "media-type-2", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-2"] = "metadata-value-2"
         }));
@@ -160,12 +160,12 @@ public class ChatMessageContentTests
             ["metadata-key-3"] = "metadata-value-3"
         }));
 #pragma warning disable SKEXP0005
-        items.Add(new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", metadata: new Dictionary<string, object?>()
+        items.Add(new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", mediaType: "media-type-4", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-4"] = "metadata-value-4"
         }));
 #pragma warning restore SKEXP0005
-        items.Add(new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "media-type-5", "model-5", metadata: new Dictionary<string, object?>()
+        items.Add(new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", mediaType: "media-type-5", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-5"] = "metadata-value-5"
         }));
@@ -208,6 +208,7 @@ public class ChatMessageContentTests
         Assert.NotNull(imageContent);
         Assert.Equal("https://fake-random-test-host:123", imageContent.Uri?.OriginalString);
         Assert.Equal("model-2", imageContent.ModelId);
+        Assert.Equal("media-type-2", imageContent.MediaType);
         Assert.NotNull(imageContent.Metadata);
         Assert.Single(imageContent.Metadata);
         Assert.Equal("metadata-value-2", imageContent.Metadata["metadata-key-2"]?.ToString());
@@ -226,6 +227,7 @@ public class ChatMessageContentTests
         Assert.NotNull(audioContent);
         Assert.True(audioContent.Data!.Value.ToArray().SequenceEqual(new BinaryData(new[] { 3, 2, 1 }).ToArray()));
         Assert.Equal("model-4", audioContent.ModelId);
+        Assert.Equal("media-type-4", audioContent.MediaType);
         Assert.NotNull(audioContent.Metadata);
         Assert.Single(audioContent.Metadata);
         Assert.Equal("metadata-value-4", audioContent.Metadata["metadata-key-4"]?.ToString());
@@ -233,8 +235,8 @@ public class ChatMessageContentTests
         imageContent = deserializedMessage.Items[4] as ImageContent;
         Assert.NotNull(imageContent);
         Assert.True(imageContent.Data?.ToArray().SequenceEqual(new BinaryData(new[] { 2, 1, 3 }).ToArray()));
-        Assert.Equal("media-type-5", imageContent.MediaType);
         Assert.Equal("model-5", imageContent.ModelId);
+        Assert.Equal("media-type-5", imageContent.MediaType);
         Assert.NotNull(imageContent.Metadata);
         Assert.Single(imageContent.Metadata);
         Assert.Equal("metadata-value-5", imageContent.Metadata["metadata-key-5"]?.ToString());

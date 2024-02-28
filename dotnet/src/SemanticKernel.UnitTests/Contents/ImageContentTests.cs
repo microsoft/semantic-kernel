@@ -32,7 +32,7 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content1 = new ImageContent(data, "text/plain");
+        var content1 = new ImageContent(data, mediaType: "text/plain");
 
         // Act
         var result1 = content1.ToString();
@@ -47,7 +47,7 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content1 = new ImageContent(data, "text/plain");
+        var content1 = new ImageContent(data, mediaType: "text/plain");
         content1.Uri = new Uri("https://endpoint/");
 
         // Act
@@ -58,19 +58,6 @@ public sealed class ImageContentTests
         Assert.Equal(dataUriToExpect, result1);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void CreateForWithoutMediaTypeThrows(string? mediaType)
-    {
-        // Arrange
-        var data = BinaryData.FromString("this is a test");
-
-        // Assert
-        Assert.Throws<ArgumentException>(() => new ImageContent(data!, mediaType!));
-    }
-
     [Fact]
     public void CreateForEmptyDataUriThrows()
     {
@@ -78,7 +65,7 @@ public sealed class ImageContentTests
         var data = BinaryData.Empty;
 
         // Assert
-        Assert.Throws<ArgumentException>(() => new ImageContent(data, "text/plain"));
+        Assert.Throws<ArgumentException>(() => new ImageContent(data, mediaType: "text/plain"));
     }
 
     [Fact]
@@ -87,7 +74,7 @@ public sealed class ImageContentTests
         // Arrange
         var bytes = System.Text.Encoding.UTF8.GetBytes("this is a test");
         var data = BinaryData.FromBytes(bytes);
-        var content1 = new ImageContent(data, "text/plain");
+        var content1 = new ImageContent(data, mediaType: "text/plain");
 
         // Act
         var result1 = content1.ToString();
@@ -103,7 +90,7 @@ public sealed class ImageContentTests
         // Arrange
         using var ms = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes("this is a test"));
         var data = BinaryData.FromStream(ms);
-        var content1 = new ImageContent(data, "text/plain");
+        var content1 = new ImageContent(data, mediaType: "text/plain");
 
         // Act
         var result1 = content1.ToString();
@@ -113,6 +100,19 @@ public sealed class ImageContentTests
         Assert.Equal(dataUriToExpect, result1);
 
         // Assert throws if mediatype is null
-        Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms), null!));
+        Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms), mediaType: null!));
+    }
+
+    [Fact]
+    public void InMemoryImageWithoutMediaTypeReturnsEmptyString()
+    {
+        // Arrange
+        var sut = new ImageContent(new byte[] { 1, 2, 3 }, mediaType: null);
+
+        // Act
+        var dataUrl = sut.ToString();
+
+        // Assert
+        Assert.Empty(dataUrl);
     }
 }

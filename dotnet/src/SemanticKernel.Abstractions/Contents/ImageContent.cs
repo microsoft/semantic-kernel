@@ -33,41 +33,39 @@ public sealed class ImageContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
+    /// <param name="mediaType">The image media type</param>
     [JsonConstructor]
     public ImageContent(
         Uri uri,
         string? modelId = null,
         object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null,
+        string? mediaType = null)
         : base(innerContent, modelId, metadata)
     {
         this.Uri = uri;
+        this.MediaType = mediaType;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
     /// <param name="data">The Data used as DataUri for the image.</param>
-    /// <param name="mediaType">The image media type</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
+    /// <param name="mediaType">The image media type</param>
     public ImageContent(
         ReadOnlyMemory<byte> data,
-        string mediaType,
         string? modelId = null,
         object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null,
+        string? mediaType = null)
         : base(innerContent, modelId, metadata)
     {
         if (data!.IsEmpty)
         {
             throw new ArgumentException("Data cannot be empty", nameof(data));
-        }
-
-        if (string.IsNullOrWhiteSpace(mediaType))
-        {
-            throw new ArgumentException("MediaType is needed for DataUri Images", nameof(mediaType));
         }
 
         this.Data = data;
@@ -89,7 +87,7 @@ public sealed class ImageContent : KernelContent
 
     private string? BuildDataUri()
     {
-        if (this.Data is null)
+        if (this.Data is null || string.IsNullOrEmpty(this.MediaType))
         {
             return null;
         }
