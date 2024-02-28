@@ -272,7 +272,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         if min_relevance_score is not None:
             pipeline.append({"$match": {"score": {"$gte": min_relevance_score}}})
 
-        cursor: core.AgnosticCommandCursor = self.database[collection_name].aggregate(pipeline)
+        cursor = self.database[collection_name].aggregate(pipeline)
 
         return [
             (
