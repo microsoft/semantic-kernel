@@ -2,8 +2,9 @@
 
 import json
 import logging
-import xml.etree.ElementTree as ET
 from typing import Any, Dict, Final, Iterator, List, Optional, Tuple, Type, Union
+
+import defusedxml.ElementTree as ET
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
