@@ -138,6 +138,7 @@ public class WiremockExamplesIT {
                     .dynamicTest(
                         testClazz.getSimpleName() + "Test",
                         () -> {
+                            mockInputStream();
                             System.out.println("Running: " + testClazz.getSimpleName());
                             WireMockServer server = null;
                             try {
