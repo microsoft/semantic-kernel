@@ -44,7 +44,7 @@ async def main():
         service_id="default",
     )
 
-    ask = "Figure out how much I have if first, my investment of 2130.23 dollars increased by 23%, and then I spend $5 on a coffee"
+    ask = "Figure out how much I have if first, my investment of 2130.23 dollars increased by 23%, and then I spend $5 on a coffee" # noqa: E501
 
     # Create a plan
     plan = await planner.create_plan(ask)
