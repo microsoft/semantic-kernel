@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python -m pip install poetry pytest
+          python -m pip install poetry pytest setuptools
           cd python
           poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
       - name: Test with pytest
