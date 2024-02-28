@@ -18,7 +18,19 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// The binary content.
     /// </summary>
-    public BinaryData? Content { get; set; }
+    public ReadOnlyMemory<byte>? Content { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class.
+    /// </summary>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="innerContent">Inner content</param>
+    /// <param name="metadata">Additional metadata</param>
+    [JsonConstructor]
+    public BinaryContent(string? modelId = null, object? innerContent = null, IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class.
@@ -27,9 +39,8 @@ public class BinaryContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    [JsonConstructor]
     public BinaryContent(
-        BinaryData content,
+        ReadOnlyMemory<byte> content,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
@@ -72,14 +83,14 @@ public class BinaryContent : KernelContent
     /// </remarks>
     public async Task<Stream> GetStreamAsync()
     {
-        if (this._streamProvider != null)
+        if (this._streamProvider is not null)
         {
             return await this._streamProvider.Invoke().ConfigureAwait(false);
         }
 
-        if (this.Content != null)
+        if (this.Content is not null)
         {
-            return this.Content.ToStream();
+            return new MemoryStream(this.Content.Value.ToArray());
         }
 
         throw new KernelException("Null content");
@@ -88,17 +99,22 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// The content stream
     /// </summary>
-    public async Task<BinaryData> GetContentAsync()
+    public async Task<ReadOnlyMemory<byte>> GetContentAsync()
     {
-        if (this._streamProvider != null)
+        if (this._streamProvider is not null)
         {
             using var stream = await this._streamProvider.Invoke().ConfigureAwait(false);
-            return await BinaryData.FromStreamAsync(stream).ConfigureAwait(false);
+
+            using var memoryStream = new MemoryStream();
+
+            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+            return memoryStream.ToArray();
         }
 
-        if (this.Content != null)
+        if (this.Content is not null)
         {
-            return this.Content;
+            return this.Content.Value;
         }
 
         throw new KernelException("Null content");
