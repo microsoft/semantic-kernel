@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.AI.ChatCompletion;
@@ -12,24 +14,7 @@ namespace SemanticKernel.UnitTests.AI.ChatCompletion;
 public class ChatHistoryTests
 {
     [Fact]
-    public void ItCanBeSerialised()
-    {
-        // Arrange
-        var options = new JsonSerializerOptions();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.User, "Hello");
-        chatHistory.AddMessage(AuthorRole.Assistant, "Hi");
-
-        // Act
-        var chatHistoryJson = JsonSerializer.Serialize(chatHistory);
-
-        // Assert
-        Assert.NotNull(chatHistoryJson);
-        Assert.Equal("[{\"Role\":{\"Label\":\"user\"},\"Content\":\"Hello\",\"AdditionalProperties\":null},{\"Role\":{\"Label\":\"assistant\"},\"Content\":\"Hi\",\"AdditionalProperties\":null}]", chatHistoryJson);
-    }
-
-    [Fact]
-    public void ItCanBeDeserialised()
+    public void ItCanBeSerializedAndDeserialized()
     {
         // Arrange
         var options = new JsonSerializerOptions();
@@ -39,15 +24,19 @@ public class ChatHistoryTests
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, options);
 
         // Act
-        var chatHistoryDeserialised = JsonSerializer.Deserialize<ChatHistory>(chatHistoryJson, options);
+        var chatHistoryDeserialized = JsonSerializer.Deserialize<ChatHistory>(chatHistoryJson, options);
 
         // Assert
-        Assert.NotNull(chatHistoryDeserialised);
-        Assert.Equal(chatHistory.Count, chatHistoryDeserialised.Count);
+        Assert.NotNull(chatHistoryDeserialized);
+        Assert.Equal(chatHistory.Count, chatHistoryDeserialized.Count);
         for (var i = 0; i < chatHistory.Count; i++)
         {
-            Assert.Equal(chatHistory[i].Role.Label, chatHistoryDeserialised[i].Role.Label);
-            Assert.Equal(chatHistory[i].Content, chatHistoryDeserialised[i].Content);
+            Assert.Equal(chatHistory[i].Role.Label, chatHistoryDeserialized[i].Role.Label);
+            Assert.Equal(chatHistory[i].Content, chatHistoryDeserialized[i].Content);
+            Assert.Equal(chatHistory[i].Items.Count, chatHistoryDeserialized[i].Items.Count);
+            Assert.Equal(
+                chatHistory[i].Items.OfType<TextContent>().Single().Text,
+                chatHistoryDeserialized[i].Items.OfType<TextContent>().Single().Text);
         }
     }
 }

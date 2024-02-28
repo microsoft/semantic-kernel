@@ -23,37 +23,37 @@ public class KernelPluginCollectionTests
         Assert.NotNull(c.GetEnumerator());
         Assert.False(c.GetEnumerator().MoveNext());
 
-        c = new(Array.Empty<KernelPlugin>());
+        c = new(Array.Empty<DefaultKernelPlugin>());
         Assert.Equal(0, c.Count);
         Assert.NotNull(c.GetEnumerator());
         Assert.False(c.GetEnumerator().MoveNext());
 
-        c = new(new[] { new KernelPlugin("Function1") });
+        c = new(new[] { KernelPluginFactory.CreateFromFunctions("plugin1") });
         Assert.Equal(1, c.Count);
         Assert.NotNull(c.GetEnumerator());
-        Assert.True(c.Contains("function1"));
-        Assert.False(c.Contains("function2"));
+        Assert.True(c.Contains("plugin1"));
+        Assert.False(c.Contains("plugin2"));
 
-        c = new(new[] { new KernelPlugin("Function1"), new KernelPlugin("Function2") });
+        c = new(new[] { KernelPluginFactory.CreateFromFunctions("plugin1"), KernelPluginFactory.CreateFromFunctions("plugin2") });
         Assert.Equal(2, c.Count);
         Assert.NotNull(c.GetEnumerator());
-        Assert.True(c.Contains("function1"));
-        Assert.True(c.Contains("function2"));
-        Assert.False(c.Contains("function3"));
+        Assert.True(c.Contains("plugin1"));
+        Assert.True(c.Contains("plugin2"));
+        Assert.False(c.Contains("plugin3"));
 
-        c = new(new[] { new KernelPlugin("Function1"), new KernelPlugin("Function2") }.Select(p => p));
+        c = new(new[] { KernelPluginFactory.CreateFromFunctions("plugin1"), KernelPluginFactory.CreateFromFunctions("plugin2") }.Select(p => p));
         Assert.Equal(2, c.Count);
         Assert.NotNull(c.GetEnumerator());
-        Assert.True(c.Contains("function1"));
-        Assert.True(c.Contains("function2"));
-        Assert.False(c.Contains("function3"));
+        Assert.True(c.Contains("plugin1"));
+        Assert.True(c.Contains("plugin2"));
+        Assert.False(c.Contains("plugin3"));
 
         c = new(c);
         Assert.Equal(2, c.Count);
         Assert.NotNull(c.GetEnumerator());
-        Assert.True(c.Contains("function1"));
-        Assert.True(c.Contains("function2"));
-        Assert.False(c.Contains("function3"));
+        Assert.True(c.Contains("plugin1"));
+        Assert.True(c.Contains("plugin2"));
+        Assert.False(c.Contains("plugin3"));
     }
 
     [Fact]
@@ -61,12 +61,12 @@ public class KernelPluginCollectionTests
     {
         var c = new KernelPluginCollection();
 
-        KernelPlugin plugin1 = new("name1", new[]
+        DefaultKernelPlugin plugin1 = new("name1", "description1", new[]
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function1"),
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
         });
-        KernelPlugin plugin2 = new("name2", new[]
+        DefaultKernelPlugin plugin2 = new("name2", "description2", new[]
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         });
@@ -115,7 +115,7 @@ public class KernelPluginCollectionTests
         Assert.False(c.Contains(plugin2));
         Assert.False(c.Contains(plugin2.Name));
         Assert.False(c.Contains(plugin2.Name.ToUpperInvariant()));
-        Assert.Equal(Array.Empty<IKernelPlugin>(), c.ToArray());
+        Assert.Equal(Array.Empty<KernelPlugin>(), c.ToArray());
 
         c.Add(plugin2);
         Assert.Equal(1, c.Count);
@@ -128,23 +128,23 @@ public class KernelPluginCollectionTests
     {
         var c = new KernelPluginCollection();
 
-        c.AddRange(new[] { new KernelPlugin("name1"), new KernelPlugin("name2") });
+        c.AddRange(new[] { KernelPluginFactory.CreateFromFunctions("name1"), KernelPluginFactory.CreateFromFunctions("name2") });
         Assert.Equal(2, c.Count);
         Assert.Equal("name1", c["name1"].Name);
         Assert.Equal("name2", c["name2"].Name);
     }
 
     [Fact]
-    public void ItExposesFunctionViewsOfAllFunctions()
+    public void ItExposesFunctionMetadataForAllFunctions()
     {
         var c = new KernelPluginCollection()
         {
-            new KernelPlugin("plugin1", new[]
+            KernelPluginFactory.CreateFromFunctions("plugin1", "description1", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => { }, "Function1"),
                 KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
             }),
-            new KernelPlugin("plugin2", new[]
+            KernelPluginFactory.CreateFromFunctions("plugin2", "description2", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
                 KernelFunctionFactory.CreateFromMethod(() => { }, "Function3"),
@@ -169,12 +169,12 @@ public class KernelPluginCollectionTests
     [Fact]
     public void ItExposesFunctionsInPlugins()
     {
-        KernelPlugin plugin1 = new("name1", new[]
+        DefaultKernelPlugin plugin1 = new("name1", "description1", new[]
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function1"),
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
         });
-        KernelPlugin plugin2 = new("name2", new[]
+        DefaultKernelPlugin plugin2 = new("name2", "description2", new[]
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function3"),
         });
@@ -206,7 +206,7 @@ public class KernelPluginCollectionTests
     public void ItThrowsForInvalidArguments()
     {
         Assert.Throws<ArgumentNullException>(() => new KernelPluginCollection(null!));
-        Assert.Throws<ArgumentNullException>(() => new KernelPluginCollection(new IKernelPlugin[] { null! }));
+        Assert.Throws<ArgumentNullException>(() => new KernelPluginCollection(new KernelPlugin[] { null! }));
 
         KernelPluginCollection c = new();
         Assert.Throws<ArgumentNullException>(() => c.Add(null!));
@@ -214,7 +214,7 @@ public class KernelPluginCollectionTests
         Assert.Throws<ArgumentNullException>(() => c.Contains(null!));
         Assert.Throws<ArgumentNullException>(() => c[null!]);
         Assert.Throws<ArgumentNullException>(() => c.TryGetPlugin(null!, out _));
-        Assert.Throws<ArgumentNullException>(() => ((ICollection<IKernelPlugin>)c).CopyTo(null!, 0));
+        Assert.Throws<ArgumentNullException>(() => ((ICollection<KernelPlugin>)c).CopyTo(null!, 0));
 
         Assert.Throws<KeyNotFoundException>(() => c["Function1"]);
     }
@@ -222,11 +222,11 @@ public class KernelPluginCollectionTests
     [Fact]
     public void ItCopiesToDestinationArrayInCopyTo()
     {
-        IKernelPlugin plugin1 = new KernelPlugin("plugin1");
-        IKernelPlugin plugin2 = new KernelPlugin("plugin2");
-        ICollection<IKernelPlugin> c = new KernelPluginCollection(new[] { plugin1, plugin2 });
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("plugin1");
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("plugin2");
+        ICollection<KernelPlugin> c = new KernelPluginCollection(new[] { plugin1, plugin2 });
 
-        var array = new IKernelPlugin[4];
+        var array = new KernelPlugin[4];
 
         c.CopyTo(array, 0);
         Assert.Same(plugin1, array[0]);

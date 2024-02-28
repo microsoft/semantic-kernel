@@ -2,16 +2,15 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace Microsoft.SemanticKernel.Functions.Yaml;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Deserializer for <see cref="PromptExecutionSettings"/>.
 /// </summary>
-internal class PromptExecutionSettingsNodeDeserializer : INodeDeserializer
+internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserializer
 {
     /// <inheritdoc/>
     public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value)
@@ -26,17 +25,15 @@ internal class PromptExecutionSettingsNodeDeserializer : INodeDeserializer
         var modelSettings = new PromptExecutionSettings();
         foreach (var kv in (Dictionary<string, object>)dictionary!)
         {
-            if (kv.Key == "service_id")
+            switch (kv.Key)
             {
-                modelSettings.ServiceId = (string)kv.Value;
-            }
-            else if (kv.Key == "model_id")
-            {
-                modelSettings.ModelId = (string)kv.Value;
-            }
-            else
-            {
-                modelSettings.ExtensionData.Add(kv.Key, kv.Value);
+                case "model_id":
+                    modelSettings.ModelId = (string)kv.Value;
+                    break;
+
+                default:
+                    (modelSettings.ExtensionData ??= new Dictionary<string, object>()).Add(kv.Key, kv.Value);
+                    break;
             }
         }
 

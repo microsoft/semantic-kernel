@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 // ReSharper disable once ClassCannotBeInstantiated
 internal sealed class CreateGraphRequest

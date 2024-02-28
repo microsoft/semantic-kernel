@@ -2,7 +2,7 @@
 
 import atexit
 import json
-from logging import Logger
+import logging
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -13,11 +13,12 @@ from psycopg_pool import ConnectionPool
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 
 # Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
 MAX_DIMENSIONALITY = 2000
 DEFAULT_SCHEMA = "public"
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PostgresMemoryStore(MemoryStoreBase):
@@ -27,7 +28,6 @@ class PostgresMemoryStore(MemoryStoreBase):
     _connection_pool: ConnectionPool
     _default_dimensionality: int
     _schema: str
-    _logger: Logger
 
     def __init__(
         self,
@@ -36,7 +36,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         min_pool: int,
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
@@ -48,21 +48,18 @@ class PostgresMemoryStore(MemoryStoreBase):
             schema {str} -- The schema to use. (default: {"public"})\n
             timezone_offset {Optional[str]} -- The timezone offset to use. (default: {None})
             Expected format '-7:00'. Uses the local timezone offset when not provided.\n
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
-
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._check_dimensionality(default_dimensionality)
 
         self._connection_string = connection_string
         self._default_dimensionality = default_dimensionality
-        self._connection_pool = ConnectionPool(
-            self._connection_string, min_size=min_pool, max_size=max_pool
-        )
+        self._connection_pool = ConnectionPool(self._connection_string, min_size=min_pool, max_size=max_pool)
         self._schema = schema
         atexit.register(self._connection_pool.close)
-        self._logger = logger or NullLogger()
 
-    async def create_collection_async(
+    async def create_collection(
         self,
         collection_name: str,
         dimension_num: Optional[int] = None,
@@ -101,7 +98,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (),
                 )
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         """Gets the list of collections.
 
         Returns:
@@ -109,9 +106,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                return await self.__get_collections_async(cur)
+                return await self.__get_collections(cur)
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
         Arguments:
@@ -128,7 +125,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     ),
                 )
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
         Arguments:
@@ -139,9 +136,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                return await self.__does_collection_exist_async(cur, collection_name)
+                return await self.__does_collection_exist(cur, collection_name)
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
 
         Arguments:
@@ -153,7 +150,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not await self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
@@ -182,9 +179,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise Exception("Upsert failed")
                 return result[0]
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -196,7 +191,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not await self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.nextset()
                 cur.executemany(
@@ -234,9 +229,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise Exception("Upsert failed")
                 return [result[0] for result in results if result is not None]
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -249,7 +242,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not await self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
@@ -278,7 +271,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     timestamp=result[3],
                 )
 
-    async def get_batch_async(
+    async def get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         """Gets a batch of records.
@@ -293,7 +286,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not await self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
@@ -312,9 +305,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 return [
                     MemoryRecord.local_record(
                         id=result[0],
-                        embedding=np.fromstring(
-                            result[1].strip("[]"), dtype=float, sep=","
-                        )
+                        embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
                         if with_embeddings
                         else np.array([]),
                         text=result[2]["text"],
@@ -325,7 +316,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     for result in results
                 ]
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
         Arguments:
@@ -337,7 +328,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not await self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
@@ -345,13 +336,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                         DELETE FROM {scm}.{tbl}
                         WHERE key = %s
                         """
-                    ).format(
-                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
-                    ),
+                    ).format(scm=Identifier(self._schema), tbl=Identifier(collection_name)),
                     (key,),
                 )
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -363,7 +352,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not await self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
@@ -371,13 +360,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                         DELETE FROM {scm}.{tbl}
                         WHERE key = ANY(%s)
                         """
-                    ).format(
-                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
-                    ),
+                    ).format(scm=Identifier(self._schema), tbl=Identifier(collection_name)),
                     (list(keys),),
                 )
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -399,7 +386,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not await self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
@@ -432,9 +419,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (
                         MemoryRecord.local_record(
                             id=result[0],
-                            embedding=np.fromstring(
-                                result[1].strip("[]"), dtype=float, sep=","
-                            )
+                            embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
                             if with_embeddings
                             else np.array([]),
                             text=result[2]["text"],
@@ -447,7 +432,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     for result in results
                 ]
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -466,7 +451,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
 
-        results = await self.get_nearest_matches_async(
+        results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
@@ -477,13 +462,11 @@ class PostgresMemoryStore(MemoryStoreBase):
             raise Exception("No match found")
         return results[0]
 
-    async def __does_collection_exist_async(
-        self, cur: Cursor, collection_name: str
-    ) -> bool:
-        results = await self.__get_collections_async(cur)
+    async def __does_collection_exist(self, cur: Cursor, collection_name: str) -> bool:
+        results = await self.__get_collections(cur)
         return collection_name in results
 
-    async def __get_collections_async(self, cur: Cursor) -> List[str]:
+    async def __get_collections(self, cur: Cursor) -> List[str]:
         cur.execute(
             """
             SELECT table_name
@@ -497,8 +480,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     def _check_dimensionality(self, dimension_num):
         if dimension_num > MAX_DIMENSIONALITY:
             raise ValueError(
-                f"Dimensionality of {dimension_num} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         if dimension_num <= 0:
             raise ValueError("Dimensionality must be a positive integer. ")

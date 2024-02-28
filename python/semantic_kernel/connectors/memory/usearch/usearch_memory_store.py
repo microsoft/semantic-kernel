@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import itertools
+import logging
 import os
 from dataclasses import dataclass
 from enum import Enum
-from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -24,7 +24,8 @@ from usearch.index import (
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -93,15 +94,12 @@ _collection_file_extensions: Dict[_CollectionFileType, str] = {
 def memoryrecords_to_pyarrow_table(records: List[MemoryRecord]) -> pa.Table:
     """Convert a list of `MemoryRecord` to a PyArrow Table"""
     records_pylist = [
-        {attr: getattr(record, "_" + attr) for attr in _embeddings_data_schema.names}
-        for record in records
+        {attr: getattr(record, "_" + attr) for attr in _embeddings_data_schema.names} for record in records
     ]
     return pa.Table.from_pylist(records_pylist, schema=_embeddings_data_schema)
 
 
-def pyarrow_table_to_memoryrecords(
-    table: pa.Table, vectors: Optional[ndarray] = None
-) -> List[MemoryRecord]:
+def pyarrow_table_to_memoryrecords(table: pa.Table, vectors: Optional[ndarray] = None) -> List[MemoryRecord]:
     """Convert a PyArrow Table to a list of MemoryRecords.
 
     Args:
@@ -113,9 +111,7 @@ def pyarrow_table_to_memoryrecords(
         List[MemoryRecord]: List of MemoryRecords constructed from the table.
     """
     result_memory_records = [
-        MemoryRecord(
-            **row.to_dict(), embedding=vectors[index] if vectors is not None else None
-        )
+        MemoryRecord(**row.to_dict(), embedding=vectors[index] if vectors is not None else None)
         for index, row in table.to_pandas().iterrows()
     ]
 
@@ -126,36 +122,32 @@ class USearchMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         persist_directory: Optional[os.PathLike] = None,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """
         Create a USearchMemoryStore instance.
 
         This store helps searching embeddings with USearch, keeping collections in memory.
         To save collections to disk, provide the `persist_directory` param.
-        Collections are saved when `close_async` is called.
+        Collections are saved when `close` is called.
 
-        To both save collections and free up memory, call `close_async`.
+        To both save collections and free up memory, call `close`.
         When `USearchMemoryStore` is used with a context manager, this will happen automatically.
         Otherwise, it should be called explicitly.
 
         Args:
             persist_directory (Optional[os.PathLike], default=None): Directory for loading and saving collections.
             If None, collections are not loaded nor saved.
-            logger (Optional[Logger], default=None): Logger for diagnostics. If None, a NullLogger is used.
         """
-        self._logger = logger or NullLogger()
-        self._persist_directory = (
-            Path(persist_directory) if persist_directory is not None else None
-        )
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        self._persist_directory = Path(persist_directory) if persist_directory is not None else None
 
         self._collections: Dict[str, _USearchCollection] = {}
         if self._persist_directory:
             self._collections = self._read_collections_from_dir()
 
-    def _get_collection_path(
-        self, collection_name: str, *, file_type: _CollectionFileType
-    ) -> Path:
+    def _get_collection_path(self, collection_name: str, *, file_type: _CollectionFileType) -> Path:
         """
         Get the path for the given collection name and file type.
 
@@ -173,11 +165,9 @@ class USearchMemoryStore(MemoryStoreBase):
         if self._persist_directory is None:
             raise ValueError("Path of persist directory is not set")
 
-        return self._persist_directory / (
-            collection_name + _collection_file_extensions[file_type]
-        )
+        return self._persist_directory / (collection_name + _collection_file_extensions[file_type])
 
-    async def create_collection_async(
+    async def create_collection(
         self,
         collection_name: str,
         ndim: int = 0,
@@ -212,9 +202,7 @@ class USearchMemoryStore(MemoryStoreBase):
             raise ValueError(f"Collection with name {collection_name} already exists.")
 
         embeddings_index_path = (
-            self._get_collection_path(
-                collection_name, file_type=_CollectionFileType.USEARCH
-            )
+            self._get_collection_path(collection_name, file_type=_CollectionFileType.USEARCH)
             if self._persist_directory
             else None
         )
@@ -230,15 +218,11 @@ class USearchMemoryStore(MemoryStoreBase):
             view=view,
         )
 
-        self._collections[collection_name] = _USearchCollection.create_default(
-            embeddings_index
-        )
+        self._collections[collection_name] = _USearchCollection.create_default(embeddings_index)
 
         return None
 
-    def _read_embeddings_table(
-        self, path: os.PathLike
-    ) -> Tuple[pa.Table, Dict[str, int]]:
+    def _read_embeddings_table(self, path: os.PathLike) -> Tuple[pa.Table, Dict[str, int]]:
         """Read embeddings from the provided path and generate an ID to label mapping.
 
         Args:
@@ -249,8 +233,7 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         embeddings_table = pq.read_table(path, schema=_embeddings_data_schema)
         embeddings_id_to_label: Dict[str, int] = {
-            record_id: idx
-            for idx, record_id in enumerate(embeddings_table.column("id").to_pylist())
+            record_id: idx for idx, record_id in enumerate(embeddings_table.column("id").to_pylist())
         }
         return embeddings_table, embeddings_id_to_label
 
@@ -274,19 +257,12 @@ class USearchMemoryStore(MemoryStoreBase):
         for collection_name, collection_files in self._get_all_storage_files().items():
             expected_storage_files = len(_CollectionFileType)
             if len(collection_files) != expected_storage_files:
-                raise ValueError(
-                    f"Expected {expected_storage_files} files for collection {collection_name}"
-                )
+                raise ValueError(f"Expected {expected_storage_files} files for collection {collection_name}")
             parquet_file, usearch_file = collection_files
-            if (
-                parquet_file.suffix
-                == _collection_file_extensions[_CollectionFileType.USEARCH]
-            ):
+            if parquet_file.suffix == _collection_file_extensions[_CollectionFileType.USEARCH]:
                 parquet_file, usearch_file = usearch_file, parquet_file
 
-            embeddings_table, embeddings_id_to_label = self._read_embeddings_table(
-                parquet_file
-            )
+            embeddings_table, embeddings_id_to_label = self._read_embeddings_table(parquet_file)
             embeddings_index = self._read_embeddings_index(usearch_file)
 
             collections[collection_name] = _USearchCollection(
@@ -297,7 +273,7 @@ class USearchMemoryStore(MemoryStoreBase):
 
         return collections
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         """Get list of existing collections.
 
         Returns:
@@ -305,26 +281,24 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         return list(self._collections.keys())
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         collection_name = collection_name.lower()
         collection = self._collections.pop(collection_name, None)
         if collection:
             collection.embeddings_index.reset()
         return None
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         collection_name = collection_name.lower()
         return collection_name in self._collections
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upsert single MemoryRecord and return its ID."""
         collection_name = collection_name.lower()
-        res = await self.upsert_batch_async(
-            collection_name=collection_name, records=[record]
-        )
+        res = await self.upsert_batch(collection_name=collection_name, records=[record])
         return res[0]
 
-    async def upsert_batch_async(
+    async def upsert_batch(
         self,
         collection_name: str,
         records: List[MemoryRecord],
@@ -354,22 +328,16 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
-            raise KeyError(
-                f"Collection {collection_name} does not exist, cannot insert."
-            )
+            raise KeyError(f"Collection {collection_name} does not exist, cannot insert.")
 
         ucollection = self._collections[collection_name]
         all_records_id = [record._id for record in records]
 
         # Remove vectors from index
         remove_labels = [
-            ucollection.embeddings_id_to_label[id]
-            for id in all_records_id
-            if id in ucollection.embeddings_id_to_label
+            ucollection.embeddings_id_to_label[id] for id in all_records_id if id in ucollection.embeddings_id_to_label
         ]
-        ucollection.embeddings_index.remove(
-            remove_labels, compact=compact, threads=threads
-        )
+        ucollection.embeddings_index.remove(remove_labels, compact=compact, threads=threads)
 
         # Determine label insertion points
         table_num_rows = ucollection.embeddings_data_table.num_rows
@@ -396,7 +364,7 @@ class USearchMemoryStore(MemoryStoreBase):
 
         return all_records_id
 
-    async def get_async(
+    async def get(
         self,
         collection_name: str,
         key: str,
@@ -405,7 +373,7 @@ class USearchMemoryStore(MemoryStoreBase):
     ) -> MemoryRecord:
         """Retrieve a single MemoryRecord using its key."""
         collection_name = collection_name.lower()
-        result = await self.get_batch_async(
+        result = await self.get_batch(
             collection_name=collection_name,
             keys=[key],
             with_embeddings=with_embedding,
@@ -415,7 +383,7 @@ class USearchMemoryStore(MemoryStoreBase):
             raise KeyError(f"Key '{key}' not found in collection '{collection_name}'")
         return result[0]
 
-    async def get_batch_async(
+    async def get_batch(
         self,
         collection_name: str,
         keys: List[str],
@@ -428,36 +396,24 @@ class USearchMemoryStore(MemoryStoreBase):
             raise KeyError(f"Collection {collection_name} does not exist")
 
         ucollection = self._collections[collection_name]
-        labels = [
-            ucollection.embeddings_id_to_label[key]
-            for key in keys
-            if key in ucollection.embeddings_id_to_label
-        ]
+        labels = [ucollection.embeddings_id_to_label[key] for key in keys if key in ucollection.embeddings_id_to_label]
         if not labels:
             return []
-        vectors = (
-            ucollection.embeddings_index.get_vectors(labels, dtype)
-            if with_embeddings
-            else None
-        )
+        vectors = ucollection.embeddings_index.get_vectors(labels, dtype) if with_embeddings else None
 
-        return pyarrow_table_to_memoryrecords(
-            ucollection.embeddings_data_table.take(pa.array(labels)), vectors
-        )
+        return pyarrow_table_to_memoryrecords(ucollection.embeddings_data_table.take(pa.array(labels)), vectors)
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Remove a single MemoryRecord using its key."""
         collection_name = collection_name.lower()
-        await self.remove_batch_async(collection_name=collection_name, keys=[key])
+        await self.remove_batch(collection_name=collection_name, keys=[key])
         return None
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """Remove a batch of MemoryRecords using their keys."""
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
-            raise KeyError(
-                f"Collection {collection_name} does not exist, cannot insert."
-            )
+            raise KeyError(f"Collection {collection_name} does not exist, cannot insert.")
 
         ucollection = self._collections[collection_name]
 
@@ -468,7 +424,7 @@ class USearchMemoryStore(MemoryStoreBase):
 
         return None
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -495,7 +451,7 @@ class USearchMemoryStore(MemoryStoreBase):
             Tuple[MemoryRecord, float]: The nearest matching record and its relevance score.
         """
         collection_name = collection_name.lower()
-        results = await self.get_nearest_matches_async(
+        results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
@@ -505,7 +461,7 @@ class USearchMemoryStore(MemoryStoreBase):
         )
         return results[0]
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -558,9 +514,7 @@ class USearchMemoryStore(MemoryStoreBase):
         assert isinstance(result, Matches)
 
         relevance_score = 1 / (result.distances + 1)
-        filtered_labels = result.keys[
-            np.where(relevance_score >= min_relevance_score)[0]
-        ]
+        filtered_labels = result.keys[np.where(relevance_score >= min_relevance_score)[0]]
 
         filtered_vectors: Optional[np.ndarray] = None
         if with_embeddings:
@@ -604,27 +558,21 @@ class USearchMemoryStore(MemoryStoreBase):
 
     def _dump_collections(self) -> None:
         collection_storage_files = self._get_all_storage_files()
-        for file_path in itertools.chain.from_iterable(
-            collection_storage_files.values()
-        ):
+        for file_path in itertools.chain.from_iterable(collection_storage_files.values()):
             file_path.unlink()
 
         for collection_name, ucollection in self._collections.items():
             ucollection.embeddings_index.save(
-                self._get_collection_path(
-                    collection_name, file_type=_CollectionFileType.USEARCH
-                )
+                self._get_collection_path(collection_name, file_type=_CollectionFileType.USEARCH)
             )
             pq.write_table(
                 ucollection.embeddings_data_table,
-                self._get_collection_path(
-                    collection_name, file_type=_CollectionFileType.PARQUET
-                ),
+                self._get_collection_path(collection_name, file_type=_CollectionFileType.PARQUET),
             )
 
         return None
 
-    async def close_async(self) -> None:
+    async def close(self) -> None:
         """Persist collection, clear.
 
         Returns:
@@ -633,6 +581,6 @@ class USearchMemoryStore(MemoryStoreBase):
         if self._persist_directory:
             self._dump_collections()
 
-        for collection_name in await self.get_collections_async():
-            await self.delete_collection_async(collection_name)
+        for collection_name in await self.get_collections():
+            await self.delete_collection(collection_name)
         self._collections = {}

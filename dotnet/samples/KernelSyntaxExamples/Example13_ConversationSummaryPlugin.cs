@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
+using xRetry;
+using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
+namespace Examples;
 
-internal static class Example13_ConversationSummaryPlugin
+public class Example13_ConversationSummaryPlugin : BaseTest
 {
     private const string ChatTranscript =
         @"
@@ -119,70 +118,74 @@ John: You're welcome. I'm glad we could help. Goodbye!
 Jane: Goodbye!
 ";
 
-    public static async Task RunAsync()
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task RunAsync()
     {
         await ConversationSummaryPluginAsync();
         await GetConversationActionItemsAsync();
         await GetConversationTopicsAsync();
     }
 
-    private static async Task ConversationSummaryPluginAsync()
+    private async Task ConversationSummaryPluginAsync()
     {
-        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
+        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
         Kernel kernel = InitializeKernel();
 
-        IKernelPlugin conversationSummaryPlugin = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
+        KernelPlugin conversationSummaryPlugin = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummaryPlugin["SummarizeConversation"], ChatTranscript);
+            conversationSummaryPlugin["SummarizeConversation"], new() { ["input"] = ChatTranscript });
 
-        Console.WriteLine("Generated Summary:");
-        Console.WriteLine(summary.GetValue<string>());
+        WriteLine("Generated Summary:");
+        WriteLine(summary.GetValue<string>());
     }
 
-    private static async Task GetConversationActionItemsAsync()
+    private async Task GetConversationActionItemsAsync()
     {
-        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
+        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
         Kernel kernel = InitializeKernel();
 
-        IKernelPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
+        KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummary["GetConversationActionItems"], ChatTranscript);
+            conversationSummary["GetConversationActionItems"], new() { ["input"] = ChatTranscript });
 
-        Console.WriteLine("Generated Action Items:");
-        Console.WriteLine(summary.GetValue<string>());
+        WriteLine("Generated Action Items:");
+        WriteLine(summary.GetValue<string>());
     }
 
-    private static async Task GetConversationTopicsAsync()
+    private async Task GetConversationTopicsAsync()
     {
-        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
+        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
         Kernel kernel = InitializeKernel();
 
-        IKernelPlugin conversationSummary = kernel.ImportPluginFromObject<ConversationSummaryPlugin>();
+        KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummary["GetConversationTopics"], ChatTranscript);
+            conversationSummary["GetConversationTopics"], new() { ["input"] = ChatTranscript });
 
-        Console.WriteLine("Generated Topics:");
-        Console.WriteLine(summary.GetValue<string>());
+        WriteLine("Generated Topics:");
+        WriteLine(summary.GetValue<string>());
     }
 
-    private static Kernel InitializeKernel()
+    private Kernel InitializeKernel()
     {
-        Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-        .Build();
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
+            .Build();
 
         return kernel;
     }
+
+    public Example13_ConversationSummaryPlugin(ITestOutputHelper output) : base(output)
+    {
+    }
 }
 
-// ReSharper disable CommentTypo
 /* Example Output:
 
 ======== SamplePlugins - Conversation Summary Plugin - Summarize ========
@@ -262,4 +265,3 @@ Generated Topics:
 }
 
 */
-// ReSharper restore CommentTypo

@@ -5,16 +5,16 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Microsoft.SemanticKernel.TextGeneration;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Extensions;
+namespace SemanticKernel.IntegrationTests;
 
 public sealed class KernelFunctionExtensionsTests : IDisposable
 {
@@ -26,16 +26,16 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
-        Kernel target = new KernelBuilder()
-            .WithLoggerFactory(this._logger)
-            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
-            .Build();
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
 
         // Assert
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
@@ -44,19 +44,61 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
-        Kernel target = new KernelBuilder()
-            .WithLoggerFactory(this._logger)
-            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
-            .Build();
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
 
         // Assert
         Assert.Equal("Hey a person@example.com", actual.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task ItSupportsInvokePromptWithHandlebarsAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
+
+        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}-GetEmailAddress}}}}";
+
+        // Act
+        FunctionResult actual = await target.InvokePromptAsync(
+            prompt,
+            new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }),
+            templateFormat: "handlebars",
+            promptTemplateFactory: new HandlebarsPromptTemplateFactory());
+
+        // Assert
+        Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task ItSupportsInvokeHandlebarsPromptAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        builder.Services.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService());
+        builder.Plugins.AddFromType<EmailPluginFake>();
+        Kernel target = builder.Build();
+
+        var prompt = $"Hey {{{{{nameof(EmailPluginFake)}-GetEmailAddress}}}}";
+
+        // Act
+        FunctionResult actual = await target.InvokeHandlebarsPromptAsync(
+            prompt,
+            new(new OpenAIPromptExecutionSettings() { MaxTokens = 150 }));
+
+        // Assert
+        Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
     }
 
     private readonly RedirectOutput _logger;
@@ -66,37 +108,20 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         this._logger.Dispose();
     }
 
-    private sealed class RedirectTextCompletion : ITextCompletion
+    private sealed class RedirectTextGenerationService : ITextGenerationService
     {
         public string? ModelId => null;
 
-        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
+            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { new(prompt) });
         }
 
-        public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
-        }
-    }
-
-    internal sealed class RedirectTextCompletionResult : ITextResult
-    {
-        private readonly string _completion;
-
-        public RedirectTextCompletionResult(string completion)
-        {
-            this._completion = completion;
-        }
-
-        public ModelResult ModelResult => new(this._completion);
-
-        public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(this._completion);
         }
     }
 }

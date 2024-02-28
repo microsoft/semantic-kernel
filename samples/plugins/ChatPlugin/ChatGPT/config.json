@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "description": "Chat with the AI",
-  "execution_settings": [
-    {
+  "execution_settings": {
+    "default": {
       "max_tokens": 150,
       "temperature": 0.9,
       "top_p": 0.0,
@@ -12,5 +12,5 @@
         "[Done]"
       ]
     }
-  ]
+  }
 }

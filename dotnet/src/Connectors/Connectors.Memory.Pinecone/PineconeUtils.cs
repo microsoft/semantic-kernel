@@ -8,10 +8,8 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Utils for Pinecone connector.
@@ -239,6 +237,7 @@ public static class PineconeUtils
             PodType.S1X4 => "s1x4",
             PodType.S1X8 => "s1x8",
             PodType.Starter => "starter",
+            PodType.Nano => "nano",
             _ => string.Empty
         };
     }

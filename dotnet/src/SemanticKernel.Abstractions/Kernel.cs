@@ -6,12 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
@@ -26,14 +24,18 @@ namespace Microsoft.SemanticKernel;
 public sealed class Kernel
 {
     /// <summary>Key used by KernelBuilder to store type information into the service provider.</summary>
-    internal const string KernelServiceTypeToKeyMappingsKey = nameof(KernelServiceTypeToKeyMappingsKey);
+    internal const string KernelServiceTypeToKeyMappings = nameof(KernelServiceTypeToKeyMappings);
 
     /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>
     private Dictionary<string, object?>? _data;
     /// <summary><see cref="CultureInfo"/> to be used by any operations that need access to the culture, a format provider, etc.</summary>
-    private CultureInfo _culture = CultureInfo.CurrentCulture;
+    private CultureInfo _culture = CultureInfo.InvariantCulture;
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
+    /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IFunctionFilter>? _functionFilters;
+    /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IPromptFilter>? _promptFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -51,9 +53,46 @@ public sealed class Kernel
         IServiceProvider? services = null,
         KernelPluginCollection? plugins = null)
     {
+        // Store the provided services, or an empty singleton if there aren't any.
         this.Services = services ?? EmptyServiceProvider.Instance;
-        this._plugins = plugins;
+
+        // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
+        this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+
+        if (this._plugins is null)
+        {
+            // Otherwise, enumerate any plugins that may have been registered directly.
+            IEnumerable<KernelPlugin> e = this.Services.GetServices<KernelPlugin>();
+
+            // It'll be common not to have any plugins directly registered as a service.
+            // If we can efficiently tell there aren't any, avoid proactively allocating
+            // the plugins collection.
+            if (e is not ICollection<KernelPlugin> c || c.Count != 0)
+            {
+                this._plugins = new(e);
+            }
+        }
+
+        // Enumerate any function filters that may have been registered.
+        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
+
+        if (functionFilters is not ICollection<IFunctionFilter> functionFilterCollection || functionFilterCollection.Count != 0)
+        {
+            this._functionFilters = new(functionFilters);
+        }
+
+        // Enumerate any prompt filters that may have been registered.
+        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
+
+        if (promptFilters is not ICollection<IPromptFilter> promptFilterCollection || promptFilterCollection.Count != 0)
+        {
+            this._promptFilters = new(promptFilters);
+        }
     }
+
+    /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
+    /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
+    public static IKernelBuilder CreateBuilder() => new KernelBuilder();
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -65,7 +104,7 @@ public sealed class Kernel
     /// The same <see cref="IServiceProvider"/> reference as is returned by the current instance's <see cref="Kernel.Services"/>.
     /// </item>
     /// <item>
-    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="IKernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
+    /// A new <see cref="KernelPluginCollection"/> instance initialized with the same <see cref="KernelPlugin"/> instances as are stored by the current instance's <see cref="Kernel.Plugins"/> collection.
     /// Changes to the new instance's plugin collection will not affect the current instance's plugin collection, and vice versa.
     /// </item>
     /// <item>
@@ -90,7 +129,6 @@ public sealed class Kernel
             _culture = this._culture,
         };
 
-    #region Core State: Plugins and Services
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
     /// </summary>
@@ -100,18 +138,34 @@ public sealed class Kernel
         this._plugins;
 
     /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0004")]
+    public IList<IFunctionFilter> FunctionFilters =>
+        this._functionFilters ??
+        Interlocked.CompareExchange(ref this._functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
+        this._functionFilters;
+
+    /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0004")]
+    public IList<IPromptFilter> PromptFilters =>
+        this._promptFilters ??
+        Interlocked.CompareExchange(ref this._promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
+        this._promptFilters;
+
+    /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
     /// </summary>
     public IServiceProvider Services { get; }
-    #endregion
 
-    #region Additional Transient State
     /// <summary>
-    /// Gets the culture currently associated with this context.
+    /// Gets the culture currently associated with this <see cref="Kernel"/>.
     /// </summary>
     /// <remarks>
-    /// The culture defaults to <see cref="CultureInfo.CurrentCulture"/> if not explicitly set.
-    /// It may be set to another culture, such as <see cref="CultureInfo.InvariantCulture"/>,
+    /// The culture defaults to <see cref="CultureInfo.InvariantCulture"/> if not explicitly set.
+    /// It may be set to another culture, such as <see cref="CultureInfo.CurrentCulture"/>,
     /// and any functions invoked within the context can consult this property for use in
     /// operations like formatting and parsing.
     /// </remarks>
@@ -119,8 +173,26 @@ public sealed class Kernel
     public CultureInfo Culture
     {
         get => this._culture;
-        set => this._culture = value ?? CultureInfo.CurrentCulture;
+        set => this._culture = value ?? CultureInfo.InvariantCulture;
     }
+
+    /// <summary>
+    /// Gets the <see cref="ILoggerFactory"/> associated with this <see cref="Kernel"/>.
+    /// </summary>
+    /// <remarks>
+    /// This returns any <see cref="ILoggerFactory"/> in <see cref="Services"/>. If there is
+    /// none, it returns an <see cref="ILoggerFactory"/> that won't perform any logging.
+    /// </remarks>
+    public ILoggerFactory LoggerFactory =>
+        this.Services.GetService<ILoggerFactory>() ??
+        NullLoggerFactory.Instance;
+
+    /// <summary>
+    /// Gets the <see cref="IAIServiceSelector"/> associated with this <see cref="Kernel"/>.
+    /// </summary>
+    public IAIServiceSelector ServiceSelector =>
+        this.Services.GetService<IAIServiceSelector>() ??
+        OrderedAIServiceSelector.Instance;
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -133,53 +205,22 @@ public sealed class Kernel
         Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
         this._data;
 
-    /// <summary>
-    /// Provides an event that's raised prior to a function's invocation.
-    /// </summary>
-    public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
-
-    /// <summary>
-    /// Provides an event that's raised after a function's invocation.
-    /// </summary>
-    public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
-
-    /// <summary>
-    /// Provides an event that's raised prior to a prompt being rendered.
-    /// </summary>
-    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
-
-    /// <summary>
-    /// Provides an event that's raised after a prompt is rendered.
-    /// </summary>
-    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
-    #endregion
-
-    #region Helpers on top of Plugins and Services
-    /// <summary>Gets a service from the <see cref="Services"/> collection.</summary>
+    #region GetServices
+    /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
     /// <typeparam name="T">Specifies the type of the service to get.</typeparam>
-    /// <param name="serviceId">An object that specifies the key of the service to get.</param>
+    /// <param name="serviceKey">An object that specifies the key of the service to get.</param>
     /// <returns>The found service instance.</returns>
     /// <exception cref="KernelException">A service of the specified type and name could not be found.</exception>
-    /// <remarks>
-    /// The behavior of this method is not the same as that of <see cref="IServiceProvider.GetService(Type)"/>
-    /// on the exposed <see cref="Services"/>. Rather, it is opinionated view around it. If a <paramref name="serviceId"/>
-    /// is provided, it will attempt to find a service registered with that key. If no <paramref name="serviceId"/>
-    /// is provided, it will attempt to find any service registered, regardless of whether it was registered with
-    /// with a key. If multiple services meet the criteria, it will return one of those registered, but no guarantee
-    /// on exactly which. For certain services, like <see cref="ILoggerFactory"/>, it will also return a default implementation
-    /// if no key was specified and no service was found. If it's able to find the specified service, that service is returned.
-    /// Otherwise, an exception is thrown.
-    /// </remarks>
-    public T GetService<T>(string? serviceId = null) where T : class
+    public T GetRequiredService<T>(object? serviceKey = null) where T : class
     {
         T? service = null;
 
-        if (serviceId is not null)
+        if (serviceKey is not null)
         {
             if (this.Services is IKeyedServiceProvider)
             {
                 // We were given a service ID, so we need to use the keyed service lookup.
-                service = this.Services.GetKeyedService<T>(serviceId);
+                service = this.Services.GetKeyedService<T>(serviceKey);
             }
         }
         else
@@ -191,22 +232,7 @@ public sealed class Kernel
             service = this.Services.GetService<T>();
             if (service is null && this.Services is IKeyedServiceProvider)
             {
-                // Get the last to approximate the same behavior as GetKeyedService when there are multiple identical keys.
                 service = this.GetAllServices<T>().LastOrDefault();
-            }
-
-            // If no service could be found, special-case specific services to provide a default.
-            if (service is null)
-            {
-                if (typeof(T) == typeof(ILoggerFactory) || typeof(T) == typeof(NullLoggerFactory))
-                {
-                    return (T)(object)NullLoggerFactory.Instance;
-                }
-
-                if (typeof(T) == typeof(IAIServiceSelector) || typeof(T) == typeof(OrderedIAIServiceSelector))
-                {
-                    return (T)(object)OrderedIAIServiceSelector.Instance;
-                }
             }
         }
 
@@ -214,9 +240,9 @@ public sealed class Kernel
         if (service is null)
         {
             string message =
-                serviceId is null ? $"Service of type '{typeof(T)}' not registered." :
-                this.Services is not IKeyedServiceProvider ? $"Key '{serviceId}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
-                $"Service of type '{typeof(T)}' and key '{serviceId}' not registered.";
+                serviceKey is null ? $"Service of type '{typeof(T)}' not registered." :
+                this.Services is not IKeyedServiceProvider ? $"Key '{serviceKey}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
+                $"Service of type '{typeof(T)}' and key '{serviceKey}' not registered.";
 
             throw new KernelException(message);
         }
@@ -228,6 +254,7 @@ public sealed class Kernel
     /// <summary>Gets all services of the specified type.</summary>
     /// <typeparam name="T">Specifies the type of the services to retrieve.</typeparam>
     /// <returns>An enumerable of all instances of the specified service that are registered.</returns>
+    /// <remarks>There is no guaranteed ordering on the results.</remarks>
     public IEnumerable<T> GetAllServices<T>() where T : class
     {
         if (this.Services is IKeyedServiceProvider)
@@ -236,13 +263,15 @@ public sealed class Kernel
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
             // mapping. We can query for that service and and then use it to try to get a service.
-            if (this.Services.GetKeyedService<Dictionary<Type, List<object?>>>(KernelServiceTypeToKeyMappingsKey) is { } typeToKeyMappings &&
-                typeToKeyMappings.TryGetValue(typeof(T), out List<object?> keys))
+            if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
-                return keys.Select(key => this.Services.GetKeyedService<T>(key)).Where(s => s is not null)!;
-            }
+                if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
+                {
+                    return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
+                }
 
-            return Enumerable.Empty<T>();
+                return Enumerable.Empty<T>();
+            }
         }
 
         return this.Services.GetServices<T>();
@@ -250,53 +279,365 @@ public sealed class Kernel
 
     #endregion
 
-    #region Helpers
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, ContextVariables variables)
+    #region Internal Filtering
+
+    [Experimental("SKEXP0004")]
+    internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
+    {
+        FunctionInvokingContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
+        {
+            context = new(function, arguments);
+
+            for (int i = 0; i < this._functionFilters.Count; i++)
+            {
+                this._functionFilters[i].OnFunctionInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+    [Experimental("SKEXP0004")]
+    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
+    {
+        FunctionInvokedContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
+        {
+            context = new(arguments, result);
+
+            for (int i = 0; i < this._functionFilters.Count; i++)
+            {
+                this._functionFilters[i].OnFunctionInvoked(context);
+            }
+        }
+
+        return context;
+    }
+
+    [Experimental("SKEXP0004")]
+    internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
+    {
+        PromptRenderingContext? context = null;
+
+        if (this._promptFilters is { Count: > 0 })
+        {
+            context = new(function, arguments);
+
+            for (int i = 0; i < this._promptFilters.Count; i++)
+            {
+                this._promptFilters[i].OnPromptRendering(context);
+            }
+        }
+
+        return context;
+    }
+
+    [Experimental("SKEXP0004")]
+    internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+    {
+        PromptRenderedContext? context = null;
+
+        if (this._promptFilters is { Count: > 0 })
+        {
+            context = new(function, arguments, renderedPrompt);
+
+            for (int i = 0; i < this._promptFilters.Count; i++)
+            {
+                this._promptFilters[i].OnPromptRendered(context);
+            }
+        }
+
+        return context;
+    }
+
+    #endregion
+
+    #region InvokeAsync
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public Task<FunctionResult> InvokeAsync(
+        KernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+
+        return function.InvokeAsync(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// This behaves identically to using <see cref="KernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
+    /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public Task<FunctionResult> InvokeAsync(
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(functionName);
+
+        var function = this.Plugins.GetFunction(pluginName, functionName);
+
+        return function.InvokeAsync(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <typeparam name="TResult">Specifies the type of the result value of the function.</typeparam>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution, cast to <typeparamref name="TResult"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
+    /// <remarks>
+    /// This behaves identically to invoking the specified <paramref name="function"/> with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public async Task<TResult?> InvokeAsync<TResult>(
+        KernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        FunctionResult result = await this.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false);
+        return result.GetValue<TResult>();
+    }
+
+    /// <summary>
+    /// Invokes a function from <see cref="Plugins"/> using the specified arguments.
+    /// </summary>
+    /// <typeparam name="TResult">Specifies the type of the result value of the function.</typeparam>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function's execution, cast to <typeparamref name="TResult"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
+    /// <remarks>
+    /// This behaves identically to using <see cref="KernelPluginExtensions.GetFunction"/> to find the desired <see cref="KernelFunction"/> and then
+    /// invoking it with this <see cref="Kernel"/> as its <see cref="Kernel"/> argument.
+    /// </remarks>
+    public async Task<TResult?> InvokeAsync<TResult>(
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        FunctionResult result = await this.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false);
+        return result.GetValue<TResult>();
+    }
+
+    #endregion
+
+    #region InvokeStreamingAsync
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
+        KernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+
+        return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(functionName);
+
+        var function = this.Plugins.GetFunction(pluginName, functionName);
+
+        return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
+    /// </summary>
+    /// <param name="function">The <see cref="KernelFunction"/> to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="function"/> is null.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+        KernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+
+        return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> and streams its results.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
+    /// <param name="functionName">The name of the function to invoke.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> for streaming the results of the function's invocation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="functionName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functionName"/> is composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    /// <remarks>
+    /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
+    /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
+    /// </remarks>
+    public IAsyncEnumerable<T> InvokeStreamingAsync<T>(
+        string? pluginName,
+        string functionName,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNullOrWhiteSpace(functionName);
+
+        var function = this.Plugins.GetFunction(pluginName, functionName);
+
+        return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
+    }
+    #endregion
+
+    #region Obsolete
+
+    /// <summary>
+    /// Provides an event that's raised prior to a function's invocation.
+    /// </summary>
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
+
+    /// <summary>
+    /// Provides an event that's raised after a function's invocation.
+    /// </summary>
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
+
+    /// <summary>
+    /// Provides an event that's raised prior to a prompt being rendered.
+    /// </summary>
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
+
+    /// <summary>
+    /// Provides an event that's raised after a prompt is rendered.
+    /// </summary>
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingEventArgs? eventArgs = null;
         if (this.FunctionInvoking is { } functionInvoking)
         {
-            eventArgs = new(function, variables);
+            eventArgs = new(function, arguments);
             functionInvoking.Invoke(this, eventArgs);
         }
 
         return eventArgs;
     }
 
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result)
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedEventArgs? eventArgs = null;
         if (this.FunctionInvoked is { } functionInvoked)
         {
-            eventArgs = new(function, result);
+            eventArgs = new(function, arguments, result);
             functionInvoked.Invoke(this, eventArgs);
         }
 
         return eventArgs;
     }
 
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, PromptExecutionSettings? executionSettings)
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
     {
         PromptRenderingEventArgs? eventArgs = null;
         if (this.PromptRendering is { } promptRendering)
         {
-            eventArgs = new(function, variables, executionSettings);
+            eventArgs = new(function, arguments);
             promptRendering.Invoke(this, eventArgs);
         }
 
         return eventArgs;
     }
 
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, ContextVariables variables, string renderedPrompt)
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
         PromptRenderedEventArgs? eventArgs = null;
         if (this.PromptRendered is { } promptRendered)
         {
-            eventArgs = new(function, variables, renderedPrompt);
+            eventArgs = new(function, arguments, renderedPrompt);
             promptRendered.Invoke(this, eventArgs);
         }
 
         return eventArgs;
     }
+
     #endregion
 }

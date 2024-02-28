@@ -6,10 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-// ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Extension methods for <see cref="Flow"/>.

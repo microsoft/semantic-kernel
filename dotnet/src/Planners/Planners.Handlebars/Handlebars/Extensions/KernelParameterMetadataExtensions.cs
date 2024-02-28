@@ -5,11 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Text;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
-#pragma warning restore IDE0130
 
 internal static class KernelParameterMetadataExtensions
 {
@@ -37,23 +35,26 @@ internal static class KernelParameterMetadataExtensions
     /// </summary>
     public static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type)
     {
-        var parameterTypes = new HashSet<HandlebarsParameterTypeMetadata>();
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
-        {
-            // Async return type - need to extract the actual return type
-            var actualReturnType = type.GenericTypeArguments[0]; // Actual Return Type
-            var returnTypeProperties = actualReturnType.GetProperties();
+        return type.ToHandlebarsParameterTypeMetadata(new HashSet<Type>());
+    }
 
-            if (!IsPrimitiveOrStringType(actualReturnType) && returnTypeProperties.Length is not 0)
+    private static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type, HashSet<Type> processedTypes)
+    {
+        var parameterTypes = new HashSet<HandlebarsParameterTypeMetadata>();
+        if (type.TryGetGenericResultType(out var taskResultType))
+        {
+            var resultTypeProperties = taskResultType.GetProperties();
+            if (!IsPrimitiveOrStringType(taskResultType) && resultTypeProperties.Length is not 0)
             {
                 parameterTypes.Add(new HandlebarsParameterTypeMetadata()
                 {
-                    Name = actualReturnType.Name,
+                    Name = taskResultType.Name,
                     IsComplex = true,
-                    Properties = returnTypeProperties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
+                    Properties = resultTypeProperties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
                 });
 
-                parameterTypes.AddNestedComplexTypes(returnTypeProperties);
+                processedTypes.Add(taskResultType);
+                parameterTypes.AddNestedComplexTypes(resultTypeProperties, processedTypes);
             }
         }
         else if (type.IsClass && type != typeof(string))
@@ -68,48 +69,53 @@ internal static class KernelParameterMetadataExtensions
                 Properties = properties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
             });
 
-            parameterTypes.AddNestedComplexTypes(properties);
+            processedTypes.Add(type);
+            parameterTypes.AddNestedComplexTypes(properties, processedTypes);
         }
 
         return parameterTypes;
     }
 
-    private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeMetadata> parameterTypes, PropertyInfo[] properties)
+    private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeMetadata> parameterTypes, PropertyInfo[] properties, HashSet<Type> processedTypes)
     {
         // Add nested complex types
         foreach (var property in properties)
         {
-            parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata());
+            // Only convert the property type if we have not already done so.
+            if (!processedTypes.Contains(property.PropertyType))
+            {
+                parameterTypes.UnionWith(property.PropertyType.ToHandlebarsParameterTypeMetadata(processedTypes));
+            }
         }
     }
 
-    private static Type GetTypeFromSchema(string schemaType)
-    {
-        var typeMap = new Dictionary<string, Type>
-            {
-                {"string", typeof(string)},
-                {"integer", typeof(long)},
-                {"number", typeof(double)},
-                {"boolean", typeof(bool)},
-                {"object", typeof(object)},
-                {"array", typeof(object[])},
-                // If type is null, default to object
-                {"null", typeof(object)}
-            };
-
-        return typeMap[schemaType];
-    }
+    private static Type GetTypeFromSchema(string schemaType) =>
+        schemaType switch
+        {
+            "string" => typeof(string),
+            "integer" => typeof(long),
+            "number" => typeof(double),
+            "boolean" => typeof(bool),
+            "array" => typeof(object[]),
+            _ => typeof(object) // default to object for "object", "null", or anything unexpected
+        };
 
     public static KernelParameterMetadata ParseJsonSchema(this KernelParameterMetadata parameter)
     {
         var schema = parameter.Schema!;
-        var type = schema.RootElement.GetProperty("type").GetString() ?? "object";
+
+        var type = "object";
+        if (schema.RootElement.TryGetProperty("type", out var typeNode))
+        {
+            type = typeNode.Deserialize<string>()!;
+        }
+
         if (IsPrimitiveOrStringType(type) || type == "null")
         {
             return new(parameter)
             {
                 ParameterType = GetTypeFromSchema(type),
-                Schema = null
+                Schema = null,
             };
         }
 
@@ -118,31 +124,28 @@ internal static class KernelParameterMetadataExtensions
 
     public static string ToJsonString(this JsonElement jsonProperties)
     {
-        var options = new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-        };
-
-        return JsonSerializer.Serialize(jsonProperties, options);
+        return JsonSerializer.Serialize(jsonProperties, JsonOptionsCache.WriteIndented);
     }
 
     public static string GetSchemaTypeName(this KernelParameterMetadata parameter)
     {
-        var schemaType = parameter.Schema is not null && parameter.Schema.RootElement.TryGetProperty("type", out var typeElement) ? typeElement.ToString() : "object";
+        var schemaType = parameter.Schema?.RootElement.TryGetProperty("type", out var typeElement) is true ? typeElement.ToString() : "object";
         return $"{parameter.Name}-{schemaType}";
     }
 
-    public static KernelParameterMetadata ToSKParameterMetadata(this KernelReturnParameterMetadata parameter, string functionName) => new($"{functionName}Returns")
-    {
-        Description = parameter.Description,
-        ParameterType = parameter.ParameterType,
-        Schema = parameter.Schema
-    };
+    public static KernelParameterMetadata ToKernelParameterMetadata(this KernelReturnParameterMetadata parameter, string functionName) =>
+        new($"{functionName}Returns")
+        {
+            Description = parameter.Description,
+            ParameterType = parameter.ParameterType,
+            Schema = parameter.Schema
+        };
 
-    public static KernelReturnParameterMetadata ToSKReturnParameterMetadata(this KernelParameterMetadata parameter) => new()
-    {
-        Description = parameter.Description,
-        ParameterType = parameter.ParameterType,
-        Schema = parameter.Schema
-    };
+    public static KernelReturnParameterMetadata ToKernelReturnParameterMetadata(this KernelParameterMetadata parameter) =>
+        new()
+        {
+            Description = parameter.Description,
+            ParameterType = parameter.ParameterType,
+            Schema = parameter.Schema
+        };
 }

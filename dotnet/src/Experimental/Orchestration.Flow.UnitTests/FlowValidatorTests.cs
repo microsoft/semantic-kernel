@@ -4,8 +4,6 @@ using System;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Xunit;
 
-#pragma warning disable SKEXP0001
-
 namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
 
 public class FlowValidatorTests

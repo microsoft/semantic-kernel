@@ -10,7 +10,7 @@ using Npgsql;
 using NpgsqlTypes;
 using Pgvector;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.

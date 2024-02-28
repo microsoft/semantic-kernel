@@ -4,13 +4,11 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
+
 public class PluginTests
 {
     [Theory]
@@ -33,14 +31,14 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
-        contextVariables["q"] = query;
-        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["countryCode"] = countryCode;
+        var arguments = new KernelArguments();
+        arguments["q"] = query;
+        arguments["size"] = size;
+        arguments["max_price"] = budget;
+        arguments["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 
     [Theory]
@@ -63,14 +61,14 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
-        contextVariables["q"] = query;
-        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["countryCode"] = countryCode;
+        var arguments = new KernelArguments();
+        arguments["q"] = query;
+        arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        arguments["max_price"] = budget;
+        arguments["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 
     [Theory]
@@ -93,14 +91,14 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
-        contextVariables["q"] = query;
-        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["countryCode"] = countryCode;
+        var arguments = new KernelArguments();
+        arguments["q"] = query;
+        arguments["size"] = size;
+        arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        arguments["countryCode"] = countryCode;
 
         // Act
-        var result = (await kernel.InvokeAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
+        var result = (await kernel.InvokeAsync(plugin[functionName], arguments)).GetValue<RestApiOperationResponse>();
 
         // Assert
         Assert.NotNull(result);
@@ -113,7 +111,7 @@ public class PluginTests
     [InlineData("https://raw.githubusercontent.com/sisbell/chatgpt-plugin-store/main/manifests/instacart.com.json",
         "Instacart",
         "create",
-        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
+        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partner_name\": \"OpenAI\" }"
         )]
     public async Task QueryInstacartPluginAsync(
         string pluginEndpoint,
@@ -129,20 +127,20 @@ public class PluginTests
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
-        var contextVariables = new ContextVariables();
-        contextVariables["payload"] = payload;
+        var arguments = new KernelArguments();
+        arguments["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 
     [Theory]
     [InlineData("Plugins/instacart-ai-plugin.json",
         "Instacart",
         "create",
-        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
+        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partner_name\": \"OpenAI\" }"
         )]
     public async Task QueryInstacartPluginFromStreamAsync(
         string pluginFilePath,
@@ -156,17 +154,17 @@ public class PluginTests
             var kernel = new Kernel();
             using HttpClient httpClient = new();
 
-            //note that this plugin is not compliant according to the underlying validator in SK
+            // note that this plugin is not compliant according to the underlying validator in SK
             var plugin = await kernel.ImportPluginFromOpenAIAsync(
                 name,
                 stream,
-                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
-            var contextVariables = new ContextVariables();
-            contextVariables["payload"] = payload;
+            var arguments = new KernelArguments();
+            arguments["payload"] = payload;
 
             // Act
-            await plugin[functionName].InvokeAsync(kernel, contextVariables);
+            await plugin[functionName].InvokeAsync(kernel, arguments);
         }
     }
 
@@ -174,7 +172,7 @@ public class PluginTests
     [InlineData("Plugins/instacart-ai-plugin.json",
         "Instacart",
         "create",
-        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
+        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partner_name\": \"OpenAI\" }"
         )]
     public async Task QueryInstacartPluginUsingRelativeFilePathAsync(
         string pluginFilePath,
@@ -186,16 +184,47 @@ public class PluginTests
         var kernel = new Kernel();
         using HttpClient httpClient = new();
 
-        //note that this plugin is not compliant according to the underlying validator in SK
+        // note that this plugin is not compliant according to the underlying validator in SK
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             pluginFilePath,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
-        var contextVariables = new ContextVariables();
-        contextVariables["payload"] = payload;
+        var arguments = new KernelArguments();
+        arguments["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+        await plugin[functionName].InvokeAsync(kernel, arguments);
+    }
+
+    [Theory]
+    [InlineData("Plugins/instacart-ai-plugin.json", "Instacart", "create")]
+    public async Task QueryInstacartPluginWithDynamicPayloadAsync(
+        string pluginFilePath,
+        string name,
+        string functionName)
+    {
+        // Arrange
+        using (var stream = System.IO.File.OpenRead(pluginFilePath))
+        {
+            var kernel = new Kernel();
+            using HttpClient httpClient = new();
+
+            // note that this plugin is not compliant according to the underlying validator in SK
+            var plugin = await kernel.ImportPluginFromOpenAIAsync(
+                name,
+                stream,
+                new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = true }); ;
+
+            var arguments = new KernelArguments();
+            arguments["title"] = "Shopping List";
+            arguments["ingredients"] = new string[] { "Flour", "Sugar", "Eggs" };
+            arguments["instructions"] = new string[] { "Cream softened butter and granulated sugar", "Add eggs one at a time, mix well, and stir in vanilla extract", "Combine dry ingredients and mix" };
+            arguments["question"] = "what ingredients do I need to make chocolate cookies?";
+            arguments["partner_name"] = "OpenAI";
+
+            // Act
+            await plugin[functionName].InvokeAsync(kernel, arguments);
+        }
     }
 }

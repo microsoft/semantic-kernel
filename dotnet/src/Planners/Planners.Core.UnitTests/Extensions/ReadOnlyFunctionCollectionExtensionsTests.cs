@@ -4,9 +4,7 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.UnitTests;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public class ReadOnlyFunctionCollectionExtensionsTests
 {

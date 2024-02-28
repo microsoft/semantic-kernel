@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI;
-
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Extension methods for PromptTemplateConfig
@@ -18,11 +14,13 @@ internal static class PromptTemplateConfigExtensions
     /// <param name="maxTokens">Value of max tokens to set</param>
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
-        PromptExecutionSettings executionSettings = config.GetDefaultRequestSettings() ?? new();
-        if (config.ModelSettings.Count == 0)
+        var executionSettings = config.ExecutionSettings;
+        foreach (var setting in executionSettings)
         {
-            config.ModelSettings.Add(executionSettings);
+            if (setting.Value.ExtensionData != null)
+            {
+                setting.Value.ExtensionData["max_tokens"] = maxTokens;
+            }
         }
-        executionSettings.ExtensionData["max_tokens"] = maxTokens;
     }
 }

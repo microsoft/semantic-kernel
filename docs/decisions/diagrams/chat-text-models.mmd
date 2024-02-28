@@ -1,0 +1,125 @@
+---
+title: Chat & Text Models
+---
+classDiagram
+    %% Use https://mermaid.live/ to preview this diagram. The VS Code extension does not handle namespaces.
+    direction LR
+
+    namespace Microsoft_SemanticKernel {
+        class KernelContent {
+            <<abstract>>
+            +InnerContent : Object
+            +ModelId : String
+            +Metadata : IDictionary
+            +string(modelContent : KernelContent)
+        }
+
+        class StreamingKernelContent {
+            <<abstract>>
+            +ChoiceIndex : Integer
+            +InnerContent : Object
+            +Metadata : IDictionary
+            +ToString()
+            +ToByteArray()
+            +string(modelContent : StreamingKernelContent)
+        }
+
+        class TextContent {
+            +Text : String
+            +Encoding : Encoding
+            +ToString()
+        }
+
+        class StreamingTextContent {
+            +Text : String
+            +Encoding : Encoding
+            +ToString()
+            +ToByteArray()
+        }
+
+        class ChatMessageContent {
+            +Role : AuthorRole
+            +Content : String
+            +Items : ChatMessageContentItemCollection
+            +Encoding : Encoding
+            +ToString()
+        }
+
+        class StreamingChatMessageContent {
+            +Content : String
+            +Role : AuthorRole
+            +Encoding : Encoding
+            +ToString()
+            +ToByteArray()
+        }
+
+        class ImageContent {
+            +Uri : Uri
+            +ToString()
+        }
+    }
+
+    namespace Microsoft_SemanticKernel_ChatCompletion {
+        class ChatMessageContentItemCollection {
+            +Count
+            +Add(item: KernelContent)
+        }
+
+        class ChatHistory {
+            +AddMessage(chatMessageContent : ChatMessageContent)
+            +AddMessage(authorRole : AuthorRole, content : string, encoding : Encoding, metadata : IDictionary)
+            +AddUserMessage(content : string)
+            +AddAssistantMessage(content : string)
+            +AddSystemMessage(content : string)
+        }
+    }
+
+    namespace Microsoft_SemanticKernel_Connectors_OpenAI {
+        class OpenAIChatMessageContent {
+            +FunctionCall : FunctionCall
+            +Name : Name
+            +GetOpenAIFunctionResponse()
+        }
+
+        class AzureOpenAIWithDataChatMessageContent {
+            +ToolContent : String
+        }
+
+        class OpenAIStreamingTextContent {
+            +ToByteArray()
+            +ToString()
+        }
+
+        class OpenAIStreamingChatMessageContent {
+            +Name : String
+            +FunctionName : String
+            +FunctionArgument : String
+            +ToByteArray()
+            +ToString()
+            +GetOpenAIStreamingFunctionResponse(fullContent : OpenAIStreamingChatMessageContent[])
+        }
+
+        class AzureOpenAIWithDataStreamingChatMessageContent {
+            +FunctionName : String
+            +FunctionArgument : String
+            -IsValidMessage(message : ChatWithDataStreamingMessage)
+        }
+
+        class OpenAIChatHistory {
+
+        }
+    }
+
+    KernelContent <|-- TextContent
+    KernelContent <|-- ImageContent
+    KernelContent <|-- ChatMessageContent
+    KernelContent *-- ChatMessageContentItemCollection
+    ChatMessageContent <|-- OpenAIChatMessageContent
+    ChatMessageContent <|-- AzureOpenAIWithDataChatMessageContent
+    StreamingKernelContent <|-- StreamingTextContent
+    StreamingTextContent <|-- OpenAIStreamingTextContent
+    StreamingKernelContent <|-- StreamingChatMessageContent
+    StreamingChatMessageContent <|-- OpenAIStreamingChatMessageContent
+    StreamingChatMessageContent <|-- AzureOpenAIWithDataStreamingChatMessageContent
+    ChatHistory <|-- OpenAIChatHistory
+    ChatMessageContent o-- ChatMessageContentItemCollection

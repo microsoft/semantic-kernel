@@ -2,42 +2,41 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Events;
+namespace Microsoft.SemanticKernel;
 
-/// <summary>
-/// Base arguments for events.
-/// </summary>
+/// <summary>Provides an <see cref="EventArgs"/> for operations related to <see cref="Kernel"/>-based operations.</summary>
+[Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
 public abstract class KernelEventArgs : EventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelEventArgs"/> class.
     /// </summary>
-    /// <param name="function">Kernel function</param>
-    /// <param name="variables">Context variables related to the event</param>
-    internal KernelEventArgs(KernelFunction function, ContextVariables variables)
+    /// <param name="function">The <see cref="KernelFunction"/> with which this event is associated.</param>
+    /// <param name="arguments">The arguments associated with the operation.</param>
+    /// <param name="metadata">A dictionary of metadata associated with the operation.</param>
+    internal KernelEventArgs(KernelFunction function, KernelArguments arguments, IReadOnlyDictionary<string, object?>? metadata)
     {
         Verify.NotNull(function);
-        Verify.NotNull(variables);
+        Verify.NotNull(arguments);
 
         this.Function = function;
-        this.Variables = variables;
-        this.Metadata = new();
+        this.Arguments = arguments;
+        this.Metadata = metadata;
     }
 
     /// <summary>
-    /// Kernel function
+    /// Gets the <see cref="KernelFunction"/> with which this event is associated.
     /// </summary>
     public KernelFunction Function { get; }
 
     /// <summary>
-    /// Variables related to the event.
+    /// Gets the arguments associated with the operation.
     /// </summary>
-    public ContextVariables Variables { get; }
+    public KernelArguments Arguments { get; }
 
     /// <summary>
-    /// Metadata for storing additional information about function execution result.
+    /// Gets a dictionary of metadata related to the event.
     /// </summary>
-    public Dictionary<string, object> Metadata { get; protected set; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 }

@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
@@ -323,14 +322,13 @@ internal sealed class CodeTokenizer
     Justification = "Does not throw an exception by design.")]
     private static bool IsValidNamedArg(string tokenContent)
     {
-        try
+        if (NamedArgBlock.TryGetNameAndValue(tokenContent, out string _, out string _))
         {
             var tokenContentAsNamedArg = new NamedArgBlock(tokenContent);
-            return tokenContentAsNamedArg.IsValid(out var error);
+
+            return tokenContentAsNamedArg.IsValid(out string _);
         }
-        catch
-        {
-            return false;
-        }
+
+        return false;
     }
 }

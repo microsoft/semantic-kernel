@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Pod type of the index, see https://docs.pinecone.io/docs/indexes#pods-pod-types-and-pod-sizes.
@@ -96,7 +96,13 @@ public enum PodType
     /// Enum Starter for value: starter
     /// </summary>
     [EnumMember(Value = "starter")]
-    Starter = 13
+    Starter = 13,
+
+    /// <summary>
+    /// Enum Nano for value: nano
+    /// </summary>
+    [EnumMember(Value = "nano")]
+    Nano = 14
 }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
