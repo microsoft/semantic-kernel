@@ -6,6 +6,7 @@ from typing import Any, Mapping, Optional
 from pydantic import Field
 
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.exceptions import FunctionResultError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -44,8 +45,7 @@ class FunctionResult(KernelBaseModel):
                     return str(list(self.value.values())[-1])
                 return str(self.value)
             except Exception as e:
-                logger.warning(f"Failed to convert value to string: {e}")
-                raise e
+                raise FunctionResultError(f"Failed to convert value to string: {e}") from e
         else:
             return ""
 

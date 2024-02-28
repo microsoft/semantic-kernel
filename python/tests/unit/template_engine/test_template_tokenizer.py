@@ -2,9 +2,7 @@
 
 from pytest import mark, raises
 
-from semantic_kernel.template_engine.blocks.block_errors import (
-    TemplateSyntaxError,
-)
+from semantic_kernel.exceptions import TemplateSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
