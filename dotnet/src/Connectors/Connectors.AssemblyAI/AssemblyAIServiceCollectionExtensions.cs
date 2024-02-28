@@ -46,7 +46,7 @@ public static class AssemblyAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAssemblyAIAudioToText(
-        IServiceCollection services,
+        this IServiceCollection services,
         string apiKey,
         string? endpoint = null,
         string? serviceId = null,

@@ -1,1 +1,0 @@
-# AssemblyAI connector for Semantic Kernel

@@ -158,8 +158,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         using var request = HttpRequest.CreatePostRequest(url, jsonRequest);
         this.AddDefaultHeaders(request);
         using var response = await this.SendWithSuccessCheckAsync(this.HttpClient, request, ct).ConfigureAwait(false);
-        var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
+        using var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         if (json.RootElement.TryGetProperty("error", out var property))
         {
             throw new KernelException($"Failed to create transcript. Reason: {property.GetString()!}");
@@ -188,7 +188,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             using var request = HttpRequest.CreateGetRequest(url);
             this.AddDefaultHeaders(request);
             using var response = await this.SendWithSuccessCheckAsync(this.HttpClient, request, ct).ConfigureAwait(false);
-            var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
 
             var status = json.RootElement.GetProperty("status").GetString()!;
