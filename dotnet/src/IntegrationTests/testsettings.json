@@ -34,5 +34,8 @@
   "MongoDB": {
     "ConnectionString": "",
     "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
+  },
+  "AzureCosmosDB": {
+    "ConnectionString": ""
   }
 }

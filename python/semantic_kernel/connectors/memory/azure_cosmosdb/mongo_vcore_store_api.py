@@ -208,5 +208,6 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 "text": record.text,
                 "description": record.description,
                 "additional_metadata": record.additional_metadata,
+                "timestamp": record.timestamp,
             }
         )
