@@ -68,8 +68,6 @@
     <modules>
         <module>semantickernel-bom</module>
 
-        <module>connectors/semantickernel-connectors-web-bing</module>
-
         <module>aiservices/openai</module>
 
         <module>semantickernel-api</module>
@@ -138,11 +136,6 @@
             <dependency>
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
                 <artifactId>semantickernel-actionplanner-extension</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-connectors-web-bing</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
