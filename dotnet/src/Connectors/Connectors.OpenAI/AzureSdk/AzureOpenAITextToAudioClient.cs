@@ -79,7 +79,7 @@ internal sealed class AzureOpenAITextToAudioClient
 
         var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        return new List<AudioContent> { new(binaryData, modelId) };
+        return new List<AudioContent> { new(binaryData.ToMemory(), modelId) };
     }
 
     internal void AddAttribute(string key, string? value)

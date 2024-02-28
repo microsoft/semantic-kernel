@@ -224,7 +224,7 @@ public class ChatMessageContentTests
         var audioContent = deserializedMessage.Items[3] as AudioContent;
 #pragma warning restore SKEXP0005 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         Assert.NotNull(audioContent);
-        Assert.True(audioContent.Data?.ToArray().SequenceEqual(new BinaryData(new[] { 3, 2, 1 }).ToArray()));
+        Assert.True(audioContent.Data!.Value.ToArray().SequenceEqual(new BinaryData(new[] { 3, 2, 1 }).ToArray()));
         Assert.Equal("model-4", audioContent.ModelId);
         Assert.NotNull(audioContent.Metadata);
         Assert.Single(audioContent.Metadata);
