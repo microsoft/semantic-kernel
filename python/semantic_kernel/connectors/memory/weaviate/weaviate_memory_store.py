@@ -9,6 +9,7 @@ import numpy as np
 import weaviate
 from weaviate.embedded import EmbeddedOptions
 
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -132,7 +133,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             else:
                 return weaviate.Client(url=self.config.url)
         else:
-            raise ValueError("Weaviate config must have either url or use_embed set")
+            raise ServiceInitializationError("Weaviate config must have either url or use_embed set")
 
     async def create_collection(self, collection_name: str) -> None:
         schema = SCHEMA.copy()

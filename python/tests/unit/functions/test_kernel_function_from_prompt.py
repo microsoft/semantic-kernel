@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
@@ -9,9 +8,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_exception import KernelFunctionInitializationException
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -55,7 +54,7 @@ def test_init_minimal_prompt_template_config():
 
 
 def test_init_no_prompt():
-    with pytest.raises(KernelFunctionInitializationException):
+    with pytest.raises(FunctionInitializationError):
         KernelFunctionFromPrompt(
             function_name="test",
             plugin_name="test",
@@ -63,7 +62,7 @@ def test_init_no_prompt():
 
 
 def test_init_invalid_name():
-    with pytest.raises(ValidationError):
+    with pytest.raises(FunctionInitializationError):
         KernelFunctionFromPrompt(function_name="test func", plugin_name="test", prompt="test")
 
 
@@ -266,3 +265,23 @@ async def test_invoke_defaults():
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
         assert str(result) == "test"
+
+
+def test_create_with_multiple_settings():
+    function = KernelFunctionFromPrompt(
+        function_name="test",
+        plugin_name="test",
+        prompt_template_config=PromptTemplateConfig(
+            template="test",
+            execution_settings=[
+                PromptExecutionSettings(service_id="test", temperature=0.0),
+                PromptExecutionSettings(service_id="test2", temperature=1.0),
+            ],
+        ),
+    )
+    assert (
+        function.prompt_template.prompt_template_config.execution_settings["test"].extension_data["temperature"] == 0.0
+    )
+    assert (
+        function.prompt_template.prompt_template_config.execution_settings["test2"].extension_data["temperature"] == 1.0
+    )

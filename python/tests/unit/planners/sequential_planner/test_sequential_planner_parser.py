@@ -5,15 +5,13 @@ from unittest.mock import Mock
 import pytest
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import PlannerInvalidPlanError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.planning_exception import PlanningException
-from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
-    SequentialPlanParser,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
 
 
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> KernelFunction:
@@ -113,7 +111,7 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
     kernel = create_kernel_and_functions_mock([])
 
     # Act and Assert
-    with pytest.raises(PlanningException):
+    with pytest.raises(PlannerInvalidPlanError):
         SequentialPlanParser.to_plan_from_xml(
             "<someTag>",
             "Solve the equation x^2 = 2.",
@@ -198,7 +196,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
         assert plan._steps[1].name.startswith("plan_")
         assert plan._steps[1].description == "MockPlugin.DoesNotExist"
     else:
-        with pytest.raises(PlanningException):
+        with pytest.raises(PlannerInvalidPlanError):
             SequentialPlanParser.to_plan_from_xml(
                 plan_text,
                 "",

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -11,6 +12,136 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Contents;
 public class ChatMessageContentTests
 {
+    [Fact]
+    public void ConstructorShouldAddTextContentToItemsCollectionIfContentProvided()
+    {
+        // Arrange & act
+        var sut = new ChatMessageContent(AuthorRole.User, "fake-content");
+
+        // Assert
+        Assert.Single(sut.Items);
+
+        Assert.Contains(sut.Items, item => item is TextContent textContent && textContent.Text == "fake-content");
+    }
+
+    [Fact]
+    public void ConstructorShouldNodAddTextContentToItemsCollectionIfNoContentProvided()
+    {
+        // Arrange & act
+        var sut = new ChatMessageContent(AuthorRole.User, content: null);
+
+        // Assert
+        Assert.Empty(sut.Items);
+    }
+
+    [Fact]
+    public void ContentPropertySetterShouldAddTextContentToItemsCollection()
+    {
+        // Arrange
+        var sut = new ChatMessageContent(AuthorRole.User, content: null);
+
+        // Act
+        sut.Content = "fake-content";
+
+        // Assert
+        Assert.Single(sut.Items);
+
+        Assert.Contains(sut.Items, item => item is TextContent textContent && textContent.Text == "fake-content");
+    }
+
+    [Fact]
+    public void ContentPropertySetterShouldUpdateContentOfFirstTextContentItem()
+    {
+        // Arrange
+        var items = new ChatMessageContentItemCollection();
+        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123")));
+        items.Add(new TextContent("fake-content-1"));
+        items.Add(new TextContent("fake-content-2"));
+
+        var sut = new ChatMessageContent(AuthorRole.User, items: items);
+
+        // Act
+        sut.Content = "fake-content-1-update";
+
+        Assert.Equal("fake-content-1-update", ((TextContent)sut.Items[1]).Text);
+    }
+
+    [Fact]
+    public void ContentPropertyGetterShouldReturnNullIfThereAreNoTextContentItems()
+    {
+        // Arrange and act
+        var sut = new ChatMessageContent(AuthorRole.User, content: null);
+
+        // Assert
+        Assert.Null(sut.Content);
+    }
+
+    [Fact]
+    public void ContentPropertyGetterShouldReturnContentOfTextContentItem()
+    {
+        // Arrange
+        var sut = new ChatMessageContent(AuthorRole.User, "fake-content");
+
+        // Act and assert
+        Assert.Equal("fake-content", sut.Content);
+    }
+
+    [Fact]
+    public void ContentPropertyGetterShouldReturnContentOfTheFirstTextContentItem()
+    {
+        // Arrange
+        var items = new ChatMessageContentItemCollection();
+        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123")));
+        items.Add(new TextContent("fake-content-1"));
+        items.Add(new TextContent("fake-content-2"));
+
+        var sut = new ChatMessageContent(AuthorRole.User, items: items);
+
+        // Act and assert
+        Assert.Equal("fake-content-1", sut.Content);
+    }
+
+    [Fact]
+    public void ItShouldBePossibleToSetAndGetEncodingEvenIfThereAreNoItems()
+    {
+        // Arrange
+        var sut = new ChatMessageContent(AuthorRole.User, content: null);
+
+        // Act
+        sut.Encoding = Encoding.UTF32;
+
+        // Assert
+        Assert.Empty(sut.Items);
+        Assert.Equal(Encoding.UTF32, sut.Encoding);
+    }
+
+    [Fact]
+    public void EncodingPropertySetterShouldUpdateEncodingTextContentItem()
+    {
+        // Arrange
+        var sut = new ChatMessageContent(AuthorRole.User, content: "fake-content");
+
+        // Act
+        sut.Encoding = Encoding.UTF32;
+
+        // Assert
+        Assert.Single(sut.Items);
+        Assert.Equal(Encoding.UTF32, ((TextContent)sut.Items[0]).Encoding);
+    }
+
+    [Fact]
+    public void EncodingPropertyGetterShouldReturnEncodingOfTextContentItem()
+    {
+        // Arrange
+        var sut = new ChatMessageContent(AuthorRole.User, content: "fake-content");
+
+        // Act
+        ((TextContent)sut.Items[0]).Encoding = Encoding.Latin1;
+
+        // Assert
+        Assert.Equal(Encoding.Latin1, sut.Encoding);
+    }
+
     [Fact]
     public void ItCanBeSerializeAndDeserialized()
     {
@@ -33,17 +164,21 @@ public class ChatMessageContentTests
         {
             ["metadata-key-4"] = "metadata-value-4"
         }));
+#pragma warning restore SKEXP0005
         items.Add(new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-5"] = "metadata-value-5"
         }));
-#pragma warning restore SKEXP0005
+        items.Add(new TextContent("content-6", "model-6", metadata: new Dictionary<string, object?>()
+        {
+            ["metadata-key-6"] = "metadata-value-6"
+        }));
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
         {
             ["message-metadata-key-1"] = "message-metadata-value-1"
         });
-        sut.Content = "message-content";
+        sut.Content = "content-1-override"; // Override the content of the first text content item that has the "content-1" content  
 
         // Act
         var chatMessageJson = JsonSerializer.Serialize(sut);
@@ -51,19 +186,19 @@ public class ChatMessageContentTests
         var deserializedMessage = JsonSerializer.Deserialize<ChatMessageContent>(chatMessageJson);
 
         // Assert
-        Assert.Equal("message-content", sut.Content);
-        Assert.Equal("message-model", sut.ModelId);
-        Assert.Equal("user", sut.Role.Label);
-        Assert.NotNull(sut.Metadata);
-        Assert.Single(sut.Metadata);
-        Assert.Equal("message-metadata-value-1", sut.Metadata["message-metadata-key-1"]?.ToString());
+        Assert.Equal("content-1-override", deserializedMessage!.Content);
+        Assert.Equal("message-model", deserializedMessage.ModelId);
+        Assert.Equal("user", deserializedMessage.Role.Label);
+        Assert.NotNull(deserializedMessage.Metadata);
+        Assert.Single(deserializedMessage.Metadata);
+        Assert.Equal("message-metadata-value-1", deserializedMessage.Metadata["message-metadata-key-1"]?.ToString());
 
         Assert.NotNull(deserializedMessage?.Items);
-        Assert.Equal(5, deserializedMessage.Items.Count);
+        Assert.Equal(6, deserializedMessage.Items.Count);
 
         var textContent = deserializedMessage.Items[0] as TextContent;
         Assert.NotNull(textContent);
-        Assert.Equal("content-1", textContent.Text);
+        Assert.Equal("content-1-override", textContent.Text);
         Assert.Equal("model-1", textContent.ModelId);
         Assert.NotNull(textContent.Metadata);
         Assert.Single(textContent.Metadata);
@@ -102,5 +237,13 @@ public class ChatMessageContentTests
         Assert.NotNull(imageContent.Metadata);
         Assert.Single(imageContent.Metadata);
         Assert.Equal("metadata-value-5", imageContent.Metadata["metadata-key-5"]?.ToString());
+
+        textContent = deserializedMessage.Items[5] as TextContent;
+        Assert.NotNull(textContent);
+        Assert.Equal("content-6", textContent.Text);
+        Assert.Equal("model-6", textContent.ModelId);
+        Assert.NotNull(textContent.Metadata);
+        Assert.Single(textContent.Metadata);
+        Assert.Equal("metadata-value-6", textContent.Metadata["metadata-key-6"]?.ToString());
     }
 }

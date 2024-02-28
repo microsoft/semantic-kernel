@@ -2,7 +2,7 @@
 
 from pytest import mark, raises
 
-from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
+from semantic_kernel.exceptions import CodeBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 
