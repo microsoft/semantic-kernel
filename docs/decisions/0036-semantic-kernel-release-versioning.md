@@ -22,16 +22,26 @@ The ADR is relevant to the .Net, Java and Python releases of the Semantic Kernel
 
 ## Decision Drivers
 
-- We will not adhere to strict [semantic versioning](https://semver.org/) because this is not strictly followed by NuGet packages. Specifically:
-  - We will not increment the MAJOR version for low impact incompatible API changes <sup>1</sup>
-  - We will document trivial incompatible API changes in the release notes
-  - We will not increment the MAJOR version for API changes to experimental features or alpha packages
-- We will increment the MINOR version when we add functionality in a backward compatible manner
-  - We expect most regular updates to the Semantic Kernel will include new features and will be backward compatible
-- We will increment the PATCH version when we make backward compatible bug fixes
-- We will use the same version number on all packages when we create a new release
-  - All packages are included in every release and version numbers are incremented even if a specific package has not been changed
-  - We will test each release to ensure all packages are compatible
-  - We recommend customers use the same version of packages and this is the configuration we will support
+### Semantic Versioning & Documentation
 
-<sup>1</sup> Low impact incompatible API changes typically only impact the Semantic Kernel internal implementation or unit tests. We are not expecting to make any significant changes to the API surface of the Semantic Kernel.
+ - We will not adhere to strict [semantic versioning](https://semver.org/) because this is not  strictly followed by NuGet packages.
+ - We will document trivial incompatible API changes in the release notes
+ - We expect most regular updates to the Semantic Kernel will include new features and will be backward compatible
+ 
+### Packages Versioning
+  - We will use the same version number on all packages when we create a new release
+    - All packages are included in every release and version numbers are incremented even if a specific package has not been changed
+    - We will test each release to ensure all packages are compatible
+    - We recommend customers use the same version of packages and this is the configuration we will support
+
+### Major Version
+  - We will not increment the MAJOR version for low impact incompatible API changes <sup>1</sup>
+  - We will not increment the MAJOR version for API changes to experimental features or alpha packages
+  
+  <sup>1</sup> Low impact incompatible API changes typically only impact the Semantic Kernel internal implementation or unit tests. We are not expecting to make any significant changes to the API surface of the Semantic Kernel.
+  
+### Minor Version
+  - We will increment the MINOR version when we add functionality in a backward compatible manner
+  
+### Patch Version
+  - We will increment the PATCH version when by the time of release we only made backward compatible bug fixes.
