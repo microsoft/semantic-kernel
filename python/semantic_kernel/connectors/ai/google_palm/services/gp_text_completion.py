@@ -5,24 +5,21 @@ import sys
 from typing import List
 
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceResponseException
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
+
 import google.generativeai as palm
 from google.generativeai.types import Completion
 from google.generativeai.types.text_types import TextCompletion
 from pydantic import StringConstraints
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
-    GooglePalmTextPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -66,11 +63,10 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         try:
             response = palm.generate_text(**settings.prepare_settings_dict())
         except Exception as ex:
-            raise AIException(
-                AIException.ErrorCodes.ServiceError,
+            raise ServiceResponseException(
                 "Google PaLM service failed to complete the prompt",
                 ex,
-            )
+            ) from ex
         return [self._create_text_content(response, candidate) for candidate in response.candidates]
 
     def _create_text_content(self, response: Completion, candidate: TextCompletion) -> TextContent:
