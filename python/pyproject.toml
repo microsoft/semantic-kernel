@@ -22,6 +22,7 @@ prance = "^23.6.21.0"
 pydantic = ">2"
 motor = "^3.3.2"
 defusedxml = "^0.7.1"
+setuptools = ">=69.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.5.0"
