@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 from typing import Optional
-from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
+
+from defusedxml import ElementTree
 
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.kernel_content import KernelContent

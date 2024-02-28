@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 from typing import List, Optional
-from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
+from defusedxml import ElementTree
 from openai.types.chat import ChatCompletion
 
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
