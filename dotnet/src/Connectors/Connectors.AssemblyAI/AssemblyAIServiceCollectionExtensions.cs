@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
@@ -21,18 +20,16 @@ public static class AssemblyAIServiceCollectionExtensions
     /// <param name="apiKey">AssemblyAI API key, <a href="https://www.assemblyai.com/dashboard">get your API key from the dashboard.</a></param>
     /// <param name="endpoint">The endpoint URL to the AssemblyAI API.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddAssemblyAIAudioToText(
         this IKernelBuilder builder,
         string apiKey,
         string? endpoint = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null
+        string? serviceId = null
     )
     {
         Verify.NotNull(builder);
-        AddAssemblyAIAudioToText(builder.Services, apiKey, endpoint, serviceId, httpClient);
+        AddAssemblyAIAudioToText(builder.Services, apiKey, endpoint, serviceId);
         return builder;
     }
 
@@ -43,21 +40,19 @@ public static class AssemblyAIServiceCollectionExtensions
     /// <param name="apiKey">AssemblyAI API key, <a href="https://www.assemblyai.com/dashboard">get your API key from the dashboard.</a></param>
     /// <param name="endpoint">The endpoint URL to the AssemblyAI API.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAssemblyAIAudioToText(
         this IServiceCollection services,
         string apiKey,
         string? endpoint = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null
+        string? serviceId = null
     )
     {
         Verify.NotNull(services);
         ValidateOptions(apiKey);
         services.AddKeyedSingleton<IAudioToTextService>(serviceId, (serviceProvider, _) =>
         {
-            httpClient = HttpClientProvider.GetHttpClient(httpClient, serviceProvider);
+            var httpClient = HttpClientProvider.GetHttpClient(serviceProvider);
             if (!string.IsNullOrEmpty(endpoint))
             {
                 httpClient.BaseAddress = new Uri(endpoint!);

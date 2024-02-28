@@ -211,12 +211,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpOperationException>(
+        await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentAsync(new AudioStreamContent(audio), textExecutionSettings)
-        );
-        Assert.Equal(
-            "Invalid endpoint schema, please refer to documentation for examples.",
-            exception.Message
         );
     }
 

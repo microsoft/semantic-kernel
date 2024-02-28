@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -125,14 +124,18 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
     private async Task<string> UploadFileAsync(Stream audioStream, CancellationToken ct)
     {
-        var url = this.Url("v2/upload");
+        var url = this.CreateUrl("v2/upload");
+
         using var content = new StreamContent(audioStream);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         this.AddDefaultHeaders(request);
         request.Content = content;
-        using var response = await this.SendWithSuccessCheckAsync(this.HttpClient, request, ct).ConfigureAwait(false);
-        var jsonStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+
+        using var response = await this.HttpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
+        using var jsonStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         return json.RootElement.GetProperty("upload_url").GetString()
                ?? throw new KernelException("Property 'upload_url' expected but not found.");
@@ -140,11 +143,12 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
     private async Task<string> CreateTranscriptAsync(
         string audioUrl,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken ct = default
+        PromptExecutionSettings? executionSettings,
+        CancellationToken ct
     )
     {
-        var url = this.Url("v2/transcript");
+        var url = this.CreateUrl("v2/transcript");
+
         var jsonRequest = new JsonObject();
         jsonRequest["audio_url"] = audioUrl;
         if (executionSettings?.ExtensionData is not null)
@@ -157,8 +161,10 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 
         using var request = HttpRequest.CreatePostRequest(url, jsonRequest);
         this.AddDefaultHeaders(request);
-        using var response = await this.SendWithSuccessCheckAsync(this.HttpClient, request, ct).ConfigureAwait(false);
+
+        using var response = await this.HttpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
         using var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
         using var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
         if (json.RootElement.TryGetProperty("error", out var property))
         {
@@ -171,10 +177,10 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     private async Task<JsonDocument> WaitForTranscriptToProcessAsync(
         string transcriptId,
         PromptExecutionSettings? executionSettings,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var url = this.Url($"v2/transcript/{transcriptId}");
+        var url = this.CreateUrl($"v2/transcript/{transcriptId}");
 
         var pollingInterval = TimeSpan.FromMilliseconds(500);
         if (executionSettings is AssemblyAIAudioToTextExecutionSettings aaiSettings)
@@ -185,10 +191,13 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         while (true)
         {
             ct.ThrowIfCancellationRequested();
+
             using var request = HttpRequest.CreateGetRequest(url);
             this.AddDefaultHeaders(request);
-            using var response = await this.SendWithSuccessCheckAsync(this.HttpClient, request, ct).ConfigureAwait(false);
+
+            using var response = await this.HttpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
             using var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
             var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
 
             var status = json.RootElement.GetProperty("status").GetString()!;
@@ -204,7 +213,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
                     var errorString = json.RootElement.GetProperty("error").GetString()!;
                     throw new KernelException($"Failed to create transcript. Reason: {errorString}");
                 default:
-                    throw new KernelException("Unexpected transcript status. This code shouldn't be reachable.");
+                    throw new KernelException($"Received unexpected transcript status '{status}'.");
             }
         }
     }
@@ -214,7 +223,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     /// </summary>
     /// <param name="url">URL without base.</param>
     /// <returns>URL with or without BaseUrl.</returns>
-    private string Url(string url)
+    private string CreateUrl(string url)
     {
         return this.HttpClient.BaseAddress is null ? $"{FallbackBaseUrl}{url}" : url;
     }
@@ -225,57 +234,5 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AssemblyAIAudioToTextService)));
-    }
-
-    private async Task<HttpResponseMessage> SendWithSuccessCheckAsync(
-        HttpClient client,
-        HttpRequestMessage request,
-        CancellationToken ct
-    )
-    {
-        HttpResponseMessage? response;
-        try
-        {
-            response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, ct).ConfigureAwait(false);
-        }
-        catch (HttpRequestException e)
-        {
-            throw new HttpOperationException(HttpStatusCode.BadRequest, null, e.Message, e);
-        }
-
-        if (!response.IsSuccessStatusCode)
-        {
-            string? responseContent = null;
-            try
-            {
-                // On .NET Framework, EnsureSuccessStatusCode disposes of the response content;
-                // that was changed years ago in .NET Core, but for .NET Framework it means in order
-                // to read the response content in the case of failure, that has to be
-                // done before calling EnsureSuccessStatusCode.
-                responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                if (response.Content.Headers.ContentType.MediaType == "application/json")
-                {
-                    var json = JsonDocument.Parse(responseContent);
-                    if (json.RootElement.TryGetProperty("error", out var errorProperty))
-                    {
-                        throw new HttpOperationException(
-                            statusCode: response.StatusCode,
-                            responseContent: responseContent,
-                            message: errorProperty.GetString()!,
-                            innerException: null
-                        );
-                    }
-                }
-
-                response.EnsureSuccessStatusCode();
-            }
-            catch (Exception e) when (e is not HttpOperationException)
-            {
-                throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
-            }
-        }
-
-        return response;
     }
 }

@@ -184,15 +184,12 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
             uploadFileResponse
         ];
 
-        // Act
-        var exception = await Assert.ThrowsAsync<HttpOperationException>(
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentAsync(
                 new AudioContent(new BinaryData("data", "audio/wav"))
             ).ConfigureAwait(true)
         ).ConfigureAwait(true);
-
-        // Assert
-        Assert.Equal(ErrorMessage, exception.Message);
     }
 
     public void Dispose()
