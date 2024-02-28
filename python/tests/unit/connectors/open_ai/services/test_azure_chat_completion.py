@@ -557,5 +557,5 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
         api_version=api_version,
     )
 
-    with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
+    with pytest.raises(ContentFilterAIException, match="service encountered a content error"):
         await azure_chat_completion.complete_chat(messages, complete_prompt_execution_settings)

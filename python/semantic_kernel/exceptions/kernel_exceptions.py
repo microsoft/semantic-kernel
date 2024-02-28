@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-# Even though there is no strict seperation between errors and exceptions in Python, it is a good practice to use:
+# Even though there is no strict separation between errors and exceptions in Python, it is a good practice to use:
 # - Exceptions for exceptional conditions that a reasonable application may wish to catch.
 # - Errors for exceptional conditions that are not reasonable to catch.
 # for instance syntax errors in a template should be called ...Error,
