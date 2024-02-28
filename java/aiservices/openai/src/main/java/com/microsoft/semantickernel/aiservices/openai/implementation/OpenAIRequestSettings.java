@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.aiservices.openai;
+package com.microsoft.semantickernel.aiservices.openai.implementation;
 
 import com.azure.core.http.HttpHeaderName;
 import com.azure.core.http.rest.RequestOptions;
@@ -8,6 +8,9 @@ import java.io.InputStream;
 import java.util.Properties;
 import org.slf4j.Logger;
 
+/**
+ * Provides Http request settings for OpenAI requests.
+ */
 public final class OpenAIRequestSettings {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
@@ -43,6 +46,11 @@ public final class OpenAIRequestSettings {
         return version;
     }
 
+    /**
+     * Get the HTTP request options for OpenAI requests.
+     *
+     * @return The request options
+     */
     public static RequestOptions getRequestOptions() {
         return new RequestOptions()
             .setHeader(HttpHeaderName.fromString("Semantic-Kernel-Version"), version);
