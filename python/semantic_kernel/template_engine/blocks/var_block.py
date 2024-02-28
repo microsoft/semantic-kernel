@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 from pydantic import model_validator
 
+from semantic_kernel.exceptions import VarBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
-from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 

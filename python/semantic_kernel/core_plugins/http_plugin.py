@@ -11,6 +11,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
+from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -41,7 +42,7 @@ class HttpPlugin(KernelBaseModel):
             The response body as a string.
         """
         if not url:
-            raise ValueError("url cannot be `None` or empty")
+            raise FunctionExecutionException("url cannot be `None` or empty")
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, raise_for_status=True) as response:
@@ -63,7 +64,7 @@ class HttpPlugin(KernelBaseModel):
             The response body as a string.
         """
         if not url:
-            raise ValueError("url cannot be `None` or empty")
+            raise FunctionExecutionException("url cannot be `None` or empty")
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
@@ -86,7 +87,7 @@ class HttpPlugin(KernelBaseModel):
             The response body as a string.
         """
         if not url:
-            raise ValueError("url cannot be `None` or empty")
+            raise FunctionExecutionException("url cannot be `None` or empty")
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
@@ -105,7 +106,7 @@ class HttpPlugin(KernelBaseModel):
             The response body as a string.
         """
         if not url:
-            raise ValueError("url cannot be `None` or empty")
+            raise FunctionExecutionException("url cannot be `None` or empty")
         async with aiohttp.ClientSession() as session:
             async with session.delete(url, raise_for_status=True) as response:
                 return await response.text()

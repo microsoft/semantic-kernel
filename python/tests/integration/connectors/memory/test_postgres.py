@@ -9,6 +9,7 @@ import pytest
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.memory.postgres import PostgresMemoryStore
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
@@ -180,7 +181,7 @@ async def test_remove(connection_string, memory_record1):
     assert result is not None
 
     await memory.remove("test_collection", memory_record1._id)
-    with pytest.raises(KeyError):
+    with pytest.raises(ServiceResourceNotFoundError):
         _ = await memory.get("test_collection", memory_record1._id, with_embedding=True)
 
 
@@ -191,10 +192,10 @@ async def test_remove_batch(connection_string, memory_record1, memory_record2):
     await memory.create_collection("test_collection")
     await memory.upsert_batch("test_collection", [memory_record1, memory_record2])
     await memory.remove_batch("test_collection", [memory_record1._id, memory_record2._id])
-    with pytest.raises(KeyError):
+    with pytest.raises(ServiceResourceNotFoundError):
         _ = await memory.get("test_collection", memory_record1._id, with_embedding=True)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ServiceResourceNotFoundError):
         _ = await memory.get("test_collection", memory_record2._id, with_embedding=True)
 
 

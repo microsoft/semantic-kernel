@@ -3,9 +3,10 @@ from typing import List, Optional
 
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents import StreamingChatMessageContent
+from semantic_kernel.exceptions import ContentAdditionException
 
 
 class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
@@ -45,13 +46,13 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
         if role is set, they should be the same.
         """
         if self.choice_index != other.choice_index:
-            raise ValueError("Cannot add StreamingChatMessageContent with different choice_index")
+            raise ContentAdditionException("Cannot add StreamingChatMessageContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
-            raise ValueError("Cannot add StreamingChatMessageContent from different ai_model_id")
+            raise ContentAdditionException("Cannot add StreamingChatMessageContent from different ai_model_id")
         if self.encoding != other.encoding:
-            raise ValueError("Cannot add StreamingChatMessageContent with different encoding")
+            raise ContentAdditionException("Cannot add StreamingChatMessageContent with different encoding")
         if self.role and other.role and self.role != other.role:
-            raise ValueError("Cannot add StreamingChatMessageContent with different role")
+            raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
         fc = (self.function_call + other.function_call) if self.function_call else other.function_call
         if self.tool_calls:
             tc = []

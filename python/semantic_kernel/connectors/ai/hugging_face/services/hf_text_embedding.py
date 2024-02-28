@@ -7,10 +7,8 @@ import sentence_transformers
 import torch
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.exceptions import ServiceResponseException
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -59,4 +57,4 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             embeddings = self.generator.encode(texts)
             return array(embeddings)
         except Exception as e:
-            raise AIException("Hugging Face embeddings failed", e)
+            raise ServiceResponseException("Hugging Face embeddings failed", e) from e

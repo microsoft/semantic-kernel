@@ -2,6 +2,7 @@
 
 import datetime
 
+from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -231,7 +232,7 @@ class TimePlugin(KernelBaseModel):
             d = d - datetime.timedelta(days=1)
             if d.strftime("%A") == day_name:
                 return d.strftime("%A, %d %B, %Y")
-        raise ValueError("day_name is not recognized")
+        raise FunctionExecutionException("day_name is not recognized")
 
     @kernel_function(description="Get the seconds on the current minute")
     def second(self) -> str:

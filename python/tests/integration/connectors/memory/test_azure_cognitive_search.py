@@ -9,6 +9,7 @@ import pytest
 from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
     AzureCognitiveSearchMemoryStore,
 )
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
@@ -115,7 +116,7 @@ async def test_record_not_found():
             # Clean up and fail
             await memory_store.delete_collection(collection)
             assert False
-        except KeyError:
+        except ServiceResourceNotFoundError:
             pass
 
         await memory_store.delete_collection(collection)

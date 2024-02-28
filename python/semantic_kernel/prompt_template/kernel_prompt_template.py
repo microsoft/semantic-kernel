@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, Any, List, Optional
 
 from pydantic import PrivateAttr
 
+from semantic_kernel.exceptions import CodeBlockRenderException, TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
@@ -98,6 +98,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         :return: The prompt template ready to be used for an AI request
         """
         from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
+        from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
         logger.debug(f"Rendering list of {len(blocks)} blocks")
         rendered_blocks: List[str] = []
@@ -106,7 +107,11 @@ class KernelPromptTemplate(PromptTemplateBase):
                 rendered_blocks.append(block.render(kernel, arguments))
                 continue
             if isinstance(block, CodeRenderer):
-                rendered_blocks.append(await block.render_code(kernel, arguments))
+                try:
+                    rendered_blocks.append(await block.render_code(kernel, arguments))
+                except CodeBlockRenderException as exc:
+                    logger.error(f"Error rendering code block: {exc}")
+                    raise TemplateRenderException(f"Error rendering code block: {exc}") from exc
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
         return prompt

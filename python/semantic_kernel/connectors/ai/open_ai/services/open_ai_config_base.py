@@ -7,17 +7,11 @@ from typing import Dict, Mapping, Optional
 from openai import AsyncOpenAI
 from pydantic import Field, validate_call
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIHandler,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
-    OpenAIModelTypes,
-)
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.telemetry import APP_INFO
+from semantic_kernel.exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -59,10 +53,7 @@ class OpenAIConfigBase(OpenAIHandler):
 
         if not async_client:
             if not api_key:
-                raise AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    "Please provide an api_key",
-                )
+                raise ServiceInitializationError("Please provide an api_key")
             async_client = AsyncOpenAI(
                 api_key=api_key,
                 organization=org_id,

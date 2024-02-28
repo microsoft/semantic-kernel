@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from typing import Literal, Optional
 
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 

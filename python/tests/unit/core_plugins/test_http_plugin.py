@@ -6,6 +6,7 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
@@ -40,7 +41,7 @@ async def test_get(mock_get):
 @pytest.mark.asyncio
 async def test_get_none_url():
     plugin = HttpPlugin()
-    with pytest.raises(ValueError):
+    with pytest.raises(FunctionExecutionException):
         await plugin.get(None)
 
 

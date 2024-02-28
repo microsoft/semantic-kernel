@@ -7,6 +7,7 @@ from typing import List
 import aiohttp
 
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -26,10 +27,10 @@ class GoogleConnector(ConnectorBase):
         self._search_engine_id = search_engine_id
 
         if not self._api_key:
-            raise ValueError("Google Custom Search API key cannot be null.")
+            raise ServiceInitializationError("Google Custom Search API key cannot be null.")
 
         if not self._search_engine_id:
-            raise ValueError("Google search engine ID cannot be null.")
+            raise ServiceInitializationError("Google search engine ID cannot be null.")
 
     async def search(self, query: str, num_results: str, offset: str) -> List[str]:
         """
@@ -42,7 +43,7 @@ class GoogleConnector(ConnectorBase):
         :return: list of search results
         """
         if not query:
-            raise ValueError("query cannot be 'None' or empty.")
+            raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 
         if not num_results:
             num_results = 1
@@ -53,12 +54,12 @@ class GoogleConnector(ConnectorBase):
         offset = int(offset)
 
         if num_results <= 0:
-            raise ValueError("num_results value must be greater than 0.")
+            raise ServiceInvalidRequestError("num_results value must be greater than 0.")
         if num_results > 10:
-            raise ValueError("num_results value must be less than or equal to 10.")
+            raise ServiceInvalidRequestError("num_results value must be less than or equal to 10.")
 
         if offset < 0:
-            raise ValueError("offset must be greater than 0.")
+            raise ServiceInvalidRequestError("offset must be greater than 0.")
 
         logger.info(
             f"Received request for google search with \

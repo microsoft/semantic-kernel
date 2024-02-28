@@ -2,9 +2,9 @@
 
 from pytest import mark, raises
 
+from semantic_kernel.exceptions import ValBlockSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.template_engine.blocks.block_errors import ValBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 

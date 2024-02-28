@@ -5,10 +5,11 @@ import pytest
 from pydantic import ValidationError
 
 from semantic_kernel import Kernel
+from semantic_kernel.exceptions import FunctionInitializationError
+from semantic_kernel.exceptions.function_exceptions import FunctionInvalidNameError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.kernel_exception import KernelException
 
 
 def not_decorated_native_function(arg1: str) -> str:
@@ -35,7 +36,7 @@ async def test_register_valid_native_function():
 def test_register_undecorated_native_function():
     kernel = Kernel()
 
-    with pytest.raises(KernelException):
+    with pytest.raises(FunctionInitializationError):
         kernel.register_function_from_method("TestPlugin", not_decorated_native_function)
 
 
@@ -51,5 +52,5 @@ def test_register_overloaded_native_function():
 
     kernel.register_function_from_method("TestPlugin", decorated_native_function)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(FunctionInvalidNameError):
         kernel.register_function_from_method("TestPlugin", decorated_native_function)

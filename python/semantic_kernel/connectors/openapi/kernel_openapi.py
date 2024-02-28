@@ -20,6 +20,7 @@ from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
+from semantic_kernel.exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -121,12 +122,12 @@ class RestApiOperation:
                     processed_headers[param_name] = param_default
             elif param["in"] == "path":
                 if not path_params or param_name not in path_params:
-                    raise ValueError(f"Required path parameter {param_name} not provided")
+                    raise ServiceInvalidRequestError(f"Required path parameter {param_name} not provided")
 
         processed_payload = None
         if self.request_body:
             if request_body is None and "required" in self.request_body and self.request_body["required"]:
-                raise ValueError("Payload is required but was not provided")
+                raise ServiceInvalidRequestError("Payload is required but was not provided")
             content = self.request_body["content"]
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type

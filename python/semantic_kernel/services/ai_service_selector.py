@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Tuple, Union
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.exceptions import KernelServiceNotFoundError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 ALL_COMPLETION_SERVICE_TYPES = Union[TextCompletionClientBase, ChatCompletionClientBase]
@@ -38,4 +38,4 @@ class AIServiceSelector:
             if service:
                 service_settings = service.get_prompt_execution_settings_from_settings(settings)
                 return service, service_settings
-        raise AIException(AIException.ErrorCodes.NoServiceFound, "No service found.")
+        raise KernelServiceNotFoundError("No service found.")

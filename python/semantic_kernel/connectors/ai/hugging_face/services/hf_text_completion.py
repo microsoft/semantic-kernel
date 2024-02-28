@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Literal, Optio
 import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
     HuggingFacePromptExecutionSettings,
 )
@@ -16,6 +15,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceResponseException
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -95,7 +95,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         try:
             results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
-            raise AIException("Hugging Face completion failed", e)
+            raise ServiceResponseException("Hugging Face completion failed", e) from e
         if isinstance(results, list):
             return [self._create_text_content(results, result) for result in results]
         return [self._create_text_content(results, results)]
@@ -124,8 +124,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             List[StreamingTextContent] -- List of StreamingTextContent objects.
         """
         if settings.num_return_sequences > 1:
-            raise AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
+            raise ServiceInvalidExecutionSettingsError(
                 "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \
                     If you need multiple responses, please use the complete method.",
             )
@@ -147,7 +146,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             thread.join()
 
         except Exception as e:
-            raise AIException("Hugging Face completion failed", e)
+            raise ServiceResponseException("Hugging Face completion failed", e) from e
 
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""

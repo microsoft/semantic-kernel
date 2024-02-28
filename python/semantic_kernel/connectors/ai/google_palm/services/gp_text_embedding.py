@@ -8,14 +8,15 @@ if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
+
 import google.generativeai as palm
 from numpy import array, ndarray
 from pydantic import StringConstraints
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
+from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
 
 
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
@@ -46,10 +47,10 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         try:
             palm.configure(api_key=self.api_key)
         except Exception as ex:
-            raise PermissionError(
+            raise ServiceInvalidAuthError(
                 "Google PaLM service failed to configure. Invalid API key provided.",
                 ex,
-            )
+            ) from ex
         embeddings = []
         for text in texts:
             try:
@@ -59,9 +60,8 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
                 )
                 embeddings.append(array(response["embedding"]))
             except Exception as ex:
-                raise AIException(
-                    AIException.ErrorCodes.ServiceError,
+                raise ServiceResponseException(
                     "Google PaLM service failed to generate the embedding.",
                     ex,
-                )
+                ) from ex
         return array(embeddings)

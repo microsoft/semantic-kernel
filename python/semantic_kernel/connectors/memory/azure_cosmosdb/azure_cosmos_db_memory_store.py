@@ -4,15 +4,10 @@ from typing import List, Tuple
 
 from numpy import ndarray
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
-    AzureCosmosDBStoreApi,
-)
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
-    get_mongodb_search_client,
-)
-from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import (
-    MongoStoreApi,
-)
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
+from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import get_mongodb_search_client
+from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -42,13 +37,13 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         similarity: str,
     ):
         if vector_dimensions <= 0:
-            raise ValueError("Vector dimensions must be a positive number.")
+            raise ServiceInitializationError("Vector dimensions must be a positive number.")
         # if connection_string is None:
         #     raise ValueError("Connection String cannot be empty.")
         if database_name is None:
-            raise ValueError("Database Name cannot be empty.")
+            raise ServiceInitializationError("Database Name cannot be empty.")
         if index_name is None:
-            raise ValueError("Index Name cannot be empty.")
+            raise ServiceInitializationError("Index Name cannot be empty.")
 
         self.cosmosStore = cosmosStore
         self.index_name = index_name
@@ -81,7 +76,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
                 database,
             )
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f"API type {cosmos_api} is not supported.")
 
         store = AzureCosmosDBMemoryStore(
             apiStore,

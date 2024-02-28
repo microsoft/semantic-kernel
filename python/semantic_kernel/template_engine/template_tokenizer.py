@@ -3,15 +3,12 @@
 import logging
 from typing import List
 
-from semantic_kernel.template_engine.blocks.block import Block
-from semantic_kernel.template_engine.blocks.block_errors import (
-    CodeBlockSyntaxError,
+from semantic_kernel.exceptions import (
+    BlockSyntaxError,
     CodeBlockTokenError,
-    FunctionIdBlockSyntaxError,
     TemplateSyntaxError,
-    ValBlockSyntaxError,
-    VarBlockSyntaxError,
 )
+from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols
@@ -146,13 +143,7 @@ class TemplateTokenizer:
 
         try:
             code_blocks = code_tokenizer.tokenize(content_without_delimiters)
-        except (
-            CodeBlockTokenError,
-            CodeBlockSyntaxError,
-            VarBlockSyntaxError,
-            ValBlockSyntaxError,
-            FunctionIdBlockSyntaxError,
-        ) as e:
+        except BlockSyntaxError as e:
             msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"
             logger.warning(msg)
             raise TemplateSyntaxError(msg) from e

@@ -2,6 +2,7 @@
 from typing import Optional
 
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.exceptions import ContentAdditionException
 
 
 class StreamingTextContent(StreamingKernelContent):
@@ -41,11 +42,11 @@ class StreamingTextContent(StreamingKernelContent):
         The inner_content of the first one is used, choice_index, ai_model_id and encoding should be the same.
         """
         if self.choice_index != other.choice_index:
-            raise ValueError("Cannot add StreamingTextContent with different choice_index")
+            raise ContentAdditionException("Cannot add StreamingTextContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
-            raise ValueError("Cannot add StreamingTextContent from different ai_model_id")
+            raise ContentAdditionException("Cannot add StreamingTextContent from different ai_model_id")
         if self.encoding != other.encoding:
-            raise ValueError("Cannot add StreamingTextContent with different encoding")
+            raise ContentAdditionException("Cannot add StreamingTextContent with different encoding")
         return StreamingTextContent(
             choice_index=self.choice_index,
             inner_content=self.inner_content,

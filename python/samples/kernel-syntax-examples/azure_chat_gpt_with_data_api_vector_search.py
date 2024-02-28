@@ -8,7 +8,7 @@ from semantic_kernel.connectors.ai.open_ai.contents.azure_streaming_chat_message
     AzureStreamingChatMessageContent,
 )
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSources,
     AzureChatPromptExecutionSettings,

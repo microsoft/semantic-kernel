@@ -5,21 +5,17 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Unio
 
 from pydantic import Field, ValidationError, model_validator
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.kernel_exception import KernelFunctionInitializationException
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -74,7 +70,7 @@ class KernelFunctionFromPrompt(KernelFunction):
                 prompt_template_config (Optional[PromptTemplateConfig]): the prompt template config.
         """
         if not prompt and not prompt_template_config and not prompt_template:
-            raise KernelFunctionInitializationException(
+            raise FunctionInitializationError(
                 "The prompt cannot be empty, must be supplied directly, \
 through prompt_template_config or in the prompt_template."
             )
@@ -101,8 +97,7 @@ through prompt_template_config or in the prompt_template."
                 return_parameter=PROMPT_RETURN_PARAM,
             )
         except ValidationError as exc:
-            # reraise the exception to clarify it comes from KernelFunctionFromPrompt init
-            raise exc
+            raise FunctionInitializationError("Failed to create KernelFunctionMetadata") from exc
         super().__init__(
             metadata=metadata, prompt_template=prompt_template, prompt_execution_settings=prompt_execution_settings
         )
@@ -151,8 +146,7 @@ through prompt_template_config or in the prompt_template."
                 # store_results function is in utils.chat
                 # chat_history = store_results(chat_history=chat_history, results=completions)
             except Exception as exc:
-                logger.error(f"Error occurred while invoking function {self.name}: {exc}")
-                raise exc
+                raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
 
             return FunctionResult(
                 function=self.metadata,
@@ -168,8 +162,7 @@ through prompt_template_config or in the prompt_template."
             try:
                 completions = await service.complete(prompt, execution_settings)
             except Exception as e:
-                logger.error(f"Error occurred while invoking function {self.name}: {e}")
-                raise e
+                raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {e}") from e
 
             return FunctionResult(
                 function=self.metadata,
@@ -181,7 +174,7 @@ through prompt_template_config or in the prompt_template."
                 },
             )
 
-        raise ValueError(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
+        raise FunctionExecutionException(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
 
     async def _invoke_internal_stream(
         self,
@@ -213,7 +206,7 @@ through prompt_template_config or in the prompt_template."
                 logger.error(f"Error occurred while invoking function {self.name}: {e}")
                 yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
 
-        raise ValueError(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
+        raise FunctionExecutionException(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
 
     def add_default_values(self, arguments: "KernelArguments") -> KernelArguments:
         """Gathers the function parameters from the arguments."""

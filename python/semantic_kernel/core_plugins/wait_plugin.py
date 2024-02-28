@@ -4,6 +4,8 @@ import asyncio
 import sys
 from typing import Union
 
+from semantic_kernel.exceptions import FunctionExecutionException
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -32,5 +34,5 @@ class WaitPlugin(KernelBaseModel):
             try:
                 input = float(input)
             except ValueError as exc:
-                raise ValueError("seconds text must be a number") from exc
+                raise FunctionExecutionException("seconds text must be a number") from exc
         await asyncio.sleep(abs(input))

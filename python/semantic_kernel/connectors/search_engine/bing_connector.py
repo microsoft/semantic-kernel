@@ -7,6 +7,7 @@ from typing import List
 import aiohttp
 
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -24,7 +25,9 @@ class BingConnector(ConnectorBase):
         self._api_key = api_key
 
         if not self._api_key:
-            raise ValueError("Bing API key cannot be null. Please set environment variable BING_API_KEY.")
+            raise ServiceInitializationError(
+                "Bing API key cannot be null. Please set environment variable BING_API_KEY."
+            )
 
     async def search(self, query: str, num_results: str, offset: str) -> List[str]:
         """
@@ -37,7 +40,7 @@ class BingConnector(ConnectorBase):
         :return: list of search results
         """
         if not query:
-            raise ValueError("query cannot be 'None' or empty.")
+            raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 
         if not num_results:
             num_results = 1
@@ -48,12 +51,12 @@ class BingConnector(ConnectorBase):
         offset = int(offset)
 
         if num_results <= 0:
-            raise ValueError("num_results value must be greater than 0.")
+            raise ServiceInvalidRequestError("num_results value must be greater than 0.")
         if num_results >= 50:
-            raise ValueError("num_results value must be less than 50.")
+            raise ServiceInvalidRequestError("num_results value must be less than 50.")
 
         if offset < 0:
-            raise ValueError("offset must be greater than 0.")
+            raise ServiceInvalidRequestError("offset must be greater than 0.")
 
         logger.info(
             f"Received request for bing web search with \

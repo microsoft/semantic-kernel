@@ -1,6 +1,6 @@
 import pytest
 
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 

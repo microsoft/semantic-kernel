@@ -4,6 +4,7 @@
 import pytest
 
 from semantic_kernel.connectors.ai import PromptExecutionSettings
+from semantic_kernel.exceptions.function_exceptions import FunctionInvalidNameError
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -248,5 +249,5 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     mock_method = mock_function
     native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(FunctionInvalidNameError):
         KernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])

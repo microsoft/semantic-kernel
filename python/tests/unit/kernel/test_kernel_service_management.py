@@ -6,6 +6,11 @@ from typing import Union
 import pytest
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.exceptions import (
+    KernelFunctionAlreadyExistsError,
+    KernelServiceNotFoundError,
+    ServiceInvalidTypeError,
+)
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -35,7 +40,7 @@ def test_kernel_add_service(kernel: Kernel):
 
 def test_kernel_add_service_twice(kernel_with_service: Kernel):
     service = AIServiceClientBase(service_id="service", ai_model_id="ai_model_id")
-    with pytest.raises(ValueError):
+    with pytest.raises(KernelFunctionAlreadyExistsError):
         kernel_with_service.add_service(service)
     assert kernel_with_service.services == {"service": service}
 
@@ -53,7 +58,7 @@ def test_kernel_remove_service(kernel_with_service: Kernel):
 
 
 def test_kernel_remove_service_error(kernel_with_service: Kernel):
-    with pytest.raises(ValueError):
+    with pytest.raises(KernelServiceNotFoundError):
         kernel_with_service.remove_service("service2")
 
 
@@ -73,7 +78,7 @@ def test_get_services_by_type(kernel_with_service: Kernel):
 
 
 def test_get_service_with_id_not_found(kernel_with_service: Kernel):
-    with pytest.raises(ValueError):
+    with pytest.raises(KernelServiceNotFoundError):
         kernel_with_service.get_service("service2", type=AIServiceClientBase)
 
 
@@ -95,7 +100,7 @@ def test_get_service_with_multiple_types_union(kernel_with_service: Kernel):
 
 
 def test_get_service_with_type_not_found(kernel_with_service: Kernel):
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceInvalidTypeError):
         kernel_with_service.get_service("service", type=ChatCompletionClientBase)
 
 

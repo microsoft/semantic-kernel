@@ -3,8 +3,6 @@
 import sys
 from typing import TYPE_CHECKING, Dict, List, Optional
 
-from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
-
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -12,7 +10,9 @@ else:
 
 from pydantic import Field, StringConstraints
 
+from semantic_kernel.exceptions import FunctionInvalidNameError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -53,7 +53,7 @@ class KernelPlugin(KernelBaseModel):
         if functions is not None:
             for function in functions:
                 if function.name in functions_dict:
-                    raise ValueError(f"Duplicate function name detected: {function.name}")
+                    raise FunctionInvalidNameError(f"Duplicate function name detected: {function.name}")
                 functions_dict[function.name] = function
         super().__init__(name=name, description=description, functions=functions_dict)
 

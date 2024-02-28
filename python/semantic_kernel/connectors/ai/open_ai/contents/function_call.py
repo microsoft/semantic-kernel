@@ -2,6 +2,10 @@
 import json
 from typing import Any, Dict, List, Optional
 
+from semantic_kernel.exceptions import (
+    FunctionCallInvalidArgumentsException,
+    FunctionCallInvalidNameException,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -30,8 +34,8 @@ class FunctionCall(KernelBaseModel):
             return None
         try:
             return json.loads(self.arguments)
-        except json.JSONDecodeError:
-            return None
+        except json.JSONDecodeError as exc:
+            raise FunctionCallInvalidArgumentsException("Function Call arguments are not valid JSON.") from exc
 
     def to_kernel_arguments(self) -> KernelArguments:
         """Return the arguments as a KernelArguments instance."""
@@ -43,7 +47,7 @@ class FunctionCall(KernelBaseModel):
     def split_name(self) -> List[str]:
         """Split the name into a plugin and function name."""
         if not self.name:
-            raise ValueError("Name is not set.")
+            raise FunctionCallInvalidNameException("Name is not set.")
         if "-" not in self.name:
             return ["", self.name]
         return self.name.split("-", maxsplit=1)

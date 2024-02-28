@@ -10,6 +10,7 @@ from semantic_kernel.connectors.memory.chroma.utils import (
     chroma_compute_similarity_scores,
     query_results_to_records,
 )
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -56,10 +57,10 @@ class ChromaMemoryStore(MemoryStoreBase):
             import chromadb
             import chromadb.config
 
-        except ImportError:
-            raise ValueError(
+        except ImportError as exc:
+            raise ServiceInitializationError(
                 "Could not import chromadb python package. " "Please install it with `pip install chromadb`."
-            )
+            ) from exc
 
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
@@ -152,7 +153,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         collection = await self.get_collection(collection_name)
         if collection is None:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         record._key = record._id
         metadata = {
@@ -200,8 +201,10 @@ class ChromaMemoryStore(MemoryStoreBase):
         records = await self.get_batch(collection_name, [key], with_embedding)
         try:
             return records[0]
-        except IndexError:
-            raise Exception(f"Record with key '{key}' does not exist in collection '{collection_name}'")
+        except IndexError as exc:
+            raise ServiceResourceNotFoundError(
+                f"Record with key '{key}' does not exist in collection '{collection_name}'"
+            ) from exc
 
     async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         """Gets a batch of records.
@@ -216,7 +219,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         collection = await self.get_collection(collection_name)
         if collection is None:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         query_includes = ["embeddings", "metadatas", "documents"] if with_embeddings else ["metadatas", "documents"]
 

@@ -22,6 +22,11 @@ from usearch.index import (
     ScalarKind,
 )
 
+from semantic_kernel.exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidRequestError,
+    ServiceResourceNotFoundError,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -163,7 +168,7 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         collection_name = collection_name.lower()
         if self._persist_directory is None:
-            raise ValueError("Path of persist directory is not set")
+            raise ServiceInitializationError("Path of persist directory is not set")
 
         return self._persist_directory / (collection_name + _collection_file_extensions[file_type])
 
@@ -197,9 +202,9 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         collection_name = collection_name.lower()
         if not collection_name:
-            raise ValueError("Collection name can not be empty.")
+            raise ServiceInvalidRequestError("Collection name can not be empty.")
         if collection_name in self._collections:
-            raise ValueError(f"Collection with name {collection_name} already exists.")
+            raise ServiceInvalidRequestError(f"Collection with name {collection_name} already exists.")
 
         embeddings_index_path = (
             self._get_collection_path(collection_name, file_type=_CollectionFileType.USEARCH)
@@ -257,7 +262,9 @@ class USearchMemoryStore(MemoryStoreBase):
         for collection_name, collection_files in self._get_all_storage_files().items():
             expected_storage_files = len(_CollectionFileType)
             if len(collection_files) != expected_storage_files:
-                raise ValueError(f"Expected {expected_storage_files} files for collection {collection_name}")
+                raise ServiceInitializationError(
+                    f"Expected {expected_storage_files} files for collection {collection_name}"
+                )
             parquet_file, usearch_file = collection_files
             if parquet_file.suffix == _collection_file_extensions[_CollectionFileType.USEARCH]:
                 parquet_file, usearch_file = usearch_file, parquet_file
@@ -328,7 +335,7 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
-            raise KeyError(f"Collection {collection_name} does not exist, cannot insert.")
+            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot insert.")
 
         ucollection = self._collections[collection_name]
         all_records_id = [record._id for record in records]
@@ -380,7 +387,7 @@ class USearchMemoryStore(MemoryStoreBase):
             dtype=dtype,
         )
         if not result:
-            raise KeyError(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
         return result[0]
 
     async def get_batch(
@@ -393,7 +400,7 @@ class USearchMemoryStore(MemoryStoreBase):
         """Retrieve a batch of MemoryRecords using their keys."""
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
-            raise KeyError(f"Collection {collection_name} does not exist")
+            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist")
 
         ucollection = self._collections[collection_name]
         labels = [ucollection.embeddings_id_to_label[key] for key in keys if key in ucollection.embeddings_id_to_label]
@@ -413,7 +420,7 @@ class USearchMemoryStore(MemoryStoreBase):
         """Remove a batch of MemoryRecords using their keys."""
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
-            raise KeyError(f"Collection {collection_name} does not exist, cannot insert.")
+            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot insert.")
 
         ucollection = self._collections[collection_name]
 
@@ -543,7 +550,7 @@ class USearchMemoryStore(MemoryStoreBase):
             Dict[str, List[Path]]: Dictionary of collection names mapped to their respective files.
         """
         if self._persist_directory is None:
-            raise ValueError("Persist directory is not set")
+            raise ServiceInitializationError("Persist directory is not set")
 
         storage_exts = _collection_file_extensions.values()
         collection_storage_files: Dict[str, List[Path]] = {}

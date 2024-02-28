@@ -3,11 +3,12 @@
 
 import pytest
 
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
@@ -95,14 +96,14 @@ def test_add_message():
 def test_add_message_invalid_message():
     chat_history = ChatHistory()
     content = "Test message"
-    with pytest.raises(ValueError):
+    with pytest.raises(ContentInitializationError):
         chat_history.add_message(message={"content": content})
 
 
 def test_add_message_invalid_type():
     chat_history = ChatHistory()
     content = "Test message"
-    with pytest.raises(ValueError):
+    with pytest.raises(ContentInitializationError):
         chat_history.add_message(message=content)
 
 
@@ -224,7 +225,7 @@ def test_serialize_and_deserialize_to_chat_history():
 def test_deserialize_invalid_json_raises_exception():
     invalid_json = "invalid json"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ContentInitializationError):
         ChatHistory.restore_chat_history(invalid_json)
 
 

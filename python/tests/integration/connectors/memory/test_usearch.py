@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from semantic_kernel.connectors.memory.usearch import USearchMemoryStore
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
@@ -212,7 +213,7 @@ async def test_remove(memory_record1):
     await memory.remove("test_collection", "test_id1")
 
     # memory.get should raise Exception if record is not found
-    with pytest.raises(KeyError):
+    with pytest.raises(ServiceResourceNotFoundError):
         await memory.get("test_collection", "test_id1", True)
 
 

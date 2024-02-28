@@ -13,6 +13,11 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
+from semantic_kernel.exceptions import (
+    PlannerCreatePlanError,
+    PlannerExecutionException,
+    PlannerInvalidPlanError,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -20,7 +25,6 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
-from semantic_kernel.planners.planning_exception import PlanningException
 from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
@@ -110,7 +114,7 @@ class StepwisePlanner:
 
     def create_plan(self, goal: str) -> Plan:
         if is_null_or_empty(goal):
-            raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
+            raise PlannerInvalidPlanError("The goal specified is empty")
 
         function_descriptions = self.get_function_descriptions()
 
@@ -146,11 +150,9 @@ class StepwisePlanner:
                 llm_response = await self._system_step_function.invoke(self._kernel, self._arguments)
 
                 if isinstance(llm_response, FunctionResult) and "error" in llm_response.metadata:
-                    raise PlanningException(
-                        PlanningException.ErrorCodes.UnknownError,
+                    raise PlannerExecutionException(
                         f"Error occurred while executing stepwise plan: {llm_response.metadata['error']}",
-                        llm_response.metadata["error"],
-                    )
+                    ) from llm_response.metadata["error"]
 
                 action_text = str(llm_response).strip()
                 logger.debug(f"Response: {action_text}")
@@ -325,10 +327,7 @@ class StepwisePlanner:
         )
 
         if target_function is None:
-            raise PlanningException(
-                PlanningException.ErrorCodes.UnknownError,
-                f"The function '{action_name}' was not found.",
-            )
+            raise PlannerExecutionException(f"The function '{action_name}' was not found.")
 
         try:
             function = self._kernel.func(target_function.plugin_name, target_function.name)
@@ -361,10 +360,7 @@ class StepwisePlanner:
 
     def get_available_functions(self) -> List[KernelFunctionMetadata]:
         if self._kernel.plugins is None:
-            raise PlanningException(
-                PlanningException.ErrorCodes.CreatePlanError,
-                "Plugin collection not found in the kernel",
-            )
+            raise PlannerCreatePlanError("Plugin collection not found in the kernel")
 
         excluded_plugins = self.config.excluded_plugins or []
         excluded_functions = self.config.excluded_functions or []

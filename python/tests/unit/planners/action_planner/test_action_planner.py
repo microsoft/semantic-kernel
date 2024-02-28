@@ -7,18 +7,18 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import (
+    PlannerInvalidConfigurationError,
+    PlannerInvalidGoalError,
+    PlannerInvalidPlanError,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.planners import ActionPlanner
-from semantic_kernel.planners.action_planner.action_planner_config import (
-    ActionPlannerConfig,
-)
-from semantic_kernel.planners.planning_exception import PlanningException
+from semantic_kernel.planners.action_planner.action_planner_config import ActionPlannerConfig
 
 
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Mock(spec=KernelFunction):
@@ -33,7 +33,7 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Mo
 
 
 def test_throw_without_kernel():
-    with pytest.raises(PlanningException):
+    with pytest.raises(PlannerInvalidConfigurationError):
         ActionPlanner(None, None)
 
 
@@ -192,7 +192,7 @@ async def test_empty_goal_throw():
 
     planner = ActionPlanner(kernel, service_id="test")
 
-    with pytest.raises(PlanningException):
+    with pytest.raises(PlannerInvalidGoalError):
         await planner.create_plan(goal)
 
 
@@ -223,5 +223,5 @@ async def test_invalid_json_throw():
 
     planner = ActionPlanner(kernel, service_id="test")
 
-    with pytest.raises(PlanningException):
+    with pytest.raises(PlannerInvalidPlanError):
         await planner.create_plan(goal)

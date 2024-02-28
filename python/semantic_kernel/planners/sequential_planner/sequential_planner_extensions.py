@@ -6,7 +6,6 @@ from typing import List, Optional
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
@@ -71,12 +70,6 @@ class SequentialPlannerKernelExtension:
         excluded_plugins = config.excluded_plugins or []
         excluded_functions = config.excluded_functions or []
         included_functions = config.included_functions or []
-
-        if kernel.plugins is None:
-            raise KernelException(
-                KernelException.ErrorCodes.PluginCollectionNotSet,
-                "Plugin collection not found in the context",
-            )
 
         available_functions = [
             func
