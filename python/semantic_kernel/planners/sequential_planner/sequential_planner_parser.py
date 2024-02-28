@@ -2,7 +2,8 @@
 
 import re
 from typing import Callable, Optional, Tuple
-from xml.etree import ElementTree as ET
+
+from defusedxml import ElementTree as ET
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
