@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>1.0.0-rc2-SNAPSHOT</version>
+        <version>1.0.0-rc2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>semantickernel-samples-parent</artifactId>
-    <version>1.0.0-rc2-SNAPSHOT</version>
+    <version>1.0.0-rc2</version>
     <packaging>pom</packaging>
     <name>Semantic Kernel Samples Parent</name>
     <description>Parent pom for sample code for using the Semantic Kernel project</description>
@@ -131,8 +130,8 @@
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <showWarnings>true</showWarnings>
                             <compilerArgs>
-                                <arg/>
-                                <compilerArg/>
+                                <arg />
+                                <compilerArg />
                             </compilerArgs>
                         </configuration>
                     </plugin>
