@@ -268,7 +268,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         if min_relevance_score:
             pipeline.append({"$match": {"score": {"$gte": min_relevance_score}}})
 
-        cursor = self.database[collection_name].aggregate(pipeline)
+        cursor: MotorCommandCursor = self.database[collection_name].aggregate(pipeline)
 
         return [
             (
