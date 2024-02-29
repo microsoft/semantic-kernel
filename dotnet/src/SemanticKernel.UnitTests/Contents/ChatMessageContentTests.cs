@@ -155,10 +155,12 @@ public class ChatMessageContentTests
         {
             ["metadata-key-2"] = "metadata-value-2"
         }));
+#pragma warning disable SKEXP0015
         items.Add(new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), "model-3", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-3"] = "metadata-value-3"
         }));
+#pragma warning restore SKEXP0015
 #pragma warning disable SKEXP0005
         items.Add(new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", mediaType: "media-type-4", metadata: new Dictionary<string, object?>()
         {
@@ -213,7 +215,9 @@ public class ChatMessageContentTests
         Assert.Single(imageContent.Metadata);
         Assert.Equal("metadata-value-2", imageContent.Metadata["metadata-key-2"]?.ToString());
 
+#pragma warning disable SKEXP0015
         var binaryContent = deserializedMessage.Items[2] as BinaryContent;
+#pragma warning restore SKEXP0015
         Assert.NotNull(binaryContent);
         Assert.True(binaryContent.Content?.ToArray().SequenceEqual(new BinaryData(new[] { 1, 2, 3 }).ToArray()));
         Assert.Equal("model-3", binaryContent.ModelId);

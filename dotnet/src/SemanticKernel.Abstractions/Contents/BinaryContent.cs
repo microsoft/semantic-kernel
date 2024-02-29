@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
+[Experimental("SKEXP0015")]
 public class BinaryContent : KernelContent
 {
     private readonly Func<Task<Stream>>? _streamProvider;
