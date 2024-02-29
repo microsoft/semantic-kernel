@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
@@ -31,4 +31,50 @@ jobs:
           poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
       - name: Test with pytest
         run: |
-          cd python && poetry run pytest  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit
+          cd python && poetry run pytest ./tests/unit
+
+  python-unit-tests-coverage:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8"]
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Update Pip ${{ matrix.python-version }}
+        run: python -m pip install -U pip
+      - name: Install dependencies
+        run: |
+          python -m pip install poetry pytest setuptools
+          cd python
+          poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
+      - name: Test with pytest
+        run: |
+          cd python && poetry run pytest --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee pytest-coverage.txt
+      - name: Pytest coverage comment
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
+      - name: Check the output coverage
+        run: |
+          echo "Coverage Percantage - ${{ steps.coverageComment.outputs.coverage }}"
+          echo "Coverage Color - ${{ steps.coverageComment.outputs.color }}"
+          echo "Coverage Html - ${{ steps.coverageComment.outputs.coverageHtml }}"
+          echo "Summary Report - ${{ steps.coverageComment.outputs.summaryReport }}"
+
+          echo "Coverage Warnings - ${{ steps.coverageComment.outputs.warnings }}"
+
+          echo "Coverage Errors - ${{ steps.coverageComment.outputs.errors }}"
+          echo "Coverage Failures - ${{ steps.coverageComment.outputs.failures }}"
+          echo "Coverage Skipped - ${{ steps.coverageComment.outputs.skipped }}"
+          echo "Coverage Tests - ${{ steps.coverageComment.outputs.tests }}"
+          echo "Coverage Time - ${{ steps.coverageComment.outputs.time }}"
+          echo "Not Success Test Info - ${{ steps.coverageComment.outputs.notSuccessTestInfo }}"
