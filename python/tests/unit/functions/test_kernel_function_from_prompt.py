@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock, MagicMock
 
 import pytest
 
@@ -139,7 +139,7 @@ def test_init_prompt_execution_settings_dict():
 
 
 @pytest.mark.asyncio
-async def test_invoke():
+async def test_invoke_chat_stream():
     kernel = Kernel()
     kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
     function = KernelFunctionFromPrompt(
@@ -148,6 +148,8 @@ async def test_invoke():
         prompt="test",
         prompt_execution_settings=PromptExecutionSettings(service_id="test"),
     )
+
+    # This part remains unchanged - for synchronous mocking example
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat"
     ) as mock:
@@ -163,6 +165,38 @@ async def test_invoke():
         ]
         async for result in function.invoke_stream(kernel=kernel):
             assert str(result) == "test"
+
+    # # Updated asynchronous mocking
+    # with patch("semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat_stream", new_callable=AsyncMock) as mock_stream:
+    #     mock_stream.return_value = MagicMock()
+    #     mock_stream.return_value.__aiter__.return_value = iter([
+    #         StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})
+    #     ])
+    #     async for result in function.invoke_stream(kernel=kernel):
+    #         # Ensure the string representation of the result matches expected output
+    #         assert str(result) == "test"  # Adjust this line based on the actual structure of your result objects
+
+# @pytest.mark.asyncio
+# async def test_invoke_chat_stream_new():
+#     async def async_generator():
+#         yield StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})
+
+#     kernel = Kernel()
+#     kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
+#     function = KernelFunctionFromPrompt(
+#         function_name="test",
+#         plugin_name="test",
+#         prompt="test",
+#         prompt_execution_settings=PromptExecutionSettings(service_id="test"),
+#     )
+
+#     with patch(
+#         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat_stream",
+#         new_callable=AsyncMock
+#     ) as mock_stream:
+#         mock_stream.return_value = async_generator()
+#         async for result in function.invoke_stream(kernel=kernel):
+#             assert str(result) == "test"
 
 
 @pytest.mark.asyncio

@@ -63,19 +63,6 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
                     tc.append(tool)
         else:
             tc = other.tool_calls
-        # if self.tool_calls:
-        #     tc = []
-        #     for index, tool in enumerate(self.tool_calls):
-        #         if other.tool_calls:
-        #             # Make sure to check the length of other.tool_calls to avoid IndexError
-        #             if index < len(other.tool_calls):
-        #                 tc.append(tool + other.tool_calls[index])
-        #             else:
-        #                 tc.append(tool)
-        #         else:
-        #             tc.append(tool)
-        # else:
-        #     tc = other.tool_calls
 
         return OpenAIStreamingChatMessageContent(
             choice_index=self.choice_index,

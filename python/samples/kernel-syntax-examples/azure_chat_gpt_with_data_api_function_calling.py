@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.utils import (
     get_tool_call_object,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -59,7 +60,7 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
-# kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
+kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 
 # enabling or disabling function calling is done by setting the tool_choice parameter for the completion.
 # when the tool_choice parameter is set to "auto" the model will decide which function to use, if any.
@@ -75,8 +76,6 @@ prompt_template_config = PromptTemplateConfig(
         InputVariable(name="user_input", description="The user input", is_required=True),
     ],
 )
-
-# prompt_template_config.add_execution_settings(settings=req_settings)
 
 history = ChatHistory()
 

@@ -346,6 +346,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 else streaming_chat_message_content + content_to_add
             )
         tool_calls_dict = update_storage["tool_call_ids_by_index"]
+        print(tool_calls_dict)
         tools_to_add = [tool_call_list[0] for tool_call_list in tool_calls_dict.values()]
         streaming_chat_message_content.tool_calls = tools_to_add  # Directly assign the list
         streaming_chat_message_content.role = ChatRole.ASSISTANT
@@ -374,6 +375,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Processes the tool calls in the result and return it as part of the chat history."""
         for tool_call in result.tool_calls:
             func = kernel.func(**tool_call.function.split_name_dict())
+            print(tool_call.function)
             arguments = tool_call.function.to_kernel_arguments()
             logger.info(f"Calling function with args: {arguments}")
             func_result = await kernel.invoke(func, arguments)

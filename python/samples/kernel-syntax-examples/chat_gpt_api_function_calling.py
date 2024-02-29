@@ -33,7 +33,7 @@ api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_service(
     sk_oai.OpenAIChatCompletion(
         service_id="chat",
-        ai_model_id="gpt-3.5-1106-preview",
+        ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
     ),
 )
@@ -102,7 +102,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = False
+    stream = True
     if stream:
         response = kernel.invoke_stream(
             chat_function,
