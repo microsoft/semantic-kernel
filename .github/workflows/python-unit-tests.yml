@@ -57,7 +57,7 @@ jobs:
           poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
       - name: Test with pytest
         run: |
-          cd python && poetry run pytest --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee pytest-coverage.txt
+          cd python && poetry run pytest --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered --disable-warnings ./tests/unit | tee pytest-coverage.txt
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
