@@ -2,8 +2,6 @@
 import sys
 from typing import AsyncIterable, Iterable, Optional
 
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
-
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -12,7 +10,7 @@ else:
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.exceptions import FunctionInitializationError
+from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function

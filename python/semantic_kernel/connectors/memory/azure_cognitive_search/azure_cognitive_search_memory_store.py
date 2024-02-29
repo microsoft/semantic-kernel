@@ -9,12 +9,13 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    HnswVectorSearchAlgorithmConfiguration,
+    HnswAlgorithmConfiguration,
+    HnswParameters,
     SearchIndex,
     SearchResourceEncryptionKey,
     VectorSearch,
 )
-from azure.search.documents.models import Vector
+from azure.search.documents.models import VectorQuery
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
@@ -75,7 +76,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
+        vector_config: Optional[HnswAlgorithmConfiguration] = None,
         search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
@@ -93,23 +94,19 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         if vector_config:
-            vector_search = VectorSearch(algorithm_configurations=[vector_config])
+            vector_search = VectorSearch(algorithms=[vector_config])
         else:
             vector_search = VectorSearch(
-                algorithm_configurations=[
-                    HnswVectorSearchAlgorithmConfiguration(
+                algorithms=[
+                    HnswAlgorithmConfiguration(
                         name="az-vector-config",
                         kind="hnsw",
-                        hnsw_parameters={
-                            # Number of bi-directional links, 4 to 10
-                            "m": 4,
-                            # Size of nearest neighbors list during indexing, 100 to 1000
-                            "efConstruction": 400,
-                            # Size of nearest neighbors list during search, 100 to 1000
-                            "efSearch": 500,
-                            # cosine, dotProduct, euclidean
-                            "metric": "cosine",
-                        },
+                        parameters=HnswParameters(
+                            m=4,  # Number of bi-directional links, typically between 4 and 10
+                            ef_construction=400,  # Size during indexing, range: 100-1000
+                            ef_search=500,  # Size during search, range: 100-1000
+                            metric="cosine",  # Can be "cosine", "dotProduct", or "euclidean"
+                        ),
                     )
                 ]
             )
@@ -378,7 +375,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
 
-        vector = Vector(value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING)
+        vector = VectorQuery(value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING)
 
         search_results = await search_client.search(
             search_text="*",

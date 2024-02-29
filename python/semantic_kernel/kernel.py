@@ -89,9 +89,9 @@ class Kernel(KernelBaseModel):
     function_invoking_handlers: Dict[
         int, Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
     ] = Field(default_factory=dict)
-    function_invoked_handlers: Dict[
-        int, Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]
-    ] = Field(default_factory=dict)
+    function_invoked_handlers: Dict[int, Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]] = (
+        Field(default_factory=dict)
+    )
 
     def __init__(
         self,
