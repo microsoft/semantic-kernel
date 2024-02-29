@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
@@ -15,7 +14,7 @@ import javax.annotation.Nullable;
  * The preferred way to supply a context is to use the discrete "with" methods in
  * {@link FunctionInvocation}.
  */
-public class InvocationContext implements Buildable {
+public class InvocationContext {
 
     @Nullable
     private final UnmodifiableKernelHooks hooks;

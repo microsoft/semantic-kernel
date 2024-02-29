@@ -2,9 +2,9 @@
 package com.microsoft.semantickernel.builders;
 
 /**
- * Interface for all builders that create Buildable objects.
+ * Interface for all builders.
  *
- * @param <T> the type of {@code Buildable} to build.
+ * @param <T> the type to build.
  */
 public interface SemanticKernelBuilder<T> {
 

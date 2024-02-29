@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -10,7 +9,7 @@ import reactor.core.publisher.Mono;
 /**
  * Represents a prompt template that can be rendered to a string.
  */
-public interface PromptTemplate extends Buildable {
+public interface PromptTemplate {
 
     /**
      * Renders the template using the supplied {@code Kernel}, {@code KernelFunctionArguments}, and

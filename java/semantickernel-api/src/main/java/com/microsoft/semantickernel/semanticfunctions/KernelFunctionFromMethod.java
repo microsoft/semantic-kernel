@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.semanticfunctions;
 import static com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter.NO_DEFAULT_VALUE;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
@@ -44,7 +43,7 @@ import reactor.core.scheduler.Schedulers;
  *
  * @param <T> the return type of the function
  */
-public class KernelFunctionFromMethod<T> extends KernelFunction<T> implements Buildable {
+public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(KernelFunctionFromMethod.class);
 

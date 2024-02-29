@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
@@ -18,7 +17,7 @@ import reactor.util.annotation.NonNull;
 /**
  * Arguments to a kernel function.
  */
-public class KernelFunctionArguments implements Buildable, Map<String, ContextVariable<?>> {
+public class KernelFunctionArguments implements Map<String, ContextVariable<?>> {
 
     /**
      * Default key for the main input.

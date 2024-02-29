@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -31,7 +30,7 @@ import javax.annotation.Nullable;
  * An instance of {@code Kernel} is passed through to every function invocation and service call
  * throughout the system, providing to each the ability to access shared state and services.
  */
-public class Kernel implements Buildable {
+public class Kernel {
 
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;

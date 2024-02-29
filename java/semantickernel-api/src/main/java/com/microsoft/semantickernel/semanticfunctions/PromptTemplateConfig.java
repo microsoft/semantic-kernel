@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
@@ -22,7 +21,7 @@ import javax.annotation.Nullable;
  * Metadata for a prompt template.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PromptTemplateConfig implements Buildable {
+public class PromptTemplateConfig {
 
     /**
      * The current prompt template config schema version.
