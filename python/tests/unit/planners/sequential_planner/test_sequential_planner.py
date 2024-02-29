@@ -5,19 +5,15 @@ from unittest.mock import Mock
 import pytest
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import PlannerException, PlannerInvalidGoalError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
-from semantic_kernel.planners.planning_exception import PlanningException
-from semantic_kernel.planners.sequential_planner.sequential_planner import (
-    SequentialPlanner,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner import SequentialPlanner
 
 
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
@@ -114,7 +110,7 @@ async def test_empty_goal_throws():
     planner = SequentialPlanner(kernel, service_id="test")
 
     # Act & Assert
-    with pytest.raises(PlanningException):
+    with pytest.raises(PlannerInvalidGoalError):
         await planner.create_plan("")
 
 
@@ -148,5 +144,5 @@ async def test_invalid_xml_throws():
     planner = SequentialPlanner(kernel, service_id="test")
 
     # Act & Assert
-    with pytest.raises(PlanningException):
+    with pytest.raises(PlannerException):
         await planner.create_plan("goal")

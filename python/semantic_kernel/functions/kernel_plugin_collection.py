@@ -3,6 +3,11 @@
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, TypeVar, Union
 
+from semantic_kernel.exceptions import (
+    FunctionInvalidNameError,
+    PluginInitializationError,
+    PluginInvalidNameError,
+)
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -48,7 +53,7 @@ class KernelPluginCollection(KernelBaseModel):
             # Process an iterable of plugins
             plugins = self._process_plugins_iterable(plugins)
         else:
-            raise ValueError("Invalid type for plugins")
+            raise PluginInitializationError("Invalid type for plugins")
 
         super().__init__(plugins=plugins)
 
@@ -57,9 +62,9 @@ class KernelPluginCollection(KernelBaseModel):
         plugins_dict = {}
         for plugin in plugins_input:
             if plugin is None:
-                raise ValueError("Plugin and plugin.name must not be None")
+                raise PluginInvalidNameError("Plugin and plugin.name must not be None")
             if plugin.name in plugins_dict:
-                raise ValueError(f"Duplicate plugin name detected: {plugin.name}")
+                raise PluginInvalidNameError(f"Duplicate plugin name detected: {plugin.name}")
             plugins_dict[plugin.name] = plugin
         return plugins_dict
 
@@ -89,7 +94,7 @@ class KernelPluginCollection(KernelBaseModel):
             ValueError: If the function or plugin_name is None or invalid.
         """
         if not functions or not plugin_name:
-            raise ValueError("Functions or plugin_name must not be None or empty")
+            raise PluginInitializationError("Functions or plugin_name must not be None or empty")
 
         plugin = KernelPlugin.from_functions(plugin_name=plugin_name, functions=functions)
         self.plugins[plugin_name] = plugin
@@ -107,7 +112,7 @@ class KernelPluginCollection(KernelBaseModel):
             ValueError: if the function already exists in the plugin.
         """
         if not functions or not plugin_name:
-            raise ValueError("Functions and plugin_name must not be None or empty")
+            raise PluginInitializationError("Functions and plugin_name must not be None or empty")
 
         if plugin_name not in self.plugins:
             self.plugins[plugin_name] = KernelPlugin(name=plugin_name, functions=functions)
@@ -115,7 +120,9 @@ class KernelPluginCollection(KernelBaseModel):
 
         for func in functions:
             if func.name in self.plugins[plugin_name].functions:
-                raise ValueError(f"Function with name '{func.name}' already exists in plugin '{plugin_name}'")
+                raise FunctionInvalidNameError(
+                    f"Function with name '{func.name}' already exists in plugin '{plugin_name}'"
+                )
             self.plugins[plugin_name].functions[func.name] = func
 
     def add_list_of_plugins(self, plugins: List["KernelPlugin"]) -> None:
@@ -130,7 +137,7 @@ class KernelPluginCollection(KernelBaseModel):
         """
 
         if plugins is None:
-            raise ValueError("Plugins must not be None")
+            raise PluginInitializationError("Plugins must not be None")
         for plugin in plugins:
             self.add(plugin)
 

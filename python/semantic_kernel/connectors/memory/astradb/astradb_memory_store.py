@@ -12,6 +12,7 @@ from semantic_kernel.connectors.memory.astradb.utils import (
     build_payload,
     parse_payload,
 )
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -54,7 +55,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         self._session = session
 
         if self._embedding_dim > MAX_DIMENSIONALITY:
-            raise ValueError(
+            raise ServiceInitializationError(
                 f"Dimensionality of {self._embedding_dim} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )

@@ -1,13 +1,18 @@
-# TODO: replace Exception with KernelException once those are more pythonic
-class BlockError(Exception):
+# Copyright (c) Microsoft. All rights reserved.
+
+
+from semantic_kernel.exceptions.kernel_exceptions import KernelException
+
+
+class BlockException(KernelException):
     pass
 
 
-class BlockSyntaxError(BlockError):
+class BlockSyntaxError(BlockException):
     pass
 
 
-class BlockRenderError(BlockError):
+class BlockRenderException(BlockException):
     pass
 
 
@@ -54,13 +59,33 @@ class CodeBlockSyntaxError(BlockSyntaxError):
     pass
 
 
-class CodeBlockTokenError(BlockError):
+class CodeBlockTokenError(BlockException):
     pass
 
 
-class CodeBlockRenderError(BlockRenderError):
+class CodeBlockRenderException(BlockRenderException):
     pass
 
 
 class TemplateSyntaxError(BlockSyntaxError):
     pass
+
+
+class TemplateRenderException(BlockRenderException):
+    pass
+
+
+__all__ = [
+    "BlockException",
+    "BlockSyntaxError",
+    "BlockRenderException",
+    "VarBlockSyntaxError",
+    "ValBlockSyntaxError",
+    "NamedArgBlockSyntaxError",
+    "FunctionIdBlockSyntaxError",
+    "CodeBlockSyntaxError",
+    "CodeBlockTokenError",
+    "CodeBlockRenderException",
+    "TemplateSyntaxError",
+    "TemplateRenderException",
+]

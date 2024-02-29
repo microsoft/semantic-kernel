@@ -5,8 +5,8 @@ from xml.etree.ElementTree import Element
 from defusedxml import ElementTree
 from openai.types.chat import ChatCompletion
 
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
 
