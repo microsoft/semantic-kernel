@@ -56,13 +56,14 @@ jobs:
           poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
       - name: Test with pytest
         run: |
-          cd python && poetry run pytest -q --show-capture=no --disable-warnings --tb=no --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered report-only-changed-files: true ./tests/unit | tee pytest-coverage.txt
+          cd python && poetry run pytest -q --show-capture=no --disable-warnings --tb=no --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee pytest-coverage.txt
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
           pytest-coverage-path: python/pytest-coverage.txt
           junitxml-path: python/pytest.xml
+          report-only-changed-files: true
       - name: Check the output coverage
         run: |
           echo "Coverage Percantage - ${{ steps.coverageComment.outputs.coverage }}"
