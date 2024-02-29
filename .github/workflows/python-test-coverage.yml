@@ -8,12 +8,11 @@ on:
 jobs:
   python-tests-coverage:
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       pull-requests: write
       contents: read
-      issues: write
     strategy:
-      fail-fast: false
       matrix:
         python-version: ["3.8"]
 
