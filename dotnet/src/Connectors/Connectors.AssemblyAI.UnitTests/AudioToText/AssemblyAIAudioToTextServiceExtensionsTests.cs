@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -16,6 +17,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
     private const string ApiKey = "Test123";
     private const string Endpoint = "http://localhost:1234/";
     private const string ServiceId = "AssemblyAI";
+    private static readonly HttpClient s_httpClient = new HttpClient();
 
     [Fact]
     public void AddServiceToKernelBuilder()
@@ -25,7 +27,8 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
             .AddAssemblyAIAudioToText(
                 apiKey: ApiKey,
                 endpoint: Endpoint,
-                serviceId: ServiceId
+                serviceId: ServiceId,
+                httpClient: s_httpClient
             )
             .Build();
 
@@ -41,6 +44,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         var aaiService = (AssemblyAIAudioToTextService)service;
         Assert.Equal(ApiKey, aaiService.ApiKey);
         Assert.NotNull(aaiService.HttpClient);
+        Assert.Equal(s_httpClient, aaiService.HttpClient);
         Assert.NotNull(aaiService.HttpClient.BaseAddress);
         Assert.Equal(Endpoint, aaiService.HttpClient.BaseAddress!.ToString());
     }
