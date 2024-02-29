@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from importlib import metadata
 import logging
+from importlib import metadata
 from typing import Any, List, Mapping, Optional, Tuple
 
 from motor import MotorCommandCursor, core, motor_asyncio
