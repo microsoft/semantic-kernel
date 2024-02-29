@@ -258,7 +258,7 @@ public static class OpenApiKernelExtensions
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
-    private static KernelFunction CreateRestApiFunction(
+    internal static KernelFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
@@ -356,8 +356,11 @@ public static class OpenApiKernelExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (ArgumentException)
         {
+            // The exception indicates that the operationId is not a valid function name.  
+            // To comply with the SK Function name requirements, it needs to be converted or sanitized.  
+            // Therefore, it should not be re-thrown, but rather swallowed to allow the conversion below.  
         }
 
         // Tokenize operation id on forward and back slashes

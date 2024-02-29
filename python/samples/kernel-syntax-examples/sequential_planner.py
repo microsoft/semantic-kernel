@@ -2,33 +2,37 @@
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.core_skills import FileIOSkill, MathSkill, TextSkill, TimeSkill
-from semantic_kernel.planning import SequentialPlanner
+from semantic_kernel.core_plugins import (
+    MathPlugin,
+    TextPlugin,
+    TimePlugin,
+)
+from semantic_kernel.planners import SequentialPlanner
 
 
 async def main():
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
 
-    kernel.add_chat_service(
-        "gpt-3.5", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
+    service_id = "gpt-3.5"
+    kernel.add_service(
+        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
     )
-    kernel.import_skill(MathSkill(), "math")
-    kernel.import_skill(FileIOSkill(), "fileIO")
-    kernel.import_skill(TimeSkill(), "time")
-    kernel.import_skill(TextSkill(), "text")
+    kernel.import_plugin_from_object(MathPlugin(), "math")
+    kernel.import_plugin_from_object(TimePlugin(), "time")
+    kernel.import_plugin_from_object(TextPlugin(), "text")
 
     # create an instance of sequential planner.
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(service_id=service_id, kernel=kernel)
 
     # the ask for which the sequential planner is going to find a relevant function.
     ask = "What day of the week is today, all uppercase?"
 
     # ask the sequential planner to identify a suitable function from the list of functions available.
-    plan = await planner.create_plan_async(goal=ask)
+    plan = await planner.create_plan(goal=ask)
 
     # ask the sequential planner to execute the identified function.
-    result = await plan.invoke_async()
+    result = await plan.invoke()
 
     for step in plan._steps:
         print(step.description, ":", step._state.__dict__)

@@ -3,6 +3,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 using Reliability;
 
 public sealed class TestConfiguration
@@ -39,6 +40,8 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
+    public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
+    public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -119,6 +122,7 @@ public sealed class TestConfiguration
     {
         public string ApiKey { get; set; }
         public string ModelId { get; set; }
+        public string EmbeddingModelId { get; set; }
     }
 
     public class PineconeConfig
@@ -173,6 +177,11 @@ public sealed class TestConfiguration
     public class MongoDBConfig
     {
         public string ConnectionString { get; set; }
+    }
+
+    public class ChatGPTRetrievalPluginConfig
+    {
+        public string Token { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.

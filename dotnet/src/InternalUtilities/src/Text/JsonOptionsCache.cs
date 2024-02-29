@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Text;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Text;
 /// Once the System.Text.Json package is upgraded to 8.0+, this will no longer be
 /// necessary and the actual default can be used.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 internal static class JsonOptionsCache
 {
     /// <summary>Singleton for <see cref="ReadOnlyMemoryConverter"/>.</summary>

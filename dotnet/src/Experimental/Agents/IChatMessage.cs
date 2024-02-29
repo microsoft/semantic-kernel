@@ -1,8 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
+
+/// <summary>
+/// $$$
+/// </summary>
+public enum ChatMessageType
+{
+    /// <summary>
+    /// $$$
+    /// </summary>
+    Text,
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    Image,
+}
 
 /// <summary>
 /// Represents a message that is part of an agent thread.
@@ -20,6 +37,11 @@ public interface IChatMessage
     string? AgentId { get; }
 
     /// <summary>
+    /// $$$
+    /// </summary>
+    ChatMessageType ContentType { get; }
+
+    /// <summary>
     /// The chat message content.
     /// </summary>
     string Content { get; }
@@ -30,7 +52,43 @@ public interface IChatMessage
     string Role { get; }
 
     /// <summary>
+    /// Annotations associated with the message.
+    /// </summary>
+    IList<IAnnotation> Annotations { get; }
+
+    /// <summary>
     /// Properties associated with the message.
     /// </summary>
     ReadOnlyDictionary<string, object> Properties { get; }
+
+    /// <summary>
+    /// Defines message annotation.
+    /// </summary>
+    interface IAnnotation
+    {
+        /// <summary>
+        /// The file identifier.
+        /// </summary>
+        string FileId { get; }
+
+        /// <summary>
+        /// The text in the message content that needs to be replaced.
+        /// </summary>
+        string Label { get; }
+
+        /// <summary>
+        /// The citation.
+        /// </summary>
+        string? Quote { get; }
+
+        /// <summary>
+        /// Start index of the citation.
+        /// </summary>
+        int StartIndex { get; }
+
+        /// <summary>
+        /// End index of the citation.
+        /// </summary>
+        int EndIndex { get; }
+    }
 }

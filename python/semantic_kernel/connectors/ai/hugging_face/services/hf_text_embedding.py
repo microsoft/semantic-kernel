@@ -8,7 +8,6 @@ import torch
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
@@ -16,15 +15,15 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
+class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     device: str
-    generator: sentence_transformers.SentenceTransformer
+    generator: Any
 
     def __init__(
         self,
         ai_model_id: str,
         device: Optional[int] = -1,
-        log: Optional[Any] = None,
+        service_id: Optional[str] = None,
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextEmbedding class.
@@ -37,22 +36,15 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase, AIServiceClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
-        resolved_device = (
-            f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
-        )
+        resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             ai_model_id=ai_model_id,
+            service_id=service_id,
             device=resolved_device,
-            generator=sentence_transformers.SentenceTransformer(
-                model_name_or_path=ai_model_id, device=resolved_device
-            ),
+            generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
-    async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
+    async def generate_embeddings(self, texts: List[str]) -> ndarray:
         """
         Generates embeddings for a list of texts.
 

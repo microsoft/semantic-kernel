@@ -22,12 +22,14 @@ class KernelException(Exception):
         InvalidServiceConfiguration = 5
         # Service not found.
         ServiceNotFound = 6
-        # Skill collection not set.
-        SkillCollectionNotSet = 7
+        # Plugin collection not set.
+        PluginCollectionNotSet = 7
         # Represents an error that occurs when invoking a function.
         FunctionInvokeError = 8
         # Ambiguous implementation.
         AmbiguousImplementation = 9
+        # Invalid plugin name
+        InvalidPluginName = 10
 
     # The error code.
     _error_code: ErrorCodes
@@ -56,3 +58,13 @@ class KernelException(Exception):
             ErrorCodes -- The error code.
         """
         return self._error_code
+
+
+# TODO: replace exception classes with KernelException
+class KernelFunctionException(Exception):
+    pass
+
+
+class KernelFunctionInitializationException(Exception):
+    def __init__(self, message: str):
+        super().__init__("KernelFunction failed to initialize: " + message)

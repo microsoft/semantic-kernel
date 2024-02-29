@@ -27,14 +27,6 @@ internal sealed class ThreadMessageModel
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Always "thread.message"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "thread.message";
-#pragma warning restore CA1720 // Identifier contains type name
-
-    /// <summary>
     /// Unix timestamp (in seconds) for when the message was created.
     /// </summary>
     [JsonPropertyName("created_at")]
@@ -47,7 +39,7 @@ internal sealed class ThreadMessageModel
     public string ThreadId { get; set; } = string.Empty;
 
     /// <summary>
-    /// The entity that produced the message. One of "user" or "agent".
+    /// The entity that produced the message. One of "user" or "assistant".
     /// </summary>
     [JsonPropertyName("role")]
     public string Role { get; set; } = string.Empty;
@@ -65,10 +57,10 @@ internal sealed class ThreadMessageModel
     public List<string> FileIds { get; set; } = new List<string>();
 
     /// <summary>
-    /// If applicable, the ID of the agent that authored this message.
+    /// If applicable, the ID of the assistant that authored this message.
     /// </summary>
-    [JsonPropertyName("agent_id")]
-    public string AgentId { get; set; } = string.Empty;
+    [JsonPropertyName("assistant_id")]
+    public string AssistantId { get; set; } = string.Empty;
 
     /// <summary>
     /// If applicable, the ID of the run associated with the authoring of this message.
@@ -99,8 +91,26 @@ internal sealed class ThreadMessageModel
         /// <summary>
         /// Text context.
         /// </summary>
+        [JsonPropertyName("image_file")]
+        public ImageContentModel? Image { get; set; }
+
+        /// <summary>
+        /// Text context.
+        /// </summary>
         [JsonPropertyName("text")]
         public TextContentModel? Text { get; set; }
+    }
+
+    /// <summary>
+    /// Text content.
+    /// </summary>
+    public sealed class ImageContentModel
+    {
+        /// <summary>
+        /// The image file identifier.
+        /// </summary>
+        [JsonPropertyName("file_id")]
+        public string FileId { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -118,6 +128,69 @@ internal sealed class ThreadMessageModel
         /// Any annotations on the text.
         /// </summary>
         [JsonPropertyName("annotations")]
-        public List<object> Annotations { get; set; } = new List<object>();
+        public List<TextAnnotationModel> Annotations { get; set; } = new List<TextAnnotationModel>();
+    }
+
+    public sealed class TextAnnotationModel
+    {
+        /// <summary>
+        /// Type of content.
+        /// </summary>
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The text of the citation-label text in the message content that can be replaced/reformatted.
+        /// </summary>
+        [JsonPropertyName("text")]
+        public string Text { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Annotation when type == "file_citation"
+        /// </summary>
+        [JsonPropertyName("file_citation")]
+        public TextFileCitationModel? FileCitation { get; set; }
+
+        /// <summary>
+        /// Annotation when type == "file_path"
+        /// </summary>
+        [JsonPropertyName("file_path")]
+        public TextFilePathModel? FilePath { get; set; }
+
+        /// <summary>
+        /// Start index of the citation.
+        /// </summary>
+        [JsonPropertyName("start_index")]
+        public int StartIndex { get; set; }
+
+        /// <summary>
+        /// End index of the citation.
+        /// </summary>
+        [JsonPropertyName("end_index")]
+        public int EndIndex { get; set; }
+    }
+
+    public sealed class TextFileCitationModel
+    {
+        /// <summary>
+        /// The file identifier.
+        /// </summary>
+        [JsonPropertyName("file_id")]
+        public string FileId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The citation.
+        /// </summary>
+        [JsonPropertyName("quote")]
+        public string Quote { get; set; } = string.Empty;
+    }
+
+    public sealed class TextFilePathModel
+    {
+        /// <summary>
+        /// The file identifier.
+        /// </summary>
+        [JsonPropertyName("file_id")]
+        public string FileId { get; set; } = string.Empty;
     }
 }
