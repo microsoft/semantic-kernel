@@ -1,17 +1,16 @@
 name: Python Test Coverage
 
 on: 
-  pull_request_target:
-    branches:
-      - "main"
+  pull_request:
     paths:
       - "python/**"
 
+permissions:
+  pull-requests: write
+
 jobs:
-  python-unit-tests-coverage:
+  python-tests-coverage:
     runs-on: ${{ matrix.os }}
-    permissions:
-      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -40,7 +39,7 @@ jobs:
         with:
           pytest-coverage-path: python/pytest-coverage.txt
           junitxml-path: python/pytest.xml
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           report-only-changed-files: true
       - name: Check the output coverage
         run: |
