@@ -1,29 +1,81 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Configuration settings for prompt execution.
  */
 public class PromptExecutionSettings {
 
+    /**
+     * The default for {@link #getServiceId()} if a 
+     * {@link Builder#withServiceId(String) service id} is not provided.
+     * Defaults to {@code "default"}
+     */
     public static final String DEFAULT_SERVICE_ID = "default";
+
+    /**
+     * The default for {@link #getMaxTokens()} if 
+     * {@link Builder#withMaxTokens(int) max_tokens} is not provided.
+     * Defaults to {@code 256}
+     */
     public static final Integer DEFAULT_MAX_TOKENS = 256;
+
+    /**
+     * The default for {@link #getTemperature()} if 
+     * {@link Builder#withTemperature(double) temperature} is not provided.
+     * Defaults to {@code 1.0}
+     */
     public static final Double DEFAULT_TEMPERATURE = 1.0;
+
+    /**
+     * The default for {@link #getTopP()} if 
+     * {@link Builder#withTopP(double) top_p} is not provided.
+     * Defaults to {@code 1.0}
+     */
     public static final Double DEFAULT_TOP_P = 1.0;
+
+    /**
+     * The default for {@link #getPresencePenalty()} if 
+     * {@link Builder#withPresencePenalty(double) presence_penalty} is not provided.
+     * Defaults to {@code 0.0}
+     */
     public static final Double DEFAULT_PRESENCE_PENALTY = 0.0;
+
+    /**
+     * The default for {@link #getFrequencyPenalty()} if 
+     * {@link Builder#withMaxTokens(doulbe) frequency_penalty} is not provided.
+     * Defaults to {@code 0.0}
+     */
     public static final Double DEFAULT_FREQUENCY_PENALTY = 0.0;
+
+    /**
+     * The default for {@link #getBestOf()} if 
+     * {@link Builder#withBestOf(int) best_of} is not provided.
+     * Defaults to {@code 1}
+     */
     public static final Integer DEFAULT_BEST_OF = 1;
+
+    /**
+     * The default for {@link #getResultsPerPrompt()} if 
+     * {@link Builder#withResultsPerPrompt(int) results per prompt (n)} is not provided.
+     * Defaults to {@code 1}
+     */
     public static final Integer DEFAULT_RESULTS_PER_PROMPT = 1;
 
+    // 
+    // Keys used as both @JsonProperty names and keys to the Builder's value map.
+    //
     private static final String SERVICE_ID = "service_id";
     private static final String MODEL_ID = "model_id";
     private static final String TEMPERATURE = "temperature";
