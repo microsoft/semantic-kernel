@@ -5,17 +5,15 @@ on:
     paths:
       - "python/**"
 
-permissions:
-  pull-requests: write
-
 jobs:
   python-tests-coverage:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.8"]
-        os: [ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +37,7 @@ jobs:
         with:
           pytest-coverage-path: python/pytest-coverage.txt
           junitxml-path: python/pytest.xml
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
           report-only-changed-files: true
       - name: Check the output coverage
         run: |
