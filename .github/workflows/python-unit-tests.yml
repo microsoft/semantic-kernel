@@ -35,6 +35,8 @@ jobs:
 
   python-unit-tests-coverage:
     runs-on: ${{ matrix.os }}
+    permissions:
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
