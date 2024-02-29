@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
 from pydantic import Field, field_validator, model_validator
 
+from semantic_kernel.exceptions import CodeBlockRenderException, CodeBlockTokenError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
-from semantic_kernel.template_engine.blocks.block_errors import CodeBlockRenderError, CodeBlockTokenError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
@@ -115,14 +115,12 @@ these will be ignored."
         return self.tokens[0].render(kernel, arguments)
 
     async def _render_function_call(self, kernel: "Kernel", arguments: "KernelArguments"):
-        if not kernel.plugins:
-            raise CodeBlockRenderError("Plugin collection not set in kernel")
         function_block = self.tokens[0]
         function = self._get_function_from_plugin_collection(kernel.plugins, function_block)
         if not function:
             error_msg = f"Function `{function_block.content}` not found"
             logger.error(error_msg)
-            raise CodeBlockRenderError(error_msg)
+            raise CodeBlockRenderException(error_msg)
 
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:
@@ -130,7 +128,7 @@ these will be ignored."
 
         result = await function.invoke(kernel, arguments_clone)
         if exc := result.metadata.get("error", None):
-            raise CodeBlockRenderError(f"Error rendering function: {function.metadata} with error: {exc}") from exc
+            raise CodeBlockRenderException(f"Error rendering function: {function.metadata} with error: {exc}") from exc
 
         return str(result) if result else ""
 
@@ -141,7 +139,7 @@ these will be ignored."
         function_metadata: KernelFunctionMetadata,
     ) -> "KernelArguments":
         if not function_metadata.parameters:
-            raise CodeBlockRenderError(
+            raise CodeBlockRenderException(
                 f"Function {function_metadata.plugin_name}.{function_metadata.name} does not take any arguments "
                 f"but it is being called in the template with {len(self.tokens) - 1} arguments."
             )

@@ -1,15 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
-
-from openai.types.chat import ChatCompletion
+from typing import Any, Dict, List, Optional, Union
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.function_result import FunctionResult
@@ -49,9 +46,8 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
                         **({"enum": param.enum} if hasattr(param, "enum") else {}),  # Added support for enum
                     }
                     for param in func_metadata.parameters
-                    if param.expose
                 },
-                "required": [p.name for p in func_metadata.parameters if p.required and p.expose],
+                "required": [p.name for p in func_metadata.parameters if p.required],
             },
         },
     }
@@ -79,7 +75,6 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
             "properties": {
                 param.name: {"description": param.description, "type": param.type_}
                 for param in func_metadata.parameters
-                if param.expose
             },
             "required": [p.name for p in func_metadata.parameters if p.required],
         },
@@ -312,49 +307,3 @@ async def chat_completion_with_tool_call(
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,
     )
-
-
-def _parse_message(
-    message: ChatCompletion, with_data: bool = False
-) -> Tuple[Optional[str], Optional[str], Optional[FunctionCall]]:
-    """
-    Parses the message.
-
-    Arguments:
-        message {OpenAIObject} -- The message to parse.
-
-    Returns:
-        Tuple[Optional[str], Optional[Dict]] -- The parsed message.
-    """
-    content = message.content if hasattr(message, "content") else None
-    tool_calls = message.tool_calls if hasattr(message, "tool_calls") else None
-    function_calls = (
-        [FunctionCall(id=call.id, name=call.function.name, arguments=call.function.arguments) for call in tool_calls]
-        if tool_calls
-        else None
-    )
-
-    # todo: support multiple function calls
-    function_call = function_calls[0] if function_calls else None
-
-    if not with_data:
-        return (content, None, function_call)
-    else:
-        tool_content = None
-        if message.model_extra and "context" in message.model_extra:
-            if "messages" in message.model_extra["context"]:
-                for m in message.model_extra["context"]["messages"]:
-                    if m.get("role") == "tool":
-                        tool_content = m.get("content", None)
-                        break
-            else:
-                tool_content = json.dumps(message.model_extra["context"])
-        return (content, tool_content, function_call)
-
-
-def _parse_choices(choice) -> Tuple[str, int]:
-    message = ""
-    if choice.delta.content:
-        message += choice.delta.content
-
-    return message, choice.index

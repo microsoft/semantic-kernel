@@ -8,13 +8,11 @@ from openai.resources.completions import AsyncCompletions
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
-    AzureTextCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
+from semantic_kernel.exceptions import ServiceInitializationError
 
 
 def test_azure_text_completion_init() -> None:
@@ -85,7 +83,7 @@ def test_azure_text_completion_init_with_empty_api_key() -> None:
     # api_key = "test_api_key"
     api_version = "2023-03-15-preview"
 
-    with pytest.raises(AIException, match="api_key"):
+    with pytest.raises(ServiceInitializationError, match="api_key"):
         AzureTextCompletion(
             deployment_name=deployment_name,
             endpoint=endpoint,

@@ -17,6 +17,7 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     document_to_memory_record,
     memory_record_to_mongo_document,
 )
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.settings import mongodb_atlas_settings_from_dot_env
@@ -211,7 +212,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             None
         """
         if not await self.does_collection_exist(collection_name):
-            raise Exception(f"collection {collection_name} not found")
+            raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
         await self.database[collection_name].delete_one({MONGODB_FIELD_ID: key})
 
     async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
@@ -225,7 +226,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             None
         """
         if not await self.does_collection_exist(collection_name):
-            raise Exception(f"collection {collection_name} not found")
+            raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
         deletes: List[DeleteOne] = [DeleteOne({MONGODB_FIELD_ID: key}) for key in keys]
         bulk_write_result = await self.database[collection_name].bulk_write(deletes, ordered=False)
         logger.debug("%s entries deleted", bulk_write_result.deleted_count)
