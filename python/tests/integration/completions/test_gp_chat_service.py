@@ -40,7 +40,9 @@ async def test_gp_chat_service_with_plugins(setup_tldr_function_for_oai_models, 
     prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings=exec_settings)
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    tldr_function = kernel.create_function_from_prompt(
+        function_name="tldr", plugin_name="plugin", prompt_template_config=prompt_template_config
+    )
 
     arguments = KernelArguments(input=text_to_summarize)
 

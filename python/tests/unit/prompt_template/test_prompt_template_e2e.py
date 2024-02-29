@@ -6,11 +6,11 @@ from typing import List, Optional, Tuple
 from pytest import mark, raises
 
 from semantic_kernel import Kernel
+from semantic_kernel.exceptions import TemplateSyntaxError
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.template_engine.blocks.block_errors import TemplateSyntaxError
 
 
 def _get_template_language_tests() -> List[Tuple[str, str]]:
@@ -84,7 +84,7 @@ class TestPromptTemplateEngine:
         # Arrange
         template = "== {{my.check123 $call}} =="
         kernel = Kernel()
-        kernel.import_plugin(MyPlugin(), "my")
+        kernel.import_plugin_from_object(MyPlugin(), "my")
 
         arguments = KernelArguments(call="123")
         # Act
@@ -100,7 +100,7 @@ class TestPromptTemplateEngine:
         # Arrange
         template = "== {{my.check123 '234'}} =="
         kernel = Kernel()
-        kernel.import_plugin(MyPlugin(), "my")
+        kernel.import_plugin_from_object(MyPlugin(), "my")
 
         # Act
         result = await KernelPromptTemplate(
@@ -115,7 +115,7 @@ class TestPromptTemplateEngine:
         # Arrange
         template = "== {{my.check123 'a\\'b'}} =="
         kernel = Kernel()
-        kernel.import_plugin(MyPlugin(), "my")
+        kernel.import_plugin_from_object(MyPlugin(), "my")
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
@@ -129,7 +129,7 @@ class TestPromptTemplateEngine:
         # Arrange
         template = '== {{my.check123 "a\\"b"}} =='
         kernel = Kernel()
-        kernel.import_plugin(MyPlugin(), "my")
+        kernel.import_plugin_from_object(MyPlugin(), "my")
 
         # Act
         result = await KernelPromptTemplate(
@@ -144,7 +144,7 @@ class TestPromptTemplateEngine:
     async def test_it_handle_edge_cases(self, template: str, expected_result: str):
         # Arrange
         kernel = Kernel()
-        kernel.import_plugin(MyPlugin(), "my_plugin")
+        kernel.import_plugin_from_object(MyPlugin(), "my_plugin")
 
         # Act
         if expected_result.startswith("ERROR"):

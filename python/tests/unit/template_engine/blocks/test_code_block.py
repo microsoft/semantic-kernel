@@ -1,15 +1,7 @@
 from pytest import mark, raises
 
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.template_engine.blocks.block_errors import (
-    CodeBlockRenderError,
+from semantic_kernel.exceptions import (
+    CodeBlockRenderException,
     CodeBlockSyntaxError,
     CodeBlockTokenError,
     FunctionIdBlockSyntaxError,
@@ -17,6 +9,12 @@ from semantic_kernel.template_engine.blocks.block_errors import (
     ValBlockSyntaxError,
     VarBlockSyntaxError,
 )
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -46,7 +44,7 @@ class TestCodeBlockRendering:
             content="functionName",
         )
         assert target.tokens[0].type == BlockTypes.FUNCTION_ID
-        with raises(CodeBlockRenderError, match="Plugin collection not set in kernel"):
+        with raises(CodeBlockRenderException, match="Function `functionName` not found"):
             await target.render_code(self.kernel, KernelArguments())
 
     @mark.asyncio
@@ -58,22 +56,18 @@ class TestCodeBlockRendering:
         self.kernel.plugins = KernelPluginCollection()
         dkp = KernelPlugin(name="test", functions=[])
         self.kernel.plugins.add(dkp)
-        with raises(CodeBlockRenderError, match="Function `functionName` not found"):
+        with raises(CodeBlockRenderException, match="Function `functionName` not found"):
             await target.render_code(self.kernel, KernelArguments())
 
     @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self):
+        @kernel_function(name="funcName")
         def invoke():
             raise Exception("error")
 
-        function = KernelFunction(
-            function_name="funcName",
+        function = KernelFunctionFromMethod(
+            method=invoke,
             plugin_name="pluginName",
-            description="",
-            function=invoke,
-            parameters=[],
-            return_parameter=None,
-            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -86,7 +80,7 @@ class TestCodeBlockRendering:
             content="functionName",
         )
 
-        with raises(CodeBlockRenderError):
+        with raises(CodeBlockRenderException):
             await target.render_code(kernel, KernelArguments())
 
     @mark.asyncio
@@ -120,6 +114,7 @@ class TestCodeBlockRendering:
 
         # Define the function to be invoked, which modifies the canary
         # and context variables
+        @kernel_function(name="funcName")
         def invoke(arguments: KernelArguments):
             nonlocal canary
             canary["input"] = arguments["input"]
@@ -131,14 +126,9 @@ class TestCodeBlockRendering:
             arguments["var2"] = "overridden"
 
         # Create an KernelFunction with the invoke function as its delegate
-        function = KernelFunction(
-            function_name="funcName",
+        function = KernelFunctionFromMethod(
+            method=invoke,
             plugin_name="pluginName",
-            description="",
-            function=invoke,
-            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
-            return_parameter=None,
-            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -181,20 +171,16 @@ class TestCodeBlockRendering:
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
-        def invoke(arguments):
+        @kernel_function(name="funcName")
+        def invoke(arguments: "KernelArguments"):
             nonlocal canary
             canary = arguments["varName"]
             return arguments["varName"]
 
         # Create an KernelFunction with the invoke function as its delegate
-        function = KernelFunction(
-            function=invoke,
+        function = KernelFunctionFromMethod(
+            method=invoke,
             plugin_name="pluginName",
-            function_name="funcName",
-            description="",
-            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
-            return_parameter=None,
-            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -227,20 +213,16 @@ class TestCodeBlockRendering:
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
+        @kernel_function(name="funcName")
         def invoke(arguments):
             nonlocal canary
             canary = arguments["input"]
             return arguments["input"]
 
         # Create an KernelFunction with the invoke function as its delegate
-        function = KernelFunction(
-            function=invoke,
+        function = KernelFunctionFromMethod(
+            method=invoke,
             plugin_name="pluginName",
-            function_name="funcName",
-            description="",
-            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
-            return_parameter=None,
-            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -278,24 +260,16 @@ class TestCodeBlockRendering:
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
+        @kernel_function(name="funcName")
         def invoke(input, arg1, arg2):
             nonlocal canary
             canary = f"{input} {arg1} {arg2}"
             return input
 
         # Create an KernelFunction with the invoke function as its delegate
-        function = KernelFunction(
-            function=invoke,
+        function = KernelFunctionFromMethod(
+            method=invoke,
             plugin_name="pluginName",
-            function_name="funcName",
-            description="",
-            parameters=[
-                KernelParameterMetadata(name="input", description="", default_value=None, required=True),
-                KernelParameterMetadata(name="arg1", description="", default_value=None, required=True),
-                KernelParameterMetadata(name="arg2", description="", default_value=None, required=True),
-            ],
-            return_parameter=None,
-            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -325,23 +299,16 @@ class TestCodeBlockRendering:
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
+        @kernel_function(name="funcName")
         def invoke(arg1, arg2):
             nonlocal canary
             canary = f"{arg1} {arg2}"
             return arg1
 
         # Create an KernelFunction with the invoke function as its delegate
-        function = KernelFunction(
-            function=invoke,
+        function = KernelFunctionFromMethod(
+            method=invoke,
             plugin_name="pluginName",
-            function_name="funcName",
-            description="",
-            parameters=[
-                KernelParameterMetadata(name="arg1", description="", default_value=None, required=True),
-                KernelParameterMetadata(name="arg2", description="", default_value=None, required=True),
-            ],
-            return_parameter=None,
-            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -368,18 +335,14 @@ class TestCodeBlockRendering:
             ],
         )
 
+        @kernel_function(name="funcName")
         def invoke():
             return "function without args"
 
         # Create an KernelFunction with the invoke function as its delegate
-        function = KernelFunction(
-            function=invoke,
+        function = KernelFunctionFromMethod(
+            method=invoke,
             plugin_name="test",
-            function_name="funcName",
-            description="",
-            parameters=[],
-            return_parameter=None,
-            is_prompt=False,
         )
 
         dkp = KernelPlugin(name="test", functions=[function])
@@ -389,7 +352,7 @@ class TestCodeBlockRendering:
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
         with raises(
-            CodeBlockRenderError,
+            CodeBlockRenderException,
             match="Function test.funcName does not take any arguments \
 but it is being called in the template with 2 arguments.",
         ):

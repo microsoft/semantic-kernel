@@ -24,7 +24,7 @@ async def test_invoke_plan_constructed_with_function():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin = kernel.import_plugin(plugin, "text")
+    plugin = kernel.import_plugin_from_object(plugin, "text")
     test_function = plugin["uppercase"]
 
     plan = Plan(name="test", function=test_function)
@@ -39,7 +39,7 @@ async def test_invoke_empty_plan_with_added_function_step():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin = kernel.import_plugin(plugin, "text")
+    plugin = kernel.import_plugin_from_object(plugin, "text")
     test_function = plugin["uppercase"]
 
     plan = Plan(name="test")
@@ -56,7 +56,7 @@ async def test_invoke_empty_plan_with_added_plan_step():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin = kernel.import_plugin(plugin, "text")
+    plugin = kernel.import_plugin_from_object(plugin, "text")
     test_function = plugin["uppercase"]
 
     plan = Plan(name="test")
@@ -73,7 +73,7 @@ async def test_invoke_multi_step_plan():
 
     # import test (text) plugin
     plugin = TextPlugin()
-    plugin = kernel.import_plugin(plugin, "text")
+    plugin = kernel.import_plugin_from_object(plugin, "text")
     test_function = plugin["uppercase"]
     test_function2 = plugin["trim_end"]
 
@@ -92,7 +92,7 @@ async def test_invoke_multi_step_plan_with_arguments():
 
     # import test (text) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin(plugin, "math")
+    plugin = kernel.import_plugin_from_object(plugin, "math")
     test_function = plugin["Add"]
     test_function2 = plugin["Subtract"]
 

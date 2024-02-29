@@ -7,6 +7,7 @@ from openai import AsyncAzureOpenAI
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 
 
 @pytest.mark.asyncio
@@ -29,10 +30,11 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
 
     kernel.add_service(embeddings_gen)
 
-    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
+    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
+    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
-    await kernel.memory.save_information("test", id="info1", text="this is a test")
-    await kernel.memory.save_reference(
+    await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
+    await memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",
@@ -59,17 +61,18 @@ async def test_azure_text_embedding_service_with_provided_client(create_kernel, 
         default_headers={"Test-User-X-ID": "test"},
     )
 
-    embedding_gen = sk_oai.AzureTextEmbedding(
+    embeddings_gen = sk_oai.AzureTextEmbedding(
         service_id="aoai-ada-2",
         deployment_name=deployment_name,
         async_client=client,
     )
 
-    kernel.add_service(embedding_gen)
-    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+    kernel.add_service(embeddings_gen)
+    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
+    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
-    await kernel.memory.save_information("test", id="info1", text="this is a test")
-    await kernel.memory.save_reference(
+    await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
+    await memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",
