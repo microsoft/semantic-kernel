@@ -6,11 +6,11 @@ from typing import List, Optional, Tuple
 from pytest import mark, raises
 
 from semantic_kernel import Kernel
+from semantic_kernel.exceptions import TemplateSyntaxError
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.template_engine.blocks.block_errors import TemplateSyntaxError
 
 
 def _get_template_language_tests() -> List[Tuple[str, str]]:

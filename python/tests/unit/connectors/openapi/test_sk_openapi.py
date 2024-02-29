@@ -5,15 +5,14 @@ import pytest
 import yaml
 from openapi_core import Spec
 
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.openapi.kernel_openapi import (
     OpenApiParser,
     OpenApiRunner,
     PreparedRestApiRequest,
     RestApiOperation,
 )
+from semantic_kernel.exceptions import ServiceInvalidRequestError
 
 directory = os.path.dirname(os.path.realpath(__file__))
 openapi_document = directory + "/openapi.yaml"
@@ -116,7 +115,7 @@ def test_prepare_request_with_missing_path_param():
     query_params = {"completed": False}
     headers = {"Authorization": "Bearer abc123"}
     request_body = {"title": "Buy milk", "completed": False}
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceInvalidRequestError):
         put_operation.prepare_request(
             path_params=path_params,
             query_params=query_params,
@@ -200,7 +199,7 @@ def test_prepare_request_with_no_request_body():
     query_params = {"completed": False}
     headers = {"Authorization": "Bearer abc123"}
     request_body = None
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceInvalidRequestError):
         put_operation.prepare_request(
             path_params=path_params,
             query_params=query_params,

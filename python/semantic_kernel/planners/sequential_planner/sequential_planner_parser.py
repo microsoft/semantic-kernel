@@ -5,12 +5,11 @@ from typing import Callable, Optional, Tuple
 
 from defusedxml import ElementTree as ET
 
+from semantic_kernel.exceptions import PlannerInvalidPlanError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.planners.plan import Plan
-from semantic_kernel.planners.planning_exception import PlanningException
 
 # Constants
 GOAL_TAG = "goal"
@@ -31,8 +30,6 @@ class SequentialPlanParser:
             try:
                 return kernel.plugins[plugin_name][function_name]
             except KeyError:
-                return None
-            except KernelException:
                 return None
 
         return function
@@ -57,15 +54,9 @@ class SequentialPlanParser:
                 try:
                     xml_doc = ET.fromstring("<xml>" + plan_xml + "</xml>")
                 except ET.ParseError:
-                    raise PlanningException(
-                        PlanningException.ErrorCodes.InvalidPlan,
-                        f"Failed to parse plan xml strings: '{xml_string}' or '{plan_xml}'",
-                    )
+                    raise PlannerInvalidPlanError(f"Failed to parse plan xml strings: '{xml_string}' or '{plan_xml}'")
             else:
-                raise PlanningException(
-                    PlanningException.ErrorCodes.InvalidPlan,
-                    f"Failed to parse plan xml string: '{xml_string}'",
-                )
+                raise PlannerInvalidPlanError(f"Failed to parse plan xml string: '{xml_string}'")
 
         solution = xml_doc.findall(".//" + SOLUTION_TAG)
 
@@ -115,8 +106,7 @@ class SequentialPlanParser:
                         elif allow_missing_functions:
                             plan.add_steps([Plan.from_goal(plugin_function_name)])
                         else:
-                            raise PlanningException(
-                                PlanningException.ErrorCodes.InvalidPlan,
+                            raise PlannerInvalidPlanError(
                                 f"Failed to find function '{plugin_function_name}' in plugin '{plugin_name}'.",
                             )
 

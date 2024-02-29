@@ -9,19 +9,11 @@ from openai import AsyncAzureOpenAI
 from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.open_ai import (
-    AzureChatCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
-    ContentFilterCodes,
     ContentFilterResultSeverity,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
@@ -31,6 +23,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     ExtraBody,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.exceptions import ServiceInitializationError
 
 
 def test_azure_chat_completion_init() -> None:
@@ -100,7 +93,7 @@ def test_azure_chat_completion_init_with_empty_api_key() -> None:
     # api_key = "test_api_key"
     api_version = "2023-03-15-preview"
 
-    with pytest.raises(AIException, match="api_key"):
+    with pytest.raises(ServiceInitializationError, match="api_key"):
         AzureChatCompletion(
             deployment_name=deployment_name,
             endpoint=endpoint,
@@ -519,7 +512,6 @@ async def test_azure_chat_completion_content_filtering_raises_correct_exception(
 
     content_filter_exc = exc_info.value
     assert content_filter_exc.param == "prompt"
-    assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
     assert content_filter_exc.content_filter_result["hate"].filtered
     assert content_filter_exc.content_filter_result["hate"].severity == ContentFilterResultSeverity.HIGH
 
@@ -565,8 +557,5 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
         api_version=api_version,
     )
 
-    with pytest.raises(ContentFilterAIException, match="service encountered a content error") as exc_info:
+    with pytest.raises(ContentFilterAIException, match="service encountered a content error"):
         await azure_chat_completion.complete_chat(messages, complete_prompt_execution_settings)
-
-    content_filter_exc = exc_info.value
-    assert content_filter_exc.content_filter_code == ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION
