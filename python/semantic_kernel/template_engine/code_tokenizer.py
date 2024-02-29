@@ -3,8 +3,8 @@
 import logging
 from typing import List
 
+from semantic_kernel.exceptions import CodeBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
-from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock

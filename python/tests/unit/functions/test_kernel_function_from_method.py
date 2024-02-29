@@ -2,19 +2,21 @@
 import sys
 from typing import AsyncIterable, Iterable, Optional
 
+from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
+
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_exception import KernelFunctionInitializationException
 
 
 def test_init_native_function_with_input_description():
@@ -106,7 +108,7 @@ def test_init_native_function_from_kernel_function_decorator_defaults():
 
 
 def test_init_method_is_none():
-    with pytest.raises(KernelFunctionInitializationException):
+    with pytest.raises(FunctionInitializationError):
         KernelFunction.from_method(method=None, plugin_name="MockPlugin")
 
 
@@ -114,7 +116,7 @@ def test_init_method_is_not_kernel_function():
     def not_kernel_function():
         pass
 
-    with pytest.raises(KernelFunctionInitializationException):
+    with pytest.raises(FunctionInitializationError):
         KernelFunction.from_method(method=not_kernel_function, plugin_name="MockPlugin")
 
 
@@ -123,7 +125,7 @@ def test_init_invalid_name():
     def invalid_name():
         pass
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(FunctionInitializationError):
         KernelFunction.from_method(method=invalid_name, plugin_name="MockPlugin")
 
 
@@ -224,4 +226,4 @@ async def test_required_param_not_supplied():
     func = KernelFunction.from_method(my_function, "test")
 
     result = await func.invoke(kernel=None, arguments=KernelArguments())
-    assert isinstance(result.metadata["error"], ValueError)
+    assert isinstance(result.metadata["error"], FunctionExecutionException)

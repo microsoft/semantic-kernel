@@ -1,15 +1,7 @@
 from pytest import mark, raises
 
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
-from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.template_engine.blocks.block_errors import (
-    CodeBlockRenderError,
+from semantic_kernel.exceptions import (
+    CodeBlockRenderException,
     CodeBlockSyntaxError,
     CodeBlockTokenError,
     FunctionIdBlockSyntaxError,
@@ -17,6 +9,12 @@ from semantic_kernel.template_engine.blocks.block_errors import (
     ValBlockSyntaxError,
     VarBlockSyntaxError,
 )
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -46,7 +44,7 @@ class TestCodeBlockRendering:
             content="functionName",
         )
         assert target.tokens[0].type == BlockTypes.FUNCTION_ID
-        with raises(CodeBlockRenderError, match="Plugin collection not set in kernel"):
+        with raises(CodeBlockRenderException, match="Function `functionName` not found"):
             await target.render_code(self.kernel, KernelArguments())
 
     @mark.asyncio
@@ -58,7 +56,7 @@ class TestCodeBlockRendering:
         self.kernel.plugins = KernelPluginCollection()
         dkp = KernelPlugin(name="test", functions=[])
         self.kernel.plugins.add(dkp)
-        with raises(CodeBlockRenderError, match="Function `functionName` not found"):
+        with raises(CodeBlockRenderException, match="Function `functionName` not found"):
             await target.render_code(self.kernel, KernelArguments())
 
     @mark.asyncio
@@ -82,7 +80,7 @@ class TestCodeBlockRendering:
             content="functionName",
         )
 
-        with raises(CodeBlockRenderError):
+        with raises(CodeBlockRenderException):
             await target.render_code(kernel, KernelArguments())
 
     @mark.asyncio
@@ -354,7 +352,7 @@ class TestCodeBlockRendering:
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
         with raises(
-            CodeBlockRenderError,
+            CodeBlockRenderException,
             match="Function test.funcName does not take any arguments \
 but it is being called in the template with 2 arguments.",
         ):

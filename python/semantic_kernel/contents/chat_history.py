@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import logging
 from typing import Any, Dict, Final, Iterator, List, Optional, Tuple, Type, Union
 
@@ -8,6 +7,7 @@ import defusedxml.ElementTree as ET
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
@@ -101,7 +101,7 @@ class ChatHistory(KernelBaseModel):
             self.messages.append(message)
             return
         if "role" not in message:
-            raise ValueError(f"Dictionary must contain at least the role. Got: {message}")
+            raise ContentInitializationError(f"Dictionary must contain at least the role. Got: {message}")
         if encoding:
             message["encoding"] = encoding
         if metadata:
@@ -241,8 +241,8 @@ class ChatHistory(KernelBaseModel):
         """
         try:
             return self.model_dump_json(indent=4)
-        except TypeError as e:
-            raise ValueError(f"Unable to serialize ChatHistory to JSON: {e}")
+        except Exception as e:
+            raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}")
 
     @classmethod
     def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
@@ -262,8 +262,8 @@ class ChatHistory(KernelBaseModel):
         """
         try:
             return ChatHistory.model_validate_json(chat_history_json)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON format: {e}")
+        except Exception as e:
+            raise ContentInitializationError(f"Invalid JSON format: {e}")
 
     def store_chat_history_to_file(chat_history: "ChatHistory", file_path: str) -> None:
         """
