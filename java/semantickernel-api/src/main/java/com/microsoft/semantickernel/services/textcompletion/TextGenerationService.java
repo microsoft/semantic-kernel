@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.services.textcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.implementation.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -16,7 +15,7 @@ import reactor.core.publisher.Mono;
 /**
  * Interface for text completion services
  */
-public interface TextGenerationService extends Buildable, TextAIService {
+public interface TextGenerationService extends TextAIService {
 
     /**
      * Get the builder for the TextGenerationService

@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -29,7 +28,7 @@ import reactor.core.publisher.Mono;
  * @see com.microsoft.semantickernel.plugin
  * @see com.microsoft.semantickernel.semanticfunctions.annotations
  */
-public abstract class KernelFunction<T> implements Buildable {
+public abstract class KernelFunction<T> {
 
     private final KernelFunctionMetadata<?> metadata;
 
