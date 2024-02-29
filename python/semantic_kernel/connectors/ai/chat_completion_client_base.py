@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents import StreamingChatMessageContent
     from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
@@ -23,6 +24,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        arguments: Optional["KernelArguments"] = None,
     ) -> List["ChatMessageContent"]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -31,6 +33,8 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             chat_history {ChatHistory} -- A list of chats in a chat_history object, that can be
                 rendered into messages from system, user, assistant and tools.
             settings {PromptExecutionSettings} -- Settings for the request.
+            arguments {Optional[KernelArguments]} -- The optional arguments, used for OpenAI auto
+                function invoking.
 
         Returns:
             Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
@@ -42,6 +46,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+        arguments: Optional["KernelArguments"] = None,
     ) -> AsyncIterable[List["StreamingChatMessageContent"]]:
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
@@ -50,6 +55,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             chat_history {ChatHistory} -- A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
+            arguments {Optional[KernelArguments]} -- The optional arguments, used for OpenAI auto
+                function invoking.
+
 
         Yields:
             A stream representing the response(s) from the LLM.

@@ -9,7 +9,7 @@ from semantic_kernel.connectors.ai.open_ai.utils import (
     get_tool_call_object,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins import MathPlugin
+from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 
@@ -33,7 +33,7 @@ api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_service(
     sk_oai.OpenAIChatCompletion(
         service_id="chat",
-        ai_model_id="gpt-4-1106-preview",
+        ai_model_id="gpt-3.5-1106-preview",
         api_key=api_key,
     ),
 )
@@ -44,6 +44,7 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
+kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
@@ -58,7 +59,7 @@ execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     tool_choice="auto",
     tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
     auto_invoke_kernel_functions=True,
-    max_allowed_tool_calls=3,
+    max_auto_invoke_attempts=3,
 )
 
 prompt_template_config = sk.PromptTemplateConfig(
@@ -101,7 +102,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = True
+    stream = False
     if stream:
         response = kernel.invoke_stream(
             chat_function,

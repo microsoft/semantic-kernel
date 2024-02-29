@@ -24,8 +24,6 @@ class OpenAIPromptExecutionSettings(PromptExecutionSettings):
     temperature: float = Field(0.0, ge=0.0, le=2.0)
     top_p: float = Field(1.0, ge=0.0, le=1.0)
     user: Optional[str] = None
-    auto_invoke_kernel_functions: Optional[bool] = False
-    max_allowed_tool_calls: Optional[int] = 5
 
 
 class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
@@ -62,6 +60,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
     messages: Optional[List[Dict[str, Any]]] = None
+    auto_invoke_kernel_functions: Optional[bool] = Field(default=False, exclude=True)
+    max_auto_invoke_attempts: Optional[int] = Field(default=5, exclude=True)
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod

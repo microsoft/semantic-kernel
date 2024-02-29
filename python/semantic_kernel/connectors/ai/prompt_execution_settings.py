@@ -43,8 +43,6 @@ class PromptExecutionSettings(KernelBaseModel):
             exclude={
                 "service_id",
                 "extension_data",
-                "auto_invoke_kernel_functions",
-                "max_allowed_tool_calls",
             },
             exclude_none=True,
             by_alias=True,
