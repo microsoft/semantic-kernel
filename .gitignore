@@ -153,6 +153,10 @@ coverage*.info
 *.coverage
 *.coveragexml
 
+# python coverage files
+pytest.xml
+pytest-coverage.txt
+
 # NCrunch
 _NCrunch_*
 .*crunch*.local.xml
