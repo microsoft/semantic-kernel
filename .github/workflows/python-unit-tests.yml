@@ -19,9 +19,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
       - name: Update Pip ${{ matrix.python-version }}
         run: python -m pip install -U pip
       - name: Install dependencies
@@ -44,9 +45,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
       - name: Update Pip ${{ matrix.python-version }}
         run: python -m pip install -U pip
       - name: Install dependencies
@@ -56,13 +58,13 @@ jobs:
           poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
       - name: Test with pytest
         run: |
-          cd python && poetry run pytest --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee pytest-coverage.txt
+          cd python && poetry run pytest --junitxml=./pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee ./pytest-coverage.txt
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
-          pytest-coverage-path: pytest-coverage.txt
-          junitxml-path: pytest.xml
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
       - name: Check the output coverage
         run: |
           echo "Coverage Percantage - ${{ steps.coverageComment.outputs.coverage }}"
