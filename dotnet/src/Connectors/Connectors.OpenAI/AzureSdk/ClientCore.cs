@@ -295,6 +295,12 @@ internal abstract class ClientCore
 
         for (int iteration = 1; ; iteration++)
         {
+            if (iteration > 1)
+            {
+                // Tools might import or remove plugins themselves, so we need to reflect that within the current exchange.
+                chatExecutionSettings.ToolCallBehavior?.ConfigureOptions(kernel, chatOptions);
+            }
+
             // Make the request.
             var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
             this.CaptureUsageDetails(responseData.Usage);
