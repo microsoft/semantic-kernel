@@ -65,7 +65,7 @@ jobs:
         with:
           pytest-coverage-path: python/pytest-coverage.txt
           junitxml-path: python/pytest.xml
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           report-only-changed-files: true
       - name: Check the output coverage
         run: |
