@@ -59,18 +59,12 @@ public class OpenAITextGenerationService implements TextGenerationService {
         return new Builder();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Nullable
     public String getServiceId() {
         return serviceId;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Mono<List<TextContent>> getTextContentsAsync(
         String prompt,
@@ -79,9 +73,6 @@ public class OpenAITextGenerationService implements TextGenerationService {
         return this.internalCompleteTextAsync(prompt, executionSettings);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Flux<StreamingTextContent> getStreamingTextContentsAsync(
         String prompt,
@@ -172,9 +163,6 @@ public class OpenAITextGenerationService implements TextGenerationService {
         return options;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Nullable
     @Override
     public String getModelId() {
@@ -186,9 +174,6 @@ public class OpenAITextGenerationService implements TextGenerationService {
      */
     public static class Builder extends TextGenerationService.Builder {
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public TextGenerationService build() {
 

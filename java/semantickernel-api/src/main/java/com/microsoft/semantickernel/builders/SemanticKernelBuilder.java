@@ -6,7 +6,7 @@ package com.microsoft.semantickernel.builders;
  *
  * @param <T> the type of {@code Buildable} to build.
  */
-public interface SemanticKernelBuilder<T extends Buildable> {
+public interface SemanticKernelBuilder<T> {
 
     /**
      * Build the object.
