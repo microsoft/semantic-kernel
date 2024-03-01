@@ -56,8 +56,7 @@ class PromptTemplateConfig(KernelBaseModel):
                 description=variable.description,
                 default_value=variable.default,
                 type_=variable.json_schema,  # TODO: update to handle complex JSON schemas
-                required=variable.is_required,
-                expose=True,
+                is_required=variable.is_required,
             )
             for variable in self.input_variables
         ]
