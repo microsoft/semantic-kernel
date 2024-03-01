@@ -18,8 +18,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     public GeminiFunctionCallingTests(ITestOutputHelper output) : base(output) { }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationEnabledFunctionsShouldReturnFunctionToCallAsync(ServiceType serviceType)
     {
@@ -47,8 +46,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingEnabledFunctionsShouldReturnFunctionToCallAsync(ServiceType serviceType)
     {
@@ -78,8 +76,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationAutoInvokeShouldCallOneFunctionAndReturnResponseAsync(ServiceType serviceType)
     {
@@ -106,8 +103,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingAutoInvokeShouldCallOneFunctionAndReturnResponseAsync(ServiceType serviceType)
     {
@@ -136,8 +132,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationAutoInvokeShouldCallTwoFunctionsAndReturnResponseAsync(ServiceType serviceType)
     {
@@ -162,8 +157,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingAutoInvokeShouldCallTwoFunctionsAndReturnResponseAsync(ServiceType serviceType)
     {
@@ -190,8 +184,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationAutoInvokeShouldCallFunctionsMultipleTimesAndReturnResponseAsync(ServiceType serviceType)
     {
@@ -218,8 +211,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingAutoInvokeShouldCallFunctionsMultipleTimesAndReturnResponseAsync(ServiceType serviceType)
     {
@@ -248,8 +240,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationAutoInvokeTwoPluginsShouldGetDateAndReturnTasksByDateParamAndReturnResponseAsync(ServiceType serviceType)
     {
@@ -275,8 +266,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     }
 
     [RetryTheory]
-    // [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingAutoInvokeTwoPluginsShouldGetDateAndReturnTasksByDateParamAndReturnResponseAsync(ServiceType serviceType)
     {
