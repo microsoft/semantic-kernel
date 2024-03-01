@@ -1,0 +1,10 @@
+{"text": "How many sheep would you have if you started with 3 and got 2 more?", "groundtruth": "5"}
+{"text": "What would be the area of a rectangle with a sides of 2ft and 3ft?", "groundtruth": "6"}
+{"text": "What would you have left if you spent $3 when you only had $2 to begin with", "groundtruth": "-1"}
+{"text": "How many slices of pizza would everyone get if you split 12 slices equally among 3 people", "groundtruth": "4"}
+{"text": "What is the sum of 5 and 3?", "groundtruth": "8"}
+{"text": "Subtract 7 from 10.", "groundtruth": "3"}
+{"text": "Multiply 6 by 4.", "groundtruth": "24"}
+{"text": "Divide 20 by 5.", "groundtruth": "4"}
+{"text": "What is the square of 7?", "groundtruth": "49"}
+{"text": "What is the square root of 81?", "groundtruth": "9"}

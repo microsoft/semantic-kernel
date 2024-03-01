@@ -631,7 +631,10 @@ class Kernel(KernelBaseModel):
         Returns:
             KernelFunction: The created Kernel Function
         """
-        if not prompt_execution_settings and not prompt_template_config.execution_settings:
+        # Assuming kwargs is a dictionary with default values for PromptExecutionSettings
+        if prompt_execution_settings is None and (
+            prompt_template_config is None or prompt_template_config.execution_settings is None
+        ):
             prompt_execution_settings = PromptExecutionSettings(extension_data=kwargs)
 
         function = KernelFunction.from_prompt(
