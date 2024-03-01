@@ -20,6 +20,8 @@ async def main():
     kernel = add_ai_service(kernel=kernel, use_chat=True)
 
     service_id = "default"
+
+    # The following execution settings are used for the ConversationSummaryPlugin
     execution_settings = PromptExecutionSettings(
         service_id=service_id, max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
     )
@@ -43,18 +45,19 @@ async def main():
     User: {{$request}}
     Assistant:  """
 
-    req_settings = kernel.get_service("default").get_prompt_execution_settings_class()(service_id=service_id)
+    # These execution settings are tied to the chat function, created below.
+    execution_settings = kernel.get_service(service_id).instantiate_prompt_execution_settings(service_id=service_id)
     chat_prompt_template_config = PromptTemplateConfig(
         template=prompt,
         description="Chat with the assistant",
-        execution_settings={service_id: req_settings},
+        execution_settings=execution_settings,
         input_variables=[
             InputVariable(name="request", description="The user input", is_required=True),
             InputVariable(name="history", description="The history of the conversation", is_required=True),
         ],
     )
 
-    # Run the prompt
+    # Create the function
     chat_function = kernel.create_function_from_prompt(
         prompt=prompt,
         plugin_name="Summarize_Conversation",

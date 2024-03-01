@@ -21,10 +21,11 @@ async def main():
     # Create the history
     history = ChatHistory()
 
-    # Create the prompt with the ConversationSummaryPlugin
-    prompt = """{{$history}}
-    User: {{$request}}
-    Assistant:  """
+    # An ideal prompt for this is {{$history}}{{$request}} as those
+    # get cleanly parsed into a new chat_history object while invoking
+    # the function. Another possibility is create the prompt as {{$history}}
+    # and make sure to add the user message to the history before invoking.
+    prompt = "{{$history}}"
 
     service_id = "default"
     req_settings = kernel.get_service("default").get_prompt_execution_settings_class()(service_id=service_id)
@@ -61,14 +62,16 @@ async def main():
             print("\n\nExiting chat...")
             return False
 
+        # Add the request to the history before we
+        # invoke the function to include it in the prompt
+        history.add_user_message(request)
+
         result = await kernel.invoke(
             chat_function,
             request=request,
             history=history,
         )
 
-        # Add the request to the history
-        history.add_user_message(request)
         history.add_assistant_message(str(result))
 
         print(f"Assistant:> {result}")

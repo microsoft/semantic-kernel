@@ -26,7 +26,7 @@ async def main():
     )
 
     template = (
-        "BEGIN CONTENT TO SUMMARIZE:\n{{" + "$input" + "}}\n{{" + "$history" + "}}\n"
+        "BEGIN CONTENT TO SUMMARIZE:\n{{" + "$history" + "}}\n{{" + "$input" + "}}\n"
         "END CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
         " SUMMARIZE',            identifying main points of discussion and any"
         " conclusions that were reached.\nDo not incorporate other general"

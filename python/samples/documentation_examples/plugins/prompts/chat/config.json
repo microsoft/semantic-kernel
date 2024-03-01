@@ -1,6 +1,6 @@
 {
     "schema": 1,
-    "description": "Gets the intent of the user.",
+    "description": "Summarizes the conversation.",
     "execution_settings": {
         "default": {
             "max_tokens": 4000,

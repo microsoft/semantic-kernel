@@ -15,29 +15,7 @@ else:
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
-async def main():
-    # Initialize the kernel
-    kernel = sk.Kernel()
-
-    # Add the service to the kernel
-    # use_chat: True to use chat completion, False to use text completion
-    kernel = add_ai_service(kernel=kernel, use_chat=True)
-
-    light_plugin = kernel.import_plugin_from_object(
-        LightPlugin(),
-        plugin_name="LightPlugin",
-    )
-
-    # Kernel Arguments are passed in as kwargs.
-    result = await kernel.invoke(light_plugin["get_state"])
-    print(f"The light is: {result}")
-
-    print("Changing the light's state...")
-
-    result = await kernel.invoke(light_plugin["change_state"], new_state=True)
-    print(f"The light is: {result}")
-
-
+# Let's define a light plugin
 class LightPlugin:
     is_on: bool = False
 
@@ -64,6 +42,29 @@ class LightPlugin:
         state = self.get_state()
         print(f"The light is now: {state}")
         return state
+
+
+async def main():
+    # Initialize the kernel
+    kernel = sk.Kernel()
+
+    # Add the service to the kernel
+    # use_chat: True to use chat completion, False to use text completion
+    kernel = add_ai_service(kernel=kernel, use_chat=True)
+
+    light_plugin = kernel.import_plugin_from_object(
+        LightPlugin(),
+        plugin_name="LightPlugin",
+    )
+
+    result = await kernel.invoke(light_plugin["get_state"])
+    print(f"The light is: {result}")
+
+    print("Changing the light's state...")
+
+    # Kernel Arguments are passed in as kwargs.
+    result = await kernel.invoke(light_plugin["change_state"], new_state=True)
+    print(f"The light is: {result}")
 
 
 # Run the main function

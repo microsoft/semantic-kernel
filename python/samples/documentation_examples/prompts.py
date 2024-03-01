@@ -130,7 +130,7 @@ async def main():
     print(result)
     print("-------------------------")
 
-    # 5.0 Provide context to the AI
+    # 5.0 Provide context to the AI through a chat history of this user
     history = (
         "User input: I hate sending emails, no one ever reads them.\n"
         "AI response: I'm sorry to hear that. Messages may be a better way to communicate."
