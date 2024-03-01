@@ -52,7 +52,7 @@ internal sealed class GeminiTool
         /// Reflects the Open API 3.03 Parameter Object string Key: the name of the parameter.
         /// Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter.
         /// </summary>
-        [JsonPropertyName("schema")]
+        [JsonPropertyName("parameters")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonNode? Parameters { get; set; }
     }

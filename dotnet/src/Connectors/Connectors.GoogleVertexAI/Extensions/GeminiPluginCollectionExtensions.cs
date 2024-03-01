@@ -34,7 +34,7 @@ public static class GeminiPluginCollectionExtensions
                 arguments = new KernelArguments();
                 foreach (var parameter in functionToolCall.Arguments)
                 {
-                    arguments[parameter.Key] = parameter.Value;
+                    arguments[parameter.Key] = parameter.Value?.ToString();
                 }
             }
 
