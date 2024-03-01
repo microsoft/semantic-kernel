@@ -165,8 +165,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         kernel: Kernel,
     ) -> None:
         """Process the completions in the chat response"""
-        chat_history = store_results(chat_history=chat_history, results=completions)
         for result in completions:
+            # An assistant message needs to be followed be a tool call response
+            chat_history = store_results(chat_history=chat_history, results=[result])
             await self._process_tool_calls(result, kernel, chat_history)
 
     async def _process_chat_stream_response(
@@ -395,6 +396,5 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         return (
             not auto_invoke_kernel_functions
             or any(not isinstance(completion, OpenAIChatMessageContent) for completion in completions)
-            or len(completions) > 1
             or any(not hasattr(completion, "tool_calls") or not completion.tool_calls for completion in completions)
         )

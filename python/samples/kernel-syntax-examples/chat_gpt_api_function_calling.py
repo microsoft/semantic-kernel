@@ -60,6 +60,7 @@ execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
     auto_invoke_kernel_functions=True,
     max_auto_invoke_attempts=3,
+    number_of_responses=2,
 )
 
 prompt_template_config = sk.PromptTemplateConfig(
@@ -117,7 +118,12 @@ async def chat() -> bool:
         print("\n")
     else:
         result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
-        print(f"Mosscap:> {result}")
+        # Check if there are more than one item in the list
+        if len(result.value) > 1:
+            joined_result = ", ".join([f"Result{i+1}: {value}" for i, value in enumerate(result.value)])
+        else:
+            joined_result = f"{result[0]}"
+        print(f"Mosscap:> {joined_result}")
     return True
 
 
