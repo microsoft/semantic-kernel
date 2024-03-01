@@ -6,7 +6,6 @@ import os
 from service_configurator import add_service
 
 import semantic_kernel as sk
-from semantic_kernel.core_plugins import MathPlugin
 
 
 async def main():
