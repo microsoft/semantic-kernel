@@ -16,6 +16,11 @@ public static class AIServiceExtensions
     /// <summary>
     /// Gets the key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
+    public static string DeploymentNameKey => "DeploymentName";
+
+    /// <summary>
+    /// Gets the key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
     public static string ModelIdKey => "ModelId";
 
     /// <summary>
@@ -27,6 +32,13 @@ public static class AIServiceExtensions
     /// Gets the key used to store the API version in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
     public static string ApiVersionKey => "ApiVersion";
+
+    /// <summary>
+    /// Gets the deployment name from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
+    /// </summary>
+    /// <param name="service">The service from which to get the model identifier.</param>
+    /// <returns>The model identifier if it was specified in the service's attributes; otherwise, null.</returns>
+    public static string? GetDeploymentName(this IAIService service) => service.GetAttribute(DeploymentNameKey);
 
     /// <summary>
     /// Gets the model identifier from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.

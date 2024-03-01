@@ -16,11 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal sealed class AzureOpenAIClientCore : ClientCore
 {
     /// <summary>
-    /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public static string DeploymentNameKey => "DeploymentName";
-
-    /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
     internal override OpenAIClient Client { get; }
@@ -49,6 +44,9 @@ internal sealed class AzureOpenAIClientCore : ClientCore
 
         this.DeploymentOrModelName = deploymentName;
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+
+        this.AddAttribute(AIServiceExtensions.DeploymentNameKey, deploymentName);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
     }
 
     /// <summary>
@@ -74,6 +72,9 @@ internal sealed class AzureOpenAIClientCore : ClientCore
 
         this.DeploymentOrModelName = deploymentName;
         this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
+
+        this.AddAttribute(AIServiceExtensions.DeploymentNameKey, deploymentName);
+        this.AddAttribute(AIServiceExtensions.EndpointKey, endpoint);
     }
 
     /// <summary>
@@ -95,6 +96,6 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         this.DeploymentOrModelName = deploymentName;
         this.Client = openAIClient;
 
-        this.AddAttribute(DeploymentNameKey, deploymentName);
+        this.AddAttribute(AIServiceExtensions.DeploymentNameKey, deploymentName);
     }
 }

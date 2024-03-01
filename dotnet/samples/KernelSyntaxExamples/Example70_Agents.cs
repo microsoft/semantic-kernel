@@ -15,7 +15,7 @@ namespace Examples;
 /// Showcase Open AI Agent integration with semantic kernel:
 /// https://platform.openai.com/docs/api-reference/agents
 /// </summary>
-public class Example70_Agent : BaseTest
+public class Example70_Agents : BaseTest
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
@@ -173,7 +173,7 @@ public class Example70_Agent : BaseTest
         }
     }
 
-    public Example70_Agent(ITestOutputHelper output) : base(output)
+    public Example70_Agents(ITestOutputHelper output) : base(output)
     {
     }
 }

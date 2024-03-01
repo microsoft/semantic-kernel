@@ -676,12 +676,7 @@ public static class OpenAIServiceCollectionExtensions
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
-            OpenAIClient client = CreateAzureOpenAIClient(
-                endpoint,
-                new AzureKeyCredential(apiKey),
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
-
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new(deploymentName, endpoint, apiKey, modelId, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);

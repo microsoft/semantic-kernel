@@ -103,7 +103,7 @@ public class ChatMessageContent : KernelContent
     /// </remarks>
     [Experimental("SKEXP0101")]
     [JsonIgnore]
-    public object? Source { get; set; }
+    public object? Source { get; set; } // $$$ UGH
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class

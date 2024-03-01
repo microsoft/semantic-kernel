@@ -10,7 +10,7 @@ using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Experimental.Agents;
+using Microsoft.SemanticKernel.Experimental.Agents.Chat;
 using Xunit;
 using Xunit.Abstractions;
 
