@@ -39,8 +39,8 @@ public class Example99_Agents : BaseTest
     {
         WriteLine("======== Run:Dual Chat Agents ========");
 
-        var agent1 = CreateChatAgent("Optimistic", "Evaluate the user input with optimism.");
-        var agent2 = CreateChatAgent("Pessimistic", "Evaluate the user input with extreme skeptism...don't be polite.");
+        var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
+        var agent2 = CreateChatAgent("Pessimistic", "Respond with extreme skeptism...don't be polite.");
 
         await RunDualAgentAsync(agent1, agent2, "I think I'm going to do something really important today!");
     }
@@ -70,7 +70,7 @@ public class Example99_Agents : BaseTest
         WriteLine("======== Run:Dual GPT Agents ========");
 
         var agent1 = await CreateGptAgentAsync("Optimistic", "Evaluate the user input with optimism.");
-        var agent2 = await CreateGptAgentAsync("Pessimistic", "Evaluate the user input with extreme skeptism...don't be polite.");
+        var agent2 = await CreateGptAgentAsync("Pessimistic", "Respond with extreme skeptism...don't be polite.");
 
         await RunDualAgentAsync(agent1, agent2, "I think I'm going to do something really important today!");
     }
@@ -83,8 +83,8 @@ public class Example99_Agents : BaseTest
     {
         WriteLine("======== Run:Dual GPT Agents ========");
 
-        var agent1 = CreateChatAgent("Optimistic", "Evaluate the user input with optimism.");
-        var agent2 = await CreateGptAgentAsync("Pessimistic", "Evaluate the user input with optimism.");
+        var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
+        var agent2 = await CreateGptAgentAsync("Pessimistic", "Respond with extreme skeptism...don't be polite.");
 
         await RunDualAgentAsync(agent1, agent2, "I think I'm going to do something really important today!");
     }
