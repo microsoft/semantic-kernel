@@ -233,6 +233,29 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         Assert.Single(contents);
     }
 
+    [Fact]
+    public async Task IfAutoInvokeShouldReturnAssistantMessageWithContentAsync()
+    {
+        // Arrange
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContent);
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        // Act
+        var messages =
+            await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+
+        // Assert
+        Assert.Single(messages, item =>
+            item.Role == AuthorRole.Assistant && !string.IsNullOrWhiteSpace(item.Content));
+    }
+
     private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();
