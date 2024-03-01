@@ -14,8 +14,8 @@
 using HomeAutomation.Options;
 using HomeAutomation.Plugins;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -57,9 +57,9 @@ internal static class Program
             // A custom HttpClient can be provided to this constructor
             return new AzureOpenAIChatCompletionService(options.ChatDeploymentName, options.Endpoint, options.ApiKey);
 
-            /* Alternatively, you can use plain, non-Azure OpenAI after loading OpenAI options instead
+            /* Alternatively, you can use plain, non-Azure OpenAI after loading OpenAIOptions instead
                of AzureOpenAI options with builder.Services.AddOptions:
-            OpenAI options = sp.GetRequiredService<IOptions<OpenAI>>().Value;
+            OpenAI options = sp.GetRequiredService<IOptions<OpenAIOptions>>().Value;
 
             return new OpenAIChatCompletionService(options.ChatModelId, options.ApiKey);*/
         });

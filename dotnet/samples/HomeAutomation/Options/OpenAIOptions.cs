@@ -7,7 +7,7 @@ namespace HomeAutomation.Options;
 /// <summary>
 /// OpenAI settings.
 /// </summary>
-public sealed class OpenAI
+public sealed class OpenAIOptions
 {
     [Required]
     public string ChatModelId { get; set; } = string.Empty;
