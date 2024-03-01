@@ -55,7 +55,7 @@ def test_init_native_function_without_input_description():
             "name": "arguments",
             "description": "Param 1 description",
             "default_value": "default_param1_value",
-            "required": True,
+            "is_required": True,
         }
     ]
 

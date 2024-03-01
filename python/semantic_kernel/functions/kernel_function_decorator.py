@@ -3,6 +3,7 @@
 
 import logging
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
+from types import NoneType
 from typing import Any, Callable, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -77,8 +78,10 @@ def _parse_parameter(param: Parameter) -> Dict[str, Any]:
 
 def _parse_annotation(annotation: Parameter) -> Dict[str, Any]:
     logger.debug(f"Parsing annotation: {annotation}")
+    if annotation == Signature.empty:
+        return {"type_": "Any", "is_required": True}
     if isinstance(annotation, str):
-        return "", annotation, True
+        return {"type_": annotation, "is_required": True}
     logger.debug(f"{annotation=}")
     ret = _parse_internal_annotation(annotation, True)
     if hasattr(annotation, "__metadata__") and annotation.__metadata__:
@@ -94,17 +97,23 @@ def _parse_internal_annotation(annotation: Parameter, required: bool) -> Dict[st
         required = False
     if hasattr(annotation, "__args__"):
         results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]
+        type_objects = [
+            result["type_object"]
+            for result in results
+            if "type_object" in result and result["type_object"] is not NoneType
+        ]
         str_results = [result["type_"] for result in results]
         if "NoneType" in str_results:
             str_results.remove("NoneType")
             required = False
         else:
             required = not (any(not result["is_required"] for result in results))
-        return {"type_": ", ".join(str_results), "is_required": required}
-    # if isinstance(annotation, KernelBaseModel):
+        ret = {"type_": ", ".join(str_results), "is_required": required}
+        if type_objects and len(type_objects) == 1:
+            ret["type_object"] = type_objects[0]
+        return ret
     return {
         "type_": getattr(annotation, "__name__", ""),
         "type_object": annotation,
         "is_required": required,
     }
-    # return {"type_": getattr(annotation, "__name__", ""), "is_required": required}
