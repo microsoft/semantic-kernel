@@ -79,13 +79,13 @@ public abstract class ToolCallBehavior
     /// if this is 1, the first request will include the tools, but the subsequent response sending back the tool's result
     /// will not include the tools for further use.
     /// </remarks>
-    internal int MaximumUseAttempts => int.MaxValue;
+    public int MaximumUseAttempts { get; set; } = int.MaxValue;
 
     /// <summary>Gets how many tool call request/response roundtrips are supported with auto-invocation.</summary>
     /// <remarks>
     /// To disable auto invocation, this can be set to 0.
     /// </remarks>
-    internal int MaximumAutoInvokeAttempts { get; }
+    public int MaximumAutoInvokeAttempts { get; set; }
 
     /// <summary>
     /// Gets whether validation against a specified list is required before allowing the model to request a function from the kernel.
