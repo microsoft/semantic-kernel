@@ -34,7 +34,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * An instance of {@code Kernel} is passed through to every function invocation and service call
  * throughout the system, providing to each the ability to access shared state and services.
  */
-public class Kernel implements Buildable {
+public class Kernel {
 
     private final AIServiceSelector serviceSelector;
     private final KernelPluginCollection plugins;

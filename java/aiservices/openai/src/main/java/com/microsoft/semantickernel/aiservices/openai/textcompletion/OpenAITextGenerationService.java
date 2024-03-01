@@ -5,12 +5,12 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.openai.OpenAIRequestSettings;
+import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.services.textcompletion.StreamingTextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
@@ -24,6 +24,9 @@ import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * An OpenAI implementation of a {@link TextGenerationService}.
+ */
 public class OpenAITextGenerationService implements TextGenerationService {
 
     private final OpenAIAsyncClient client;
@@ -31,15 +34,13 @@ public class OpenAITextGenerationService implements TextGenerationService {
     private final String serviceId;
     private final String modelId;
 
-    /// <summary>
-    /// Creates a new <see cref="OpenAITextGenerationService"/> client instance supporting AAD auth
-    /// </summary>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
-    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /**
+     * Creates a new {@link OpenAITextGenerationService}.
+     *
+     * @param client    OpenAI client
+     * @param modelId   OpenAI model id
+     * @param serviceId Service id
+     */
     protected OpenAITextGenerationService(
         OpenAIAsyncClient client,
         String modelId,
@@ -49,6 +50,11 @@ public class OpenAITextGenerationService implements TextGenerationService {
         this.modelId = modelId;
     }
 
+    /**
+     * Creates a builder for creating a {@link OpenAITextGenerationService}.
+     *
+     * @return A new {@link OpenAITextGenerationService} builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -113,7 +119,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
             });
     }
 
-    public static Map<String, ContextVariable<?>> buildMetadata(
+    private static Map<String, ContextVariable<?>> buildMetadata(
         String id,
         CompletionsUsage usage,
         OffsetDateTime createdAt) {

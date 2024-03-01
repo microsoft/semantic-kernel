@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.services.chatcompletion;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.implementation.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -16,7 +15,7 @@ import reactor.core.publisher.Mono;
 /**
  * Chat completion service interface.
  */
-public interface ChatCompletionService extends Buildable, TextAIService {
+public interface ChatCompletionService extends TextAIService {
 
     /**
      * Get a builder for creating a {@code ChatCompletionService}. The builder loads a service that
