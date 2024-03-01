@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -92,14 +91,14 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
         for (int iteration = 1;; iteration++)
         {
-            var geminiResponse = await this.SendRequestAndReturnValidResponseAsync(endpoint, geminiRequest, cancellationToken)
+            var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(endpoint, geminiRequest, cancellationToken)
                 .ConfigureAwait(false);
 
             var chatMessagesContents = this.ProcessChatResponse(geminiResponse);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
-            if (!autoInvoke || geminiResponse.Candidates!.Count != 1)
+            if (!autoInvoke || chatMessagesContents.Count != 1)
             {
                 return chatMessagesContents;
             }
@@ -185,7 +184,64 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
         }
     }
 
-    private async Task<GeminiResponse> SendRequestAndReturnValidResponseAsync(
+    /// <inheritdoc/>
+    public virtual async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
+        ChatHistory chatHistory,
+        Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var chatHistoryCopy = new ChatHistory(chatHistory);
+        ValidateAndPrepareChatHistory(chatHistoryCopy);
+
+        var endpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
+
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+        bool autoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings);
+
+        var geminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel);
+
+        for (int iteration = 1;; iteration++)
+        {
+            using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
+            using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
+            using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
+                .ConfigureAwait(false);
+
+            GeminiChatMessageContent result = null!;
+            bool first = true;
+            foreach (var messageContent in this.ProcessChatResponseStream(responseStream))
+            {
+                if (first && autoInvoke && messageContent.ToolCalls is not null)
+                {
+                    // If function call was returned there is no more data in stream
+                    result = messageContent;
+                    break;
+                }
+
+                first = false;
+
+                // If we don't want to attempt to invoke any functions, just return the result.
+                yield return this.GetStreamingChatContentFromChatContent(messageContent);
+            }
+
+            if (!first)
+            {
+                yield break;
+            }
+
+            chatHistory.Add(result);
+            geminiRequest.AddChatMessage(result);
+
+            this.Logger.LogDebug("Tool requests: {Requests}", result.ToolCalls!.Count);
+            this.Logger.LogTrace("Function call requests: {FunctionCall}",
+                string.Join(", ", result.ToolCalls.Select(ftc => ftc.ToString())));
+        }
+    }
+
+    private async Task<GeminiResponse> SendRequestAndReturnValidGeminiResponseAsync(
         Uri endpoint,
         GeminiRequest geminiRequest,
         CancellationToken cancellationToken)
@@ -234,32 +290,6 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
                           && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateAutoInvoke(autoInvoke, geminiExecutionSettings.CandidateCount ?? 1);
         return autoInvoke;
-    }
-
-    /// <inheritdoc/>
-    public virtual async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
-        ChatHistory chatHistory,
-        Kernel? kernel = null,
-        PromptExecutionSettings? executionSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var chatHistoryCopy = new ChatHistory(chatHistory);
-        ValidateAndPrepareChatHistory(chatHistoryCopy);
-
-        var endpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
-        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var geminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
-
-        using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-            .ConfigureAwait(false);
-
-        foreach (var streamingChatMessageContent in this.ProcessChatResponseStream(responseStream))
-        {
-            yield return streamingChatMessageContent;
-        }
     }
 
     private static void ValidateAndPrepareChatHistory(ChatHistory chatHistory)
@@ -320,10 +350,10 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
         }
     }
 
-    private IEnumerable<StreamingChatMessageContent> ProcessChatResponseStream(Stream responseStream)
+    private IEnumerable<GeminiChatMessageContent> ProcessChatResponseStream(Stream responseStream)
         => from geminiResponse in this.ParseResponseStream(responseStream)
            from chatMessageContent in this.ProcessChatResponse(geminiResponse)
-           select GetStreamingChatContentFromChatContent(chatMessageContent);
+           select chatMessageContent;
 
     private IEnumerable<GeminiResponse> ParseResponseStream(Stream responseStream)
         => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<GeminiResponse>);
@@ -379,12 +409,11 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
         return geminiRequest;
     }
 
-    private static StreamingChatMessageContent GetStreamingChatContentFromChatContent(ChatMessageContent chatMessageContent)
+    private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(ChatMessageContent chatMessageContent)
         => new(
             role: chatMessageContent.Role,
             content: chatMessageContent.Content,
-            modelId: chatMessageContent.ModelId,
-            innerContent: chatMessageContent.InnerContent,
+            modelId: this._modelId,
             metadata: chatMessageContent.Metadata,
             choiceIndex: ((GeminiMetadata)chatMessageContent.Metadata!).Index);
 
