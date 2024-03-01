@@ -1,7 +1,6 @@
 name: Python Test Coverage
 
 on: 
-  workflow_dispatch:
   pull_request_target:    
     paths:
       - "python/**"
