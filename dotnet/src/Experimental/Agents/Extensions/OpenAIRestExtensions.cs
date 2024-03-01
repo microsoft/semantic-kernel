@@ -14,6 +14,7 @@ internal static partial class OpenAIRestExtensions
 {
     private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
     private const string HeaderNameAuthorization = "Authorization";
+    private const string HeaderNameUserAgent = "User-Agent";
     private const string HeaderOpenAIValueAssistant = "assistants=v1";
 
     private static Task<TResult> ExecuteGetAsync<TResult>(
@@ -87,10 +88,13 @@ internal static partial class OpenAIRestExtensions
 
     private static void AddHeaders(this HttpRequestMessage request, OpenAIRestContext context)
     {
+        request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
+
         if (context.HasVersion)
         {
             // OpenAI
             request.Headers.Add("api-key", context.ApiKey);
+            return;
         }
 
         // Azure OpenAI
