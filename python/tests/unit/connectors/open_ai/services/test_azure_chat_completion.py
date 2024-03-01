@@ -24,6 +24,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
 )
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
 
 
 def test_azure_chat_completion_init() -> None:
@@ -558,4 +559,33 @@ async def test_azure_chat_completion_content_filtering_without_response_code_rai
     )
 
     with pytest.raises(ContentFilterAIException, match="service encountered a content error"):
+        await azure_chat_completion.complete_chat(messages, complete_prompt_execution_settings)
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create")
+async def test_azure_chat_completion_bad_request_non_content_filter(
+    mock_create,
+) -> None:
+    deployment_name = "test_deployment"
+    endpoint = "https://test-endpoint.com"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    prompt = "some prompt that would trigger the content filtering"
+    messages = ChatHistory()
+    messages.add_user_message(prompt)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
+
+    mock_create.side_effect = openai.BadRequestError(
+        "The request was bad.", response=Response(400, request=Request("POST", endpoint)), body={}
+    )
+
+    azure_chat_completion = AzureChatCompletion(
+        deployment_name=deployment_name,
+        endpoint=endpoint,
+        api_key=api_key,
+        api_version=api_version,
+    )
+
+    with pytest.raises(ServiceResponseException, match="service failed to complete the prompt"):
         await azure_chat_completion.complete_chat(messages, complete_prompt_execution_settings)

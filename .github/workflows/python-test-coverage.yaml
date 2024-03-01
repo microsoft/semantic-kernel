@@ -1,0 +1,53 @@
+name: Python Test Coverage
+
+on: 
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "python/**"
+
+jobs:
+  python-tests-coverage:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+          cache: "poetry"
+      - name: Install dependencies
+        run: cd python && poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
+      - name: Test with pytest
+        run: cd python && poetry run pytest -q --show-capture=no --disable-warnings --tb=no --junitxml=pytest.xml  --cov=semantic_kernel --cov-report="xml:coverage.xml":term-missing:skip-covered ./tests/unit
+      - name: Pytest coverage comment
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
+          pytest-coverage-path: python/coverage.xml
+          junitxml-path: python/pytest.xml
+          report-only-changed-files: true
+          title: "Python Unit Test Coverage Report"
+          badge-title: "Python Test Coverage"
+          coverage-path-prefix: "python/"
+          default-branch: "main"
+      - name: Check the output coverage
+        run: |
+          echo "Coverage Percantage - ${{ steps.coverageComment.outputs.coverage }}"
+          echo "Coverage Color - ${{ steps.coverageComment.outputs.color }}"
+          echo "Coverage Html - ${{ steps.coverageComment.outputs.coverageHtml }}"
+          echo "Summary Report - ${{ steps.coverageComment.outputs.summaryReport }}"
+          echo "Coverage Warnings - ${{ steps.coverageComment.outputs.warnings }}"
+          echo "Coverage Errors - ${{ steps.coverageComment.outputs.errors }}"
+          echo "Coverage Failures - ${{ steps.coverageComment.outputs.failures }}"
+          echo "Coverage Skipped - ${{ steps.coverageComment.outputs.skipped }}"
+          echo "Coverage Tests - ${{ steps.coverageComment.outputs.tests }}"
+          echo "Coverage Time - ${{ steps.coverageComment.outputs.time }}"
+          echo "Not Success Test Info - ${{ steps.coverageComment.outputs.notSuccessTestInfo }}"
