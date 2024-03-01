@@ -34,6 +34,11 @@ public abstract class KernelContent
     public string? ModelId { get; }
 
     /// <summary>
+    /// MIME type of the content.
+    /// </summary>
+    public string? MimeType { get; }
+
+    /// <summary>
     /// The metadata associated with the content.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; }
@@ -44,10 +49,12 @@ public abstract class KernelContent
     /// <param name="innerContent">The inner content representation</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Metadata associated with the content</param>
-    protected KernelContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
+    /// <param name="mimeType">MIME type of the content</param>
+    protected KernelContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null, string? mimeType = null)
     {
         this.ModelId = modelId;
         this.InnerContent = innerContent;
         this.Metadata = metadata;
+        this.MimeType = mimeType;
     }
 }

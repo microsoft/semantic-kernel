@@ -254,7 +254,7 @@ internal sealed class HuggingFaceClient
 
         // Read the file into a byte array
         var imageContent = new ByteArrayContent(content.Data?.ToArray());
-        imageContent.Headers.ContentType = new(content.MediaType);
+        imageContent.Headers.ContentType = new(content.MimeType);
 
         var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {

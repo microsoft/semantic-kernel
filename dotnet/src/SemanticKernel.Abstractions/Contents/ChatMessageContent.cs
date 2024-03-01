@@ -51,7 +51,8 @@ public class ChatMessageContent : KernelContent
                     modelId: this.ModelId,
                     innerContent: this.InnerContent,
                     encoding: this.Encoding,
-                    metadata: this.Metadata
+                    metadata: this.Metadata,
+                    mimeType: this.MimeType
                 ));
             }
         }
@@ -114,6 +115,7 @@ public class ChatMessageContent : KernelContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// <param name="mimeType">The MIME type of the chat content</param>
     [JsonConstructor]
     public ChatMessageContent(
         AuthorRole role,
@@ -121,8 +123,9 @@ public class ChatMessageContent : KernelContent
         string? modelId = null,
         object? innerContent = null,
         Encoding? encoding = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
+        IReadOnlyDictionary<string, object?>? metadata = null,
+        string? mimeType = null)
+        : base(innerContent, modelId, metadata, mimeType)
     {
         this.Role = role;
         this._encoding = encoding ?? Encoding.UTF8;

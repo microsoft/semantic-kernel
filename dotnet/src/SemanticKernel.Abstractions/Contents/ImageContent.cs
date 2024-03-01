@@ -17,11 +17,6 @@ public sealed class ImageContent : KernelContent
     public Uri? Uri { get; set; }
 
     /// <summary>
-    /// The image media type.
-    /// </summary>
-    public string? MediaType { get; set; }
-
-    /// <summary>
     /// The image data.
     /// </summary>
     public ReadOnlyMemory<byte>? Data { get; set; }
@@ -33,18 +28,17 @@ public sealed class ImageContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    /// <param name="mediaType">The image media type</param>
+    /// <param name="mimeType">The MIME type of the image content</param>
     [JsonConstructor]
     public ImageContent(
         Uri uri,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null,
-        string? mediaType = null)
-        : base(innerContent, modelId, metadata)
+        string? mimeType = null)
+        : base(innerContent, modelId, metadata, mimeType)
     {
         this.Uri = uri;
-        this.MediaType = mediaType;
     }
 
     /// <summary>
@@ -54,14 +48,14 @@ public sealed class ImageContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    /// <param name="mediaType">The image media type</param>
+    /// <param name="mimeType">The MIME type of the image content</param>
     public ImageContent(
         ReadOnlyMemory<byte> data,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null,
-        string? mediaType = null)
-        : base(innerContent, modelId, metadata)
+        string? mimeType = null)
+        : base(innerContent, modelId, metadata, mimeType)
     {
         if (data!.IsEmpty)
         {
@@ -69,7 +63,6 @@ public sealed class ImageContent : KernelContent
         }
 
         this.Data = data;
-        this.MediaType = mediaType;
     }
 
     /// <summary>
@@ -87,11 +80,11 @@ public sealed class ImageContent : KernelContent
 
     private string? BuildDataUri()
     {
-        if (this.Data is null || string.IsNullOrEmpty(this.MediaType))
+        if (this.Data is null || string.IsNullOrEmpty(this.MimeType))
         {
             return null;
         }
 
-        return $"data:{this.MediaType};base64,{Convert.ToBase64String(this.Data.Value.ToArray())}";
+        return $"data:{this.MimeType};base64,{Convert.ToBase64String(this.Data.Value.ToArray())}";
     }
 }
