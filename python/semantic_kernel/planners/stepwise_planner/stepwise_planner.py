@@ -106,7 +106,9 @@ class StepwisePlanner:
             plugin_name="planners",
             description="",
             parameters=[
-                KernelParameterMetadata(name="goal", description="The goal to achieve", default_value="", required=True)
+                KernelParameterMetadata(
+                    name="goal", description="The goal to achieve", default_value="", is_required=True
+                )
             ],
             is_prompt=True,
             is_asynchronous=True,

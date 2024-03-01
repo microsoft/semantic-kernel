@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 import sys
-from typing import AsyncIterable, Iterable, Optional
+from typing import AsyncIterable, Iterable, Optional, Union
 
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -33,12 +34,12 @@ def test_init_native_function_with_input_description():
     assert native_function.parameters[0].description == "input"
     assert not native_function.parameters[0].default_value
     assert native_function.parameters[0].type_ == "str"
-    assert native_function.parameters[0].required is True
+    assert native_function.parameters[0].is_required is True
     assert native_function.parameters[1].name == "arguments"
     assert native_function.parameters[1].description == ""
     assert not native_function.parameters[1].default_value
     assert native_function.parameters[1].type_ == "KernelArguments"
-    assert native_function.parameters[1].required is True
+    assert native_function.parameters[1].is_required is True
 
 
 def test_init_native_function_without_input_description():
@@ -54,7 +55,7 @@ def test_init_native_function_without_input_description():
             "name": "arguments",
             "description": "Param 1 description",
             "default_value": "default_param1_value",
-            "required": True,
+            "is_required": True,
         }
     ]
 
@@ -67,7 +68,7 @@ def test_init_native_function_without_input_description():
     assert native_function.parameters[0].description == "Param 1 description"
     assert native_function.parameters[0].default_value == "default_param1_value"
     assert native_function.parameters[0].type_ == "str"
-    assert native_function.parameters[0].required is True
+    assert native_function.parameters[0].is_required is True
 
 
 def test_init_native_function_from_kernel_function_decorator():
@@ -89,7 +90,7 @@ def test_init_native_function_from_kernel_function_decorator():
     assert native_function.parameters[0].description == "Test input description"
     assert native_function.parameters[0].default_value == "test_default_value"
     assert native_function.parameters[0].type_ == "str"
-    assert native_function.parameters[0].required is False
+    assert native_function.parameters[0].is_required is False
 
 
 def test_init_native_function_from_kernel_function_decorator_defaults():
@@ -227,3 +228,88 @@ async def test_required_param_not_supplied():
 
     result = await func.invoke(kernel=None, arguments=KernelArguments())
     assert isinstance(result.metadata["error"], FunctionExecutionException)
+
+
+@pytest.mark.asyncio
+async def test_service_execution_with_complex_object():
+    kernel = Kernel()
+
+    class InputObject(KernelBaseModel):
+        arg1: str
+        arg2: int
+
+    @kernel_function(name="function")
+    def my_function(input_obj: InputObject) -> str:
+        assert input_obj is not None
+        assert isinstance(input_obj, InputObject)
+        assert input_obj.arg1 == "test"
+        assert input_obj.arg2 == 5
+        return f"{input_obj.arg1} {input_obj.arg2}"
+
+    func = KernelFunction.from_method(my_function, "test")
+
+    arguments = KernelArguments(input_obj=InputObject(arg1="test", arg2=5))
+    result = await func.invoke(kernel, arguments)
+    assert result.value == "test 5"
+
+
+class InputObject(KernelBaseModel):
+    arg1: str
+    arg2: int
+
+
+@pytest.mark.asyncio
+async def test_service_execution_with_complex_object_from_str():
+    kernel = Kernel()
+
+    @kernel_function(name="function")
+    def my_function(input_obj: InputObject) -> str:
+        assert input_obj is not None
+        assert isinstance(input_obj, InputObject)
+        assert input_obj.arg1 == "test"
+        assert input_obj.arg2 == 5
+        return f"{input_obj.arg1} {input_obj.arg2}"
+
+    func = KernelFunction.from_method(my_function, "test")
+
+    arguments = KernelArguments(input_obj={"arg1": "test", "arg2": 5})
+    result = await func.invoke(kernel, arguments)
+    assert result.value == "test 5"
+
+
+@pytest.mark.asyncio
+async def test_service_execution_with_complex_object_from_str_mixed():
+    kernel = Kernel()
+
+    @kernel_function(name="function")
+    def my_function(input_obj: InputObject, input_str: str) -> str:
+        assert input_obj is not None
+        assert isinstance(input_obj, InputObject)
+        assert input_obj.arg1 == "test"
+        assert input_obj.arg2 == 5
+        return f"{input_obj.arg1} {input_str} {input_obj.arg2}"
+
+    func = KernelFunction.from_method(my_function, "test")
+
+    arguments = KernelArguments(input_obj={"arg1": "test", "arg2": 5}, input_str="test2")
+    result = await func.invoke(kernel, arguments)
+    assert result.value == "test test2 5"
+
+
+@pytest.mark.asyncio
+async def test_service_execution_with_complex_object_from_str_mixed_multi():
+    kernel = Kernel()
+
+    @kernel_function(name="function")
+    def my_function(input_obj: InputObject, input_str: Union[str, int]) -> str:
+        assert input_obj is not None
+        assert isinstance(input_obj, InputObject)
+        assert input_obj.arg1 == "test"
+        assert input_obj.arg2 == 5
+        return f"{input_obj.arg1} {input_str} {input_obj.arg2}"
+
+    func = KernelFunction.from_method(my_function, "test")
+
+    arguments = KernelArguments(input_obj={"arg1": "test", "arg2": 5}, input_str="test2")
+    result = await func.invoke(kernel, arguments)
+    assert result.value == "test test2 5"

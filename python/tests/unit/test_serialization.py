@@ -89,7 +89,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             description="bar",
             default_value="baz",
             type="string",
-            required=True,
+            is_required=True,
         ),
         KernelFunctionMetadata: KernelFunctionMetadata(
             name="foo",

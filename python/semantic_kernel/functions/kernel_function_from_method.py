@@ -59,7 +59,7 @@ class KernelFunctionFromMethod(KernelFunction):
             description=method.__kernel_function_return_description__,  # type: ignore
             default_value=None,
             type=method.__kernel_function_return_type__,  # type: ignore
-            required=method.__kernel_function_return_required__,  # type: ignore
+            is_required=method.__kernel_function_return_required__,  # type: ignore
         )
 
         try:
@@ -142,9 +142,25 @@ class KernelFunctionFromMethod(KernelFunction):
                 function_arguments[param.name] = arguments
                 continue
             if param.name in arguments:
-                function_arguments[param.name] = arguments[param.name]
+                value = arguments[param.name]
+                if param.type_.find(",") == -1 and param.type_object:
+                    if hasattr(param.type_object, "model_validate"):
+                        try:
+                            value = param.type_object.model_validate(value)
+                        except Exception as exc:
+                            raise FunctionExecutionException(
+                                f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
+                            ) from exc
+                    else:
+                        try:
+                            value = param.type_object(value)
+                        except Exception as exc:
+                            raise FunctionExecutionException(
+                                f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
+                            ) from exc
+                function_arguments[param.name] = value
                 continue
-            if param.required:
+            if param.is_required:
                 raise FunctionExecutionException(
                     f"Parameter {param.name} is required but not provided in the arguments."
                 )
