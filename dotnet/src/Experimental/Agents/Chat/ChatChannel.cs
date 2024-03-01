@@ -30,6 +30,11 @@ public sealed class ChatChannel : AgentChannel
             chat.AddMessage(AuthorRole.System, agent.Instructions!); // $$$ NAME
         }
 
+        if (message != null)
+        {
+            this._chat!.Add(message); // $$$ USER ???
+        }
+
         chat.AddRange(this._chat!); // $$$ NULL
 
         var chatCompletionService = agent.Kernel.GetRequiredService<IChatCompletionService>();
@@ -37,7 +42,7 @@ public sealed class ChatChannel : AgentChannel
         var chatMessageContent =
             await chatCompletionService.GetChatMessageContentsAsync(
                 chat,
-                executionSettings: null, // $$$
+                executionSettings: null, // $$$ FUNCTION CALLING / AGENT SPECIFIC
                 agent.Kernel,
                 cancellationToken).ConfigureAwait(false);
 

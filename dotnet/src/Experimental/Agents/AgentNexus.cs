@@ -32,7 +32,7 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
     /// <returns></returns>
     protected Task<IEnumerable<ChatMessageContent>> InvokeAgentAsync(KernelAgent agent, string? input = null, /*KernelArguments $$$,*/ CancellationToken cancellationToken = default)
     {
-        var content = new ChatMessageContent(AuthorRole.User, input);
+        var content = string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
         return this.InvokeAgentAsync(agent, content, cancellationToken);
     }
 
@@ -52,14 +52,17 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
         var response = await channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false);
 
         // Process response
-        var messages = response.ToArray();
+        foreach (var message in response)
+        {
+            this.AgentHistory.Add(message);
 
-        var tasks =
-            this._agentChannels.Values
-                .Where(c => c != channel)
-                .Select(c => c.RecieveAsync(messages));
+            var tasks =
+                this._agentChannels.Values
+                    .Where(c => c != channel)
+                    .Select(c => c.RecieveAsync([message]));
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
 
         return response;
     }
