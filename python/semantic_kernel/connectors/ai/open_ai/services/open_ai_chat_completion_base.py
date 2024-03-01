@@ -272,16 +272,19 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 else:
                     out_messages[index] += str(content)
             if content.tool_calls is not None:
-                if index not in tool_call_ids_by_index:
-                    tool_call_ids_by_index[index] = content.tool_calls
-                else:
-                    for tc_index, tool_call in enumerate(content.tool_calls):
-                        tool_call_ids_by_index[index][tc_index] += tool_call
+                for tc in content.tool_calls:
+                    if tc.index not in tool_call_ids_by_index:
+                        tool_call_ids_by_index[tc.index] = tc
+                    else:
+                        for tc in content.tool_calls:
+                            tool_call_ids_by_index[tc.index] += tc
             if content.function_call is not None:
-                if index not in function_call_by_index:
-                    function_call_by_index[index] = content.function_call
-                else:
-                    function_call_by_index[index] += content.function_call
+                for fc in content.function_call:
+                    if fc.index not in function_call_by_index:
+                        function_call_by_index[fc.index] = fc
+                    else:
+                        for tc in content.function_call:
+                            function_call_by_index[fc.index] += fc
 
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> Dict[str, Any]:
         """Get metadata from a chat response."""
@@ -316,9 +319,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             return None
         return [
             ToolCall(
+                index=getattr(tool, "index", None),
                 id=tool.id,
                 type=tool.type,
-                function=FunctionCall(name=tool.function.name, arguments=tool.function.arguments),
+                function=FunctionCall(name=tool.function.name, arguments=tool.function.arguments, id=tool.id),
             )
             for tool in content.tool_calls
         ]
@@ -346,9 +350,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 else streaming_chat_message_content + content_to_add
             )
         tool_calls_dict = update_storage["tool_call_ids_by_index"]
-        print(tool_calls_dict)
-        tools_to_add = [tool_call_list[0] for tool_call_list in tool_calls_dict.values()]
-        streaming_chat_message_content.tool_calls = tools_to_add  # Directly assign the list
+        streaming_chat_message_content.tool_calls = list(tool_calls_dict.values())
         streaming_chat_message_content.role = ChatRole.ASSISTANT
         return streaming_chat_message_content
 
@@ -373,11 +375,11 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         chat_history: ChatHistory,
     ) -> None:
         """Processes the tool calls in the result and return it as part of the chat history."""
+        logger.info(f"processing {len(result.tool_calls)} tool calls")
         for tool_call in result.tool_calls:
             func = kernel.func(**tool_call.function.split_name_dict())
-            print(tool_call.function)
             arguments = tool_call.function.to_kernel_arguments()
-            logger.info(f"Calling function with args: {arguments}")
+            logger.info(f"Calling {tool_call.function.name} function with args: {arguments}")
             func_result = await kernel.invoke(func, arguments)
             chat_history.add_tool_message(
                 str(func_result.value),
