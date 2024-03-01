@@ -17,7 +17,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
     private const string ApiKey = "Test123";
     private const string Endpoint = "http://localhost:1234/";
     private const string ServiceId = "AssemblyAI";
-    private static readonly HttpClient s_httpClient = new HttpClient();
+    private static readonly HttpClient s_httpClient = new();
 
     [Fact]
     public void AddServiceToKernelBuilder()
