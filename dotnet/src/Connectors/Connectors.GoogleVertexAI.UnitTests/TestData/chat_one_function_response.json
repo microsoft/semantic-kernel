@@ -5,7 +5,7 @@
         "parts": [
           {
             "functionCall": {
-              "name": "TimePlugin-Now",
+              "name": "TimePlugin%nameSeparator%Now",
               "args": {
                 "param1": "hello"
               }

@@ -38,7 +38,7 @@ public sealed class GeminiPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
-        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "MyPlugin-MyFunction" });
+        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = $"MyPlugin{GeminiFunction.NameSeparator}MyFunction" });
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -64,7 +64,7 @@ public sealed class GeminiPluginCollectionExtensionsTests
         var plugins = new KernelPluginCollection([plugin]);
         var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart
         {
-            FunctionName = "MyPlugin-MyFunction",
+            FunctionName = $"MyPlugin{GeminiFunction.NameSeparator}MyFunction",
             Arguments = expectedArgs
         });
 

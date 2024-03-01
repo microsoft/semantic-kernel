@@ -83,7 +83,7 @@ public sealed class GeminiFunctionTests
         GeminiTool.FunctionDeclaration result = sut.ToFunctionDeclaration();
 
         // Assert
-        Assert.Equal("myplugin-myfunc", result.Name);
+        Assert.Equal($"myplugin{GeminiFunction.NameSeparator}myfunc", result.Name);
         Assert.Equal(sut.Description, result.Description);
     }
 
@@ -112,7 +112,7 @@ public sealed class GeminiFunctionTests
         GeminiTool.FunctionDeclaration functionDefinition = sut.ToFunctionDeclaration();
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
+        Assert.Equal($"Tests{GeminiFunction.NameSeparator}TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)),
             JsonSerializer.Serialize(functionDefinition.Parameters));
@@ -143,7 +143,7 @@ public sealed class GeminiFunctionTests
         GeminiTool.FunctionDeclaration functionDefinition = sut.ToFunctionDeclaration();
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
+        Assert.Equal($"Tests{GeminiFunction.NameSeparator}TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)),
             JsonSerializer.Serialize(functionDefinition.Parameters));

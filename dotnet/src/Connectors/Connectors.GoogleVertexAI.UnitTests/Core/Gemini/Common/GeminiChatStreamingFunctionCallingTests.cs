@@ -17,7 +17,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
 
 [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Test class is disposed")]
-public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
+public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly string _responseContent;
@@ -25,10 +25,10 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly GeminiFunction _timePluginDate, _timePluginNow;
     private readonly Kernel _kernelWithFunctions;
-    private const string ChatTestDataFilePath = "./TestData/chat_one_response.json";
+    private const string ChatTestDataFilePath = "./TestData/chat_stream_response.json";
     private const string ChatTestDataWithFunctionFilePath = "./TestData/chat_one_function_response.json";
 
-    public GeminiChatGenerationFunctionCallingTests()
+    public GeminiChatStreamingFunctionCallingTests()
     {
         this._responseContent = File.ReadAllText(ChatTestDataFilePath);
         this._responseContentWithFunction = File.ReadAllText(ChatTestDataWithFunctionFilePath)
@@ -68,7 +68,8 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+            .ToListAsync();
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -104,7 +105,8 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+            .ToListAsync();
 
         // Assert
         GeminiRequest request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent)!;
@@ -141,7 +143,8 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+            .ToListAsync();
 
         // Assert
         GeminiRequest request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent)!;
@@ -168,10 +171,11 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
 
         // Act
         var chatMessageContents =
-            await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+            await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+                .ToListAsync();
 
         // Assert
-        var message = chatMessageContents.SingleOrDefault() as GeminiChatMessageContent;
+        var message = chatMessageContents.SingleOrDefault() as GeminiStreamingChatMessageContent;
         Assert.NotNull(message);
         Assert.NotNull(message.ToolCalls);
         Assert.Single(message.ToolCalls,
@@ -195,7 +199,8 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+            .ToListAsync();
 
         // Assert
         var messages = chatHistory.OfType<GeminiChatMessageContent>();
@@ -222,7 +227,8 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+            .ToListAsync();
 
         // Assert
         var messages = chatHistory.OfType<GeminiChatMessageContent>();
@@ -235,7 +241,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
     }
 
     [Fact]
-    public async Task IfAutoInvokeShouldReturnAssistantMessageWithContentAsync()
+    public async Task IfAutoInvokeShouldReturnAssistantMessagesWithContentAsync()
     {
         // Arrange
         using var handlerStub = new MultipleHttpMessageHandlerStub();
@@ -250,11 +256,14 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
 
         // Act
         var messages =
-            await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+            await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+                .ToListAsync();
 
         // Assert
-        Assert.Single(messages, item =>
-            item.Role == AuthorRole.Assistant && !string.IsNullOrWhiteSpace(item.Content));
+        Assert.All(messages, item =>
+            Assert.Equal(AuthorRole.Assistant, item.Role));
+        Assert.All(messages, item =>
+            Assert.False(string.IsNullOrWhiteSpace(item.Content)));
     }
 
     private static ChatHistory CreateSampleChatHistory()

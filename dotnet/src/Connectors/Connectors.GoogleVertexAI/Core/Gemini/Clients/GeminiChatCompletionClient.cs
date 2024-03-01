@@ -85,102 +85,38 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
-        bool autoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings);
 
-        var geminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel);
-
-        for (int iteration = 1;; iteration++)
+        ChatCompletionState state = new()
         {
-            var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(endpoint, geminiRequest, cancellationToken)
+            AutoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings),
+            ChatHistory = chatHistory,
+            ExecutionSettings = geminiExecutionSettings,
+            GeminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel),
+            Kernel = kernel! // not null if auto-invoke is true
+        };
+
+        for (state.Iteration = 1;; state.Iteration++)
+        {
+            var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(endpoint, state.GeminiRequest, cancellationToken)
                 .ConfigureAwait(false);
 
-            var chatMessagesContents = this.ProcessChatResponse(geminiResponse);
+            var chatResponses = this.ProcessChatResponse(geminiResponse);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
-            if (!autoInvoke || chatMessagesContents.Count != 1)
+            if (kernel is null || !state.AutoInvoke || chatResponses.Count != 1)
             {
-                return chatMessagesContents;
+                return chatResponses;
             }
 
-            var result = chatMessagesContents[0];
-            if (result.ToolCalls is null)
+            state.LastMessage = chatResponses[0];
+            if (state.LastMessage.ToolCalls is null)
             {
-                return chatMessagesContents;
+                return chatResponses;
             }
 
-            chatHistory.Add(result);
-            geminiRequest.AddChatMessage(result);
-
-            this.Logger.LogDebug("Tool requests: {Requests}", result.ToolCalls.Count);
-            this.Logger.LogTrace("Function call requests: {FunctionCall}",
-                string.Join(", ", result.ToolCalls.Select(ftc => ftc.ToString())));
-
-            // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
-            // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-            foreach (var toolCall in result.ToolCalls)
-            {
-                // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
-                // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
-                // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
-                if (geminiExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
-                    !IsRequestableTool(geminiRequest.Tools![0].Functions, toolCall))
-                {
-                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, functionResponse: null,
-                        "Error: Function call request for a function that wasn't defined.");
-                    continue;
-                }
-
-                // Find the function in the kernel and populate the arguments.
-                if (!kernel!.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? functionArgs))
-                {
-                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, functionResponse: null,
-                        "Error: Requested function could not be found.");
-                    continue;
-                }
-
-                // Now, invoke the function, and add the resulting tool call message to the chat history.
-                s_inflightAutoInvokes.Value++;
-                object? functionResult;
-                try
-                {
-                    // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                    // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                    // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken)
-                        .ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
-                }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception e)
-#pragma warning restore CA1031
-                {
-                    this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall, functionResponse: null,
-                        $"Error: Exception while invoking function. {e.Message}");
-                    continue;
-                }
-                finally
-                {
-                    s_inflightAutoInvokes.Value--;
-                }
-
-                this.AddToolResponseMessage(chatHistory, geminiRequest, toolCall,
-                    functionResponse: functionResult, errorMessage: null);
-            }
-
-            if (iteration >= geminiExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
-            {
-                // Clear the tools
-                geminiRequest.Tools = null;
-                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.",
-                    geminiExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
-            }
-
-            if (iteration >= geminiExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
-            {
-                autoInvoke = false;
-                this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.",
-                    geminiExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
-            }
+            state.AddLastMessageToChatHistoryAndRequest();
+            await this.ProcessFunctionsAsync(state, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -198,47 +134,148 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
-        bool autoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings);
 
-        var geminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel);
-
-        for (int iteration = 1;; iteration++)
+        ChatCompletionState state = new()
         {
-            using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
+            AutoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings),
+            ChatHistory = chatHistory,
+            ExecutionSettings = geminiExecutionSettings,
+            GeminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel),
+            Kernel = kernel! // not null if auto-invoke is true
+        };
+
+        for (state.Iteration = 1;; state.Iteration++)
+        {
+            using var httpRequestMessage = this.HttpRequestFactory.CreatePost(state.GeminiRequest, endpoint);
             using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
                 .ConfigureAwait(false);
             using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
                 .ConfigureAwait(false);
 
-            GeminiChatMessageContent result = null!;
-            bool first = true;
-            foreach (var messageContent in this.ProcessChatResponseStream(responseStream))
+            foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCalling(state, responseStream))
             {
-                if (first && autoInvoke && messageContent.ToolCalls is not null)
-                {
-                    // If function call was returned there is no more data in stream
-                    result = messageContent;
-                    break;
-                }
-
-                first = false;
-
-                // If we don't want to attempt to invoke any functions, just return the result.
-                yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                yield return messageContent;
             }
 
-            if (!first)
+            if (!state.AutoInvoke)
             {
                 yield break;
             }
 
-            chatHistory.Add(result);
-            geminiRequest.AddChatMessage(result);
-
-            this.Logger.LogDebug("Tool requests: {Requests}", result.ToolCalls!.Count);
-            this.Logger.LogTrace("Function call requests: {FunctionCall}",
-                string.Join(", ", result.ToolCalls.Select(ftc => ftc.ToString())));
+            state.AddLastMessageToChatHistoryAndRequest();
+            await this.ProcessFunctionsAsync(state, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private IEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsOrPopulateStateForToolCalling(
+        ChatCompletionState state,
+        Stream responseStream)
+    {
+        using var chatResponsesEnumerator = this.ProcessChatResponseStream(responseStream).GetEnumerator();
+        while (chatResponsesEnumerator.MoveNext())
+        {
+            var messageContent = chatResponsesEnumerator.Current!;
+            if (state.AutoInvoke && messageContent.ToolCalls is not null)
+            {
+                if (chatResponsesEnumerator.MoveNext())
+                {
+                    // We disable auto-invoke because we have more than one message in the stream.
+                    state.AutoInvoke = false;
+                    chatResponsesEnumerator.Reset();
+                    continue;
+                }
+
+                // If function call was returned there is no more data in stream
+                state.LastMessage = messageContent;
+                yield break;
+            }
+
+            // We disable auto-invoke because we have more than one message in the stream.
+            state.AutoInvoke = false;
+
+            // If we don't want to attempt to invoke any functions, just return the result.
+            yield return this.GetStreamingChatContentFromChatContent(messageContent);
+        }
+    }
+
+    private async Task ProcessFunctionsAsync(ChatCompletionState state, CancellationToken cancellationToken)
+    {
+        this.Logger.LogDebug("Tool requests: {Requests}", state.LastMessage.ToolCalls!.Count);
+        this.Logger.LogTrace("Function call requests: {FunctionCall}",
+            string.Join(", ", state.LastMessage.ToolCalls.Select(ftc => ftc.ToString())));
+
+        // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
+        // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
+        foreach (var toolCall in state.LastMessage.ToolCalls)
+        {
+            await this.ProcessSingleToolCallAsync(state, toolCall, cancellationToken).ConfigureAwait(false);
+        }
+
+        // If we've reached the maximum number of attempts for either tool use or auto-invoke, we need to clear the tools
+        if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
+        {
+            // Clear the tools
+            state.GeminiRequest.Tools = null;
+            this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.",
+                state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
+        }
+
+        // If we've reached the maximum number of attempts for auto-invoke, we need to disable auto-invoke
+        if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+        {
+            state.AutoInvoke = false;
+            this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.",
+                state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+        }
+    }
+
+    private async Task ProcessSingleToolCallAsync(ChatCompletionState state, GeminiFunctionToolCall toolCall, CancellationToken cancellationToken)
+    {
+        // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
+        // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
+        // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
+        if (state.ExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
+            !IsRequestableTool(state.GeminiRequest.Tools![0].Functions, toolCall))
+        {
+            this.AddToolResponseMessage(state.ChatHistory, state.GeminiRequest, toolCall, functionResponse: null,
+                "Error: Function call request for a function that wasn't defined.");
+            return;
+        }
+
+        // Find the function in the kernel and populate the arguments.
+        if (!state.Kernel!.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? functionArgs))
+        {
+            this.AddToolResponseMessage(state.ChatHistory, state.GeminiRequest, toolCall, functionResponse: null,
+                "Error: Requested function could not be found.");
+            return;
+        }
+
+        // Now, invoke the function, and add the resulting tool call message to the chat history.
+        s_inflightAutoInvokes.Value++;
+        object? functionResult;
+        try
+        {
+            // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+            // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+            // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+            functionResult = (await function.InvokeAsync(state.Kernel, functionArgs, cancellationToken: cancellationToken)
+                .ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+        }
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch (Exception e)
+#pragma warning restore CA1031
+        {
+            this.AddToolResponseMessage(state.ChatHistory, state.GeminiRequest, toolCall, functionResponse: null,
+                $"Error: Exception while invoking function. {e.Message}");
+            return;
+        }
+        finally
+        {
+            s_inflightAutoInvokes.Value--;
+        }
+
+        this.AddToolResponseMessage(state.ChatHistory, state.GeminiRequest, toolCall,
+            functionResponse: functionResult, errorMessage: null);
     }
 
     private async Task<GeminiResponse> SendRequestAndReturnValidGeminiResponseAsync(
@@ -409,13 +446,37 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
         return geminiRequest;
     }
 
-    private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(ChatMessageContent chatMessageContent)
-        => new(
-            role: chatMessageContent.Role,
-            content: chatMessageContent.Content,
+    private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message)
+    {
+        if (message.CalledTool != null)
+        {
+            return new GeminiStreamingChatMessageContent(
+                role: message.Role,
+                content: message.Content,
+                modelId: this._modelId,
+                calledTool: message.CalledTool,
+                metadata: message.Metadata,
+                choiceIndex: message.Metadata!.Index);
+        }
+
+        if (message.ToolCalls != null)
+        {
+            return new GeminiStreamingChatMessageContent(
+                role: message.Role,
+                content: message.Content,
+                modelId: this._modelId,
+                toolCalls: message.ToolCalls,
+                metadata: message.Metadata,
+                choiceIndex: message.Metadata!.Index);
+        }
+
+        return new GeminiStreamingChatMessageContent(
+            role: message.Role,
+            content: message.Content,
             modelId: this._modelId,
-            metadata: chatMessageContent.Metadata,
-            choiceIndex: ((GeminiMetadata)chatMessageContent.Metadata!).Index);
+            choiceIndex: message.Metadata!.Index,
+            metadata: message.Metadata);
+    }
 
     private static void ValidateAutoInvoke(bool autoInvoke, int resultsPerPrompt)
     {
@@ -450,5 +511,22 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
             metadata.CandidatesTokenCount,
             metadata.PromptTokenCount,
             metadata.TotalTokenCount);
+    }
+
+    private sealed class ChatCompletionState
+    {
+        public ChatHistory ChatHistory { get; set; }
+        public GeminiRequest GeminiRequest { get; set; }
+        public Kernel Kernel { get; set; }
+        public GeminiPromptExecutionSettings ExecutionSettings { get; set; }
+        public GeminiChatMessageContent LastMessage { get; set; }
+        public int Iteration { get; set; }
+        public bool AutoInvoke { get; set; }
+
+        public void AddLastMessageToChatHistoryAndRequest()
+        {
+            this.ChatHistory.Add(this.LastMessage);
+            this.GeminiRequest.AddChatMessage(this.LastMessage);
+        }
     }
 }

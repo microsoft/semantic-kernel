@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -47,14 +46,14 @@ public sealed class GeminiStreamingChatMessageContent : StreamingChatMessageCont
     /// <param name="content">Content of the message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="choiceIndex">Choice index</param>
-    /// <param name="functionsToolCalls">Tool calls parts returned by model</param>
+    /// <param name="toolCalls">Tool calls returned by model</param>
     /// <param name="metadata">Additional metadata</param>
     internal GeminiStreamingChatMessageContent(
         AuthorRole role,
         string? content,
         string modelId,
         int choiceIndex,
-        IEnumerable<GeminiPart.FunctionCallPart>? functionsToolCalls,
+        IReadOnlyList<GeminiFunctionToolCall>? toolCalls,
         GeminiMetadata? metadata = null)
         : base(
             role: role,
@@ -65,7 +64,7 @@ public sealed class GeminiStreamingChatMessageContent : StreamingChatMessageCont
             encoding: Encoding.UTF8,
             metadata: metadata)
     {
-        this.ToolCalls = functionsToolCalls?.Select(tool => new GeminiFunctionToolCall(tool)).ToList();
+        this.ToolCalls = toolCalls;
     }
 
     /// <summary>

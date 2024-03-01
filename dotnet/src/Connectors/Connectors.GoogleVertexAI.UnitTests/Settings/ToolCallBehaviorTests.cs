@@ -135,7 +135,7 @@ public sealed class ToolCallBehaviorTests
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureGeminiRequest(kernel, geminiRequest));
         Assert.Equal(
-            $"The specified {nameof(ToolCallBehavior.EnabledFunctions)} function MyPlugin-MyFunction is not available in the kernel.",
+            $"The specified {nameof(ToolCallBehavior.EnabledFunctions)} function MyPlugin{GeminiFunction.NameSeparator}MyFunction is not available in the kernel.",
             exception.Message);
     }
 
@@ -214,7 +214,7 @@ public sealed class ToolCallBehaviorTests
 
         Assert.NotNull(function);
 
-        Assert.Equal("MyPlugin-MyFunction", function.Name);
+        Assert.Equal($"MyPlugin{GeminiFunction.NameSeparator}MyFunction", function.Name);
         Assert.Equal("Test Function", function.Description);
         Assert.Equal("""{"type":"object","required":[],"properties":{"parameter1":{"type":"string"},"parameter2":{"type":"string"}}}""",
             JsonSerializer.Serialize(function.Parameters));
