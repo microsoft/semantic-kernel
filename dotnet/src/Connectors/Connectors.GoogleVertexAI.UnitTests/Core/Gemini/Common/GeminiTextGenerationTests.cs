@@ -14,13 +14,13 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
 
-public sealed class GeminiClientTextGenerationTests : IDisposable
+public sealed class GeminiTextGenerationTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private const string TestDataFilePath = "./TestData/completion_one_response.json";
 
-    public GeminiClientTextGenerationTests()
+    public GeminiTextGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(

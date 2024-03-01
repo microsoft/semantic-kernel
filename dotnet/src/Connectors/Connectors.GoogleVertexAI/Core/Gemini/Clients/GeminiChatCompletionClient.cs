@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -217,7 +216,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
         if (functionResponse is not null)
         {
-            tool = new GeminiFunctionToolCall(tool, functionResponse as string ?? JsonSerializer.Serialize(functionResponse));
+            tool = new GeminiFunctionToolCall(tool, functionResponse);
         }
 
         var message = new GeminiChatMessageContent(AuthorRole.Tool,
@@ -299,10 +298,13 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     private static void ValidateChatHistoryMessagesOrder(ChatHistory chatHistory)
     {
         bool incorrectOrder = false;
-        for (int i = 0; i < chatHistory.Count; i++)
+        // Exclude tool calls from the validation
+        ChatHistory chatHistoryCopy = new(chatHistory
+            .Where(message => message.Role != AuthorRole.Tool && (message is not GeminiChatMessageContent { ToolCalls: not null })));
+        for (int i = 0; i < chatHistoryCopy.Count; i++)
         {
-            if (chatHistory[i].Role != (i % 2 == 0 ? AuthorRole.User : AuthorRole.Assistant) ||
-                (i == chatHistory.Count - 1 && chatHistory[i].Role != AuthorRole.User))
+            if (chatHistoryCopy[i].Role != (i % 2 == 0 ? AuthorRole.User : AuthorRole.Assistant) ||
+                (i == chatHistoryCopy.Count - 1 && chatHistoryCopy[i].Role != AuthorRole.User))
             {
                 incorrectOrder = true;
                 break;

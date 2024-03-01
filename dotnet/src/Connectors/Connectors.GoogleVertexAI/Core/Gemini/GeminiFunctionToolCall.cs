@@ -40,14 +40,14 @@ public sealed class GeminiFunctionToolCall
         }
     }
 
-    internal GeminiFunctionToolCall(GeminiFunctionToolCall other, string? arguments)
+    internal GeminiFunctionToolCall(GeminiFunctionToolCall source, object? responseArguments)
     {
-        this._fullyQualifiedFunctionName = other._fullyQualifiedFunctionName;
-        this.PluginName = other.PluginName;
-        this.FunctionName = other.FunctionName;
-        if (arguments != null)
+        this._fullyQualifiedFunctionName = source._fullyQualifiedFunctionName;
+        this.PluginName = source.PluginName;
+        this.FunctionName = source.FunctionName;
+        if (responseArguments != null)
         {
-            this.Arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(arguments);
+            this.Arguments = new Dictionary<string, object?> { { "response", responseArguments } };
         }
     }
 

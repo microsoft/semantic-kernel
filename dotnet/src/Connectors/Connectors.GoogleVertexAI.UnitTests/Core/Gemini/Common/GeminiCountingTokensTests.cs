@@ -12,13 +12,13 @@ using Xunit;
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
 
 [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
-public sealed class GeminiClientCountingTokensTests : IDisposable
+public sealed class GeminiCountingTokensTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private const string TestDataFilePath = "./TestData/counttokens_response.json";
 
-    public GeminiClientCountingTokensTests()
+    public GeminiCountingTokensTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(

@@ -41,6 +41,8 @@
              Link="%(RecursiveDir)%(Filename)%(Extension)"/>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/HttpMessageHandlerStub.cs"
              Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/MultipleHttpMessageHandlerStub.cs"
+             Link="%(RecursiveDir)%(Filename)%(Extension)"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -49,28 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\completion_one_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\completion_stream_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\chat_one_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\chat_stream_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\embeddings_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\counttokens_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\vertex_embeddings_response.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\chat_one_function_response.json">
+    <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

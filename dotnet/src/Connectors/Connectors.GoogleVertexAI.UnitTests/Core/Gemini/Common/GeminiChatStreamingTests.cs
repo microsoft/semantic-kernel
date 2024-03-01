@@ -3,13 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Moq;
@@ -18,55 +16,30 @@ using Xunit;
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
 
 [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
-public sealed class GeminiClientChatGenerationTests : IDisposable
+public sealed class GeminiChatStreamingTests : IDisposable
 {
     private readonly HttpClient _httpClient;
-    private readonly string _responseContent;
-    private readonly string _responseContentWithFunction;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
-    private readonly GeminiFunction _timePluginDate, _timePluginNow;
-    private readonly Kernel _kernelWithFunctions;
-    private const string ChatTestDataFilePath = "./TestData/chat_one_response.json";
-    private const string ChatTestDataWithFunctionFilePath = "./TestData/chat_one_function_response.json";
+    private const string StreamTestDataFilePath = "./TestData/chat_stream_response.json";
 
-    public GeminiClientChatGenerationTests()
+    public GeminiChatStreamingTests()
     {
-        this._responseContent = File.ReadAllText(ChatTestDataFilePath);
-        this._responseContentWithFunction = File.ReadAllText(ChatTestDataWithFunctionFilePath);
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
-            this._responseContent);
+            File.ReadAllText(StreamTestDataFilePath));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
-
-        var kernelPlugin = KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
-        {
-            KernelFunctionFactory.CreateFromMethod((string? format = null)
-                => DateTime.Now.Date.ToString(format, CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
-            KernelFunctionFactory.CreateFromMethod(()
-                    => DateTime.Now.ToString("", CultureInfo.InvariantCulture), "Now", "TimePlugin.Now",
-                parameters: [new KernelParameterMetadata("param1") { ParameterType = typeof(string), Description = "desc", IsRequired = false }]),
-        });
-        IList<KernelFunctionMetadata> functions = kernelPlugin.GetFunctionsMetadata();
-
-        this._timePluginDate = functions[0].ToGeminiFunction();
-        this._timePluginNow = functions[1].ToGeminiFunction();
-
-        this._kernelWithFunctions = new Kernel();
-        this._kernelWithFunctions.Plugins.Add(kernelPlugin);
     }
 
     [Fact]
     public async Task ShouldContainRolesInRequestAsync()
     {
         // Arrange
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
-            await File.ReadAllTextAsync(ChatTestDataFilePath));
         var client = this.CreateChatCompletionClient();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -82,15 +55,29 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
-        var chatHistory = CreateSampleChatHistory();
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+        chatHistory.AddAssistantMessage("Hi");
+        chatHistory.AddUserMessage("Explain me world in many word ;)");
 
         // Act
-        var response = await client.GenerateChatMessageAsync(chatHistory);
+        var chatMessageContents = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        Assert.NotNull(response);
-        Assert.Equal("I'm fine, thanks. How are you?", response[0].Content);
-        Assert.Equal(AuthorRole.Assistant, response[0].Role);
+        List<GeminiResponse> testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
+            await File.ReadAllTextAsync(StreamTestDataFilePath))!;
+
+        Assert.NotEmpty(chatMessageContents);
+        Assert.Equal(testDataResponse.Count, chatMessageContents.Count);
+        for (int i = 0; i < testDataResponse.Count; i++)
+        {
+            Assert.Equal(
+                testDataResponse[i].Candidates![0].Content!.Parts[0].Text,
+                chatMessageContents[i].Content);
+            Assert.Equal(
+                testDataResponse[i].Candidates![0].Content!.Role,
+                chatMessageContents[i].Role);
+        }
     }
 
     [Fact]
@@ -101,13 +88,14 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        var chatMessageContents = await client.GenerateChatMessageAsync(chatHistory);
+        var chatMessageContents =
+            await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        GeminiResponse testDataResponse = JsonSerializer.Deserialize<GeminiResponse>(
-            await File.ReadAllTextAsync(ChatTestDataFilePath))!;
+        GeminiResponse testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
+            await File.ReadAllTextAsync(StreamTestDataFilePath))![0];
         var testDataCandidate = testDataResponse.Candidates![0];
-        var textContent = chatMessageContents.SingleOrDefault();
+        var textContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata as GeminiMetadata;
         Assert.NotNull(metadata);
@@ -146,13 +134,14 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        var chatMessageContents = await client.GenerateChatMessageAsync(chatHistory);
+        var chatMessageContents =
+            await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        GeminiResponse testDataResponse = JsonSerializer.Deserialize<GeminiResponse>(
-            await File.ReadAllTextAsync(ChatTestDataFilePath))!;
+        GeminiResponse testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
+            await File.ReadAllTextAsync(StreamTestDataFilePath))![0];
         var testDataCandidate = testDataResponse.Candidates![0];
-        var textContent = chatMessageContents.SingleOrDefault();
+        var textContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata;
         Assert.NotNull(metadata);
@@ -190,10 +179,11 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        var chatMessageContents = await client.GenerateChatMessageAsync(chatHistory);
+        var chatMessageContents =
+            await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        var chatMessageContent = chatMessageContents.SingleOrDefault();
+        var chatMessageContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(chatMessageContent);
         Assert.Equal(modelId, chatMessageContent.ModelId);
     }
@@ -212,7 +202,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings);
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings).ToListAsync();
 
         // Assert
         var geminiRequest = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -220,46 +210,6 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         Assert.Equal(executionSettings.MaxTokens, geminiRequest.Configuration!.MaxOutputTokens);
         Assert.Equal(executionSettings.Temperature, geminiRequest.Configuration!.Temperature);
         Assert.Equal(executionSettings.TopP, geminiRequest.Configuration!.TopP);
-    }
-
-    [Fact]
-    public async Task ShouldThrowInvalidOperationExceptionIfChatHistoryContainsOnlySystemMessageAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory("System message");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
-    }
-
-    [Fact]
-    public async Task ShouldThrowInvalidOperationExceptionIfChatHistoryContainsOnlyManySystemMessagesAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory("System message");
-        chatHistory.AddSystemMessage("System message 2");
-        chatHistory.AddSystemMessage("System message 3");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
-    }
-
-    [Fact]
-    public async Task ShouldThrowInvalidOperationExceptionIfChatHistoryContainsMoreThanOneSystemMessageAsync()
-    {
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory("System message");
-        chatHistory.AddSystemMessage("System message 2");
-        chatHistory.AddSystemMessage("System message 3");
-        chatHistory.AddUserMessage("hello");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
     }
 
     [Fact]
@@ -272,7 +222,7 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -281,48 +231,6 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         var messageRole = request.Contents[0].Role;
         Assert.Equal(AuthorRole.User, messageRole);
         Assert.Equal(message, systemMessage);
-    }
-
-    [Fact]
-    public async Task ShouldThrowNotSupportedIfChatHistoryHaveIncorrectOrderAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Hello");
-        chatHistory.AddAssistantMessage("Hi");
-        chatHistory.AddAssistantMessage("Hi me again");
-        chatHistory.AddUserMessage("How are you?");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
-    }
-
-    [Fact]
-    public async Task ShouldThrowNotSupportedIfChatHistoryNotEndWithUserMessageAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Hello");
-        chatHistory.AddAssistantMessage("Hi");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
-    }
-
-    [Fact]
-    public async Task ShouldThrowArgumentExceptionIfChatHistoryIsEmptyAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory();
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
     }
 
     [Theory]
@@ -339,20 +247,20 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
-            () => client.GenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings: executionSettings));
+            async () => await client.StreamGenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings: executionSettings).ToListAsync());
     }
 
     [Fact]
-    public async Task ShouldCallGetChatEndpointAsync()
+    public async Task ShouldCallGetStreamingChatEndpointAsync()
     {
         // Arrange
         var endpointProviderMock = new Mock<IEndpointProvider>();
-        endpointProviderMock.Setup(x => x.GetGeminiChatCompletionEndpoint(It.IsAny<string>()))
+        endpointProviderMock.Setup(x => x.GetGeminiStreamChatCompletionEndpoint(It.IsAny<string>()))
             .Returns(new Uri("https://fake-endpoint.com/"));
         var sut = this.CreateChatCompletionClient(endpointProvider: endpointProviderMock.Object);
 
         // Act
-        await sut.GenerateChatMessageAsync(CreateSampleChatHistory());
+        await sut.StreamGenerateChatMessageAsync(CreateSampleChatHistory()).ToListAsync();
 
         // Assert
         endpointProviderMock.VerifyAll();
@@ -368,66 +276,10 @@ public sealed class GeminiClientChatGenerationTests : IDisposable
         var sut = this.CreateChatCompletionClient(httpRequestFactory: requestFactoryMock.Object);
 
         // Act
-        await sut.GenerateChatMessageAsync(CreateSampleChatHistory());
+        await sut.StreamGenerateChatMessageAsync(CreateSampleChatHistory()).ToListAsync();
 
         // Assert
         requestFactoryMock.VerifyAll();
-    }
-
-    [Fact]
-    public async Task ShouldPassToolsToRequestAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = CreateSampleChatHistory();
-        var executionSettings = new GeminiPromptExecutionSettings
-        {
-            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
-        };
-
-        // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
-
-        // Assert
-        GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
-        Assert.NotNull(request);
-        Assert.NotNull(request.Tools);
-        Assert.Collection(request.Tools[0].Functions,
-            item => Assert.Equal(this._timePluginDate.FullyQualifiedName, item.Name),
-            item => Assert.Equal(this._timePluginNow.FullyQualifiedName, item.Name));
-        Assert.Collection(request.Tools[0].Functions,
-            item =>
-                Assert.Equal(JsonSerializer.Serialize(this._timePluginDate.ToFunctionDeclaration().Parameters),
-                    JsonSerializer.Serialize(item.Parameters)),
-            item =>
-                Assert.Equal(JsonSerializer.Serialize(this._timePluginNow.ToFunctionDeclaration().Parameters),
-                    JsonSerializer.Serialize(item.Parameters)));
-    }
-
-    [Fact]
-    public async Task ShouldReturnFunctionsCalledByModelAsync()
-    {
-        // Arrange
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(this._responseContentWithFunction);
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = CreateSampleChatHistory();
-        var executionSettings = new GeminiPromptExecutionSettings
-        {
-            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
-        };
-
-        // Act
-        var chatMessageContents =
-            await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
-
-        // Assert
-        var message = chatMessageContents.SingleOrDefault() as GeminiChatMessageContent;
-        Assert.NotNull(message);
-        Assert.NotNull(message.ToolCalls);
-        Assert.Single(message.ToolCalls,
-            item => item.FullyQualifiedName == this._timePluginNow.FullyQualifiedName);
-        Assert.Single(message.ToolCalls,
-            item => item.Arguments!["param1"]!.ToString()!.Equals("hello", StringComparison.Ordinal));
     }
 
     private static ChatHistory CreateSampleChatHistory()
