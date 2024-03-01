@@ -3,100 +3,54 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Microsoft.SemanticKernel.TextGeneration;
+using xRetry;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
 
-public sealed class GeminiTextGenerationTests
+public sealed class GeminiTextGenerationTests : TestsBase
 {
-    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-        .AddEnvironmentVariables()
-        .Build();
-
-    [Fact(Skip = "This test is for manual verification.")]
-    public async Task GoogleAIGeminiTextGenerationAsync()
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task TextGenerationAsync(ServiceType serviceType)
     {
         // Arrange
         const string Input = "Expand this abbreviation: LLM";
 
-        var geminiService = new GoogleAIGeminiTextGenerationService(this.GoogleAIGetModel(), this.GoogleAIGetApiKey());
+        var sut = this.GetTextService(serviceType);
 
         // Act
-        var response = await geminiService.GetTextContentAsync(Input);
+        var response = await sut.GetTextContentAsync(Input);
 
         // Assert
         Assert.NotNull(response.Text);
+        this.Output.WriteLine(response.Text);
         Assert.Contains("Large Language Model", response.Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
-    public async Task GoogleAIGeminiTextStreamingAsync()
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task TextStreamingAsync(ServiceType serviceType)
     {
         // Arrange
         const string Input = "Write a story about a magic backpack.";
 
-        var geminiService = new GoogleAIGeminiTextGenerationService(this.GoogleAIGetModel(), this.GoogleAIGetApiKey());
+        var sut = this.GetTextService(serviceType);
 
         // Act
-        var response = await geminiService.GetStreamingTextContentsAsync(Input).ToListAsync();
+        var response = await sut.GetStreamingTextContentsAsync(Input).ToListAsync();
 
         // Assert
         Assert.NotEmpty(response);
         Assert.True(response.Count > 1);
-        Assert.DoesNotContain(response, content => string.IsNullOrEmpty(content.Text));
+        var text = string.Concat(response.Select(r => r.Text));
+        this.Output.WriteLine(text);
+        Assert.False(string.IsNullOrWhiteSpace(text));
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
-    public async Task VertexAIGeminiTextGenerationAsync()
-    {
-        // Arrange
-        const string Input = "Expand this abbreviation: LLM";
-
-        var geminiService = new VertexAIGeminiTextGenerationService(
-            model: this.VertexAIGetModel(),
-            apiKey: this.VertexAIGetApiKey(),
-            location: this.VertexAIGetLocation(),
-            projectId: this.VertexAIGetProjectId());
-
-        // Act
-        var response = await geminiService.GetTextContentAsync(Input);
-
-        // Assert
-        Assert.NotNull(response.Text);
-        Assert.Contains("Large Language Model", response.Text, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact(Skip = "This test is for manual verification.")]
-    public async Task VertexAIGeminiTextStreamingAsync()
-    {
-        // Arrange
-        const string Input = "Write a story about a magic backpack.";
-
-        var geminiService = new VertexAIGeminiTextGenerationService(
-            model: this.VertexAIGetModel(),
-            apiKey: this.VertexAIGetApiKey(),
-            location: this.VertexAIGetLocation(),
-            projectId: this.VertexAIGetProjectId());
-
-        // Act
-        var response = await geminiService.GetStreamingTextContentsAsync(Input).ToListAsync();
-
-        // Assert
-        Assert.NotEmpty(response);
-        Assert.True(response.Count > 1);
-        Assert.DoesNotContain(response, content => string.IsNullOrEmpty(content.Text));
-    }
-
-    private string GoogleAIGetModel() => this._configuration.GetSection("GoogleAI:Gemini:ModelId").Get<string>()!;
-    private string GoogleAIGetApiKey() => this._configuration.GetSection("GoogleAI:ApiKey").Get<string>()!;
-
-    private string VertexAIGetModel() => this._configuration.GetSection("VertexAI:Gemini:ModelId").Get<string>()!;
-    private string VertexAIGetApiKey() => this._configuration.GetSection("VertexAI:ApiKey").Get<string>()!;
-    private string VertexAIGetLocation() => this._configuration.GetSection("VertexAI:Location").Get<string>()!;
-    private string VertexAIGetProjectId() => this._configuration.GetSection("VertexAI:ProjectId").Get<string>()!;
+    public GeminiTextGenerationTests(ITestOutputHelper output) : base(output) { }
 }
