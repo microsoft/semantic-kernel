@@ -174,7 +174,7 @@ public final class CodeBlock extends Block implements CodeRendering {
 
         // Check if the function has parameters to be set
         if (functionMetadata.getParameters().isEmpty()) {
-            throw new IllegalArgumentException(
+            throw new SKException(
                 "Function " + fBlock.getPluginName() + "." + fBlock.getFunctionName()
                     + " does not take any arguments but it is being called in the template with {this._tokens.Count - 1} arguments.");
         }

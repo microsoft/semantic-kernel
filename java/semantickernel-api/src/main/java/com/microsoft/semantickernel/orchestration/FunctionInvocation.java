@@ -117,7 +117,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 try {
                     sink.next(new FunctionResult<>(
                         ContextVariable.convert(result.getResult(), variableType),
-                        result.getMetadata()));
+                        result.getMetadata(),
+                        result.getUnconvertedResult()));
                 } catch (Exception e) {
                     sink.error(new SKException(
                         "Failed to convert result to requested type: "

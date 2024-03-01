@@ -177,7 +177,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                     mono = invokeAsyncFunction(method, instance, args);
                 }
 
-                Mono<T> r = mono
+                return mono
                     .map(it -> {
                         if (it instanceof Iterable) {
                             // Handle return from things like Mono<List<?>>
@@ -186,9 +186,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                         } else {
                             return (T) it;
                         }
-                    });
-
-                return r
+                    })
                     .map(it -> {
                         // If given a variable type, use it.
                         // If it's wrong, then it's a programming error on the part of the caller.
@@ -200,7 +198,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                                     it.getClass().getName()));
                             }
                             return new FunctionResult<>(
-                                new ContextVariable<>(variableType, it));
+                                new ContextVariable<>(variableType, it), it);
                         }
 
                         Class<?> returnParameterType = function
@@ -221,7 +219,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
                         if (contextVariableType != null) {
                             return new FunctionResult<>(
-                                new ContextVariable<>(contextVariableType, it));
+                                new ContextVariable<>(contextVariableType, it),
+                                it);
                         }
 
                         // If we get here, then either the returnParameterType doesn't match T

@@ -5,6 +5,7 @@ import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 /**
  * A {@link ContextVariableTypeConverter} for {@code java.lang.Character} variables. Use
@@ -33,7 +34,7 @@ public class CharacterVariableContextVariableTypeConverter extends
      */
     static Character charFromPromptString(String s) {
         if (s.length() != 1) {
-            throw new IllegalArgumentException("Cannot convert string to character: " + s);
+            throw new SKException("Cannot convert string to character: " + s);
         }
         return s.charAt(0);
     }
