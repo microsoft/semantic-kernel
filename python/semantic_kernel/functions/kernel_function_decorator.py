@@ -3,9 +3,9 @@
 
 import logging
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
-from types import NoneType
 from typing import Any, Callable, Dict, Optional
 
+NoneType = type(None)
 logger = logging.getLogger(__name__)
 
 
