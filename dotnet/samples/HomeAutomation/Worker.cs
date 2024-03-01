@@ -34,23 +34,25 @@ internal sealed class Worker : BackgroundService
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
 
-        ChatMessageContent chatResult = await chatCompletionService.GetChatMessageContentAsync(
-            "If it's before 7:00 pm, turn on the office light.",
-            openAIPromptExecutionSettings, _kernel, stoppingToken);
-        Console.WriteLine($">>> Result: {chatResult}");
+        Console.WriteLine("Ask questions or give instructions to the copilot such as:\n" +
+                          "- What time is it?\n" +
+                          "- Turn on the porch light.\n" +
+                          "- If it's before 7:00 pm, turn on the office light.\n" +
+                          "- Which light is currently on?\n" +
+                          "- Set an alarm for 6:00 am.\n");
 
-        chatResult = await chatCompletionService.GetChatMessageContentAsync(
-            "Otherwise, turn on the porch light.",
-            openAIPromptExecutionSettings, _kernel, stoppingToken);
-        Console.WriteLine($">>> Result: {chatResult}");
+        Console.Write("> ");
 
-        chatResult = await chatCompletionService.GetChatMessageContentAsync("Which light is currently on?",
-            openAIPromptExecutionSettings, _kernel, stoppingToken);
-        Console.WriteLine($">>> Result: {chatResult}");
+        string? input = null;
+        while ((input = Console.ReadLine()) != null)
+        {
+            Console.WriteLine();
 
-        chatResult = await chatCompletionService.GetChatMessageContentAsync("Set an alarm for 6:00 am.",
-            openAIPromptExecutionSettings, _kernel, stoppingToken);
-        Console.WriteLine($">>> Result: {chatResult}");
+            ChatMessageContent chatResult = await chatCompletionService.GetChatMessageContentAsync(input,
+                    openAIPromptExecutionSettings, _kernel, stoppingToken);
+
+            Console.Write($"\n>>> Result: {chatResult}\n\n> ");
+        }
 
         _hostApplicationLifetime.StopApplication();
     }
