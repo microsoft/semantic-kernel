@@ -71,7 +71,7 @@ public sealed class GeminiChatCompletionTests : TestsBase
     public async Task ChatGenerationVisionBinaryDataAsync(ServiceType serviceType)
     {
         // Arrange
-        Memory<byte> image = await File.ReadAllBytesAsync("./TestData/car.jpg");
+        Memory<byte> image = await File.ReadAllBytesAsync("./TestData/test_image_001.jpg");
         var chatHistory = new ChatHistory();
         var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
         {
@@ -97,7 +97,7 @@ public sealed class GeminiChatCompletionTests : TestsBase
     public async Task ChatStreamingVisionBinaryDataAsync(ServiceType serviceType)
     {
         // Arrange
-        Memory<byte> image = await File.ReadAllBytesAsync("./TestData/car.jpg");
+        Memory<byte> image = await File.ReadAllBytesAsync("./TestData/test_image_001.jpg");
         var chatHistory = new ChatHistory();
         var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
         {
