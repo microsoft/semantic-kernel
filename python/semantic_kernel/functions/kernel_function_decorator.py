@@ -3,7 +3,7 @@
 
 import logging
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -53,61 +53,58 @@ def kernel_function(
         func.__kernel_function_parameters__ = [
             _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
         ]
-
+        return_param_dict = {}
         if func_sig.return_annotation != Signature.empty:
-            return_description, return_type, return_required = _parse_annotation(func_sig.return_annotation)
-        else:
-            return_description, return_type, return_required = "", "None", False
-        func.__kernel_function_return_type__ = return_type
-        func.__kernel_function_return_description__ = return_description
-        func.__kernel_function_return_required__ = return_required
+            return_param_dict = _parse_annotation(func_sig.return_annotation)
+        func.__kernel_function_return_type__ = return_param_dict.get("type_", "None")
+        func.__kernel_function_return_description__ = return_param_dict.get("description", "")
+        func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)
         return func
 
     return decorator
 
 
-def _parse_parameter(param: Parameter):
+def _parse_parameter(param: Parameter) -> Dict[str, Any]:
     logger.debug(f"Parsing param: {param}")
-    param_description = ""
-    type_ = "str"
-    required = True
+    ret = {}
     if param != Parameter.empty:
-        param_description, type_, required = _parse_annotation(param.annotation)
-    logger.debug(f"{param_description=}, {type_=}, {required=}")
-    return {
-        "name": param.name,
-        "description": param_description,
-        "default_value": param.default if param.default != Parameter.empty else None,
-        "type": type_,
-        "required": required,
-    }
+        ret = _parse_annotation(param.annotation)
+    ret["name"] = param.name
+    if param.default != Parameter.empty:
+        ret["default_value"] = param.default
+    return ret
 
 
-def _parse_annotation(annotation: Parameter) -> Tuple[str, str, bool]:
+def _parse_annotation(annotation: Parameter) -> Dict[str, Any]:
     logger.debug(f"Parsing annotation: {annotation}")
     if isinstance(annotation, str):
         return "", annotation, True
     logger.debug(f"{annotation=}")
-    description = ""
+    ret = _parse_internal_annotation(annotation, True)
     if hasattr(annotation, "__metadata__") and annotation.__metadata__:
-        description = annotation.__metadata__[0]
-    return (description, *_parse_internal_annotation(annotation, True))
+        ret["description"] = annotation.__metadata__[0]
+    return ret
 
 
-def _parse_internal_annotation(annotation: Parameter, required: bool) -> Tuple[str, bool]:
+def _parse_internal_annotation(annotation: Parameter, required: bool) -> Dict[str, Any]:
     logger.debug(f"Internal {annotation=}")
-    logger.debug(f"{annotation=}")
     if hasattr(annotation, "__forward_arg__"):
-        return annotation.__forward_arg__, required
+        return {"type_": annotation.__forward_arg__, "is_required": required}
     if getattr(annotation, "__name__", None) == "Optional":
         required = False
     if hasattr(annotation, "__args__"):
         results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]
-        str_results = [result[0] for result in results]
+        str_results = [result["type_"] for result in results]
         if "NoneType" in str_results:
             str_results.remove("NoneType")
             required = False
         else:
-            required = not (any(not result[1] for result in results))
-        return ", ".join(str_results), required
-    return getattr(annotation, "__name__", ""), required
+            required = not (any(not result["is_required"] for result in results))
+        return {"type_": ", ".join(str_results), "is_required": required}
+    # if isinstance(annotation, KernelBaseModel):
+    return {
+        "type_": getattr(annotation, "__name__", ""),
+        "type_object": annotation,
+        "is_required": required,
+    }
+    # return {"type_": getattr(annotation, "__name__", ""), "is_required": required}
