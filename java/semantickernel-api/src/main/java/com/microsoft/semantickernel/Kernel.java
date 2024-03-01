@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
