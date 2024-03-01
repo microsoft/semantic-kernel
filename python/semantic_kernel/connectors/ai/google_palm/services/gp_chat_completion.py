@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -26,7 +26,6 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_role import ChatRole
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -64,7 +63,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         chat_history: ChatHistory,
         settings: GooglePalmPromptExecutionSettings,
-        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ) -> List[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -73,7 +72,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             chat_history {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
             settings {GooglePalmPromptExecutionSettings} -- Settings for the request.
-            arguments {Optional[KernelArguments]} -- the optional kernel arguments
+            kwargs {Dict[str, Any]} -- The optional arguments.
 
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
@@ -115,7 +114,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         messages: List[Tuple[str, str]],
         settings: GooglePalmPromptExecutionSettings,
-        arguments: Optional[KernelArguments] = None,
+        **kwargs: Dict[str, Any],
     ):
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
