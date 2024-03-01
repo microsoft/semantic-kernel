@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import os
 
-from service_configurator import add_ai_service
+from service_configurator import add_service
 
 import semantic_kernel as sk
 from semantic_kernel.core_plugins import MathPlugin
@@ -14,15 +15,17 @@ async def main():
 
     # Add the service to the kernel
     # use_chat: True to use chat completion, False to use text completion
-    kernel = add_ai_service(kernel=kernel, use_chat=True)
+    kernel = add_service(kernel=kernel, use_chat=True)
 
     # Import the MathPlugin.
-    math_plugin = kernel.import_plugin_from_object(MathPlugin(), plugin_name="MathPlugin")
+    script_directory = os.path.dirname(__file__)
+    plugins_directory = os.path.join(script_directory, "plugins")
+    math_plugin = kernel.import_native_plugin_from_directory(plugins_directory, "MathPlugin")
 
     result = await kernel.invoke(
         math_plugin["Add"],
-        input=5,
-        amount=5,
+        number1=5,
+        number2=5,
     )
 
     print(result)

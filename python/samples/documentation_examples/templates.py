@@ -2,7 +2,7 @@
 
 import asyncio
 
-from service_configurator import add_ai_service
+from service_configurator import add_service
 
 import semantic_kernel as sk
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -16,7 +16,7 @@ async def main():
 
     # Add the service to the kernel
     # use_chat: True to use chat completion, False to use text completion
-    kernel = add_ai_service(kernel=kernel, use_chat=True)
+    kernel = add_service(kernel=kernel, use_chat=True)
 
     # Create the history
     history = ChatHistory()

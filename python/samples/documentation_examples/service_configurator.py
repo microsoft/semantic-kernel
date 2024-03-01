@@ -12,7 +12,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.kernel import Kernel
 
 
-def add_ai_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
+def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
     """
     Configure the AI service for the kernel
 

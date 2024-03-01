@@ -2,7 +2,7 @@
 import asyncio
 import os
 
-from service_configurator import add_ai_service
+from service_configurator import add_service
 
 import semantic_kernel as sk
 from semantic_kernel.planners.sequential_planner import SequentialPlanner
@@ -14,7 +14,7 @@ async def main():
 
     # Add the service to the kernel
     # use_chat: True to use chat completion, False to use text completion
-    kernel = add_ai_service(kernel=kernel, use_chat=True)
+    kernel = add_service(kernel=kernel, use_chat=True)
 
     script_directory = os.path.dirname(__file__)
     plugins_directory = os.path.join(script_directory, "plugins")
@@ -33,7 +33,7 @@ async def main():
     # Execute the plan
     result = await kernel.invoke(plan)
 
-    print(f"The ask: {goal}")
+    print(f"The goal: {goal}")
     print("Plan results:")
     print(f"I will have: ${result} left over.")
 
