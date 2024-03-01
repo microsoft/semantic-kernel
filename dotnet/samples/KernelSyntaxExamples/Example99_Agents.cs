@@ -28,12 +28,7 @@ public class Example99_Agents : BaseTest
                 "Parrot",
                 "Repeat the user message in the voice of a pirate and then end with a parrot sound.");
 
-        // Call the common chat-loop
-        await ChatAsync(
-            agent,
-            "Fortune favors the bold.",
-            "I came, I saw, I conquered.",
-            "Practice makes perfect.");
+        await RunSingleAgentAsync(agent);
     }
 
     /// <summary>
@@ -63,12 +58,7 @@ public class Example99_Agents : BaseTest
                 "Parrot",
                 "Repeat the user message in the voice of a pirate and then end with a parrot sound.");
 
-        // Call the common chat-loop
-        await ChatAsync(
-            agent,
-            "Fortune favors the bold.",
-            "I came, I saw, I conquered.",
-            "Practice makes perfect.");
+        await RunSingleAgentAsync(agent);
     }
 
     /// <summary>

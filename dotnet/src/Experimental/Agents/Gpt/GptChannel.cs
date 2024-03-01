@@ -14,6 +14,12 @@ public sealed class GptChannel : AgentChannel
     //private readonly string threadId;
 
     /// <inheritdoc/>
+    public override void Init(AgentNexus nexus)
+    {
+        // !!! THREAD ID
+    }
+
+    /// <inheritdoc/>
     public override Task<IEnumerable<ChatMessageContent>> InvokeAsync(KernelAgent agent, ChatMessageContent? message, CancellationToken cancellationToken)
     {
         throw new NotImplementedException("$$$");
