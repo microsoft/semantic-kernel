@@ -23,11 +23,20 @@ public sealed class ChatChannel : AgentChannel
     /// <inheritdoc/>
     public override async Task<IEnumerable<ChatMessageContent>> InvokeAsync(KernelAgent agent, ChatMessageContent? message, CancellationToken cancellationToken)
     {
+        var chat = new ChatHistory();
+
+        if (!string.IsNullOrWhiteSpace(agent.Instructions))
+        {
+            chat.AddMessage(AuthorRole.System, agent.Instructions!); // $$$ NAME
+        }
+
+        chat.AddRange(this._chat!); // $$$ NULL
+
         var chatCompletionService = agent.Kernel.GetRequiredService<IChatCompletionService>();
 
         var chatMessageContent =
             await chatCompletionService.GetChatMessageContentsAsync(
-                this._chat!,
+                chat,
                 executionSettings: null, // $$$
                 agent.Kernel,
                 cancellationToken).ConfigureAwait(false);
