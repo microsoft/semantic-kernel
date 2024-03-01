@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+from semantic_kernel.exceptions import ServiceInitializationError
+
 
 def get_mongodb_search_client(connection_string: str):
     """
@@ -24,9 +26,9 @@ def get_mongodb_search_client(connection_string: str):
     elif os.getenv(ENV_VAR_COSMOS_CONN_STR):
         cosmos_conn_str = os.getenv(ENV_VAR_COSMOS_CONN_STR)
     else:
-        raise ValueError("Error: missing Azure Cosmos Mongo vCore Connection String")
+        raise ServiceInitializationError("Error: missing Azure Cosmos Mongo vCore Connection String")
 
     if cosmos_conn_str:
         return MongoClient(cosmos_conn_str)
 
-    raise ValueError("Error: unable to create Azure Cosmos Mongo vCore Vector DB client.")
+    raise ServiceInitializationError("Error: unable to create Azure Cosmos Mongo vCore Vector DB client.")

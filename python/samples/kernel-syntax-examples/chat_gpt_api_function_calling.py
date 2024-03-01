@@ -6,11 +6,10 @@ import os
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.utils import (
-    chat_completion_with_tool_call,
     get_tool_call_object,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins import MathPlugin
+from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 
@@ -30,15 +29,12 @@ you will return a full answer to me as soon as possible.
 kernel = sk.Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-api_version = "2023-12-01-preview"
+api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_service(
-    sk_oai.AzureChatCompletion(
+    sk_oai.OpenAIChatCompletion(
         service_id="chat",
-        deployment_name=deployment_name,
-        base_url=endpoint,
+        ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
-        api_version=api_version,
     ),
 )
 
@@ -48,20 +44,22 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
+kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
-execution_settings = sk_oai.AzureChatPromptExecutionSettings(
+execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     service_id="chat",
-    ai_model_id=deployment_name,
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
     tool_choice="auto",
     tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
+    auto_invoke_kernel_functions=True,
+    max_auto_invoke_attempts=3,
 )
 
 prompt_template_config = sk.PromptTemplateConfig(
@@ -70,9 +68,9 @@ prompt_template_config = sk.PromptTemplateConfig(
     template_format="semantic-kernel",
     input_variables=[
         InputVariable(name="user_input", description="The user input", is_required=True),
-        InputVariable(name="history", description="The history of the conversation", is_required=True, default=""),
+        InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
     ],
-    execution_settings={"default": execution_settings},
+    execution_settings={"chat": execution_settings},
 )
 
 history = ChatHistory()
@@ -103,16 +101,23 @@ async def chat() -> bool:
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
-    arguments = KernelArguments(
-        user_input=user_input, history=("\n").join([f"{msg.role}: {msg.content}" for msg in history])
-    )
-    result = await chat_completion_with_tool_call(
-        kernel=kernel,
-        arguments=arguments,
-        chat_plugin_name="ChatBot",
-        chat_function_name="Chat",
-    )
-    print(f"Mosscap:> {result}")
+
+    stream = True
+    if stream:
+        response = kernel.invoke_stream(
+            chat_function,
+            return_function_results=False,
+            user_input=user_input,
+            chat_history=history,
+        )
+
+        print("Mosscap:> ", end="")
+        async for message in response:
+            print(str(message[0]), end="")
+        print("\n")
+    else:
+        result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
+        print(f"Mosscap:> {result}")
     return True
 
 
@@ -120,8 +125,8 @@ async def main() -> None:
     chatting = True
     print(
         "Welcome to the chat bot!\
-\n  Type 'exit' to exit.\
-\n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
+        \n  Type 'exit' to exit.\
+        \n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
     )
     while chatting:
         chatting = await chat()

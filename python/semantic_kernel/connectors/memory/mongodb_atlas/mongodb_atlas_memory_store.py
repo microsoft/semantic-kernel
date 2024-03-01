@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import logging
+from importlib import metadata
 from typing import Any, List, Mapping, Optional, Tuple
 
 from motor import MotorCommandCursor, core, motor_asyncio
 from numpy import ndarray
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
+from pymongo.driver_info import DriverInfo
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
@@ -17,6 +19,7 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     document_to_memory_record,
     memory_record_to_mongo_document,
 )
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.settings import mongodb_atlas_settings_from_dot_env
@@ -46,6 +49,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
             connection_string or mongodb_atlas_settings_from_dot_env(),
             read_preference=read_preference,
+            driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
         )
         self.__database_name = database_name or DEFAULT_DB_NAME
         self.__index_name = index_name or DEFAULT_SEARCH_INDEX_NAME
@@ -211,7 +215,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             None
         """
         if not await self.does_collection_exist(collection_name):
-            raise Exception(f"collection {collection_name} not found")
+            raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
         await self.database[collection_name].delete_one({MONGODB_FIELD_ID: key})
 
     async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
@@ -225,7 +229,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             None
         """
         if not await self.does_collection_exist(collection_name):
-            raise Exception(f"collection {collection_name} not found")
+            raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
         deletes: List[DeleteOne] = [DeleteOne({MONGODB_FIELD_ID: key}) for key in keys]
         bulk_write_result = await self.database[collection_name].bulk_write(deletes, ordered=False)
         logger.debug("%s entries deleted", bulk_write_result.deleted_count)
@@ -265,8 +269,8 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         # add meta search scoring
         pipeline.append({"$set": {"score": {"$meta": "vectorSearchScore"}}})
 
-        if min_relevance_score:
-            pipeline.append({"$match": {"$gte": ["$score", min_relevance_score]}})
+        if min_relevance_score is not None:
+            pipeline.append({"$match": {"score": {"$gte": min_relevance_score}}})
 
         cursor: MotorCommandCursor = self.database[collection_name].aggregate(pipeline)
 

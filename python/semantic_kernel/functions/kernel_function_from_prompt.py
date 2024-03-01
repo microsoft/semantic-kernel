@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from copy import copy
 from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Union
 
 from pydantic import Field, ValidationError, model_validator
@@ -8,18 +9,21 @@ from pydantic import Field, ValidationError, model_validator
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.kernel_exception import KernelFunctionInitializationException
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -33,7 +37,7 @@ PROMPT_RETURN_PARAM = KernelParameterMetadata(
     description="The completion result",
     default_value=None,
     type="FunctionResult",
-    required=True,
+    is_required=True,
 )
 
 
@@ -74,7 +78,7 @@ class KernelFunctionFromPrompt(KernelFunction):
                 prompt_template_config (Optional[PromptTemplateConfig]): the prompt template config.
         """
         if not prompt and not prompt_template_config and not prompt_template:
-            raise KernelFunctionInitializationException(
+            raise FunctionInitializationError(
                 "The prompt cannot be empty, must be supplied directly, \
 through prompt_template_config or in the prompt_template."
             )
@@ -101,8 +105,7 @@ through prompt_template_config or in the prompt_template."
                 return_parameter=PROMPT_RETURN_PARAM,
             )
         except ValidationError as exc:
-            # reraise the exception to clarify it comes from KernelFunctionFromPrompt init
-            raise exc
+            raise FunctionInitializationError("Failed to create KernelFunctionMetadata") from exc
         super().__init__(
             metadata=metadata, prompt_template=prompt_template, prompt_execution_settings=prompt_execution_settings
         )
@@ -139,81 +142,178 @@ through prompt_template_config or in the prompt_template."
         kernel: "Kernel",
         arguments: KernelArguments,
     ) -> "FunctionResult":
+        """Invokes the function with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
         prompt = await self.prompt_template.render(kernel, arguments)
 
         if isinstance(service, ChatCompletionClientBase):
-            chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
-            try:
-                completions = await service.complete_chat(chat_history, execution_settings)
-                # this can be expanded for auto-invoking function calls
-                # store_results function is in utils.chat
-                # chat_history = store_results(chat_history=chat_history, results=completions)
-            except Exception as exc:
-                logger.error(f"Error occurred while invoking function {self.name}: {exc}")
-                raise exc
-
-            return FunctionResult(
-                function=self.metadata,
-                value=completions,
-                metadata={
-                    "messages": chat_history,
-                    "arguments": arguments,
-                    "metadata": [completion.metadata for completion in completions],
-                },
+            return await self._handle_complete_chat(
+                kernel=kernel,
+                service=service,
+                execution_settings=execution_settings,
+                prompt=prompt,
+                arguments=arguments,
             )
 
         if isinstance(service, TextCompletionClientBase):
-            try:
-                completions = await service.complete(prompt, execution_settings)
-            except Exception as e:
-                logger.error(f"Error occurred while invoking function {self.name}: {e}")
-                raise e
-
-            return FunctionResult(
-                function=self.metadata,
-                value=completions,
-                metadata={
-                    "prompt": prompt,
-                    "arguments": arguments,
-                    "metadata": [completion.metadata for completion in completions],
-                },
+            return await self._handle_text_complete(
+                service=service,
+                execution_settings=execution_settings,
+                prompt=prompt,
+                arguments=arguments,
             )
 
-        raise ValueError(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
+        raise ValueError(f"Service `{type(service).__name__}` is not a valid AI service")
+
+    async def _handle_complete_chat(
+        self,
+        kernel: "Kernel",
+        service: ChatCompletionClientBase,
+        execution_settings: PromptExecutionSettings,
+        prompt: str,
+        arguments: KernelArguments,
+    ) -> FunctionResult:
+        """Handles the chat service call."""
+        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
+
+        # Copy the arguments and add the kernel so
+        # that OpenAI calls can handle auto function calling
+        arguments_clone: KernelArguments = None
+        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings) and isinstance(
+            service, ChatCompletionClientBase
+        ):
+            arguments_clone = copy(arguments)
+            arguments_clone["kernel"] = kernel
+
+        try:
+            completions = await service.complete_chat(
+                chat_history=chat_history,
+                settings=execution_settings,
+                arguments=arguments_clone,
+            )
+            if not completions:
+                raise FunctionExecutionException(f"No completions returned while invoking function {self.name}")
+
+            return self._create_function_result(completions, chat_history, arguments)
+        except Exception as exc:
+            raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
+
+    async def _handle_text_complete(
+        self,
+        service: TextCompletionClientBase,
+        execution_settings: PromptExecutionSettings,
+        prompt: str,
+        arguments: KernelArguments,
+    ) -> FunctionResult:
+        """Handles the text service call."""
+        try:
+            completions = await service.complete(prompt, execution_settings)
+            return self._create_function_result(completions, None, arguments, prompt=prompt)
+        except Exception as exc:
+            raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
+
+    def _create_function_result(
+        self,
+        completions: Union[List[ChatMessageContent], List[TextContent]],
+        chat_history: ChatHistory,
+        arguments: KernelArguments,
+        prompt: str = None,
+    ) -> FunctionResult:
+        """Creates a function result with the given completions."""
+        metadata = {
+            "arguments": arguments,
+            "metadata": [completion.metadata for completion in completions],
+        }
+        if chat_history:
+            metadata["messages"] = chat_history
+        if prompt:
+            metadata["prompt"] = prompt
+        return FunctionResult(
+            function=self.metadata,
+            value=completions,
+            metadata=metadata,
+        )
 
     async def _invoke_internal_stream(
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
     ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
+        """Invokes the function stream with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
         prompt = await self.prompt_template.render(kernel, arguments)
 
         if isinstance(service, ChatCompletionClientBase):
-            chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
-            try:
-                async for partial_content in service.complete_chat_stream(
-                    chat_history=chat_history, settings=execution_settings
-                ):
-                    yield partial_content
-                return
-            except Exception as e:
-                logger.error(f"Error occurred while invoking function {self.name}: {e}")
-                yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+            async for content in self._handle_complete_chat_stream(
+                kernel=kernel,
+                service=service,
+                execution_settings=execution_settings,
+                prompt=prompt,
+                arguments=arguments,
+            ):
+                yield content
+            return
 
         if isinstance(service, TextCompletionClientBase):
-            try:
-                async for partial_content in service.complete_stream(prompt=prompt, settings=execution_settings):
-                    yield partial_content
-                return
-            except Exception as e:
-                logger.error(f"Error occurred while invoking function {self.name}: {e}")
-                yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+            async for content in self._handle_complete_text_stream(
+                service=service,
+                execution_settings=execution_settings,
+                prompt=prompt,
+            ):
+                yield content
+            return
 
-        raise ValueError(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
+        raise FunctionExecutionException(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
+
+    async def _handle_complete_chat_stream(
+        self,
+        kernel: "Kernel",
+        service: ChatCompletionClientBase,
+        execution_settings: PromptExecutionSettings,
+        prompt: str,
+        arguments: KernelArguments,
+    ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
+        """Handles the chat service call."""
+
+        # Copy the arguments and add the kernel so
+        # that OpenAI calls can handle auto function calling
+        arguments_clone = None
+        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings) and isinstance(
+            service, ChatCompletionClientBase
+        ):
+            arguments_clone = copy(arguments)
+            arguments_clone["kernel"] = kernel
+
+        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
+        try:
+            async for partial_content in service.complete_chat_stream(
+                chat_history=chat_history,
+                settings=execution_settings,
+                arguments=arguments_clone,
+            ):
+                yield partial_content
+
+            return  # Exit after processing all iterations
+        except Exception as e:
+            logger.error(f"Error occurred while invoking function {self.name}: {e}")
+            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+
+    async def _handle_complete_text_stream(
+        self,
+        service: TextCompletionClientBase,
+        execution_settings: PromptExecutionSettings,
+        prompt: str,
+    ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
+        """Handles the text service call."""
+        try:
+            async for partial_content in service.complete_stream(prompt=prompt, settings=execution_settings):
+                yield partial_content
+            return
+        except Exception as e:
+            logger.error(f"Error occurred while invoking function {self.name}: {e}")
+            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
 
     def add_default_values(self, arguments: "KernelArguments") -> KernelArguments:
         """Gathers the function parameters from the arguments."""

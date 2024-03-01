@@ -3,24 +3,18 @@
 import os
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerException, PlannerInvalidGoalError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
-from semantic_kernel.planners.planning_exception import PlanningException
-from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
-    SequentialPlannerConfig,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
 from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
     SequentialPlannerKernelExtension as KernelContextExtension,
 )
-from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
-    SequentialPlanParser,
-)
-from semantic_kernel.prompt_template.prompt_template_config import (
-    PromptTemplateConfig,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
@@ -98,7 +92,7 @@ class SequentialPlanner:
 
     async def create_plan(self, goal: str) -> Plan:
         if len(goal) == 0:
-            raise PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty")
+            raise PlannerInvalidGoalError("The goal specified is empty")
 
         relevant_function_manual = await KernelContextExtension.get_functions_manual(
             self._kernel, self._arguments, goal, self.config
@@ -109,8 +103,7 @@ class SequentialPlanner:
         plan_result = await self._function_flow_function.invoke(self._kernel, self._arguments)
 
         if isinstance(plan_result, FunctionResult) and "error" in plan_result.metadata:
-            raise PlanningException(
-                PlanningException.ErrorCodes.CreatePlanError,
+            raise PlannerCreatePlanError(
                 f"Error creating plan for goal: {plan_result.metadata['error']}",
                 plan_result.metadata["error"],
             )
@@ -129,38 +122,17 @@ class SequentialPlanner:
             )
 
             if len(plan._steps) == 0:
-                raise PlanningException(
-                    PlanningException.ErrorCodes.CreatePlanError,
-                    (
-                        "Not possible to create plan for goal with available functions.\n",
-                        f"Goal:{goal}\nFunctions:\n{relevant_function_manual}",
-                    ),
+                raise PlannerCreatePlanError(
+                    "Not possible to create plan for goal with available functions.\n",
+                    f"Goal:{goal}\nFunctions:\n{relevant_function_manual}",
                 )
 
             return plan
 
-        except PlanningException as e:
-            if e.error_code == PlanningException.ErrorCodes.CreatePlanError:
-                raise e
-            elif e.error_code in [
-                PlanningException.ErrorCodes.InvalidPlan,
-                PlanningException.ErrorCodes.InvalidGoal,
-            ]:
-                raise PlanningException(
-                    PlanningException.ErrorCodes.CreatePlanError,
-                    "Unable to create plan",
-                    e,
-                )
-            else:
-                raise PlanningException(
-                    PlanningException.ErrorCodes.CreatePlanError,
-                    "Unable to create plan",
-                    e,
-                )
-
+        except PlannerException as e:
+            raise e
         except Exception as e:
-            raise PlanningException(
-                PlanningException.ErrorCodes.UnknownError,
+            raise PlannerException(
                 "Unknown error creating plan",
                 e,
-            )
+            ) from e
