@@ -103,7 +103,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\test_audio.wav">
+    <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

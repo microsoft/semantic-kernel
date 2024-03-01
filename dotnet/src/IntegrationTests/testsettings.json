@@ -51,7 +51,8 @@
     "EmbeddingModelId": "embedding-001",
     "ApiKey": "",
     "Gemini": {
-      "ModelId": "gemini-pro"
+      "ModelId": "gemini-pro",
+      "VisionModelId": "gemini-pro-vision"
     }
   },
   "VertexAI": {
@@ -60,7 +61,8 @@
     "Location": "",
     "ProjectId": "",
     "Gemini": {
-      "ModelId": "gemini-pro"
+      "ModelId": "gemini-pro",
+      "VisionModelId": "gemini-pro-vision"
     }
   },
   "Bing": {
