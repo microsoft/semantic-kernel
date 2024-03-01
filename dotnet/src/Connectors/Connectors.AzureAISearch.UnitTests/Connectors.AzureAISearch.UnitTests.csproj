@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>SemanticKernel.Connectors.AzureAISearch.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Connectors.AzureAISearch.UnitTests</RootNamespace>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <RollForward>LatestMajor</RollForward>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <NoWarn>SKEXP0003,SKEXP0021</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Use newest available compiler to permit LangVersion 12. -->
+    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
+  </ItemGroup>
+
+</Project>

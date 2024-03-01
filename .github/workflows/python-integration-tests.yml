@@ -50,22 +50,23 @@ jobs:
         os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: "poetry"
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
           export HNSWLIB_NO_NATIVE=1
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install poetry pytest
           cd python && poetry install
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install poetry pytest
           cd python
           poetry install
       - name: Run Integration Tests
@@ -79,7 +80,10 @@ jobs:
           AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
           AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
           AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
+          AzureOpenAIEmbeddings_EastUS__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS_EASTUS__DEPLOYMENTNAME}}
           AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI_EastUS__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
+          AzureOpenAI_EastUS__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
@@ -111,24 +115,24 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
+          cache: "poetry"
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
           export HNSWLIB_NO_NATIVE=1
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install poetry pytest
           cd python && poetry install
 
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install poetry pytest
           cd python && poetry install
 
       - name: Run Integration Tests
@@ -142,9 +146,12 @@ jobs:
           AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
           AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
           AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
+          AzureOpenAIEmbeddings_EastUS__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS_EASTUS__DEPLOYMENTNAME}}
           AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAI_EastUS__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
+          AzureOpenAI_EastUS__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}

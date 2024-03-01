@@ -17,13 +17,14 @@
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.5" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
-    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
+    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+    <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.2" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
@@ -62,13 +63,14 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.9.2" />
-    <PackageVersion Include="MongoDB.Driver" Version="2.23.1" />
-    <PackageVersion Include="Microsoft.Graph" Version="4.54.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
+    <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="[3.32.3, )" />
-    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="2.32.0" />
+    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.13" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.13" />
-    <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="1.66.0.3290" />
+    <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
+    <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.60.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
@@ -80,7 +82,7 @@
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
-    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="4.8.0" />
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="4.9.0-3.final" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
@@ -96,7 +98,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.10.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.11.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -106,7 +108,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.Analyzers" Version="[4.10.0]" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="[4.11.0]" />
     <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -116,7 +118,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.10.0]" />
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.11.0]" />
     <PackageReference Include="Roslynator.Formatting.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

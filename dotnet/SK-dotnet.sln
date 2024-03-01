@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
 		..\.github\workflows\dotnet-format.yml = ..\.github\workflows\dotnet-format.yml
+		docs\EXPERIMENTS.md = docs\EXPERIMENTS.md
 		..\nuget.config = ..\nuget.config
 		..\README.md = ..\README.md
 	EndProjectSection
@@ -115,7 +116,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3
 		src\InternalUtilities\src\Http\HttpClientExtensions.cs = src\InternalUtilities\src\Http\HttpClientExtensions.cs
 		src\InternalUtilities\src\Http\HttpClientProvider.cs = src\InternalUtilities\src\Http\HttpClientProvider.cs
 		src\InternalUtilities\src\Http\HttpContentExtensions.cs = src\InternalUtilities\src\Http\HttpContentExtensions.cs
-		src\InternalUtilities\src\Http\HttpHeaderValues.cs = src\InternalUtilities\src\Http\HttpHeaderValues.cs
+		src\InternalUtilities\src\Http\HttpHeaderConstant.cs = src\InternalUtilities\src\Http\HttpHeaderConstant.cs
 		src\InternalUtilities\src\Http\HttpRequest.cs = src\InternalUtilities\src\Http\HttpRequest.cs
 	EndProjectSection
 EndProject
@@ -218,6 +219,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-F
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\test\Linq\AsyncEnumerable.cs = src\InternalUtilities\test\Linq\AsyncEnumerable.cs
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAISearch.UnitTests", "src\Connectors\Connectors.AzureAISearch.UnitTests\Connectors.AzureAISearch.UnitTests.csproj", "{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.HuggingFace.UnitTests", "src\Connectors\Connectors.HuggingFace.UnitTests\Connectors.HuggingFace.UnitTests.csproj", "{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\HomeAutomation\HomeAutomation.csproj", "{13429BD6-4C4E-45EC-81AD-30BAC380AA60}"
 EndProject
@@ -502,6 +507,18 @@ Global
 		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13429BD6-4C4E-45EC-81AD-30BAC380AA60}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -581,6 +598,8 @@ Global
 		{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{EB2C141A-AE5F-4080-8790-13EB16323CEF} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{607DD6FA-FA0D-45E6-80BA-22A373609E89} = {5C246969-D794-4EC3-8E8F-F90D4D166420}
+		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{1F96837A-61EC-4C8F-904A-07BEBD05FDEE} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{13429BD6-4C4E-45EC-81AD-30BAC380AA60} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
