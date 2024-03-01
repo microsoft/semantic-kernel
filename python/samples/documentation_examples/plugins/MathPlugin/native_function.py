@@ -60,7 +60,7 @@ class Math:
         self,
         number1: Annotated[float, "the first number to add"],
         number2: Annotated[float, "the second number to add"],
-    ) -> Annotated[float, "the output is a number"]:
+    ) -> Annotated[float, "the output is a float"]:
         return float(number1) + float(number2)
 
     @kernel_function(
@@ -69,7 +69,7 @@ class Math:
     )
     def subtract(
         self,
-        input: Annotated[float, "the first number"],
-        amount: Annotated[float, "the number to subtract"],
-    ) -> float:
-        return float(input) - float(amount)
+        number1: Annotated[float, "the first number"],
+        number2: Annotated[float, "the number to subtract"],
+    ) -> Annotated[float, "the output is a float"]:
+        return float(number1) - float(number2)
