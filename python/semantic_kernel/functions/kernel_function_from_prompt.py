@@ -177,20 +177,18 @@ through prompt_template_config or in the prompt_template."
         """Handles the chat service call."""
         chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
 
-        # Copy the arguments and add the kernel so
-        # that OpenAI calls can handle auto function calling
-        arguments_clone: KernelArguments = None
+        # pass the kernel in for auto function calling
+        kwargs = {}
         if isinstance(execution_settings, OpenAIChatPromptExecutionSettings) and isinstance(
             service, ChatCompletionClientBase
         ):
-            arguments_clone = copy(arguments)
-            arguments_clone["kernel"] = kernel
+            kwargs['kernel'] = kernel
 
         try:
             completions = await service.complete_chat(
                 chat_history=chat_history,
                 settings=execution_settings,
-                arguments=arguments_clone,
+                **kwargs,
             )
             if not completions:
                 raise FunctionExecutionException(f"No completions returned while invoking function {self.name}")
@@ -251,7 +249,6 @@ through prompt_template_config or in the prompt_template."
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
-                arguments=arguments,
             ):
                 yield content
             return
@@ -273,25 +270,22 @@ through prompt_template_config or in the prompt_template."
         service: ChatCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
-        arguments: KernelArguments,
     ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
         """Handles the chat service call."""
 
-        # Copy the arguments and add the kernel so
-        # that OpenAI calls can handle auto function calling
-        arguments_clone = None
+        # pass the kernel in for auto function calling
+        kwargs = {}
         if isinstance(execution_settings, OpenAIChatPromptExecutionSettings) and isinstance(
             service, ChatCompletionClientBase
         ):
-            arguments_clone = copy(arguments)
-            arguments_clone["kernel"] = kernel
+            kwargs["kernel"] = kernel
 
         chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
         try:
             async for partial_content in service.complete_chat_stream(
                 chat_history=chat_history,
                 settings=execution_settings,
-                arguments=arguments_clone,
+                **kwargs,
             ):
                 yield partial_content
 

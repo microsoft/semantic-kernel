@@ -6,6 +6,12 @@ from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.sequential_planner import SequentialPlanner
 from semantic_kernel.planners.stepwise_planner import StepwisePlanner
 from semantic_kernel.planners.planner_options import PlannerOptions
+from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner_options import (
+    FunctionCallingStepwisePlannerOptions,
+)
+from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner import (
+    FunctionCallingStepwisePlanner,
+)
 
 __all__ = [
     "BasicPlanner",
@@ -14,4 +20,6 @@ __all__ = [
     "StepwisePlanner",
     "ActionPlanner",
     "PlannerOptions",
+    "FunctionCallingStepwisePlannerOptions",
+    "FunctionCallingStepwisePlanner",
 ]
