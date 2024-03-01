@@ -40,7 +40,12 @@ public sealed class GeminiFunctionToolCall
         }
     }
 
-    internal GeminiFunctionToolCall(GeminiFunctionToolCall source, object? responseArguments)
+    /// <summary>
+    /// Initialize the <see cref="GeminiFunctionToolCall"/> from a <see cref="GeminiPart.FunctionCallPart"/>.
+    /// </summary>
+    /// <param name="source">Tool call source to copy data</param>
+    /// <param name="responseArguments">Response of invocation of tool</param>
+    public GeminiFunctionToolCall(GeminiFunctionToolCall source, object? responseArguments)
     {
         this._fullyQualifiedFunctionName = source._fullyQualifiedFunctionName;
         this.PluginName = source.PluginName;

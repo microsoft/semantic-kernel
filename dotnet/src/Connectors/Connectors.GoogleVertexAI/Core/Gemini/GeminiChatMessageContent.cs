@@ -20,7 +20,7 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="calledTool">The tool called by the kernel with response data.</param>
     /// <param name="metadata">Additional metadata</param>
-    internal GeminiChatMessageContent(
+    public GeminiChatMessageContent(
         AuthorRole role,
         string? content,
         string modelId,
