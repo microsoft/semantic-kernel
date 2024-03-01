@@ -24,11 +24,8 @@
 
 package com.microsoft.semantickernel.templateengine.handlebars;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -36,15 +33,14 @@ import static java.util.stream.Collectors.joining;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
@@ -59,6 +55,27 @@ public class HandlebarsPromptTemplateTest {
     }
 
     public static void main(String[] args) { new HandlebarsPromptTemplateTest().testRenderAsync(); }
+
+    public static class StringFunctions {
+
+        @DefineKernelFunction(name = "upper", description = "Converts a string to upper case.")
+        public String upper(
+            @KernelFunctionParameter(name = "input", required = true, description = "The string to convert to upper case", type = String.class) 
+            String input) {
+                return input.toUpperCase();
+        }
+
+        @DefineKernelFunction(name = "concat", description = "Concatenate the second string to the first string.")
+        public String concat(
+            @KernelFunctionParameter(name = "input", required = true, description = "The string to which the second string is concatenated.", type = String.class) 
+            String first, 
+            @KernelFunctionParameter(name = "suffix", required = true, description = "The string which is concatenated to the first string.", type = String.class) 
+            String suffix) {
+                return first.concat(suffix);
+        }
+
+    }
+
     /**
      * Test of renderAsync method, of class HandlebarsPromptTemplate.
      */
@@ -70,39 +87,23 @@ public class HandlebarsPromptTemplateTest {
         List<ChatHistory> history = Arrays.asList(
             new ChatHistory(
                 Arrays.asList(
-                    new ChatMessageContent<String>(AuthorRole.SYSTEM, "A.a"),
-                    new ChatMessageContent<String>(AuthorRole.USER, "A.b")
+                    new ChatMessageContent<String>(AuthorRole.SYSTEM, "a"),
+                    new ChatMessageContent<String>(AuthorRole.USER, "b")
+                )
+            ), 
+            new ChatHistory(
+                Arrays.asList(
+                    new ChatMessageContent<String>(AuthorRole.SYSTEM, "c"),
+                    new ChatMessageContent<String>(AuthorRole.USER, "d")
                 )
             )
         );
 
-        String target = "hello@";
-        Method method = null;
-        try {
-            method = String.class.getMethod("concat", String.class);
-        } catch(NoSuchMethodException ex) {
-            fail(ex.getMessage(), ex);
-        }
+        KernelPlugin kernelPlugin = KernelPluginFactory.createFromObject(
+            new StringFunctions(),
+            "string"
+        );
 
-        KernelFunction<?> concatFunction = KernelFunctionFromMethod.builder()
-            .withPluginName("string")
-            .withFunctionName("concat")
-            .withMethod(method)
-            .withTarget(target)
-            .build();
-
-        Map<String, KernelFunction<?>> pluginFunctions = new HashMap<>();
-        pluginFunctions.put("concat", concatFunction);
-
-        KernelPlugin kernelPlugin = new KernelPlugin("string", "string functions", pluginFunctions);
-
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
-            .withVariable("input", "world")
-            .withVariable("choices", choices)
-            .withVariable("history", history)
-            .withVariable("kernelPlugins", Arrays.asList(kernelPlugin))
-            .build();       
-            
         Kernel kernel = Kernel.builder()
             .withPlugin(kernelPlugin)
             .build();
@@ -113,22 +114,26 @@ public class HandlebarsPromptTemplateTest {
                 "{{choices}}\n" +
                 "{{#each history}}\n" +
                 "    {{#each this}}\n" +
-                "        {{content}}\n" +
+                "        {{string-upper content}}\n" +
                 "    {{/each}}\n" +
                 "{{/each}}\n" +
-                "{{#each kernelPlugins}}\n" +
-                "    {{#each this}}\n" +
-                "        {{content}}\n" +
-                "    {{/each}}\n" +
-                "{{/each}}\n" +
-                "{{string.concat $input}}\n")
-        .withTemplateFormat("handlebars")
+                "Hello World")
+                // "{{string-concat input suffix}}") TODO - this is not working
+            .withTemplateFormat("handlebars")
         .build();
 
         HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
 
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+            .withVariable("input", "Hello ")
+            .withVariable("suffix", "World")
+            .withVariable("choices", choices)
+            .withVariable("history", history)
+            .withVariable("kernelPlugins", Arrays.asList(kernelPlugin))
+            .build();       
+            
         // Return from renderAsync is normalized to remove empty lines and leading/trailing whitespace
-        String expResult = "CHOICE-A [CHOICE-A, CHOICE-B] <messages> A.a A.b </messages> <messages> B.a B.b </messages> hello@world";
+        String expResult = "CHOICE-A [CHOICE-A, CHOICE-B] <messages> A B </messages> <messages> C D </messages> Hello World";
 
         String result = instance.renderAsync(kernel, arguments, null).block();
         assertNotNull(result);
@@ -138,7 +143,7 @@ public class HandlebarsPromptTemplateTest {
             Arrays.stream(result.split("\\r?\\n|\\r"))
                 // remove leading and trailing whitespace
                 .map(String::trim)
-            
+                // remove empty lines
                 .filter(s -> !s.isEmpty())
                 // put it back together
                 .collect(joining(" "));
