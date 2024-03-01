@@ -95,7 +95,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
             Kernel = kernel! // not null if auto-invoke is true
         };
 
-        for (state.Iteration = 1;; state.Iteration++)
+        for (state.Iteration = 1; ; state.Iteration++)
         {
             var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(endpoint, state.GeminiRequest, cancellationToken)
                 .ConfigureAwait(false);
@@ -144,7 +144,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
             Kernel = kernel! // not null if auto-invoke is true
         };
 
-        for (state.Iteration = 1;; state.Iteration++)
+        for (state.Iteration = 1; ; state.Iteration++)
         {
             using var httpRequestMessage = this.HttpRequestFactory.CreatePost(state.GeminiRequest, endpoint);
             using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
@@ -492,17 +492,17 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     private static GeminiMetadata GetResponseMetadata(
         GeminiResponse geminiResponse,
         GeminiResponseCandidate candidate) => new()
-    {
-        FinishReason = candidate.FinishReason,
-        Index = candidate.Index,
-        PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
-        CurrentCandidateTokenCount = candidate.TokenCount,
-        CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
-        TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
-        PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
-        PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
-        ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
-    };
+        {
+            FinishReason = candidate.FinishReason,
+            Index = candidate.Index,
+            PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
+            CurrentCandidateTokenCount = candidate.TokenCount,
+            CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
+            TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
+            PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
+            PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
+            ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
+        };
 
     private void LogUsageMetadata(GeminiMetadata metadata)
     {
