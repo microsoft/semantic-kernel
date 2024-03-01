@@ -79,7 +79,7 @@ public class Example99_Agents : BaseTest
     /// Demonstrate single chat agent.
     /// </summary>
     [Fact]
-    public async Task RunMixedDualAgentsAsync()
+    public async Task RunMixedAgentsAsync()
     {
         WriteLine("======== Run:Dual GPT Agents ========");
 
