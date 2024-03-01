@@ -50,7 +50,7 @@ public sealed class Example79_OpenAIFiles : BaseTest
         WriteLine("SOURCE:");
         WriteLine($"# Name: {fileReference.FileName}");
         WriteLine("# Content:");
-        WriteLine(Encoding.UTF8.GetString((await fileContent.GetContentAsync()).ToArray()));
+        WriteLine(Encoding.UTF8.GetString((await fileContent.GetContentAsync()).Span));
 
         try
         {

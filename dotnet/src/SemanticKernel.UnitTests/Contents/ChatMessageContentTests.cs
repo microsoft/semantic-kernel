@@ -219,7 +219,7 @@ public class ChatMessageContentTests
         var binaryContent = deserializedMessage.Items[2] as BinaryContent;
 #pragma warning restore SKEXP0015
         Assert.NotNull(binaryContent);
-        Assert.True(binaryContent.Content?.ToArray().SequenceEqual(new BinaryData(new[] { 1, 2, 3 }).ToArray()));
+        Assert.True(binaryContent.Content?.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
         Assert.Equal("model-3", binaryContent.ModelId);
         Assert.NotNull(binaryContent.Metadata);
         Assert.Single(binaryContent.Metadata);
@@ -229,7 +229,7 @@ public class ChatMessageContentTests
         var audioContent = deserializedMessage.Items[3] as AudioContent;
 #pragma warning restore SKEXP0005 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         Assert.NotNull(audioContent);
-        Assert.True(audioContent.Data!.Value.ToArray().SequenceEqual(new BinaryData(new[] { 3, 2, 1 }).ToArray()));
+        Assert.True(audioContent.Data!.Value.Span.SequenceEqual(new BinaryData(new[] { 3, 2, 1 })));
         Assert.Equal("model-4", audioContent.ModelId);
         Assert.Equal("media-type-4", audioContent.MediaType);
         Assert.NotNull(audioContent.Metadata);
@@ -238,7 +238,7 @@ public class ChatMessageContentTests
 
         imageContent = deserializedMessage.Items[4] as ImageContent;
         Assert.NotNull(imageContent);
-        Assert.True(imageContent.Data?.ToArray().SequenceEqual(new BinaryData(new[] { 2, 1, 3 }).ToArray()));
+        Assert.True(imageContent.Data?.Span.SequenceEqual(new BinaryData(new[] { 2, 1, 3 })));
         Assert.Equal("model-5", imageContent.ModelId);
         Assert.Equal("media-type-5", imageContent.MediaType);
         Assert.NotNull(imageContent.Metadata);

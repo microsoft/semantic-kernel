@@ -163,7 +163,7 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         var requestPayload = this._messageHandlerStub.RequestContent;
 
         Assert.NotNull(requestPayload);
-        Assert.Equal(this._imageContentInput.Data!.Value.ToArray(), requestPayload);
+        Assert.Equal(this._imageContentInput.Data!.Value.Span, requestPayload);
     }
 
     [Fact]
