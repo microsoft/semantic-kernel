@@ -22,7 +22,6 @@ internal sealed class OllamaClient : IOllamaClient
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
 
-    private IHttpRequestFactory HttpRequestFactory { get; }
     private IEndpointProvider EndpointProvider { get; }
     private HttpClient HttpClient { get; }
     private ILogger Logger { get; }
@@ -30,7 +29,6 @@ internal sealed class OllamaClient : IOllamaClient
     internal OllamaClient(
         string modelId,
         HttpClient httpClient,
-        IHttpRequestFactory httpRequestFactory,
         IEndpointProvider endpointProvider,
         IStreamJsonParser? streamJsonParser = null,
         ILogger? logger = null)
@@ -39,7 +37,6 @@ internal sealed class OllamaClient : IOllamaClient
 
         this._modelId = modelId;
         this.HttpClient = httpClient;
-        this.HttpRequestFactory = httpRequestFactory;
         this.EndpointProvider = endpointProvider;
         this.Logger = logger ?? NullLogger.Instance;
         this._streamJsonParser = streamJsonParser ?? new OllamaStreamJsonParser();
@@ -49,7 +46,7 @@ internal sealed class OllamaClient : IOllamaClient
     {
         var endpoint = this.EndpointProvider.TextGenerationEndpoint;
         var request = this.CreateTextRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+        using var httpRequestMessage = this.CreatePost(request, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -71,7 +68,7 @@ internal sealed class OllamaClient : IOllamaClient
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+        using var httpRequestMessage = this.CreatePost(request, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -92,7 +89,7 @@ internal sealed class OllamaClient : IOllamaClient
     {
         var endpoint = this.EndpointProvider.ChatCompletionEndpoint;
         var request = this.CreateChatRequest(chatHistory, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+        using var httpRequestMessage = this.CreatePost(request, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -114,7 +111,7 @@ internal sealed class OllamaClient : IOllamaClient
         var endpoint = this.EndpointProvider.StreamChatCompletionEndpoint;
         var request = this.CreateChatRequest(chatHistory, executionSettings);
         request.Stream = true;
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+        using var httpRequestMessage = this.CreatePost(request, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -138,7 +135,7 @@ internal sealed class OllamaClient : IOllamaClient
         foreach (string prompt in prompts)
         {
             var request = this.CreateEmbeddingRequest(prompt, executionSettings);
-            using var httpRequestMessage = this.HttpRequestFactory.CreatePost(request, endpoint);
+            using var httpRequestMessage = this.CreatePost(request, endpoint);
 
             string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
                 .ConfigureAwait(false);
@@ -310,5 +307,12 @@ internal sealed class OllamaClient : IOllamaClient
             metadata.LoadDuration,
             metadata.PromptEvalCount,
             metadata.PromptEvalDuration);
+    }
+
+    private HttpRequestMessage CreatePost(object requestData, Uri endpoint)
+    {
+        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        return httpRequestMessage;
     }
 }

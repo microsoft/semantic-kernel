@@ -39,7 +39,6 @@ public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerat
 
         this.Client = new OllamaClient(
             modelId: model,
-            httpRequestFactory: new OllamaHttpRequestFactory(),
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
