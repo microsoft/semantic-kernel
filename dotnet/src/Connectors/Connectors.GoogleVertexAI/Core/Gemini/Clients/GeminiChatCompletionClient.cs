@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -42,6 +43,38 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static readonly Meter s_meter = new(typeof(GeminiChatCompletionClient).Namespace!);
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{typeof(GeminiChatCompletionClient).Namespace}.tokens.prompt",
+            unit: "{token}",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{typeof(GeminiChatCompletionClient).Namespace}.tokens.completion",
+            unit: "{token}",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{typeof(GeminiChatCompletionClient).Namespace}.tokens.total",
+            unit: "{token}",
+            description: "Number of tokens used");
 
     /// <summary>
     /// Represents a client for interacting with the chat completion gemini model.
@@ -506,11 +539,21 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
     private void LogUsageMetadata(GeminiMetadata metadata)
     {
+        if (metadata.TotalTokenCount <= 0)
+        {
+            this.Logger.LogDebug("Gemini usage information is not available.");
+            return;
+        }
+
         this.Logger.LogDebug(
             "Gemini usage metadata: Candidates tokens: {CandidatesTokens}, Prompt tokens: {PromptTokens}, Total tokens: {TotalTokens}",
             metadata.CandidatesTokenCount,
             metadata.PromptTokenCount,
             metadata.TotalTokenCount);
+
+        s_promptTokensCounter.Add(metadata.PromptTokenCount);
+        s_completionTokensCounter.Add(metadata.CandidatesTokenCount);
+        s_totalTokensCounter.Add(metadata.TotalTokenCount);
     }
 
     private sealed class ChatCompletionState
