@@ -72,6 +72,51 @@ public class Example79_ChatCompletionAgent : BaseTest
     }
 
     /// <summary>
+    /// This example demonstrates two agents chat using streaming API.
+    /// </summary>
+    [Fact]
+    public async Task TwoAgentsChatWithStreamingAsync()
+    {
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            MaxTokens = 1500,
+            Temperature = 0.7,
+            TopP = 1.0,
+            PresencePenalty = 0.0,
+            FrequencyPenalty = 0.0,
+        };
+
+        var fitnessTrainer = new ChatCompletionAgent(
+            kernel: this._kernel,
+            instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
+            "You are not a stress management expert, so refrain from recommending stress management strategies. " +
+            "Collaborate with the stress management expert to create a holistic wellness plan." +
+            "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
+            "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
+            description: "Fitness Trainer",
+            executionSettings: settings
+        );
+
+        var stressManagementExpert = new ChatCompletionAgent(
+            kernel: this._kernel,
+            instructions: "As a stress management expert, provide guidance on stress reduction strategies. " +
+            "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
+            "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
+            "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
+            "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
+            "Always include your role at the beginning of each response such as 'As a stress management expert.",
+            description: "Stress Management Expert",
+            executionSettings: settings
+         );
+
+        var fitnessTrainerStreamResponse = fitnessTrainer.InvokeStreamingAsync(new ChatMessageContent[] { new(AuthorRole.User, "I need help creating a simple wellness plan for a beginner. Please guide me.") });
+        await PrintConversationAsync(fitnessTrainerStreamResponse);
+
+        var stressManagementExpertStreamResponse = stressManagementExpert.InvokeStreamingAsync(fitnessTrainerStreamResponse);
+        await PrintConversationAsync(stressManagementExpertStreamResponse);
+    }
+
+    /// <summary>
     /// This example demonstrates a round-robin chat between two chat completion agents using the TurnBasedChat collaboration experience.
     /// </summary>
     [Fact]
@@ -289,6 +334,8 @@ public class Example79_ChatCompletionAgent : BaseTest
         {
             this.Write(content.Content);
         }
+
+        this.WriteLine();
     }
 
     /// <summary>
