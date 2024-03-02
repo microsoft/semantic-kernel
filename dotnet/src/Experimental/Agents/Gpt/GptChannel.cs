@@ -130,13 +130,13 @@ public sealed class GptChannel : AgentChannel
                 {
                     if (content is MessageTextContent contentMessage)
                     {
-                        yield return new ChatMessageContent(role, contentMessage.Text.Trim(), agent.Name);
+                        yield return new ChatMessageContent(role, contentMessage.Text.Trim(), name: agent.Name);
                         continue;
                     }
 
                     if (content is MessageImageFileContent contentImage)
                     {
-                        yield return new ChatMessageContent(role, contentImage.FileId, agent.Name); // $$$ FILE HANDLING
+                        yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name); // $$$ FILE HANDLING
                         continue;
                     }
                 }
