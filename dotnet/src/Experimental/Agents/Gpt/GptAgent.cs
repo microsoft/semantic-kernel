@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +11,12 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Experimental.Agents.Gpt;
 
 /// <summary>
-/// $$$
+/// A <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
 public sealed class GptAgent : KernelAgent<GptChannel>
 {
     private readonly Assistant _assistant;
-
-    internal AssistantsClient Client { get; } // $$$ SCOPE
+    private readonly AssistantsClient _client;
 
     /// <inheritdoc/>
     public override string? Description => this._assistant.Description;
@@ -60,7 +58,7 @@ public sealed class GptAgent : KernelAgent<GptChannel>
                 Description = description,
                 Instructions = instructions,
                 Name = name,
-                // $$$
+                // $$$ METADATA / FILEIDS
             };
 
         var response = await client.CreateAssistantAsync(options, cancellationToken).ConfigureAwait(false);
@@ -89,9 +87,9 @@ public sealed class GptAgent : KernelAgent<GptChannel>
     /// <inheritdoc/>
     protected internal override async Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
     {
-        var thread = await this.Client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+        var thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
-        return new GptChannel(this.Client, thread.Value.Id);
+        return new GptChannel(this._client, thread.Value.Id);
     }
 
     private static AssistantsClient CreateClient(IChatCompletionService service, string apiKey)
@@ -127,16 +125,12 @@ public sealed class GptAgent : KernelAgent<GptChannel>
     }
 
     /// <summary>
-    /// $$$
+    /// Initializes a new instance of the <see cref="GptAgent"/> class.
     /// </summary>
-    /// <param name="client"></param>
-    /// <param name="model"></param>
-    /// <param name="kernel"></param>
-    /// <exception cref="InvalidOperationException"></exception>
     private GptAgent(AssistantsClient client, Assistant model, Kernel kernel)
         : base(kernel)
     {
         this._assistant = model;
-        this.Client = client;
+        this._client = client;
     }
 }

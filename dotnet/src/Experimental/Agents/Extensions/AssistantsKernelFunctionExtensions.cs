@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Azure.AI.OpenAI.Assistants;
 using Json.More;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
 
@@ -62,6 +63,43 @@ internal static class AssistantsKernelFunctionExtensions
                                     Required = required,
                                 },
                     },
+            };
+
+        return payload;
+    }
+
+    /// <summary>
+    /// Convert <see cref="KernelFunction"/> to an OpenAI tool model.
+    /// </summary>
+    /// <param name="function">The source function</param>
+    /// <param name="pluginName">The plugin name</param>
+    /// <returns>An OpenAI tool definition</returns>
+    public static ToolDefinition ToToolDefinition(this KernelFunction function, string pluginName)
+    {
+        var metadata = function.Metadata;
+        var required = new List<string>(metadata.Parameters.Count);
+        var parameters =
+            metadata.Parameters.ToDictionary(
+                p => p.Name,
+                p =>
+                {
+                    if (p.IsRequired)
+                    {
+                        required.Add(p.Name);
+                    }
+
+                    return
+                        new OpenAIParameter
+                        {
+                            Type = ConvertType(p.ParameterType),
+                            Description = p.Description,
+                        };
+                });
+
+        var payload =
+            new FunctionToolDefinition(function.GetQualifiedName(pluginName), function.Description)
+            {
+                //Parameters = null, // $$$ CRITICAL !!!
             };
 
         return payload;

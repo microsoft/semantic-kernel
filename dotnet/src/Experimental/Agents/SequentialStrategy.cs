@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
-/// $$$
+/// Round-robin turn-taking strategy.
 /// </summary>
 public sealed class SequentialChatStrategy : NexusStrategy
 {

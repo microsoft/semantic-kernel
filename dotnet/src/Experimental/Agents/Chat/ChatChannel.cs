@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Experimental.Agents.Chat;
 
 /// <summary>
-/// $$$
+/// A <see cref="AgentChannel"/> specialization for use with <see cref="ChatAgent"/>.
 /// </summary>
 public sealed class ChatChannel : AgentChannel
 {
@@ -49,11 +49,14 @@ public sealed class ChatChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    public override Task RecieveAsync(IEnumerable<ChatMessageContent> content, CancellationToken cancellationToken)
+    public override Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatChannel"/> class.
+    /// </summary>
     internal ChatChannel(ChatHistory chat, PromptExecutionSettings? settings)
     {
         this._chat = chat;

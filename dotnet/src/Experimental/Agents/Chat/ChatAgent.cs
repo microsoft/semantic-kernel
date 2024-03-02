@@ -2,12 +2,13 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Chat;
 
 /// <summary>
-/// $$$
+/// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
 public sealed class ChatAgent : KernelAgent<ChatChannel>
 {
@@ -28,11 +29,11 @@ public sealed class ChatAgent : KernelAgent<ChatChannel>
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new ChatChannel(nexus.AgentHistory, this._executionSettings));
+        return Task.FromResult<AgentChannel>(new ChatChannel(nexus.History, this._executionSettings));
     }
 
     /// <summary>
-    /// $$$
+    /// Initializes a new instance of the <see cref="ChatAgent"/> class.
     /// </summary>
     /// <param name="kernel"></param>
     /// <param name="instructions"></param>

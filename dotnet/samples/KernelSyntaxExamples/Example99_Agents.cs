@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
@@ -159,12 +158,11 @@ public class Example99_Agents : BaseTest
 
     private async Task RunDualAgentAsync(KernelAgent agent1, KernelAgent agent2, string input)
     {
-        var nexus = new ManualNexus(); // $$$
+        var nexus = new ManualNexus();
 
         await InvokeAgentAsync(nexus, agent1, input); // $$$ USER PROXY
         await InvokeAgentAsync(nexus, agent2);
     }
-
 
     private Task RunToolAgentAsync(KernelAgent agent)
     {
@@ -183,7 +181,7 @@ public class Example99_Agents : BaseTest
         KernelAgent agent,
         params string[] messages)
     {
-        var nexus = new ManualNexus(); // $$$
+        var nexus = new ManualNexus();
 
         this.WriteLine($"[{agent.Id}]");
 
@@ -197,9 +195,9 @@ public class Example99_Agents : BaseTest
     private async Task InvokeAgentAsync(ManualNexus nexus, KernelAgent agent, string? message = null)
     {
         var response = await nexus.InvokeAsync(agent, message);
-        foreach (var content in response)
+        await foreach (var content in response)
         {
-            //this.WriteLine($"[{content.Id}]"); $$$
+            //this.WriteLine($"[{content.Id}]"); $$$ SOURCE ???
             this.WriteLine($"# {content.Role}: '{content.Content}'");
         }
     }

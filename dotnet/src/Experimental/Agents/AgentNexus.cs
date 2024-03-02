@@ -10,27 +10,21 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
-/// $$$
+/// Point of interaction for one or more agents.
 /// </summary>
 public abstract class AgentNexus /*: $$$ ChatHistory ??? */
 {
     private readonly Dictionary<Type, AgentChannel> _agentChannels;
-    private readonly ChatHistory _agentHistory;
+
+    internal ChatHistory History { get; }
 
     /// <summary>
-    /// $$$
+    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
-    public IReadOnlyList<ChatMessageContent> Messages => this._agentHistory;
-
-    internal ChatHistory AgentHistory => this._agentHistory; // $$$
-
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="input"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="input">Optional user input.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchornous enumeration of messages.</returns>
     protected IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(KernelAgent agent, string? input = null, /*KernelArguments $$$,*/ CancellationToken cancellationToken = default)
     {
         var content = string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
@@ -38,12 +32,12 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
     }
 
     /// <summary>
-    /// $$$
+    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="input"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="input">Optional user input.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchornous enumeration of messages.</returns>
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
         KernelAgent agent,
         ChatMessageContent? input = null,
@@ -58,7 +52,7 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
         // Invoke agent & process response
         await foreach (var message in channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false))
         {
-            this.AgentHistory.Add(message);
+            this.History.Add(message);
 
             yield return message;
 
@@ -79,23 +73,23 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
             // $$$ CHANNEL FACTORY (CREATE / RESTORE) - CONTEXT
             channel = await agent.CreateChannelAsync(this, cancellationToken).ConfigureAwait(false);
 
-            if (this.Messages.Count > 0)
+            if (this.History.Count > 0)
             {
-                await channel.RecieveAsync(this.Messages, cancellationToken).ConfigureAwait(false); // $$$ NEED SYNC-POINT FOR RESTORE
+                await channel.RecieveAsync(this.History, cancellationToken).ConfigureAwait(false); // $$$ NEED SYNC-POINT FOR RESTORE
             }
 
-            this._agentChannels[agent.ChannelType] = channel;
+            this._agentChannels.Add(agent.ChannelType, channel);
         }
 
         return channel;
     }
 
     /// <summary>
-    /// $$$
+    /// Initializes a new instance of the <see cref="AgentNexus"/> class.
     /// </summary>
     protected AgentNexus()
     {
         this._agentChannels = [];
-        this._agentHistory = [];
+        this.History = [];
     }
 }
