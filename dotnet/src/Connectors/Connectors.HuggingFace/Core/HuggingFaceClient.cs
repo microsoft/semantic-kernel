@@ -94,7 +94,7 @@ internal sealed class HuggingFaceClient
         }
     }
 
-    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+    public async Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         Kernel? kernel,
         CancellationToken cancellationToken)
@@ -119,7 +119,7 @@ internal sealed class HuggingFaceClient
         var response = DeserializeResponse<TextEmbeddingResponse>(body);
 
         // Currently only one embedding per data is supported
-        return response[0][0].ToList()!;
+        return new List<EmbeddingContent<float>> { new(innerContent: response, data: response[0][0].ToList(), modelId: this._modelId) };
     }
 
     private static void ValidateMaxTokens(int? maxTokens)
