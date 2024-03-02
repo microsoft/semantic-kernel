@@ -8,4 +8,4 @@ namespace Microsoft.SemanticKernel.Embeddings;
 /// Represents a generator of image embeddings of type <c>float</c>.
 /// </summary>
 [Experimental("SKEXP0001")]
-public interface IImageEmbeddingGenerationService : IEmbeddingGenerationService<ImageContent, float> { }
+public interface IImageEmbeddingGenerationService : IGenericEmbeddingGenerationService<ImageContent, float> { }

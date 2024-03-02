@@ -8,6 +8,6 @@ namespace Microsoft.SemanticKernel.Embeddings;
 /// Represents a generator of text embeddings of type <c>float</c>.
 /// </summary>
 [Experimental("SKEXP0001")]
-public interface ITextEmbeddingGenerationService : IEmbeddingGenerationService<string, float>
+public interface ITextEmbeddingGenerationService : IGenericEmbeddingGenerationService<string, float>
 {
 }
