@@ -52,9 +52,12 @@ public static class ChatHistoryExtensions
 
         if (messageContents.Count != 0)
         {
+            var role = streamedRole ?? AuthorRole.Assistant;
+
             chatHistory.Add(new OpenAIChatMessageContent(
-                streamedRole ?? AuthorRole.Assistant,
+                role,
                 contentBuilder?.ToString() ?? string.Empty,
+                role == AuthorRole.Assistant ? chatHistory.SystemName : null,
                 messageContents[0].ModelId!,
                 OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
                 metadata));

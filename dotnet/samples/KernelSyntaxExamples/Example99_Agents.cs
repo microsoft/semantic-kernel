@@ -115,14 +115,28 @@ public class Example99_Agents : BaseTest
     /// Demonstrate mixed agents.
     /// </summary>
     [Fact]
-    public async Task RunMixedAgentsAsync()
+    public async Task RunMixedAgentNexusAsync()
     {
-        WriteLine("======== Run:Dual GPT Agents ========");
+        WriteLine("======== Run:Mixed Agents ========");
 
         var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
         var agent2 = await CreateGptAgentAsync("Pessimistic", "Respond with extreme skeptism...don't be polite.");
 
         await RunDualAgentAsync(agent1, agent2, "I think I'm going to do something really important today!");
+    }
+
+    /// <summary>
+    /// Demonstrate mixed agents.
+    /// </summary>
+    [Fact]
+    public async Task RunMixedAgentStrategyAsync()
+    {
+        WriteLine("======== Run:Agents in Strategy Nexus ========");
+
+        var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
+        var agent2 = await CreateGptAgentAsync("Pessimistic", "Respond with extreme skeptism...don't be polite.");
+
+        await RunStrategyAsync(agent1, agent2, "I think I'm going to do something really important today!");
     }
 
     private async Task<GptAgent> CreateGptAgentAsync(string name, string instructions, KernelPlugin? plugin = null)
@@ -158,10 +172,23 @@ public class Example99_Agents : BaseTest
 
     private async Task RunDualAgentAsync(KernelAgent agent1, KernelAgent agent2, string input)
     {
+        WriteAgent(agent1);
+        WriteAgent(agent2);
+
         var nexus = new ManualNexus();
 
         await InvokeAgentAsync(nexus, agent1, input); // $$$ USER PROXY
         await InvokeAgentAsync(nexus, agent2);
+    }
+
+    private async Task RunStrategyAsync(KernelAgent agent1, KernelAgent agent2, string input)
+    {
+        WriteAgent(agent1);
+        WriteAgent(agent2);
+
+        var nexus = new StrategyNexus(new SequentialChatStrategy(), agent1, agent2);
+
+        await InvokeAgentAsync(nexus, input); // $$$ USER PROXY
     }
 
     private Task RunToolAgentAsync(KernelAgent agent)
@@ -181,9 +208,9 @@ public class Example99_Agents : BaseTest
         KernelAgent agent,
         params string[] messages)
     {
-        var nexus = new ManualNexus();
+        WriteAgent(agent);
 
-        this.WriteLine($"[{agent.Id}]");
+        var nexus = new ManualNexus();
 
         // Process each user message and agent response.
         foreach (var message in messages)
@@ -197,8 +224,16 @@ public class Example99_Agents : BaseTest
         var response = await nexus.InvokeAsync(agent, message);
         await foreach (var content in response)
         {
-            //this.WriteLine($"[{content.Id}]"); $$$ SOURCE ???
-            this.WriteLine($"# {content.Role}: '{content.Content}'");
+            this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
+        }
+    }
+
+    private async Task InvokeAgentAsync(StrategyNexus nexus, string? message = null)
+    {
+        var response = await nexus.InvokeAsync(message);
+        await foreach (var content in response)
+        {
+            this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
         }
     }
 
@@ -236,6 +271,11 @@ public class Example99_Agents : BaseTest
         }
 
         return TestConfiguration.AzureOpenAI.ApiKey;
+    }
+
+    private void WriteAgent(KernelAgent agent)
+    {
+        this.WriteLine($"[{agent.GetType().Name}:{agent.Id}:{agent.Name ?? "*"}]");
     }
 
     public Example99_Agents(ITestOutputHelper output) : base(output)

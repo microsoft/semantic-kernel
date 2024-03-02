@@ -20,8 +20,8 @@ public sealed class OpenAIChatMessageContentTests
         List<ChatCompletionsToolCall> toolCalls = [new FakeChatCompletionsToolCall("id")];
 
         // Act
-        var content1 = new OpenAIChatMessageContent(new ChatRole("user"), "content1", "model-id1", toolCalls);
-        var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content2", "model-id2", toolCalls);
+        var content1 = new OpenAIChatMessageContent(new ChatRole("user"), "content1", null, "model-id1", toolCalls);
+        var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content2", null, "model-id2", toolCalls);
 
         // Assert
         this.AssertChatMessageContent(AuthorRole.User, "content1", "model-id1", toolCalls, content1);
@@ -38,8 +38,8 @@ public sealed class OpenAIChatMessageContentTests
             new FakeChatCompletionsToolCall("id3"),
             new FakeChatCompletionsToolCall("id4")];
 
-        var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", toolCalls);
-        var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", []);
+        var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content", null, "model-id", toolCalls);
+        var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content", null, "model-id", []);
 
         // Act
         var actualToolCalls1 = content1.GetOpenAIFunctionToolCalls();
@@ -65,8 +65,8 @@ public sealed class OpenAIChatMessageContentTests
             new FakeChatCompletionsToolCall("id4")];
 
         // Act
-        var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content1", "model-id1", [], metadata);
-        var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content2", "model-id2", toolCalls, metadata);
+        var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content1", null, "model-id1", [], metadata);
+        var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content2", null, "model-id2", toolCalls, metadata);
 
         // Assert
         Assert.NotNull(content1.Metadata);

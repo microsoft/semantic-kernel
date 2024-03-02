@@ -307,7 +307,7 @@ internal abstract class ClientCore
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice))).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, chat.SystemName, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice))).ToList();
             }
 
             Debug.Assert(kernel is not null);
@@ -318,7 +318,7 @@ internal abstract class ClientCore
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, resultChoice));
+            OpenAIChatMessageContent result = new(resultChoice.Message, chat.SystemName, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, resultChoice));
             if (result.ToolCalls.Count == 0)
             {
                 return new[] { result };
@@ -531,7 +531,7 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, toolCalls));
-            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata));
+            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, chat.SystemName, this.DeploymentOrModelName, toolCalls, metadata)); // $$$ NAME
 
             // Respond to each tooling request.
             foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)

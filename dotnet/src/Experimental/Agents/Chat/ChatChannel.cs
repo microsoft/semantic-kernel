@@ -22,12 +22,12 @@ public sealed class ChatChannel : AgentChannel
 
         if (!string.IsNullOrWhiteSpace(agent.Instructions))
         {
-            chat.AddMessage(AuthorRole.System, agent.Instructions!); // $$$ NAME
+            chat.AddMessage(AuthorRole.System, agent.Instructions!, name: agent.Name);
         }
 
         if (input != null)
         {
-            this._chat.Add(input); // $$$ VERIFY USER ???
+            this._chat.Add(input);
             yield return input;
         }
 

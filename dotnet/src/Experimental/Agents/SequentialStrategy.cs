@@ -13,6 +13,8 @@ public sealed class SequentialChatStrategy : NexusStrategy
     /// <inheritdoc/>
     public override Task<KernelAgent> NextAgentAsync()
     {
+        var agent = this.Nexus.Agents[this._index];
+
         ++this._index;
 
         if (this._index == this.Nexus.Agents.Count)
@@ -20,6 +22,6 @@ public sealed class SequentialChatStrategy : NexusStrategy
             this._index = 0;
         }
 
-        return Task.FromResult(this.Nexus.Agents[this._index]);
+        return Task.FromResult(agent);
     }
 }

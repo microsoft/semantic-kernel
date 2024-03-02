@@ -44,7 +44,7 @@ public sealed class GptChannel : AgentChannel
             string actorName;
             if (message.Role == AuthorRole.Assistant)
             {
-                actorName = message.Role.Label;
+                actorName = message.Name ?? message.Role.Label;
             }
             else
             {
@@ -54,7 +54,7 @@ public sealed class GptChannel : AgentChannel
             await this._client.CreateMessageAsync(
                 this._threadId,
                 MessageRole.User,
-                $"{actorName}: {message.Content}", // $$$ ALWAYS ALIAS WHEN JOINING
+                $"{actorName}: {message.Content}",
                 fileIds: null,
                 metadata: null,
                 cancellationToken).ConfigureAwait(false);
@@ -130,13 +130,13 @@ public sealed class GptChannel : AgentChannel
                 {
                     if (content is MessageTextContent contentMessage)
                     {
-                        yield return new ChatMessageContent(role, contentMessage.Text.Trim()); // $$$ NAME
+                        yield return new ChatMessageContent(role, contentMessage.Text.Trim(), agent.Name);
                         continue;
                     }
 
                     if (content is MessageImageFileContent contentImage)
                     {
-                        yield return new ChatMessageContent(role, contentImage.FileId); // $$$ NAME, FILE HANDLING
+                        yield return new ChatMessageContent(role, contentImage.FileId, agent.Name); // $$$ FILE HANDLING
                         continue;
                     }
                 }

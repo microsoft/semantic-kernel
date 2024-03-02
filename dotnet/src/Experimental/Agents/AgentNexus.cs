@@ -12,10 +12,13 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// <summary>
 /// Point of interaction for one or more agents.
 /// </summary>
-public abstract class AgentNexus /*: $$$ ChatHistory ??? */
+public abstract class AgentNexus /*: $$$ PLUGIN ??? */
 {
     private readonly Dictionary<Type, AgentChannel> _agentChannels;
 
+    /// <summary>
+    /// The primary nexus history.
+    /// </summary>
     internal ChatHistory History { get; }
 
     /// <summary>
@@ -44,7 +47,13 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
         /*KernelArguments $$$,*/
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // $$$ CONCURRENCY
+        // Verify only a single operation is active
+        int isActive = 0;
+        int wasActive = Interlocked.CompareExchange(ref isActive, 1, 0);
+        if (wasActive > 0)
+        {
+            throw new InvalidOperationException("$$$");
+        }
 
         // Manifest the required channel
         var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
@@ -70,12 +79,11 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
         // $$$ BETTER KEY THAN TYPE (DIFFERENT APIKEYS / ENDPOINTS / TENENTS OF SAME TYPE)
         if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))
         {
-            // $$$ CHANNEL FACTORY (CREATE / RESTORE) - CONTEXT
             channel = await agent.CreateChannelAsync(this, cancellationToken).ConfigureAwait(false);
 
             if (this.History.Count > 0)
             {
-                await channel.RecieveAsync(this.History, cancellationToken).ConfigureAwait(false); // $$$ NEED SYNC-POINT FOR RESTORE
+                await channel.RecieveAsync(this.History, cancellationToken).ConfigureAwait(false);
             }
 
             this._agentChannels.Add(agent.ChannelType, channel);
