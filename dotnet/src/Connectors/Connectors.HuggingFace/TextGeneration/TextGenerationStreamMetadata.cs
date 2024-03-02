@@ -51,7 +51,7 @@ public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, ob
     }
 
     /// <summary>
-    /// Unique token idenfitier for the model
+    /// Unique token identifier for the model
     /// </summary>
     public int? TokenId
     {
