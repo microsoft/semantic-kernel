@@ -26,7 +26,7 @@ public sealed class GeminiStreamingChatMessageContent : StreamingChatMessageCont
         string modelId,
         int choiceIndex,
         GeminiFunctionToolCall? calledTool = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
+        GeminiMetadata? metadata = null)
         : base(
             role: role,
             content: content,
