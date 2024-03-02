@@ -129,9 +129,9 @@ Event: {{$input}}
     {
         this.WriteLine("======== Simple Prompt ========");
 
-        string? response = await kernel.InvokePromptAsync<string>("Hi Gemini, what can you do for me?",
-            new KernelArguments(new GeminiPromptExecutionSettings() { MaxTokens = 120 }));
-        this.WriteLine(response);
+        var response = await kernel.InvokePromptAsync("Hi Gemini, what can you do for me?",
+            new KernelArguments(new GeminiPromptExecutionSettings() { MaxTokens = 600 }));
+        this.WriteLine(response.GetValue<string>());
     }
 
     public Example85_GeminiTextGeneration(ITestOutputHelper output) : base(output) { }
