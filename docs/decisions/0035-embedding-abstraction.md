@@ -1,34 +1,191 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: {proposed | rejected | accepted | deprecated | … | superseded by [ADR-0001](0001-madr-architecture-decisions.md)}
-contact: {person proposing the ADR}
-date: {YYYY-MM-DD when the decision was last updated}
-deciders: {list everyone involved in the decision}
-consulted: {list everyone whose opinions are sought (typically subject-matter experts); and with whom there is a two-way communication}
-informed: {list everyone who is kept up-to-date on progress; and with whom there is a one-way communication}
+status: proposed
+contact: Krzysztof318
+date: 2024-03-02
+deciders: ???
+consulted: ???
+informed: ???
 ---
 
-# {short title of solved problem and solution}
+# Embeddings Generation in Semantic Kernel
 
 ## Context and Problem Statement
 
-{Describe the context and problem statement, e.g., in free form using two to three sentences or in the form of an illustrative story.
-You may want to articulate the problem in form of a question and add links to collaboration boards or issue management systems.}
+### General Information
+
+The current abstraction of generating embeddings only allows for generation from text data.\
+We want to enable the generation of embeddings from other types of data, such as images and others.\
+We also want to make it possible to parameterize the query.
+
+### Embeddings models
+
+OpenAI provides models that allow for generating embeddings only from textual data.\
+The models do not return metadata, and also do not allow for parameterizing the query.
+
+Google VertexAI provides models that allow for generating embeddings from textual data, as well as from images and other types of data.\
+The models return metadata, and also allow for parameterizing the query.
 
 <!-- This is an optional element. Feel free to remove. -->
 
 ## Decision Drivers
 
-- {decision driver 1, e.g., a force, facing concern, …}
-- {decision driver 2, e.g., a force, facing concern, …}
-- … <!-- numbers of drivers can vary -->
+1. Abstraction should be able to generate embeddings from different types of data, at least from text and images.
+2. Abstraction should return metadata with generated embeddings.
+3. Abstraction should allow parameterize the embeddings query.
 
 ## Considered Options
 
-- {title of option 1}
-- {title of option 2}
-- {title of option 3}
-- … <!-- numbers of options can vary -->
+### Option 1 [Current] - Generic embeddings generation interface and specialized interfaces for different types of data
+
+The current abstraction of generating embeddings only allows for generation from text and image data.\
+We return raw data in the form of `IList<ReadOnlyMemory<TEmbedding>>` instead of a specialized data type like `IList<EmbeddingContent>`.\
+In this option, we cannot parameterize the query or return metadata.
+
+```csharp
+public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService where TEmbedding : unmanaged
+{
+    Task<IList<ReadOnlyMemory<TEmbedding>>> GenerateEmbeddingsAsync(
+        IList<TValue> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default);
+}
+
+public interface ITextEmbeddingGenerationService : IEmbeddingGenerationService<string, float> { }
+
+public interface IImageEmbeddingGenerationService : IEmbeddingGenerationService<ImageContent, float> { }
+```
+
+Pros:
+- Allows for generating embeddings from different types of data.
+- Generic interface.
+- Interface segregation.
+
+Cons:
+- Cannot parameterize the query.
+- Cannot return metadata.
+
+### Option 2 [Proposed] - Specialized embeddings generation interfaces for different types of data with metadata and query parameterization without a generic interface
+
+This option allows you to generate embeds from different data types, such as text and images.\
+And allows you to parameterize the query and return metadata.\
+We can also develop interfaces with other returned types like `EmbeddingContent<int>`, `EmbeddingContent<double>`, etc.
+
+```csharp
+public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
+{
+    public EmbeddingContent(
+        object? innerContent,
+        IReadOnlyList<ReadOnlyMemory<TEmbedding>> data,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Data = data;
+    }
+
+    public IReadOnlyList<ReadOnlyMemory<TEmbedding>> Data { get; set; }
+}
+
+public interface ITextEmbeddingGenerationService : IAIService
+{
+    Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default);
+}
+
+public interface IImageEmbeddingGenerationService : IAIService
+{
+    Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+        IList<ImageContent> data,
+        Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default);
+}
+```
+Pros:
+- Allows for generating embeddings from different types of data.
+- Allows for parameterizing the query.
+- Allows for returning metadata.
+- Interface segregation.
+
+Cons:
+- No generic interface.
+
+### Option 3 [Proposed] - Common interface for embeddings generation with metadata and query parameterization
+
+Similar to option 2, but with a common interface for generating embeddings from different types of data.
+
+```csharp
+public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
+{
+    public EmbeddingContent(
+        object? innerContent,
+        IReadOnlyList<ReadOnlyMemory<TEmbedding>> data,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Data = data;
+    }
+
+    public IReadOnlyList<ReadOnlyMemory<TEmbedding>> Data { get; set; }
+}
+
+public interface IEmbeddingGenerationService : IAIService
+{
+    Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+        IList<ImageContent> data,
+        Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default);
+}
+```
+
+Pros:
+- Allows for generating embeddings from different types of data.
+- Allows for parameterizing the query.
+- Allows for returning metadata.
+
+Cons:
+- No generic interface.
+- One common interface for different types of data. Some models don't support all types of data.
+
+### Option 4 [Proposed] - Same as option 2 or 3 but with non-generic EmbeddingContent
+
+Similar to option 2 or 3, but with a non-generic `EmbeddingContent` class.
+This option forces the conversion of embeddings data always to `float`.
+
+```csharp
+public class EmbeddingContent : KernelContent
+{
+    public EmbeddingContent(
+        object? innerContent,
+        IReadOnlyList<ReadOnlyMemory<float>> data,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Data = data;
+    }
+
+    public IReadOnlyList<ReadOnlyMemory<float>> Data { get; set; }
+}
+```
+
+Pros:
+- Simplicity.
+
+Cons:
+- We cannot return embeddings with different types.
 
 ## Decision Outcome
 
@@ -42,39 +199,6 @@ Chosen option: "{title of option 1}", because
 - Good, because {positive consequence, e.g., improvement of one or more desired qualities, …}
 - Bad, because {negative consequence, e.g., compromising one or more desired qualities, …}
 - … <!-- numbers of consequences can vary -->
-
-<!-- This is an optional element. Feel free to remove. -->
-
-## Validation
-
-{describe how the implementation of/compliance with the ADR is validated. E.g., by a review or an ArchUnit test}
-
-<!-- This is an optional element. Feel free to remove. -->
-
-## Pros and Cons of the Options
-
-### {title of option 1}
-
-<!-- This is an optional element. Feel free to remove. -->
-
-{example | description | pointer to more information | …}
-
-- Good, because {argument a}
-- Good, because {argument b}
-<!-- use "neutral" if the given argument weights neither for good nor bad -->
-- Neutral, because {argument c}
-- Bad, because {argument d}
-- … <!-- numbers of pros and cons can vary -->
-
-### {title of other option}
-
-{example | description | pointer to more information | …}
-
-- Good, because {argument a}
-- Good, because {argument b}
-- Neutral, because {argument c}
-- Bad, because {argument d}
-- …
 
 <!-- This is an optional element. Feel free to remove. -->
 
