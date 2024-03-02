@@ -21,15 +21,16 @@ internal sealed class OllamaClient : IOllamaClient
 {
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
+    private readonly Uri? _baseUri;
+    private readonly string _separator;
 
-    private IEndpointProvider EndpointProvider { get; }
     private HttpClient HttpClient { get; }
     private ILogger Logger { get; }
 
     internal OllamaClient(
         string modelId,
         HttpClient httpClient,
-        IEndpointProvider endpointProvider,
+        Uri baseUri,
         IStreamJsonParser? streamJsonParser = null,
         ILogger? logger = null)
     {
@@ -37,14 +38,15 @@ internal sealed class OllamaClient : IOllamaClient
 
         this._modelId = modelId;
         this.HttpClient = httpClient;
-        this.EndpointProvider = endpointProvider;
+        this._baseUri = baseUri;
+        this._separator = baseUri.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture) ? string.Empty : "/";
         this.Logger = logger ?? NullLogger.Instance;
         this._streamJsonParser = streamJsonParser ?? new OllamaStreamJsonParser();
     }
 
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(string prompt, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
     {
-        var endpoint = this.EndpointProvider.TextGenerationEndpoint;
+        var endpoint = this.GetTextGenerationEndpoint();
         var request = this.CreateTextRequest(prompt, executionSettings);
         using var httpRequestMessage = this.CreatePost(request, endpoint);
 
@@ -64,7 +66,7 @@ internal sealed class OllamaClient : IOllamaClient
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var endpoint = this.EndpointProvider.StreamTextGenerationEndpoint;
+        var endpoint = this.GetTextGenerationEndpoint();
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
@@ -87,7 +89,7 @@ internal sealed class OllamaClient : IOllamaClient
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var endpoint = this.EndpointProvider.ChatCompletionEndpoint;
+        var endpoint = this.GetChatCompletionEndpoint();
         var request = this.CreateChatRequest(chatHistory, executionSettings);
         using var httpRequestMessage = this.CreatePost(request, endpoint);
 
@@ -108,7 +110,7 @@ internal sealed class OllamaClient : IOllamaClient
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var endpoint = this.EndpointProvider.StreamChatCompletionEndpoint;
+        var endpoint = this.GetChatCompletionEndpoint();
         var request = this.CreateChatRequest(chatHistory, executionSettings);
         request.Stream = true;
         using var httpRequestMessage = this.CreatePost(request, endpoint);
@@ -128,7 +130,7 @@ internal sealed class OllamaClient : IOllamaClient
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var endpoint = this.EndpointProvider.EmbeddingsGenerationEndpoint;
+        var endpoint = this.GetEmbeddingsGenerationEndpoint();
 
         var result = new List<ReadOnlyMemory<float>>(prompts.Count);
 
@@ -308,6 +310,10 @@ internal sealed class OllamaClient : IOllamaClient
             metadata.PromptEvalCount,
             metadata.PromptEvalDuration);
     }
+
+    private Uri GetTextGenerationEndpoint() => new($"{this._baseUri}{this._separator}api/generate");
+    private Uri GetChatCompletionEndpoint() => new($"{this._baseUri}{this._separator}api/chat");
+    private Uri GetEmbeddingsGenerationEndpoint() => new($"{this._baseUri}{this._separator}api/embeddings");
 
     private HttpRequestMessage CreatePost(object requestData, Uri endpoint)
     {

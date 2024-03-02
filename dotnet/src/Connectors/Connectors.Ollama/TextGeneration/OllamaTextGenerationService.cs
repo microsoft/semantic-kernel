@@ -37,10 +37,10 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
 
         this.Client = new OllamaClient(
             modelId: model,
+            baseUri: baseUri,
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
-            endpointProvider: new OllamaEndpointProvider(baseUri),
             logger: loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService))
         );
 
