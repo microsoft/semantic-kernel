@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
 [Experimental("SKEXP0001")]
-public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
+public sealed class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
 {
     /// <summary>
     /// Represents embedding content.
