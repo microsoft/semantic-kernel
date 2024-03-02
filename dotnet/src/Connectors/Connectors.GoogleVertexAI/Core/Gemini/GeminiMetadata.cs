@@ -105,6 +105,7 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     {
         null => throw new ArgumentNullException(nameof(dictionary)),
         GeminiMetadata metadata => metadata,
+        IDictionary<string, object?> metadata => new GeminiMetadata(metadata),
         _ => new GeminiMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
     };
 
