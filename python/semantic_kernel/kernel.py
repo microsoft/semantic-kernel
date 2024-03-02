@@ -226,11 +226,11 @@ class Kernel(KernelBaseModel):
 
             output_function_result = []
             for result in function_result:
-                for index, choice in enumerate(result):
-                    if len(output_function_result) <= index:
+                for choice in result:
+                    if len(output_function_result) <= choice.choice_index:
                         output_function_result.append(copy(choice))
                     else:
-                        output_function_result[index] += choice
+                        output_function_result[choice.choice_index] += choice
             func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
             function_invoked_args = self.on_function_invoked(
                 stream_function.metadata,
