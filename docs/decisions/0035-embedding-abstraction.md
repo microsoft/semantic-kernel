@@ -157,7 +157,7 @@ Pros:
 
 Cons:
 - No generic interface.
-- One common interface for different types of data. Some models don't support all types of data.
+- One common interface for different types of data. Many models don't support all types of data.
 
 ### Option 4 [Proposed] - Same as option 2 or 3 but with non-generic EmbeddingContent
 
