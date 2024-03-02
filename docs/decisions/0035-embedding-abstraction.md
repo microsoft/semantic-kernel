@@ -23,7 +23,7 @@ We also want to make it possible to parameterize the query.
 OpenAI provides models that allow for generating embeddings only from textual data.\
 The models do not return metadata, and also do not allow for parameterizing the query.
 
-Google VertexAI provides models that allow for generating embeddings from textual data, as well as from images and other types of data.\
+Google VertexAI provides models that allow for generating embeddings from textual data, as well as from images and other types of data.
 The models return metadata, and also allow for parameterizing the query.
 
 <!-- This is an optional element. Feel free to remove. -->
@@ -39,7 +39,8 @@ The models return metadata, and also allow for parameterizing the query.
 ### Option 1 [Current] - Generic embeddings generation interface and specialized interfaces for different types of data
 
 The current abstraction of generating embeddings only allows for generation from text and image data.\
-We return raw data in the form of `IList<ReadOnlyMemory<TEmbedding>>` instead of a specialized data type like `IList<EmbeddingContent>`.\
+We return raw data in the form of `IList<ReadOnlyMemory<TEmbedding>>` instead of a specialized data type like `IList<EmbeddingContent>`.
+
 In this option, we cannot parameterize the query or return metadata.
 
 ```csharp
@@ -162,6 +163,7 @@ Cons:
 ### Option 4 [Proposed] - Same as option 2 or 3 but with non-generic EmbeddingContent
 
 Similar to option 2 or 3, but with a non-generic `EmbeddingContent` class.
+
 This option forces the conversion of embeddings data always to `float`.
 
 ```csharp
