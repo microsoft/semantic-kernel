@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Microsoft.SemanticKernel.Experimental.Agents.Chat;
 using Microsoft.SemanticKernel.Experimental.Agents.Gpt;
+using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -46,7 +47,25 @@ public class Example99_Agents : BaseTest
     }
 
     /// <summary>
-    /// Demonstrate single chat agent.
+    /// Demonstrate tooled chat agent.
+    /// </summary>
+    [Fact]
+    public async Task RunChatToolsAgentAsync()
+    {
+        WriteLine("======== Run:Tooled Chat Agent ========");
+
+        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        var agent =
+            CreateChatAgent(
+                "Host",
+                "Use tools to answer questions about menu.",
+                plugin);
+
+        await RunToolAgentAsync(agent);
+    }
+
+    /// <summary>
+    /// Demonstrate single gpt agent.
     /// </summary>
     [Fact]
     public async Task RunGptSingleAgentAsync()
@@ -62,7 +81,7 @@ public class Example99_Agents : BaseTest
     }
 
     /// <summary>
-    /// Demonstrate single chat agent.
+    /// Demonstrate single gpt agent.
     /// </summary>
     [Fact]
     public async Task RunGptDualAgentsAsync()
@@ -76,7 +95,25 @@ public class Example99_Agents : BaseTest
     }
 
     /// <summary>
-    /// Demonstrate single chat agent.
+    /// Demonstrate tooled gpt agent.
+    /// </summary>
+    [Fact]
+    public async Task RunGptToolsAgentAsync()
+    {
+        WriteLine("======== Run:Tooled GPT Agent ========");
+
+        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        var agent =
+            await CreateGptAgentAsync(
+                "Host",
+                "Use tools to answer questions about menu.",
+                plugin);
+
+        await RunToolAgentAsync(agent);
+    }
+
+    /// <summary>
+    /// Demonstrate mixed agents.
     /// </summary>
     [Fact]
     public async Task RunMixedAgentsAsync()
@@ -89,37 +126,36 @@ public class Example99_Agents : BaseTest
         await RunDualAgentAsync(agent1, agent2, "I think I'm going to do something really important today!");
     }
 
-    private async Task<GptAgent> CreateGptAgentAsync(string name, string instructions)
+    private async Task<GptAgent> CreateGptAgentAsync(string name, string instructions, KernelPlugin? plugin = null)
     {
         return
             await GptAgent.CreateAsync(
-                CreateKernel(),
+                CreateKernel(plugin),
                 GetApiKey(),
                 instructions,
                 description: null,
                 name);
     }
 
-    private ChatAgent CreateChatAgent(string name, string instructions)
+    private ChatAgent CreateChatAgent(string name, string instructions, KernelPlugin? plugin = null)
     {
         return
             new ChatAgent(
-                CreateKernel(),
+                CreateKernel(plugin),
                 instructions,
                 description: null,
                 name);
     }
 
-    private async Task RunSingleAgentAsync(KernelAgent agent)
+    private Task RunSingleAgentAsync(KernelAgent agent)
     {
-        // Call the common chat-loop
-        await ChatAsync(
-            agent,
-            "Fortune favors the bold.",
-            "I came, I saw, I conquered.",
-            "Practice makes perfect.");
+        return
+            ChatAsync(
+                agent,
+                "Fortune favors the bold.",
+                "I came, I saw, I conquered.",
+                "Practice makes perfect.");
     }
-
 
     private async Task RunDualAgentAsync(KernelAgent agent1, KernelAgent agent2, string input)
     {
@@ -127,6 +163,17 @@ public class Example99_Agents : BaseTest
 
         await InvokeAgentAsync(nexus, agent1, input); // $$$ USER PROXY
         await InvokeAgentAsync(nexus, agent2);
+    }
+
+
+    private Task RunToolAgentAsync(KernelAgent agent)
+    {
+        return
+            ChatAsync(
+                agent,
+                "What is the special soup?",
+                "What is the special drink?",
+                "What else is on the menu?");
     }
 
     /// <summary>
@@ -153,11 +200,11 @@ public class Example99_Agents : BaseTest
         foreach (var content in response)
         {
             //this.WriteLine($"[{content.Id}]"); $$$
-            this.WriteLine($"# {content.Role}: {content.Content}");
+            this.WriteLine($"# {content.Role}: '{content.Content}'");
         }
     }
 
-    private Kernel CreateKernel()
+    private Kernel CreateKernel(KernelPlugin? plugin = null)
     {
         var builder = Kernel.CreateBuilder();
 
@@ -173,6 +220,11 @@ public class Example99_Agents : BaseTest
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
+        }
+
+        if (plugin != null)
+        {
+            builder.Plugins.Add(plugin);
         }
 
         return builder.Build();

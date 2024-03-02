@@ -86,6 +86,14 @@ public sealed class GptAgent : KernelAgent<GptChannel>
         return new GptAgent(client, response, kernel);
     }
 
+    /// <inheritdoc/>
+    protected internal override async Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
+    {
+        var thread = await this.Client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+
+        return new GptChannel(this.Client, thread.Value.Id);
+    }
+
     private static AssistantsClient CreateClient(IChatCompletionService service, string apiKey)
     {
         if (service is AzureOpenAIChatCompletionService azureService)

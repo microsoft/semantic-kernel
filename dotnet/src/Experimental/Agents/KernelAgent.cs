@@ -25,14 +25,6 @@ public abstract class KernelAgent<TChannel>(Kernel kernel)
 public abstract class KernelAgent(Type channelType, Kernel kernel)
 {
     /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public delegate Task DefinitionCallback(KernelAgent agent, CancellationToken cancellationToken); // $$$ !!!
-
-    /// <summary>
     /// The description of the agent (optional)
     /// </summary>
     public abstract string? Description { get; }
@@ -65,4 +57,12 @@ public abstract class KernelAgent(Type channelType, Kernel kernel)
     /// with a corresponding <see cref="AgentChannel"/>.
     /// </remarks>
     internal Type ChannelType { get; } = channelType;
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="nexus"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected internal abstract Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken); // $$$ CONTEXT INSTEAD OF NEXUS ???
 }

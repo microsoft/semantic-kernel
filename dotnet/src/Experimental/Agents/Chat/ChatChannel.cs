@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -12,16 +12,11 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Chat;
 /// </summary>
 public sealed class ChatChannel : AgentChannel
 {
-    private ChatHistory? _chat;
+    private readonly ChatHistory _chat;
+    private readonly PromptExecutionSettings? _settings;
 
     /// <inheritdoc/>
-    public override void Init(AgentNexus nexus)
-    {
-        this._chat = nexus.AgentHistory;
-    }
-
-    /// <inheritdoc/>
-    public override async Task<IEnumerable<ChatMessageContent>> InvokeAsync(KernelAgent agent, ChatMessageContent? message, CancellationToken cancellationToken)
+    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(KernelAgent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var chat = new ChatHistory();
 
@@ -30,23 +25,27 @@ public sealed class ChatChannel : AgentChannel
             chat.AddMessage(AuthorRole.System, agent.Instructions!); // $$$ NAME
         }
 
-        if (message != null)
+        if (input != null)
         {
-            this._chat!.Add(message); // $$$ USER ???
+            this._chat.Add(input); // $$$ VERIFY USER ???
+            yield return input;
         }
 
-        chat.AddRange(this._chat!); // $$$ NULL
+        chat.AddRange(this._chat);
 
         var chatCompletionService = agent.Kernel.GetRequiredService<IChatCompletionService>();
 
-        var chatMessageContent =
+        var messages =
             await chatCompletionService.GetChatMessageContentsAsync(
                 chat,
-                executionSettings: null, // $$$ FUNCTION CALLING / AGENT SPECIFIC
+                this._settings,
                 agent.Kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        return chatMessageContent;
+        foreach (var message in messages)
+        {
+            yield return message;
+        }
     }
 
     /// <inheritdoc/>
@@ -55,10 +54,9 @@ public sealed class ChatChannel : AgentChannel
         return Task.CompletedTask;
     }
 
-    ///// <summary>
-    ///// $$$
-    ///// </summary>
-    //public ChatChannel()
-    //{
-    //}
+    internal ChatChannel(ChatHistory chat, PromptExecutionSettings? settings)
+    {
+        this._chat = chat;
+        this._settings = settings;
+    }
 }

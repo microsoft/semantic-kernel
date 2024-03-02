@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -30,7 +31,7 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
     /// <param name="input"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected Task<IEnumerable<ChatMessageContent>> InvokeAgentAsync(KernelAgent agent, string? input = null, /*KernelArguments $$$,*/ CancellationToken cancellationToken = default)
+    protected IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(KernelAgent agent, string? input = null, /*KernelArguments $$$,*/ CancellationToken cancellationToken = default)
     {
         var content = string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
         return this.InvokeAgentAsync(agent, content, cancellationToken);
@@ -43,18 +44,23 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
     /// <param name="input"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected async Task<IEnumerable<ChatMessageContent>> InvokeAgentAsync(KernelAgent agent, ChatMessageContent? input = null, /*KernelArguments $$$,*/ CancellationToken cancellationToken = default)
+    protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
+        KernelAgent agent,
+        ChatMessageContent? input = null,
+        /*KernelArguments $$$,*/
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // $$$ CONCURRENCY
+
         // Manifest the required channel
         var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
-        // Invoke agent
-        var response = await channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false);
-
-        // Process response
-        foreach (var message in response)
+        // Invoke agent & process response
+        await foreach (var message in channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false))
         {
             this.AgentHistory.Add(message);
+
+            yield return message;
 
             var tasks =
                 this._agentChannels.Values
@@ -63,8 +69,6 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
-
-        return response;
     }
 
     private async Task<AgentChannel> GetChannelAsync(KernelAgent agent, CancellationToken cancellationToken)
@@ -73,11 +77,12 @@ public abstract class AgentNexus /*: $$$ ChatHistory ??? */
         if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))
         {
             // $$$ CHANNEL FACTORY (CREATE / RESTORE) - CONTEXT
-            channel = (AgentChannel)(Activator.CreateInstance(agent.ChannelType) ?? throw new InvalidOperationException("$$$"));
+            channel = await agent.CreateChannelAsync(this, cancellationToken).ConfigureAwait(false);
 
-            channel.Init(this); // $$$ CONTEXT ???
-
-            await channel.RecieveAsync(this.Messages, cancellationToken).ConfigureAwait(false); // $$$ NEED SYNC-POINT FOR RESTORE
+            if (this.Messages.Count > 0)
+            {
+                await channel.RecieveAsync(this.Messages, cancellationToken).ConfigureAwait(false); // $$$ NEED SYNC-POINT FOR RESTORE
+            }
 
             this._agentChannels[agent.ChannelType] = channel;
         }

@@ -42,7 +42,7 @@ public sealed class StrategyNexus : AgentNexus
         // Identify next agent using strategy
         var agent = await this._strategy.NextAgentAsync().ConfigureAwait(false);
 
-        return await base.InvokeAgentAsync(agent, input, cancellationToken).ConfigureAwait(false);
+        return await base.InvokeAgentAsync(agent, input, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false); // $$$ ASYNC ENUM
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public sealed class StrategyNexus : AgentNexus
         // Identify next agent using strategy
         var agent = await this._strategy.NextAgentAsync().ConfigureAwait(false);
 
-        return await base.InvokeAgentAsync(agent, input, cancellationToken).ConfigureAwait(false);
+        return await base.InvokeAgentAsync(agent, input, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false); // $$$ ASYNC ENUM
     }
 
     /// <summary>
