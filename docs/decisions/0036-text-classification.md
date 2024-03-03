@@ -82,19 +82,19 @@ These models return a variety of data structures, making it hard to extract an a
 
 If we decide to create a common abstraction for classification models, we should consider the following drivers:
 1. Abstraction should be able to generate classification from different types of data, at least from text and images.
-2. Abstraction should return metadata with generated embeddings.
+2. Abstraction should return metadata with generated classification results.
 3. Abstraction should allow parameterize the classification query.
 
 ## Considered Options
 
-### Option 1 [Proposed] - With abstraction and interfaces
+### Option 1 [Proposed] - With abstraction
 
 This option assumes the creation of a common abstraction layer for classification models.
 
-Since the models return different data structures, we return `IReadOnlyDictionary<string, object?> Result` as the result.
+Since the models return different data structures, we return `IReadOnlyDictionary<string, object?> Result` as a result.
 This type is very abstract by which the consumer must know the structure of the result
-and will probably have to use a cast to a connector-supplied type such as. `OpenAIClassificationData`.
-We could just as well return `object` and always require a cast.
+and will probably have to use a cast to a connector-supplied type such like `OpenAIClassificationData`.
+We could just as well return `object` and always require a casting.
 
 ```csharp
 public interface ITextClassificationService : IAIService
@@ -142,7 +142,7 @@ Cons:
 
 ### Option 2 [Proposed] - With abstraction and common method
 
-Similar to option 1 but with one metod with kernelcontent param..
+Similar to option 1 but with one method with kernelcontent param.
 
 ```csharp
 public interface IClassificationService : IAIService
