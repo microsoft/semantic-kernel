@@ -15,7 +15,7 @@ public abstract class NexusStrategy
     /// <summary>
     /// The nexus bound to this strategy.
     /// </summary>
-    protected StrategyNexus GetNexus =>
+    protected StrategyNexus Nexus =>
         this._nexus ??
         throw new InvalidOperationException("Not bound to nexus");
 
