@@ -6,14 +6,14 @@ using static Microsoft.SemanticKernel.Connectors.HuggingFace.Core.TextGeneration
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.ImageToText;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class ImageToTextGenerationResponse : List<GeneratedTextItem>
 {
     internal sealed class GeneratedTextItem
     {
         /// <summary>
-        /// The continuated string
+        /// The generated string
         /// </summary>
         [JsonPropertyName("generated_text")]
         public string? GeneratedText { get; set; }

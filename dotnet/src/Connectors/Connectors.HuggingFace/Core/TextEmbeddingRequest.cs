@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 /// <summary>
 /// HTTP schema to perform embedding request.
 /// </summary>
-public sealed class TextEmbeddingRequest
+internal sealed class TextEmbeddingRequest
 {
     /// <summary>
     /// Data to embed.

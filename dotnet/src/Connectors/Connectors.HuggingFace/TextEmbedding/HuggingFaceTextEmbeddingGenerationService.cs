@@ -45,9 +45,7 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
         modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
-#pragma warning disable CA2000 // Dispose objects before losing scope
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-#pragma warning restore CA2000 // Dispose objects before losing scope
             logger: loggerFactory?.CreateLogger(this.GetType())
         );
 
