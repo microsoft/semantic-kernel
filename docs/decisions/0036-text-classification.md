@@ -140,7 +140,49 @@ Pros:
 Cons:
 - `IReadOnlyDictionary<string, object?> Result` is too abstract.
 
-### Option 2 [Proposed] - Without abstraction, only specialized implementations
+### Option 2 [Proposed] - With abstraction and common method
+
+Similar to option 1 but with one metod with kernelcontent param..
+
+```csharp
+public interface IClassificationService : IAIService
+{
+    Task<IReadOnlyList<ClassificationContent>> ClassifyTextsAsync(
+        IEnumerable<KernelContent> contents,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default);
+
+    IList<Type> SupportedContents { get; }
+}
+
+public class ClassificationContent : KernelContent
+{
+    public ClassificationContent(
+        KernelContent classifiedContent,
+        IReadOnlyDictionary<string, object?> result,
+        object? innerContent = null,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.ClassifiedContent = classifiedContent;
+        this.Result = result;
+    }
+
+    public KernelContent ClassifiedContent { get; }
+    public IReadOnlyDictionary<string, object?> Result { get; }
+}
+```
+
+Pros:
+- We have abstraction for classification models.
+
+Cons:
+- `IReadOnlyDictionary<string, object?> Result` is too abstract
+- Exception would be thrown if model doesn't support type of content.
+
+### Option 3 [Proposed] - Without abstraction, only specialized implementations
 
 This solution dispenses with abstractions altogether; it uses concrete implementations for each model.
 
