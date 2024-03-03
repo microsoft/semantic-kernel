@@ -220,6 +220,7 @@ public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService
     Task<IReadOnlyList<EmbeddingContent<TEmbedding>>> GenerateEmbeddingsAsync(
         IList<TValue> data,
         Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
 }
 
@@ -248,11 +249,13 @@ public class EmbeddingGenerationService
     public Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
         IList<TextContent> data,
         Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default) { /* implementation */ }
 
     public Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
         IList<ImageContet> data,
         Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default) { /* implementation */ }
 }
 ```
