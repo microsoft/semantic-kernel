@@ -20,7 +20,7 @@ public interface IGenericEmbeddingGenerationService<TValue, TEmbedding> : IAISer
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
-    /// <param name="data">List of strings to generate embeddings for</param>
+    /// <param name="data">Data collection to generate embeddings for</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
