@@ -23,6 +23,8 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
 
+    private static readonly string s_namespace = typeof(GeminiChatCompletionClient).Namespace!;
+
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
     /// asynchronous chain of execution.
@@ -43,8 +45,6 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
-
-    private static readonly string s_namespace = typeof(GeminiChatCompletionClient).Namespace!;
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
