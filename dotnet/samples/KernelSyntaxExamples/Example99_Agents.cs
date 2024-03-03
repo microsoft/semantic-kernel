@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Microsoft.SemanticKernel.Experimental.Agents.Chat;
 using Microsoft.SemanticKernel.Experimental.Agents.Gpt;
@@ -139,27 +140,6 @@ public class Example99_Agents : BaseTest
         await RunStrategyAsync(agent1, agent2, "I think I'm going to do something really important today!");
     }
 
-    private async Task<GptAgent> CreateGptAgentAsync(string name, string instructions, KernelPlugin? plugin = null)
-    {
-        return
-            await GptAgent.CreateAsync(
-                CreateKernel(plugin),
-                GetApiKey(),
-                instructions,
-                description: null,
-                name);
-    }
-
-    private ChatAgent CreateChatAgent(string name, string instructions, KernelPlugin? plugin = null)
-    {
-        return
-            new ChatAgent(
-                CreateKernel(plugin),
-                instructions,
-                description: null,
-                name);
-    }
-
     private Task RunSingleAgentAsync(KernelAgent agent)
     {
         return
@@ -276,6 +256,28 @@ public class Example99_Agents : BaseTest
     private void WriteAgent(KernelAgent agent)
     {
         this.WriteLine($"[{agent.GetType().Name}:{agent.Id}:{agent.Name ?? "*"}]");
+    }
+
+    private async Task<GptAgent> CreateGptAgentAsync(string name, string instructions, KernelPlugin? plugin = null)
+    {
+        return
+            await GptAgent.CreateAsync(
+                CreateKernel(plugin),
+                GetApiKey(),
+                instructions,
+                description: null,
+                name);
+    }
+
+    private ChatAgent CreateChatAgent(string name, string instructions, KernelPlugin? plugin = null)
+    {
+        return
+            new ChatAgent(
+                CreateKernel(plugin),
+                instructions,
+                description: null,
+                name,
+                new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions });
     }
 
     public Example99_Agents(ITestOutputHelper output) : base(output)

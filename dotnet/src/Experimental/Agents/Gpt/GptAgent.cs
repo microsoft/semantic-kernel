@@ -32,15 +32,15 @@ public sealed class GptAgent : KernelAgent<GptChannel>
     public override string? Name => this._assistant.Name;
 
     /// <summary>
-    /// $$$
+    /// Define a new <see cref="GptAgent"/>.
     /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="apiKey"></param>
-    /// <param name="instructions"></param>
-    /// <param name="description"></param>
-    /// <param name="name"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="apiKey">The Assistants API Key</param>
+    /// <param name="instructions">The agent instructions</param>
+    /// <param name="description">The agent description (optional)</param>
+    /// <param name="name">The agent name</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An agent instance</returns>
     public static async Task<GptAgent> CreateAsync(
         Kernel kernel,
         string apiKey,
@@ -68,13 +68,13 @@ public sealed class GptAgent : KernelAgent<GptChannel>
     }
 
     /// <summary>
-    /// $$$
+    /// Retrieve a <see cref="GptAgent"/> by identifier.
     /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="apiKey"></param>
-    /// <param name="id"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="apiKey">The Assistants API Key</param>
+    /// <param name="id">The agent identifier</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An agent instance</returns>
     public static async Task<GptAgent> RestoreAsync(Kernel kernel, string apiKey, string id, CancellationToken cancellationToken)
     {
         var service = kernel.GetRequiredService<IChatCompletionService>();

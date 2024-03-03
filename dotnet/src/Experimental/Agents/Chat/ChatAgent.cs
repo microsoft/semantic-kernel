@@ -35,11 +35,14 @@ public sealed class ChatAgent : KernelAgent<ChatChannel>
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatAgent"/> class.
     /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="instructions"></param>
-    /// <param name="description"></param>
-    /// <param name="name"></param>
-    /// <param name="executionSettings"></param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="instructions">The agent instructions</param>
+    /// <param name="description">The agent description (optional)</param>
+    /// <param name="name">The agent name</param>
+    /// <param name="executionSettings">The execution settings for the agent.</param>
+    /// <remarks>
+    /// Enable <see cref="OpenAIPromptExecutionSettings.ToolCallBehavior"/> for agent plugins.
+    /// </remarks>
     public ChatAgent(
         Kernel kernel,
         string? instructions,
@@ -52,11 +55,6 @@ public sealed class ChatAgent : KernelAgent<ChatChannel>
         this.Description = description;
         this.Instructions = instructions;
         this.Name = name;
-        this._executionSettings = executionSettings ?? new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }; // $$$
-
-        if (this._executionSettings is OpenAIPromptExecutionSettings openaiSettings)
-        {
-            openaiSettings.ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions; // $$$
-        }
+        this._executionSettings = executionSettings;
     }
 }
