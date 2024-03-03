@@ -228,7 +228,7 @@ Pros:
 
 Cons:
 - No generic interface.
-- Exveption would be thrown for not supported contents. Many models don't support all types of data.
+- Exception would be thrown for not supported contents. Many models don't support all types of data.
 
 
 ## Decision Outcome
