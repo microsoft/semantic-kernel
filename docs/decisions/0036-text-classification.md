@@ -80,6 +80,7 @@ These models return a variety of data structures, making it hard to extract an a
 
 ## Decision Drivers
 
+If we decide to create a common abstraction for classification models, we should consider the following drivers:
 1. Abstraction should be able to generate classification from different types of data, at least from text and images.
 2. Abstraction should return metadata with generated embeddings.
 3. Abstraction should allow parameterize the classification query.
