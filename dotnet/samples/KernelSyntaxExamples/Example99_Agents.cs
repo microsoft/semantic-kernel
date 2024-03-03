@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -114,6 +113,27 @@ public class Example99_Agents : BaseTest
     }
 
     /// <summary>
+    /// Demonstrate tooled gpt agent.
+    /// </summary>
+    [Fact]
+    public async Task RunGptCodeAgentAsync()
+    {
+        WriteLine("======== Run:Tooled GPT Agent ========");
+
+        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        var agent =
+            await CreateGptAgentAsync(
+                "Coder",
+                "Write only code to solve the given problem without comment.",
+                enableCoding: true);
+
+        await ChatAsync(
+            agent,
+            "What is the solution to `3x + 2 = 14`?",
+            "What is the fibinacci sequence until 101?");
+    }
+
+    /// <summary>
     /// Demonstrate mixed agents.
     /// </summary>
     [Fact]
@@ -148,7 +168,6 @@ public class Example99_Agents : BaseTest
             "Fortune favors the bold.",
             "I came, I saw, I conquered.",
             "Practice makes perfect.");
-
     }
 
     private async Task RunDualAgentAsync(KernelAgent agent1, KernelAgent agent2, string input)
@@ -293,7 +312,12 @@ public class Example99_Agents : BaseTest
         }
     }
 
-    private async Task<GptAgent> CreateGptAgentAsync(string name, string instructions, KernelPlugin? plugin = null)
+    private async Task<GptAgent> CreateGptAgentAsync(
+        string name,
+        string instructions,
+        KernelPlugin? plugin = null,
+        bool enableCoding = false,
+        bool enableRetrieval = false)
     {
         return
             await GptAgent.CreateAsync(
@@ -301,7 +325,9 @@ public class Example99_Agents : BaseTest
                 GetApiKey(),
                 instructions,
                 description: null,
-                name);
+                name,
+                enableCoding,
+                enableRetrieval);
     }
 
     private ChatAgent CreateChatAgent(string name, string instructions, KernelPlugin? plugin = null)

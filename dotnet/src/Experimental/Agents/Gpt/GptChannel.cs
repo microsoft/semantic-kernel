@@ -29,7 +29,8 @@ public sealed class GptChannel : AgentChannel
 
     private readonly AssistantsClient _client;
     private readonly string _threadId;
-    private readonly Dictionary<string, ToolDefinition[]> _tools;
+    private readonly Dictionary<string, ToolDefinition[]> _agentTools;
+    private readonly Dictionary<string, string> _agentNames;
 
     /// <inheritdoc/>
     public override async Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
@@ -60,16 +61,26 @@ public sealed class GptChannel : AgentChannel
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(KernelAgent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        if (agent is not GptAgent gptAgent)
+        {
+            throw new AgentException($"Invalid agent channel: {nameof(GptChannel)}/{agent.GetType().Name}");
+        }
+
         if (input != null)
         {
             var userMessage = await this._client.CreateMessageAsync(this._threadId, MessageRole.User, input.Content, fileIds: null, metadata: null, cancellationToken).ConfigureAwait(false);
             yield return input;
         }
 
-        if (!this._tools.TryGetValue(agent.Id, out var tools))
+        if (!this._agentTools.TryGetValue(agent.Id, out var tools))
         {
-            tools = agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name))).ToArray(); // $$$ CODE / RETRIEVAL
-            this._tools.Add(agent.Id, tools);
+            tools = gptAgent.Tools.Concat(agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))).ToArray();
+            this._agentTools.Add(agent.Id, tools);
+        }
+
+        if (!this._agentNames.ContainsKey(agent.Id) && !string.IsNullOrWhiteSpace(agent.Name))
+        {
+            this._agentNames.Add(agent.Id, agent.Name!);
         }
 
         var options =
@@ -173,7 +184,7 @@ public sealed class GptChannel : AgentChannel
             // Process all of the steps that require action
             if (step.Status == RunStepStatus.InProgress && step.StepDetails is RunStepToolCallDetails callDetails)
             {
-                foreach (var toolCall in callDetails.ToolCalls.OfType<RunStepFunctionToolCall>()) // $$$ CODE / RETRIEVAL ???
+                foreach (var toolCall in callDetails.ToolCalls.OfType<RunStepFunctionToolCall>())
                 {
                     // Run function
                     yield return ProcessFunctionStepAsync(toolCall.Id, toolCall, cancellationToken);
@@ -207,10 +218,6 @@ public sealed class GptChannel : AgentChannel
                 }
 
                 var result = await function.InvokeAsync(agent.Kernel, functionArguments, cancellationToken).ConfigureAwait(false);
-                if (result.ValueType == typeof(AgentResponse)) // $$$ WTF ???
-                {
-                    return result.GetValue<AgentResponse>()!;
-                }
 
                 return result.GetValue<string>() ?? string.Empty;
             }
@@ -230,16 +237,24 @@ public sealed class GptChannel : AgentChannel
             {
                 var role = new AuthorRole(message.Role.ToString());
 
+                string? assistantName = null;
+                if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
+                    !this._agentNames.TryGetValue(message.AssistantId, out assistantName))
+                {
+                    // $$$ NAME
+                    // $$$ this._agentNames.Add(agent.Id, agent.Name!);
+                }
+
                 foreach (var content in message.ContentItems)
                 {
                     if (content is MessageTextContent contentMessage)
                     {
-                        yield return new ChatMessageContent(role, contentMessage.Text.Trim(), name: message.AssistantId); // $$$ NAME
+                        yield return new ChatMessageContent(role, contentMessage.Text.Trim(), name: assistantName ?? message.AssistantId);
                     }
 
                     if (content is MessageImageFileContent contentImage)
                     {
-                        yield return new ChatMessageContent(role, contentImage.FileId, name: message.AssistantId); // $$$ NAME
+                        yield return new ChatMessageContent(role, contentImage.FileId, name: assistantName ?? message.AssistantId);
                     }
                 }
 
@@ -256,24 +271,7 @@ public sealed class GptChannel : AgentChannel
     {
         this._client = client;
         this._threadId = threadId;
-        this._tools = [];
-    }
-
-    private static IEnumerable<ChatMessageContent> CreateContent(KernelAgent agent, ThreadMessage message)
-    {
-        var role = new AuthorRole(message.Role.ToString());
-
-        foreach (var content in message.ContentItems)
-        {
-            if (content is MessageTextContent contentMessage)
-            {
-                yield return new ChatMessageContent(role, contentMessage.Text.Trim(), name: agent.Name);
-            }
-
-            if (content is MessageImageFileContent contentImage)
-            {
-                yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name); // $$$ FILE HANDLING
-            }
-        }
+        this._agentTools = [];
+        this._agentNames = [];
     }
 }

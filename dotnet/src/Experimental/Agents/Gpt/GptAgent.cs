@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -32,6 +33,11 @@ public sealed class GptAgent : KernelAgent<GptChannel>
     public override string? Name => this._assistant.Name;
 
     /// <summary>
+    /// Expose predefined tools.
+    /// </summary>
+    internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
+
+    /// <summary>
     /// Define a new <see cref="GptAgent"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -39,6 +45,9 @@ public sealed class GptAgent : KernelAgent<GptChannel>
     /// <param name="instructions">The agent instructions</param>
     /// <param name="description">The agent description (optional)</param>
     /// <param name="name">The agent name</param>
+    /// <param name="enableCodeIntepreter">Enable code-intepreter tool</param>
+    /// <param name="enableRetrieval">Enable retrieval tool</param>
+    /// <param name="metadata">Agent metadata</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An agent instance</returns>
     public static async Task<GptAgent> CreateAsync(
@@ -47,6 +56,9 @@ public sealed class GptAgent : KernelAgent<GptChannel>
         string? instructions,
         string? description,
         string? name,
+        bool enableCodeIntepreter = false,
+        bool enableRetrieval = false,
+        IDictionary<string, string>? metadata = null,
         CancellationToken cancellationToken = default)
     {
         var service = kernel.GetRequiredService<IChatCompletionService>();
@@ -59,8 +71,19 @@ public sealed class GptAgent : KernelAgent<GptChannel>
                 Description = description,
                 Instructions = instructions,
                 Name = name,
-                // $$$ METADATA / FILEIDS
+                Metadata = metadata,
+                // $$$ FILEIDS
             };
+
+        if (enableCodeIntepreter)
+        {
+            options.Tools.Add(new CodeInterpreterToolDefinition());
+        }
+
+        if (enableRetrieval)
+        {
+            options.Tools.Add(new RetrievalToolDefinition());
+        }
 
         var response = await client.CreateAssistantAsync(options, cancellationToken).ConfigureAwait(false);
 
@@ -97,12 +120,12 @@ public sealed class GptAgent : KernelAgent<GptChannel>
     {
         if (service is AzureOpenAIChatCompletionService azureService)
         {
-            return new AssistantsClient(new Uri(azureService.GetEndpoint()), new AzureKeyCredential(apiKey)); // $$$ OPTIONS
+            return new AssistantsClient(new Uri(azureService.GetEndpoint()), new AzureKeyCredential(apiKey));
         }
 
         if (service is OpenAIChatCompletionService openaiService)
         {
-            return new AssistantsClient(apiKey); // $$$ OPTIONS
+            return new AssistantsClient(apiKey);
         }
 
         throw new AgentException("Missing IChatCompletionService");
