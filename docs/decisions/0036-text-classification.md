@@ -148,7 +148,7 @@ As a sample we take OpenAI moderation endpoint.
 ```csharp
 public class OpenAITextClassificationService : IAIService
 {
-    Task<IReadOnlyList<ClassificationContent>> ClassifyTextsAsync(
+    Task<IReadOnlyList<OpenAIClassificationContent>> ClassifyTextsAsync(
         IEnumerable<TextContent> texts,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
