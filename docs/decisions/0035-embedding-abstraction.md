@@ -191,6 +191,46 @@ Pros:
 Cons:
 - We cannot return embeddings with different types.
 
+### Option 5 [Proposed] - One interface for embeddings generation with metadata and query parameters
+
+Similar to option 3 but with only one metod with KernelContent param.
+
+```csharp
+public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
+{
+    public EmbeddingContent(
+        IReadOnlyList<ReadOnlyMemory<TEmbedding>> data,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Data = data;
+    }
+
+    public IReadOnlyList<ReadOnlyMemory<TEmbedding>> Data { get; set; }
+}
+
+public interface IEmbeddingGenerationService : IAIService
+{
+    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
+        IList<KernelContent> data,
+        Kernel? kernel = null,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = null);
+}
+```
+
+Pros:
+- Allows for generating embeddings from different types of data.
+- Allows for parameterizing the query.
+- Allows for returning metadata.
+
+Cons:
+- No generic interface.
+- Exveption would be thrown for not supported contents. Many models don't support all types of data.
+
+
 ## Decision Outcome
 
 Chosen option: "{title of option 1}", because
