@@ -42,7 +42,9 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 - SKEXP0030: MongoDB memory connector
 - SKEXP0031: Pinecone memory connector
 - SKEXP0032: Postgres memory connector
-- SKEXP0033: MistralAI connector
+- SKEXP0033: Gemini connector
+- SKEXP0034: AssemblyAI connector
+- SKEXP0035: MistralAI connector
 
 ## Functions
 

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI;
 /// <summary>
 /// Mistral Execution Settings.
 /// </summary>
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
@@ -150,12 +150,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
         var json = JsonSerializer.Serialize(executionSettings);
 
         var mistralExecutionSettings = JsonSerializer.Deserialize<MistralAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (mistralExecutionSettings is not null)
-        {
-            return mistralExecutionSettings;
-        }
-
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(MistralAIPromptExecutionSettings)}", nameof(executionSettings));
+        return mistralExecutionSettings!;
     }
 
     #region private ================================================================================

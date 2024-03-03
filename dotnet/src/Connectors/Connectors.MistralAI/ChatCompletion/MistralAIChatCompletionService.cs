@@ -21,12 +21,12 @@ public sealed class MistralAIChatCompletionService : IChatCompletionService
     /// <summary>
     /// Initializes a new instance of the <see cref="MistralAIChatCompletionService"/> class.
     /// </summary>
-    /// <param name="model">The HuggingFace model for the text generation service.</param>
-    /// <param name="endpoint">The uri endpoint including the port where HuggingFace server is hosted</param>
-    /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
-    /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
+    /// <param name="model">The MistralAI model for the text generation service.</param>
+    /// <param name="apiKey">API key for accessing the MistralAI service.</param>
+    /// <param name="endpoint">Optional  uri endpoint including the port where MistralAI server is hosted. Default is https://api.mistral.ai.</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the MistralAI API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
-    public MistralAIChatCompletionService(string model, Uri? endpoint, string? apiKey, HttpClient httpClient, ILoggerFactory? loggerFactory = null)
+    public MistralAIChatCompletionService(string model, string apiKey, Uri? endpoint = null, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(model);
 
@@ -34,9 +34,7 @@ public sealed class MistralAIChatCompletionService : IChatCompletionService
         modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
-#pragma warning disable CA2000 // Dispose objects before losing scope
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-#pragma warning restore CA2000 // Dispose objects before losing scope
             logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
         );
 
