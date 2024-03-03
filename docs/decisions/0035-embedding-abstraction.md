@@ -218,6 +218,8 @@ public interface IEmbeddingGenerationService : IAIService
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = null);
+
+    IList<Type> SupportedContents { get; }
 }
 ```
 
