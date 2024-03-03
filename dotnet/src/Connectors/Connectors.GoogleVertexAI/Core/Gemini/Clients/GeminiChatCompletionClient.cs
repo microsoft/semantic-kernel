@@ -22,6 +22,8 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 {
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
+    private readonly Uri _chatGenerationEndpoint;
+    private readonly Uri _chatStreamingEndpoint;
 
     private static readonly string s_namespace = typeof(GeminiChatCompletionClient).Namespace!;
 
@@ -104,6 +106,8 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
         this._modelId = modelId;
         this._streamJsonParser = streamJsonParser ?? new GeminiStreamJsonParser();
+        this._chatGenerationEndpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
+        this._chatStreamingEndpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
     }
 
     /// <inheritdoc/>
@@ -114,11 +118,11 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
         CancellationToken cancellationToken = default)
     {
         var state = CreateChatCompletionState(chatHistory, kernel, executionSettings);
-        var endpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(endpoint, state.GeminiRequest, cancellationToken)
+            var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
+                    this._chatGenerationEndpoint, state.GeminiRequest, cancellationToken)
                 .ConfigureAwait(false);
 
             var chatResponses = this.ProcessChatResponse(geminiResponse);
@@ -149,11 +153,10 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var state = CreateChatCompletionState(chatHistory, kernel, executionSettings);
-        var endpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            using var httpRequestMessage = this.HttpRequestFactory.CreatePost(state.GeminiRequest, endpoint);
+            using var httpRequestMessage = this.HttpRequestFactory.CreatePost(state.GeminiRequest, this._chatStreamingEndpoint);
             using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
                 .ConfigureAwait(false);
             using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
