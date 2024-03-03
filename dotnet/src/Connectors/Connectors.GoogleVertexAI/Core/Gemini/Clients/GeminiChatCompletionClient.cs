@@ -44,17 +44,19 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
+    private static readonly string s_namespace = typeof(GeminiChatCompletionClient).Namespace!;
+
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(typeof(GeminiChatCompletionClient).Namespace!);
+    private static readonly Meter s_meter = new(s_namespace!);
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
     /// </summary>
     private static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
-            name: $"{typeof(GeminiChatCompletionClient).Namespace}.tokens.prompt",
+            name: $"{s_namespace}.tokens.prompt",
             unit: "{token}",
             description: "Number of prompt tokens used");
 
@@ -63,7 +65,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     /// </summary>
     private static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
-            name: $"{typeof(GeminiChatCompletionClient).Namespace}.tokens.completion",
+            name: $"{s_namespace}.tokens.completion",
             unit: "{token}",
             description: "Number of completion tokens used");
 
@@ -72,7 +74,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     /// </summary>
     private static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
-            name: $"{typeof(GeminiChatCompletionClient).Namespace}.tokens.total",
+            name: $"{s_namespace}.tokens.total",
             unit: "{token}",
             description: "Number of tokens used");
 
