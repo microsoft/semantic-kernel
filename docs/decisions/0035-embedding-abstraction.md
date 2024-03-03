@@ -238,7 +238,9 @@ public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unm
 ```
 Sample implementation:
 ```csharp
-public class EmbeddingGenerationService : IEmbeddingGenerationService<TextContent, float>, IEmbeddingGenerationService<ImageContet, double>
+public class EmbeddingGenerationService
+        : IEmbeddingGenerationService<TextContent, float>,
+          IEmbeddingGenerationService<ImageContet, double>
 {
     public Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
         IList<TextContent> data,
