@@ -6,6 +6,7 @@ using Azure;
 using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Gpt;
@@ -104,7 +105,7 @@ public sealed class GptAgent : KernelAgent<GptChannel>
             return new AssistantsClient(apiKey); // $$$ OPTIONS
         }
 
-        throw new InvalidOperationException("$$$");
+        throw new AgentException("Missing IChatCompletionService");
     }
 
     private static string GetModel(IChatCompletionService service)
@@ -121,7 +122,7 @@ public sealed class GptAgent : KernelAgent<GptChannel>
             model = openaiService.GetModelId();
         }
 
-        return model ?? throw new InvalidOperationException("$$$");
+        return model ?? throw new AgentException("Unable to determine model.");
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -14,9 +15,9 @@ public abstract class NexusStrategy
     /// <summary>
     /// The nexus bound to this strategy.
     /// </summary>
-    protected StrategyNexus Nexus =>
+    protected StrategyNexus GetNexus =>
         this._nexus ??
-        throw new InvalidOperationException("$$$");
+        throw new InvalidOperationException("Not bound to nexus");
 
     /// <summary>
     /// Identify the next agent for processing.
@@ -31,7 +32,7 @@ public abstract class NexusStrategy
     {
         if (this._nexus != null)
         {
-            throw new InvalidOperationException("$$$");
+            throw new AgentException("Already bound to nexus.");
         }
 
         this._nexus = nexus;

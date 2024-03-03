@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// $$$
+/// Showcase Agent abstraction and patterns.
 /// </summary>
 public class Example99_Agents : BaseTest
 {

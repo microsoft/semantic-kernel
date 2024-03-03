@@ -67,7 +67,7 @@ public sealed class GptChannel : AgentChannel
         if (input != null)
         {
             var userMessage = await this._client.CreateMessageAsync(this._threadId, MessageRole.User, input.Content, fileIds: null, metadata: null, cancellationToken).ConfigureAwait(false);
-            yield return input; // $$$ TRANSFORM USERMESSAGE
+            yield return input;
         }
 
         if (!this._tools.TryGetValue(agent.Id, out var tools))

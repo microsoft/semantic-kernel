@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -52,7 +53,7 @@ public abstract class AgentNexus /*: $$$ PLUGIN ??? */
         int wasActive = Interlocked.CompareExchange(ref isActive, 1, 0);
         if (wasActive > 0)
         {
-            throw new InvalidOperationException("$$$");
+            throw new AgentException("Unable to proceed while another agent is active.");
         }
 
         // Manifest the required channel
