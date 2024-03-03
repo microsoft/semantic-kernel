@@ -66,6 +66,7 @@ Pros:
 Cons:
 - Cannot parameterize the query.
 - Cannot return metadata.
+- We lost precision.
 
 ### Option 2 [Proposed] - Specialized embeddings generation interfaces for different types of data with metadata and query parameterization without a generic interface
 
@@ -91,7 +92,7 @@ public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unm
 
 public interface ITextEmbeddingGenerationService : IAIService
 {
-    Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
         IList<string> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -100,7 +101,7 @@ public interface ITextEmbeddingGenerationService : IAIService
 
 public interface IImageEmbeddingGenerationService : IAIService
 {
-    Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
         IList<ImageContent> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -138,13 +139,13 @@ public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unm
 
 public interface IEmbeddingGenerationService : IAIService
 {
-    Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
         IList<string> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
     
-    Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
         IList<ImageContent> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -180,7 +181,7 @@ public class EmbeddingContent : KernelContent
         this.Data = data;
     }
 
-    public IReadOnlyList<ReadOnlyMemory<float>> Data { get; set; }
+    public IReadOnlyList<ReadOnlyMemory<double>> Data { get; set; }
 }
 ```
 
