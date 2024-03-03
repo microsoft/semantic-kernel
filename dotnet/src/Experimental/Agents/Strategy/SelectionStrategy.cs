@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 
@@ -22,8 +23,9 @@ public abstract class SelectionStrategy
     /// <summary>
     /// Identify the next agent for processing.
     /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The next agent for processing.</returns>
-    public abstract Task<KernelAgent> NextAgentAsync();
+    public abstract Task<KernelAgent> NextAgentAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Bind the nexus to this strategy.

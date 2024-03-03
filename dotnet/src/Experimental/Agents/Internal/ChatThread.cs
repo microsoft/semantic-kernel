@@ -31,7 +31,7 @@ internal sealed class ChatThread : IAgentThread
         // Common case is for failure exception to be raised by REST invocation.  Null result is a logical possibility, but unlikely edge case.
         var threadModel = await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false);
 
-        return new ChatThread(threadModel, messageListModel: null, restContext);
+        return new ChatThread(threadModel, restContext);
     }
 
     /// <summary>
@@ -44,9 +44,8 @@ internal sealed class ChatThread : IAgentThread
     public static async Task<IAgentThread> GetAsync(OpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
     {
         var threadModel = await restContext.GetThreadModelAsync(threadId, cancellationToken).ConfigureAwait(false);
-        var messageListModel = await restContext.GetMessagesAsync(threadId, cancellationToken).ConfigureAwait(false);
 
-        return new ChatThread(threadModel, messageListModel, restContext);
+        return new ChatThread(threadModel, restContext);
     }
 
     /// <inheritdoc/>
@@ -113,7 +112,6 @@ internal sealed class ChatThread : IAgentThread
     /// </summary>
     private ChatThread(
         ThreadModel threadModel,
-        ThreadMessageListModel? messageListModel,
         OpenAIRestContext restContext)
     {
         this.Id = threadModel.Id;

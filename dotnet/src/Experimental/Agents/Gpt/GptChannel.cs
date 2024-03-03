@@ -76,7 +76,7 @@ public sealed class GptChannel : AgentChannel
 
         if (!this._agentTools.TryGetValue(agent.Id, out var tools))
         {
-            tools = gptAgent.Tools.Concat(agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))).ToArray();
+            tools = [.. gptAgent.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
             this._agentTools.Add(agent.Id, tools);
         }
 
@@ -88,7 +88,7 @@ public sealed class GptChannel : AgentChannel
         var options =
             new CreateRunOptions(agent.Id)
             {
-                OverrideInstructions = null, // $$$ TEMPLATING ???
+                OverrideInstructions = null, // $$$ TODO: TEMPLATING ???
                 OverrideTools = tools,
             };
 
@@ -121,6 +121,8 @@ public sealed class GptChannel : AgentChannel
 
                 // Refresh run as it goes back into pending state after posting function results.
                 await PollRunStatus(force: true).ConfigureAwait(false);
+
+                steps = await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
 
             var messageDetails =
@@ -140,7 +142,9 @@ public sealed class GptChannel : AgentChannel
                 {
                     try
                     {
-                        message = await this._client.GetMessageAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken).ConfigureAwait(false);
+                        PageableList<MessageFile> files = await this._client.GetMessageFilesAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        //var messages = await this._client.GetMessagesAsync(this._threadId, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        message = await this._client.GetMessageAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken).ConfigureAwait(false); // $$$ BUG: IMAGE FILES !!!
                     }
                     catch (RequestFailedException exception)
                     {
@@ -168,7 +172,7 @@ public sealed class GptChannel : AgentChannel
 
                         if (content is MessageImageFileContent contentImage)
                         {
-                            yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name) // $$$ FILE HANDLING
+                            yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name) // $$$ FILEID
                             {
                                 Source = new AgentMessageSource(agent.Id, message.Id).ToJson()
                             };
@@ -224,8 +228,7 @@ public sealed class GptChannel : AgentChannel
         async Task<ToolOutput> ProcessFunctionStepAsync(string callId, RunStepFunctionToolCall functionDetails, CancellationToken cancellationToken)
         {
             var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
-            var toolResult = result as string;
-            if (toolResult == null)
+            if (result is not string toolResult)
             {
                 toolResult = JsonSerializer.Serialize(result);
             }

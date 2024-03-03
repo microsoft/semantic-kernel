@@ -153,8 +153,7 @@ internal sealed class ChatRun
     private async Task<ToolResultModel> ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
     {
         var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
-        var toolResult = result as string;
-        if (toolResult == null)
+        if (result is not string toolResult)
         {
             toolResult = JsonSerializer.Serialize(result);
         }

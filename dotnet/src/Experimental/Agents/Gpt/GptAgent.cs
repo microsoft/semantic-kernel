@@ -72,7 +72,7 @@ public sealed class GptAgent : KernelAgent<GptChannel>
                 Instructions = instructions,
                 Name = name,
                 Metadata = metadata,
-                // $$$ FILEIDS
+                // $$$ FILEID
             };
 
         if (enableCodeIntepreter)

@@ -9,6 +9,8 @@ using static Microsoft.SemanticKernel.Experimental.Agents.IChatMessage;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
+#pragma warning disable IDE0290 // Use primary constructor
+
 /// <summary>
 /// Represents a message that is part of an agent thread.
 /// </summary>

@@ -71,14 +71,14 @@ public sealed class StrategyNexus : AgentNexus
         for (int index = 0; index < maximumIterations; index++)
         {
             // Identify next agent using strategy
-            var agent = await this._strategy.NextAgentAsync().ConfigureAwait(false);
+            var agent = await this._strategy.NextAgentAsync(cancellationToken).ConfigureAwait(false);
 
             var isComplete = false;
             await foreach (var message in base.InvokeAgentAsync(agent, input, cancellationToken))
             {
                 yield return message;
 
-                var task = executionSettings.CompletionCriteria?.Invoke(message, cancellationToken) ?? Task.FromResult(false);
+                var task = executionSettings.CompletionCriteria?.Invoke(this.History, cancellationToken) ?? Task.FromResult(false);
 
                 if (message.Role == AuthorRole.Assistant)
                 {

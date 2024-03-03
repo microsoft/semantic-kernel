@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Strategy;
@@ -11,7 +12,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     private int _index = 0;
 
     /// <inheritdoc/>
-    public override Task<KernelAgent> NextAgentAsync()
+    public override Task<KernelAgent> NextAgentAsync(CancellationToken cancellationToken)
     {
         var agent = this.Nexus.Agents[this._index];
 

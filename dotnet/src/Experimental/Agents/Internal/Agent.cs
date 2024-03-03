@@ -14,6 +14,8 @@ using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
+#pragma warning disable IDE0290 // Use primary constructor
+
 /// <summary>
 /// Represents an agent that can call the model and use tools.
 /// </summary>
@@ -133,7 +135,7 @@ internal sealed class Agent : IAgent
             (this._model.Tools.Any(t => string.Equals(t.Type, ToolRetrieval, StringComparison.OrdinalIgnoreCase)) ? AgentCapability.Retrieval : AgentCapability.None) |
             (this._model.Tools.Any(t => string.Equals(t.Type, ToolCodeInterpreter, StringComparison.OrdinalIgnoreCase)) ? AgentCapability.CodeInterpreter : AgentCapability.None);
 
-        this._tools = this._model.Tools.Concat(this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)))).ToArray();
+        this._tools = [.. this._model.Tools, .. this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)))];
     }
 
     public AgentPlugin AsPlugin() => this._agentPlugin ??= this.DefinePlugin();

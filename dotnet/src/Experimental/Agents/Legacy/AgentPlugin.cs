@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
+#pragma warning disable IDE0290 // Use primary constructor
+
 /// <summary>
 /// Specialization of <see cref="KernelPlugin"/> for <see cref="IAgent"/>
 /// </summary>
@@ -41,7 +43,7 @@ public abstract class AgentPlugin : KernelPlugin
     /// <returns>The agent response</returns>
     public async Task<string> InvokeAsync(string input, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        arguments ??= new KernelArguments();
+        arguments ??= [];
 
         arguments["input"] = input;
 

@@ -27,14 +27,14 @@ public sealed class ChatChannel : AgentChannel
             chat.AddMessage(AuthorRole.System, agent.Instructions!, name: agent.Name);
         }
 
+        chat.AddRange(this._chat);
+
+        var chatCompletionService = agent.Kernel.GetRequiredService<IChatCompletionService>();
+
         if (input != null)
         {
             yield return input;
         }
-
-        chat.AddRange(this._chat);
-
-        var chatCompletionService = agent.Kernel.GetRequiredService<IChatCompletionService>();
 
         var messages =
             await chatCompletionService.GetChatMessageContentsAsync(

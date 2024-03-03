@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Microsoft.SemanticKernel.Experimental.Agents.Chat;
@@ -124,7 +125,6 @@ public class Example99_Agents : BaseTest
         var agent =
             await CreateGptAgentAsync(
                 "Coder",
-                "Write only code to solve the given problem without comment.",
                 enableCoding: true);
 
         await ChatAsync(
@@ -141,16 +141,18 @@ public class Example99_Agents : BaseTest
     {
         WriteLine("======== Run:Retrieval GPT Agent ========");
 
+        // $$$ FILEID
+
         var agent =
             await CreateGptAgentAsync(
-                "$$$",
-                "$$$",
+                "Helper",
                 enableRetrieval: true);
 
         await ChatAsync(
             agent,
-            "$$$",
-            "$$$");
+            "Where did sam go?",
+            "When does the flight leave Seattle?",
+            "What is the hotel contact info at the destination?");
     }
 
     /// <summary>
@@ -163,21 +165,30 @@ public class Example99_Agents : BaseTest
 
         var agent =
             await CreateGptAgentAsync(
-                "$$$",
-                "$$$.",
+                "ChartMaker",
+                "Create charts as requested without explanation.",
                 enableCoding: true);
 
         await ChatAsync(
             agent,
-            "$$$",
-            "$$$");
+            @"
+            Display this data using a bar-chart:
+
+            Banding  Brown Pink Yellow  Sum
+            X00000   339   433     126  898
+            X00300    48   421     222  691
+            X12345    16   395     352  763
+            Others    23   373     156  552
+            Sum      426  1622     856 2904
+            ",
+            "Can you regenerate this same chart using the category names as the bar colors?");
     }
 
     /// <summary>
     /// Demonstrate mixed agents.
     /// </summary>
     [Fact]
-    public async Task RunMixedAgentNexusAsync()
+    public async Task RunMixedDualAgentAsync()
     {
         WriteLine("======== Run:Mixed Agents ========");
 
@@ -188,17 +199,82 @@ public class Example99_Agents : BaseTest
     }
 
     /// <summary>
-    /// Demonstrate mixed agents.
+    /// Demonstrate strategy nexus with mixed agents.
     /// </summary>
     [Fact]
-    public async Task RunMixedAgentStrategyAsync()
+    public async Task RunMixedAgentExpressionStrategyAsync()
     {
-        WriteLine("======== Run:Agents in Strategy Nexus ========");
+        WriteLine("======== Run:Agents in ExpressionStrategy Nexus ========");
 
         var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
         var agent2 = await CreateGptAgentAsync("Pessimistic", "Respond with extreme skeptism...don't be polite.");
 
-        await RunStrategyAsync(agent1, agent2, "I think I'm going to do something really important today!");
+        await RunStrategyAsync(
+            "I think I'm going to do something really important today!",
+            new NexusExecutionSettings
+            {
+                MaximumIterations = 6,
+                CompletionCriteria = new ExpressionCompletionStrategy("Oh really?"), // Terminate on pessimistic phrase.
+            },
+            agent1,
+            agent2);
+    }
+
+    /// <summary>
+    /// Demonstrate semantic completion strategy with mixed agents.
+    /// </summary>
+    [Fact]
+    public async Task RunMixedAgentCompletionStrategyAsync()
+    {
+        WriteLine("======== Run:Agents in CompletionStrategy Nexus ========");
+
+        var agent1 = CreateChatAgent("CopyWriter", "You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.");
+        var agent2 = await CreateGptAgentAsync("ArtDirector", "You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print.  If not, provide insight on how to refine suggested copy without example.");
+
+        await RunStrategyAsync(
+            "concept: maps made out of egg cartons.",
+            new NexusExecutionSettings
+            {
+                CompletionCriteria =
+                    new SemanticCompletionStrategy(
+                        agent1.Kernel.GetRequiredService<IChatCompletionService>(),
+                        "Respond with only true or false in evaulation on whether ArtDirector has given approval"),
+            },
+            agent1,
+            agent2);
+    }
+
+    /// <summary>
+    /// Demonstrate semantic completion strategy with mixed agents.
+    /// </summary>
+    [Fact]
+    public async Task RunMixedAgentSelectionStrategyAsync() // $$$ IMPROVE
+    {
+        WriteLine("======== Run:Agents in SelectionStrategy Nexus ========");
+
+        var agent1 = CreateChatAgent("Player1", "Your name is Player1. You are playing a game taking turns with other players.  Only respond with your own turn.  On your first turn, only introduce yourself by name.  Then on subsequent turns, play the game. The game starts when one player states they've thought of a number from 1 to 10.  The other players take turns guessing what the number is.  The player who knows the number replies with: too low, too high, or you got it.");
+        var agent2 = CreateChatAgent("Player2", "Your name is Player2. You are playing a game taking turns with other players.  Only respond with your own turn.  On your first turn, only introduce yourself by name.  Then on subsequent turns, play the game. The game starts when one player states they've thought of a number from 1 to 10.  The other players take turns guessing what the number is.  The player who knows the number replies with: too low, too high, or you got it.");
+        var agent3 = CreateChatAgent("Player3", "Your name is Player3. You are playing a game taking turns with other players.  Only respond with your own turn.  On your first turn, only introduce yourself by name.  Then on subsequent turns, play the game. The game starts when one player states they've thought of a number from 1 to 10.  The other players take turns guessing what the number is.  The player who knows the number replies with: too low, too high, or you got it.");
+
+        await RunStrategyAsync(
+            input: null,
+            new NexusExecutionSettings
+            {
+                CompletionCriteria =
+                    new SemanticCompletionStrategy(
+                        agent1.Kernel.GetRequiredService<IChatCompletionService>(),
+                        "Someone correctly guesses the number."),
+            },
+            new SemanticSelectionStrategy(
+                agent1.Kernel.GetRequiredService<IChatCompletionService>(),
+                "Your job is to only state the name of the player whose turn is next without explanation.  You are not a player.  There are three player: Player1, Player2, and Player3.  Pick anyone to start.  Only respond with the player name.  Players start by taking turns to introduce themselves. After all players has introduced themselves, one player thinks of a number from 1 to 10.  The other players take turns guessing what the number is.  The player who knows the number replies with: too low, too high, or you got it.",
+                new OpenAIPromptExecutionSettings
+                {
+                    Temperature = 0,
+                }),
+            agent1,
+            agent2,
+            agent3);
     }
 
     private async Task RunSingleAgentAsync(KernelAgent agent)
@@ -226,26 +302,35 @@ public class Example99_Agents : BaseTest
         await WriteHistoryAsync(nexus, agent2);
     }
 
-    private async Task RunStrategyAsync(KernelAgent agent1, KernelAgent agent2, string input)
+    private Task RunStrategyAsync(
+        string? input,
+        NexusExecutionSettings settings,
+        params KernelAgent[] agents)
+    {
+        return RunStrategyAsync(input, settings, seletionStrategy: null, agents);
+    }
+
+    private async Task RunStrategyAsync(
+        string? input,
+        NexusExecutionSettings settings,
+        SelectionStrategy? seletionStrategy,
+        params KernelAgent[] agents)
     {
         this.WriteLine("[TEST]");
-        WriteAgent(agent1);
-        WriteAgent(agent2);
+        foreach (var agent in agents)
+        {
+            WriteAgent(agent);
+        }
 
-        var nexus = new StrategyNexus(new SequentialSelectionStrategy(), agent1, agent2);
-
-        var settings =
-            new NexusExecutionSettings
-            {
-                MaximumIterations = 6,
-                CompletionCriteria = new ExpressionCompletionStrategy("Oh really?"),
-            };
+        var nexus = new StrategyNexus(seletionStrategy ?? new SequentialSelectionStrategy(), agents);
 
         await InvokeAgentAsync(nexus, input, settings); // $$$ USER PROXY
 
         await WriteHistoryAsync(nexus);
-        await WriteHistoryAsync(nexus, agent1);
-        await WriteHistoryAsync(nexus, agent2);
+        foreach (var agent in agents)
+        {
+            await WriteHistoryAsync(nexus, agent);
+        }
     }
 
     private async Task RunToolAgentAsync(KernelAgent agent)
@@ -359,7 +444,7 @@ public class Example99_Agents : BaseTest
 
     private async Task<GptAgent> CreateGptAgentAsync(
         string name,
-        string instructions,
+        string? instructions = null,
         KernelPlugin? plugin = null,
         bool enableCoding = false,
         bool enableRetrieval = false)
@@ -375,7 +460,7 @@ public class Example99_Agents : BaseTest
                 enableRetrieval);
     }
 
-    private ChatAgent CreateChatAgent(string name, string instructions, KernelPlugin? plugin = null)
+    private ChatAgent CreateChatAgent(string name, string? instructions = null, KernelPlugin? plugin = null)
     {
         return
             new ChatAgent(

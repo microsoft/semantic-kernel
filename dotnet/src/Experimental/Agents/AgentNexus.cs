@@ -26,7 +26,7 @@ public record AgentMessageSource(string AgentId, string? MessageId = null)
 /// <summary>
 /// Point of interaction for one or more agents.
 /// </summary>
-public abstract class AgentNexus /*: $$$ PLUGIN ??? */
+public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
 {
     private readonly Dictionary<Type, AgentChannel> _agentChannels;
 
@@ -76,7 +76,7 @@ public abstract class AgentNexus /*: $$$ PLUGIN ??? */
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
         KernelAgent agent,
         ChatMessageContent? input = null,
-        /*KernelArguments $$$,*/
+        /*KernelArguments $$$ TODO: TEMPLATING,*/
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Verify only a single operation is active
@@ -108,7 +108,7 @@ public abstract class AgentNexus /*: $$$ PLUGIN ??? */
 
     private async Task<AgentChannel> GetChannelAsync(KernelAgent agent, CancellationToken cancellationToken)
     {
-        // $$$ BETTER KEY THAN TYPE (DIFFERENT APIKEYS / ENDPOINTS / TENENTS OF SAME TYPE)
+        // $$$ TODO: BETTER KEY THAN TYPE (DIFFERENT APIKEYS / ENDPOINTS / TENENTS OF SAME TYPE)
         if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))
         {
             channel = await agent.CreateChannelAsync(this, cancellationToken).ConfigureAwait(false);
