@@ -15,7 +15,7 @@ informed: ???
 ### General Information
 
 The current abstraction of generating embeddings has generic interface which potentially can be used for generation from multi-modal data.
-It's good because we want to enable the generation of embeddings from different types of data, such as images and others.
+It's good because we want to enable the generation of embeddings from different types of data, such as text, images and others.
 
 We also want to make it possible to parameterize the query and return metadata but this is not possible in the current abstraction.
 
