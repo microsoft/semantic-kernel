@@ -76,9 +76,9 @@ We can also develop interfaces with other returned types like `EmbeddingContent<
 public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
 {
     public EmbeddingContent(
-        object? innerContent,
         IReadOnlyList<ReadOnlyMemory<TEmbedding>> data,
         string? modelId = null,
+        object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
@@ -123,9 +123,9 @@ Similar to option 2, but with a common interface for generating embeddings from 
 public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
 {
     public EmbeddingContent(
-        object? innerContent,
         IReadOnlyList<ReadOnlyMemory<TEmbedding>> data,
         string? modelId = null,
+        object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
@@ -170,9 +170,9 @@ This option forces the conversion of embeddings data always to `float`.
 public class EmbeddingContent : KernelContent
 {
     public EmbeddingContent(
-        object? innerContent,
         IReadOnlyList<ReadOnlyMemory<float>> data,
         string? modelId = null,
+        object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
