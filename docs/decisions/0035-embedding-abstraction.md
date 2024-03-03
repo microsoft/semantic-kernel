@@ -166,7 +166,7 @@ Cons:
 
 Similar to option 2 or 3, but with a non-generic `EmbeddingContent` class.
 
-This option forces the conversion of embeddings data always to `float`.
+This option forces the conversion of embeddings data always to `double`.
 
 ```csharp
 public class EmbeddingContent : KernelContent
