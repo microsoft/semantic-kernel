@@ -213,7 +213,9 @@ Similar to Option 1 but with EmbeddingContent, metadata and execution settings.
 
 Abstraction:
 ```csharp
-public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService where TEmbedding : unmanaged, TValue : KernelContent
+public interface IEmbeddingGenerationService<TValue, TEmbedding>
+        : IAIService where TEmbedding : unmanaged,
+          TValue : KernelContent
 {
     Task<IReadOnlyList<EmbeddingContent<TEmbedding>>> GenerateEmbeddingsAsync(
         IList<TValue> data,
@@ -221,7 +223,8 @@ public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService wh
         CancellationToken cancellationToken = default);
 }
 
-public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
+public class EmbeddingContent<TEmbedding>
+        : KernelContent where TEmbedding : unmanaged
 {
     public EmbeddingContent(
         ReadOnlyMemory<TEmbedding> data,
