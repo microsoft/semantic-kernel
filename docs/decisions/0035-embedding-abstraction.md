@@ -196,6 +196,7 @@ public interface IEmbeddingGenerationService : IAIService
 
 Pros:
 - Simplicity.
+- We reusing existing KernelContent descants.
 - Allows for generating embeddings from different types of data.
 - Allows for parameterizing the query.
 - Allows for returning metadata.
@@ -205,6 +206,60 @@ Cons:
 - We cannot return embeddings with different types.
 - Exception would be thrown for not supported contents. Many models don't support all types of data.
 
+### Option 5 [Proposed] - Generic embeddings generation interface with metadata and execution parameters
+
+Similar to Option 1 but with EmbeddingContent, metadata and execution settings.
+
+Abstraction:
+```csharp
+public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService where TEmbedding : unmanaged, TValue : KernelContent
+{
+    Task<IReadOnlyList<EmbeddingContent<TEmbedding>>> GenerateEmbeddingsAsync(
+        IList<TValue> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default);
+}
+
+public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
+{
+    public EmbeddingContent(
+        ReadOnlyMemory<TEmbedding> data,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Data = data;
+    }
+
+    public ReadOnlyMemory<TEmbedding> Data { get; set; }
+}
+```
+Sample implementation:
+```csharp
+public class EmbeddingGenerationService : IEmbeddingGenerationService<TextContent, float>, IEmbeddingGenerationService<ImageContet, double>
+{
+    public Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+        IList<TextContent> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default) { /* implementation */ }
+
+    public Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
+        IList<ImageContet> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default) { /* implementation */ }
+}
+```
+
+Pros:
+- We reusing existing KernelContent descants, because TValue is limited to KernelContent and derived types.
+- Allows for generating embeddings from different types of data.
+- Allows returning data with different types like float, double etc.
+- Allows for parameterizing the query.
+- Allows for returning metadata.
+
+Cons:
+- More complex than option 4.
 
 ## Decision Outcome
 
