@@ -49,7 +49,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static readonly Meter s_meter = new(s_namespace!);
+    private static readonly Meter s_meter = new(s_namespace);
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
