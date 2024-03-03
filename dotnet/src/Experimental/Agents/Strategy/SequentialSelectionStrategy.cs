@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 
 /// <summary>
 /// Round-robin turn-taking strategy.
 /// </summary>
-public sealed class SequentialChatStrategy : NexusStrategy
+public sealed class SequentialSelectionStrategy : SelectionStrategy
 {
     private int _index = 0;
 

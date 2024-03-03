@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -11,8 +14,9 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// </summary>
 public sealed class StrategyNexus : AgentNexus
 {
+    private readonly HashSet<string> _agentIds;
     private readonly List<KernelAgent> _agents;
-    private readonly NexusStrategy _strategy;
+    private readonly SelectionStrategy _strategy;
 
     /// <summary>
     /// The agents participating in the nexus.
@@ -25,7 +29,7 @@ public sealed class StrategyNexus : AgentNexus
     /// <param name="agent">The <see cref="KernelAgent"/> to add.</param>
     public void AddAgent(KernelAgent agent)
     {
-        if (!this._agents.Any(a => a.Id == agent.Id)) // $$$ PERF / LOOP
+        if (this._agentIds.Add(agent.Id))
         {
             this._agents.Add(agent);
         }
@@ -35,28 +39,65 @@ public sealed class StrategyNexus : AgentNexus
     /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="input">Optional user input.</param>
+    /// <param name="executionSettings">Execution settings agent interaction.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchornous enumeration of messages.</returns>
-    public async Task<IAsyncEnumerable<ChatMessageContent>> InvokeAsync(string? input = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(string? input = null, NexusExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
-        // Identify next agent using strategy
-        var agent = await this._strategy.NextAgentAsync().ConfigureAwait(false);
+        var content = CreateUserMessage(input);
 
-        return base.InvokeAgentAsync(agent, input, cancellationToken);
+        return this.InvokeAsync(content, executionSettings, cancellationToken);
     }
 
     /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="input">Optional user input.</param>
+    /// <param name="executionSettings">Execution settings agent interaction.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchornous enumeration of messages.</returns>
-    public async Task<IAsyncEnumerable<ChatMessageContent>> InvokeAsync(ChatMessageContent? input = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatMessageContent? input = null, NexusExecutionSettings? executionSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // Identify next agent using strategy
-        var agent = await this._strategy.NextAgentAsync().ConfigureAwait(false);
+        executionSettings ??= NexusExecutionSettings.Default;
 
-        return base.InvokeAgentAsync(agent, input, cancellationToken);
+        // Use the the count, if defined and positive, otherwise:
+        // - Default to a maximum limit of 99 when only a criteria is defined.
+        // - Default to a single iteration if no count and no criteria is defined.
+        var maximumIterations =
+            executionSettings.MaximumIterations > 0 ?
+                executionSettings.MaximumIterations :
+                executionSettings.CompletionCriteria == null ? 1 : 99;
+
+        for (int index = 0; index < maximumIterations; index++)
+        {
+            // Identify next agent using strategy
+            var agent = await this._strategy.NextAgentAsync().ConfigureAwait(false);
+
+            var isComplete = false;
+            await foreach (var message in base.InvokeAgentAsync(agent, input, cancellationToken))
+            {
+                yield return message;
+
+                var task = executionSettings.CompletionCriteria?.Invoke(message, cancellationToken) ?? Task.FromResult(false);
+
+                if (message.Role == AuthorRole.Assistant)
+                {
+                    isComplete = await task.ConfigureAwait(false);
+                }
+
+                if (isComplete)
+                {
+                    break;
+                }
+            }
+
+            if (isComplete)
+            {
+                break;
+            }
+
+            input = null;
+        }
     }
 
     /// <summary>
@@ -64,9 +105,10 @@ public sealed class StrategyNexus : AgentNexus
     /// </summary>
     /// <param name="strategy">The agent selection strategy.</param>
     /// <param name="agents">The agents initially participating in the nexus.</param>
-    public StrategyNexus(NexusStrategy strategy, params KernelAgent[] agents)
+    public StrategyNexus(SelectionStrategy strategy, params KernelAgent[] agents)
     {
         this._agents = [.. agents];
+        this._agentIds = [.. this._agents.Select(a => a.Id).Distinct()];
         this._strategy = strategy;
 
         this._strategy.Bind(this);

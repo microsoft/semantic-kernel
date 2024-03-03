@@ -58,16 +58,12 @@ public abstract class AgentNexus /*: $$$ PLUGIN ??? */
     }
 
     /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
+    /// Transform text into a user message.
     /// </summary>
-    /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="input">Optional user input.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchornous enumeration of messages.</returns>
-    protected IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(KernelAgent agent, string? input = null, /*KernelArguments $$$,*/ CancellationToken cancellationToken = default)
+    protected static ChatMessageContent? CreateUserMessage(string? input)
     {
-        var content = string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
-        return this.InvokeAgentAsync(agent, content, cancellationToken);
+        return string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
     }
 
     /// <summary>

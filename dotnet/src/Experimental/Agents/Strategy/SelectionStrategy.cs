@@ -3,12 +3,12 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 
 /// <summary>
 /// Defines a strategy used by <see cref="StrategyNexus"/>.
 /// </summary>
-public abstract class NexusStrategy
+public abstract class SelectionStrategy
 {
     private StrategyNexus? _nexus;
 

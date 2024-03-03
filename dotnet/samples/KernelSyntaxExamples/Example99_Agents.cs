@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Microsoft.SemanticKernel.Experimental.Agents.Chat;
 using Microsoft.SemanticKernel.Experimental.Agents.Gpt;
+using Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 using Plugins;
 using Xunit;
 using Xunit.Abstractions;
@@ -133,7 +134,7 @@ public class Example99_Agents : BaseTest
     }
 
     /// <summary>
-    /// Demonstrate tooled gpt agent.
+    /// Demonstrate retrieval gpt agent.
     /// </summary>
     [Fact]
     public async Task RunGptRetrievalAgentAsync()
@@ -153,7 +154,7 @@ public class Example99_Agents : BaseTest
     }
 
     /// <summary>
-    /// Demonstrate tooled gpt agent.
+    /// Demonstrate chart maker gpt agent.
     /// </summary>
     [Fact]
     public async Task RunGptChartAgentAsync()
@@ -231,9 +232,16 @@ public class Example99_Agents : BaseTest
         WriteAgent(agent1);
         WriteAgent(agent2);
 
-        var nexus = new StrategyNexus(new SequentialChatStrategy(), agent1, agent2);
+        var nexus = new StrategyNexus(new SequentialSelectionStrategy(), agent1, agent2);
 
-        await InvokeAgentAsync(nexus, input); // $$$ USER PROXY
+        var settings =
+            new NexusExecutionSettings
+            {
+                MaximumIterations = 6,
+                CompletionCriteria = new ExpressionCompletionStrategy("Oh really?"),
+            };
+
+        await InvokeAgentAsync(nexus, input, settings); // $$$ USER PROXY
 
         await WriteHistoryAsync(nexus);
         await WriteHistoryAsync(nexus, agent1);
@@ -276,17 +284,15 @@ public class Example99_Agents : BaseTest
 
     private async Task InvokeAgentAsync(ManualNexus nexus, KernelAgent agent, string? message = null)
     {
-        var response = await nexus.InvokeAsync(agent, message);
-        await foreach (var content in response)
+        await foreach (var content in nexus.InvokeAsync(agent, message))
         {
             this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
         }
     }
 
-    private async Task InvokeAgentAsync(StrategyNexus nexus, string? message = null)
+    private async Task InvokeAgentAsync(StrategyNexus nexus, string? message = null, NexusExecutionSettings? settings = null)
     {
-        var response = await nexus.InvokeAsync(message);
-        await foreach (var content in response)
+        await foreach (var content in nexus.InvokeAsync(message, settings))
         {
             this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
         }
