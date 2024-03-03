@@ -113,22 +113,8 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var chatHistoryCopy = new ChatHistory(chatHistory);
-        ValidateAndPrepareChatHistory(chatHistoryCopy);
-
+        var state = CreateChatCompletionState(chatHistory, kernel, executionSettings);
         var endpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
-
-        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
-
-        ChatCompletionState state = new()
-        {
-            AutoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings),
-            ChatHistory = chatHistory,
-            ExecutionSettings = geminiExecutionSettings,
-            GeminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel),
-            Kernel = kernel! // not null if auto-invoke is true
-        };
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
@@ -139,7 +125,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
-            if (kernel is null || !state.AutoInvoke || chatResponses.Count != 1)
+            if (!state.AutoInvoke || chatResponses.Count != 1)
             {
                 return chatResponses;
             }
@@ -162,22 +148,8 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var chatHistoryCopy = new ChatHistory(chatHistory);
-        ValidateAndPrepareChatHistory(chatHistoryCopy);
-
+        var state = CreateChatCompletionState(chatHistory, kernel, executionSettings);
         var endpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
-
-        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
-
-        ChatCompletionState state = new()
-        {
-            AutoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings),
-            ChatHistory = chatHistory,
-            ExecutionSettings = geminiExecutionSettings,
-            GeminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel),
-            Kernel = kernel! // not null if auto-invoke is true
-        };
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
@@ -200,6 +172,27 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
             state.AddLastMessageToChatHistoryAndRequest();
             await this.ProcessFunctionsAsync(state, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private static ChatCompletionState CreateChatCompletionState(
+        ChatHistory chatHistory,
+        Kernel? kernel,
+        PromptExecutionSettings? executionSettings)
+    {
+        var chatHistoryCopy = new ChatHistory(chatHistory);
+        ValidateAndPrepareChatHistory(chatHistoryCopy);
+
+        var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+
+        return new ChatCompletionState()
+        {
+            AutoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings),
+            ChatHistory = chatHistory,
+            ExecutionSettings = geminiExecutionSettings,
+            GeminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel),
+            Kernel = kernel! // not null if auto-invoke is true
+        };
     }
 
     private IEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsOrPopulateStateForToolCalling(
