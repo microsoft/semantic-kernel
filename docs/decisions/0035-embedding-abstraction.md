@@ -21,10 +21,10 @@ We also want to make it possible to parameterize the query.
 ### Embeddings models
 
 OpenAI provides models that allow for generating embeddings only from textual data.\
-The models do not return metadata, and also do not allow for parameterizing the query.
+These models return metadata, and also allow for parameterizing the query.
 
 Google VertexAI provides models that allow for generating embeddings from textual data, as well as from images and other types of data.
-The models return metadata, and also allow for parameterizing the query.
+These models return metadata, and also allow for parameterizing the query.
 
 <!-- This is an optional element. Feel free to remove. -->
 
@@ -78,7 +78,7 @@ We can also develop interfaces with other returned types like `EmbeddingContent<
 public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
 {
     public EmbeddingContent(
-        IReadOnlyList<ReadOnlyMemory<TEmbedding>> data,
+        ReadOnlyMemory<TEmbedding> data,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
@@ -87,7 +87,7 @@ public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unm
         this.Data = data;
     }
 
-    public IReadOnlyList<ReadOnlyMemory<TEmbedding>> Data { get; set; }
+    public IReadOnlyMemory<TEmbedding> Data { get; set; }
 }
 
 public interface ITextEmbeddingGenerationService : IAIService
@@ -125,7 +125,7 @@ Similar to option 2, but with a common interface for generating embeddings from 
 public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
 {
     public EmbeddingContent(
-        IReadOnlyList<ReadOnlyMemory<TEmbedding>> data,
+        ReadOnlyMemory<TEmbedding> data,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
@@ -134,7 +134,7 @@ public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unm
         this.Data = data;
     }
 
-    public IReadOnlyList<ReadOnlyMemory<TEmbedding>> Data { get; set; }
+    public ReadOnlyMemory<TEmbedding> Data { get; set; }
 }
 
 public interface IEmbeddingGenerationService : IAIService
@@ -162,17 +162,15 @@ Cons:
 - No generic interface.
 - One common interface for different types of data. Many models don't support all types of data.
 
-### Option 4 [Proposed] - Same as option 2 or 3 but with non-generic EmbeddingContent
+### Option 4 [Proposed] - One interface for embeddings generation with metadata and query parameters
 
-Similar to option 2 or 3, but with a non-generic `EmbeddingContent` class.
-
-This option forces the conversion of embeddings data always to `double`.
+Similar to option 3 but with only one method with KernelContent param and non-generic EmbeddingContent.
 
 ```csharp
 public class EmbeddingContent : KernelContent
 {
     public EmbeddingContent(
-        IReadOnlyList<ReadOnlyMemory<float>> data,
+        ReadOnlyMemory<double> data,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
@@ -181,39 +179,12 @@ public class EmbeddingContent : KernelContent
         this.Data = data;
     }
 
-    public IReadOnlyList<ReadOnlyMemory<double>> Data { get; set; }
-}
-```
-
-Pros:
-- Simplicity.
-
-Cons:
-- We cannot return embeddings with different types.
-
-### Option 5 [Proposed] - One interface for embeddings generation with metadata and query parameters
-
-Similar to option 3 but with only one metod with KernelContent param.
-
-```csharp
-public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unmanaged
-{
-    public EmbeddingContent(
-        IReadOnlyList<ReadOnlyMemory<TEmbedding>> data,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        this.Data = data;
-    }
-
-    public IReadOnlyList<ReadOnlyMemory<TEmbedding>> Data { get; set; }
+    public ReadOnlyMemory<double> Data { get; set; }
 }
 
 public interface IEmbeddingGenerationService : IAIService
 {
-    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent>> GenerateEmbeddingsAsync(
         IList<KernelContent> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -224,12 +195,14 @@ public interface IEmbeddingGenerationService : IAIService
 ```
 
 Pros:
+- Simplicity.
 - Allows for generating embeddings from different types of data.
 - Allows for parameterizing the query.
 - Allows for returning metadata.
 
 Cons:
 - No generic interface.
+- We cannot return embeddings with different types.
 - Exception would be thrown for not supported contents. Many models don't support all types of data.
 
 
