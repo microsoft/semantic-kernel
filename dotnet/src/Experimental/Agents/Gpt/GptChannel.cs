@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -13,7 +12,6 @@ using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
-using Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Gpt;
 

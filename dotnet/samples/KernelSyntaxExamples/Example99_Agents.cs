@@ -132,7 +132,6 @@ public class Example99_Agents : BaseTest
             "What is the fibinacci sequence until 101?");
     }
 
-
     /// <summary>
     /// Demonstrate tooled gpt agent.
     /// </summary>
@@ -152,7 +151,6 @@ public class Example99_Agents : BaseTest
             "$$$",
             "$$$");
     }
-
 
     /// <summary>
     /// Demonstrate tooled gpt agent.
