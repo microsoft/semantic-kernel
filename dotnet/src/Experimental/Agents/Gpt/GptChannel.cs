@@ -2,14 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
+using Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Gpt;
 
@@ -130,24 +134,51 @@ public sealed class GptChannel : AgentChannel
 
             foreach (var detail in messageDetails)
             {
-                ThreadMessage message = await this._client.GetMessageAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken).ConfigureAwait(false); // $$$ RETRY 404
+                ThreadMessage? message = null;
 
-                var role = new AuthorRole(message.Role.ToString());
-
-                foreach (var content in message.ContentItems)
+                bool retry = false;
+                int count = 0;
+                do
                 {
-                    if (content is MessageTextContent contentMessage)
+                    try
                     {
-                        yield return new ChatMessageContent(role, contentMessage.Text.Trim(), name: agent.Name);
+                        message = await this._client.GetMessageAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken).ConfigureAwait(false);
                     }
-
-                    if (content is MessageImageFileContent contentImage)
+                    catch (RequestFailedException exception)
                     {
-                        yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name); // $$$ FILE HANDLING
+                        // Step says message exists.  Try again.
+                        retry = exception.Status == (int)HttpStatusCode.NotFound && count < 3;
+                    }
+                    ++count;
+                }
+                while (retry);
+
+                if (message != null)
+                {
+                    var role = new AuthorRole(message.Role.ToString());
+
+                    foreach (var content in message.ContentItems)
+                    {
+                        if (content is MessageTextContent contentMessage)
+                        {
+                            yield return
+                                new ChatMessageContent(role, contentMessage.Text.Trim(), name: agent.Name)
+                                {
+                                    Source = new AgentMessageSource(agent.Id, message.Id).ToJson()
+                                };
+                        }
+
+                        if (content is MessageImageFileContent contentImage)
+                        {
+                            yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name) // $$$ FILE HANDLING
+                            {
+                                Source = new AgentMessageSource(agent.Id, message.Id).ToJson()
+                            };
+                        }
                     }
                 }
 
-                processedMessageIds.Add(message.Id);
+                processedMessageIds.Add(detail.MessageCreation.MessageId);
             }
         }
         while (run.Status != RunStatus.Completed);
@@ -241,8 +272,11 @@ public sealed class GptChannel : AgentChannel
                 if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
                     !this._agentNames.TryGetValue(message.AssistantId, out assistantName))
                 {
-                    // $$$ NAME
-                    // $$$ this._agentNames.Add(agent.Id, agent.Name!);
+                    Assistant assistant = await this._client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(assistant.Name))
+                    {
+                        this._agentNames.Add(assistant.Id, assistant.Name!);
+                    }
                 }
 
                 foreach (var content in message.ContentItems)

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -44,6 +45,8 @@ public sealed class ChatChannel : AgentChannel
 
         foreach (var message in messages)
         {
+            message.Source = new AgentMessageSource(agent.Id).ToJson();
+
             yield return message;
         }
     }

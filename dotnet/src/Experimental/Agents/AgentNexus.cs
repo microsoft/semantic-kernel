@@ -11,6 +11,19 @@ using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
+/// Associate a <see cref="ChatMessageContent"/> with an agent source.
+/// </summary>
+/// <param name="AgentId">The agent identifier</param>
+/// <param name="MessageId">An optional message identifier.</param>
+public record AgentMessageSource(string AgentId, string? MessageId = null)
+{
+    internal string ToJson()
+    {
+        return BinaryData.FromObjectAsJson(this).ToString();
+    }
+}
+
+/// <summary>
 /// Point of interaction for one or more agents.
 /// </summary>
 public abstract class AgentNexus /*: $$$ PLUGIN ??? */

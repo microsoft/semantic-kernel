@@ -118,9 +118,8 @@ public class Example99_Agents : BaseTest
     [Fact]
     public async Task RunGptCodeAgentAsync()
     {
-        WriteLine("======== Run:Tooled GPT Agent ========");
+        WriteLine("======== Run:Coding GPT Agent ========");
 
-        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         var agent =
             await CreateGptAgentAsync(
                 "Coder",
@@ -131,6 +130,48 @@ public class Example99_Agents : BaseTest
             agent,
             "What is the solution to `3x + 2 = 14`?",
             "What is the fibinacci sequence until 101?");
+    }
+
+
+    /// <summary>
+    /// Demonstrate tooled gpt agent.
+    /// </summary>
+    [Fact]
+    public async Task RunGptRetrievalAgentAsync()
+    {
+        WriteLine("======== Run:Retrieval GPT Agent ========");
+
+        var agent =
+            await CreateGptAgentAsync(
+                "$$$",
+                "$$$",
+                enableRetrieval: true);
+
+        await ChatAsync(
+            agent,
+            "$$$",
+            "$$$");
+    }
+
+
+    /// <summary>
+    /// Demonstrate tooled gpt agent.
+    /// </summary>
+    [Fact]
+    public async Task RunGptChartAgentAsync()
+    {
+        WriteLine("======== Run:Charting GPT Agent ========");
+
+        var agent =
+            await CreateGptAgentAsync(
+                "$$$",
+                "$$$.",
+                enableCoding: true);
+
+        await ChatAsync(
+            agent,
+            "$$$",
+            "$$$");
     }
 
     /// <summary>
