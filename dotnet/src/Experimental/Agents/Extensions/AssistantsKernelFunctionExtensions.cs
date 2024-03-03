@@ -77,32 +77,39 @@ internal static class AssistantsKernelFunctionExtensions
     public static ToolDefinition ToToolDefinition(this KernelFunction function, string pluginName)
     {
         var metadata = function.Metadata;
-        var required = new List<string>(metadata.Parameters.Count);
-        var parameters =
-            metadata.Parameters.ToDictionary(
-                p => p.Name,
-                p =>
-                {
-                    if (p.IsRequired)
+        if (metadata.Parameters.Count > 0)
+        {
+            var required = new List<string>(metadata.Parameters.Count);
+            var parameters =
+                metadata.Parameters.ToDictionary(
+                    p => p.Name,
+                    p =>
                     {
-                        required.Add(p.Name);
-                    }
-
-                    return
-                        new OpenAIParameter
+                        if (p.IsRequired)
                         {
-                            Type = ConvertType(p.ParameterType),
-                            Description = p.Description,
-                        };
-                });
+                            required.Add(p.Name);
+                        }
 
-        var payload =
-            new FunctionToolDefinition(function.GetQualifiedName(pluginName), function.Description)
-            {
-                //Parameters = null, // $$$ CRITICAL !!!
-            };
+                        return
+                            new
+                            {
+                                type = ConvertType(p.ParameterType),
+                                description = p.Description,
+                            };
+                    });
 
-        return payload;
+            var spec =
+                new
+                {
+                    type = "object",
+                    properties = parameters,
+                    required,
+                };
+
+            return new FunctionToolDefinition(function.GetQualifiedName(pluginName), function.Description, BinaryData.FromObjectAsJson(spec));
+        }
+
+        return new FunctionToolDefinition(function.GetQualifiedName(pluginName), function.Description);
     }
 
     private static string ConvertType(Type? type)

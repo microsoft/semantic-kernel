@@ -178,7 +178,8 @@ public class Example99_Agents : BaseTest
                 agent,
                 "What is the special soup?",
                 "What is the special drink?",
-                "What else is on the menu?");
+                "How much for a soup and a drink?",
+                "What else is available?");
     }
 
     /// <summary>
