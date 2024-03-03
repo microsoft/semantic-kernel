@@ -22,7 +22,7 @@ namespace KernelSyntaxExamples;
 // In order to create a Prompt Function that fully benefits from the Handlebars syntax power.
 // The example also shows how to use the HandlebarsPlanner to generate a plan (and persist it) which was used to generate the initial Handlebar template.
 // The example also shows how to create two prompt functions and a plugin to group them together.
-public class Example77_HandlebarsPromptSyntax : BaseTest
+public class Example87_HandlebarsPromptSyntax : BaseTest
 {
     private const string CompanyDescription = "The company is a startup that is building new AI solutions for the market. using Generative AI and AI orchestration novel technologies. The company is an expert on this recently launched SDK (Software Development Toolkit) named Semantic Kernel. Semantic Kernel or SK, enables AI Orchestration with .NET which is production ready, enterprise ready and cloud ready." +
             "Also it is able to self plan and execute complex tasks and use the power of AI agents which" +
@@ -314,7 +314,7 @@ public class Example77_HandlebarsPromptSyntax : BaseTest
         Console.WriteLine($"Result:  {customHandlebarsPromptResult}");
     }
 
-    public Example77_HandlebarsPromptSyntax(ITestOutputHelper output) : base(output)
+    public Example87_HandlebarsPromptSyntax(ITestOutputHelper output) : base(output)
     {
     }
 }
