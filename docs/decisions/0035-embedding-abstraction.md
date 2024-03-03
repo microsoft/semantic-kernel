@@ -211,6 +211,8 @@ Cons:
 
 Similar to Option 1 but with EmbeddingContent, metadata and execution settings.
 
+Against to option 1, this option are not using specialized interfaces like `ITextEmbeddingGenerationService`, `IImageEmbeddingGenerationService` but only generic one.
+
 Abstraction:
 ```csharp
 public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService
