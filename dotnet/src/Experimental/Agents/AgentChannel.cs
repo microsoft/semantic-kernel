@@ -28,4 +28,11 @@ public abstract class AgentChannel
         KernelAgent agent,
         ChatMessageContent? input = null, // $$$ USER PROXY
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieve the message history specific to this channel.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    public abstract IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken);
 }

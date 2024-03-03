@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +28,6 @@ public sealed class ChatChannel : AgentChannel
 
         if (input != null)
         {
-            this._chat.Add(input);
             yield return input;
         }
 
@@ -52,6 +52,12 @@ public sealed class ChatChannel : AgentChannel
     public override Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
+    {
+        return this._chat.Reverse().ToAsyncEnumerable();
     }
 
     /// <summary>

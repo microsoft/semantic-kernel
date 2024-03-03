@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -140,18 +141,19 @@ public class Example99_Agents : BaseTest
         await RunStrategyAsync(agent1, agent2, "I think I'm going to do something really important today!");
     }
 
-    private Task RunSingleAgentAsync(KernelAgent agent)
+    private async Task RunSingleAgentAsync(KernelAgent agent)
     {
-        return
-            ChatAsync(
-                agent,
-                "Fortune favors the bold.",
-                "I came, I saw, I conquered.",
-                "Practice makes perfect.");
+        await ChatAsync(
+            agent,
+            "Fortune favors the bold.",
+            "I came, I saw, I conquered.",
+            "Practice makes perfect.");
+
     }
 
     private async Task RunDualAgentAsync(KernelAgent agent1, KernelAgent agent2, string input)
     {
+        this.WriteLine("[TEST]");
         WriteAgent(agent1);
         WriteAgent(agent2);
 
@@ -159,36 +161,45 @@ public class Example99_Agents : BaseTest
 
         await InvokeAgentAsync(nexus, agent1, input); // $$$ USER PROXY
         await InvokeAgentAsync(nexus, agent2);
+
+        await WriteHistoryAsync(nexus);
+        await WriteHistoryAsync(nexus, agent1);
+        await WriteHistoryAsync(nexus, agent2);
     }
 
     private async Task RunStrategyAsync(KernelAgent agent1, KernelAgent agent2, string input)
     {
+        this.WriteLine("[TEST]");
         WriteAgent(agent1);
         WriteAgent(agent2);
 
         var nexus = new StrategyNexus(new SequentialChatStrategy(), agent1, agent2);
 
         await InvokeAgentAsync(nexus, input); // $$$ USER PROXY
+
+        await WriteHistoryAsync(nexus);
+        await WriteHistoryAsync(nexus, agent1);
+        await WriteHistoryAsync(nexus, agent2);
     }
 
-    private Task RunToolAgentAsync(KernelAgent agent)
+    private async Task RunToolAgentAsync(KernelAgent agent)
     {
-        return
-            ChatAsync(
-                agent,
-                "What is the special soup?",
-                "What is the special drink?",
-                "How much for a soup and a drink?",
-                "What else is available?");
+        await ChatAsync(
+            agent,
+            "What is the special soup?",
+            "What is the special drink?",
+            "How much for a soup and a drink?",
+            "What else is available?");
     }
 
     /// <summary>
     /// Common chat loop.
     /// </summary>
-    private async Task ChatAsync(
+    private async Task<AgentNexus> ChatAsync(
         KernelAgent agent,
         params string[] messages)
     {
+        this.WriteLine("[TEST]");
         WriteAgent(agent);
 
         var nexus = new ManualNexus();
@@ -198,6 +209,11 @@ public class Example99_Agents : BaseTest
         {
             await InvokeAgentAsync(nexus, agent, message);
         }
+
+        await WriteHistoryAsync(nexus);
+        await WriteHistoryAsync(nexus, agent);
+
+        return nexus;
     }
 
     private async Task InvokeAgentAsync(ManualNexus nexus, KernelAgent agent, string? message = null)
@@ -257,6 +273,24 @@ public class Example99_Agents : BaseTest
     private void WriteAgent(KernelAgent agent)
     {
         this.WriteLine($"[{agent.GetType().Name}:{agent.Id}:{agent.Name ?? "*"}]");
+    }
+
+    private async Task WriteHistoryAsync(AgentNexus nexus, KernelAgent? agent = null)
+    {
+        if (agent == null)
+        {
+            this.WriteLine("\n[primary history]");
+        }
+        else
+        {
+            this.WriteLine();
+            this.WriteAgent(agent);
+        }
+
+        await foreach (var message in nexus.GetHistoryAsync(agent))
+        {
+            this.WriteLine($"# {message.Role} - {message.Name ?? "*"}: '{message.Content}'");
+        }
     }
 
     private async Task<GptAgent> CreateGptAgentAsync(string name, string instructions, KernelPlugin? plugin = null)

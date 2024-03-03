@@ -23,6 +23,28 @@ public abstract class AgentNexus /*: $$$ PLUGIN ??? */
     internal ChatHistory History { get; }
 
     /// <summary>
+    /// Retrieve the message history, either the primary history or
+    /// an agent specific version.
+    /// </summary>
+    /// <param name="agent">An optional agent, if requesting an agent history.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The message history</returns>
+    public IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(KernelAgent? agent = null, CancellationToken cancellationToken = default)
+    {
+        if (agent == null)
+        {
+            return this.History.Reverse().ToAsyncEnumerable();
+        }
+
+        if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))
+        {
+            return Array.Empty<ChatMessageContent>().ToAsyncEnumerable();
+        }
+
+        return channel.GetHistoryAsync(cancellationToken);
+    }
+
+    /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>

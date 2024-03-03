@@ -15,6 +15,9 @@
     <Description>Semantic Kernel Agents</Description>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="C:\Users\crickman\source\repos\semantic-kernel2\dotnet\src\InternalUtilities\src\Linq\AsyncEnumerable.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Agents.UnitTests" />
   </ItemGroup>
   <ItemGroup>

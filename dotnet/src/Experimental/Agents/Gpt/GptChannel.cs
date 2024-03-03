@@ -41,20 +41,16 @@ public sealed class GptChannel : AgentChannel
                 continue;
             }
 
-            string actorName;
+            string? actorLabel = null;
             if (message.Role == AuthorRole.Assistant)
             {
-                actorName = message.Name ?? message.Role.Label;
-            }
-            else
-            {
-                actorName = message.Role.Label;
+                actorLabel = $"{message.Name ?? message.Role.Label}: ";
             }
 
             await this._client.CreateMessageAsync(
                 this._threadId,
                 MessageRole.User,
-                $"{actorName}: {message.Content}",
+                $"{actorLabel}{message.Content}",
                 fileIds: null,
                 metadata: null,
                 cancellationToken).ConfigureAwait(false);
@@ -124,6 +120,7 @@ public sealed class GptChannel : AgentChannel
             foreach (var detail in messageDetails)
             {
                 ThreadMessage message = await this._client.GetMessageAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken).ConfigureAwait(false); // $$$ RETRY 404
+
                 var role = new AuthorRole(message.Role.ToString());
 
                 foreach (var content in message.ContentItems)
@@ -131,13 +128,11 @@ public sealed class GptChannel : AgentChannel
                     if (content is MessageTextContent contentMessage)
                     {
                         yield return new ChatMessageContent(role, contentMessage.Text.Trim(), name: agent.Name);
-                        continue;
                     }
 
                     if (content is MessageImageFileContent contentImage)
                     {
                         yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name); // $$$ FILE HANDLING
-                        continue;
                     }
                 }
 
@@ -222,6 +217,38 @@ public sealed class GptChannel : AgentChannel
         }
     }
 
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<ChatMessageContent> GetHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        PageableList<ThreadMessage> messages;
+
+        string? lastId = null;
+        do
+        {
+            messages = await this._client.GetMessagesAsync(this._threadId, limit: 100, ListSortOrder.Descending, after: lastId, null, cancellationToken).ConfigureAwait(false);
+            foreach (var message in messages)
+            {
+                var role = new AuthorRole(message.Role.ToString());
+
+                foreach (var content in message.ContentItems)
+                {
+                    if (content is MessageTextContent contentMessage)
+                    {
+                        yield return new ChatMessageContent(role, contentMessage.Text.Trim(), name: message.AssistantId); // $$$ NAME
+                    }
+
+                    if (content is MessageImageFileContent contentImage)
+                    {
+                        yield return new ChatMessageContent(role, contentImage.FileId, name: message.AssistantId); // $$$ NAME
+                    }
+                }
+
+                lastId = message.Id;
+            }
+        }
+        while (messages.HasMore);
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="GptChannel"/> class.
     /// </summary>
@@ -230,5 +257,23 @@ public sealed class GptChannel : AgentChannel
         this._client = client;
         this._threadId = threadId;
         this._tools = [];
+    }
+
+    private static IEnumerable<ChatMessageContent> CreateContent(KernelAgent agent, ThreadMessage message)
+    {
+        var role = new AuthorRole(message.Role.ToString());
+
+        foreach (var content in message.ContentItems)
+        {
+            if (content is MessageTextContent contentMessage)
+            {
+                yield return new ChatMessageContent(role, contentMessage.Text.Trim(), name: agent.Name);
+            }
+
+            if (content is MessageImageFileContent contentImage)
+            {
+                yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name); // $$$ FILE HANDLING
+            }
+        }
     }
 }
