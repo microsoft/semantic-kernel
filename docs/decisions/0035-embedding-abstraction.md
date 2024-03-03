@@ -33,6 +33,7 @@ The models return metadata, and also allow for parameterizing the query.
 1. Abstraction should be able to generate embeddings from different types of data, at least from text and images.
 2. Abstraction should return metadata with generated embeddings.
 3. Abstraction should allow parameterize the embeddings query.
+4. We should maintain the precision of the obtained embeddings.
 
 ## Considered Options
 
