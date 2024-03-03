@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represent embedding content.
+/// Represents embedding content.
 /// </summary>
 /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
 [Experimental("SKEXP0001")]
