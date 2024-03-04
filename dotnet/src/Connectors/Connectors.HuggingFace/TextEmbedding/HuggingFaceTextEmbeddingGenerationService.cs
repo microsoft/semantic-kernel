@@ -42,7 +42,7 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
         Verify.NotNullOrWhiteSpace(model);
 
         this.Client = new HuggingFaceClient(
-        modelId: model,
+            modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
 #pragma warning disable CA2000 // Dispose objects before losing scope
@@ -55,6 +55,10 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
     }
 
     /// <inheritdoc/>
-    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
         => this.Client.GenerateEmbeddingsAsync(data, kernel, cancellationToken);
 }
