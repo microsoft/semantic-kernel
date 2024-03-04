@@ -65,7 +65,7 @@ kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 # if the model or api version do not support this you will get an error.
 
 # Note: the number of responses for auto inoking tool calls is limited to 1.
-# If configured to be greater than one, this value will be overriden to 1.
+# If configured to be greater than one, this value will be overridden to 1.
 execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     service_id="chat",
     max_tokens=2000,
