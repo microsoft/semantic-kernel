@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
