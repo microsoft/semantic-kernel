@@ -1,7 +1,11 @@
+from semantic_kernel.connectors import telemetry
+
+
 [run]
 source = semantic_kernel
 omit = 
     semantic_kernel/connectors/memory/*
+    semantic_kernel/connectors/telemetry.py
     semantic_kernel/utils/settings.py
     semantic_kernel/utils/null_logger.py
     semantic_kernel/utils/logging.py
