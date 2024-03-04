@@ -1,6 +1,12 @@
 import json
 import logging
+import sys
 from typing import Dict, Mapping, Optional, Union
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
 from urllib.parse import urljoin
 
 import aiohttp
@@ -10,13 +16,14 @@ from openapi_core.contrib.requests import RequestsOpenAPIRequest
 from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
-from semantic_kernel import Kernel, KernelContext
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
-from semantic_kernel.orchestration.kernel_function_base import KernelFunctionBase
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
+from semantic_kernel.exceptions import ServiceInvalidRequestError
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -115,12 +122,12 @@ class RestApiOperation:
                     processed_headers[param_name] = param_default
             elif param["in"] == "path":
                 if not path_params or param_name not in path_params:
-                    raise ValueError(f"Required path parameter {param_name} not provided")
+                    raise ServiceInvalidRequestError(f"Required path parameter {param_name} not provided")
 
         processed_payload = None
         if self.request_body:
             if request_body is None and "required" in self.request_body and self.request_body["required"]:
-                raise ValueError("Payload is required but was not provided")
+                raise ServiceInvalidRequestError("Payload is required but was not provided")
             content = self.request_body["content"]
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
@@ -216,7 +223,7 @@ class OpenApiRunner:
         query_params: Optional[Dict[str, str]] = None,
         headers: Optional[Dict[str, str]] = None,
         request_body: Optional[Union[str, Dict[str, str]]] = None,
-    ) -> aiohttp.ClientResponse:
+    ) -> str:
         prepared_request = operation.prepare_request(
             path_params=path_params,
             query_params=query_params,
@@ -251,7 +258,7 @@ def register_openapi_plugin(
     kernel: Kernel,
     plugin_name: str,
     openapi_document: str,
-) -> Dict[str, KernelFunctionBase]:
+) -> Dict[str, KernelFunction]:
     parser = OpenApiParser()
     parsed_doc = parser.parse(openapi_document)
     operations = parser.create_rest_api_operations(parsed_doc)
@@ -264,22 +271,30 @@ def register_openapi_plugin(
             description=operation.summary if operation.summary else operation.description,
             name=operation_id,
         )
-        @kernel_function_context_parameter(name="path_params", description="A dictionary of path parameters")
-        @kernel_function_context_parameter(name="query_params", description="A dictionary of query parameters")
-        @kernel_function_context_parameter(name="headers", description="A dictionary of headers")
-        @kernel_function_context_parameter(name="request_body", description="A dictionary of the request body")
-        async def run_openapi_operation(kernel_context: KernelContext) -> str:
-            path_params = kernel_context.variables.get("path_params")
-            query_params = kernel_context.variables.get("query_params")
-            headers = kernel_context.variables.get("headers")
-            request_body = kernel_context.variables.get("request_body")
-
+        async def run_openapi_operation(
+            path_params: Annotated[Optional[Union[Dict, str]], "A dictionary of path parameters"] = None,
+            query_params: Annotated[Optional[Union[Dict, str]], "A dictionary of query parameters"] = None,
+            headers: Annotated[Optional[Union[Dict, str]], "A dictionary of headers"] = None,
+            request_body: Annotated[Optional[Union[Dict, str]], "A dictionary of the request body"] = None,
+        ) -> str:
             response = await runner.run_operation(
                 operation,
-                path_params=json.loads(path_params) if path_params else None,
-                query_params=json.loads(query_params) if query_params else None,
-                headers=json.loads(headers) if headers else None,
-                request_body=json.loads(request_body) if request_body else None,
+                path_params=json.loads(path_params)
+                if isinstance(path_params, str)
+                else path_params
+                if path_params
+                else None,
+                query_params=json.loads(query_params)
+                if isinstance(query_params, str)
+                else query_params
+                if query_params
+                else None,
+                headers=json.loads(headers) if isinstance(headers, str) else headers if headers else None,
+                request_body=json.loads(request_body)
+                if isinstance(request_body, str)
+                else request_body
+                if request_body
+                else None,
             )
             return response
 
@@ -288,4 +303,4 @@ def register_openapi_plugin(
     for operation_id, operation in operations.items():
         logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation_id}")
         plugin[operation_id] = create_run_operation_function(openapi_runner, operation)
-    return kernel.import_plugin(plugin, plugin_name)
+    return kernel.import_plugin_from_object(plugin, plugin_name)

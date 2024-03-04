@@ -1,18 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from __future__ import annotations
+
 import os
-import typing as t
 import warnings
+from typing import Optional
 
 import pytest
 
-import semantic_kernel as sk
-from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyPluginCollection,
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.settings import (
+    azure_openai_settings_from_dot_env,
+    google_palm_settings_from_dot_env,
+    openai_settings_from_dot_env,
 )
 
 
@@ -54,9 +55,11 @@ def enable_debug_mode():
     builtins.pr = snoop.pp
 
 
-@pytest.fixture(scope="session")
-def create_kernel():
-    kernel = sk.Kernel()
+@pytest.fixture(scope="function")
+def create_kernel(plugin: Optional[KernelPlugin] = None):
+    kernel = Kernel()
+    if plugin:
+        kernel.add_plugin(plugin)
     return kernel
 
 
@@ -64,11 +67,11 @@ def create_kernel():
 def get_aoai_config():
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
-        api_key = os.environ["AzureOpenAI__ApiKey"]
-        endpoint = os.environ["AzureOpenAI__Endpoint"]
+        api_key = os.environ["AzureOpenAI_EastUS__ApiKey"]
+        endpoint = os.environ["AzureOpenAI_EastUS__Endpoint"]
     else:
         # Load credentials from .env file
-        deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+        deployment_name, api_key, endpoint = azure_openai_settings_from_dot_env()
         deployment_name = "text-embedding-ada-002"
 
     return deployment_name, api_key, endpoint
@@ -81,26 +84,9 @@ def get_oai_config():
         org_id = None
     else:
         # Load credentials from .env file
-        api_key, org_id = sk.openai_settings_from_dot_env()
+        api_key, org_id = openai_settings_from_dot_env()
 
     return api_key, org_id
-
-
-@pytest.fixture()
-def context_factory() -> t.Callable[[ContextVariables], KernelContext]:
-    """Return a factory for KernelContext objects."""
-
-    def create_context(context_variables: ContextVariables, *functions: KernelFunction) -> KernelContext:
-        """Return a KernelContext object."""
-        return KernelContext(
-            context_variables,
-            NullMemory(),
-            plugin_collection=ReadOnlyPluginCollection(
-                data={ReadOnlyPluginCollection.GLOBAL_PLUGIN.lower(): {f.name: f for f in functions}},
-            ),
-        )
-
-    return create_context
 
 
 @pytest.fixture(scope="session")
@@ -109,6 +95,6 @@ def get_gp_config():
         api_key = os.environ["GOOGLE_PALM_API_KEY"]
     else:
         # Load credentials from .env file
-        api_key = sk.google_palm_settings_from_dot_env()
+        api_key = google_palm_settings_from_dot_env()
 
     return api_key
