@@ -108,7 +108,7 @@ public interface ITextClassificationService : IAIService
 
 public interface ITImageClassificationService : IAIService
 {
-    Task<IReadOnlyList<ClassificationContent>> ClassifyTextsAsync(
+    Task<IReadOnlyList<ClassificationContent>> ClassifyImagesAsync(
         IEnumerable<ImageContent> images,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
@@ -147,7 +147,7 @@ Similar to option 1 but with one method with kernelcontent param.
 ```csharp
 public interface IClassificationService : IAIService
 {
-    Task<IReadOnlyList<ClassificationContent>> ClassifyTextsAsync(
+    Task<IReadOnlyList<ClassificationContent>> ClassifyContentsAsync(
         IEnumerable<KernelContent> contents,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
