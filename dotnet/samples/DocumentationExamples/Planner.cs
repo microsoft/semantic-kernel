@@ -93,11 +93,5 @@ public class Planner : BaseTest
 
     public Planner(ITestOutputHelper output) : base(output)
     {
-        //SimulatedInputText = [
-        //    "What is 49 divided by 37?",
-        //    "What is the square root of 49?",
-        //    "What is the sum of all numbers from 1 to 10?",
-        //    "If my investment of 2130.23 dollars increased by 23%, how much would I have after I spent $5 on a latte?"
-        //];
     }
 }
