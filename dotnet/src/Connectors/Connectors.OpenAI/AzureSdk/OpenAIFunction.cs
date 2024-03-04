@@ -101,7 +101,9 @@ public sealed class OpenAIFunction
     }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
-    public static string NameSeparator => "_";
+    /// <remarks>This separator was previously <c>_</c>, but has been changed to <c>-</c> to better align to the behavior elsewhere in SK and in response
+    /// to developers who want to use underscores in their function or plugin names. We plan to make this setting configurable in the future.</remarks>
+    public static string NameSeparator { get; set; } = "-";
 
     /// <summary>Gets the name of the plugin with which the function is associated, if any.</summary>
     public string? PluginName { get; }

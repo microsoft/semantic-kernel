@@ -13,6 +13,7 @@ from numpy import ndarray
 from qdrant_client import QdrantClient
 from qdrant_client import models as qdrant_models
 
+from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -130,7 +131,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         if result.status == qdrant_models.UpdateStatus.COMPLETED:
             return data_to_upsert.id
         else:
-            raise Exception("Upsert failed")
+            raise ServiceResponseException("Upsert failed")
 
     async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         tasks = []
@@ -152,7 +153,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         if result.status == qdrant_models.UpdateStatus.COMPLETED:
             return [data.id for data in data_to_upsert]
         else:
-            raise Exception("Batch upsert failed")
+            raise ServiceResponseException("Batch upsert failed")
 
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> Optional[MemoryRecord]:
         result = await self._get_existing_record_by_payload_id(
@@ -201,7 +202,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             pointId = existing_record.id
             result = self._qdrantclient.delete(collection_name=collection_name, points_selector=[pointId])
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
-                raise Exception("Delete failed")
+                raise ServiceResponseException("Delete failed")
 
     async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         tasks = []
@@ -222,7 +223,7 @@ class QdrantMemoryStore(MemoryStoreBase):
                 points_selector=[record.id for record in existing_records],
             )
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
-                raise Exception("Delete failed")
+                raise ServiceResponseException("Delete failed")
 
     async def get_nearest_matches(
         self,
