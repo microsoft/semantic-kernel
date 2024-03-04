@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Experimental.Agents;
 using Resources;
 using Xunit;
 using Xunit.Abstractions;
-using static Google.Protobuf.Reflection.GeneratedCodeInfo;
 
 namespace Examples;
 
