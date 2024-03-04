@@ -100,7 +100,7 @@ We could just as well return `object` and always require a casting.
 public interface ITextClassificationService : IAIService
 {
     Task<IReadOnlyList<ClassifiedContent>> GetClassifiedContentsAsync(
-        IEnumerable<TextContent> texts,
+        IEnumerable<string> texts,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
