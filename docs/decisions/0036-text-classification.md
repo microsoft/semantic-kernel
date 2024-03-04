@@ -99,7 +99,7 @@ We could just as well return `object` and always require a casting.
 ```csharp
 public interface ITextClassificationService : IAIService
 {
-    Task<IReadOnlyList<ClassificationContent>> ClassifyTextsAsync(
+    Task<IReadOnlyList<ClassifiedContent>> GetClassifiedContentsAsync(
         IEnumerable<TextContent> texts,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
@@ -108,16 +108,16 @@ public interface ITextClassificationService : IAIService
 
 public interface IImageClassificationService : IAIService
 {
-    Task<IReadOnlyList<ClassificationContent>> ClassifyImagesAsync(
+    Task<IReadOnlyList<ClassifiedContent>> GetClassifiedContentsAsync(
         IEnumerable<ImageContent> images,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 }
 
-public class ClassificationContent : KernelContent
+public class ClassifiedContent : KernelContent
 {
-    public ClassificationContent(
+    public ClassifiedContent(
         KernelContent classifiedContent,
         IReadOnlyDictionary<string, object?> result,
         object? innerContent = null,
@@ -129,8 +129,8 @@ public class ClassificationContent : KernelContent
         this.Result = result;
     }
 
-    public KernelContent ClassifiedContent { get; }
-    public IReadOnlyDictionary<string, object?> Result { get; }
+    // value (double) will be used as score value and also as boolean 1|0 (true|false)
+    public IReadOnlyDictionary<string, double> ScoredCategories { get; }
 }
 ```
 
@@ -138,7 +138,7 @@ Pros:
 - We have abstraction for classification models.
 
 Cons:
-- `IReadOnlyDictionary<string, object?> Result` is too abstract.
+- double used as decimal value and also as boolean
 
 ### Option 2 [Proposed] - With abstraction and common method
 
@@ -147,7 +147,7 @@ Similar to option 1 but with one method with kernelcontent param.
 ```csharp
 public interface IClassificationService : IAIService
 {
-    Task<IReadOnlyList<ClassificationContent>> ClassifyContentsAsync(
+    Task<IReadOnlyList<ClassifiedContent>> GetClassifiedContentsAsync(
         IEnumerable<KernelContent> contents,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
@@ -156,9 +156,9 @@ public interface IClassificationService : IAIService
     IList<Type> SupportedContents { get; }
 }
 
-public class ClassificationContent : KernelContent
+public class ClassifiedContent : KernelContent
 {
-    public ClassificationContent(
+    public ClassifiedContent(
         KernelContent classifiedContent,
         IReadOnlyDictionary<string, object?> result,
         object? innerContent = null,
@@ -170,8 +170,8 @@ public class ClassificationContent : KernelContent
         this.Result = result;
     }
 
-    public KernelContent ClassifiedContent { get; }
-    public IReadOnlyDictionary<string, object?> Result { get; }
+    // value (double) will be used as score value and also as boolean 1|0 (true|false)
+    public IReadOnlyDictionary<string, double> ScoredCategories { get; }
 }
 ```
 
@@ -180,27 +180,17 @@ Pros:
 - We have abstraction for classification models.
 
 Cons:
-- `IReadOnlyDictionary<string, object?> Result` is too abstract
 - Exception would be thrown if model doesn't support type of content.
+- Double value used as decimal value and also as boolean
 
-### Option 3 [Proposed] - Without abstraction, only specialized implementations
+### Option 3 [Proposed] - Same as option 1 and 2 but with different ClassifiedContent
 
-This solution dispenses with abstractions altogether; it uses concrete implementations for each model.
+Same as option 1 and 2 but with different ClassifiedContent.ScoredCategories
 
-As a sample we take OpenAI moderation endpoint.
 ```csharp
-public class OpenAITextClassificationService : IAIService
+public class ClassifiedContent : KernelContent
 {
-    Task<IReadOnlyList<OpenAIClassificationContent>> ClassifyTextsAsync(
-        IEnumerable<TextContent> texts,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default) { }
-}
-
-public class OpenAIClassificationContent : KernelContent
-{
-    public OpenAIClassificationContent(
+    public ClassifiedContent(
         KernelContent classifiedContent,
         IReadOnlyDictionary<string, object?> result,
         object? innerContent = null,
@@ -212,7 +202,47 @@ public class OpenAIClassificationContent : KernelContent
         this.Result = result;
     }
 
-    public KernelContent ClassifiedContent { get; }
+    // bool used to indicate is category flagged, double for score value
+    public IReadOnlyDictionary<string, (bool, double)> ScoredCategories { get; }
+}
+```
+
+Pros:
+- More readable than `IReadOnlyDictionary<string, double>`
+- We have abstraction for classification models.
+
+Cons:
+- More complex
+
+### Option 4 [Proposed] - Without abstraction, only specialized implementations
+
+This solution dispenses with abstractions altogether; it uses concrete implementations for each model.
+
+As a sample we take OpenAI moderation endpoint.
+```csharp
+public class OpenAITextClassificationService : IAIService
+{
+    Task<IReadOnlyList<OpenAIClassifiedContent>> GetClassifiedContentsAsync(
+        IEnumerable<TextContent> texts,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default) { }
+}
+
+public class OpenAIClassifiedContent : KernelContent
+{
+    public OpenAIClassifiedContent(
+        KernelContent classifiedContent,
+        IReadOnlyDictionary<string, object?> result,
+        object? innerContent = null,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.ClassifiedContent = classifiedContent;
+        this.Result = result;
+    }
+
     public OpenAIClassificationData Result { get; }
 }
 ```
