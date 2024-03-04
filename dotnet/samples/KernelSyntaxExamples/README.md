@@ -60,6 +60,16 @@ dotnet user-secrets set "KeyVault:TenantId" "..."
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ModelId" "..."
 
+dotnet user-secrets set "GoogleAI:ApiKey" "..."
+dotnet user-secrets set "GoogleAI:EmbeddingModelId" "..."
+dotnet user-secrets set "GoogleAI:Gemini:ModelId" "..."
+
+dotnet user-secrets set "VertexAI:ApiKey" "..."
+dotnet user-secrets set "VertexAI:EmbeddingModelId" "..."
+dotnet user-secrets set "VertexAI:Location" "..."
+dotnet user-secrets set "VertexAI:ProjectId" "..."
+dotnet user-secrets set "VertexAI:Gemini:ModelId" "..."
+
 dotnet user-secrets set "Pinecone:ApiKey" "..."
 dotnet user-secrets set "Pinecone:Environment" "..."
 
@@ -121,6 +131,18 @@ KeyVault__TenantId
 # Hugging Face
 HuggingFace__ApiKey
 HuggingFace__ModelId
+
+# GoogleAI
+GoogleAI__ApiKey
+GoogleAI__EmbeddingModelId
+GoogleAI__Gemini__ModelId
+
+# VertexAI
+VertexAI__ApiKey
+VertexAI__EmbeddingModelId
+VertexAI__Location
+VertexAI__ProjectId
+VertexAI__Gemini__ModelId
 
 # Pinecone
 Pinecone__ApiKey

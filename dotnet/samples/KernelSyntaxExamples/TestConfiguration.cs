@@ -42,6 +42,8 @@ public sealed class TestConfiguration
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
     public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
+    public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
+    public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -55,8 +57,9 @@ public sealed class TestConfiguration
         {
             throw new ArgumentNullException(nameof(caller));
         }
+
         return s_instance._configRoot.GetSection(caller).Get<T>() ??
-            throw new ConfigurationNotFoundException(section: caller);
+               throw new ConfigurationNotFoundException(section: caller);
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
@@ -181,6 +184,32 @@ public sealed class TestConfiguration
     public class ChatGPTRetrievalPluginConfig
     {
         public string Token { get; set; }
+    }
+
+    public class GoogleAIConfig
+    {
+        public string ApiKey { get; set; }
+        public string EmbeddingModelId { get; set; }
+        public GeminiConfig Gemini { get; set; }
+
+        public class GeminiConfig
+        {
+            public string ModelId { get; set; }
+        }
+    }
+
+    public class VertexAIConfig
+    {
+        public string ApiKey { get; set; }
+        public string EmbeddingModelId { get; set; }
+        public string Location { get; set; }
+        public string ProjectId { get; set; }
+        public GeminiConfig Gemini { get; set; }
+
+        public class GeminiConfig
+        {
+            public string ModelId { get; set; }
+        }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
