@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-# TODO @jmj: Finish tests
+# TODO @jmj: Finish tests. Could use validaton that all settings from the YAML were actually used in invokation
 
 import asyncio
 
@@ -9,6 +9,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
+# TODO @jmj: Move this to a .YAML file
 yaml_text = """
 name: GenerateStory
 template: |
@@ -51,10 +52,9 @@ async def main() -> None:
     response = str(result)
     print(response)
     # Print Output:
-    # "Once there were three stray dogs who roamed the streets together, searching for scraps of food and
-    # shelter. Despite their hardships, they remained loyal to each other, always sticking together
-    # through thick and thin. Eventually, a kind-hearted family took them in, giving them a warm home
-    # and plenty of love for the rest of their days.'
+    # "Once there were three stray dogs who roamed the streets together, searching for scraps of food and shelter. Despite
+    # their hardships, they remained loyal to each other, always sticking together through thick and thin. Eventually, a
+    # kind-hearted family took them in, giving them a warm home and plenty of love for the rest of their days.'
 
 
 if __name__ == "__main__":

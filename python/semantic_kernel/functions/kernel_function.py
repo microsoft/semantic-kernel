@@ -107,7 +107,6 @@ class KernelFunction(KernelBaseModel):
         """
         import yaml
 
-        from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
         from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 

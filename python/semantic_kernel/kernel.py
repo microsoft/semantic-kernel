@@ -653,7 +653,6 @@ class Kernel(KernelBaseModel):
             KernelFunction: The created KernelFunction object.
         """
 
-        # TODO @jmj: Should the logger from kernel.py be passed in here to be used in the _invoke_completion functions?
         function = KernelFunction.from_prompt_yaml(text)
         return function
 
