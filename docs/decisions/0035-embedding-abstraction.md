@@ -93,7 +93,7 @@ public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unm
 
 public interface ITextEmbeddingGenerationService : IAIService
 {
-    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<double>>> GetEmbeddingContentsAsync(
         IEnumerable<string> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -102,7 +102,7 @@ public interface ITextEmbeddingGenerationService : IAIService
 
 public interface IImageEmbeddingGenerationService : IAIService
 {
-    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<double>>> GetEmbeddingContentsAsync(
         IEnumerable<ImageContent> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -140,13 +140,13 @@ public class EmbeddingContent<TEmbedding> : KernelContent where TEmbedding : unm
 
 public interface IEmbeddingGenerationService : IAIService
 {
-    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<double>>> GetEmbeddingContentsAsync(
         IEnumerable<string> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
     
-    Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<double>>> GetEmbeddingContentsAsync(
         IEnumerable<ImageContent> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -185,7 +185,7 @@ public class EmbeddingContent : KernelContent
 
 public interface IEmbeddingGenerationService : IAIService
 {
-    Task<IReadOnlyList<EmbeddingContent>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent>> GetEmbeddingContentsAsync(
         IEnumerable<KernelContent> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -219,7 +219,7 @@ public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService
         where TEmbedding : unmanaged,
               TValue : KernelContent
 {
-    Task<IReadOnlyList<EmbeddingContent<TEmbedding>>> GenerateEmbeddingsAsync(
+    Task<IReadOnlyList<EmbeddingContent<TEmbedding>>> GetEmbeddingContentsAsync(
         IEnumerable<TValue> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -248,13 +248,13 @@ public class EmbeddingGenerationService
         : IEmbeddingGenerationService<TextContent, float>,
           IEmbeddingGenerationService<ImageContet, double>
 {
-    public Task<IReadOnlyList<EmbeddingContent<float>>> GenerateEmbeddingsAsync(
+    public Task<IReadOnlyList<EmbeddingContent<float>>> GetEmbeddingContentsAsync(
         IEnumerable<TextContent> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default) { /* implementation */ }
 
-    public Task<IReadOnlyList<EmbeddingContent<double>>> GenerateEmbeddingsAsync(
+    public Task<IReadOnlyList<EmbeddingContent<double>>> GetEmbeddingContentsAsync(
         IEnumerable<ImageContet> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
