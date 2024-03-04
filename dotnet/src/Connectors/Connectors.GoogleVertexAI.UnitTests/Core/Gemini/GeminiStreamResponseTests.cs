@@ -23,7 +23,7 @@ public sealed class GeminiStreamResponseTests
         var parser = new GeminiStreamJsonParser();
         var stream = new MemoryStream();
         var streamExample = File.ReadAllText(StreamTestDataFilePath);
-        var geminiSampleResponses = JsonSerializer.Deserialize<List<GeminiResponse>>(streamExample);
+        var sampleResponses = JsonSerializer.Deserialize<List<GeminiResponse>>(streamExample)!;
 
         WriteToStream(stream, streamExample);
 
@@ -32,7 +32,8 @@ public sealed class GeminiStreamResponseTests
         var responses = jsonChunks.Select(json => JsonSerializer.Deserialize<GeminiResponse>(json)).ToList();
 
         // Assert
-        Assert.Equivalent(geminiSampleResponses, responses);
+        // Uses all because Equivalent ignores order
+        Assert.All(responses, (res, i) => Assert.Equivalent(sampleResponses[i], res));
     }
 
     private static void WriteToStream(Stream stream, string input)
