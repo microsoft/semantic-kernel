@@ -641,6 +641,22 @@ class Kernel(KernelBaseModel):
 
         return function
 
+    def create_function_from_prompt_yaml(self, text: str, **kwargs: Any) -> "KernelFunction":
+        """
+        Create a KernelFunction object from a YAML prompt.
+
+        Args:
+            text (str): The YAML prompt text.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            KernelFunction: The created KernelFunction object.
+        """
+
+        # TODO @jmj: Should the logger from kernel.py be passed in here to be used in the _invoke_completion functions?
+        function = KernelFunction.from_prompt_yaml(text)
+        return function
+
     def register_function_from_method(
         self,
         plugin_name: str,

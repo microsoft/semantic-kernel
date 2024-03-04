@@ -4,6 +4,10 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
 
+import yaml
+
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -92,6 +96,43 @@ class KernelFunction(KernelBaseModel):
             plugin_name=plugin_name,
             method=method,
             stream_method=stream_method,
+        )
+
+    @staticmethod
+    def from_prompt_yaml(text: str, **kwargs: Any) -> "KernelFunction":
+        """
+        Creates a KernelFunction instance from YAML text.
+
+        Args:
+            text    (str): YAML representation of the SemanticFunctionConfig.
+
+        Returns:
+            KernelFunction: The kernel function.
+        """
+        from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+        from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+        from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+        yaml_data = yaml.safe_load(text)
+
+        prompt_template_config = PromptTemplateConfig(
+            name=yaml_data["name"],
+            description=yaml_data["description"],
+            template=yaml_data["template"],
+            template_format=yaml_data.get("template_format", "semantic-kernel"),
+            input_variables=yaml_data.get("input_variables", []),
+            execution_settings=yaml_data.get("execution_settings", {}),
+        )
+
+        prompt_execution_settings = kwargs.get("execution_settings", prompt_template_config.execution_settings)
+
+        return KernelFunctionFromPrompt(
+            function_name=prompt_template_config.name,
+            description=prompt_template_config.description,
+            template_format="semantic-kernel",
+            prompt=yaml_data["template"],
+            prompt_template_config=prompt_template_config,
+            prompt_execution_settings=prompt_execution_settings,
         )
 
     @property
