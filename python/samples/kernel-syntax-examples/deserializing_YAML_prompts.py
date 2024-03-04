@@ -51,9 +51,10 @@ async def main() -> None:
     response = str(result)
     print(response)
     # Print Output:
-    # "Once there were three stray dogs who roamed the streets together, searching for scraps of food and shelter. Despite
-    # their hardships, they remained loyal to each other, always sticking together through thick and thin. Eventually, a
-    # kind-hearted family took them in, giving them a warm home and plenty of love for the rest of their days.'
+    # "Once there were three stray dogs who roamed the streets together, searching for scraps of food and
+    # shelter. Despite their hardships, they remained loyal to each other, always sticking together
+    # through thick and thin. Eventually, a kind-hearted family took them in, giving them a warm home
+    # and plenty of love for the rest of their days.'
 
 
 if __name__ == "__main__":

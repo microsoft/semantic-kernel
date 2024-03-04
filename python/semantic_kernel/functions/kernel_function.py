@@ -4,10 +4,6 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
 
-import yaml
-
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -109,6 +105,8 @@ class KernelFunction(KernelBaseModel):
         Returns:
             KernelFunction: The kernel function.
         """
+        import yaml
+
         from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
         from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
