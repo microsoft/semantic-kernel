@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.MistralAI;
+namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
 /// <summary>
 /// The Mistral client.

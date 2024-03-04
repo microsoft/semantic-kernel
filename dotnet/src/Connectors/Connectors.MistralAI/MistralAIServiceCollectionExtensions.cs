@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
@@ -23,21 +22,19 @@ public static class MistralAIServiceCollectionExtensions
     /// <param name="apiKey">The API key required for accessing the Mistral service.</param>
     /// <param name="endpoint">Optional  uri endpoint including the port where MistralAI server is hosted. Default is https://api.mistral.ai.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddMistralChatCompletion(
         this IServiceCollection services,
         string model,
         string apiKey,
         Uri? endpoint = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new MistralAIChatCompletionService(model, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new MistralAIChatCompletionService(model, apiKey, endpoint, HttpClientProvider.GetHttpClient(serviceProvider)));
     }
 
     /// <summary>
@@ -48,20 +45,18 @@ public static class MistralAIServiceCollectionExtensions
     /// <param name="apiKey">The API key required for accessing the Mistral service.</param>
     /// <param name="endpoint">Optional  uri endpoint including the port where MistralAI server is hosted. Default is https://api.mistral.ai.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddMistralTextEmbeddingGeneration(
         this IServiceCollection services,
         string model,
         string apiKey,
         Uri? endpoint = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new MistralAITextEmbeddingGenerationService(model, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new MistralAITextEmbeddingGenerationService(model, apiKey, endpoint, HttpClientProvider.GetHttpClient(serviceProvider)));
     }
 }
