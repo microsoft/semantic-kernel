@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
 import javax.annotation.Nullable;
-
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 
 /**
  * Defines the behavior of a tool call. Currently, the only tool available is function calling.

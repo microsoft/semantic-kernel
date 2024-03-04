@@ -225,7 +225,8 @@ public class Example57_KernelHooks {
                 event.getArguments(),
                 new FunctionResult<>(
                     ContextVariable.of(result),
-                    event.getResult().getMetadata()));
+                    event.getResult().getMetadata(),
+                    result));
         };
         kernel.getGlobalKernelHooks().addHook(hook);
 

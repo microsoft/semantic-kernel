@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
@@ -49,12 +50,12 @@ class KernelPluginCollection {
     KernelFunction<?> getFunction(String pluginName, String functionName) {
         KernelPlugin plugin = plugins.get(pluginName);
         if (plugin == null) {
-            throw new IllegalArgumentException("Failed to find plugin " + pluginName);
+            throw new SKException("Failed to find plugin " + pluginName);
         }
         KernelFunction<?> function = plugin.get(functionName);
 
         if (function == null) {
-            throw new IllegalArgumentException(
+            throw new SKException(
                 "Function '" + functionName + "' not found in plugin '" + pluginName + "'");
         }
         return function;

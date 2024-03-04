@@ -17,6 +17,8 @@ public class FunctionResult<T> {
 
     private final ContextVariable<T> result;
     private final FunctionResultMetadata metadata;
+    @Nullable
+    private final Object unconvertedResult;
 
     /**
      * Create a new instance of FunctionResult.
@@ -26,9 +28,11 @@ public class FunctionResult<T> {
      */
     public FunctionResult(
         ContextVariable<T> result,
-        @Nullable FunctionResultMetadata metadata) {
+        @Nullable FunctionResultMetadata metadata,
+        @Nullable Object unconvertedResult) {
         this.result = result;
         this.metadata = metadata == null ? FunctionResultMetadata.empty() : metadata;
+        this.unconvertedResult = unconvertedResult;
     }
 
     /**
@@ -36,8 +40,9 @@ public class FunctionResult<T> {
      *
      * @param of The result of the function invocation.
      */
-    public FunctionResult(ContextVariable<T> of) {
-        this(of, FunctionResultMetadata.empty());
+    public FunctionResult(ContextVariable<T> of,
+        @Nullable Object unconvertedResult) {
+        this(of, FunctionResultMetadata.empty(), unconvertedResult);
     }
 
     /**
@@ -70,5 +75,10 @@ public class FunctionResult<T> {
      */
     public FunctionResultMetadata getMetadata() {
         return metadata;
+    }
+
+    @Nullable
+    public Object getUnconvertedResult() {
+        return unconvertedResult;
     }
 }

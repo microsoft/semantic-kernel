@@ -119,7 +119,7 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
             return (ContextVariable<T>) value;
         }
 
-        throw new IllegalArgumentException(
+        throw new SKException(
             String.format(
                 "Variable %s is of type %s, but requested type is %s",
                 key, value.getType().getClazz(), clazz));

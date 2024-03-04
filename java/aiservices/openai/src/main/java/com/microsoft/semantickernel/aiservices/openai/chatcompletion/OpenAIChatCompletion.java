@@ -198,8 +198,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                                                     functionResult.getResult(),
                                                     functionToolCall.getId());
 
-                                                msgs.add(requestToolMessage);
-                                                return msgs;
+                                                ArrayList<ChatRequestMessage> res = new ArrayList<>(
+                                                    msgs);
+                                                res.add(requestToolMessage);
+                                                return res;
                                             });
                                     });
                             }
@@ -207,8 +209,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                         })
                     .flatMap(it -> it)
                     .flatMap(
-                        msgs -> internalChatMessageContentsAsync(msgs, kernel, functions,
-                            invocationContext, autoInvokeAttempts - 1));
+                        msgs -> {
+                            return internalChatMessageContentsAsync(msgs, kernel, functions,
+                                invocationContext, autoInvokeAttempts - 1);
+                        });
             });
 
         return result.map(op -> (List<ChatMessageContent<?>>) op);
@@ -218,36 +222,50 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     private Mono<FunctionResult<String>> invokeFunctionTool(
         Kernel kernel,
         ChatCompletionsFunctionToolCall toolCall) {
+
+        try {
+            OpenAIFunctionToolCall openAIFunctionToolCall = extractOpenAIFunctionToolCall(toolCall);
+            KernelFunction<?> function = kernel.getFunction(
+                openAIFunctionToolCall.getPluginName(),
+                openAIFunctionToolCall.getFunctionName());
+
+            return function
+                .invokeAsync(kernel)
+                .withArguments(openAIFunctionToolCall.getArguments())
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
+                    String.class));
+        } catch (JsonProcessingException e) {
+            return Mono.error(new SKException("Failed to parse tool arguments"));
+        }
+    }
+
+    private OpenAIFunctionToolCall extractOpenAIFunctionToolCall(
+        ChatCompletionsFunctionToolCall toolCall) throws JsonProcessingException {
+
         // Split the full name of a function into plugin and function name
         String name = toolCall.getFunction().getName();
         String[] parts = name.split(OpenAIFunction.getNameSeparator());
         String pluginName = parts.length > 1 ? parts[0] : "";
         String fnName = parts.length > 1 ? parts[1] : parts[0];
 
-        KernelFunction<?> function = kernel.getFunction(pluginName, fnName);
-
         KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
 
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonToolCallArguments = mapper.readTree(toolCall.getFunction().getArguments());
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonToolCallArguments = mapper.readTree(toolCall.getFunction().getArguments());
 
-            jsonToolCallArguments.fields().forEachRemaining(
-                entry -> arguments.put(entry.getKey(),
-                    ContextVariable.of(entry.getValue().asText())));
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to parse json", e);
-            return Mono.empty();
-        }
+        jsonToolCallArguments.fields().forEachRemaining(
+            entry -> arguments.put(entry.getKey(),
+                ContextVariable.of(entry.getValue().asText())));
 
-        return function
-            .invokeAsync(kernel)
-            .withArguments(arguments)
-            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
-                String.class));
+        return new OpenAIFunctionToolCall(
+            toolCall.getId(),
+            pluginName,
+            fnName,
+            arguments);
+
     }
 
-    private Mono<List<ChatMessageContent>> getChatMessageContentsAsync(
+    private Mono<List<OpenAIChatMessageContent>> getChatMessageContentsAsync(
         ChatCompletions completions) {
         FunctionResultMetadata completionMetadata = FunctionResultMetadata.build(
             completions.getId(),
@@ -262,14 +280,38 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .collect(Collectors.toList());
 
         return Flux.fromIterable(responseMessages)
-            .map(response -> new ChatMessageContent(
+            .map(response -> new OpenAIChatMessageContent(
                 AuthorRole.ASSISTANT,
                 response.getContent(),
                 this.getModelId(),
                 null,
                 null,
-                completionMetadata))
+                completionMetadata,
+                formOpenAiToolCalls(response)))
             .collectList();
+    }
+
+    private List<OpenAIFunctionToolCall> formOpenAiToolCalls(ChatResponseMessage response) {
+        if (response.getToolCalls() == null || response.getToolCalls().isEmpty()) {
+            return new ArrayList<>();
+        }
+        return response
+            .getToolCalls()
+            .stream()
+            .map(call -> {
+                if (call instanceof ChatCompletionsFunctionToolCall) {
+                    try {
+                        return extractOpenAIFunctionToolCall(
+                            (ChatCompletionsFunctionToolCall) call);
+                    } catch (JsonProcessingException e) {
+                        throw new SKException("Failed to parse tool arguments", e);
+                    }
+                } else {
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     private static ChatCompletionsOptions getCompletionsOptions(

@@ -164,7 +164,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                                 return Flux.just(
                                     new FunctionResult<>(
                                         new ContextVariable<>(variableType, value),
-                                        chatMessageContent.getMetadata()));
+                                        chatMessageContent.getMetadata(),
+                                        chatMessageContent));
                             }
                             return Flux.empty();
                         })
@@ -175,7 +176,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                                     it.getResult() != null
                                         ? variableType.of(it.getResult()).getValue()
                                         : null),
-                                it.getMetadata());
+                                it.getMetadata(),
+                                it.getUnconvertedResult());
                         });
                 } else if (client instanceof TextGenerationService) {
                     result = ((TextGenerationService) client)
@@ -200,7 +202,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                                     new ContextVariable<>(
                                         variableType,
                                         value),
-                                    textContent.getMetadata()));
+                                    textContent.getMetadata(),
+                                    textContent));
                         });
                 } else {
                     return Flux.error(new IllegalStateException("Unknown service type"));
