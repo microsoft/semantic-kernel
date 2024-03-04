@@ -83,7 +83,7 @@ public abstract class ToolCallBehavior
     }
 
     /// <summary>
-    /// Options for function call result serialization.
+    /// Options to control function call result serialization behavior.
     /// </summary>
     public JsonSerializerOptions? FunctionResultSerializerOptions { get; set; }
 
