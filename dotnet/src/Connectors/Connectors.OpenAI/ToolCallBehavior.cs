@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using Azure.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -80,6 +81,11 @@ public abstract class ToolCallBehavior
         Verify.NotNull(function);
         return new RequiredFunction(function, autoInvoke);
     }
+
+    /// <summary>
+    /// Options for function call result serialization.
+    /// </summary>
+    public JsonSerializerOptions? FunctionResultSerializerOptions { get; set; }
 
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
     private ToolCallBehavior(bool autoInvoke)

@@ -403,7 +403,7 @@ internal abstract class ClientCore
                 {
                     s_inflightAutoInvokes.Value--;
                 }
-                AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, toolCall.Id, this.Logger);
+                AddResponseMessage(chatOptions, chat, ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior), errorMessage: null, toolCall.Id, this.Logger);
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, string toolId, ILogger logger)
                 {
@@ -593,7 +593,7 @@ internal abstract class ClientCore
                 {
                     s_inflightAutoInvokes.Value--;
                 }
-                AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
+                AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior), errorMessage: null, this.Logger);
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
@@ -1057,5 +1057,32 @@ internal abstract class ClientCore
         s_promptTokensCounter.Add(usage.PromptTokens);
         s_completionTokensCounter.Add(usage.CompletionTokens);
         s_totalTokensCounter.Add(usage.TotalTokens);
+    }
+
+    /// <summary>
+    /// Processes the function result.
+    /// </summary>
+    /// <param name="functionResult">The result of the function call.</param>
+    /// <param name="toolCallBehavior">The ToolCallBehavior object containing optional settings like JsonSerializerOptions.TypeInfoResolver.</param>
+    /// <returns>A string representation of the function result.</returns>
+    private static string? ProcessFunctionResult(object functionResult, ToolCallBehavior? toolCallBehavior)
+    {
+        if (functionResult is string stringResult)
+        {
+            return stringResult;
+        }
+
+        // This is an optimization to use ChatMessageContent content directly  
+        // without unnecessary serialization of the whole message content class.  
+        if (functionResult is ChatMessageContent chatMessageContent)
+        {
+            return chatMessageContent.Content;
+        }
+
+        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
+        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
+        // For more details about the polymorphic serialization, see the article at:  
+        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
+        return JsonSerializer.Serialize(functionResult, toolCallBehavior?.FunctionResultSerializerOptions);
     }
 }
