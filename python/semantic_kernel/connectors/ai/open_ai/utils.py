@@ -47,7 +47,7 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
                     }
                     for param in func_metadata.parameters
                 },
-                "required": [p.name for p in func_metadata.parameters if p.required],
+                "required": [p.name for p in func_metadata.parameters if p.is_required],
             },
         },
     }
@@ -76,7 +76,7 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
                 param.name: {"description": param.description, "type": param.type_}
                 for param in func_metadata.parameters
             },
-            "required": [p.name for p in func_metadata.parameters if p.required],
+            "required": [p.name for p in func_metadata.parameters if p.is_required],
         },
     }
 

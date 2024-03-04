@@ -10,16 +10,10 @@ from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Ty
 
 from pydantic import Field, field_validator
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
@@ -39,26 +33,18 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
-from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import (
-    PromptTemplateConfig,
-)
-from semantic_kernel.reliability.pass_through_without_retry import (
-    PassThroughWithoutRetry,
-)
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
-from semantic_kernel.utils.validation import (
-    validate_plugin_name,
-)
+from semantic_kernel.utils.validation import validate_plugin_name
 
 T = TypeVar("T")
 
@@ -609,35 +595,38 @@ class Kernel(KernelBaseModel):
         description: Optional[str] = None,
         prompt: Optional[str] = None,
         prompt_template_config: Optional[PromptTemplateConfig] = None,
-        prompt_execution_settings: Optional[PromptExecutionSettings] = None,
+        prompt_execution_settings: Optional[
+            Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
+        ] = None,
         template_format: Optional[str] = None,
-        prompt_template: Optional[PromptTemplateBase] = None,
+        prompt_template: Optional[KernelPromptTemplate] = None,
         **kwargs: Any,
     ) -> KernelFunction:
         """
         Create a Kernel Function from a prompt.
 
         Args:
-            template (Optional[str]): The prompt template. If not provided, defaults to {{$user_input}}.
-            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
-            execution_settings (Optional[PromptExecutionSettings]): The execution settings
             function_name (Optional[str]): The name of the function
             plugin_name (Optional[str]): The name of the plugin
             description (Optional[str]): The description of the function
+            prompt (Optional[str]): The prompt template.
+            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
+            prompt_execution_settings (Optional[
+            Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
+        ]): The execution settings, will be parsed into a dict.
             template_format (Optional[str]): The format of the prompt template
-            prompt_template (Optional[PromptTemplateBase]): The prompt template
+            prompt_template (Optional[KernelPromptTemplate]): The prompt template
             kwargs (Any): Additional arguments
 
         Returns:
             KernelFunction: The created Kernel Function
         """
-        # Assuming kwargs is a dictionary with default values for PromptExecutionSettings
         if prompt_execution_settings is None and (
             prompt_template_config is None or prompt_template_config.execution_settings is None
         ):
             prompt_execution_settings = PromptExecutionSettings(extension_data=kwargs)
 
-        function = KernelFunction.from_prompt(
+        function = KernelFunctionFromPrompt(
             function_name=function_name,
             plugin_name=plugin_name,
             description=description,
