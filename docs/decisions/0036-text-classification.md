@@ -213,6 +213,7 @@ Pros:
 
 Cons:
 - More complex
+- Depending on the functionality of the model, double may always be 0 or bool be false.
 
 ### Option 4 [Proposed] - Without abstraction, only specialized implementations
 
