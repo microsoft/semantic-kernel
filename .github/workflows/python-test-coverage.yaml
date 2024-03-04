@@ -31,12 +31,15 @@ jobs:
         with:
           github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
           pytest-coverage-path: python/pytest-coverage.txt
-          junitxml-path: python/pytest.xml
-          report-only-changed-files: true
-          title: "Python Unit Test Coverage Report"
-          badge-title: "Python Test Coverage"
           coverage-path-prefix: "python/"
+          title: "Python Test Coverage Report"
+          badge-title: "Python Test Coverage"
+          report-only-changed-files: true
+          create-new-comment: true
+          junitxml-title: "Python Unit Test Overview"
+          junitxml-path: python/pytest.xml
           default-branch: "main"
+          unique-id-for-comment: python3.8
       - name: Check the output coverage
         run: |
           echo "Coverage Percantage - ${{ steps.coverageComment.outputs.coverage }}"
