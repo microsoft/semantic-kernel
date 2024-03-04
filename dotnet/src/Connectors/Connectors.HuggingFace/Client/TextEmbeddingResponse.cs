@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 /// <summary>
 /// Represents the response from the Hugging Face text embedding API.

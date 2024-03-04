@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 

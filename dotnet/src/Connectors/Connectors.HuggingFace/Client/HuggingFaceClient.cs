@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 internal sealed class HuggingFaceClient
 {

@@ -3,8 +3,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests.TextGeneration;
