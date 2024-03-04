@@ -150,8 +150,6 @@ public interface IClassificationService : IAIService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
-    IList<Type> SupportedContents { get; }
 }
 
 public class ClassifiedContent : KernelContent
