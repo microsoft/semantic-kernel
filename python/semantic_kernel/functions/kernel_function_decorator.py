@@ -3,8 +3,9 @@
 
 import logging
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Dict, Optional
 
+NoneType = type(None)
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +26,7 @@ def kernel_function(
     To parse the type, first it checks if the parameter is annotated, and get's the description from there.
     After that it checks recursively until it reaches the lowest level, and it combines
     the types into a single comma-separated string, a forwardRef is also supported.
-    All of this is are stored in __kernel_function_context_parameters__.
+    All of this is are stored in __kernel_function_parameters__.
 
     The return type and description are parsed from the function signature,
     and that is stored in __kernel_function_return_type__, __kernel_function_return_description__
@@ -50,64 +51,69 @@ def kernel_function(
 
         func_sig = signature(func)
         logger.debug(f"{func_sig=}")
-        func.__kernel_function_context_parameters__ = [
+        func.__kernel_function_parameters__ = [
             _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
         ]
-
+        return_param_dict = {}
         if func_sig.return_annotation != Signature.empty:
-            return_description, return_type, return_required = _parse_annotation(func_sig.return_annotation)
-        else:
-            return_description, return_type, return_required = "", "None", False
-        func.__kernel_function_return_type__ = return_type
-        func.__kernel_function_return_description__ = return_description
-        func.__kernel_function_return_required__ = return_required
+            return_param_dict = _parse_annotation(func_sig.return_annotation)
+        func.__kernel_function_return_type__ = return_param_dict.get("type_", "None")
+        func.__kernel_function_return_description__ = return_param_dict.get("description", "")
+        func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)
         return func
 
     return decorator
 
 
-def _parse_parameter(param: Parameter):
+def _parse_parameter(param: Parameter) -> Dict[str, Any]:
     logger.debug(f"Parsing param: {param}")
-    param_description = ""
-    type_ = "str"
-    required = True
+    ret = {}
     if param != Parameter.empty:
-        param_description, type_, required = _parse_annotation(param.annotation)
-    logger.debug(f"{param_description=}, {type_=}, {required=}")
-    return {
-        "name": param.name,
-        "description": param_description,
-        "default_value": param.default if param.default != Parameter.empty else None,
-        "type": type_,
-        "required": required,
-    }
+        ret = _parse_annotation(param.annotation)
+    ret["name"] = param.name
+    if param.default != Parameter.empty:
+        ret["default_value"] = param.default
+    return ret
 
 
-def _parse_annotation(annotation: Parameter) -> Tuple[str, str, bool]:
+def _parse_annotation(annotation: Parameter) -> Dict[str, Any]:
     logger.debug(f"Parsing annotation: {annotation}")
+    if annotation == Signature.empty:
+        return {"type_": "Any", "is_required": True}
     if isinstance(annotation, str):
-        return "", annotation, True
+        return {"type_": annotation, "is_required": True}
     logger.debug(f"{annotation=}")
-    description = ""
+    ret = _parse_internal_annotation(annotation, True)
     if hasattr(annotation, "__metadata__") and annotation.__metadata__:
-        description = annotation.__metadata__[0]
-    return (description, *_parse_internal_annotation(annotation, True))
+        ret["description"] = annotation.__metadata__[0]
+    return ret
 
 
-def _parse_internal_annotation(annotation: Parameter, required: bool) -> Tuple[str, bool]:
+def _parse_internal_annotation(annotation: Parameter, required: bool) -> Dict[str, Any]:
     logger.debug(f"Internal {annotation=}")
-    logger.debug(f"{annotation=}")
     if hasattr(annotation, "__forward_arg__"):
-        return annotation.__forward_arg__, required
+        return {"type_": annotation.__forward_arg__, "is_required": required}
     if getattr(annotation, "__name__", None) == "Optional":
         required = False
     if hasattr(annotation, "__args__"):
         results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]
-        str_results = [result[0] for result in results]
+        type_objects = [
+            result["type_object"]
+            for result in results
+            if "type_object" in result and result["type_object"] is not NoneType
+        ]
+        str_results = [result["type_"] for result in results]
         if "NoneType" in str_results:
             str_results.remove("NoneType")
             required = False
         else:
-            required = not (any(not result[1] for result in results))
-        return ", ".join(str_results), required
-    return getattr(annotation, "__name__", ""), required
+            required = not (any(not result["is_required"] for result in results))
+        ret = {"type_": ", ".join(str_results), "is_required": required}
+        if type_objects and len(type_objects) == 1:
+            ret["type_object"] = type_objects[0]
+        return ret
+    return {
+        "type_": getattr(annotation, "__name__", ""),
+        "type_object": annotation,
+        "is_required": required,
+    }

@@ -5,6 +5,7 @@ import os
 from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
+from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     SearchableField,
     SearchField,
@@ -16,6 +17,7 @@ from dotenv import load_dotenv
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 SEARCH_FIELD_ID = "Id"
@@ -45,17 +47,6 @@ def get_search_index_async_client(
     ENV_VAR_ENDPOINT = "AZURE_COGNITIVE_SEARCH_ENDPOINT"
     ENV_VAR_API_KEY = "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
 
-    try:
-        # Note: there are two client classes available:
-        # 1. Async: azure.search.documents.indexes.aio.SearchIndexClient
-        # 2. Sync: azure.search.documents.indexes.SearchIndexClient
-        from azure.search.documents.indexes.aio import SearchIndexClient
-    except ImportError:
-        raise ValueError(
-            "Error: Unable to import Azure Cognitive Search client python package."
-            "Please install Azure Cognitive Search client"
-        )
-
     # Load environment variables
     load_dotenv()
 
@@ -65,11 +56,11 @@ def get_search_index_async_client(
     elif os.getenv(ENV_VAR_ENDPOINT):
         service_endpoint = os.getenv(ENV_VAR_ENDPOINT)
     else:
-        raise ValueError("Error: missing Azure Cognitive Search client endpoint.")
+        raise ServiceInitializationError("Error: missing Azure Cognitive Search client endpoint.")
 
     if service_endpoint is None:
         print(service_endpoint)
-        raise ValueError("Error: Azure Cognitive Search client not set.")
+        raise ServiceInitializationError("Error: Azure Cognitive Search client not set.")
 
     # Credentials
     if admin_key:
@@ -81,10 +72,10 @@ def get_search_index_async_client(
     elif os.getenv(ENV_VAR_API_KEY):
         azure_credential = AzureKeyCredential(os.getenv(ENV_VAR_API_KEY))
     else:
-        raise ValueError("Error: missing Azure Cognitive Search client credentials.")
+        raise ServiceInitializationError("Error: missing Azure Cognitive Search client credentials.")
 
     if azure_credential is None and token_credential is None:
-        raise ValueError("Error: Azure Cognitive Search credentials not set.")
+        raise ServiceInitializationError("Error: Azure Cognitive Search credentials not set.")
 
     sk_headers = {USER_AGENT: "Semantic-Kernel"}
 

@@ -36,7 +36,9 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    tldr_function = kernel.create_function_from_prompt(
+        function_name="story", plugin_name="plugin", prompt_template_config=prompt_template_config
+    )
 
     arguments = KernelArguments(input=text_to_summarize)
 
@@ -82,7 +84,11 @@ async def test_oai_text_completion_with_plugins_with_provided_client(
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    tldr_function = kernel.create_function_from_prompt(
+        function_name="story",
+        plugin_name="plugin",
+        prompt_template_config=prompt_template_config,
+    )
 
     arguments = KernelArguments(input=text_to_summarize)
 
@@ -128,7 +134,11 @@ async def test_oai_text_stream_completion_with_plugins(setup_tldr_function_for_o
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    tldr_function = kernel.create_function_from_prompt(
+        function_name="story",
+        plugin_name="plugin",
+        prompt_template_config=prompt_template_config,
+    )
 
     arguments = KernelArguments(input=text_to_summarize)
 

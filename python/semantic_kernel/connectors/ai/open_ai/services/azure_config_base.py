@@ -7,7 +7,6 @@ from typing import Awaitable, Callable, Dict, Mapping, Optional, Union
 from openai import AsyncAzureOpenAI
 from pydantic import validate_call
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.open_ai.const import (
     DEFAULT_AZURE_API_VERSION,
     USER_AGENT,
@@ -17,6 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
 from semantic_kernel.connectors.telemetry import APP_INFO
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -65,10 +65,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 
         if not async_client:
             if not api_key and not ad_token and not ad_token_provider:
-                raise AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    "Please provide either api_key, ad_token or ad_token_provider",
-                )
+                raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
             if base_url:
                 async_client = AsyncAzureOpenAI(
                     base_url=str(base_url),
@@ -80,10 +77,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 )
             else:
                 if not endpoint:
-                    raise AIException(
-                        AIException.ErrorCodes.InvalidConfiguration,
-                        "Please provide either base_url or endpoint",
-                    )
+                    raise ServiceInitializationError("Please provide either base_url or endpoint")
                 async_client = AsyncAzureOpenAI(
                     azure_endpoint=str(endpoint),
                     azure_deployment=deployment_name,

@@ -4,6 +4,8 @@ import asyncio
 import sys
 from typing import Union
 
+from semantic_kernel.exceptions import FunctionExecutionException
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -18,7 +20,7 @@ class WaitPlugin(KernelBaseModel):
     WaitPlugin provides a set of functions to wait for a certain amount of time.
 
     Usage:
-        kernel.import_plugin(WaitPlugin(), plugin_name="wait")
+        kernel.import_plugin_from_object(WaitPlugin(), plugin_name="wait")
 
     Examples:
         {{wait.wait 5}} => Wait for 5 seconds
@@ -32,5 +34,5 @@ class WaitPlugin(KernelBaseModel):
             try:
                 input = float(input)
             except ValueError as exc:
-                raise ValueError("seconds text must be a number") from exc
+                raise FunctionExecutionException("seconds text must be a number") from exc
         await asyncio.sleep(abs(input))
