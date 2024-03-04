@@ -11,7 +11,7 @@ internal sealed class OllamaHttpRequestFactory : IHttpRequestFactory
     public HttpRequestMessage CreatePost(object requestData, Uri endpoint)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         return httpRequestMessage;
     }
 }
