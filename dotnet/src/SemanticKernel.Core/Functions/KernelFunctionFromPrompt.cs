@@ -192,7 +192,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
         }
 
-        await foreach (var content in asyncReference)
+        await foreach (var content in asyncReference.ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
