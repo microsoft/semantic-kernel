@@ -21,17 +21,8 @@ public class AudioContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
-    /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content,</param>
-    /// <param name="metadata">Additional metadata</param>
-    /// <param name="mimeType">The MIME type of the audio content.</param>
     [JsonConstructor]
-    public AudioContent(
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null,
-        string? mimeType = null)
-        : base(innerContent, modelId, metadata, mimeType)
+    public AudioContent()
     {
     }
 
@@ -42,14 +33,12 @@ public class AudioContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="innerContent">Inner content,</param>
     /// <param name="metadata">Additional metadata</param>
-    /// <param name="mimeType">The MIME type of the audio content.</param>
     public AudioContent(
         ReadOnlyMemory<byte> data,
         string? modelId = null,
         object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null,
-        string? mimeType = null)
-        : base(innerContent, modelId, metadata, mimeType)
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
     {
         this.Data = data;
     }

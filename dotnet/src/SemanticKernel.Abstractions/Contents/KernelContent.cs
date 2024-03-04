@@ -26,22 +26,29 @@ public abstract class KernelContent
     /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
     /// </remarks>
     [JsonIgnore]
-    public object? InnerContent { get; }
+    public object? InnerContent { get; set; }
 
     /// <summary>
     /// The model ID used to generate the content.
     /// </summary>
-    public string? ModelId { get; }
-
-    /// <summary>
-    /// MIME type of the content.
-    /// </summary>
-    public string? MimeType { get; }
+    public string? ModelId { get; set; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
+
+    /// <summary>
+    /// MIME type of the content.
+    /// </summary>
+    public string? MimeType { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelContent"/> class.
+    /// </summary>
+    protected KernelContent()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.
@@ -49,12 +56,10 @@ public abstract class KernelContent
     /// <param name="innerContent">The inner content representation</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Metadata associated with the content</param>
-    /// <param name="mimeType">MIME type of the content</param>
-    protected KernelContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null, string? mimeType = null)
+    protected KernelContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         this.ModelId = modelId;
         this.InnerContent = innerContent;
         this.Metadata = metadata;
-        this.MimeType = mimeType;
     }
 }

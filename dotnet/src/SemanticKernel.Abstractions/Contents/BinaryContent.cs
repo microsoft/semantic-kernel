@@ -25,17 +25,8 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class.
     /// </summary>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
-    /// <param name="mimeType">The MIME type of the binary content.</param>
     [JsonConstructor]
-    public BinaryContent(
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null,
-        string? mimeType = null)
-        : base(innerContent, modelId, metadata, mimeType)
+    public BinaryContent()
     {
     }
 
@@ -46,14 +37,12 @@ public class BinaryContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    /// <param name="mimeType">The MIME type of the binary content.</param>
     public BinaryContent(
         ReadOnlyMemory<byte> content,
         string? modelId = null,
         object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null,
-        string? mimeType = null)
-        : base(innerContent, modelId, metadata, mimeType)
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
     {
         Verify.NotNull(content, nameof(content));
 
@@ -67,7 +56,6 @@ public class BinaryContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    /// <param name="mimeType">The MIME type of the binary content.</param>
     /// <remarks>
     /// The <see cref="Stream"/> is accessed and disposed as part of either the
     /// the <see cref="GetStreamAsync"/> or <see cref="GetContentAsync"/>
@@ -77,9 +65,8 @@ public class BinaryContent : KernelContent
         Func<Task<Stream>> streamProvider,
         string? modelId = null,
         object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null,
-        string? mimeType = null)
-        : base(innerContent, modelId, metadata, mimeType)
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
     {
         Verify.NotNull(streamProvider, nameof(streamProvider));
 

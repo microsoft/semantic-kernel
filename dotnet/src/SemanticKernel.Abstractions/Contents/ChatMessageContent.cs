@@ -51,9 +51,9 @@ public class ChatMessageContent : KernelContent
                     modelId: this.ModelId,
                     innerContent: this.InnerContent,
                     encoding: this.Encoding,
-                    metadata: this.Metadata,
-                    mimeType: this.MimeType
-                ));
+                    metadata: this.Metadata
+                )
+                { MimeType = this.MimeType });
             }
         }
     }
@@ -109,23 +109,29 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
+    [JsonConstructor]
+    public ChatMessageContent()
+    {
+        this._encoding = Encoding.UTF8;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ChatMessageContent"/> class
+    /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
-    /// <param name="mimeType">The MIME type of the chat content</param>
-    [JsonConstructor]
     public ChatMessageContent(
         AuthorRole role,
         string? content,
         string? modelId = null,
         object? innerContent = null,
         Encoding? encoding = null,
-        IReadOnlyDictionary<string, object?>? metadata = null,
-        string? mimeType = null)
-        : base(innerContent, modelId, metadata, mimeType)
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
     {
         this.Role = role;
         this._encoding = encoding ?? Encoding.UTF8;
