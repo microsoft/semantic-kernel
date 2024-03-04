@@ -118,14 +118,12 @@ public interface IImageClassificationService : IAIService
 public class ClassifiedContent : KernelContent
 {
     public ClassifiedContent(
-        KernelContent classifiedContent,
-        IReadOnlyDictionary<string, object?> result,
+        IReadOnlyDictionary<string, double> result,
         object? innerContent = null,
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.ClassifiedContent = classifiedContent;
         this.Result = result;
     }
 
@@ -159,14 +157,12 @@ public interface IClassificationService : IAIService
 public class ClassifiedContent : KernelContent
 {
     public ClassifiedContent(
-        KernelContent classifiedContent,
-        IReadOnlyDictionary<string, object?> result,
+        IReadOnlyDictionary<string, double> result,
         object? innerContent = null,
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.ClassifiedContent = classifiedContent;
         this.Result = result;
     }
 
@@ -191,14 +187,12 @@ Same as option 1 and 2 but with different ClassifiedContent.ScoredCategories
 public class ClassifiedContent : KernelContent
 {
     public ClassifiedContent(
-        KernelContent classifiedContent,
-        IReadOnlyDictionary<string, object?> result,
+        IReadOnlyDictionary<string, (bool, double)> result,
         object? innerContent = null,
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.ClassifiedContent = classifiedContent;
         this.Result = result;
     }
 
@@ -233,14 +227,12 @@ public class OpenAITextClassificationService : IAIService
 public class OpenAIClassifiedContent : KernelContent
 {
     public OpenAIClassifiedContent(
-        KernelContent classifiedContent,
-        IReadOnlyDictionary<string, object?> result,
+        OpenAIClassificationData result,
         object? innerContent = null,
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.ClassifiedContent = classifiedContent;
         this.Result = result;
     }
 
