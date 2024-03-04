@@ -24,7 +24,7 @@ public static class IAgentExtensions
         this IAgent agent,
         string input,
         KernelArguments? arguments = null,
-        string[]? fileIds = null,
+        IEnumerable<string>? fileIds = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IAgentThread thread = await agent.NewThreadAsync(cancellationToken).ConfigureAwait(false);
