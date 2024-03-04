@@ -176,6 +176,7 @@ public class ClassificationContent : KernelContent
 ```
 
 Pros:
+- Simplicity.
 - We have abstraction for classification models.
 
 Cons:
