@@ -24,19 +24,22 @@ jobs:
       - name: Install dependencies
         run: cd python && poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
       - name: Test with pytest
-        run: cd python && poetry run pytest -q --show-capture=no --disable-warnings --tb=no --junitxml=pytest.xml  --cov=semantic_kernel --cov-report="xml:coverage.xml":term-missing:skip-covered ./tests/unit
+        run: cd python && poetry run pytest -q --show-capture=no --disable-warnings --tb=no --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee pytest-coverage.txt
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
           github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
-          pytest-coverage-path: python/coverage.xml
-          junitxml-path: python/pytest.xml
-          report-only-changed-files: true
-          title: "Python Unit Test Coverage Report"
-          badge-title: "Python Test Coverage"
+          pytest-coverage-path: python/pytest-coverage.txt
           coverage-path-prefix: "python/"
+          title: "Python Test Coverage Report"
+          badge-title: "Python Test Coverage"
+          report-only-changed-files: true
+          create-new-comment: true
+          junitxml-title: "Python Unit Test Overview"
+          junitxml-path: python/pytest.xml
           default-branch: "main"
+          unique-id-for-comment: python3.8
       - name: Check the output coverage
         run: |
           echo "Coverage Percantage - ${{ steps.coverageComment.outputs.coverage }}"
