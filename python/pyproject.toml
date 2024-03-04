@@ -11,13 +11,18 @@ python = "^3.8,<3.13"
 aiohttp = ">=3.8"
 numpy = [
     { version = "^1.24", python = "3.8" },
-    { version = ">1.24", python = ">=3.9,<3.12" },
+    { version = ">=1.25", python = ">=3.9,<3.12" },
     { version = ">=1.26", python = ">=3.12" },
 ]
 scipy = [
     { version = ">=1.5.0", python = "<3.12" },
     { version = ">=1.12.0", python = ">=3.12" }
-    ]
+]
+grpcio = [
+    { version = ">=1.40.0", python = "3.8" },
+    { version = ">=1.50.0", python = ">=3.9" },
+    { version = ">=1.60.0", python = ">=3.12" }
+]
 openai = ">=1.0"
 python-dotenv = ">=1.0.1"
 regex = ">=2023.6.3"
@@ -56,9 +61,13 @@ qdrant-client = [
 chromadb = ">=0.4.13"
 
 [tool.poetry.group.milvus.dependencies]
+pymilvus = [
+    { version = "^2.2,<2.3", markers = 'python_version == "3.8"'},
+    { version = ">=2.3,<2.3.8", markers = 'python_version > "3.8"'}
+]
 milvus = [
-    { version = "^2.2,<2.3", markers = 'python_version == "3.8" or sys_platform == "win32"', extras=["client"]},
-    { version = ">=2.3,<2.3.8", markers = 'python_version > "3.8" and sys_platform != "win32"', extras=["client"]}
+    { version = "^2.2,<2.3", markers = 'python_version == "3.8" and sys_platform != "win32"'},
+    { version = ">=2.3,<2.3.8", markers = 'python_version > "3.8" and sys_platform != "win32"'}
 ]
 
 [tool.poetry.group.weaviate.dependencies]
