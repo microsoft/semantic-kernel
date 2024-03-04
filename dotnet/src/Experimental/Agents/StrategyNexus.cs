@@ -42,7 +42,10 @@ public sealed class StrategyNexus : AgentNexus
     /// <param name="executionSettings">Execution settings agent interaction.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchornous enumeration of messages.</returns>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(string? input = null, NexusExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        string? input = null,
+        NexusExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
     {
         var content = CreateUserMessage(input);
 
@@ -56,7 +59,10 @@ public sealed class StrategyNexus : AgentNexus
     /// <param name="executionSettings">Execution settings agent interaction.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchornous enumeration of messages.</returns>
-    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatMessageContent? input = null, NexusExecutionSettings? executionSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        ChatMessageContent? input = null,
+        NexusExecutionSettings? executionSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         executionSettings ??= NexusExecutionSettings.Default;
 
@@ -108,7 +114,7 @@ public sealed class StrategyNexus : AgentNexus
     public StrategyNexus(SelectionStrategy strategy, params KernelAgent[] agents)
     {
         this._agents = [.. agents];
-        this._agentIds = [.. this._agents.Select(a => a.Id).Distinct()];
+        this._agentIds = [.. this._agents.Select(a => a.Id)];
         this._strategy = strategy;
 
         this._strategy.Bind(this);

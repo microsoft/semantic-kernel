@@ -286,6 +286,16 @@ public class Example99_Agents : BaseTest
             "Practice makes perfect.");
     }
 
+    private async Task RunToolAgentAsync(KernelAgent agent)
+    {
+        await ChatAsync(
+            agent,
+            "What is the special soup?",
+            "What is the special drink?",
+            "How much for a soup and a drink?",
+            "What else is available?");
+    }
+
     private async Task RunDualAgentAsync(KernelAgent agent1, KernelAgent agent2, string input)
     {
         this.WriteLine("[TEST]");
@@ -331,16 +341,6 @@ public class Example99_Agents : BaseTest
         {
             await WriteHistoryAsync(nexus, agent);
         }
-    }
-
-    private async Task RunToolAgentAsync(KernelAgent agent)
-    {
-        await ChatAsync(
-            agent,
-            "What is the special soup?",
-            "What is the special drink?",
-            "How much for a soup and a drink?",
-            "What else is available?");
     }
 
     /// <summary>
@@ -460,7 +460,10 @@ public class Example99_Agents : BaseTest
                 enableRetrieval);
     }
 
-    private ChatAgent CreateChatAgent(string name, string? instructions = null, KernelPlugin? plugin = null)
+    private ChatAgent CreateChatAgent(
+        string name,
+        string? instructions = null,
+        KernelPlugin? plugin = null)
     {
         return
             new ChatAgent(

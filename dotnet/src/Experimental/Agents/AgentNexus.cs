@@ -58,15 +58,6 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     }
 
     /// <summary>
-    /// Transform text into a user message.
-    /// </summary>
-    /// <param name="input">Optional user input.</param>
-    protected static ChatMessageContent? CreateUserMessage(string? input)
-    {
-        return string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
-    }
-
-    /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
@@ -93,10 +84,13 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
         // Invoke agent & process response
         await foreach (var message in channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false))
         {
+            // Add to primary history
             this.History.Add(message);
 
+            // Yield message to caller
             yield return message;
 
+            // Broadcast message to other channels (in parallel)
             var tasks =
                 this._agentChannels.Values
                     .Where(c => c != channel)
@@ -122,6 +116,15 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
         }
 
         return channel;
+    }
+
+    /// <summary>
+    /// Transform text into a user message.
+    /// </summary>
+    /// <param name="input">Optional user input.</param>
+    protected static ChatMessageContent? CreateUserMessage(string? input)
+    {
+        return string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
     }
 
     /// <summary>
