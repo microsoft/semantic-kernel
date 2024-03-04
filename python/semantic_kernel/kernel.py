@@ -172,10 +172,6 @@ class Kernel(KernelBaseModel):
                 # if invoke is called with one function, the result is not a list.
                 if isinstance(results, FunctionResult):
                     results = [results]
-            else:
-                raise KernelInvokeException("No functions passed to run")
-            if not results:
-                results = []
             pipeline_step = len(functions) - 1
         while True:
             function_invoking_args = self.on_function_invoking(stream_function.metadata, arguments)
@@ -374,7 +370,8 @@ class Kernel(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
-        function = KernelFunction.from_prompt(
+
+        function = KernelFunctionFromPrompt(
             function_name=function_name,
             plugin_name=plugin_name,
             prompt=prompt,
