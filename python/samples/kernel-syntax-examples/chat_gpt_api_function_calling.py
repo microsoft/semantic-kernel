@@ -2,9 +2,18 @@
 
 import asyncio
 import os
+from functools import reduce
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
+from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
+    OpenAIStreamingChatMessageContent,
+)
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.utils import (
     get_tool_call_object,
 )
@@ -12,6 +21,9 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_function import KernelFunction
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -51,6 +63,9 @@ kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
+
+# Note: the number of responses for auto inoking tool calls is limited to 1.
+# If configured to be greater than one, this value will be overriden to 1.
 execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     service_id="chat",
     max_tokens=2000,
@@ -60,7 +75,6 @@ execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
     auto_invoke_kernel_functions=True,
     max_auto_invoke_attempts=3,
-    number_of_responses=2,
 )
 
 prompt_template_config = sk.PromptTemplateConfig(
@@ -89,6 +103,67 @@ chat_function = kernel.create_function_from_prompt(
 )
 
 
+def print_tool_calls(message: Union[OpenAIChatMessageContent, OpenAIStreamingChatMessageContent]) -> None:
+    # A helper method to pretty print the tool calls from the message.
+    # This is only triggered if auto invoke tool calls is disabled.
+    if isinstance(message, (OpenAIChatMessageContent, OpenAIStreamingChatMessageContent)):
+        tool_calls = message.tool_calls
+        formatted_tool_calls = []
+        for i, tool_call in enumerate(tool_calls, start=1):
+            tool_call_id = tool_call.id
+            function_name = tool_call.function.name
+            function_arguments = tool_call.function.arguments
+            formatted_str = (
+                f"tool_call {i} id: {tool_call_id}\n"
+                f"tool_call {i} function name: {function_name}\n"
+                f"tool_call {i} arguments: {function_arguments}"
+            )
+            formatted_tool_calls.append(formatted_str)
+        print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+
+
+async def handle_streaming(
+    kernel: sk.Kernel,
+    chat_function: "KernelFunction",
+    user_input: str,
+    history: ChatHistory,
+    execution_settings: OpenAIPromptExecutionSettings,
+) -> None:
+    response = kernel.invoke_stream(
+        chat_function,
+        return_function_results=False,
+        user_input=user_input,
+        chat_history=history,
+    )
+
+    print("Mosscap:> ", end="")
+    streamed_chunks: List[OpenAIStreamingChatMessageContent] = []
+    tool_call_ids_by_index: Dict[int, Any] = {}
+
+    async for message in response:
+        if not execution_settings.auto_invoke_kernel_functions and isinstance(
+            message[0], OpenAIStreamingChatMessageContent
+        ):
+            streamed_chunks.append(message[0])
+            if message[0].tool_calls is not None:
+                for tc in message[0].tool_calls:
+                    if tc.index not in tool_call_ids_by_index:
+                        tool_call_ids_by_index[tc.index] = tc
+                    else:
+                        for tc in message[0].tool_calls:
+                            tool_call_ids_by_index[tc.index] += tc
+        else:
+            print(str(message[0]), end="")
+
+    if streamed_chunks:
+        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+        streaming_chat_message.tool_calls = list(tool_call_ids_by_index.values())
+        print("Auto tool calls is disabled, printing returned tool calls...")
+        print_tool_calls(streaming_chat_message)
+
+    print("\n")
+
+
 async def chat() -> bool:
     try:
         user_input = input("User:> ")
@@ -103,27 +178,22 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = True
+    stream = False
     if stream:
-        response = kernel.invoke_stream(
-            chat_function,
-            return_function_results=False,
-            user_input=user_input,
-            chat_history=history,
-        )
-
-        print("Mosscap:> ", end="")
-        async for message in response:
-            print(str(message[0]), end="")
-        print("\n")
+        await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
     else:
         result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
-        # Check if there are more than one item in the list
-        if len(result.value) > 1:
-            joined_result = ", ".join([f"Result{i+1}: {value}" for i, value in enumerate(result.value)])
-        else:
-            joined_result = f"{result[0]}"
-        print(f"Mosscap:> {joined_result}")
+
+        # If tools are used, and auto invoke tool calls is False, the response will be of type
+        # OpenAIChatMessageContent with information about the tool calls, which need to be sent
+        # back to the model to get the final response.
+        if not execution_settings.auto_invoke_kernel_functions and isinstance(
+            result.value[0], OpenAIChatMessageContent
+        ):
+            print_tool_calls(result.value[0])
+            return True
+
+        print(f"Mosscap:> {result}")
     return True
 
 

@@ -70,9 +70,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[OpenAIChatMessageContent | AzureChatMessageContent] -- The completion result(s).
         """
         auto_invoke_kernel_functions, max_auto_invoke_attempts = self._get_auto_invoke_execution_settings(settings)
-        kernel = None
-        if auto_invoke_kernel_functions:
-            kernel = self._validate_kernel_for_tool_calling(**kwargs)
+        kernel = self._validate_kernel_for_tool_calling(**kwargs)
 
         for _ in range(max_auto_invoke_attempts):
             settings = self._prepare_settings(settings, chat_history, stream_request=False)
@@ -100,9 +98,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 OpenAIStreamingChatMessages or AzureStreamingChatMessageContent when using Azure.
         """
         auto_invoke_kernel_functions, max_auto_invoke_attempts = self._get_auto_invoke_execution_settings(settings)
-        kernel = None
-        if auto_invoke_kernel_functions:
-            kernel = self._validate_kernel_for_tool_calling(**kwargs)
+        kernel = self._validate_kernel_for_tool_calling(**kwargs)
         tool_call_behavior = None
         if auto_invoke_kernel_functions:
             # Only configure the tool_call_behavior if auto_invoking_functions is true
@@ -139,6 +135,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings.stream = stream_request
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
+
+        # If auto_invoke_kernel_functions is True and num_of_responses > 1 provide a warning
+        # that the num_of_responses will be configured to one.
+        if settings.auto_invoke_kernel_functions and settings.number_of_responses > 1:
+            logger.warning(
+                (
+                    "Auto invoking functions does not support more than one num_of_response. "
+                    "The num_of_responses setting is configured as 1."
+                )
+            )
+            settings.number_of_responses = 1
         return settings
 
     async def _send_chat_request(self, settings: OpenAIChatPromptExecutionSettings) -> List[OpenAIChatMessageContent]:
@@ -186,7 +193,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             self._update_storages(contents, update_storage)
 
             finish_reason = getattr(contents[0], "finish_reason", None)
-            if contents[0].tool_calls:
+            if tool_call_behavior and tool_call_behavior.auto_invoke_kernel_functions and contents[0].tool_calls:
                 stream_chunks.setdefault(contents[0].choice_index, []).append(contents[0])
                 if finish_reason == FinishReason.STOP:
                     break
@@ -202,7 +209,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 break
 
             if stream_chunks and finish_reason == FinishReason.TOOL_CALLS:
-                chat_contents = self._build_streaming_message_with_tool_call(stream_chunks)
+                chat_contents = self._build_streaming_message_with_tool_call(stream_chunks, update_storage)
                 for chat_content in chat_contents:
                     chat_history = store_results(chat_history=chat_history, results=[chat_content])
                     await self._process_tool_calls(chat_content, kernel, chat_history)
@@ -275,16 +282,11 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                     out_messages[index] += str(content)
             if content.tool_calls is not None:
                 for tc in content.tool_calls:
-                    if content.choice_index not in tool_call_ids_by_index:
-                        tool_call_ids_by_index[content.choice_index] = tc
+                    if tc.index not in tool_call_ids_by_index:
+                        tool_call_ids_by_index[tc.index] = tc
                     else:
                         for tc in content.tool_calls:
-                            tool_call_ids_by_index[content.choice_index] += tc
-                    # if tc.index not in tool_call_ids_by_index:
-                    #     tool_call_ids_by_index[tc.index] = tc
-                    # else:
-                    #     for tc in content.tool_calls:
-                    #         tool_call_ids_by_index[tc.index] += tc
+                            tool_call_ids_by_index[tc.index] += tc
             if content.function_call is not None:
                 for fc in content.function_call:
                     if fc.index not in function_call_by_index:
@@ -345,8 +347,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         return FunctionCall(name=content.function_call.name, arguments=content.function_call.arguments)
 
     def _build_streaming_message_with_tool_call(
-        self, 
+        self,
         stream_chunks: Dict[int, List[OpenAIStreamingChatMessageContent]],
+        update_storage: Dict[str, Dict[int, Any]],
     ) -> List[OpenAIStreamingChatMessageContent]:
         """Build the streaming message with the tool call(s)."""
         streaming_chat_message_contents = []
@@ -354,12 +357,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             chat_message: OpenAIStreamingChatMessageContent = None
             for result in stream_chunks[index]:
                 content_to_add = result
-                chat_message = (
-                    content_to_add
-                    if chat_message is None
-                    else chat_message + content_to_add
-                )
-            chat_message.role = ChatRole.ASSISTANT
+                chat_message = content_to_add if chat_message is None else chat_message + content_to_add
+            tool_calls_dict = update_storage["tool_call_ids_by_index"]
+            chat_message.tool_calls = list(tool_calls_dict.values())
             streaming_chat_message_contents.append(chat_message)
         return streaming_chat_message_contents
 
@@ -375,6 +375,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         else:
             auto_invoke_kernel_functions = False
             max_auto_invoke_attempts = 1
+
         return auto_invoke_kernel_functions, max_auto_invoke_attempts
 
     async def _process_tool_calls(
