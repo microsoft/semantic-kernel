@@ -211,6 +211,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
                 if (chatResponsesEnumerator.MoveNext())
                 {
                     // We disable auto-invoke because we have more than one message in the stream.
+                    // This scenario should not happen but I leave it as a precaution
                     state.AutoInvoke = false;
                     chatResponsesEnumerator.Reset();
                     continue;
@@ -221,7 +222,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
                 yield break;
             }
 
-            // We disable auto-invoke because we have more than one message in the stream.
+            // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-ivoke is already false
             state.AutoInvoke = false;
 
             // If we don't want to attempt to invoke any functions, just return the result.
