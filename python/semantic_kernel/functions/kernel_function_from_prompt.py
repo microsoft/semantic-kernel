@@ -29,7 +29,7 @@ PROMPT_RETURN_PARAM = KernelParameterMetadata(
     description="The completion result",
     default_value=None,
     type="FunctionResult",
-    required=True,
+    is_required=True,
 )
 
 

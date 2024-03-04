@@ -163,7 +163,7 @@ class Plan:
             while self.has_next_step:
                 function_arguments = copy(arguments)
                 self.add_variables_to_state(self._state, function_arguments)
-                logger.error(
+                logger.info(
                     "Invoking next step: "
                     + str(self._steps[self._next_step_index].name)
                     + " with arguments: "
@@ -174,7 +174,7 @@ class Plan:
                     partial_results.append(result)
                     self._state[Plan.DEFAULT_RESULT_KEY] = str(result)
                     arguments = self.update_arguments_with_outputs(arguments)
-                    logger.error(f"updated arguments: {arguments}")
+                    logger.info(f"updated arguments: {arguments}")
 
             result_string = str(partial_results[-1]) if len(partial_results) > 0 else ""
 
