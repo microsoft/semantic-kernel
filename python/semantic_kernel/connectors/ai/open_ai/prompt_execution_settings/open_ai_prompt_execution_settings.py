@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +39,13 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     def check_best_of_and_n(self) -> "OpenAITextPromptExecutionSettings":
         """Check that the best_of parameter is not greater than the number_of_responses parameter."""
         if self.best_of is not None and self.best_of < self.number_of_responses:
-            raise ValueError(
+            raise ServiceInvalidExecutionSettingsError(
                 "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
             )
         if self.extension_data.get("best_of") is not None and self.extension_data["best_of"] < self.extension_data.get(
             "number_of_responses"
         ):
-            raise ValueError(
+            raise ServiceInvalidExecutionSettingsError(
                 "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
             )
         return self

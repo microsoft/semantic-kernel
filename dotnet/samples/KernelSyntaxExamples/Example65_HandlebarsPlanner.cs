@@ -140,18 +140,12 @@ public class Example65_HandlebarsPlanner : BaseTest
     [InlineData(false)]
     public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt)
     {
-        WriteSampleHeading("Plan Not Possible");
-
         try
         {
+            WriteSampleHeading("Plan Not Possible");
+
             // Load additional plugins to enable planner but not enough for the given goal.
             await RunSampleAsync("Send Mary an email with the list of meetings I have scheduled today.", null, null, shouldPrintPrompt, true, "SummarizePlugin");
-        }
-        catch (KernelException ex) when (
-            ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InsufficientFunctionsForGoal), StringComparison.CurrentCultureIgnoreCase)
-            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.HallucinatedHelpers), StringComparison.CurrentCultureIgnoreCase)
-            || ex.Message.Contains(nameof(HandlebarsPlannerErrorCodes.InvalidTemplate), StringComparison.CurrentCultureIgnoreCase))
-        {
             /*
                 [InsufficientFunctionsForGoal] Unable to create plan for goal with available functions.
                 Goal: Send Mary an email with the list of meetings I have scheduled today.
@@ -160,7 +154,10 @@ public class Example65_HandlebarsPlanner : BaseTest
                 As the available helpers do not contain any functionality to send an email or interact with meeting scheduling data, I cannot create a template to achieve the stated goal. 
                 Additional helpers or information may be required.
             */
-            WriteLine($"\n{ex.Message}\n");
+        }
+        catch (Exception e)
+        {
+            WriteLine(e.InnerException?.Message);
         }
     }
 
@@ -335,11 +332,11 @@ public class Example65_HandlebarsPlanner : BaseTest
         return RunSampleAsync("Write a poem about the given person, then translate it into French.", null, initialArguments, shouldPrintPrompt, true, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
-            {{!-- Step 0: Set the given person --}}
-            {{set "person" "John Doe"}}
+            {{!-- Step 0: Extract key values --}}
+            {{set "personName" @root.person.name}}
 
             {{!-- Step 1: Generate a short poem about the person --}}
-            {{set "poem" (WriterPlugin-ShortPoem input=person)}}
+            {{set "poem" (WriterPlugin-ShortPoem input=personName)}}
 
             {{!-- Step 2: Translate the poem into French --}}
             {{set "translatedPoem" (WriterPlugin-Translate input=poem language="French")}}
@@ -453,9 +450,11 @@ public class Example65_HandlebarsPlanner : BaseTest
         };
 
         var goal = "I just watched the movie 'Inception' and I loved it! I want to leave a 5 star review. Can you help me?";
-        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt, false, "WriterPlugin");
 
+        // Note that since the custom prompt inputs a unique Helpers section with helpers not actually registered with the kernel,
+        // any plan created using this prompt will fail execution; thus, we will skip the InvokePlan call in this example.
         // For a simpler example, see `ItOverridesPromptAsync` in the dotnet\src\Planners\Planners.Handlebars.UnitTests\Handlebars\HandlebarsPlannerTests.cs file.
+        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt, shouldInvokePlan: false, "WriterPlugin");
     }
 
     public Example65_HandlebarsPlanner(ITestOutputHelper output) : base(output)

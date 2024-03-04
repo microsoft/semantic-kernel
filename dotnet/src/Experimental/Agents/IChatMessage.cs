@@ -6,6 +6,22 @@ using System.Collections.ObjectModel;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
+/// $$$
+/// </summary>
+public enum ChatMessageType
+{
+    /// <summary>
+    /// $$$
+    /// </summary>
+    Text,
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    Image,
+}
+
+/// <summary>
 /// Represents a message that is part of an agent thread.
 /// </summary>
 public interface IChatMessage
@@ -19,6 +35,11 @@ public interface IChatMessage
     /// The id of the agent associated with the a message where role = "agent", otherwise null.
     /// </summary>
     string? AgentId { get; }
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    ChatMessageType ContentType { get; }
 
     /// <summary>
     /// The chat message content.
