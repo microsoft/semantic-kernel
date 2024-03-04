@@ -106,7 +106,7 @@ public interface ITextClassificationService : IAIService
         CancellationToken cancellationToken = default);
 }
 
-public interface ITImageClassificationService : IAIService
+public interface IImageClassificationService : IAIService
 {
     Task<IReadOnlyList<ClassificationContent>> ClassifyImagesAsync(
         IEnumerable<ImageContent> images,
