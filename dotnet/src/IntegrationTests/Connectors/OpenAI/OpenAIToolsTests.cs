@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -121,6 +122,65 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
         // Assert
         Assert.NotNull(result);
         Assert.Contains("10", result.GetValue<string>(), StringComparison.InvariantCulture);
+    }
+
+    [Fact]
+    public async Task CanAutoInvokeKernelFunctionFromPromptAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+
+        var promptFunction = KernelFunctionFactory.CreateFromPrompt(
+            "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+            functionName: "FindLatestNews",
+            description: "Searches for the latest news.");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
+            "NewsProvider",
+            "Delivers up-to-date news content.",
+            new[] { promptFunction }));
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var result = await kernel.InvokePromptAsync("Show me the latest news as they are.", new(settings));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Transportation", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task CanAutoInvokeKernelFunctionFromPromptStreamingAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+
+        var promptFunction = KernelFunctionFactory.CreateFromPrompt(
+            "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+            functionName: "FindLatestNews",
+            description: "Searches for the latest news.");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
+            "NewsProvider",
+            "Delivers up-to-date news content.",
+            new[] { promptFunction }));
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news as they are.", new(settings));
+
+        var builder = new StringBuilder();
+
+        await foreach (var update in streamingResult)
+        {
+            builder.Append(update.ToString());
+        }
+
+        var result = builder.ToString();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Transportation", result, StringComparison.InvariantCultureIgnoreCase);
     }
 
     private Kernel InitializeKernel()

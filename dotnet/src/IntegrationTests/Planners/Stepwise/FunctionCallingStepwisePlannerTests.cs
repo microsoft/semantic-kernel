@@ -131,6 +131,33 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "Email a joke to test@example.com"));
     }
 
+    [Fact]
+    public async Task CanExecutePromptFunctionAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+
+        var promptFunction = KernelFunctionFactory.CreateFromPrompt(
+           "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+           functionName: "FindLatestNews",
+           description: "Searches for the latest news.");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
+            "NewsProvider",
+            "Delivers up-to-date news content.",
+            new[] { promptFunction }));
+
+        var planner = new FunctionCallingStepwisePlanner(
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 2 });
+
+        // Act
+        var planResult = await planner.ExecuteAsync(kernel, "Show me the latest news as they are.");
+
+        // Assert
+        Assert.NotNull(planResult);
+        Assert.Contains("Transportation", planResult.FinalAnswer, StringComparison.InvariantCultureIgnoreCase);
+    }
+
     private Kernel InitializeKernel()
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
