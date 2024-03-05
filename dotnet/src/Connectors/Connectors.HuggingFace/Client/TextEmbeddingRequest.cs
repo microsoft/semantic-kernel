@@ -3,12 +3,12 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 /// <summary>
 /// HTTP schema to perform embedding request.
 /// </summary>
-public sealed class TextEmbeddingRequest
+internal sealed class TextEmbeddingRequest
 {
     /// <summary>
     /// Data to embed.

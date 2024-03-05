@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests.TextGeneration;
