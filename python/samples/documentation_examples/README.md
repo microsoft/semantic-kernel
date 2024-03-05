@@ -11,7 +11,7 @@ This project contains a collection of examples used in documentation on [learn.m
 The samples can be configured with a `.env` file in the project which holds api keys and other secrets and configurations.
 
 Make sure you have an
-[Open AI API Key](https://openai.com/api/) or
+[Open AI API Key](https://openai.com/product/) or
 [Azure Open AI service key](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
 
 Copy the `.env.example` file to a new file named `.env`. Then, copy those keys into the `.env` file:
