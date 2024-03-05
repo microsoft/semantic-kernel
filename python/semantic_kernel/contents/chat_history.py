@@ -208,10 +208,12 @@ class ChatHistory(KernelBaseModel):
         end_tag = f"</{ROOT_KEY_MESSAGE}>"
         single_item_end_tag = "/>"
         end = prompt.find(end_tag)
-        end_of_tag = end + len(end_tag)
-        if end == -1:
-            end = prompt.find(single_item_end_tag)
+        si_end = prompt.find(single_item_end_tag)
+        if si_end != -1 and (end == -1 or si_end < end):
+            end = si_end
             end_of_tag = end + len(single_item_end_tag)
+        elif end != -1:
+            end_of_tag = end + len(end_tag)
         if start == -1 or end == -1:
             return chat_message_content_type(role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt), None
         if start > 0 and end > 0:
