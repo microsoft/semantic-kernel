@@ -15,7 +15,6 @@ using HomeAutomation.Options;
 using HomeAutomation.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -37,17 +36,6 @@ internal static class Program
                         .Bind(builder.Configuration.GetSection(nameof(AzureOpenAI)))
                         .ValidateDataAnnotations()
                         .ValidateOnStart();
-
-        // Optionally set an HTTP retry policy
-        builder.Services.ConfigureHttpClientDefaults(c =>
-        {
-            // Use a standard resiliency policy, augmented to retry 3 times
-            c.AddStandardResilienceHandler().Configure(o =>
-            {
-                o.Retry.MaxRetryAttempts = 3;
-                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
-            });
-        });
 
         // Chat completion service that kernels will use
         builder.Services.AddSingleton<IChatCompletionService>(sp =>
