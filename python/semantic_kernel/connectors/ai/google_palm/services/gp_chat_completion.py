@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -61,21 +61,23 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def complete_chat(
         self,
-        messages: ChatHistory,
+        chat_history: ChatHistory,
         settings: GooglePalmPromptExecutionSettings,
+        **kwargs: Dict[str, Any],
     ) -> List[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+            chat_history {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
             settings {GooglePalmPromptExecutionSettings} -- Settings for the request.
+            kwargs {Dict[str, Any]} -- The optional arguments.
 
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
-        settings.messages = self._prepare_chat_history_for_request(messages)
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
@@ -112,6 +114,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         messages: List[Tuple[str, str]],
         settings: GooglePalmPromptExecutionSettings,
+        **kwargs: Dict[str, Any],
     ):
         raise NotImplementedError("Google Palm API does not currently support streaming")
 

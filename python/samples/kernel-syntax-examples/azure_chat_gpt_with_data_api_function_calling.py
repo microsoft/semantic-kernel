@@ -12,7 +12,6 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     ExtraBody,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import (
-    chat_completion_with_tool_call,
     get_tool_call_object,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -20,6 +19,11 @@ from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+# NOTE:
+# AzureOpenAI function calling requires the following models: gpt-35-turbo (1106) or gpt-4 (1106-preview)
+# along with the API version: 2023-12-01-preview
+# https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/function-calling?tabs=python
 
 kernel = sk.Kernel()
 
@@ -41,7 +45,7 @@ req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_bod
 
 chat_service = sk_oai.AzureChatCompletion(
     service_id="chat-gpt",
-    deployment_name=deployment,
+    deployment_name="gpt-35-turbo-16k",
     api_key=api_key,
     endpoint=endpoint,
     api_version="2023-12-01-preview",
@@ -54,7 +58,7 @@ kernel.add_service(
 plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-kernel.import_plugin_from_prompt_directory("chat-gpt", plugins_directory, "FunPlugin")
+kernel.import_plugin_from_prompt_directory(plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
 kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 
@@ -69,17 +73,14 @@ prompt_template_config = PromptTemplateConfig(
     template_format="semantic-kernel",
     input_variables=[
         InputVariable(name="history", description="The history of the conversation", is_required=True),
-        InputVariable(name="request", description="The user input", is_required=True),
+        InputVariable(name="user_input", description="The user input", is_required=True),
     ],
-    execution_settings=req_settings,
 )
 
 history = ChatHistory()
 
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am an AI assistant here to answer your questions.")
-
-arguments = KernelArguments()
 
 chat_function = kernel.create_function_from_prompt(
     plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
@@ -90,6 +91,9 @@ chat_function = kernel.create_function_from_prompt(
 # see the openai_function_calling example for how to use this with a unrelated function definition
 filter = {"exclude_plugin": ["ChatBot"]}
 req_settings.tools = get_tool_call_object(kernel, filter)
+req_settings.auto_invoke_kernel_functions = True
+
+arguments = KernelArguments(settings=req_settings)
 
 
 async def chat() -> bool:
@@ -106,11 +110,10 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    arguments = KernelArguments(request=user_input, execution_settings=req_settings)
-    answer = await chat_completion_with_tool_call(
-        kernel=kernel,
+    arguments["user_input"] = user_input
+    answer = await kernel.invoke(
+        functions=chat_function,
         arguments=arguments,
-        chat_function=chat_function,
     )
     print(f"Mosscap:> {answer}")
     history.add_user_message(user_input)
@@ -121,8 +124,8 @@ async def chat() -> bool:
 async def main() -> None:
     print(
         "Welcome to the chat bot!\
-\n  Type 'exit' to exit.\
-\n  Try a time question to see the function calling in action (i.e. what day is it?)."
+        \n  Type 'exit' to exit.\
+        \n  Try a time question to see the function calling in action (i.e. what day is it?)."
     )
     chatting = True
     while chatting:

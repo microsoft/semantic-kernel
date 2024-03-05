@@ -201,6 +201,7 @@ class Kernel(KernelBaseModel):
                 # might need to be done as part of the invoked_handler
             function_result = []
             exception = None
+
             async for stream_message in stream_function.invoke_stream(self, arguments):
                 if isinstance(stream_message, FunctionResult):
                     exception = stream_message.metadata.get("exception", None)
@@ -211,11 +212,11 @@ class Kernel(KernelBaseModel):
 
             output_function_result = []
             for result in function_result:
-                for index, choice in enumerate(result):
-                    if len(output_function_result) <= index:
+                for choice in result:
+                    if len(output_function_result) <= choice.choice_index:
                         output_function_result.append(copy(choice))
                     else:
-                        output_function_result[index] += choice
+                        output_function_result[choice.choice_index] += choice
             func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
             function_invoked_args = self.on_function_invoked(
                 stream_function.metadata,

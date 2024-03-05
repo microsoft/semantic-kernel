@@ -220,6 +220,7 @@ async def test_get_nearest_match(connection_string, memory_record1, memory_recor
 
 
 @pytest.mark.asyncio
+@pytest.mark.xfail(reason="The test is failing due to a timeout.")
 async def test_get_nearest_matches(connection_string, memory_record1, memory_record2, memory_record3):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 

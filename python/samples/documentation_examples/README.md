@@ -37,6 +37,7 @@ _Note: if running the examples with VSCode, it will look for your .env file at t
 
 To run the console application within Visual Studio Code, just hit `F5`.
 Otherwise the sample can be run via the command line:
+
 ```
 python.exe <absolute_path_to_sk_code>/python/samples/documentation_examples/planner.py
 ```

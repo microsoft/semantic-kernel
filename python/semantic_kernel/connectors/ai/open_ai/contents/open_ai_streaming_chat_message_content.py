@@ -56,7 +56,7 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
         fc = (self.function_call + other.function_call) if self.function_call else other.function_call
         if self.tool_calls:
             tc = []
-            for index, tool in self.tool_calls:
+            for index, tool in enumerate(self.tool_calls):
                 if other.tool_calls:
                     tc.append(tool + other.tool_calls[index])
                 else:

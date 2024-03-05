@@ -40,7 +40,10 @@ class PromptExecutionSettings(KernelBaseModel):
 
     def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
         return self.model_dump(
-            exclude={"service_id", "extension_data"},
+            exclude={
+                "service_id",
+                "extension_data",
+            },
             exclude_none=True,
             by_alias=True,
         )
