@@ -182,7 +182,7 @@ through prompt_template_config or in the prompt_template."
         if isinstance(execution_settings, OpenAIChatPromptExecutionSettings) and isinstance(
             service, ChatCompletionClientBase
         ):
-            kwargs['kernel'] = kernel
+            kwargs["kernel"] = kernel
 
         try:
             completions = await service.complete_chat(

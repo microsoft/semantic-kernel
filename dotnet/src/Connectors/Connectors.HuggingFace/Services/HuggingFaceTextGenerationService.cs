@@ -6,17 +6,18 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
-using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
-/// HuggingFace embedding generation service.
+/// HuggingFace text generation service.
 /// </summary>
-public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGenerationService
+public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 {
     private Dictionary<string, object?> AttributesInternal { get; } = new();
     private HuggingFaceClient Client { get; }
@@ -25,14 +26,14 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
     /// </summary>
     /// <param name="model">The HuggingFace model for the text generation service.</param>
-    /// <param name="endpoint">The endpoint uri including the port where HuggingFace server is hosted</param>
+    /// <param name="endpoint">The uri endpoint including the port where HuggingFace server is hosted</param>
     /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
-    public HuggingFaceTextEmbeddingGenerationService(
+    public HuggingFaceTextGenerationService(
         string model,
         Uri? endpoint = null,
         string? apiKey = null,
@@ -45,16 +46,18 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
         modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
-#pragma warning disable CA2000 // Dispose objects before losing scope
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-#pragma warning restore CA2000 // Dispose objects before losing scope
-            logger: loggerFactory?.CreateLogger(this.GetType())
+            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
         );
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    /// <inheritdoc/>
-    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateEmbeddingsAsync(data, kernel, cancellationToken);
+    /// <inheritdoc />
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
 }

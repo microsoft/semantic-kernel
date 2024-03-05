@@ -12,11 +12,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.ImageToText;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 internal sealed class HuggingFaceClient
 {
@@ -254,7 +253,7 @@ internal sealed class HuggingFaceClient
 
         // Read the file into a byte array
         var imageContent = new ByteArrayContent(content.Data?.ToArray());
-        imageContent.Headers.ContentType = new(content.Data?.MediaType);
+        imageContent.Headers.ContentType = new(content.MimeType);
 
         var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {

@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
