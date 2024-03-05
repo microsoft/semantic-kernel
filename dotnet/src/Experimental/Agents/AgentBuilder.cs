@@ -98,13 +98,7 @@ public partial class AgentBuilder
         var restContext = new OpenAIRestContext(this._endpoint!, this._apiKey!, this._version, this._httpClientProvider);
         var model = await restContext.GetAssistantModelAsync(agentId, cancellationToken).ConfigureAwait(false);
 
-        return
-            await Agent.CreateAsync(
-                restContext,
-                model,
-                this._config,
-                this._plugins,
-                cancellationToken).ConfigureAwait(false);
+        return new Agent(model, this._config, restContext, this._plugins);
     }
 
     /// <summary>
