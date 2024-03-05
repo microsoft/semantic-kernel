@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for interacting with the chat completion gemini model.
 /// </summary>
-internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionClient
+internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionClient
 {
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;
@@ -111,7 +111,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
+    public async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
@@ -146,7 +146,7 @@ internal class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionCli
     }
 
     /// <inheritdoc/>
-    public virtual async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
+    public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
         ChatHistory chatHistory,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
