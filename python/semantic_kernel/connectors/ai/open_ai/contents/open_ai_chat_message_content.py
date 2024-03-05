@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import json
 from typing import List, Optional
 from xml.etree.ElementTree import Element
 
@@ -48,6 +49,7 @@ class OpenAIChatMessageContent(ChatMessageContent):
 
         root = Element(root_key)
         root.set("role", self.role.value)
+        root.set("metadata", json.dumps(self.metadata))
         if self.function_call:
             root.set("function_call", self.function_call.model_dump_json(exclude_none=True))
         if self.tool_calls:
@@ -66,6 +68,8 @@ class OpenAIChatMessageContent(ChatMessageContent):
             ChatMessageContent - The new instance of ChatMessageContent.
         """
         args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        if metadata := element.get("metadata"):
+            args["metadata"] = json.loads(metadata)
         if function_call := element.get("function_call"):
             args["function_call"] = FunctionCall.model_validate_json(function_call)
         if tool_calls := element.get("tool_calls"):
