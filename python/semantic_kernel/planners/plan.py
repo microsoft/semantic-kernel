@@ -10,11 +10,11 @@ from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
+from semantic_kernel.exceptions import KernelInvokeException
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.utils.naming import generate_random_ascii_name
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -152,8 +152,7 @@ class Plan:
                 logger.error(
                     "Something went wrong in plan step {0}.{1}:'{2}'".format(self._plugin_name, self._name, exc)
                 )
-                raise KernelException(
-                    KernelException.ErrorCodes.FunctionInvokeError,
+                raise KernelInvokeException(
                     "Error occurred while running plan step: " + str(exc),
                     exc,
                 ) from exc
@@ -164,7 +163,7 @@ class Plan:
             while self.has_next_step:
                 function_arguments = copy(arguments)
                 self.add_variables_to_state(self._state, function_arguments)
-                logger.error(
+                logger.info(
                     "Invoking next step: "
                     + str(self._steps[self._next_step_index].name)
                     + " with arguments: "
@@ -175,7 +174,7 @@ class Plan:
                     partial_results.append(result)
                     self._state[Plan.DEFAULT_RESULT_KEY] = str(result)
                     arguments = self.update_arguments_with_outputs(arguments)
-                    logger.error(f"updated arguments: {arguments}")
+                    logger.info(f"updated arguments: {arguments}")
 
             result_string = str(partial_results[-1]) if len(partial_results) > 0 else ""
 
@@ -201,11 +200,6 @@ class Plan:
 
     def set_available_functions(self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments") -> "Plan":
         if len(plan.steps) == 0:
-            if kernel.plugins is None:
-                raise KernelException(
-                    KernelException.ErrorCodes.PluginCollectionNotSet,
-                    "Plugin collection not found in the context",
-                )
             try:
                 pluginFunction = kernel.plugins[plan.plugin_name][plan.name]
                 plan.set_function(pluginFunction)
@@ -262,8 +256,7 @@ class Plan:
         try:
             result = await step.invoke(kernel, arguments)
         except Exception as exc:
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionInvokeError,
+            raise KernelInvokeException(
                 "Error occurred while running plan step: " + str(exc),
                 exc,
             ) from exc

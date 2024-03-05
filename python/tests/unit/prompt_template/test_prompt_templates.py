@@ -69,7 +69,7 @@ def test_get_kernel_parameter_metadata_with_variables():
     assert metadata[0].description == "A variable"
     assert metadata[0].default_value == "default_val"
     assert metadata[0].type_ == "string"
-    assert metadata[0].required is True
+    assert metadata[0].is_required is True
 
 
 def test_restore():
