@@ -13,7 +13,7 @@ internal sealed class TextEmbeddingRequest
     [JsonPropertyName("model")]
     public string Model { get; set; }
 
-    [JsonPropertyName("messages")]
+    [JsonPropertyName("input")]
     public IList<string> Input { get; set; }
 
     [JsonPropertyName("encoding_format")]

@@ -1,49 +1,46 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MistralAI;
 /// <summary>
-/// Integration tests for <see cref="MistralAIChatCompletionService"/>.
+/// Integration tests for <see cref="MistralAITextEmbeddingGenerationService"/>.
 /// </summary>
-public sealed class MistralAIChatCompletionTests
+public sealed class MistralAITextEmbeddingTests
 {
     private readonly IConfigurationRoot _configuration;
 
-    public MistralAIChatCompletionTests()
+    public MistralAITextEmbeddingTests()
     {
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<MistralAIChatCompletionTests>()
+            .AddUserSecrets<MistralAITextEmbeddingTests>()
             .Build();
     }
 
     [Fact] // (Skip = "This test is for manual verification.")
-    public async Task MistralAIChatCompletionTestsAsync()
+    public async Task MistralAIGenerateEmbeddingsAsync()
     {
         // Arrange
-        var model = this._configuration["MistralAI:ChatModel"];
+        var model = this._configuration["MistralAI:EmbeddingModel"];
         var apiKey = this._configuration["MistralAI:ApiKey"];
-        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var service = new MistralAITextEmbeddingGenerationService(model!, apiKey!);
 
         // Act
-        var chatHistory = new ChatHistory
-        {
-            new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
-        };
-        var response = await service.GetChatMessageContentsAsync(chatHistory);
+        List<string> data = new() { "Hello", "world" };
+        var response = await service.GenerateEmbeddingsAsync(data);
 
         // Assert
         Assert.NotNull(response);
-        Assert.Single(response);
-        Assert.True(response[0].Content?.Length > 0);
+        Assert.Equal(2, response.Count);
+        Assert.Equal(1024, response[0].Length);
+        Assert.Equal(1024, response[1].Length);
     }
 }

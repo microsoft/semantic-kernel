@@ -12,5 +12,4 @@ internal sealed class TextEmbeddingResponse : MistralResponseBase
 {
     [JsonPropertyName("data")]
     public IList<MistralEmbedding>? Data { get; set; }
-
 }

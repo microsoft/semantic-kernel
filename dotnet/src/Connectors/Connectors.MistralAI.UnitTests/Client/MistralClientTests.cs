@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -41,7 +42,7 @@ public sealed class MistralClientTests : IDisposable
     public async Task ValidateGetChatMessageContentsAsync()
     {
         // Arrange
-        var content = this.GetTestResponse("chat_completion_response.json");
+        var content = this.GetTestResponse("chat_completions_response.json");
         this._delegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
         this._httpClient = new HttpClient(this._delegatingHandler, false);
         var client = new MistralClient("mistral-tiny", this._httpClient, "key");
@@ -61,6 +62,26 @@ public sealed class MistralClientTests : IDisposable
         Assert.Equal(AuthorRole.Assistant, response[0].Role);
         Assert.NotNull(response[0].Metadata);
         Assert.Equal(7, response[0].Metadata?.Count);
+    }
+
+    [Fact]
+    public async Task ValidateGenerateEmbeddingsAsync()
+    {
+        // Arrange
+        var content = this.GetTestResponse("embeddings_response.json");
+        this._delegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/embeddings", content);
+        this._httpClient = new HttpClient(this._delegatingHandler, false);
+        var client = new MistralClient("mistral-tiny", this._httpClient, "key");
+
+        // Act
+        List<string> data = new() { "Hello", "world" };
+        var response = await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Count);
+        Assert.Equal(1024, response[0].Length);
+        Assert.Equal(1024, response[1].Length);
     }
 
     public void Dispose()

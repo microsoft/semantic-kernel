@@ -63,15 +63,12 @@ internal sealed class MistralClient
     {
         var request = new TextEmbeddingRequest(this._modelId, data);
         var endpoint = new Uri($"{this._endpoint}{this._separator}embeddings");
-
-
         using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, false);
 
         var response = await this.SendRequestAsync<TextEmbeddingResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        throw new NotImplementedException();
+        return response.Data.Select(item => new ReadOnlyMemory<float>(item.Embedding.ToArray())).ToList();
     }
-
 
     #region private
     private readonly string _modelId;
@@ -119,7 +116,8 @@ internal sealed class MistralClient
 
     private async Task<T> SendRequestAsync<T>(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken)
     {
-        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        //using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
