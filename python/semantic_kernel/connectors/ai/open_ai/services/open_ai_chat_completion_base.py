@@ -2,6 +2,7 @@
 
 import logging
 from typing import (
+    TYPE_CHECKING,
     Any,
     AsyncIterable,
     Dict,
@@ -35,8 +36,10 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceInvalidResponseError
-from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.chat import store_results
+
+if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -117,7 +120,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                     break
             attempts += 1
 
-    def _validate_kernel_for_tool_calling(self, **kwargs: Dict[str, Any]) -> Kernel:
+    def _validate_kernel_for_tool_calling(self, **kwargs: Dict[str, Any]) -> "Kernel":
         """Validate that the arguments contains the kernel, which is used for function calling, if applicable."""
         kernel = kwargs.pop("kernel", None)
         if kernel is None:
@@ -169,7 +172,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         completions: List[OpenAIChatMessageContent],
         chat_history: ChatHistory,
-        kernel: Kernel,
+        kernel: "Kernel",
     ) -> None:
         """Process the completions in the chat response"""
         for result in completions:
@@ -178,7 +181,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             await self._process_tool_calls(result, kernel, chat_history)
 
     async def _process_chat_stream_response(
-        self, response: AsyncStream, tool_call_behavior: ToolCallBehavior, chat_history: ChatHistory, kernel: Kernel
+        self, response: AsyncStream, tool_call_behavior: ToolCallBehavior, chat_history: ChatHistory, kernel: "Kernel"
     ) -> AsyncIterable[List[OpenAIStreamingChatMessageContent]]:
         """Process the chat stream response and handle tool calls if applicable."""
         stream_chunks, update_storage = {}, self._get_update_storage_fields()
@@ -381,7 +384,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def _process_tool_calls(
         self,
         result: Union[OpenAIChatMessageContent, OpenAIStreamingChatMessageContent],
-        kernel: Kernel,
+        kernel: "Kernel",
         chat_history: ChatHistory,
     ) -> None:
         """Processes the tool calls in the result and return it as part of the chat history."""
