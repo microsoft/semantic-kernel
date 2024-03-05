@@ -14,7 +14,7 @@ namespace Examples;
 public sealed class Example87_GeminiVision : BaseTest
 {
     [Fact]
-    public async Task GoogleAI()
+    public async Task GoogleAIAsync()
     {
         this.WriteLine("============= Google AI - Gemini Chat Completion with vision =============");
 
@@ -55,7 +55,7 @@ public sealed class Example87_GeminiVision : BaseTest
     }
 
     [Fact]
-    public async Task VertexAI()
+    public async Task VertexAIAsync()
     {
         this.WriteLine("============= Vertex AI - Gemini Chat Completion with vision =============");
 

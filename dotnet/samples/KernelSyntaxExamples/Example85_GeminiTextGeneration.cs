@@ -11,7 +11,7 @@ namespace Examples;
 public sealed class Example85_GeminiTextGeneration : BaseTest
 {
     [Fact]
-    public async Task GoogleAI()
+    public async Task GoogleAIAsync()
     {
         this.WriteLine("============= Google AI - Gemini Text Generation =============");
 
@@ -34,7 +34,7 @@ public sealed class Example85_GeminiTextGeneration : BaseTest
     }
 
     [Fact]
-    public async Task VertexAI()
+    public async Task VertexAIAsync()
     {
         this.WriteLine("============= Vertex AI - Gemini Text Generation =============");
 

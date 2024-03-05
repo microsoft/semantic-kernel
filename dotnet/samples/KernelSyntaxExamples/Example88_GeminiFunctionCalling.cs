@@ -13,7 +13,7 @@ namespace Examples;
 public sealed class Example88_GeminiFunctionCalling : BaseTest
 {
     [RetryFact]
-    public async Task GoogleAI()
+    public async Task GoogleAIAsync()
     {
         this.WriteLine("============= Google AI - Gemini Chat Completion with function calling =============");
 
@@ -36,7 +36,7 @@ public sealed class Example88_GeminiFunctionCalling : BaseTest
     }
 
     [RetryFact]
-    public async Task VertexAI()
+    public async Task VertexAIAsync()
     {
         this.WriteLine("============= Vertex AI - Gemini Chat Completion with function calling =============");
 
