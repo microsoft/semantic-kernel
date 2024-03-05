@@ -127,6 +127,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
     [Fact]
     public async Task CanAutoInvokeKernelFunctionFromPromptAsync()
     {
+        // Arrange
         Kernel kernel = this.InitializeKernel();
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
@@ -151,6 +152,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
     [Fact]
     public async Task CanAutoInvokeKernelFunctionFromPromptStreamingAsync()
     {
+        // Arrange
         Kernel kernel = this.InitializeKernel();
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
