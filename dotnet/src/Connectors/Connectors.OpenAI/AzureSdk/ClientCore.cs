@@ -254,7 +254,7 @@ internal abstract class ClientCore
 
         var audioOptions = new AudioTranscriptionOptions
         {
-            AudioData = new BinaryData(content.Data),
+            AudioData = BinaryData.FromBytes(content.Data.Value),
             DeploymentName = this.DeploymentOrModelName,
             Filename = audioExecutionSettings.Filename,
             Language = audioExecutionSettings.Language,
