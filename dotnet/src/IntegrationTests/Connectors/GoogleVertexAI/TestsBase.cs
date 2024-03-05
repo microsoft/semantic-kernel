@@ -90,7 +90,7 @@ public abstract class TestsBase
     private string VertexAIGetGeminiModel() => this._configuration.GetSection("VertexAI:Gemini:ModelId").Get<string>()!;
     private string VertexAIGetGeminiVisionModel() => this._configuration.GetSection("VertexAI:Gemini:VisionModelId").Get<string>()!;
     private string VertexAIGetEmbeddingModel() => this._configuration.GetSection("VertexAI:EmbeddingModelId").Get<string>()!;
-    private string VertexAIGetApiKey() => this._configuration.GetSection("VertexAI:ApiKey").Get<string>()!;
+    private string VertexAIGetApiKey() => this._configuration.GetSection("VertexAI:BearerKey").Get<string>()!;
     private string VertexAIGetLocation() => this._configuration.GetSection("VertexAI:Location").Get<string>()!;
     private string VertexAIGetProjectId() => this._configuration.GetSection("VertexAI:ProjectId").Get<string>()!;
 }

@@ -41,7 +41,7 @@ public sealed class Example86_GeminiChatCompletion : BaseTest
     {
         this.WriteLine("============= Vertex AI - Gemini Chat Completion =============");
 
-        string geminiApiKey = TestConfiguration.VertexAI.ApiKey;
+        string geminiApiKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
         string geminiLocation = TestConfiguration.VertexAI.Location;
         string geminiProject = TestConfiguration.VertexAI.ProjectId;

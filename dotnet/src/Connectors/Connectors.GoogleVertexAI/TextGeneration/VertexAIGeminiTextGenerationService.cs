@@ -39,7 +39,7 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._textGenerationClient = new GeminiTextGenerationClient(new VertexAIGeminiChatCompletionClient(
+        this._textGenerationClient = new GeminiTextGenerationClient(new GeminiChatCompletionClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000

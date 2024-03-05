@@ -38,7 +38,7 @@ public sealed class Example85_GeminiTextGeneration : BaseTest
     {
         this.WriteLine("============= Vertex AI - Gemini Text Generation =============");
 
-        string geminiApiKey = TestConfiguration.VertexAI.ApiKey;
+        string geminiApiKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
         string geminiLocation = TestConfiguration.VertexAI.Location;
         string geminiProject = TestConfiguration.VertexAI.ProjectId;

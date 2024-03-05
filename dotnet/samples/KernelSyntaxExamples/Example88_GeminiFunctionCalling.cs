@@ -40,7 +40,7 @@ public sealed class Example88_GeminiFunctionCalling : BaseTest
     {
         this.WriteLine("============= Vertex AI - Gemini Chat Completion with function calling =============");
 
-        string geminiApiKey = TestConfiguration.VertexAI.ApiKey;
+        string geminiApiKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
         string geminiLocation = TestConfiguration.VertexAI.Location;
         string geminiProject = TestConfiguration.VertexAI.ProjectId;
