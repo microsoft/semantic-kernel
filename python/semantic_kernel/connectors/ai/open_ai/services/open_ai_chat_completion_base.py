@@ -355,14 +355,16 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         update_storage: Dict[str, Dict[int, Any]],
     ) -> List[OpenAIStreamingChatMessageContent]:
         """Build the streaming message with the tool call(s)."""
+        if not stream_chunks:
+            raise ServiceInvalidResponseError("Expected a non-empty stream_chunks.")
         streaming_chat_message_contents = []
-        for index, _ in stream_chunks.items():
+        for _, chunk in stream_chunks.items():
             chat_message: OpenAIStreamingChatMessageContent = None
-            for result in stream_chunks[index]:
-                content_to_add = result
-                chat_message = content_to_add if chat_message is None else chat_message + content_to_add
+            for result in chunk:
+                chat_message = result if chat_message is None else chat_message + result
             tool_calls_dict = update_storage["tool_call_ids_by_index"]
             chat_message.tool_calls = list(tool_calls_dict.values())
+            chat_message.role = ChatRole.ASSISTANT
             streaming_chat_message_contents.append(chat_message)
         return streaming_chat_message_contents
 
