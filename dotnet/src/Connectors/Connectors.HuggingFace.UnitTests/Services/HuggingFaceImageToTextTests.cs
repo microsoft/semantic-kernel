@@ -29,7 +29,9 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
 
         var expectedPayload = HuggingFaceTestHelper.GetTestResponseBytes("imagetotext_test_request.jpg");
-        this._imageContentInput = new ImageContent(new BinaryData(expectedPayload, "image/jpeg"), "model");
+#pragma warning disable SKEXP0015
+        this._imageContentInput = new ImageContent(expectedPayload, "model") { MimeType = "image/jpeg" };
+#pragma warning restore SKEXP0015
     }
 
     [Fact]
@@ -161,7 +163,7 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         var requestPayload = this._messageHandlerStub.RequestContent;
 
         Assert.NotNull(requestPayload);
-        Assert.Equal(this._imageContentInput.Data!.ToArray(), requestPayload);
+        Assert.Equal(this._imageContentInput.Data!.Value.Span, requestPayload);
     }
 
     [Fact]

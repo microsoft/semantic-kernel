@@ -85,7 +85,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result[0].Data);
-        Assert.True(result[0].Data!.ToArray().SequenceEqual(expectedByteArray));
+        Assert.True(result[0].Data!.Value.Span.SequenceEqual(expectedByteArray));
     }
 
     [Theory]

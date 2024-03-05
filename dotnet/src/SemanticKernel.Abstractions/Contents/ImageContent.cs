@@ -17,9 +17,17 @@ public sealed class ImageContent : KernelContent
     public Uri? Uri { get; set; }
 
     /// <summary>
-    /// The image binary data.
+    /// The image data.
     /// </summary>
-    public BinaryData? Data { get; set; }
+    public ReadOnlyMemory<byte>? Data { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImageContent"/> class.
+    /// </summary>
+    [JsonConstructor]
+    public ImageContent()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
@@ -28,7 +36,6 @@ public sealed class ImageContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    [JsonConstructor]
     public ImageContent(
         Uri uri,
         string? modelId = null,
@@ -47,22 +54,15 @@ public sealed class ImageContent : KernelContent
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
     public ImageContent(
-        BinaryData data,
+        ReadOnlyMemory<byte> data,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        Verify.NotNull(data, nameof(data));
-
         if (data!.IsEmpty)
         {
             throw new ArgumentException("Data cannot be empty", nameof(data));
-        }
-
-        if (string.IsNullOrWhiteSpace(data!.MediaType))
-        {
-            throw new ArgumentException("MediaType is needed for DataUri Images", nameof(data));
         }
 
         this.Data = data;
@@ -70,7 +70,7 @@ public sealed class ImageContent : KernelContent
 
     /// <summary>
     /// Returns the string representation of the image.
-    /// BinaryData images will be represented as DataUri
+    /// In-memory images will be represented as DataUri
     /// Remote Uri images will be represented as is
     /// </summary>
     /// <remarks>
@@ -83,11 +83,11 @@ public sealed class ImageContent : KernelContent
 
     private string? BuildDataUri()
     {
-        if (this.Data is null)
+        if (this.Data is null || string.IsNullOrEmpty(this.MimeType))
         {
             return null;
         }
 
-        return $"data:{this.Data.MediaType};base64,{Convert.ToBase64String(this.Data.ToArray())}";
+        return $"data:{this.MimeType};base64,{Convert.ToBase64String(this.Data.Value.ToArray())}";
     }
 }
