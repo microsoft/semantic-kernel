@@ -1,26 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncIterable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Tuple, Type, Union
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.contents import OpenAIChatMessageContent, OpenAIStreamingChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
@@ -412,3 +400,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             or any(not isinstance(completion, OpenAIChatMessageContent) for completion in completions)
             or any(not hasattr(completion, "tool_calls") or not completion.tool_calls for completion in completions)
         )
+
+    def _chat_message_content_to_dict(self, message: ChatMessageContent) -> Dict[str, Optional[str]]:
+        msg = super()._chat_message_content_to_dict(message)
+        if message.role == "tool":
+            if message.metadata and "tool_call_id" in message.metadata:
+                msg["tool_call_id"] = message.metadata["tool_call_id"]
+            if message.metadata and "function" in message.metadata:
+                msg["name"] = message.metadata["function_name"]
+        return msg
