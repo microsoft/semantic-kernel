@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
 {
     private readonly Dictionary<string, object?> _attributesInternal = new();
-    private readonly VertexAIGeminiChatCompletionClient _chatCompletionClient;
+    private readonly GeminiChatCompletionClient _chatCompletionClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VertexAIGeminiChatCompletionService"/> class.
@@ -39,7 +39,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._chatCompletionClient = new VertexAIGeminiChatCompletionClient(
+        this._chatCompletionClient = new GeminiChatCompletionClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
