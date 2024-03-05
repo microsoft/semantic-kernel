@@ -403,7 +403,10 @@ internal abstract class ClientCore
                 {
                     s_inflightAutoInvokes.Value--;
                 }
-                AddResponseMessage(chatOptions, chat, ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior), errorMessage: null, toolCall.Id, this.Logger);
+
+                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+
+                AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, toolCall.Id, this.Logger);
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, string toolId, ILogger logger)
                 {
@@ -593,7 +596,10 @@ internal abstract class ClientCore
                 {
                     s_inflightAutoInvokes.Value--;
                 }
-                AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior), errorMessage: null, this.Logger);
+
+                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+
+                AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
