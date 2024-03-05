@@ -23,7 +23,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
     /// Initializes a new instance of the <see cref="VertexAIGeminiChatCompletionService"/> class.
     /// </summary>
     /// <param name="model">The Gemini model for the chat completion service.</param>
-    /// <param name="bearerKey">The Bearer Key for authentication with the Gemini client.</param>
+    /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
