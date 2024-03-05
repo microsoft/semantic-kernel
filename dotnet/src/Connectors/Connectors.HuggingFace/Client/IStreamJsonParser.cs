@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 /// <summary>
 /// Represents a JSON parser that can parse a Stream containing JSON data and yield the individual JSON objects.

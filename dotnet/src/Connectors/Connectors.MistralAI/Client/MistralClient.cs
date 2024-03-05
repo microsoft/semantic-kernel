@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,8 +45,9 @@ internal sealed class MistralClient
         string modelId = executionSettings?.ModelId ?? this._modelId;
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings);
+        var endpoint = new Uri($"{this._endpoint}{this._separator}chat/completions");
 
-        using var httpRequestMessage = this.CreatePost(request, this._endpoint, this._apiKey, false);
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, false);
 
         var response = await this.SendRequestAsync<ChatCompletionResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
@@ -60,8 +62,10 @@ internal sealed class MistralClient
     internal async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         var request = new TextEmbeddingRequest(this._modelId, data);
+        var endpoint = new Uri($"{this._endpoint}{this._separator}embeddings");
 
-        using var httpRequestMessage = this.CreatePost(request, this._endpoint, this._apiKey, false);
+
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, false);
 
         var response = await this.SendRequestAsync<TextEmbeddingResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
@@ -110,6 +114,7 @@ internal sealed class MistralClient
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
         request.Headers.Add("Accept", stream ? "text/event-stream" : "application/json");
         request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        request.Content!.Headers.ContentType = new MediaTypeHeaderValue("application/json");
     }
 
     private async Task<T> SendRequestAsync<T>(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken)

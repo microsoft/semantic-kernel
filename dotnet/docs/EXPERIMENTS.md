@@ -29,7 +29,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 ## Connectors
 
-- SKEXP0020: Experimental AI connector
+- SKEXP0020: AI connector
 - SKEXP0021: Azure AI Search memory connector
 - SKEXP0022: Chroma memory connector
 - SKEXP0023: DuckDB memory connector
