@@ -2,25 +2,25 @@
 
 import json
 import logging
-from typing import List, Optional, Union
+from typing import AsyncIterable, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.ollama.ollama_request_settings import (
-    OllamaTextRequestSettings,
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaTextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
+class OllamaTextCompletion(TextCompletionClientBase):
     """
     Initializes a new instance of the OllamaTextCompletion class.
 
@@ -37,56 +37,60 @@ class OllamaTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     async def complete(
         self,
         prompt: str,
-        request_settings: OllamaTextRequestSettings,
-        **kwargs,
-    ) -> Union[str, List[str]]:
+        settings: OllamaTextPromptExecutionSettings,
+    ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
-            settings {AIRequestSettings} -- Settings for the request.
-            logger {Logger} -- A logger to use for logging (deprecated).
+            settings {OllamaTextPromptExecutionSettings} -- Settings for the request.
 
-            Returns:
-                Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
-        request_settings.prompt = prompt
-        request_settings.stream = False
+        settings.prompt = prompt
+        settings.stream = False
         async with AsyncSession(self.session) as session:
-            async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
+            async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
-                return await response.text()
+                text = await response.text()
+                return [TextContent(inner_content=text, ai_model_id=self.ai_model_id, text=text)]
 
     async def complete_stream(
         self,
         prompt: str,
-        request_settings: OllamaTextRequestSettings,
-        **kwargs,
-    ):
+        settings: OllamaTextPromptExecutionSettings,
+    ) -> AsyncIterable[List[StreamingTextContent]]:
         """
-        Streams a text completion using a Hugging Face model.
-        Note that this method does not support multiple responses.
+        Streams a text completion using a Ollama model.
+        Note that this method does not support multiple responses,
+        but the result will be a list anyway.
 
         Arguments:
             prompt {str} -- Prompt to complete.
-            request_settings {HuggingFaceRequestSettings} -- Request settings.
+            settings {OllamaTextPromptExecutionSettings} -- Request settings.
 
         Yields:
-            str -- Completion result.
+            List[StreamingTextContent] -- Completion result.
         """
-        request_settings.prompt = prompt
-        request_settings.stream = True
+        settings.prompt = prompt
+        settings.stream = True
         async with AsyncSession(self.session) as session:
-            async with session.post(self.url, json=request_settings.prepare_settings_dict()) as response:
+            async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)
-                    response_part = body.get("response")
-                    yield response_part
+                    if body.get("done") and body.get("response") is None:
+                        break
+                    yield [
+                        StreamingTextContent(
+                            choice_index=0, inner_content=body, ai_model_id=self.ai_model_id, text=body.get("response")
+                        )
+                    ]
                     if body.get("done"):
                         break
 
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "OllamaTextPromptExecutionSettings":
         """Get the request settings class."""
-        return OllamaTextRequestSettings
+        return OllamaTextPromptExecutionSettings

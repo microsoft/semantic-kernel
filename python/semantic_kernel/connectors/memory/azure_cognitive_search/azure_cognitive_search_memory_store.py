@@ -2,6 +2,7 @@
 
 import logging
 import uuid
+from inspect import isawaitable
 from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
@@ -10,6 +11,7 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     HnswVectorSearchAlgorithmConfiguration,
     SearchIndex,
+    SearchResourceEncryptionKey,
     VectorSearch,
 )
 from azure.search.documents.models import Vector
@@ -25,6 +27,7 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     get_search_index_async_client,
     memory_record_to_search_record,
 )
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -59,16 +62,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        try:
-            pass
-        except ImportError:
-            raise ValueError(
-                "Error: Unable to import Azure Cognitive Search client python package."
-                "Please install Azure Cognitive Search client"
-            )
-
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
             search_endpoint, admin_key, azure_credentials, token_credentials
@@ -83,6 +76,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
+        search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -91,6 +85,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
                                                                       (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
+            search_resource_encryption_key {SearchResourceEncryptionKey}            -- Optional Search Encryption Key
+                                                                                       (default: {None}).
+
         Returns:
             None
         """
@@ -118,10 +115,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             )
 
         if not self._search_index_client:
-            raise ValueError("Error: self._search_index_client not set 1.")
-
-        if self._search_index_client is None:
-            raise ValueError("Error: self._search_index_client not set 2.")
+            raise ServiceInitializationError("Error: self._search_index_client not set 1.")
 
         # Check to see if collection exists
         collection_index = None
@@ -136,6 +130,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                 name=collection_name.lower(),
                 fields=get_index_schema(self._vector_size),
                 vector_search=vector_search,
+                encryption_key=search_resource_encryption_key,
             )
 
             await self._search_index_client.create_index(index)
@@ -148,11 +143,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         results_list = []
-        try:
-            items = await self._search_index_client.list_index_names()
-        except TypeError:
-            # Note: used on Windows
-            items = self._search_index_client.list_index_names()
+        items = self._search_index_client.list_index_names()
+        if isawaitable(items):
+            items = await items
 
         async for result in items:
             results_list.append(result)
@@ -262,9 +255,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             search_result = await search_client.get_document(
                 key=encode_id(key), selected_fields=get_field_selection(with_embedding)
             )
-        except ResourceNotFoundError:
+        except ResourceNotFoundError as exc:
             await search_client.close()
-            raise KeyError("Memory record not found")
+            raise ServiceResourceNotFoundError("Memory record not found") from exc
 
         await search_client.close()
 

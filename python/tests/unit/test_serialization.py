@@ -4,11 +4,10 @@ import pytest
 import typing_extensions as te
 from pydantic import Field, Json
 
-from semantic_kernel import KernelFunctionBase
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
-from semantic_kernel.core_plugins.file_io_plugin import FileIOPlugin
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
@@ -16,43 +15,25 @@ from semantic_kernel.core_plugins.text_plugin import TextPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
 from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
-from semantic_kernel.orchestration.delegate_inference import DelegateInference
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.orchestration.kernel_function import KernelFunction
-from semantic_kernel.plugin_definition.function_view import FunctionView
-from semantic_kernel.plugin_definition.functions_view import FunctionsView
-from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
-from semantic_kernel.plugin_definition.parameter_view import ParameterView
-from semantic_kernel.plugin_definition.plugin_collection import PluginCollection
-from semantic_kernel.plugin_definition.plugin_collection_base import (
-    PluginCollectionBase,
-)
-from semantic_kernel.plugin_definition.read_only_plugin_collection import (
-    ReadOnlyPluginCollection,
-)
-from semantic_kernel.plugin_definition.read_only_plugin_collection_base import (
-    ReadOnlyPluginCollectionBase,
-)
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
-from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
-from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
-from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
-from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
-    PromptTemplatingEngine,
-)
-from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
-from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
@@ -74,89 +55,52 @@ class _Serializable(t.Protocol):
 def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     """Return a factory for various objects in semantic-kernel."""
 
-    def create_functions_view() -> FunctionsView:
-        """Return a functions view."""
-        result = FunctionsView()
-        result.add_function(
-            FunctionView(
-                name="function1",
-                plugin_name="plugin1",
-                description="Native function",
-                parameters=[],
-                is_semantic=False,
-                is_asynchronous=True,
-            )
-        )
-        result.add_function(
-            FunctionView(
-                name="function1",
-                plugin_name="plugin1",
-                description="Semantic function",
-                parameters=[],
-                is_semantic=True,
-                is_asynchronous=True,
-            )
-        )
-        return result
-
     def create_kernel_function() -> KernelFunction:
         """Return an KernelFunction."""
 
         @kernel_function(name="function")
-        def my_function(cx: KernelContext) -> str:
-            return f"F({cx.variables.input})"
+        def my_function(arguments: KernelArguments) -> str:
+            return f"F({arguments['input']})"
 
-        return KernelFunction.from_native_method(my_function)
-
-    def create_context_variables() -> ContextVariables:
-        """Return a context variables object."""
-        return ContextVariables(
-            content="content",
-            variables={"foo": "bar"},
+        return KernelFunction.from_method(
+            plugin_name="plugin",
+            method=my_function,
         )
 
-    def create_plugin_collection() -> PluginCollection:
+    def create_chat_history() -> ChatHistory:
+        return ChatHistory()
+
+    def create_plugin_collection() -> KernelPluginCollection:
         """Return a plugin collection."""
         # TODO: Add a few plugins to this collection.
-        return PluginCollection()
+        return KernelPluginCollection()
 
     cls_obj_map = {
         Block: Block(content="foo"),
         CodeBlock: CodeBlock(content="foo"),
-        FunctionIdBlock: FunctionIdBlock(content="bar"),
+        FunctionIdBlock: FunctionIdBlock(content="foo.bar"),
         TextBlock: TextBlock(content="baz"),
-        ValBlock: ValBlock(content="qux"),
-        VarBlock: VarBlock(content="quux"),
-        CodeTokenizer: CodeTokenizer(),
-        PromptTemplateEngine: PromptTemplateEngine(),
-        TemplateTokenizer: TemplateTokenizer(),
-        ParameterView: ParameterView(
+        ValBlock: ValBlock(content="'qux'"),
+        VarBlock: VarBlock(content="$quux"),
+        NamedArgBlock: NamedArgBlock(content="foo='bar'"),
+        # PromptTemplateEngine: PromptTemplateEngine(),
+        KernelParameterMetadata: KernelParameterMetadata(
             name="foo",
             description="bar",
             default_value="baz",
             type="string",
-            required=True,
+            is_required=True,
         ),
-        FunctionView: FunctionView(
-            "foo",
-            "bar",
-            "baz",
-            [ParameterView(name="qux", description="bar", default_value="baz")],
-            True,
-            False,
+        KernelFunctionMetadata: KernelFunctionMetadata(
+            name="foo",
+            plugin_name="bar",
+            description="baz",
+            parameters=[KernelParameterMetadata(name="qux", description="bar", default_value="baz")],
+            is_prompt=True,
+            is_asynchronous=False,
         ),
-        FunctionsView: create_functions_view(),
-        ReadOnlyPluginCollection: create_plugin_collection().read_only_plugin_collection,
-        DelegateHandlers: DelegateHandlers(),
-        DelegateInference: DelegateInference(),
-        ContextVariables: create_context_variables(),
-        PluginCollection: create_plugin_collection(),
-        KernelContext[NullMemory]: KernelContext[NullMemory](
-            # TODO: Test serialization with different types of memories.
-            variables=create_context_variables(),
-            memory=NullMemory(),
-            plugin_collection=create_plugin_collection().read_only_plugin_collection,
-        ),
+        ChatHistory: create_chat_history(),
+        KernelPluginCollection: create_plugin_collection(),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
     }
@@ -170,7 +114,6 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 PROTOCOLS = [
     pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
-    FileIOPlugin,
     HttpPlugin,
     MathPlugin,
     TextMemoryPlugin,
@@ -178,35 +121,18 @@ PROTOCOLS = [
     TimePlugin,
     WaitPlugin,
     pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
-    CodeRenderer,
-    PromptTemplatingEngine,
-    TextRenderer,
 ]
 
 BASE_CLASSES = [
-    ReadOnlyPluginCollectionBase,
-    PluginCollectionBase,
     SemanticTextMemoryBase,
-    KernelFunctionBase,
-]
-
-# Classes that don't need serialization
-UNSERIALIZED_CLASSES = [
-    ReadOnlyPluginCollection,
 ]
 
 STATELESS_CLASSES = [
-    CodeTokenizer,
-    PromptTemplateEngine,
-    TemplateTokenizer,
-    DelegateHandlers,
-    DelegateInference,
     NullMemory,
 ]
 
 ENUMS = [
     BlockTypes,
-    DelegateInference,
 ]
 
 PYDANTIC_MODELS = [
@@ -216,13 +142,11 @@ PYDANTIC_MODELS = [
     TextBlock,
     ValBlock,
     VarBlock,
-    ParameterView,
-    FunctionView,
-    FunctionsView,
-    ReadOnlyPluginCollection,
-    PluginCollection,
-    ContextVariables,
-    KernelContext[NullMemory],
+    NamedArgBlock,
+    KernelParameterMetadata,
+    KernelFunctionMetadata,
+    KernelPluginCollection,
+    ChatHistory,
     pytest.param(
         KernelFunction,
         marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),
@@ -233,7 +157,7 @@ PYDANTIC_MODELS = [
 class TestUsageInPydanticFields:
     @pytest.mark.parametrize(
         "kernel_type",
-        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES + UNSERIALIZED_CLASSES,
+        BASE_CLASSES + PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES,
     )
     def test_usage_as_optional_field(
         self,
