@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 public class AudioContent : KernelContent
 {
     /// <summary>
-    /// The audio binary data.
+    /// The audio data.
     /// </summary>
     public ReadOnlyMemory<byte>? Data { get; set; }
 
