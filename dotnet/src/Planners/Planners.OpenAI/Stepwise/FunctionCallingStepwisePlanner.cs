@@ -259,7 +259,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         if (valueObj is ChatMessageContent chatMessageContent)
         {
-            return chatMessageContent.Content ?? string.Empty;
+            return chatMessageContent.ToString();
         }
         else if (valueObj is RestApiOperationResponse apiResponse)
         {
@@ -282,7 +282,7 @@ public sealed class FunctionCallingStepwisePlanner
         }
         else
         {
-            resultStr = JsonSerializer.Serialize(valueObj, toolCallBehavior?.FunctionResultSerializerOptions);
+            resultStr = JsonSerializer.Serialize(valueObj, toolCallBehavior?.ToolCallResultSerializerOptions);
         }
 
         return resultStr;

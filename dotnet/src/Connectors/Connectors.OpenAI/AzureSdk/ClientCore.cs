@@ -1082,13 +1082,13 @@ internal abstract class ClientCore
         // without unnecessary serialization of the whole message content class.  
         if (functionResult is ChatMessageContent chatMessageContent)
         {
-            return chatMessageContent.Content;
+            return chatMessageContent.ToString();
         }
 
         // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
         // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
         // For more details about the polymorphic serialization, see the article at:  
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
-        return JsonSerializer.Serialize(functionResult, toolCallBehavior?.FunctionResultSerializerOptions);
+        return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
     }
 }

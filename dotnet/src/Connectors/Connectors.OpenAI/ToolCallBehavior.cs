@@ -82,16 +82,16 @@ public abstract class ToolCallBehavior
         return new RequiredFunction(function, autoInvoke);
     }
 
-    /// <summary>
-    /// Options to control function call result serialization behavior.
-    /// </summary>
-    public JsonSerializerOptions? FunctionResultSerializerOptions { get; set; }
-
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
     private ToolCallBehavior(bool autoInvoke)
     {
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
+
+    /// <summary>
+    /// Options to control tool call result serialization behavior.
+    /// </summary>
+    public virtual JsonSerializerOptions? ToolCallResultSerializerOptions { get; set; }
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
     /// <remarks>
