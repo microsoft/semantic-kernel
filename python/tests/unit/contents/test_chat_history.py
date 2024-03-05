@@ -375,7 +375,7 @@ async def test_handwritten_xml():
 
 @pytest.mark.asyncio
 async def test_no_content_message():
-    template = '<message role="assistant" /><message role="user">test content</message>'
+    template = '<message role="assistant"></message><message role="user">test content</message>'
     rendered = await KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(kernel=Kernel(), arguments=KernelArguments())

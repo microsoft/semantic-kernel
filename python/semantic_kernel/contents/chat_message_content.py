@@ -45,7 +45,7 @@ class ChatMessageContent(KernelContent):
         root = Element(root_key)
         root.set("role", self.role.value)
         root.text = self.content or ""
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode")
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
     @classmethod
     def from_element(cls, element: Element) -> "ChatMessageContent":
