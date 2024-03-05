@@ -53,7 +53,7 @@ class OpenAIChatMessageContent(ChatMessageContent):
         if self.function_call:
             root.set("function_call", self.function_call.model_dump_json(exclude_none=True))
         if self.tool_calls:
-            root.set("tool_calls", ",".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
+            root.set("tool_calls", "|".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
         root.text = self.content or ""
         return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
@@ -73,5 +73,5 @@ class OpenAIChatMessageContent(ChatMessageContent):
         if function_call := element.get("function_call"):
             args["function_call"] = FunctionCall.model_validate_json(function_call)
         if tool_calls := element.get("tool_calls"):
-            args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split(",")]
+            args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split("|")]
         return cls(**args)
