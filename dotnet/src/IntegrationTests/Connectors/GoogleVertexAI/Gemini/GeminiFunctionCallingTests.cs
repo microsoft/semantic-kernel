@@ -337,7 +337,9 @@ public sealed class GeminiFunctionCallingTests : TestsBase
     {
         [KernelFunction(nameof(GetDate))]
         [Description("Get current (today) date.")]
+#pragma warning disable CA1024
         public DateTime GetDate()
+#pragma warning restore CA1024
         {
             return DateTime.Now.Date;
         }

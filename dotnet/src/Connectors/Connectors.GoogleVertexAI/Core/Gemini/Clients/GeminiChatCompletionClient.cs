@@ -232,7 +232,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private async Task ProcessFunctionsAsync(ChatCompletionState state, CancellationToken cancellationToken)
     {
-        this.Logger.LogDebug("Tool requests: {Requests}", state.LastMessage.ToolCalls!.Count);
+        this.Logger.LogDebug("Tool requests: {Requests}", state.LastMessage!.ToolCalls!.Count);
         this.Logger.LogTrace("Function call requests: {FunctionCall}",
             string.Join(", ", state.LastMessage.ToolCalls.Select(ftc => ftc.ToString())));
 
@@ -557,16 +557,17 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private sealed class ChatCompletionState
     {
-        public ChatHistory ChatHistory { get; set; }
-        public GeminiRequest GeminiRequest { get; set; }
-        public Kernel Kernel { get; set; }
-        public GeminiPromptExecutionSettings ExecutionSettings { get; set; }
-        public GeminiChatMessageContent LastMessage { get; set; }
+        public ChatHistory ChatHistory { get; set; } = null!;
+        public GeminiRequest GeminiRequest { get; set; } = null!;
+        public Kernel Kernel { get; set; } = null!;
+        public GeminiPromptExecutionSettings ExecutionSettings { get; set; } = null!;
+        public GeminiChatMessageContent? LastMessage { get; set; }
         public int Iteration { get; set; }
         public bool AutoInvoke { get; set; }
 
         public void AddLastMessageToChatHistoryAndRequest()
         {
+            Verify.NotNull(this.LastMessage);
             this.ChatHistory.Add(this.LastMessage);
             this.GeminiRequest.AddChatMessage(this.LastMessage);
         }

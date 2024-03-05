@@ -39,13 +39,13 @@ internal sealed class GeminiTool
         /// Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
         /// </remarks>
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         /// <summary>
         /// Required. A brief description of the function.
         /// </summary>
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public string Description { get; set; } = null!;
 
         /// <summary>
         /// Optional. Describes the parameters to this function.
