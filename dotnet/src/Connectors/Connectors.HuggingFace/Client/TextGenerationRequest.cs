@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 /// <summary>
 /// HuggingFace text generation request object.
