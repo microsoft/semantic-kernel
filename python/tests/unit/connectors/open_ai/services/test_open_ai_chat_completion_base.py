@@ -161,22 +161,25 @@ async def test_process_tool_calls():
     )
 
 
-@pytest.mark.parametrize("completions,auto_invoke_kernel_functions,expected_result", [
-    # Case 1: Empty completions, auto_invoke_kernel_functions=False
-    ([], False, True),
-    # Case 2: Completions with OpenAIChatMessageContent, auto_invoke_kernel_functions=True
-    ([MagicMock(spec=OpenAIChatMessageContent)], True, True),
-    # Case 3: Completions with OpenAIChatMessageContent, no tool_calls, auto_invoke_kernel_functions=True
-    ([MagicMock(spec=OpenAIChatMessageContent, tool_calls=[])], True, True),
-    # Case 4: Completions with OpenAIStreamingChatMessageContent, auto_invoke_kernel_functions=True
-    ([MagicMock(spec=OpenAIStreamingChatMessageContent)], True, True),
-    # Case 5: Completions with OpenAIStreamingChatMessageContent, auto_invoke_kernel_functions=False
-    ([MagicMock(spec=OpenAIStreamingChatMessageContent)], False, True),
-    # Case 6: Completions with both types, auto_invoke_kernel_functions=True
-    ([MagicMock(spec=OpenAIChatMessageContent), MagicMock(spec=OpenAIStreamingChatMessageContent)], True, True),
-    # Case 7: Completions with OpenAIChatMessageContent with tool_calls, auto_invoke_kernel_functions=True
-    ([MagicMock(spec=OpenAIChatMessageContent, tool_calls=[{}])], True, False),
-])
+@pytest.mark.parametrize(
+    "completions,auto_invoke_kernel_functions,expected_result",
+    [
+        # Case 1: Empty completions, auto_invoke_kernel_functions=False
+        ([], False, True),
+        # Case 2: Completions with OpenAIChatMessageContent, auto_invoke_kernel_functions=True
+        ([MagicMock(spec=OpenAIChatMessageContent)], True, True),
+        # Case 3: Completions with OpenAIChatMessageContent, no tool_calls, auto_invoke_kernel_functions=True
+        ([MagicMock(spec=OpenAIChatMessageContent, tool_calls=[])], True, True),
+        # Case 4: Completions with OpenAIStreamingChatMessageContent, auto_invoke_kernel_functions=True
+        ([MagicMock(spec=OpenAIStreamingChatMessageContent)], True, True),
+        # Case 5: Completions with OpenAIStreamingChatMessageContent, auto_invoke_kernel_functions=False
+        ([MagicMock(spec=OpenAIStreamingChatMessageContent)], False, True),
+        # Case 6: Completions with both types, auto_invoke_kernel_functions=True
+        ([MagicMock(spec=OpenAIChatMessageContent), MagicMock(spec=OpenAIStreamingChatMessageContent)], True, True),
+        # Case 7: Completions with OpenAIChatMessageContent with tool_calls, auto_invoke_kernel_functions=True
+        ([MagicMock(spec=OpenAIChatMessageContent, tool_calls=[{}])], True, False),
+    ],
+)
 @pytest.mark.asyncio
 async def test_should_return_completions_response(completions, auto_invoke_kernel_functions, expected_result):
     chat_completion_base = OpenAIChatCompletionBase(
