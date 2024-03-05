@@ -47,6 +47,6 @@ public abstract class BaseTest
     /// <param name="target">Target object to write</param>
     protected void Write(object? target = null)
     {
-        this.Output.WriteLine(target ?? string.Empty);
+        this.Output.Write(target ?? string.Empty);
     }
 }
