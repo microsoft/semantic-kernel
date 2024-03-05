@@ -5,7 +5,7 @@ import logging
 from importlib import metadata
 from typing import Any, List, Mapping, Optional, Tuple
 
-from motor import MotorCommandCursor, core, motor_asyncio
+from motor import core, motor_asyncio
 from numpy import ndarray
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
@@ -272,7 +272,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         if min_relevance_score is not None:
             pipeline.append({"$match": {"score": {"$gte": min_relevance_score}}})
 
-        cursor: MotorCommandCursor = self.database[collection_name].aggregate(pipeline)
+        cursor = self.database[collection_name].aggregate(pipeline)
 
         return [
             (

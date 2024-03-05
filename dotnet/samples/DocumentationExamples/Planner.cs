@@ -54,7 +54,7 @@ public class Planner : BaseTest
         {
             // Get user input
             Write("User > ");
-            history.AddUserMessage(ReadLine()!);
+            history.AddUserMessage(userInput!);
 
             // Enable auto function calling
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
