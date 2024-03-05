@@ -168,11 +168,14 @@ public sealed class GeminiRequestTests
     public void FromChatHistoryImageAsImageContentItReturnsGeminiRequestWithChatHistory()
     {
         // Arrange
+        ReadOnlyMemory<byte> imageAsBytes = new byte[] { 0x00, 0x01, 0x02, 0x03 };
         ChatHistory chatHistory = [];
         chatHistory.AddUserMessage("user-message");
         chatHistory.AddAssistantMessage("assist-message");
         chatHistory.AddUserMessage(contentItems:
-            [new ImageContent(new Uri("https://example-image.com/"), metadata: new Dictionary<string, object?> { ["mimeType"] = "value" })]);
+            [new ImageContent(new Uri("https://example-image.com/")) { MimeType = "image/png" }]);
+        chatHistory.AddUserMessage(contentItems:
+            [new ImageContent(imageAsBytes) { MimeType = "image/png" }]);
         var executionSettings = new GeminiPromptExecutionSettings();
 
         // Act
@@ -182,7 +185,10 @@ public sealed class GeminiRequestTests
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[0].Content, c.Parts[0].Text),
             c => Assert.Equal(chatHistory[1].Content, c.Parts[0].Text),
-            c => Assert.Equal(chatHistory[2].Items!.Cast<ImageContent>().Single().Uri, c.Parts[0].FileData!.FileUri));
+            c => Assert.Equal(chatHistory[2].Items!.Cast<ImageContent>().Single().Uri,
+                c.Parts[0].FileData!.FileUri),
+            c => Assert.True(imageAsBytes.ToArray()
+                .SequenceEqual(Convert.FromBase64String(c.Parts[0].InlineData!.InlineData))));
     }
 
     [Fact]
