@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from abc import ABC, abstractmethod
 from typing import List
 
 
-class ConnectorBase:
+class ConnectorBase(ABC):
     """
     Base class for search engine connectors
     """
 
-    def search(self, query: str, num_results: str, offset: str) -> List[str]:
+    @abstractmethod
+    async def search(self, query: str, num_results: str, offset: str) -> List[str]:
         pass

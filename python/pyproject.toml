@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.5.1.dev"
+version = "0.9.0.beta1"
 description = "Semantic Kernel Python SDK"
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -12,23 +12,24 @@ aiohttp = "^3.8"
 numpy = "^1.24.2"
 openai = ">=1.0"
 aiofiles = "^23.1.0"
-python-dotenv = "1.0.0"
+python-dotenv = "1.0.1"
 regex = "^2023.6.3"
 openapi_core = "^0.18.0"
 prance = "^23.6.21.0"
 pydantic = ">2"
-motor = "^3.3.1"
+motor = "^3.3.2"
+defusedxml = "^0.7.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.5.0"
-# please keep black and ruff version in sync with the ones in .pre-commit-config.yaml
-black = "^23.12.0"
-ruff = "0.1.8"
+black = ">=23.12.0"
+ruff = ">=0.2.2"
 ipykernel = "^6.21.1"
 pytest = "7.4.3"
 pytest-asyncio = "0.23.2"
 snoop = "0.4.3"
-pytest-cov = "4.1.0"
+pytest-cov = ">=4.1.0"
+mypy = ">=1.8.0"
 
 [tool.poetry.group.google_palm.dependencies]
 google-generativeai = { version = ">=0.1,<0.4", markers = "python_version >= '3.9'" }
@@ -50,7 +51,7 @@ pymilvus = "2.2.16"
 milvus = "2.2.16"
 
 [tool.poetry.group.weaviate.dependencies]
-weaviate-client = "^3.18.0"
+weaviate-client = ">=3.18,<5.0"
 
 [tool.poetry.group.pinecone.dependencies]
 pinecone-client = "^2.2.2"
@@ -76,11 +77,8 @@ azure-core = "^1.28.0"
 usearch = "1.1.1"
 pyarrow = ">=12.0.1,<15.0.0"
 
-[tool.isort]
-profile = "ruff"
-
 [tool.ruff]
-select = ["E", "F", "I"]
+lint.select = ["E", "F", "I"]
 line-length = 120
 
 [tool.black]
