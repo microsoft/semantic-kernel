@@ -23,7 +23,7 @@ public sealed class GoogleAIGeminiTextGenerationService : ITextGenerationService
     /// Initializes a new instance of the <see cref="GoogleAIGeminiTextGenerationService"/> class.
     /// </summary>
     /// <param name="model">The model identifier.</param>
-    /// <param name="apiKey">The API key.</param>
+    /// <param name="apiKey">The API key for authentication.</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public GoogleAIGeminiTextGenerationService(

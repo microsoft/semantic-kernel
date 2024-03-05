@@ -66,12 +66,12 @@ public sealed class Example87_GeminiVision : BaseTest
     {
         this.WriteLine("===== Vertex AI Gemini API =====");
 
-        string geminiApiKey = TestConfiguration.VertexAI.BearerKey;
+        string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = "gemini-pro-vision";
         string geminiLocation = TestConfiguration.VertexAI.Location;
         string geminiProject = TestConfiguration.VertexAI.ProjectId;
 
-        if (geminiApiKey is null || geminiLocation is null || geminiProject is null)
+        if (geminiBearerKey is null || geminiLocation is null || geminiProject is null)
         {
             this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
             return;
@@ -80,7 +80,7 @@ public sealed class Example87_GeminiVision : BaseTest
         Kernel kernel = Kernel.CreateBuilder()
             .AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
-                apiKey: geminiApiKey,
+                bearerKey: geminiBearerKey,
                 location: geminiLocation,
                 projectId: geminiProject)
             .Build();
