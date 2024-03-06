@@ -4,7 +4,6 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class ToolCallBehavior(KernelBaseModel):
-
     """
     This, at its start, is a very slim class. The reason that this class is necessary
     is because during auto invoking function calls for OpenAI streaming chat completions,

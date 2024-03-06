@@ -4,6 +4,7 @@
 QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
 The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
+
 import asyncio
 import logging
 import uuid

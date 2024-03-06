@@ -4,6 +4,7 @@ Split text in chunks, attempting to leave meaning intact.
 For plain text, split looking at new lines first, then periods, and so on.
 For markdown, split looking at punctuation first, and so on.
 """
+
 import os
 import re
 from typing import Callable, List, Tuple
