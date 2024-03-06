@@ -151,7 +151,9 @@ class Kernel(KernelBaseModel):
         When multiple functions are provided only the last one is streamed, the rest is executed as a pipeline.
 
         Arguments:
-            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute, this value has precedence when supplying both this and using function_name and plugin_name, if this is none, function_name and plugin_name are used and cannot be None.
+            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute,
+            this value has precedence when supplying both this and using function_name and plugin_name,
+            if this is none, function_name and plugin_name are used and cannot be None.
             arguments (KernelArguments): The arguments to pass to the function(s), optional
             function_name (Optional[str]): The name of the function to execute
             plugin_name (Optional[str]): The name of the plugin to execute
@@ -272,7 +274,9 @@ class Kernel(KernelBaseModel):
         When multiple functions are passed the FunctionResult of each is put into a list.
 
         Arguments:
-            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute, this value has precedence when supplying both this and using function_name and plugin_name, if this is none, function_name and plugin_name are used and cannot be None.
+            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute,
+            this value has precedence when supplying both this and using function_name and plugin_name,
+            if this is none, function_name and plugin_name are used and cannot be None.
             arguments (KernelArguments): The arguments to pass to the function(s), optional
             function_name (Optional[str]): The name of the function to execute
             plugin_name (Optional[str]): The name of the plugin to execute
