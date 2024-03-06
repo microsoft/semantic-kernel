@@ -13,6 +13,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # The other sequential planner extensions will be left in right now for as long as we support that planner
 # and will be removed once we deprecate it.
 
+
 class PlannerFunctionExtension:
     @staticmethod
     def to_manual_string(function: KernelFunctionMetadata):

@@ -23,15 +23,15 @@ class FunctionCallingStepwisePlannerOptions(PlannerOptions):
     min_iteration_time_ms: Optional[int] = 100
     execution_settings: Optional[OpenAIPromptExecutionSettings] = None
 
-    @field_validator('max_tokens', 'max_prompt_tokens', mode='after')
+    @field_validator("max_tokens", "max_prompt_tokens", mode="after")
     @classmethod
     def adjust_token_settings(cls, value, info):
-        max_tokens = info.data.get('max_tokens')
-        max_tokens_ratio = info.data.get('max_tokens_ratio', 0.1)
+        max_tokens = info.data.get("max_tokens")
+        max_tokens_ratio = info.data.get("max_tokens_ratio", 0.1)
 
-        if max_tokens is not None and info.field_name == 'max_tokens':
+        if max_tokens is not None and info.field_name == "max_tokens":
             return int(max_tokens * max_tokens_ratio)
-        elif max_tokens is not None and info.field_name == 'max_prompt_tokens':
+        elif max_tokens is not None and info.field_name == "max_prompt_tokens":
             return int(max_tokens * (1 - max_tokens_ratio))
-        
+
         return value

@@ -120,9 +120,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         for i in range(self.options.max_iterations):
             # sleep for a bit to avoid rate limiting
             if i > 0:
-                await asyncio.sleep(
-                    self.options.min_iteration_time_ms / 1000.0
-                )  # convert ms to sec
+                await asyncio.sleep(self.options.min_iteration_time_ms / 1000.0)  # convert ms to sec
             # For each step, request another completion to select a function for that step
             chat_history_for_steps.add_user_message(STEPWISE_USER_MESSAGE)
             chat_result = await self._get_completion_with_functions(
@@ -144,7 +142,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                     chat_history=chat_history_for_steps,
                     iterations=i + 1,
                 )
-            
+
             chat_history_for_steps = await self._process_tool_calls(chat_result, cloned_kernel, chat_history_for_steps)
 
         # We're done, but the model hasn't returned a final answer.
