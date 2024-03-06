@@ -24,7 +24,11 @@ async def main():
 
     await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
 
-    result = await kernel.invoke_prompt("{{recall 'budget by year'}} What is my budget for 2024?")
+    result = await kernel.invoke_prompt(
+        function_name="budget",
+        plugin_name="BudgetPlugin",
+        prompt="{{recall 'budget by year'}} What is my budget for 2024?",
+    )
     print(result)
 
 
