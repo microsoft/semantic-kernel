@@ -64,6 +64,8 @@ async def example2(kernel: sk.Kernel, service_id: str):
     print(question)
 
     oracle = kernel.create_function_from_prompt(
+        function_name="oracle",
+        plugin_name="OraclePlugin",
         template=prompt,
         execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(
             service_id=service_id, max_tokens=150, temperature=0, top_p=1

@@ -97,8 +97,15 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
     user_input = "Do I live in Seattle?"
     print(f"Question: {user_input}")
     req_settings = kernel.get_service("dv").get_prompt_execution_settings_class()(service_id="dv")
-    chat_func = kernel.create_function_from_prompt(sk_prompt_rag, prompt_execution_settings=req_settings)
-    self_critique_func = kernel.create_function_from_prompt(sk_prompt_rag_sc, prompt_execution_settings=req_settings)
+    chat_func = kernel.create_function_from_prompt(
+        function_name="rag", plugin_name="RagPlugin", prompt=sk_prompt_rag, prompt_execution_settings=req_settings
+    )
+    self_critique_func = kernel.create_function_from_prompt(
+        function_name="self_critique_rag",
+        plugin_name="RagPlugin",
+        prompt=sk_prompt_rag_sc,
+        prompt_execution_settings=req_settings,
+    )
 
     chat_history = ChatHistory()
     chat_history.add_user_message(user_input)
