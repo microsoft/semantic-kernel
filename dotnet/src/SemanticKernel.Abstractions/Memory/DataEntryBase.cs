@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// A base class for data entries.
 /// </summary>
+[Experimental("SKEXP0003")]
 public class DataEntryBase
 {
     /// <summary>

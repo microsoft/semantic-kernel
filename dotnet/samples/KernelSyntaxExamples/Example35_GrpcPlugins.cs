@@ -1,35 +1,38 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Grpc.Extensions;
-using Microsoft.SemanticKernel.Orchestration;
-using RepoUtils;
+using Microsoft.SemanticKernel.Plugins.Grpc;
+using Xunit;
+using Xunit.Abstractions;
 
-/**
- * This example shows how to use gRPC plugins.
- */
-// ReSharper disable once InconsistentNaming
-public static class Example35_GrpcPlugins
+namespace Examples;
+
+// This example shows how to use gRPC plugins.
+public class Example35_GrpcPlugins : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact(Skip = "Setup crendentials")]
+    public async Task RunAsync()
     {
-        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
 
         // Import a gRPC plugin using one of the following Kernel extension methods
-        // kernel.RegisterGrpcFunctions
-        // kernel.ImportGrpcFunctionsFromDirectory
-        var plugin = kernel.ImportGrpcFunctionsFromFile("<plugin-name>", "<path-to-.proto-file>");
+        // kernel.ImportGrpcPlugin
+        // kernel.ImportGrpcPluginFromDirectory
+        var plugin = kernel.ImportPluginFromGrpcFile("<path-to-.proto-file>", "<plugin-name>");
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("address", "<gRPC-server-address>");
-        contextVariables.Set("payload", "<gRPC-request-message-as-json>");
+        var arguments = new KernelArguments();
+        arguments["address"] = "<gRPC-server-address>";
+        arguments["payload"] = "<gRPC-request-message-as-json>";
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, plugin["<operation-name>"]);
+        var result = await kernel.InvokeAsync(plugin["<operation-name>"], arguments);
 
-        Console.WriteLine("Plugin response: {0}", result.GetValue<string>());
+        WriteLine($"Plugin response: {result.GetValue<string>()}");
+    }
+
+    public Example35_GrpcPlugins(ITestOutputHelper output) : base(output)
+    {
     }
 }

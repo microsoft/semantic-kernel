@@ -21,14 +21,8 @@ public class FileIOPluginTests
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = new KernelBuilder().Build();
-
-        // Act
-        var functions = kernel.ImportFunctions(new FileIOPlugin(), "fileIO");
-
-        // Assert no exception occurs e.g. due to reflection
-        Assert.NotNull(functions);
+        // Act - Assert no exception occurs e.g. due to reflection
+        Assert.NotNull(KernelPluginFactory.CreateFromType<FileIOPlugin>("fileIO"));
     }
 
     [Fact]
@@ -37,7 +31,7 @@ public class FileIOPluginTests
         // Arrange
         var plugin = new FileIOPlugin();
         var path = Path.GetTempFileName();
-        File.WriteAllText(path, "hello world");
+        await File.WriteAllTextAsync(path, "hello world");
 
         // Act
         var result = await plugin.ReadAsync(path);

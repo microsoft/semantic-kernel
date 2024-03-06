@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal class WeaviateObject
 {
