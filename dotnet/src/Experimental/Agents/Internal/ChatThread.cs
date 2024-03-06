@@ -54,7 +54,7 @@ internal sealed class ChatThread : IAgentThread
     {
         this.ThrowIfDeleted();
 
-        var messagemodel = await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds: null, cancellationToken).ConfigureAwait(false);
+        var messagemodel = await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds, cancellationToken).ConfigureAwait(false);
 
         return new ChatMessage(messagemodel);
     }
@@ -72,7 +72,7 @@ internal sealed class ChatThread : IAgentThread
 
         if (!string.IsNullOrWhiteSpace(userMessage))
         {
-            yield return await this.AddUserMessageAsync(userMessage, fileIds: fileIds, cancellationToken).ConfigureAwait(false);
+            yield return await this.AddUserMessageAsync(userMessage, fileIds, cancellationToken).ConfigureAwait(false);
         }
 
         // Finalize prompt / agent instructions using provided parameters.
