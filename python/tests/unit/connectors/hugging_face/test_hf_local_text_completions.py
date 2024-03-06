@@ -14,7 +14,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
     ("model_name", "task", "input_str"),
     [
         (
-            "patrickvonplaten/t5-tiny-random",
+            "Narsil/tiny-random-bart",
             "text2text-generation",
             "translate English to Dutch: Hello, how are you?",
         ),
