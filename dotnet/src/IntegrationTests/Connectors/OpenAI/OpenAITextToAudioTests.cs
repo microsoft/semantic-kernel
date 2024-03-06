@@ -48,7 +48,7 @@ public sealed class OpenAITextToAudioTests : IDisposable
 
         // Assert
         Assert.NotNull(result.Data);
-        Assert.False(result.Data!.IsEmpty);
+        Assert.False(result.Data!.Value.IsEmpty);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public sealed class OpenAITextToAudioTests : IDisposable
 
         // Assert
         Assert.NotNull(result.Data);
-        Assert.False(result.Data!.IsEmpty);
+        Assert.False(result.Data!.Value.IsEmpty);
     }
 
     public void Dispose()

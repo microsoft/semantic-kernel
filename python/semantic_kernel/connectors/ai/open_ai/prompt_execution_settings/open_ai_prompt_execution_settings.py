@@ -60,6 +60,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
     messages: Optional[List[Dict[str, Any]]] = None
+    auto_invoke_kernel_functions: Optional[bool] = Field(default=False, exclude=True)
+    max_auto_invoke_attempts: Optional[int] = Field(default=5, exclude=True)
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
