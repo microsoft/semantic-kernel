@@ -33,6 +33,7 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -166,7 +167,7 @@ class Kernel(KernelBaseModel):
         results: List[FunctionResult] = []
         if not functions:
             if not function_name or not plugin_name:
-                raise KernelFunctionNotFoundError("No function or plugin name provided")
+                raise KernelFunctionNotFoundError("No function(s) or function- and plugin-name provided")
             functions = [self.func(plugin_name, function_name)]
         if isinstance(functions, KernelFunction):
             stream_function = functions
@@ -485,7 +486,7 @@ class Kernel(KernelBaseModel):
             raise PluginInvalidNameError("Plugin name cannot be empty")
         logger.debug(f"Importing plugin {plugin_name}")
 
-        functions = []
+        functions: Dict[str, KernelFunction] = {}
 
         if isinstance(plugin_instance, dict):
             candidates = plugin_instance.items()
@@ -497,16 +498,13 @@ class Kernel(KernelBaseModel):
             if not hasattr(candidate, "__kernel_function__"):
                 continue
 
-            functions.append(KernelFunction.from_method(plugin_name=plugin_name, method=candidate))
-
+            func = KernelFunctionFromMethod(plugin_name=plugin_name, method=candidate)
+            if func.name in functions:
+                raise FunctionNameNotUniqueError(
+                    "Overloaded functions are not supported, " "please differentiate function names."
+                )
+            functions[func.name] = func
         logger.debug(f"Methods imported: {len(functions)}")
-
-        # Uniqueness check on function names
-        function_names = [f.name for f in functions]
-        if len(function_names) != len(set(function_names)):
-            raise FunctionNameNotUniqueError(
-                "Overloaded functions are not supported, " "please differentiate function names."
-            )
 
         plugin = KernelPlugin(name=plugin_name, functions=functions)
         self.plugins.add(plugin)
@@ -538,7 +536,7 @@ class Kernel(KernelBaseModel):
             plugin_obj = getattr(module, class_name)()
             return self.import_plugin_from_object(plugin_obj, plugin_name)
 
-        return {}
+        return None
 
     def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         """

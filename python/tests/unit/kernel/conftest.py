@@ -4,6 +4,8 @@ from unittest.mock import Mock
 import pytest
 
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
+from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -28,6 +30,20 @@ def kernel_with_service(kernel: Kernel, service: AIServiceClientBase) -> Kernel:
     return kernel
 
 
+@pytest.fixture(scope="function")
+def kernel_with_handlers(kernel: Kernel) -> Kernel:
+    def invoking_handler(kernel: Kernel, e: FunctionInvokingEventArgs) -> FunctionInvokingEventArgs:
+        pass
+
+    def invoked_handler(kernel: Kernel, e: FunctionInvokedEventArgs) -> FunctionInvokedEventArgs:
+        pass
+
+    kernel.add_function_invoking_handler(invoking_handler)
+    kernel.add_function_invoked_handler(invoked_handler)
+
+    return kernel
+
+
 @pytest.fixture(scope="session")
 def not_decorated_native_function() -> Callable:
     def not_decorated_native_function(arg1: str) -> str:
@@ -43,6 +59,16 @@ def decorated_native_function() -> Callable:
         return "test"
 
     return decorated_native_function
+
+
+@pytest.fixture(scope="session")
+def custom_plugin_class():
+    class CustomPlugin:
+        @kernel_function(name="getLightStatus")
+        def decorated_native_function(self) -> str:
+            return "test"
+
+    return CustomPlugin
 
 
 @pytest.fixture(scope="session")
