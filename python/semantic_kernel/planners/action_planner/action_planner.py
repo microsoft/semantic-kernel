@@ -27,9 +27,7 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.planners.action_planner.action_planner_config import (
-    ActionPlannerConfig,
-)
+from semantic_kernel.planners.action_planner.action_planner_config import ActionPlannerConfig
 from semantic_kernel.planners.plan import Plan
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -77,9 +75,10 @@ class ActionPlanner:
         )
 
         self._planner_function = kernel.create_function_from_prompt(
+            function_name="ActionPlanner",
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
-            template=self._prompt_template,
-            execution_settings=execute_settings,
+            prompt=self._prompt_template,
+            prompt_execution_settings=execute_settings,
         )
         kernel.import_plugin_from_object(self, self.RESTRICTED_PLUGIN_NAME)
 

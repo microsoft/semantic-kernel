@@ -13,11 +13,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.exceptions import (
-    PlannerCreatePlanError,
-    PlannerExecutionException,
-    PlannerInvalidPlanError,
-)
+from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerExecutionException, PlannerInvalidPlanError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -25,13 +21,9 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
-from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (
-    StepwisePlannerConfig,
-)
+from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import StepwisePlannerConfig
 from semantic_kernel.planners.stepwise_planner.system_step import SystemStep
-from semantic_kernel.prompt_template.prompt_template_config import (
-    PromptTemplateConfig,
-)
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
