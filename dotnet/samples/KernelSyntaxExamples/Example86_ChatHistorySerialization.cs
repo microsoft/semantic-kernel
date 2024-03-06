@@ -29,9 +29,9 @@ public class Example86_ChatHistorySerialization : BaseTest
             new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
             new ImageContent(new Uri("https://fake-random-test-host:123")),
             new BinaryContent(new BinaryData(data)),
-            #pragma warning disable SKEXP0005
+            #pragma warning disable SKEXP0001
             new AudioContent(new BinaryData(data))
-            #pragma warning restore SKEXP0005
+            #pragma warning restore SKEXP0001
         };
 
         var chatHistory = new ChatHistory(new[] { message });
