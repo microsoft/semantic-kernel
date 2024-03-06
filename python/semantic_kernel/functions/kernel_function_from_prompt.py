@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from copy import copy
 from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Union
 
 from pydantic import Field, ValidationError, model_validator

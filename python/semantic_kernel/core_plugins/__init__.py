@@ -3,6 +3,7 @@
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
+from semantic_kernel.core_plugins.email_plugin import EmailPlugin
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
@@ -18,4 +19,5 @@ __all__ = [
     "ConversationSummaryPlugin",
     "MathPlugin",
     "WebSearchEnginePlugin",
+    "EmailPlugin",
 ]

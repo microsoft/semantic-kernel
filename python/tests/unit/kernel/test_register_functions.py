@@ -6,7 +6,6 @@ from pydantic import ValidationError
 
 from semantic_kernel import Kernel
 from semantic_kernel.exceptions import FunctionInitializationError
-from semantic_kernel.exceptions.function_exceptions import FunctionInvalidNameError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -45,12 +44,3 @@ def test_register_with_none_plugin_name():
 
     with pytest.raises(ValidationError):
         kernel.register_function_from_method(method=decorated_native_function, plugin_name=None)
-
-
-def test_register_overloaded_native_function():
-    kernel = Kernel()
-
-    kernel.register_function_from_method("TestPlugin", decorated_native_function)
-
-    with pytest.raises(FunctionInvalidNameError):
-        kernel.register_function_from_method("TestPlugin", decorated_native_function)

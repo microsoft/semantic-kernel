@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, TypeVar, Union
 
 from semantic_kernel.exceptions import (
-    FunctionInvalidNameError,
     PluginInitializationError,
     PluginInvalidNameError,
 )
@@ -120,9 +119,7 @@ class KernelPluginCollection(KernelBaseModel):
 
         for func in functions:
             if func.name in self.plugins[plugin_name].functions:
-                raise FunctionInvalidNameError(
-                    f"Function with name '{func.name}' already exists in plugin '{plugin_name}'"
-                )
+                logger.warning(f'Overwriting function "{func.name}" in collection')
             self.plugins[plugin_name].functions[func.name] = func
 
     def add_list_of_plugins(self, plugins: List["KernelPlugin"]) -> None:
