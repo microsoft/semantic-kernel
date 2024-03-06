@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 import aiohttp
 
 from semantic_kernel.connectors.memory.astradb.utils import AsyncSession
+from semantic_kernel.exceptions import ServiceResponseException
 
 
 class AstraClient:
@@ -39,11 +40,11 @@ class AstraClient:
                 if response.status == 200:
                     response_dict = await response.json()
                     if "errors" in response_dict:
-                        raise Exception(f"Astra DB request error - {response_dict['errors']}")
+                        raise ServiceResponseException(f"Astra DB request error - {response_dict['errors']}")
                     else:
                         return response_dict
                 else:
-                    raise Exception(f"Astra DB not available. Status : {response}")
+                    raise ServiceResponseException(f"Astra DB not available. Status : {response}")
 
     async def find_collections(self, include_detail: bool = True):
         query = {"findCollections": {"options": {"explain": include_detail}}}

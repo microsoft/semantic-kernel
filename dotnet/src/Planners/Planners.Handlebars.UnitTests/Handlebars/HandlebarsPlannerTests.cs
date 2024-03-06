@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Text;
 using Moq;
@@ -61,13 +62,18 @@ public sealed class HandlebarsPlannerTests
     public async Task InvalidHandlebarsTemplateThrowsAsync()
     {
         // Arrange
-        var kernel = this.CreateKernelWithMockCompletionResult("<plan>notvalid<</plan>");
+        var invalidPlan = "<plan>notvalid<</plan>";
+        var kernel = this.CreateKernelWithMockCompletionResult(invalidPlan);
 
         var planner = new HandlebarsPlanner();
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
-        Assert.True(exception?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
+        var exception = await Assert.ThrowsAsync<PlanCreationException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
+
+        Assert.True(exception?.Message?.Contains("CreatePlan failed. See inner exception for details.", StringComparison.InvariantCulture));
+        Assert.True(exception?.InnerException?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
+        Assert.Equal(exception?.ModelResults?.Content, invalidPlan);
+        Assert.NotNull(exception?.CreatePlanPrompt);
     }
 
     [Fact]
@@ -185,6 +191,41 @@ public sealed class HandlebarsPlannerTests
         Assert.Contains(mockPromptOverride, plan.Prompt, StringComparison.CurrentCulture);
         Assert.Contains("## Goal", plan.Prompt, StringComparison.CurrentCulture);
         Assert.DoesNotContain("## Tips and reminders", plan.Prompt, StringComparison.CurrentCulture);
+    }
+
+    [Fact]
+    public async Task ItThrowsIfStrictlyOnePlanCantBeIdentifiedAsync()
+    {
+        // Arrange
+        var ResponseWithMultipleHbTemplates =
+    @"```handlebars
+{{!-- Step 1: Call Summarize function --}}  
+{{set ""summary"" (SummarizePlugin-Summarize)}}  
+```
+
+```handlebars
+{{!-- Step 2: Call Translate function with the language set to French --}}  
+{{set ""translatedSummary"" (WriterPlugin-Translate language=""French"" input=(get ""summary""))}}  
+```
+
+```handlebars
+{{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
+{{set ""emailAddress"" (email-GetEmailAddress input=""John Doe"")}}  
+
+{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
+```
+
+```handlebars
+{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
+```";
+        var kernel = this.CreateKernelWithMockCompletionResult(ResponseWithMultipleHbTemplates);
+        var planner = new HandlebarsPlanner();
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<PlanCreationException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
+        Assert.True(exception?.InnerException?.Message?.Contains("Identified multiple Handlebars templates in model response", StringComparison.InvariantCulture));
     }
 
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)

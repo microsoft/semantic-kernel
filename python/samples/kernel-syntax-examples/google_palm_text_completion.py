@@ -14,7 +14,7 @@ async def text_completion_example_complete(kernel, api_key, user_mssg, settings)
     Complete a text prompt using the Google PaLM model and print the results.
     """
     palm_text_completion = sk_gp.GooglePalmTextCompletion("models/text-bison-001", api_key)
-    kernel.add_text_completion_service("models/text-bison-001", palm_text_completion)
+    kernel.add_service(palm_text_completion)
     answer = await palm_text_completion.complete(user_mssg, settings)
     return answer
 
