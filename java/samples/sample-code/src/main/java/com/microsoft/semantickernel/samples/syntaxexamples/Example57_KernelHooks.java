@@ -19,6 +19,7 @@ import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
 import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.hooks.PostChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
@@ -345,6 +346,12 @@ public class Example57_KernelHooks {
 
             return new PreChatCompletionEvent(
                 PreChatCompletionHook.cloneOptionsWithMessages(options, messages));
+        });
+
+        kernel.getGlobalKernelHooks().addPostChatCompletionHook(event -> {
+            System.out.println("Chat completion");
+            System.out.println("Id: " + event.getChatCompletions().getId());
+            return event;
         });
 
         try {

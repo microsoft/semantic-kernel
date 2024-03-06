@@ -25,6 +25,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.hooks.PostChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
@@ -153,6 +154,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     .map(ChatChoice::getMessage)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+
+                // execute post chat completion hook
+                kernelHooks.executeHooks(new PostChatCompletionEvent(completions));
 
                 // Just return the result:
                 // If we don't want to attempt to invoke any functions
