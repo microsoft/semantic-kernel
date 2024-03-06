@@ -41,6 +41,8 @@ async def main():
     print(rendered_prompt)
 
     kind_of_day = kernel.create_function_from_prompt(
+        function_name="kind_of_day",
+        plugin_name="TimePlugin",
         template=function_definition,
         execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(service_id=service_id, max_tokens=100),
         function_name="kind_of_day",
