@@ -98,7 +98,7 @@ async def test_generate_plan():
     kernel_mock.get_service.return_value = AsyncMock()
 
     with patch(
-        "semantic_kernel.planners.function_calling_stepwise_planner.FunctionCallingStepwisePlanner.create_config_from_yaml",
+        "semantic_kernel.planners.function_calling_stepwise_planner.FunctionCallingStepwisePlanner._create_config_from_yaml",
         return_value=AsyncMock(spec=KernelFunction),
     ) as mock_create_yaml_config, patch(
         "semantic_kernel.planners.planner_extensions.PlannerKernelExtension.get_functions_manual",
