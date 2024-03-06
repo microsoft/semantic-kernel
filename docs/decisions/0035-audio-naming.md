@@ -76,6 +76,28 @@ Proposed renaming:
 - AzureOpenAITextToAudioService -> AzureOpenAITextToSpeechService
 - OpenAITextToAudioService -> OpenAITextToSpeechService
 
+## Naming comparison
+
+| AI Provider  | Audio conversion    | Interface            | Implementation                      |
+| -----------  | ------------------- | -------------------- | ----------------------------------- |
+| Microsoft    | Text-to-speech      | ITextToSpeechService | MicrosoftTextToSpeechService        |
+| Microsoft    | Speech-to-text      | ISpeechToTextService | MicrosoftSpeechToTextService        |
+| Microsoft    | Speech translation  | ISpeechToTextService | MicrosoftSpeechTranslationService   |
+| OpenAI       | Text-to-speech      | ITextToSpeechService | OpenAITextToSpeechService           |
+| OpenAI       | Audio transcription | ISpeechToTextService | OpenAIAudioTranscriptionService     |
+| OpenAI       | Audio translation   | ISpeechToTextService | OpenAIAudioTranslationService       |
+| Google       | Speech-to-text      | ISpeechToTextService | GoogleSpeechToTextService           |
+| Google       | Text-to-speech      | ITextToSpeechService | GoogleTextToSpeechService           |
+| Amazon       | Text-to-speech      | ITextToSpeechService | AmazonTextToSpeechService           |
+| Amazon       | Transcription       | ISpeechToTextService | AmazonAudioTranscriptionService     |
+| Meta         | Text-to-sound       | ITextToAudioService  | MetaTextToSoundService              |
+| Meta         | Text-to-music       | ITextToAudioService  | MetaTextToMusicService              |
+| Hugging Face | Text-to-speech      | ITextToSpeechService | HuggingFaceTextToSpeechService      |
+| Hugging Face | Text-to-audio       | ITextToAudioService  | HuggingFaceTextToAudioService       |
+| Hugging Face | Audio-to-audio      | IAudioToAudioService | HuggingFaceAudioToAudioService      |
+| Hugging Face | Speech recognition  | ISpeechToTextService | HuggingFaceSpeechRecognitionService |
+| AssemblyAI   | Transcription       | ISpeechToTextService | AssemblyAIAudioTranscriptionService |
+
 ## Decision Outcome
 
 TBD.
