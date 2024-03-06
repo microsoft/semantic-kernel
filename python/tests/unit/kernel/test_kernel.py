@@ -102,9 +102,7 @@ async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
 
     assert mock_function.invoke.call_count == 1
 
-    async for response in kernel.invoke_stream(
-        function_name="test_function", plugin_name="test", arguments=KernelArguments()
-    ):
+    async for response in kernel.invoke_stream(function_name="test_function", plugin_name="test"):
         assert response[0].text == "test"
 
 
@@ -128,7 +126,7 @@ async def test_invoke_stream_functions(kernel: Kernel, pipeline_count: int, crea
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
     functions = [mock_function] * pipeline_count
 
-    async for part in kernel.invoke_stream(functions, KernelArguments()):
+    async for part in kernel.invoke_stream(functions, input="test"):
         assert part[0].text == "test"
 
     assert mock_function.invoke.call_count == pipeline_count - 1
@@ -146,8 +144,7 @@ async def test_invoke_prompt(kernel: Kernel, create_mock_function):
 
 
 @pytest.mark.asyncio
-async def test_invoke_prompt_no_prompt_error():
-    kernel = Kernel()
+async def test_invoke_prompt_no_prompt_error(kernel: Kernel):
     with pytest.raises(TemplateSyntaxError):
         await kernel.invoke_prompt(
             function_name="test_function",
@@ -334,7 +331,7 @@ async def test_invoke_change_variable_invoked_handler(kernel: Kernel, create_moc
 
 def test_prompt_plugin_can_be_imported(kernel: Kernel):
     # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_plugins")
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
     # path to plugins directory
     plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
 
@@ -346,7 +343,7 @@ def test_prompt_plugin_can_be_imported(kernel: Kernel):
 
 def test_prompt_plugin_not_found(kernel: Kernel):
     # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_plugins_fail")
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins_fail")
     # path to plugins directory
     with pytest.raises(PluginInitializationError):
         kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
@@ -359,7 +356,7 @@ def test_plugin_name_error(kernel: Kernel):
 
 def test_native_plugin_can_be_imported(kernel: Kernel):
     # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_native_plugins")
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
     # path to plugins directory
     plugin = kernel.import_native_plugin_from_directory(plugins_directory, "TestNativePlugin")
 
@@ -373,7 +370,7 @@ def test_native_plugin_can_be_imported(kernel: Kernel):
 
 def test_native_plugin_cannot_be_imported(kernel: Kernel):
     # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_native_plugins")
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
     # path to plugins directory
     plugin = kernel.import_native_plugin_from_directory(plugins_directory, "TestNativePluginNoClass")
 
@@ -382,7 +379,7 @@ def test_native_plugin_cannot_be_imported(kernel: Kernel):
 
 def test_native_plugin_not_found(kernel: Kernel):
     # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../..", "test_native_plugins_fail")
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins_fail")
     # path to plugins directory
     with pytest.raises(PluginInitializationError):
         kernel.import_native_plugin_from_directory(plugins_directory, "TestNativePlugin")
@@ -523,9 +520,34 @@ def test_kernel_remove_all_service(kernel_with_service: Kernel):
     assert kernel_with_service.services == {}
 
 
+def test_get_default_service(kernel_with_default_service: Kernel):
+    service_get = kernel_with_default_service.get_service()
+    assert service_get == kernel_with_default_service.services["default"]
+
+
+def test_get_default_service_with_type(kernel_with_default_service: Kernel):
+    service_get = kernel_with_default_service.get_service(type=AIServiceClientBase)
+    assert service_get == kernel_with_default_service.services["default"]
+
+
 def test_get_service(kernel_with_service: Kernel):
     service_get = kernel_with_service.get_service("service")
     assert service_get == kernel_with_service.services["service"]
+
+
+def test_get_service_by_type(kernel_with_service: Kernel):
+    service_get = kernel_with_service.get_service(type=AIServiceClientBase)
+    assert service_get == kernel_with_service.services["service"]
+
+
+def test_get_service_by_type_not_found(kernel_with_service: Kernel):
+    with pytest.raises(KernelServiceNotFoundError):
+        kernel_with_service.get_service(type=ChatCompletionClientBase)
+
+
+def test_get_default_service_by_type(kernel_with_default_service: Kernel):
+    service_get = kernel_with_default_service.get_services_by_type(AIServiceClientBase)
+    assert service_get["default"] == kernel_with_default_service.services["default"]
 
 
 def test_get_services_by_type(kernel_with_service: Kernel):
@@ -563,6 +585,11 @@ def test_get_service_with_type_not_found(kernel_with_service: Kernel):
 def test_get_service_no_id(kernel_with_service: Kernel):
     service_get = kernel_with_service.get_service()
     assert service_get == kernel_with_service.services["service"]
+
+
+def test_instantiate_prompt_execution_settings_through_kernel(kernel_with_service: Kernel):
+    settings = kernel_with_service.get_prompt_execution_settings_from_service_id("service")
+    assert settings.service_id == "service"
 
 
 # endregion
