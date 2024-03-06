@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,19 +22,22 @@ internal static partial class OpenAIRestExtensions
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="content">The message text</param>
+    /// <param name="fileIds">Up to 10 file ids</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message definition</returns>
     public static Task<ThreadMessageModel> CreateUserTextMessageAsync(
         this OpenAIRestContext context,
         string threadId,
         string content,
+        IEnumerable<string>? fileIds,
         CancellationToken cancellationToken = default)
     {
         var payload =
             new
             {
                 role = AuthorRole.User.Label,
-                content,
+                file_ids = fileIds?.ToArray() ?? Array.Empty<string>(),
+                content
             };
 
         return
