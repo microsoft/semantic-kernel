@@ -180,21 +180,7 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~FunctionCallingStepwisePlannerTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
+        this._logger.Dispose();
+        this._testOutputHelper.Dispose();
     }
 }
