@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -46,7 +45,7 @@ public sealed class Example87_GeminiVision : BaseTest
             new TextContent("What’s in this image?"),
             // Google AI Gemini API requires the image to be in base64 format, doesn't support URI
             // You have to always provide the mimeType for the image
-            new ImageContent(new BinaryData(bytes, "image/jpeg")),
+            new ImageContent(bytes) { MimeType = "image/jpeg" },
         });
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
@@ -59,12 +58,12 @@ public sealed class Example87_GeminiVision : BaseTest
     {
         this.WriteLine("============= Vertex AI - Gemini Chat Completion with vision =============");
 
-        string geminiApiKey = TestConfiguration.VertexAI.BearerKey;
+        string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = "gemini-pro-vision";
         string geminiLocation = TestConfiguration.VertexAI.Location;
         string geminiProject = TestConfiguration.VertexAI.ProjectId;
 
-        if (geminiApiKey is null || geminiLocation is null || geminiProject is null)
+        if (geminiBearerKey is null || geminiLocation is null || geminiProject is null)
         {
             this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
             return;
@@ -73,7 +72,7 @@ public sealed class Example87_GeminiVision : BaseTest
         Kernel kernel = Kernel.CreateBuilder()
             .AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
-                apiKey: geminiApiKey,
+                bearerKey: geminiBearerKey,
                 location: geminiLocation,
                 projectId: geminiProject)
             .Build();
@@ -91,8 +90,7 @@ public sealed class Example87_GeminiVision : BaseTest
             new TextContent("What’s in this image?"),
             // Vertex AI Gemini API supports both base64 and URI format
             // You have to always provide the mimeType for the image
-            // For URI as metadata, for BinaryData in BinaryData constructor
-            new ImageContent(new BinaryData(bytes, "image/jpeg")),
+            new ImageContent(bytes) { MimeType = "image/jpeg" },
             // The Cloud Storage URI of the image to include in the prompt.
             // The bucket that stores the file must be in the same Google Cloud project that's sending the request.
             // new ImageContent(new Uri("gs://generativeai-downloads/images/scones.jpg"),

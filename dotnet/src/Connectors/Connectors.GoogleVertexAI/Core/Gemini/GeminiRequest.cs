@@ -147,7 +147,7 @@ internal sealed class GeminiRequest
                     }));
                 break;
             default:
-                parts.AddRange(content.Items?.Select(GetGeminiPartFromKernelContent) ?? Enumerable.Empty<GeminiPart>());
+                parts.AddRange(content.Items.Select(GetGeminiPartFromKernelContent));
                 break;
         }
 
@@ -175,8 +175,8 @@ internal sealed class GeminiRequest
             {
                 InlineData = new GeminiPart.InlineDataPart
                 {
-                    MimeType = GetMimeTypeFromImageContentDataMediaType(imageContent),
-                    InlineData = Convert.ToBase64String(imageContent.Data.ToArray())
+                    MimeType = GetMimeTypeFromImageContent(imageContent),
+                    InlineData = Convert.ToBase64String(imageContent.Data.Value.ToArray())
                 }
             };
         }
@@ -187,7 +187,7 @@ internal sealed class GeminiRequest
             {
                 FileData = new GeminiPart.FileDataPart
                 {
-                    MimeType = GetMimeTypeFromImageContentMetadata(imageContent),
+                    MimeType = GetMimeTypeFromImageContent(imageContent),
                     FileUri = imageContent.Uri ?? throw new InvalidOperationException("Image content URI is empty.")
                 }
             };
@@ -196,19 +196,10 @@ internal sealed class GeminiRequest
         throw new InvalidOperationException("Image content does not contain any data or uri.");
     }
 
-    private static string GetMimeTypeFromImageContentDataMediaType(ImageContent imageContent)
+    private static string GetMimeTypeFromImageContent(ImageContent imageContent)
     {
-        return imageContent.Data?.MediaType
-               ?? throw new InvalidOperationException("Image content Data.MediaType is empty.");
-    }
-
-    private static string GetMimeTypeFromImageContentMetadata(ImageContent imageContent)
-    {
-        var key = imageContent.Metadata?.Keys.SingleOrDefault(key =>
-                      key.Equals("mimeType", StringComparison.OrdinalIgnoreCase)
-                      || key.Equals("mime_type", StringComparison.OrdinalIgnoreCase))
-                  ?? throw new InvalidOperationException("Mime type is not found in the image content metadata.");
-        return imageContent.Metadata[key]!.ToString();
+        return imageContent.MimeType
+               ?? throw new InvalidOperationException("Image content MimeType is empty.");
     }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)

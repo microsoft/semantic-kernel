@@ -52,7 +52,7 @@ public sealed class Example85_GeminiTextGeneration : BaseTest
         Kernel kernel = Kernel.CreateBuilder()
             .AddVertexAIGeminiTextGeneration(
                 modelId: geminiModelId,
-                apiKey: geminiApiKey,
+                bearerKey: geminiApiKey,
                 location: geminiLocation,
                 projectId: geminiProject)
             .Build();

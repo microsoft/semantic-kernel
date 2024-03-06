@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -76,7 +75,7 @@ public sealed class GeminiChatCompletionTests : TestsBase
         var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
         {
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
-            new ImageContent(BinaryData.FromBytes(image, "image/jpeg"))
+            new ImageContent(image) { MimeType = "image/jpeg" }
         });
         chatHistory.Add(messageContent);
 
@@ -102,7 +101,7 @@ public sealed class GeminiChatCompletionTests : TestsBase
         var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
         {
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
-            new ImageContent(BinaryData.FromBytes(image, "image/jpeg"))
+            new ImageContent(image) { MimeType = "image/jpeg" }
         });
         chatHistory.Add(messageContent);
 
@@ -130,7 +129,7 @@ public sealed class GeminiChatCompletionTests : TestsBase
         var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
         {
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
-            new ImageContent(imageUri, metadata: new Dictionary<string, object?> { { "mimeType", "image/jpeg" } })
+            new ImageContent(imageUri) { MimeType = "image/jpeg" }
         });
         chatHistory.Add(messageContent);
 
@@ -156,7 +155,7 @@ public sealed class GeminiChatCompletionTests : TestsBase
         var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
         {
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
-            new ImageContent(imageUri, metadata: new Dictionary<string, object?> { { "mimeType", "image/jpeg" } })
+            new ImageContent(imageUri) { MimeType = "image/jpeg" }
         });
         chatHistory.Add(messageContent);
 

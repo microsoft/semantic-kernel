@@ -6,6 +6,8 @@ from typing import Any, Callable
 
 logger: Logger = getLogger(__name__)
 
+# TODO: delete
+
 
 def _nullify(fn) -> Callable[[Any], None]:
     """General wrapper to not call wrapped function"""

@@ -54,7 +54,7 @@ public sealed class Example88_GeminiFunctionCalling : BaseTest
         Kernel kernel = Kernel.CreateBuilder()
             .AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
-                apiKey: geminiApiKey,
+                bearerKey: geminiApiKey,
                 location: geminiLocation,
                 projectId: geminiProject)
             .Build();
