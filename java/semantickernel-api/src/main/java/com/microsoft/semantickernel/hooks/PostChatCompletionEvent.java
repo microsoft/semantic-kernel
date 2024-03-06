@@ -22,7 +22,7 @@ public class PostChatCompletionEvent implements KernelHookEvent {
     /**
      * Gets the chat completions.
      *
-     * @return the options
+     * @return the chat completions
      */
     public ChatCompletions getChatCompletions() {
         return chatCompletions;

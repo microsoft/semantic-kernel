@@ -240,6 +240,12 @@ public class KernelHooks {
         }
 
         @Override
+        public String addPostChatCompletionHook(
+            Function<PostChatCompletionEvent, PostChatCompletionEvent> function) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
         public String addPromptRenderedHook(
             Function<PromptRenderedEvent, PromptRenderedEvent> function) {
             throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
