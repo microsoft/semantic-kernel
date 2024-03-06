@@ -1,11 +1,10 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: markwallace
-date: 2024-02-27
+date: 2024-023-2706
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk
 consulted: matthewbolanos
-informed: {list everyone who is kept up-to-date on progress; and with whom there is a one-way communication}
+informed: matthewbolanos
 ---
 
 # Semantic Kernel Release Versioning
