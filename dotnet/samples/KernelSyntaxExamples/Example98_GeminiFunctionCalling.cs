@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public sealed class Example88_GeminiFunctionCalling : BaseTest
+public sealed class Example98_GeminiFunctionCalling : BaseTest
 {
     [RetryFact]
     public async Task GoogleAIAsync()
@@ -184,5 +184,5 @@ public sealed class Example88_GeminiFunctionCalling : BaseTest
         */
     }
 
-    public Example88_GeminiFunctionCalling(ITestOutputHelper output) : base(output) { }
+    public Example98_GeminiFunctionCalling(ITestOutputHelper output) : base(output) { }
 }

@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public sealed class Example85_GeminiTextGeneration : BaseTest
+public sealed class Example95_GeminiTextGeneration : BaseTest
 {
     [Fact]
     public async Task GoogleAIAsync()
@@ -134,5 +134,5 @@ Event: {{$input}}
         this.WriteLine(response.GetValue<string>());
     }
 
-    public Example85_GeminiTextGeneration(ITestOutputHelper output) : base(output) { }
+    public Example95_GeminiTextGeneration(ITestOutputHelper output) : base(output) { }
 }
