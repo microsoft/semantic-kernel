@@ -8,6 +8,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 class ToolCall(KernelBaseModel):
     """Class to hold a tool call response."""
 
+    index: Optional[int] = None
     id: Optional[str] = None
     type: Optional[Literal["function"]] = "function"
     function: Optional[FunctionCall] = None
@@ -17,6 +18,7 @@ class ToolCall(KernelBaseModel):
         if not other:
             return self
         return ToolCall(
+            index=self.index or other.index,
             id=self.id or other.id,
             type=self.type or other.type,
             function=self.function + other.function if self.function else other.function,

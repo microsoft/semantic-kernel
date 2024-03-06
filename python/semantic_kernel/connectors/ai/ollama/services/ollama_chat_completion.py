@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import AsyncIterable, List, Optional
+from typing import Any, AsyncIterable, Dict, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
@@ -45,6 +45,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
+        **kwargs: Dict[str, Any],
     ) -> List[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -53,6 +54,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
                 that can be rendered into a set of messages, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
+            kwargs {Dict[str, Any]} -- The optional arguments.
 
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
@@ -76,6 +78,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
+        **kwargs: Dict[str, Any],
     ) -> AsyncIterable[List[StreamingChatMessageContent]]:
         """
         Streams a text completion using a Ollama model.
@@ -85,6 +88,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
                 that can be rendered into a set of messages, from system, user, assistant and function.
             settings {OllamaChatPromptExecutionSettings} -- Request settings.
+            kwargs {Dict[str, Any]} -- The optional arguments.
 
         Yields:
             List[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.
