@@ -53,6 +53,10 @@ dotnet user-secrets set "AzureOpenAITextToAudio:DeploymentName" "tts-1"
 dotnet user-secrets set "AzureOpenAITextToAudio:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAITextToAudio:ApiKey" "..."
 
+dotnet user-secrets set "MistralAI:ChatModel" "mistral-large-latest"
+dotnet user-secrets set "MistralAI:EmbeddingModel" "mistral-embed"
+dotnet user-secrets set "MistralAI:ApiKey" "..."
+
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "Bing:ApiKey" "..."
 dotnet user-secrets set "Postgres:ConnectionString" "..."
