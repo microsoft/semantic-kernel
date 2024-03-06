@@ -54,9 +54,7 @@ internal sealed class ChatThread : IAgentThread
     {
         this.ThrowIfDeleted();
 
-        var messagemodel = fileIds == null
-            ? await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds: null, cancellationToken).ConfigureAwait(false)
-            : await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds, cancellationToken).ConfigureAwait(false);
+        var messagemodel = await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds: null, cancellationToken).ConfigureAwait(false);
 
         return new ChatMessage(messagemodel);
     }
