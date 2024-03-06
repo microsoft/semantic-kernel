@@ -32,7 +32,6 @@ from semantic_kernel.planners.function_calling_stepwise_planner.function_calling
     FunctionCallingStepwisePlannerResult,
     UserInteraction,
 )
-from semantic_kernel.planners.function_calling_stepwise_planner.utils import read_file
 from semantic_kernel.planners.planner_extensions import PlannerKernelExtension
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -69,8 +68,16 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 the function calling stepwise planner. Defaults to None.
         """
         options = options or FunctionCallingStepwisePlannerOptions()
-        generate_plan_yaml = options.get_initial_plan() if options.get_initial_plan else read_file(PLAN_YAML_FILE_PATH)
-        step_prompt = options.get_step_prompt() if options.get_step_prompt else read_file(STEP_PROMPT_FILE_PATH)
+        generate_plan_yaml = (
+            options.get_initial_plan()
+            if options.get_initial_plan
+            else (lambda path: open(path).read())(PLAN_YAML_FILE_PATH)
+        )
+        step_prompt = (
+            options.get_step_prompt()
+            if options.get_step_prompt
+            else (lambda path: open(path).read())(STEP_PROMPT_FILE_PATH)
+        )
         options.excluded_plugins.add(STEPWISE_PLANNER_PLUGIN_NAME)
 
         super().__init__(
