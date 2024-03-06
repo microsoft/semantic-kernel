@@ -263,12 +263,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("Assistant is a large language model.", messages[0].GetProperty("content").GetString());
         Assert.Equal("system", messages[0].GetProperty("role").GetString());
 
+        Assert.Equal("Hello", messages[1].GetProperty("content").GetString());
         Assert.Equal("user", messages[1].GetProperty("role").GetString());
-        var contentItems = messages[1].GetProperty("content");
-
-        Assert.Equal(1, contentItems.GetArrayLength());
-        Assert.Equal("Hello", contentItems[0].GetProperty("text").GetString());
-        Assert.Equal("text", contentItems[0].GetProperty("type").GetString());
     }
 
     public void Dispose()
