@@ -36,7 +36,7 @@ internal sealed class VertexAIEndpointProvider : IEndpointProvider
 
     /// <inheritdoc />
     public Uri GetGeminiStreamTextGenerationEndpoint(string modelId)
-        => new($"{this.ModelsEndpoint.AbsoluteUri}{modelId}:streamGenerateContent");
+        => new($"{this.ModelsEndpoint.AbsoluteUri}{modelId}:streamGenerateContent?alt=sse");
 
     /// <inheritdoc />
     public Uri GetGeminiChatCompletionEndpoint(string modelId)
