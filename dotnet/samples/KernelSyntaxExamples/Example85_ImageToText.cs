@@ -39,7 +39,7 @@ public sealed class Example85_ImageToText : BaseTest
 
         // Read image content from a file
         ReadOnlyMemory<byte> imageData = await EmbeddedResource.ReadAllAsync(ImageFilePath);
-        ImageContent imageContent = new(new BinaryData(imageData, "image/jpeg"));
+        ImageContent imageContent = new(new BinaryData(imageData), "image/jpeg");
 
         // Convert image to text
         var textContent = await imageToText.GetTextContentAsync(imageContent, executionSettings);

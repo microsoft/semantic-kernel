@@ -201,6 +201,7 @@ class Kernel(KernelBaseModel):
                 # might need to be done as part of the invoked_handler
             function_result = []
             exception = None
+
             async for stream_message in stream_function.invoke_stream(self, arguments):
                 if isinstance(stream_message, FunctionResult):
                     exception = stream_message.metadata.get("exception", None)
@@ -211,11 +212,11 @@ class Kernel(KernelBaseModel):
 
             output_function_result = []
             for result in function_result:
-                for index, choice in enumerate(result):
-                    if len(output_function_result) <= index:
+                for choice in result:
+                    if len(output_function_result) <= choice.choice_index:
                         output_function_result.append(copy(choice))
                     else:
-                        output_function_result[index] += choice
+                        output_function_result[choice.choice_index] += choice
             func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
             function_invoked_args = self.on_function_invoked(
                 stream_function.metadata,
@@ -348,6 +349,8 @@ class Kernel(KernelBaseModel):
 
     async def invoke_prompt(
         self,
+        function_name: str,
+        plugin_name: str,
         prompt: str,
         arguments: Optional[KernelArguments] = None,
         template_format: Optional[str] = None,
@@ -357,6 +360,8 @@ class Kernel(KernelBaseModel):
         Invoke a function from the provided prompt
 
         Args:
+            function_name (str): The name of the function
+            plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
             arguments (Optional[KernelArguments]): The arguments to pass to the function(s), optional
             template_format (Optional[str]): The format of the prompt template
@@ -370,6 +375,8 @@ class Kernel(KernelBaseModel):
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
         function = KernelFunction.from_prompt(
+            function_name=function_name,
+            plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
         )
@@ -606,8 +613,8 @@ class Kernel(KernelBaseModel):
         Create a Kernel Function from a prompt.
 
         Args:
-            function_name (Optional[str]): The name of the function
-            plugin_name (Optional[str]): The name of the plugin
+            function_name (str): The name of the function
+            plugin_name (str): The name of the plugin
             description (Optional[str]): The description of the function
             prompt (Optional[str]): The prompt template.
             prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
