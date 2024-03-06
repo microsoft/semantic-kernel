@@ -139,7 +139,7 @@ def test_init_prompt_execution_settings_dict():
 
 
 @pytest.mark.asyncio
-async def test_invoke():
+async def test_invoke_chat_stream():
     kernel = Kernel()
     kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
     function = KernelFunctionFromPrompt(
@@ -148,6 +148,8 @@ async def test_invoke():
         prompt="test",
         prompt_execution_settings=PromptExecutionSettings(service_id="test"),
     )
+
+    # This part remains unchanged - for synchronous mocking example
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat"
     ) as mock:

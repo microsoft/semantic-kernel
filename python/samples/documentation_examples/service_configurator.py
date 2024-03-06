@@ -25,6 +25,7 @@ def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
     """
     config = dotenv_values(".env")
     llm_service = config.get("GLOBAL__LLM_SERVICE", None)
+    assert llm_service, "The LLM_SERVICE environment variable is not set."
 
     # The service_id is used to identify the service in the kernel.
     # This can be updated to a custom value if needed.
