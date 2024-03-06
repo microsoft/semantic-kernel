@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -13,108 +14,116 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extensions for adding VertexAI generation services to the application.
 /// </summary>
-public static class VertexAIServiceCollectionExtensions
+public static class VertexAIKernelBuilderExtensions
 {
     /// <summary>
-    /// Adds Vertex AI Gemini Text Generation service to the specified service collection.
+    /// Adds Vertex AI Gemini Text Generation service to the kernel builder.
     /// </summary>
-    /// <param name="services">The service collection to add the Gemini Text Generation service to.</param>
+    /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
-    /// <param name="serviceId">Optional service ID.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddVertexAIGeminiTextGeneration(
-        this IServiceCollection services,
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddVertexAIGeminiTextGeneration(
+        this IKernelBuilder builder,
         string modelId,
         string bearerKey,
         string location,
         string projectId,
-        string? serviceId = null)
+        string? serviceId = null,
+        HttpClient? httpClient = null)
     {
-        Verify.NotNull(services);
+        Verify.NotNull(builder);
         Verify.NotNull(modelId);
         Verify.NotNull(bearerKey);
         Verify.NotNull(location);
         Verify.NotNull(projectId);
 
-        return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new VertexAIGeminiTextGenerationService(
                 model: modelId,
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
-                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+        return builder;
     }
 
     /// <summary>
-    /// Adds Vertex AI Gemini Chat Completion and Text Generation services to the specified service collection.
+    /// Adds Vertex AI Gemini Chat Completion and Text Generation services to the kernel builder.
     /// </summary>
-    /// <param name="services">The service collection to add the Gemini Text Generation service to.</param>
+    /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
-    /// <param name="serviceId">Optional service ID.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddVertexAIGeminiChatCompletion(
-        this IServiceCollection services,
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddVertexAIGeminiChatCompletion(
+        this IKernelBuilder builder,
         string modelId,
         string bearerKey,
         string location,
         string projectId,
-        string? serviceId = null)
+        string? serviceId = null,
+        HttpClient? httpClient = null)
     {
-        Verify.NotNull(services);
+        Verify.NotNull(builder);
         Verify.NotNull(modelId);
         Verify.NotNull(bearerKey);
         Verify.NotNull(location);
         Verify.NotNull(projectId);
 
-        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new VertexAIGeminiChatCompletionService(
                 model: modelId,
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
-                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-        return services;
+        return builder;
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the specified service collection.
+    /// Adds Vertex AI embeddings generation service to the kernel builder.
     /// </summary>
-    /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
-    /// <param name="modelId">The model for embeddings generation.</param>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
-    /// <param name="serviceId">Optional service ID.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddVertexAIEmbeddingGeneration(
-        this IServiceCollection services,
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddVertexAIEmbeddingGeneration(
+        this IKernelBuilder builder,
         string modelId,
         string bearerKey,
         string location,
         string projectId,
-        string? serviceId = null)
+        string? serviceId = null,
+        HttpClient? httpClient = null)
     {
-        Verify.NotNull(services);
+        Verify.NotNull(builder);
         Verify.NotNull(modelId);
         Verify.NotNull(bearerKey);
         Verify.NotNull(location);
         Verify.NotNull(projectId);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new VertexAITextEmbeddingGenerationService(
                 model: modelId,
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
-                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+        return builder;
     }
 }

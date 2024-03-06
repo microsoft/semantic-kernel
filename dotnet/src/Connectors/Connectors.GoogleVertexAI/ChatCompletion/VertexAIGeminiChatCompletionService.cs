@@ -23,28 +23,28 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
     /// Initializes a new instance of the <see cref="VertexAIGeminiChatCompletionService"/> class.
     /// </summary>
     /// <param name="model">The Gemini model for the chat completion service.</param>
-    /// <param name="apiKey">The API key for authentication with the Gemini client.</param>
+    /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public VertexAIGeminiChatCompletionService(
         string model,
-        string apiKey,
+        string bearerKey,
         string location,
         string projectId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(model);
-        Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.NotNullOrWhiteSpace(bearerKey);
 
         this._chatCompletionClient = new GeminiChatCompletionClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new VertexAIHttpRequestFactory(apiKey),
+            httpRequestFactory: new VertexAIHttpRequestFactory(bearerKey),
             endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);

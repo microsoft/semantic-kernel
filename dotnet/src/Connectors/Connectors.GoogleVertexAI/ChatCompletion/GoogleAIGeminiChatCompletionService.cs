@@ -23,7 +23,7 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
     /// Initializes a new instance of the <see cref="GoogleAIGeminiChatCompletionService"/> class.
     /// </summary>
     /// <param name="model">The Gemini model for the chat completion service.</param>
-    /// <param name="apiKey">The API key for authentication with the Gemini client.</param>
+    /// <param name="apiKey">The API key for authentication.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public GoogleAIGeminiChatCompletionService(
