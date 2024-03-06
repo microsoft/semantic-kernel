@@ -47,11 +47,11 @@ public sealed class MistralAIChatCompletionService : IChatCompletionService
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this.Client.GetChatMessageContentsAsync(chatHistory, cancellationToken, executionSettings, kernel);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this.Client.GetStreamingChatMessageContentsAsync(chatHistory, cancellationToken, executionSettings, kernel);
 
     #region private
     private Dictionary<string, object?> AttributesInternal { get; } = new();

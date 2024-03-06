@@ -52,7 +52,7 @@ public sealed class MistralClientTests : IDisposable
         {
             new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
         };
-        var response = await client.GetChatMessageContentsAsync(chatHistory);
+        var response = await client.GetChatMessageContentsAsync(chatHistory, default);
 
         // Assert
         Assert.NotNull(response);
@@ -75,7 +75,7 @@ public sealed class MistralClientTests : IDisposable
 
         // Act
         List<string> data = new() { "Hello", "world" };
-        var response = await client.GenerateEmbeddingsAsync(data);
+        var response = await client.GenerateEmbeddingsAsync(data, default);
 
         // Assert
         Assert.NotNull(response);

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
 /// <summary>
-///Base class for Mistral response.
+/// Base class for Mistral response.
 /// </summary>
 internal abstract class MistralResponseBase
 {

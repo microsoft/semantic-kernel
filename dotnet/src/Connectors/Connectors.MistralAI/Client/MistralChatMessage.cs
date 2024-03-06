@@ -19,7 +19,7 @@ internal class MistralChatMessage
     /// Construct an instance of <see cref="MistralChatMessage"/>.
     /// </summary>
     /// <param name="role">Must be one of: system, user, assistant</param>
-    /// <param name="content">Content of the chant message</param>
+    /// <param name="content">Content of the chat message</param>
     [JsonConstructor]
     internal MistralChatMessage(string role, string content)
     {

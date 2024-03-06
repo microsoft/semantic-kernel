@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MistralAI;
+
 /// <summary>
 /// Integration tests for <see cref="MistralAIChatCompletionService"/>.
 /// </summary>
@@ -26,7 +27,7 @@ public sealed class MistralAIChatCompletionTests
             .Build();
     }
 
-    [Fact] // (Skip = "This test is for manual verification.")
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task MistralAIChatCompletionTestsAsync()
     {
         // Arrange
