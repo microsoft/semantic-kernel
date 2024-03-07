@@ -4,7 +4,7 @@ using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
+namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
 /// <summary>
 /// Ollama Execution Settings.
