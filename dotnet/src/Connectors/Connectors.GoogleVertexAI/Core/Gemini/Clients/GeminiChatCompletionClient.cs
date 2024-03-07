@@ -438,7 +438,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
-        if (geminiResponse.Candidates == null || geminiResponse.Candidates.All(c => c.Content?.Parts == null))
+        if (geminiResponse.Candidates == null || !geminiResponse.Candidates.Any())
         {
             if (geminiResponse.PromptFeedback?.BlockReason != null)
             {
@@ -458,7 +458,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
-        GeminiPart? part = candidate.Content?.Parts?[0];
+        GeminiPart? part = candidate.Content?.Parts[0];
         GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function ? new[] { function } : null;
         return new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
