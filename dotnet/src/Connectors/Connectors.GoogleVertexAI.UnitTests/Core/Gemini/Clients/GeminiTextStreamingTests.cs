@@ -119,8 +119,8 @@ public sealed class GeminiTextStreamingTests : IDisposable
 
         var mock = new Mock<IGeminiChatCompletionClient>();
         mock.Setup(c => c.StreamGenerateChatMessageAsync(
-                It.IsAny<ChatHistory>(), It.IsAny<Kernel>(),
-                It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
             .Returns(streamChatMessageContents.ToAsyncEnumerable());
 
         return mock;

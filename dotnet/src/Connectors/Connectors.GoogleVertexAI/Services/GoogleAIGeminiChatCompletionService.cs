@@ -57,7 +57,7 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, kernel, executionSettings, cancellationToken);
+        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -67,6 +67,6 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, kernel, executionSettings, cancellationToken);
+        return this._chatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

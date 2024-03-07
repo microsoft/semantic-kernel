@@ -57,7 +57,7 @@ public sealed class GoogleAIGeminiTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._textGenerationClient.GenerateTextAsync(prompt, kernel, executionSettings, cancellationToken);
+        return this._textGenerationClient.GenerateTextAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -67,6 +67,6 @@ public sealed class GoogleAIGeminiTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._textGenerationClient.StreamGenerateTextAsync(prompt, kernel, executionSettings, cancellationToken);
+        return this._textGenerationClient.StreamGenerateTextAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 }

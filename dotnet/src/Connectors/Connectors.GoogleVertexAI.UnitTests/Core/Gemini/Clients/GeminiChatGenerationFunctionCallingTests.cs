@@ -67,7 +67,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -103,7 +103,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
 
         // Assert
         GeminiRequest request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent)!;
@@ -140,7 +140,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
 
         // Assert
         GeminiRequest request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent)!;
@@ -167,7 +167,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
 
         // Act
         var chatMessageContents =
-            await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+            await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
 
         // Assert
         var message = chatMessageContents.SingleOrDefault() as GeminiChatMessageContent;
@@ -196,7 +196,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
 
         // Assert
         var messages = chatHistory.OfType<GeminiChatMessageContent>();
@@ -225,7 +225,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
 
         // Assert
         var messages = chatHistory.OfType<GeminiChatMessageContent>();
@@ -255,7 +255,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
 
         // Act
         var messages =
-            await client.GenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings);
+            await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
 
         // Assert
         Assert.Single(messages, item =>

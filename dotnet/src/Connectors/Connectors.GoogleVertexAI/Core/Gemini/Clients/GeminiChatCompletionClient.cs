@@ -112,8 +112,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
-        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         var state = ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
@@ -150,8 +150,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
     /// <inheritdoc/>
     public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
         ChatHistory chatHistory,
-        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var state = ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);

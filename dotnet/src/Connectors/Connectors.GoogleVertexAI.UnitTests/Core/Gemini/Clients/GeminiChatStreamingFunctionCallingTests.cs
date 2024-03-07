@@ -67,7 +67,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
             .ToListAsync();
 
         // Assert
@@ -104,7 +104,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
             .ToListAsync();
 
         // Assert
@@ -142,7 +142,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
             .ToListAsync();
 
         // Assert
@@ -170,7 +170,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
 
         // Act
         var chatMessageContents =
-            await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+            await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
                 .ToListAsync();
 
         // Assert
@@ -200,7 +200,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
             .ToListAsync();
 
         // Assert
@@ -230,7 +230,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         };
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
             .ToListAsync();
 
         // Assert
@@ -261,7 +261,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
 
         // Act
         var messages =
-            await client.StreamGenerateChatMessageAsync(chatHistory, kernel: this._kernelWithFunctions, executionSettings: executionSettings)
+            await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
                 .ToListAsync();
 
         // Assert

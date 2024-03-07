@@ -29,14 +29,14 @@ internal sealed class GeminiTextGenerationClient
     /// Generates text based on the given prompt asynchronously.
     /// </summary>
     /// <param name="prompt">The prompt for generating text content.</param>
-    /// <param name="kernel">A kernel instance.</param>
     /// <param name="executionSettings">The prompt execution settings (optional).</param>
+    /// <param name="kernel">A kernel instance.</param>
     /// <param name="cancellationToken">The cancellation token (optional).</param>
     /// <returns>A list of text content generated based on the prompt.</returns>
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
         string prompt,
-        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(prompt);
@@ -44,7 +44,7 @@ internal sealed class GeminiTextGenerationClient
         ChatHistory history = new();
         history.AddUserMessage(prompt);
         var resultMessages = await this._chatCompletionClient
-            .GenerateChatMessageAsync(history, kernel, executionSettings, cancellationToken)
+            .GenerateChatMessageAsync(history, executionSettings, kernel, cancellationToken)
             .ConfigureAwait(false);
 
         return ConvertChatMessagesToTextContents(resultMessages);
@@ -54,14 +54,14 @@ internal sealed class GeminiTextGenerationClient
     /// Streams the generated text content asynchronously.
     /// </summary>
     /// <param name="prompt">The prompt for generating text content.</param>
-    /// <param name="kernel">A kernel instance.</param>
     /// <param name="executionSettings">The prompt execution settings (optional).</param>
+    /// <param name="kernel">A kernel instance.</param>
     /// <param name="cancellationToken">The cancellation token (optional).</param>
     /// <returns>An asynchronous enumerable of <see cref="StreamingTextContent"/> streaming text contents.</returns>
     public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
         string prompt,
-        Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(prompt);
@@ -69,7 +69,7 @@ internal sealed class GeminiTextGenerationClient
         ChatHistory history = new();
         history.AddUserMessage(prompt);
         var resultMessages = this._chatCompletionClient
-            .StreamGenerateChatMessageAsync(history, kernel, executionSettings, cancellationToken)
+            .StreamGenerateChatMessageAsync(history, executionSettings, kernel, cancellationToken)
             .ConfigureAwait(false);
 
         await foreach (var chatMessage in resultMessages)
