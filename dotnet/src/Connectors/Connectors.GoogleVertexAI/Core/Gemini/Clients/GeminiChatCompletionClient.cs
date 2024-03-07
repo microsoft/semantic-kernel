@@ -117,7 +117,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var state = CreateChatCompletionState(chatHistory, kernel, executionSettings);
+        var state = ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
@@ -155,7 +155,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var state = CreateChatCompletionState(chatHistory, kernel, executionSettings);
+        var state = ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
@@ -183,7 +183,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         }
     }
 
-    private static ChatCompletionState CreateChatCompletionState(
+    private static ChatCompletionState ValidateInputAndCreateChatCompletionState(
         ChatHistory chatHistory,
         Kernel? kernel,
         PromptExecutionSettings? executionSettings)
