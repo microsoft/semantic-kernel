@@ -33,12 +33,16 @@ jobs:
           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: 'Python Unit Tests'
+          search_artifacts: true
+          if_no_artifact_found: warn
       - name: Download pytest
         uses: dawidd6/action-download-artifact@v3
         with:
           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: 'Python Unit Tests'
+          search_artifacts: true
+          if_no_artifact_found: warn
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
@@ -53,4 +57,5 @@ jobs:
           junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           default-branch: "main"
           unique-id-for-comment: python-${{ matrix.python-version }}
+          
           
