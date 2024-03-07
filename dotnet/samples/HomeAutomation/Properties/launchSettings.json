@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "HomeAutomation": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

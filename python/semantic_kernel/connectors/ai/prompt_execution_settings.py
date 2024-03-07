@@ -14,7 +14,7 @@ class PromptExecutionSettings(KernelBaseModel):
     prompt execution settings that each services returns by using the service.get_prompt_execution_settings() method.
 
     Parameters:
-        service_id (str, optional): The service ID to use for the request. Defaults to None.
+        service_id (str): The service ID to use for the request.
         extension_data (Dict[str, Any], optional): Any additional data to send with the request. Defaults to None.
         kwargs (Any): Additional keyword arguments,
             these are attempted to parse into the keys of the specific prompt execution settings.
@@ -40,7 +40,10 @@ class PromptExecutionSettings(KernelBaseModel):
 
     def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
         return self.model_dump(
-            exclude={"service_id", "extension_data"},
+            exclude={
+                "service_id",
+                "extension_data",
+            },
             exclude_none=True,
             by_alias=True,
         )

@@ -3,6 +3,9 @@
 ## Built-in block helpers
 - `\{{#if}}\{{/if}}`
 - `\{{#unless}}\{{/unless}}`{{#if allowLoops}}
-- `\{{#each}}\{{/each}}`{{/if}}
+- `\{{#each}}\{{/each}}` - inside this block, you can use:
+    - `this` to reference the element being iterated over
+    - `@index` to reference the current index
+    - `@key` to reference the current key (for object iteration){{/if}}
 - `\{{#with}}\{{/with}}`
 {{/inline}}
