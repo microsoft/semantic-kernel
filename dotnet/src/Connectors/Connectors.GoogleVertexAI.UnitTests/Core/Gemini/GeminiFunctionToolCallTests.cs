@@ -14,16 +14,16 @@ namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;
 public sealed class GeminiFunctionToolCallTests
 {
     [Theory]
-    [InlineData("MyFunction", "MyFunction")]
-    [InlineData("MyPlugin_MyFunction", "MyPlugin_MyFunction")]
-    public void FullyQualifiedNameReturnsValidName(string toolCallName, string expectedName)
+    [InlineData("MyFunction")]
+    [InlineData("MyPlugin_MyFunction")]
+    public void FullyQualifiedNameReturnsValidName(string toolCallName)
     {
         // Arrange
         var toolCallPart = new GeminiPart.FunctionCallPart { FunctionName = toolCallName };
         var functionToolCall = new GeminiFunctionToolCall(toolCallPart);
 
         // Act & Assert
-        Assert.Equal(expectedName, functionToolCall.FullyQualifiedName);
+        Assert.Equal(toolCallName, functionToolCall.FullyQualifiedName);
     }
 
     [Fact]
@@ -42,7 +42,8 @@ public sealed class GeminiFunctionToolCallTests
         var functionToolCall = new GeminiFunctionToolCall(toolCallPart);
 
         // Act & Assert
-        Assert.Equal(2, functionToolCall.Arguments!.Count);
+        Assert.NotNull(functionToolCall.Arguments);
+        Assert.Equal(2, functionToolCall.Arguments.Count);
         Assert.Equal("San Diego", functionToolCall.Arguments["location"]!.ToString());
         Assert.Equal(300,
             Convert.ToInt32(functionToolCall.Arguments["max_price"]!.ToString(), new NumberFormatInfo()));

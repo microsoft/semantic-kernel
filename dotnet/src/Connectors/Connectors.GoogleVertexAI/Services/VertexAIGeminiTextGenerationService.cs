@@ -59,9 +59,7 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-    {
-        return this._textGenerationClient.GenerateTextAsync(prompt, kernel, executionSettings, cancellationToken);
-    }
+        => this._textGenerationClient.GenerateTextAsync(prompt, kernel, executionSettings, cancellationToken);
 
     /// <inheritdoc />
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -69,7 +67,5 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-    {
-        return this._textGenerationClient.StreamGenerateTextAsync(prompt, kernel, executionSettings, cancellationToken);
-    }
+        => this._textGenerationClient.StreamGenerateTextAsync(prompt, kernel, executionSettings, cancellationToken);
 }

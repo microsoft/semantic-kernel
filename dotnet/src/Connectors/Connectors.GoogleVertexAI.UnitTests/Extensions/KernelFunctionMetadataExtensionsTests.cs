@@ -75,9 +75,9 @@ public sealed class KernelFunctionMetadataExtensionsTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ItCanConvertToGeminiFunctionWithParameter(bool withSchema)
+    [InlineData(null)]
+    [InlineData("""{"type":"integer"}""")]
+    public void ItCanConvertToGeminiFunctionWithParameter(string? schema)
     {
         // Arrange
         var param1 = new KernelParameterMetadata("param1")
@@ -86,7 +86,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             DefaultValue = "1",
             ParameterType = typeof(int),
             IsRequired = false,
-            Schema = withSchema ? KernelJsonSchema.Parse("""{"type":"integer"}""") : null,
+            Schema = schema != null ? KernelJsonSchema.Parse(schema) : null,
         };
 
         var sut = new KernelFunctionMetadata("foo")

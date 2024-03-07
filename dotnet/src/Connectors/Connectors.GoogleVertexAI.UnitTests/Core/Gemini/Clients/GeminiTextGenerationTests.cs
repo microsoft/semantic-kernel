@@ -100,8 +100,10 @@ public sealed class GeminiTextGenerationTests : IDisposable
 
         var mock = new Mock<IGeminiChatCompletionClient>();
         mock.Setup(c => c.GenerateChatMessageAsync(
-                It.IsAny<ChatHistory>(), It.IsAny<Kernel>(),
-                It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
+                It.IsAny<ChatHistory>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(chatMessageContents);
 
         return mock;

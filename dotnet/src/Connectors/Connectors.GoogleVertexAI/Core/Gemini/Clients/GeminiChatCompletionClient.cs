@@ -562,15 +562,15 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private sealed class ChatCompletionState
     {
-        public ChatHistory ChatHistory { get; set; } = null!;
-        public GeminiRequest GeminiRequest { get; set; } = null!;
-        public Kernel Kernel { get; set; } = null!;
-        public GeminiPromptExecutionSettings ExecutionSettings { get; set; } = null!;
-        public GeminiChatMessageContent? LastMessage { get; set; }
-        public int Iteration { get; set; }
-        public bool AutoInvoke { get; set; }
+        internal ChatHistory ChatHistory { get; set; } = null!;
+        internal GeminiRequest GeminiRequest { get; set; } = null!;
+        internal Kernel Kernel { get; set; } = null!;
+        internal GeminiPromptExecutionSettings ExecutionSettings { get; set; } = null!;
+        internal GeminiChatMessageContent? LastMessage { get; set; }
+        internal int Iteration { get; set; }
+        internal bool AutoInvoke { get; set; }
 
-        public void AddLastMessageToChatHistoryAndRequest()
+        internal void AddLastMessageToChatHistoryAndRequest()
         {
             Verify.NotNull(this.LastMessage);
             this.ChatHistory.Add(this.LastMessage);
