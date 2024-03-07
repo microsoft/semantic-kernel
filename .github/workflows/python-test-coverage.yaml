@@ -32,7 +32,7 @@ jobs:
         with:
           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          workflow: 'Python Unit Tests'
+          workflow: python-unit-tests.yml
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Download pytest
@@ -40,7 +40,7 @@ jobs:
         with:
           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          workflow: 'Python Unit Tests'
+          workflow: python-unit-tests.yml
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Pytest coverage comment
