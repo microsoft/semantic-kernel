@@ -450,8 +450,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         }
     }
 
-    private void LogUsage(IReadOnlyList<ChatMessageContent> chatMessageContents)
-        => this.LogUsageMetadata((GeminiMetadata)chatMessageContents[0].Metadata!);
+    private void LogUsage(IReadOnlyList<GeminiChatMessageContent> chatMessageContents)
+        => this.LogUsageMetadata(chatMessageContents[0].Metadata!);
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
         => geminiResponse.Candidates!.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
