@@ -36,7 +36,7 @@ internal sealed class GoogleAIEndpointProvider : IEndpointProvider
 
     /// <inheritdoc />
     public Uri GetGeminiStreamTextGenerationEndpoint(string modelId)
-        => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:streamGenerateContent?key={this._apiKey}");
+        => new($"{ModelsEndpoint.AbsoluteUri}{modelId}:streamGenerateContent?key={this._apiKey}&alt=sse");
 
     /// <inheritdoc />
     public Uri GetGeminiChatCompletionEndpoint(string modelId)
