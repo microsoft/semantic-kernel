@@ -46,15 +46,15 @@ jobs:
           retention-days: 1
   python-tests-coverage:
     name: Create Test Coverage Messages
-    if: 
+    needs: python-unit-tests
     runs-on: ${{ matrix.os }}
+    permissions:
+      pull-requests: write
+      contents: read
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest]
-    permissions:
-      pull-requests: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Download coverage
