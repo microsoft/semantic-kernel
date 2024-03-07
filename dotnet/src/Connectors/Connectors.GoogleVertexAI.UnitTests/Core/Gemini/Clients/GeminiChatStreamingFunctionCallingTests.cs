@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Clients;
 
 [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Test class is disposed")]
 public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable

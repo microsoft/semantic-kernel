@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// Represents a client for interacting with the embeddings models by Vertex AI.
 /// </summary>
-internal sealed class VertexAIEmbeddingClient : ClientBase, IEmbeddingClient
+internal sealed class VertexAIEmbeddingClient : ClientBase
 {
     private readonly string _embeddingModelId;
 
@@ -42,7 +42,12 @@ internal sealed class VertexAIEmbeddingClient : ClientBase, IEmbeddingClient
         this._embeddingModelId = embeddingModelId;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Generates embeddings for the given data asynchronously.
+    /// </summary>
+    /// <param name="data">The list of strings to generate embeddings for.</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+    /// <returns>Result contains a list of read-only memories of floats representing the generated embeddings.</returns>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         CancellationToken cancellationToken = default)

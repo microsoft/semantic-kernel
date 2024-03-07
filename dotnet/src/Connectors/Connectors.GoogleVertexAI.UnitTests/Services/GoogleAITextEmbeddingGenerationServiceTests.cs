@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.TextEmbedding;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Services;
 
 public sealed class GoogleAITextEmbeddingGenerationServiceTests
 {
