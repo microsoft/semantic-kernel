@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -15,36 +14,8 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// <summary>
 /// Extension methods for adding Ollama Text Generation service to the kernel builder.
 /// </summary>
-public static class OllamaServiceExtensions
+public static class OllamaServiceCollectionExtensions
 {
-    /// <summary>
-    /// Add Ollama Text Generation service to the kernel builder.
-    /// </summary>
-    /// <param name="builder">The kernel builder.</param>
-    /// <param name="modelId">The model for text generation.</param>
-    /// <param name="baseUri">The base uri to Ollama hosted service.</param>
-    /// <param name="serviceId">The optional service ID.</param>
-    /// <param name="httpClient">The optional custom HttpClient.</param>
-    /// <returns>The updated kernel builder.</returns>
-    public static IKernelBuilder AddOllamaTextGeneration(
-        this IKernelBuilder builder,
-        string modelId,
-        Uri baseUri,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
-    {
-        Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new OllamaTextGenerationService(
-                model: modelId,
-                baseUri: baseUri,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-        return builder;
-    }
-
     /// <summary>
     /// Add Ollama Text Generation service to the specified service collection.
     /// </summary>
@@ -68,35 +39,6 @@ public static class OllamaServiceExtensions
                 baseUri: baseUri,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-    }
-
-    /// <summary>
-    /// Add Ollama Chat Completion services to the kernel builder.
-    /// </summary>
-    /// <param name="builder">The kernel builder.</param>
-    /// <param name="modelId">The model for text generation.</param>
-    /// <param name="baseUri">The base uri to Ollama hosted service.</param>
-    /// <param name="serviceId">The optional service ID.</param>
-    /// <param name="httpClient">The optional custom HttpClient.</param>
-    /// <returns>The updated kernel builder.</returns>
-    public static IKernelBuilder AddOllamaChatCompletion(
-        this IKernelBuilder builder,
-        string modelId,
-        Uri baseUri,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
-    {
-        Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new OllamaChatCompletionService(
-                model: modelId,
-                baseUri: baseUri,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-
-        return builder;
     }
 
     /// <summary>
@@ -124,36 +66,6 @@ public static class OllamaServiceExtensions
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
         return services;
-    }
-
-    /// <summary>
-    /// Add Ollama Text Embedding Generation services to the kernel builder.
-    /// </summary>
-    /// <param name="builder">The kernel builder.</param>
-    /// <param name="modelId">The model for text generation.</param>
-    /// <param name="baseUri">The base uri to Ollama hosted service.</param>
-    /// <param name="serviceId">The optional service ID.</param>
-    /// <param name="httpClient">The optional custom HttpClient.</param>
-    /// <returns>The updated kernel builder.</returns>
-    [Experimental("SKEXP0011")]
-    public static IKernelBuilder AddOllamaTextEmbeddingGeneration(
-        this IKernelBuilder builder,
-        string modelId,
-        Uri baseUri,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
-    {
-        Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new OllamaTextEmbeddingGenerationService(
-                model: modelId,
-                baseUri: baseUri,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-
-        return builder;
     }
 
     /// <summary>

@@ -17,7 +17,7 @@ using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
-internal sealed class OllamaClient : IOllamaClient
+internal sealed class OllamaClient
 {
     private readonly IStreamJsonParser _streamJsonParser;
     private readonly string _modelId;

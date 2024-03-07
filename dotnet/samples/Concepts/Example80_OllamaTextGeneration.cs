@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
-using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Xunit;
 using Xunit.Abstractions;
 
