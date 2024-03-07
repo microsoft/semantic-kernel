@@ -73,15 +73,9 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         """
         options = options or FunctionCallingStepwisePlannerOptions()
         generate_plan_yaml = (
-            options.get_initial_plan()
-            if options.get_initial_plan
-            else open(PLAN_YAML_FILE_PATH).read()
+            options.get_initial_plan() if options.get_initial_plan else open(PLAN_YAML_FILE_PATH).read()
         )
-        step_prompt = (
-            options.get_step_prompt()
-            if options.get_step_prompt
-            else open(STEP_PROMPT_FILE_PATH).read()
-        )
+        step_prompt = options.get_step_prompt() if options.get_step_prompt else open(STEP_PROMPT_FILE_PATH).read()
         options.excluded_plugins.add(STEPWISE_PLANNER_PLUGIN_NAME)
 
         super().__init__(
