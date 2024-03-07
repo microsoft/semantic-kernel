@@ -1,26 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncIterable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Tuple, Type, Union
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.contents import OpenAIChatMessageContent, OpenAIStreamingChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
@@ -113,7 +101,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         while attempts < max_auto_invoke_attempts and continue_loop:
             settings = self._prepare_settings(settings, chat_history, stream_request=True)
             response = await self._send_chat_stream_request(settings)
-            async for content in self._process_chat_stream_response(response, tool_call_behavior, chat_history, kernel):
+            async for content in self._process_chat_stream_response(response, chat_history, kernel, tool_call_behavior):
                 yield content
                 if tool_call_behavior and not tool_call_behavior.auto_invoke_kernel_functions:
                     continue_loop = False
@@ -181,10 +169,14 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             await self._process_tool_calls(result, kernel, chat_history)
 
     async def _process_chat_stream_response(
-        self, response: AsyncStream, tool_call_behavior: ToolCallBehavior, chat_history: ChatHistory, kernel: "Kernel"
+        self,
+        response: AsyncStream,
+        chat_history: ChatHistory,
+        kernel: "Kernel",
+        tool_call_behavior: Optional[ToolCallBehavior] = None,
     ) -> AsyncIterable[List[OpenAIStreamingChatMessageContent]]:
         """Process the chat stream response and handle tool calls if applicable."""
-        stream_chunks, update_storage = {}, self._get_update_storage_fields()
+        full_content = None
         async for chunk in response:
             if len(chunk.choices) == 0:
                 continue
@@ -193,29 +185,20 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             contents = [
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
-            self._update_storages(contents, update_storage)
-
+            if not tool_call_behavior or not tool_call_behavior.auto_invoke_kernel_functions:
+                yield contents
             finish_reason = getattr(contents[0], "finish_reason", None)
-            if tool_call_behavior and tool_call_behavior.auto_invoke_kernel_functions and contents[0].tool_calls:
-                stream_chunks.setdefault(contents[0].choice_index, []).append(contents[0])
-                if finish_reason == FinishReason.STOP:
-                    break
-            elif (tool_call_behavior and not tool_call_behavior.auto_invoke_kernel_functions) or finish_reason not in (
-                FinishReason.STOP,
-                FinishReason.TOOL_CALLS,
-            ):
+            full_content = contents[0] if full_content is None else full_content + contents[0]
+            if not contents[0].tool_calls or finish_reason not in (FinishReason.STOP, FinishReason.TOOL_CALLS, None):
                 yield contents
 
             if finish_reason == FinishReason.STOP:
                 if tool_call_behavior:
                     tool_call_behavior.auto_invoke_kernel_functions = False
                 break
-
-            if stream_chunks and finish_reason == FinishReason.TOOL_CALLS:
-                chat_contents = self._build_streaming_message_with_tool_call(stream_chunks, update_storage)
-                for chat_content in chat_contents:
-                    chat_history = store_results(chat_history=chat_history, results=[chat_content])
-                    await self._process_tool_calls(chat_content, kernel, chat_history)
+            if finish_reason == FinishReason.TOOL_CALLS:
+                chat_history.add_message(message=full_content)
+                await self._process_tool_calls(full_content, kernel, chat_history)
                 break
 
     def _create_chat_message_content(
@@ -254,49 +237,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
         )
-
-    def _get_update_storage_fields(self) -> Dict[str, Dict[int, Any]]:
-        """Get the fields to use for storing updates to the messages, tool_calls and function_calls."""
-        out_messages = {}
-        tool_call_ids_by_index = {}
-        function_call_by_index = {}
-        return {
-            "out_messages": out_messages,
-            "tool_call_ids_by_index": tool_call_ids_by_index,
-            "function_call_by_index": function_call_by_index,
-        }
-
-    def _update_storages(
-        self, contents: List[OpenAIStreamingChatMessageContent], update_storage: Dict[str, Dict[int, Any]]
-    ):
-        """Handle updates to the messages, tool_calls and function_calls.
-
-        This will be used for auto-invoking tools.
-        """
-        out_messages = update_storage["out_messages"]
-        tool_call_ids_by_index = update_storage["tool_call_ids_by_index"]
-        function_call_by_index = update_storage["function_call_by_index"]
-
-        for index, content in enumerate(contents):
-            if content.content is not None:
-                if index not in out_messages:
-                    out_messages[index] = str(content)
-                else:
-                    out_messages[index] += str(content)
-            if content.tool_calls is not None:
-                for tc in content.tool_calls:
-                    if tc.index not in tool_call_ids_by_index:
-                        tool_call_ids_by_index[tc.index] = tc
-                    else:
-                        for tc in content.tool_calls:
-                            tool_call_ids_by_index[tc.index] += tc
-            if content.function_call is not None:
-                for fc in content.function_call:
-                    if fc.index not in function_call_by_index:
-                        function_call_by_index[fc.index] = fc
-                    else:
-                        for tc in content.function_call:
-                            function_call_by_index[fc.index] += fc
 
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> Dict[str, Any]:
         """Get metadata from a chat response."""
@@ -349,25 +289,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             return None
         return FunctionCall(name=content.function_call.name, arguments=content.function_call.arguments)
 
-    def _build_streaming_message_with_tool_call(
-        self,
-        stream_chunks: Dict[int, List[OpenAIStreamingChatMessageContent]],
-        update_storage: Dict[str, Dict[int, Any]],
-    ) -> List[OpenAIStreamingChatMessageContent]:
-        """Build the streaming message with the tool call(s)."""
-        if not stream_chunks:
-            raise ServiceInvalidResponseError("Expected a non-empty stream_chunks.")
-        streaming_chat_message_contents = []
-        for _, chunk in stream_chunks.items():
-            chat_message: OpenAIStreamingChatMessageContent = None
-            for result in chunk:
-                chat_message = result if chat_message is None else chat_message + result
-            tool_calls_dict = update_storage["tool_call_ids_by_index"]
-            chat_message.tool_calls = list(tool_calls_dict.values())
-            chat_message.role = ChatRole.ASSISTANT
-            streaming_chat_message_contents.append(chat_message)
-        return streaming_chat_message_contents
-
     def _get_auto_invoke_execution_settings(
         self, execution_settings: OpenAIPromptExecutionSettings
     ) -> Tuple[bool, int]:
@@ -391,14 +312,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Processes the tool calls in the result and return it as part of the chat history."""
         logger.info(f"processing {len(result.tool_calls)} tool calls")
         for tool_call in result.tool_calls:
-            func = kernel.func(**tool_call.function.split_name_dict())
-            arguments = tool_call.function.to_kernel_arguments()
-            logger.info(f"Calling {tool_call.function.name} function with args: {arguments}")
-            func_result = await kernel.invoke(func, arguments)
-            chat_history.add_tool_message(
-                str(func_result.value),
+            if tool_call.function is None:
+                continue
+            logger.info(f"Calling {tool_call.function.name} function with args: {tool_call.function.arguments}")
+            func_result = await kernel.invoke(
+                **tool_call.function.split_name_dict(), arguments=tool_call.function.to_kernel_arguments()
+            )
+            msg = OpenAIChatMessageContent(
+                role=ChatRole.TOOL,
+                content=str(func_result),
                 metadata={"tool_call_id": tool_call.id, "function_name": tool_call.function.name},
             )
+            chat_history.add_message(message=msg)
 
     def _should_return_completions_response(
         self,
@@ -411,3 +336,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             or any(not isinstance(completion, OpenAIChatMessageContent) for completion in completions)
             or any(not hasattr(completion, "tool_calls") or not completion.tool_calls for completion in completions)
         )
+
+    def _chat_message_content_to_dict(self, message: ChatMessageContent) -> Dict[str, Optional[str]]:
+        msg = super()._chat_message_content_to_dict(message)
+        if message.role == "assistant":
+            if tool_calls := getattr(message, "tool_calls", None):
+                msg["tool_calls"] = tool_calls
+            if function_call := getattr(message, "function_call", None):
+                msg["function_call"] = function_call
+        if message.role == "tool":
+            if message.metadata and "tool_call_id" in message.metadata:
+                msg["tool_call_id"] = message.metadata["tool_call_id"]
+            if message.metadata and "function" in message.metadata:
+                msg["name"] = message.metadata["function_name"]
+        return msg
