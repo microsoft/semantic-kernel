@@ -78,7 +78,7 @@ internal static class Verify
         }
     }
 
-    internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression(nameof(filename)] string? paramName = null)
+    internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression(nameof(filename))] string? paramName = null)
     {
         NotNullOrWhiteSpace(filename);
         if (!s_filenameRegex.IsMatch(filename))

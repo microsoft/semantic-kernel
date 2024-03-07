@@ -198,7 +198,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
         return kernel;
     }
 
-    private readonly RedirectOutput _testOutputHelper = new(output);
+    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)

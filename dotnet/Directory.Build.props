@@ -14,7 +14,7 @@
   <ItemGroup>
     <!-- Use newest available compiler to support C# 12. -->
     <!-- This can be removed once we no longer target the .NET 6/7 SDKs in CI. -->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.9.2" />
   </ItemGroup>
 
   <PropertyGroup>
