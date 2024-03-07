@@ -7,13 +7,12 @@ from openai import AsyncAzureOpenAI
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 
 
 @pytest.mark.asyncio
-async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
-    kernel = create_kernel
-
+async def test_azure_text_embedding_service(kernel: Kernel, get_aoai_config):
     _, api_key, endpoint = get_aoai_config
 
     if "Python_Integration_Tests" in os.environ:
@@ -43,9 +42,7 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
 
 
 @pytest.mark.asyncio
-async def test_azure_text_embedding_service_with_provided_client(create_kernel, get_aoai_config):
-    kernel = create_kernel
-
+async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel, get_aoai_config):
     _, api_key, endpoint = get_aoai_config
 
     if "Python_Integration_Tests" in os.environ:

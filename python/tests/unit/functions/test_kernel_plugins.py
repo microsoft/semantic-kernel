@@ -6,6 +6,8 @@ import pytest
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.exceptions.function_exceptions import FunctionInvalidNameError
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -117,7 +119,7 @@ def test_default_kernel_plugin_construction_with_prompt_function():
 
     expected_plugin_name = "test_plugin"
     expected_function_name = "mock_function"
-    semantic_function = KernelFunction.from_prompt(
+    semantic_function = KernelFunctionFromPrompt(
         prompt=prompt,
         prompt_template_config=prompt_template_config,
         plugin_name=expected_plugin_name,
@@ -182,7 +184,7 @@ def test_default_kernel_plugin_construction_with_both_function_types():
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
+    native_function = KernelFunctionFromMethod(method=mock_method, plugin_name="MockPlugin")
 
     # Add both types to the default kernel plugin
     expected_plugin_description = "A unit test plugin"
@@ -247,7 +249,7 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     mock_function.__kernel_function_return_type__ = "None"
 
     mock_method = mock_function
-    native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
+    native_function = KernelFunctionFromMethod(method=mock_method, plugin_name="MockPlugin")
 
     with pytest.raises(FunctionInvalidNameError):
         KernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])

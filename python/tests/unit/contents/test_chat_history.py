@@ -15,6 +15,11 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
+@pytest.fixture(scope="function")
+def chat_history():
+    return ChatHistory()
+
+
 def test_init_with_system_message_only():
     system_msg = "test message"
     chat_history = ChatHistory(system_message=system_msg)
@@ -37,53 +42,46 @@ def test_init_with_messages_and_system_message():
     assert chat_history.messages[1:] == msgs, "Remaining messages should follow the system message"
 
 
-def test_init_without_messages_and_system_message():
-    chat_history = ChatHistory()
+def test_init_without_messages_and_system_message(chat_history):
     assert chat_history.messages == [], "Chat history should be empty if no messages and system_message are provided"
 
 
-def test_add_system_message():
-    chat_history = ChatHistory()
+def test_add_system_message(chat_history):
     content = "System message"
     chat_history.add_system_message(content)
     assert chat_history.messages[-1].content == content
     assert chat_history.messages[-1].role == ChatRole.SYSTEM
 
 
-def test_add_system_message_at_init():
-    chat_history = ChatHistory()
+def test_add_system_message_at_init(chat_history):
     content = "System message"
     chat_history = ChatHistory(system_message=content)
     assert chat_history.messages[-1].content == content
     assert chat_history.messages[-1].role == ChatRole.SYSTEM
 
 
-def test_add_user_message():
-    chat_history = ChatHistory()
+def test_add_user_message(chat_history):
     content = "User message"
     chat_history.add_user_message(content)
     assert chat_history.messages[-1].content == content
     assert chat_history.messages[-1].role == ChatRole.USER
 
 
-def test_add_assistant_message():
-    chat_history = ChatHistory()
+def test_add_assistant_message(chat_history):
     content = "Assistant message"
     chat_history.add_assistant_message(content)
     assert chat_history.messages[-1].content == content
     assert chat_history.messages[-1].role == ChatRole.ASSISTANT
 
 
-def test_add_tool_message():
-    chat_history = ChatHistory()
+def test_add_tool_message(chat_history):
     content = "Tool message"
     chat_history.add_tool_message(content)
     assert chat_history.messages[-1].content == content
     assert chat_history.messages[-1].role == ChatRole.TOOL
 
 
-def test_add_message():
-    chat_history = ChatHistory()
+def test_add_message(chat_history):
     content = "Test message"
     role = ChatRole.USER
     encoding = "utf-8"
@@ -93,22 +91,19 @@ def test_add_message():
     assert chat_history.messages[-1].encoding == encoding
 
 
-def test_add_message_invalid_message():
-    chat_history = ChatHistory()
+def test_add_message_invalid_message(chat_history):
     content = "Test message"
     with pytest.raises(ContentInitializationError):
         chat_history.add_message(message={"content": content})
 
 
-def test_add_message_invalid_type():
-    chat_history = ChatHistory()
+def test_add_message_invalid_type(chat_history):
     content = "Test message"
     with pytest.raises(ContentInitializationError):
         chat_history.add_message(message=content)
 
 
-def test_remove_message():
-    chat_history = ChatHistory()
+def test_remove_message(chat_history):
     content = "Message to remove"
     role = ChatRole.USER
     encoding = "utf-8"
@@ -118,8 +113,7 @@ def test_remove_message():
     assert message not in chat_history.messages
 
 
-def test_remove_message_invalid():
-    chat_history = ChatHistory()
+def test_remove_message_invalid(chat_history):
     content = "Message to remove"
     role = ChatRole.USER
     encoding = "utf-8"
@@ -128,23 +122,20 @@ def test_remove_message_invalid():
     assert chat_history.remove_message("random") is False
 
 
-def test_len():
-    chat_history = ChatHistory()
+def test_len(chat_history):
     content = "Message"
     chat_history.add_user_message(content)
     chat_history.add_system_message(content)
     assert len(chat_history) == 2
 
 
-def test_getitem():
-    chat_history = ChatHistory()
+def test_getitem(chat_history):
     content = "Message for index"
     chat_history.add_user_message(content)
     assert chat_history[0].content == content
 
 
-def test_contains():
-    chat_history = ChatHistory()
+def test_contains(chat_history):
     content = "Message to check"
     role = ChatRole.USER
     encoding = "utf-8"
@@ -153,8 +144,7 @@ def test_contains():
     assert message in chat_history
 
 
-def test_iter():
-    chat_history = ChatHistory()
+def test_iter(chat_history):
     messages = ["Message 1", "Message 2"]
     for msg in messages:
         chat_history.add_user_message(msg)
@@ -181,16 +171,13 @@ def test_eq():
     assert chat_history1 != chat_history2
 
 
-def test_eq_invalid():
-    # Create two instances of ChatHistory
-    chat_history1 = ChatHistory()
-
+def test_eq_invalid(chat_history):
     # Populate both instances with the same set of messages
     messages = [("Message 1", ChatRole.USER), ("Message 2", ChatRole.ASSISTANT)]
     for content, role in messages:
-        chat_history1.add_message({"role": role, "content": content})
+        chat_history.add_message({"role": role, "content": content})
 
-    assert chat_history1 != "other"
+    assert chat_history != "other"
 
 
 def test_serialize():  # ignore: E501
@@ -229,14 +216,12 @@ def test_deserialize_invalid_json_raises_exception():
         ChatHistory.restore_chat_history(invalid_json)
 
 
-def test_chat_history_to_prompt_empty():
-    chat_history = ChatHistory()
+def test_chat_history_to_prompt_empty(chat_history):
     prompt = str(chat_history)
     assert prompt == ""
 
 
-def test_chat_history_to_prompt():
-    chat_history = ChatHistory()
+def test_chat_history_to_prompt(chat_history):
     chat_history.add_system_message("I am an AI assistant")
     chat_history.add_user_message("What can you do?")
     prompt = str(chat_history)
@@ -276,8 +261,7 @@ stuff</message>
 
 
 @pytest.mark.asyncio
-async def test_template():
-    chat_history = ChatHistory()
+async def test_template(chat_history):
     chat_history.add_assistant_message("I am an AI assistant")
 
     template = "system stuff{{$chat_history}}{{$input}}"
@@ -353,8 +337,7 @@ async def test_template_two_histories_one_empty():
 
 
 @pytest.mark.asyncio
-async def test_template_history_only():
-    chat_history = ChatHistory()
+async def test_template_history_only(chat_history):
     chat_history.add_assistant_message("I am an AI assistant")
 
     template = "{{$chat_history}}"
@@ -416,9 +399,8 @@ async def test_handwritten_xml_as_arg():
 
 
 @pytest.mark.asyncio
-async def test_history_openai_cmc():
-    chat_history1 = ChatHistory()
-    chat_history1.add_message(
+async def test_history_openai_cmc(chat_history):
+    chat_history.add_message(
         message=OpenAIChatMessageContent(
             inner_content=None,
             role=ChatRole.ASSISTANT,
@@ -430,9 +412,9 @@ async def test_history_openai_cmc():
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(
         kernel=Kernel(),
-        arguments=KernelArguments(chat_history=chat_history1),
+        arguments=KernelArguments(chat_history=chat_history),
     )
-    chat_history = ChatHistory.from_rendered_prompt(rendered, chat_message_content_type=OpenAIChatMessageContent)
+    chat_history1 = ChatHistory.from_rendered_prompt(rendered, chat_message_content_type=OpenAIChatMessageContent)
 
-    assert chat_history.messages[0].role == ChatRole.ASSISTANT
-    assert chat_history.messages[0].function_call.name == "test-test"
+    assert chat_history1.messages[0].role == ChatRole.ASSISTANT
+    assert chat_history1.messages[0].function_call.name == "test-test"

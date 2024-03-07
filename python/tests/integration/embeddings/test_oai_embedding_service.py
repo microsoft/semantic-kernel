@@ -5,13 +5,12 @@ from openai import AsyncOpenAI
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 
 
 @pytest.mark.asyncio
-async def test_oai_embedding_service(create_kernel, get_oai_config):
-    kernel = create_kernel
-
+async def test_oai_embedding_service(kernel: Kernel, get_oai_config):
     api_key, org_id = get_oai_config
 
     embedding_gen = sk_oai.OpenAITextEmbedding(
@@ -32,9 +31,7 @@ async def test_oai_embedding_service(create_kernel, get_oai_config):
 
 
 @pytest.mark.asyncio
-async def test_oai_embedding_service_with_provided_client(create_kernel, get_oai_config):
-    kernel = create_kernel
-
+async def test_oai_embedding_service_with_provided_client(kernel: Kernel, get_oai_config):
     api_key, org_id = get_oai_config
 
     client = AsyncOpenAI(
