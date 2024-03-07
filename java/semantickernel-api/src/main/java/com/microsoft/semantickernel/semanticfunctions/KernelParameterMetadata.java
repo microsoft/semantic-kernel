@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 /**
@@ -87,4 +89,30 @@ public class KernelParameterMetadata<T> {
     public Class<?> getType() {
         return parameterType;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, defaultValue, isRequired, parameterType);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        
+        KernelParameterMetadata<?> other = (KernelParameterMetadata<?>) obj;
+        if (!Objects.equals(name, other.name))
+            return false;
+        if (!Objects.equals(description, other.description))
+            return false;
+        if (!Objects.equals(defaultValue, other.defaultValue))
+            return false;
+        if (isRequired != other.isRequired)
+            return false;
+        return Objects.equals(parameterType, other.parameterType);
+    }
+
+    
 }

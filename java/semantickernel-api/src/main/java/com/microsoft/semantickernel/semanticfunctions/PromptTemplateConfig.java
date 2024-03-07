@@ -9,12 +9,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
 
 /**
@@ -63,7 +66,7 @@ public class PromptTemplateConfig {
             SEMANTIC_KERNEL_TEMPLATE_FORMAT,
             "",
             Collections.emptyList(),
-            new OutputVariable("out", String.class.getName()),
+            new OutputVariable(String.class.getName(), "out"),
             Collections.emptyMap());
     }
 
@@ -101,7 +104,9 @@ public class PromptTemplateConfig {
         } else {
             this.inputVariables = new ArrayList<>(inputVariables);
         }
-        this.outputVariable = outputVariable;
+        this.outputVariable = outputVariable != null
+            ? outputVariable
+            : new OutputVariable(String.class.getName(), "out");
         if (executionSettings == null) {
             this.executionSettings = new HashMap<>();
         } else {
@@ -304,6 +309,44 @@ public class PromptTemplateConfig {
         return new Builder(this);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, template, templateFormat, description, inputVariables, outputVariable, executionSettings);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PromptTemplateConfig other = (PromptTemplateConfig) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.template, other.template)) {
+            return false;
+        }
+        if (!Objects.equals(this.description, other.description)) {
+            return false;
+        }
+        if (!Objects.equals(this.templateFormat, other.templateFormat)) {
+            return false;
+        }   
+        if (!Objects.equals(this.inputVariables, other.inputVariables)) {
+            return false;
+        }
+        if (!Objects.equals(this.outputVariable, other.outputVariable)) {
+            return false;
+        }
+        return Objects.equals(this.executionSettings, other.executionSettings);
+    }
+
     /**
      * Builder for a prompt template config.
      */
@@ -318,7 +361,7 @@ public class PromptTemplateConfig {
         private String description = null;
         private List<InputVariable> inputVariables = new ArrayList<>();
         @Nullable
-        private OutputVariable outputVariable = new OutputVariable("out", String.class.getName());
+        private OutputVariable outputVariable;
         private Map<String, PromptExecutionSettings> executionSettings = new HashMap<>();
 
         private Builder() {

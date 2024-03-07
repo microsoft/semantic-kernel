@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+
 import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
  * A class for creating a {@link KernelFunction} instance from a YAML representation of a prompt
@@ -29,8 +31,9 @@ public class KernelFunctionYaml {
     public static <T> KernelFunction<T> fromPromptYaml(
         String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory) throws IOException {
-        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
-        return fromYaml(targetStream, promptTemplateFactory);
+        try (InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))) {
+            return fromYaml(targetStream, promptTemplateFactory);
+        } 
     }
 
     /**
@@ -44,8 +47,7 @@ public class KernelFunctionYaml {
      */
     public static <T> KernelFunction<T> fromPromptYaml(
         String yaml) throws IOException {
-        InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8));
-        return fromYaml(targetStream, null);
+        return fromPromptYaml(yaml, null);
     }
 
     /**
@@ -58,9 +60,10 @@ public class KernelFunctionYaml {
      * @throws IOException If an error occurs while reading the YAML.
      */
     public static <T> KernelFunction<T> fromYaml(Path filePath) throws IOException {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream(filePath.toString());
-        return fromYaml(inputStream, null);
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        try (InputStream inputStream = classLoader.getResourceAsStream(filePath.toString())) {
+            return fromYaml(inputStream, null);
+        }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
