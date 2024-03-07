@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public sealed class Example87_GeminiVision : BaseTest
+public sealed class Example97_GeminiVision : BaseTest
 {
     [Fact]
     public async Task RunAsync()
@@ -109,5 +109,5 @@ public sealed class Example87_GeminiVision : BaseTest
         WriteLine(reply.Content);
     }
 
-    public Example87_GeminiVision(ITestOutputHelper output) : base(output) { }
+    public Example97_GeminiVision(ITestOutputHelper output) : base(output) { }
 }
