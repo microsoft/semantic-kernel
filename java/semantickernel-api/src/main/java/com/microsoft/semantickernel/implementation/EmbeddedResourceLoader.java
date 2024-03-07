@@ -51,7 +51,7 @@ public class EmbeddedResourceLoader {
                 type -> {
                     switch (type) {
                         case CLASSPATH:
-                            try (InputStream inputStream = clazz.getResourceAsStream(fileName)) {
+                            try (InputStream inputStream = getResourceAsStream(fileName, clazz)) {
                                 return readInputStream(fileName, inputStream);
                             } catch (Exception e) {
                                 // IGNORE
@@ -67,14 +67,10 @@ public class EmbeddedResourceLoader {
                             }
                             break;
                         case FILESYSTEM:
-                            File file = new File(fileName);
-                            if (file.exists()) {
-                                try (
-                                    InputStream inputStream = Files.newInputStream(file.toPath())) {
-                                    return readInputStream(fileName, inputStream);
-                                } catch (IOException e) {
-                                    // IGNORE
-                                }
+                            try {
+                                return readFileFromFileSystem(fileName);
+                            } catch (IOException e) {
+                                // IGNORE
                             }
                             break;
                         default:
@@ -89,6 +85,20 @@ public class EmbeddedResourceLoader {
         }
 
         throw new FileNotFoundException("Could not find file " + fileName);
+    }
+
+    static InputStream getResourceAsStream(String fileName, Class<?> clazz) {
+        return clazz.getResourceAsStream(fileName);
+    }
+
+    static String readFileFromFileSystem(String fileName) throws IOException {
+        File file = new File(fileName);
+        if (file.exists()) {
+            InputStream inputStream = Files.newInputStream(file.toPath());
+            return readInputStream(fileName, inputStream);
+        }
+
+        return null;
     }
 
     private static String readInputStream(String fileName, InputStream inputStream)
