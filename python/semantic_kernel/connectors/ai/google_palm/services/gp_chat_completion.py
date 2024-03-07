@@ -2,10 +2,11 @@
 
 import logging
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -16,18 +17,13 @@ import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
 from pydantic import PrivateAttr, StringConstraints
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
     GooglePalmChatPromptExecutionSettings,
     GooglePalmPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_role import ChatRole
 
@@ -65,21 +61,23 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def complete_chat(
         self,
-        messages: ChatHistory,
+        chat_history: ChatHistory,
         settings: GooglePalmPromptExecutionSettings,
+        **kwargs: Dict[str, Any],
     ) -> List[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+            chat_history {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
             settings {GooglePalmPromptExecutionSettings} -- Settings for the request.
+            kwargs {Dict[str, Any]} -- The optional arguments.
 
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
-        settings.messages = self._prepare_chat_history_for_request(messages)
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
@@ -116,6 +114,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         messages: List[Tuple[str, str]],
         settings: GooglePalmPromptExecutionSettings,
+        **kwargs: Dict[str, Any],
     ):
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
@@ -203,10 +202,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             raise ValueError("The request settings cannot be `None`")
 
         if settings.messages[-1]["author"] != "user":
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "The last message must be from the user",
-            )
+            raise ServiceInvalidRequestError("The last message must be from the user")
         try:
             palm.configure(api_key=self.api_key)
         except Exception as ex:
@@ -223,11 +219,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 )
             self._message_history = response  # Store response object for future use
         except Exception as ex:
-            raise AIException(
-                AIException.ErrorCodes.ServiceError,
+            raise ServiceResponseException(
                 "Google PaLM service failed to complete the prompt",
                 ex,
-            )
+            ) from ex
         return response
 
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":

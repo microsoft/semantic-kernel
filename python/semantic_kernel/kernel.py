@@ -10,43 +10,41 @@ from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Ty
 
 from pydantic import Field, field_validator
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
+from semantic_kernel.exceptions import (
+    FunctionInitializationError,
+    FunctionNameNotUniqueError,
+    KernelFunctionAlreadyExistsError,
+    KernelFunctionNotFoundError,
+    KernelInvokeException,
+    KernelPluginNotFoundError,
+    KernelServiceNotFoundError,
+    PluginInitializationError,
+    PluginInvalidNameError,
+    ServiceInvalidRequestError,
+    ServiceInvalidTypeError,
+    TemplateSyntaxError,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
-from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
-from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import (
-    PromptTemplateConfig,
-)
-from semantic_kernel.reliability.pass_through_without_retry import (
-    PassThroughWithoutRetry,
-)
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
-from semantic_kernel.utils.validation import (
-    validate_plugin_name,
-)
+from semantic_kernel.utils.validation import validate_plugin_name
 
 T = TypeVar("T")
 
@@ -175,7 +173,7 @@ class Kernel(KernelBaseModel):
                 if isinstance(results, FunctionResult):
                     results = [results]
             else:
-                raise ValueError("No functions passed to run")
+                raise KernelInvokeException("No functions passed to run")
             if not results:
                 results = []
             pipeline_step = len(functions) - 1
@@ -203,6 +201,7 @@ class Kernel(KernelBaseModel):
                 # might need to be done as part of the invoked_handler
             function_result = []
             exception = None
+
             async for stream_message in stream_function.invoke_stream(self, arguments):
                 if isinstance(stream_message, FunctionResult):
                     exception = stream_message.metadata.get("exception", None)
@@ -213,11 +212,11 @@ class Kernel(KernelBaseModel):
 
             output_function_result = []
             for result in function_result:
-                for index, choice in enumerate(result):
-                    if len(output_function_result) <= index:
+                for choice in result:
+                    if len(output_function_result) <= choice.choice_index:
                         output_function_result.append(copy(choice))
                     else:
-                        output_function_result[index] += choice
+                        output_function_result[choice.choice_index] += choice
             func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
             function_invoked_args = self.on_function_invoked(
                 stream_function.metadata,
@@ -226,14 +225,10 @@ class Kernel(KernelBaseModel):
                 exception,
             )
             if function_invoked_args.exception:
-                raise AIException(
-                    error_code=AIException.ErrorCodes.InvalidRequest,
-                    message=(
-                        f"Something went wrong in stream function. "
-                        f"During function invocation:'{stream_function.plugin_name}.{stream_function.name}'. "
-                        f"Error description: '{str(function_invoked_args.exception)}'"
-                    ),
-                    inner_exception=function_invoked_args.exception,
+                raise ServiceInvalidRequestError(
+                    f"Something went wrong in stream function. "
+                    f"During function invocation:'{stream_function.plugin_name}.{stream_function.name}'. "
+                    f"Error description: '{str(function_invoked_args.exception)}'"
                 ) from function_invoked_args.exception
             if return_function_results:
                 results.append(function_invoked_args.function_result)
@@ -325,10 +320,8 @@ class Kernel(KernelBaseModel):
                 results.append(function_invoked_args.function_result)
 
                 if function_invoked_args.exception:
-                    raise KernelException(
-                        KernelException.ErrorCodes.FunctionInvokeError,
-                        f"Error occurred while invoking function: '{func.plugin_name}.{func.name}'",
-                        function_invoked_args.exception,
+                    raise KernelInvokeException(
+                        f"Error occurred while invoking function: '{func.plugin_name}.{func.name}'"
                     ) from function_invoked_args.exception
                 if function_invoked_args.is_cancel_requested:
                     logger.info(
@@ -356,6 +349,8 @@ class Kernel(KernelBaseModel):
 
     async def invoke_prompt(
         self,
+        function_name: str,
+        plugin_name: str,
         prompt: str,
         arguments: Optional[KernelArguments] = None,
         template_format: Optional[str] = None,
@@ -365,6 +360,8 @@ class Kernel(KernelBaseModel):
         Invoke a function from the provided prompt
 
         Args:
+            function_name (str): The name of the function
+            plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
             arguments (Optional[KernelArguments]): The arguments to pass to the function(s), optional
             template_format (Optional[str]): The format of the prompt template
@@ -376,11 +373,10 @@ class Kernel(KernelBaseModel):
         if not arguments:
             arguments = KernelArguments(**kwargs)
         if not prompt:
-            raise AIException(
-                error_code=AIException.ErrorCodes.InvalidPrompt,
-                message="The prompt is either null or empty.",
-            )
+            raise TemplateSyntaxError("The prompt is either null or empty.")
         function = KernelFunction.from_prompt(
+            function_name=function_name,
+            plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
         )
@@ -473,11 +469,7 @@ class Kernel(KernelBaseModel):
             KernelPlugin: The imported plugin of type KernelPlugin.
         """
         if not plugin_name.strip():
-            logger.warn("Unable to import plugin due to missing plugin_name")
-            raise KernelException(
-                KernelException.ErrorCodes.InvalidPluginName,
-                "Plugin name cannot be empty",
-            )
+            raise PluginInvalidNameError("Plugin name cannot be empty")
         logger.debug(f"Importing plugin {plugin_name}")
 
         functions = []
@@ -499,9 +491,8 @@ class Kernel(KernelBaseModel):
         # Uniqueness check on function names
         function_names = [f.name for f in functions]
         if len(function_names) != len(set(function_names)):
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                ("Overloaded functions are not supported, " "please differentiate function names."),
+            raise FunctionNameNotUniqueError(
+                "Overloaded functions are not supported, " "please differentiate function names."
             )
 
         plugin = KernelPlugin(name=plugin_name, functions=functions)
@@ -518,7 +509,7 @@ class Kernel(KernelBaseModel):
         native_py_file_path = os.path.join(plugin_directory, f"{MODULE_NAME}.py")
 
         if not os.path.exists(native_py_file_path):
-            raise ValueError(f"Native Plugin Python File does not exist: {native_py_file_path}")
+            raise PluginInitializationError(f"Native Plugin Python File does not exist: {native_py_file_path}")
 
         plugin_name = os.path.basename(plugin_directory)
 
@@ -553,7 +544,7 @@ class Kernel(KernelBaseModel):
         plugin_directory = os.path.abspath(plugin_directory)
 
         if not os.path.exists(plugin_directory):
-            raise ValueError(f"Plugin directory does not exist: {plugin_directory_name}")
+            raise PluginInitializationError(f"Plugin directory does not exist: {plugin_directory_name}")
 
         functions = []
 
@@ -599,9 +590,9 @@ class Kernel(KernelBaseModel):
 
     def func(self, plugin_name: str, function_name: str) -> KernelFunction:
         if plugin_name not in self.plugins:
-            raise ValueError(f"Plugin '{plugin_name}' not found")
+            raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
         if function_name not in self.plugins[plugin_name]:
-            raise ValueError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
+            raise KernelFunctionNotFoundError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
         return self.plugins[plugin_name][function_name]
 
     def create_function_from_prompt(
@@ -611,32 +602,38 @@ class Kernel(KernelBaseModel):
         description: Optional[str] = None,
         prompt: Optional[str] = None,
         prompt_template_config: Optional[PromptTemplateConfig] = None,
-        prompt_execution_settings: Optional[PromptExecutionSettings] = None,
+        prompt_execution_settings: Optional[
+            Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
+        ] = None,
         template_format: Optional[str] = None,
-        prompt_template: Optional[PromptTemplateBase] = None,
+        prompt_template: Optional[KernelPromptTemplate] = None,
         **kwargs: Any,
     ) -> KernelFunction:
         """
         Create a Kernel Function from a prompt.
 
         Args:
-            template (Optional[str]): The prompt template. If not provided, defaults to {{$user_input}}.
-            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
-            execution_settings (Optional[PromptExecutionSettings]): The execution settings
-            function_name (Optional[str]): The name of the function
-            plugin_name (Optional[str]): The name of the plugin
+            function_name (str): The name of the function
+            plugin_name (str): The name of the plugin
             description (Optional[str]): The description of the function
+            prompt (Optional[str]): The prompt template.
+            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
+            prompt_execution_settings (Optional[
+            Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
+        ]): The execution settings, will be parsed into a dict.
             template_format (Optional[str]): The format of the prompt template
-            prompt_template (Optional[PromptTemplateBase]): The prompt template
+            prompt_template (Optional[KernelPromptTemplate]): The prompt template
             kwargs (Any): Additional arguments
 
         Returns:
             KernelFunction: The created Kernel Function
         """
-        if not prompt_execution_settings and not prompt_template_config.execution_settings:
+        if prompt_execution_settings is None and (
+            prompt_template_config is None or prompt_template_config.execution_settings is None
+        ):
             prompt_execution_settings = PromptExecutionSettings(extension_data=kwargs)
 
-        function = KernelFunction.from_prompt(
+        function = KernelFunctionFromPrompt(
             function_name=function_name,
             plugin_name=plugin_name,
             description=description,
@@ -667,8 +664,7 @@ class Kernel(KernelBaseModel):
             KernelFunction: The created native function
         """
         if not hasattr(method, "__kernel_function__"):
-            raise KernelException(
-                KernelException.ErrorCodes.InvalidFunctionType,
+            raise FunctionInitializationError(
                 "kernel_function argument must be decorated with @kernel_function",
             )
 
@@ -728,11 +724,11 @@ class Kernel(KernelBaseModel):
             for service in self.services.values():
                 if isinstance(service, type):
                     return service
-            raise ValueError(f"No service found of type {type}")
+            raise KernelServiceNotFoundError(f"No service found of type {type}")
         if not (service := self.services.get(service_id)):
-            raise ValueError(f"Service with service_id '{service_id}' does not exist")
+            raise KernelServiceNotFoundError(f"Service with service_id '{service_id}' does not exist")
         if type and not isinstance(service, type):
-            raise ValueError(f"Service with service_id '{service_id}' is not of type {type}")
+            raise ServiceInvalidTypeError(f"Service with service_id '{service_id}' is not of type {type}")
         return service
 
     def get_services_by_type(self, type: Type[T]) -> Dict[str, T]:
@@ -752,12 +748,12 @@ class Kernel(KernelBaseModel):
         if service.service_id not in self.services or overwrite:
             self.services[service.service_id] = service
         else:
-            raise ValueError(f"Service with service_id '{service.service_id}' already exists")
+            raise KernelFunctionAlreadyExistsError(f"Service with service_id '{service.service_id}' already exists")
 
     def remove_service(self, service_id: str) -> None:
         """Delete a single service from the Kernel."""
         if service_id not in self.services:
-            raise ValueError(f"Service with service_id '{service_id}' does not exist")
+            raise KernelServiceNotFoundError(f"Service with service_id '{service_id}' does not exist")
         del self.services[service_id]
 
     def remove_all_services(self) -> None:

@@ -14,9 +14,17 @@ namespace Microsoft.SemanticKernel;
 public class AudioContent : KernelContent
 {
     /// <summary>
-    /// The audio binary data.
+    /// The audio data.
     /// </summary>
-    public BinaryData? Data { get; set; }
+    public ReadOnlyMemory<byte>? Data { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    [JsonConstructor]
+    public AudioContent()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
@@ -25,9 +33,8 @@ public class AudioContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="innerContent">Inner content,</param>
     /// <param name="metadata">Additional metadata</param>
-    [JsonConstructor]
     public AudioContent(
-        BinaryData data,
+        ReadOnlyMemory<byte> data,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
