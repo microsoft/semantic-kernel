@@ -51,18 +51,18 @@
     "EmbeddingModelId": "embedding-001",
     "ApiKey": "",
     "Gemini": {
-      "ModelId": "gemini-pro",
-      "VisionModelId": "gemini-pro-vision"
+      "ModelId": "gemini-1.0-pro",
+      "VisionModelId": "gemini-1.0-pro-vision"
     }
   },
   "VertexAI": {
-    "EmbeddingModelId": "textembedding-gecko",
+    "EmbeddingModelId": "textembedding-gecko@003",
     "BearerKey": "",
-    "Location": "",
+    "Location": "europe-west1",
     "ProjectId": "",
     "Gemini": {
-      "ModelId": "gemini-pro",
-      "VisionModelId": "gemini-pro-vision"
+      "ModelId": "gemini-1.0-pro",
+      "VisionModelId": "gemini-1.0-pro-vision"
     }
   },
   "Bing": {
