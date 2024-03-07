@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
-namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
+namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
 /// <summary>
 /// Represents the metadata of the Ollama response.
@@ -28,7 +29,7 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public long PromptEvalDuration
     {
-        get => (this.GetValueFromDictionary() as long?) ?? 0;
+        get => this.GetValueFromDictionary() as long? ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
@@ -37,7 +38,7 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int PromptEvalCount
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        get => this.GetValueFromDictionary() as int? ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
@@ -46,7 +47,7 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public long LoadDuration
     {
-        get => (this.GetValueFromDictionary() as long?) ?? 0;
+        get => this.GetValueFromDictionary() as long? ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
@@ -55,7 +56,7 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public DateTime? CreatedAt
     {
-        get => (this.GetValueFromDictionary() as DateTime?) ?? DateTime.MinValue;
+        get => this.GetValueFromDictionary() as DateTime? ?? DateTime.MinValue;
         internal init => this.SetValueInDictionary(value);
     }
 
@@ -64,7 +65,7 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public long EvalDuration
     {
-        get => (this.GetValueFromDictionary() as long?) ?? 0;
+        get => this.GetValueFromDictionary() as long? ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
@@ -73,7 +74,7 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int EvalCount
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
+        get => this.GetValueFromDictionary() as int? ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
@@ -82,7 +83,7 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public long TotalDuration
     {
-        get => (this.GetValueFromDictionary() as long?) ?? 0;
+        get => this.GetValueFromDictionary() as long? ?? 0;
         internal init => this.SetValueInDictionary(value);
     }
 
