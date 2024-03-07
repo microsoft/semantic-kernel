@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
@@ -13,7 +12,6 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.GoogleAI;
 
-[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
 public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
 {
     private readonly HttpClient _httpClient;
@@ -51,7 +49,9 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
         // Arrange
         var requestFactoryMock = new Mock<IHttpRequestFactory>();
         requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
+#pragma warning disable CA2000
             .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
+#pragma warning restore CA2000
         var sut = this.CreateEmbeddingsClient(httpRequestFactory: requestFactoryMock.Object);
 
         // Act
@@ -109,7 +109,6 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
 
     private GoogleAIEmbeddingClient CreateEmbeddingsClient(
         string modelId = "fake-model",
-        string apiKey = "fake-api-key",
         IEndpointProvider? endpointProvider = null,
         IHttpRequestFactory? httpRequestFactory = null)
     {

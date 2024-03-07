@@ -15,6 +15,7 @@ public abstract class TestsBase
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddUserSecrets<TestsBase>()
         .AddEnvironmentVariables()
         .Build();
 

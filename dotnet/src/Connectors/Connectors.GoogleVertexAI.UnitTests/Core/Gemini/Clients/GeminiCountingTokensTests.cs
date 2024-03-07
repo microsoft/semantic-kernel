@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Clients;
 
-[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
 public sealed class GeminiCountingTokensTests : IDisposable
 {
     private readonly HttpClient _httpClient;
@@ -62,7 +60,9 @@ public sealed class GeminiCountingTokensTests : IDisposable
         // Arrange
         var requestFactoryMock = new Mock<IHttpRequestFactory>();
         requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
+#pragma warning disable CA2000
             .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
+#pragma warning restore CA2000
         var sut = this.CreateTokenCounterClient(httpRequestFactory: requestFactoryMock.Object);
 
         // Act
@@ -74,7 +74,6 @@ public sealed class GeminiCountingTokensTests : IDisposable
 
     private GeminiTokenCounterClient CreateTokenCounterClient(
         string modelId = "fake-model",
-        string apiKey = "fake-api-key",
         IEndpointProvider? endpointProvider = null,
         IHttpRequestFactory? httpRequestFactory = null)
     {

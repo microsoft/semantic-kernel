@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -16,7 +15,6 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Clients;
 
-[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Test class is disposed")]
 public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
 {
     private readonly HttpClient _httpClient;
@@ -191,7 +189,9 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         using var handlerStub = new MultipleHttpMessageHandlerStub();
         handlerStub.AddJsonResponse(this._responseContentWithFunction);
         handlerStub.AddJsonResponse(this._responseContent);
+#pragma warning disable CA2000
         var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
@@ -219,7 +219,9 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         using var handlerStub = new MultipleHttpMessageHandlerStub();
         handlerStub.AddJsonResponse(this._responseContentWithFunction);
         handlerStub.AddJsonResponse(this._responseContent);
+#pragma warning disable CA2000
         var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
@@ -247,7 +249,9 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         using var handlerStub = new MultipleHttpMessageHandlerStub();
         handlerStub.AddJsonResponse(this._responseContentWithFunction);
         handlerStub.AddJsonResponse(this._responseContent);
+#pragma warning disable CA2000
         var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
@@ -277,7 +281,6 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
 
     private GeminiChatCompletionClient CreateChatCompletionClient(
         string modelId = "fake-model",
-        string apiKey = "fake-api-key",
         HttpClient? httpClient = null,
         IEndpointProvider? endpointProvider = null,
         IHttpRequestFactory? httpRequestFactory = null)
