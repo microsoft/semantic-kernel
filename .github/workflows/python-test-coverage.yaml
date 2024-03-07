@@ -1,43 +1,47 @@
-name: Python Test Coverage
+# name: Python Test Coverage
 
-on: 
-  pull_request_target:    
-    paths:
-      - "python/**"
+# on: 
+#   pull_request_target:
+#     branches: ["main", "feature*"]
+#     paths:
+#       - "python/**"
 
-jobs:
-  python-tests-coverage:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    permissions:
-      pull-requests: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.8"
-          cache: "poetry"
-      - name: Install dependencies
-        run: cd python && poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
-      - name: Test with pytest
-        run: cd python && poetry run pytest -q --show-capture=no --disable-warnings --tb=no --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee pytest-coverage.txt
-      - name: Pytest coverage comment
-        id: coverageComment
-        uses: MishaKav/pytest-coverage-comment@main
-        with:
-          github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
-          pytest-coverage-path: python/pytest-coverage.txt
-          coverage-path-prefix: "python/"
-          title: "Python Test Coverage Report"
-          badge-title: "Python Test Coverage"
-          report-only-changed-files: true
-          create-new-comment: true
-          junitxml-title: "Python Unit Test Overview"
-          junitxml-path: python/pytest.xml
-          default-branch: "main"
-          unique-id-for-comment: python3.8
+# jobs:
+#   python-tests-coverage:
+#     name: Create Test Coverage Messages
+#     if: 
+#     runs-on: ${{ matrix.os }}
+#     strategy:
+#       matrix:
+#         python-version: ["3.8", "3.9", "3.10", "3.11"]
+#         os: [ubuntu-latest]
+#     permissions:
+#       pull-requests: write
+#       contents: read
+#     steps:
+#       - uses: actions/checkout@v4
+#       - name: Download coverage
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+#           github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"          
+#       - name: Download coverage
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+#           github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
+#       - name: Pytest coverage comment
+#         id: coverageComment
+#         uses: MishaKav/pytest-coverage-comment@main
+#         with:
+#           github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
+#           pytest-coverage-path: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+#           coverage-path-prefix: "python/"
+#           title: "Python Test Coverage Report"
+#           badge-title: "Python Test Coverage"
+#           report-only-changed-files: true
+#           junitxml-title: "Python Unit Test Overview"
+#           junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+#           default-branch: "main"
+#           unique-id-for-comment: python-${{ matrix.python-version }}
           
