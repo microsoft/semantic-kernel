@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// A response candidate generated from the model.
 /// </summary>
-public sealed class GeminiResponseCandidate
+internal sealed class GeminiResponseCandidate
 {
     /// <summary>
     /// Generated content returned from the model.

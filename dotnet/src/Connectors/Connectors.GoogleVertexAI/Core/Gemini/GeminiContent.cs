@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// <summary>
 /// The base structured datatype containing multi-part content of a message.
 /// </summary>
-public sealed class GeminiContent
+internal sealed class GeminiContent
 {
     /// <summary>
     /// Ordered Parts that constitute a single message. Parts may have different MIME types.

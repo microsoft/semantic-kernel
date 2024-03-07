@@ -87,7 +87,7 @@ public sealed class GeminiPartTests
 
     [Theory]
     [ClassData(typeof(GeminiPartTestData))]
-    public void IsInvalidWhenMoreThanOnePropertyIsNotNull(GeminiPart sut)
+    internal void IsInvalidWhenMoreThanOnePropertyIsNotNull(GeminiPart sut)
     {
         // Act
         var result = sut.IsValid();
