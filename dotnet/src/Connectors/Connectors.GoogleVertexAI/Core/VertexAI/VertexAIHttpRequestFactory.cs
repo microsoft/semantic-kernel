@@ -8,13 +8,13 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 internal sealed class VertexAIHttpRequestFactory : IHttpRequestFactory
 {
-    private readonly string _apiKey;
+    private readonly string _bearerKey;
 
-    public VertexAIHttpRequestFactory(string apiKey)
+    public VertexAIHttpRequestFactory(string bearerKey)
     {
-        Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.NotNullOrWhiteSpace(bearerKey);
 
-        this._apiKey = apiKey;
+        this._bearerKey = bearerKey;
     }
 
     public HttpRequestMessage CreatePost(object requestData, Uri endpoint)
@@ -23,7 +23,7 @@ internal sealed class VertexAIHttpRequestFactory : IHttpRequestFactory
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(VertexAIHttpRequestFactory)));
-        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._bearerKey}");
         return httpRequestMessage;
     }
 }

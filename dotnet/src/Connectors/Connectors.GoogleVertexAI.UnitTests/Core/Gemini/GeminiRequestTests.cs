@@ -257,11 +257,14 @@ public sealed class GeminiRequestTests
         // Assert
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[0].Role, c.Role),
-            c => Assert.Equal(chatHistory[1].Role, c.Role),
+            c => Assert.Equal(chatHistory[1].Role, c.Role));
+        Assert.Collection(request.Contents,
             c => Assert.NotNull(c.Parts[0].FunctionCall),
-            c => Assert.NotNull(c.Parts[0].FunctionCall),
+            c => Assert.NotNull(c.Parts[0].FunctionCall));
+        Assert.Collection(request.Contents,
             c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart.FunctionName),
-            c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart2.FunctionName),
+            c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart2.FunctionName));
+        Assert.Collection(request.Contents,
             c => Assert.Equal(expectedArgs.ToJsonString(),
                 c.Parts[0].FunctionCall!.Arguments!.ToJsonString()),
             c => Assert.Equal(expectedArgs.ToJsonString(),

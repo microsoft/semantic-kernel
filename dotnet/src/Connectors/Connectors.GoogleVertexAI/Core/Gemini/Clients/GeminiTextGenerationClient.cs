@@ -22,6 +22,8 @@ internal sealed class GeminiTextGenerationClient
     /// <param name="chatCompletionClient">A Gemini chat completion client instance.</param>
     internal GeminiTextGenerationClient(IGeminiChatCompletionClient chatCompletionClient)
     {
+        Verify.NotNull(chatCompletionClient);
+
         this._chatCompletionClient = chatCompletionClient;
     }
 
