@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 internal sealed class VertexAIEmbeddingClient : ClientBase
 {
     private readonly string _embeddingModelId;
+    private readonly Uri _embeddingEndpoint;
 
     /// <summary>
     /// Represents a client for interacting with the embeddings models by Vertex AI.
@@ -23,23 +24,25 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="embeddingModelId">Embeddings generation model id</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
-    /// <param name="endpointProvider">Endpoints provider for gemini rest api or gemini vertex ai</param>
+    /// <param name="embeddingEndpoint">Endpoint for embeddings generation</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public VertexAIEmbeddingClient(
         HttpClient httpClient,
         string embeddingModelId,
         IHttpRequestFactory httpRequestFactory,
-        IEndpointProvider endpointProvider,
+        Uri embeddingEndpoint,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
             httpRequestFactory:
             httpRequestFactory,
-            endpointProvider: endpointProvider,
             logger: logger)
     {
         Verify.NotNullOrWhiteSpace(embeddingModelId);
+        Verify.NotNull(embeddingEndpoint);
+
         this._embeddingModelId = embeddingModelId;
+        this._embeddingEndpoint = embeddingEndpoint;
     }
 
     /// <summary>
@@ -54,9 +57,8 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     {
         Verify.NotNullOrEmpty(data);
 
-        var endpoint = this.EndpointProvider.GetEmbeddingsEndpoint(this._embeddingModelId);
         var geminiRequest = GetEmbeddingRequest(data);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, this._embeddingEndpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);

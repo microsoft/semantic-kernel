@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -42,7 +43,8 @@ public sealed class GoogleAIGeminiTextGenerationService : ITextGenerationService
 #pragma warning restore CA2000
             modelId: model,
             httpRequestFactory: new GoogleAIHttpRequestFactory(),
-            endpointProvider: new GoogleAIEndpointProvider(apiKey),
+            chatGenerationEndpoint: new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}"),
+            chatStreamingEndpoint: new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?key={apiKey}&alt=sse"),
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiTextGenerationService))));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }

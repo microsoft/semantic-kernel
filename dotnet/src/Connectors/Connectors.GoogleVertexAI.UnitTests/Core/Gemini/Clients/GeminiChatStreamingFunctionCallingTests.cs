@@ -283,14 +283,14 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
     private GeminiChatCompletionClient CreateChatCompletionClient(
         string modelId = "fake-model",
         HttpClient? httpClient = null,
-        IEndpointProvider? endpointProvider = null,
         IHttpRequestFactory? httpRequestFactory = null)
     {
         return new GeminiChatCompletionClient(
             httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            endpointProvider: endpointProvider ?? new FakeEndpointProvider());
+            chatGenerationEndpoint: new Uri("https://example.com/models/sample_model"),
+            chatStreamingEndpoint: new Uri("https://example.com/models/sample_model/stream"));
     }
 
     public void Dispose()

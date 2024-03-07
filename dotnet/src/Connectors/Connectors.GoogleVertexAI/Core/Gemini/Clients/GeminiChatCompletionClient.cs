@@ -86,27 +86,29 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
-    /// <param name="endpointProvider">Endpoints provider for gemini rest api or gemini vertex ai</param>
-    /// <param name="streamJsonParser">Response streaming json parser (optional)</param>
+    /// <param name="chatGenerationEndpoint">The URI endpoint for streaming chat completion</param>
+    /// <param name="chatStreamingEndpoint">The URI endpoint for chat completion</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiChatCompletionClient(
         HttpClient httpClient,
         string modelId,
         IHttpRequestFactory httpRequestFactory,
-        IEndpointProvider endpointProvider,
+        Uri chatGenerationEndpoint,
+        Uri chatStreamingEndpoint,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
             httpRequestFactory: httpRequestFactory,
-            endpointProvider: endpointProvider,
             logger: logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(chatGenerationEndpoint);
+        Verify.NotNull(chatStreamingEndpoint);
 
         this._modelId = modelId;
         this._streamJsonParser = new StreamJsonParser();
-        this._chatGenerationEndpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
-        this._chatStreamingEndpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
+        this._chatGenerationEndpoint = chatGenerationEndpoint;
+        this._chatStreamingEndpoint = chatStreamingEndpoint;
     }
 
     /// <inheritdoc/>
@@ -227,7 +229,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
                 yield break;
             }
 
-            // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-ivoke is already false
+            // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-invoke is already false
             state.AutoInvoke = false;
 
             // If we don't want to attempt to invoke any functions, just return the result.

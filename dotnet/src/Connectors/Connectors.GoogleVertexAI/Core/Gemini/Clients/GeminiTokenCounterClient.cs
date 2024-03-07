@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 internal sealed class GeminiTokenCounterClient : ClientBase
 {
     private readonly string _modelId;
+    private readonly Uri _tokenCountingEndpoint;
 
     /// <summary>
     /// Represents a client for token counting gemini model.
@@ -21,23 +23,24 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model to use to counting tokens</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
-    /// <param name="endpointProvider">Endpoints provider for gemini rest api or gemini vertex ai</param>
+    /// <param name="tokenCountingEndpoint">The endpoint for token counting</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiTokenCounterClient(
         HttpClient httpClient,
         string modelId,
         IHttpRequestFactory httpRequestFactory,
-        IEndpointProvider endpointProvider,
+        Uri tokenCountingEndpoint,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
             httpRequestFactory: httpRequestFactory,
-            endpointProvider: endpointProvider,
             logger: logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(tokenCountingEndpoint);
 
         this._modelId = modelId;
+        this._tokenCountingEndpoint = tokenCountingEndpoint;
     }
 
     /// <summary>
@@ -54,9 +57,8 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        var endpoint = this.EndpointProvider.GetCountTokensEndpoint(this._modelId);
         var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, endpoint);
+        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, this._tokenCountingEndpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);

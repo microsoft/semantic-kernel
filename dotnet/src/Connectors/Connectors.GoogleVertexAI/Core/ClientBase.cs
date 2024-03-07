@@ -14,19 +14,19 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 internal abstract class ClientBase
 {
     protected IHttpRequestFactory HttpRequestFactory { get; }
-    protected IEndpointProvider EndpointProvider { get; }
     protected HttpClient HttpClient { get; }
     protected ILogger Logger { get; }
 
     protected ClientBase(
         HttpClient httpClient,
         IHttpRequestFactory httpRequestFactory,
-        IEndpointProvider endpointProvider,
         ILogger? logger)
     {
+        Verify.NotNull(httpClient);
+        Verify.NotNull(httpRequestFactory);
+
         this.HttpClient = httpClient;
         this.HttpRequestFactory = httpRequestFactory;
-        this.EndpointProvider = endpointProvider;
         this.Logger = logger ?? NullLogger.Instance;
     }
 

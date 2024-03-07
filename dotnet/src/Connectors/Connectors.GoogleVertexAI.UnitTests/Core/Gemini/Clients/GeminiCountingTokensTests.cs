@@ -40,22 +40,6 @@ public sealed class GeminiCountingTokensTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldCallGetCountEndpointAsync()
-    {
-        // Arrange
-        var endpointProviderMock = new Mock<IEndpointProvider>();
-        endpointProviderMock.Setup(x => x.GetCountTokensEndpoint(It.IsAny<string>()))
-            .Returns(new Uri("https://fake-endpoint.com/"));
-        var sut = this.CreateTokenCounterClient(endpointProvider: endpointProviderMock.Object);
-
-        // Act
-        await sut.CountTokensAsync("fake-text");
-
-        // Assert
-        endpointProviderMock.VerifyAll();
-    }
-
-    [Fact]
     public async Task ShouldCallCreatePostRequestAsync()
     {
         // Arrange
@@ -75,14 +59,13 @@ public sealed class GeminiCountingTokensTests : IDisposable
 
     private GeminiTokenCounterClient CreateTokenCounterClient(
         string modelId = "fake-model",
-        IEndpointProvider? endpointProvider = null,
         IHttpRequestFactory? httpRequestFactory = null)
     {
         var client = new GeminiTokenCounterClient(
             httpClient: this._httpClient,
             modelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            endpointProvider: endpointProvider ?? new FakeEndpointProvider());
+            tokenCountingEndpoint: new Uri("https://example.com/models/sample_model"));
         return client;
     }
 

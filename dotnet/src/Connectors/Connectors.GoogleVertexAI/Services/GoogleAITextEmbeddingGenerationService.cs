@@ -43,7 +43,7 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
 #pragma warning restore CA2000
             embeddingModelId: model,
             httpRequestFactory: new GoogleAIHttpRequestFactory(),
-            endpointProvider: new GoogleAIEndpointProvider(apiKey),
+            embeddingEndpoint: new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{model}:batchEmbedContents?key={apiKey}"),
             logger: loggerFactory?.CreateLogger(typeof(GoogleAITextEmbeddingGenerationService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }

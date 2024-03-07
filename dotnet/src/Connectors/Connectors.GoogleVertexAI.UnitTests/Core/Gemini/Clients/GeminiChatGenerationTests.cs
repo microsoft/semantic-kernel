@@ -317,22 +317,6 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldCallGetChatEndpointAsync()
-    {
-        // Arrange
-        var endpointProviderMock = new Mock<IEndpointProvider>();
-        endpointProviderMock.Setup(x => x.GetGeminiChatCompletionEndpoint(It.IsAny<string>()))
-            .Returns(new Uri("https://fake-endpoint.com/"));
-        var sut = this.CreateChatCompletionClient(endpointProvider: endpointProviderMock.Object);
-
-        // Act
-        await sut.GenerateChatMessageAsync(CreateSampleChatHistory());
-
-        // Assert
-        endpointProviderMock.VerifyAll();
-    }
-
-    [Fact]
     public async Task ShouldCallCreatePostRequestAsync()
     {
         // Arrange
@@ -362,14 +346,14 @@ public sealed class GeminiChatGenerationTests : IDisposable
     private GeminiChatCompletionClient CreateChatCompletionClient(
         string modelId = "fake-model",
         HttpClient? httpClient = null,
-        IEndpointProvider? endpointProvider = null,
         IHttpRequestFactory? httpRequestFactory = null)
     {
         return new GeminiChatCompletionClient(
             httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            endpointProvider: endpointProvider ?? new FakeEndpointProvider());
+            chatGenerationEndpoint: new Uri("https://example.com/models/sample_model"),
+            chatStreamingEndpoint: new Uri("https://example.com/models/sample_model/stream"));
     }
 
     public void Dispose()

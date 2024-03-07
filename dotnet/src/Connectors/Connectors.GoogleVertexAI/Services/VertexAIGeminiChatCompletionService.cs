@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -39,6 +40,8 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(bearerKey);
+        Verify.NotNullOrWhiteSpace(location);
+        Verify.NotNullOrWhiteSpace(projectId);
 
         this._chatCompletionClient = new GeminiChatCompletionClient(
 #pragma warning disable CA2000
@@ -46,7 +49,8 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
 #pragma warning restore CA2000
             modelId: model,
             httpRequestFactory: new VertexAIHttpRequestFactory(bearerKey),
-            endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
+            chatGenerationEndpoint: new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{model}:generateContent"),
+            chatStreamingEndpoint: new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{model}:streamGenerateContent?alt=sse"),
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }

@@ -47,7 +47,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
 #pragma warning restore CA2000
             embeddingModelId: model,
             httpRequestFactory: new VertexAIHttpRequestFactory(bearerKey),
-            endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
+            embeddingEndpoint: new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{model}:predict"),
             logger: loggerFactory?.CreateLogger(typeof(VertexAITextEmbeddingGenerationService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
