@@ -44,8 +44,9 @@ public class AzureCosmosDBMongoVCoreMemoryStore: IMemoryStore, IDisposable
     /// Initiates a AzureCosmosDBMongoVCoreMemoryStore instance.
     /// <summary>
     /// <param name="connectionString">Connection string required to connect to Azure Cosmos Mongo vCore.</param>
-    /// <param name="databaseName"></param>
+    /// <param name="databaseName">Database name for Mongo vCore DB</param>
     /// <param name="indexName">Index name for the Mongo vCore DB</param>
+    /// <param name="applicationName">Application name for the client for tracking and logging</param>
     /// <param name="kind">Kind: Type of vector index to create.
     ///     Possible options are:
     ///         - vector-ivf
@@ -71,7 +72,8 @@ public class AzureCosmosDBMongoVCoreMemoryStore: IMemoryStore, IDisposable
     public AzureCosmosDBMongoVCoreMemoryStore(
         string connectionString,
         string databaseName,
-        string? indexName = default,
+        string? indexName = "default_index",
+        string? applicationName = "DotNet_Semantic_Kernel",
         string? kind = "vector_hnsw",
         int? numLists = 1, 
         string? similarity = "COS",
@@ -80,7 +82,9 @@ public class AzureCosmosDBMongoVCoreMemoryStore: IMemoryStore, IDisposable
         int? efConstruction = 64,
         int? efSearch = 40)
     {
-        this._cosmosDBMongoClient = new MongoClient(connectionString);
+        MongoClientSettings settings = MongoClientSettings.FromConnectionString(connectionString);
+        settings.ApplicationName = applicationName;
+        this._cosmosDBMongoClient = new MongoClient(settings);
         this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(databaseName);
         this._indexName = indexName;
         this._kind = kind;
@@ -95,7 +99,8 @@ public class AzureCosmosDBMongoVCoreMemoryStore: IMemoryStore, IDisposable
     public AzureCosmosDBMongoVCoreMemoryStore(
         IMongoClient mongoClient,
         string databaseName,
-        string? indexName = default,
+        string? indexName = "default_index",
+        string? applicationName = "DotNet_Semantic_Kernel",
         string? kind = "vector_hnsw",
         int? numLists = 1, 
         string? similarity = "COS",
@@ -104,7 +109,9 @@ public class AzureCosmosDBMongoVCoreMemoryStore: IMemoryStore, IDisposable
         int? efConstruction = 64,
         int? efSearch = 40)
     {
-        this._cosmosDBMongoClient = mongoClient;
+        MongoClientSettings settings = mongoClient.Settings;
+        settings.ApplicationName = applicationName;
+        this._cosmosDBMongoClient = new MongoClient(settings);
         this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(databaseName);
         this._indexName = indexName;
         this._kind = kind;
