@@ -125,6 +125,15 @@ async def test_upsert_and_get(memory_record1):
 
 
 @pytest.mark.asyncio
+async def test_overwrite(memory_record1):
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    await qdrant_mem_store.upsert("test_collection", memory_record1)
+    await qdrant_mem_store.upsert("test_collection", memory_record1)
+
+
+@pytest.mark.asyncio
 async def test_upsert_batch_and_get_batch(memory_record1, memory_record2):
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
