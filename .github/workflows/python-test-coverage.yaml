@@ -31,13 +31,13 @@ jobs:
         uses: dawidd6/action-download-artifact@v3
         with:
           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: 'Python Unit Tests'
       - name: Download pytest
         uses: dawidd6/action-download-artifact@v3
         with:
           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: 'Python Unit Tests'
       - name: Pytest coverage comment
         id: coverageComment
