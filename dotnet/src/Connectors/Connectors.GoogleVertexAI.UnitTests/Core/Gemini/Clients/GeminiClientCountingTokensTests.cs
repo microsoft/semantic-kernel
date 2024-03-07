@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Clients;
 
 [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
 public sealed class GeminiClientCountingTokensTests : IDisposable

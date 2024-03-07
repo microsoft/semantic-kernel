@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Common;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Clients;
 
 public sealed class GeminiClientTextStreamingTests : IDisposable
 {
