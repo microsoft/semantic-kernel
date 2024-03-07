@@ -13,6 +13,7 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
+      actions: read
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
@@ -22,20 +23,22 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.3.3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          check-regexp: 'Python Unit Tests .*'
+          check-name: 'Python Unit Tests (${{ matrix.python-version}}, ${{ matrix.os }})'
           repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           wait-interval: 10
       - uses: actions/checkout@v4
       - name: Download coverage
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v3
         with:
           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}   
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          workflow: 'Python Unit Tests'
       - name: Download pytest
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v3
         with:
           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          workflow: 'Python Unit Tests'
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
