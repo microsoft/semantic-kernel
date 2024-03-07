@@ -82,5 +82,5 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     def _chat_message_content_to_dict(self, message: ChatMessageContent) -> Dict[str, Optional[str]]:
         """can be overridden to customize the serialization of the chat message content"""
-        msg = message.model_dump(exclude_none=True, exclude=["metadata", "encoding"])
+        msg = message.model_dump(exclude_none=True, include=["role", "content"])
         return msg

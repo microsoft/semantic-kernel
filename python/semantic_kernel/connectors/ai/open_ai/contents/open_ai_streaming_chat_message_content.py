@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from copy import copy
 from typing import List, Optional
 
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -55,12 +56,12 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
         fc = (self.function_call + other.function_call) if self.function_call else other.function_call
         if self.tool_calls:
-            tc = []
-            for index, tool in enumerate(self.tool_calls):
-                if other.tool_calls:
-                    tc.append(tool + other.tool_calls[index])
+            tc = copy(self.tool_calls)
+            for new_tool in other.tool_calls:
+                if new_tool.index >= len(self.tool_calls):
+                    tc.append(new_tool)
                 else:
-                    tc.append(tool)
+                    tc[new_tool.index] += new_tool
         else:
             tc = other.tool_calls
 
