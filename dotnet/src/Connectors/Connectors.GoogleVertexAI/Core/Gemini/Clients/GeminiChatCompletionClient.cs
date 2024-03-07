@@ -140,7 +140,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
                 return chatResponses;
             }
 
-            // ToolCallBehavior is not null because we are in auto-invoke mode but we check it again to be sure it's not changed in the meantime
+            // ToolCallBehavior is not null because we are in auto-invoke mode but we check it again to be sure it wasn't changed in the meantime
             Verify.NotNull(state.ExecutionSettings.ToolCallBehavior);
 
             state.AddLastMessageToChatHistoryAndRequest();
@@ -175,7 +175,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
                 yield break;
             }
 
-            // ToolCallBehavior is not null because we are in auto-invoke mode but we check it again to be sure it's not changed in the meantime
+            // ToolCallBehavior is not null because we are in auto-invoke mode but we check it again to be sure it wasn't changed in the meantime
             Verify.NotNull(state.ExecutionSettings.ToolCallBehavior);
 
             state.AddLastMessageToChatHistoryAndRequest();
