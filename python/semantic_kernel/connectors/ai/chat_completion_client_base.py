@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Type
 
 from semantic_kernel.contents import ChatMessageContent
-from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
@@ -79,17 +78,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             List[Dict[str, Optional[str]]] -- The prepared chat history.
         """
-        prepared_messages = []
-        for message in chat_history.messages:
-            if message.role == ChatRole.TOOL:
-                dump = message.model_dump(exclude_none=True, exclude=["encoding"])
-                if "metadata" in dump and "tool_call_id" in dump["metadata"]:
-                    dump["tool_call_id"] = dump["metadata"]["tool_call_id"]
-                    dump["name"] = dump["metadata"]["function_name"]
-                    dump.pop("metadata", None)
-            else:
-                dump = message.model_dump(
-                    exclude_none=True, exclude=["metadata", "encoding", "ai_model_id", "inner_content", "choice_index"]
-                )
-            prepared_messages.append(dump)
-        return prepared_messages
+        return [self._chat_message_content_to_dict(message) for message in chat_history.messages]
+
+    def _chat_message_content_to_dict(self, message: ChatMessageContent) -> Dict[str, Optional[str]]:
+        """can be overridden to customize the serialization of the chat message content"""
+        msg = message.model_dump(exclude_none=True, include=["role", "content"])
+        return msg

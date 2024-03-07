@@ -6,16 +6,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import (
-    OpenAIChatMessageContent,
-)
+from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
     OpenAIStreamingChatMessageContent,
 )
-from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
-    OpenAIChatCompletionBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.kernel import Kernel
 
@@ -108,25 +103,13 @@ async def test_complete_chat(tool_call):
             mock_process_chat_response_with_tool_call.assert_called()
 
 
-def test_build_streaming_message_with_tool_call():
-    chat_completion_base = OpenAIChatCompletionBase(
-        ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
-    )
-
-    stream_chunks = {1: [MagicMock(spec=OpenAIStreamingChatMessageContent)]}
-    update_storage = {"tool_call_ids_by_index": {1: MagicMock(spec=ToolCall)}}
-
-    result = chat_completion_base._build_streaming_message_with_tool_call(stream_chunks, update_storage)
-
-    assert result is not None
-
-
 @pytest.mark.asyncio
 async def test_process_tool_calls():
     tool_call_mock = MagicMock()
     tool_call_mock.function.split_name_dict.return_value = {"arg_name": "arg_value"}
     tool_call_mock.function.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
     tool_call_mock.function.name = "test_function"
+    tool_call_mock.function.arguments = {"arg_name": "arg_value"}
     tool_call_mock.id = "test_id"
 
     result_mock = MagicMock(spec=OpenAIChatMessageContent)
@@ -148,17 +131,14 @@ async def test_process_tool_calls():
 
     logger_mock.info.assert_any_call(f"processing {len(result_mock.tool_calls)} tool calls")
     logger_mock.info.assert_any_call(
-        f"Calling {tool_call_mock.function.name} function with args: {tool_call_mock.function.to_kernel_arguments()}"
+        f"Calling {tool_call_mock.function.name} function with args: {tool_call_mock.function.arguments}"
     )
 
     kernel_mock.invoke.assert_called_once_with(
-        kernel_mock.func(**tool_call_mock.function.split_name_dict()), {"arg_name": "arg_value"}
+        **tool_call_mock.function.split_name_dict(), arguments={"arg_name": "arg_value"}
     )
 
-    chat_history_mock.add_tool_message.assert_called_once_with(
-        "Function result",
-        metadata={"tool_call_id": tool_call_mock.id, "function_name": tool_call_mock.function.name},
-    )
+    chat_history_mock.add_message.assert_called_once()
 
 
 @pytest.mark.parametrize(

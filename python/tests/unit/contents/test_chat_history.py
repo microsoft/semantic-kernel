@@ -221,13 +221,13 @@ def test_chat_history_to_prompt_empty(chat_history):
     assert prompt == ""
 
 
-def test_chat_history_to_prompt(chat_history):
+def test_chat_history_to_prompt(chat_history: ChatHistory):
     chat_history.add_system_message("I am an AI assistant")
     chat_history.add_user_message("What can you do?")
     prompt = str(chat_history)
     assert (
         prompt
-        == '<message role="system">I am an AI assistant</message>\n<message role="user">What can you do?</message>'
+        == '<message role="system" metadata="{}">I am an AI assistant</message>\n<message role="user" metadata="{}">What can you do?</message>'  # noqa: E501
     )
 
 
@@ -271,7 +271,9 @@ async def test_template(chat_history):
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
     )
-    assert rendered == 'system stuff<message role="assistant">I am an AI assistant</message>What can you do?'
+    assert (
+        rendered == 'system stuff<message role="assistant" metadata="{}">I am an AI assistant</message>What can you do?'
+    )
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history_2.messages[0].content == "system stuff"
@@ -298,8 +300,8 @@ async def test_template_two_histories():  # ignore: E501
     )
     assert (
         rendered
-        == 'system prompt<message role="assistant">I am an AI assistant</message>\
-What can you do?<message role="assistant">I like to be added later on</message>'
+        == 'system prompt<message role="assistant" metadata="{}">I am an AI assistant</message>\
+What can you do?<message role="assistant" metadata="{}">I like to be added later on</message>'
     )
 
     chat_history_out = ChatHistory.from_rendered_prompt(rendered)
@@ -371,6 +373,18 @@ async def test_handwritten_xml():
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
     assert chat_history.messages[0].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_no_content_message():
+    template = '<message role="assistant"></message><message role="user">test content</message>'
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments())
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].role == ChatRole.ASSISTANT
+    assert chat_history.messages[1].content == "test content"
+    assert chat_history.messages[1].role == ChatRole.USER
 
 
 @pytest.mark.asyncio
