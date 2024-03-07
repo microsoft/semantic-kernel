@@ -243,7 +243,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             await this.ProcessSingleToolCallAsync(state, toolCall, cancellationToken).ConfigureAwait(false);
         }
 
-        // If we've reached the maximum number of attempts for either tool use or auto-invoke, we need to clear the tools
+        // If we've reached the maximum number of attempts for tools usage, we need to clear the tools
         if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
         {
             // Clear the tools
