@@ -438,7 +438,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
-        if (geminiResponse.Candidates == null || !geminiResponse.Candidates.Any())
+        if (geminiResponse.Candidates == null || geminiResponse.Candidates.Count == 0)
         {
             if (geminiResponse.PromptFeedback?.BlockReason != null)
             {
