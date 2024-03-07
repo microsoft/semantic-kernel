@@ -1,7 +1,6 @@
 name: Python Unit Tests
 
 on:
-  workflow_dispatch:
   pull_request:
     branches: ["main", "feature*"]
     paths:
@@ -9,13 +8,15 @@ on:
 
 jobs:
   python-unit-tests:
+    name: Python Unit Tests
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, windows-latest, macos-latest]
-
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
@@ -28,4 +29,18 @@ jobs:
       - name: Install dependencies
         run: cd python && poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
       - name: Test with pytest
-        run: cd python && poetry run pytest ./tests/unit
+        run: cd python && poetry run pytest -q --junitxml=pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          path: python/python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          overwrite: true
+          retention-days: 1  
+      - name: Upload pytest.xml
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          path: python/pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          overwrite: true
+          retention-days: 1
