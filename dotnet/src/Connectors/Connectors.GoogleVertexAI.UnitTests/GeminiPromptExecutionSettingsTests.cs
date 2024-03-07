@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Settings;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests;
 
 public sealed class GeminiPromptExecutionSettingsTests
 {

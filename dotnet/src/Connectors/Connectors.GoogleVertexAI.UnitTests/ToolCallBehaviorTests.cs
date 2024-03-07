@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Settings;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="ToolCallBehavior"/>
@@ -112,7 +112,7 @@ public sealed class ToolCallBehaviorTests
     public void EnabledFunctionsConfigureGeminiRequestWithAutoInvokeAndNullKernelThrowsException()
     {
         // Arrange
-        var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
+        var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => GeminiKernelFunctionMetadataExtensions.ToGeminiFunction(function));
         var enabledFunctions = new ToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
         var geminiRequest = new GeminiRequest();
 
