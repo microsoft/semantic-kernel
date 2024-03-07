@@ -1,47 +1,53 @@
-# name: Python Test Coverage
+name: Python Test Coverage
 
-# on: 
-#   pull_request_target:
-#     branches: ["main", "feature*"]
-#     paths:
-#       - "python/**"
+on: 
+  pull_request_target:
+    branches: ["main", "feature*"]
+    paths:
+      - "python/**"
 
-# jobs:
-#   python-tests-coverage:
-#     name: Create Test Coverage Messages
-#     if: 
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       matrix:
-#         python-version: ["3.8", "3.9", "3.10", "3.11"]
-#         os: [ubuntu-latest]
-#     permissions:
-#       pull-requests: write
-#       contents: read
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: Download coverage
-#         uses: actions/download-artifact@v4
-#         with:
-#           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
-#           github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"          
-#       - name: Download coverage
-#         uses: actions/download-artifact@v4
-#         with:
-#           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
-#           github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
-#       - name: Pytest coverage comment
-#         id: coverageComment
-#         uses: MishaKav/pytest-coverage-comment@main
-#         with:
-#           github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
-#           pytest-coverage-path: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
-#           coverage-path-prefix: "python/"
-#           title: "Python Test Coverage Report"
-#           badge-title: "Python Test Coverage"
-#           report-only-changed-files: true
-#           junitxml-title: "Python Unit Test Overview"
-#           junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
-#           default-branch: "main"
-#           unique-id-for-comment: python-${{ matrix.python-version }}
+jobs:
+  python-tests-coverage:
+    name: Create Test Coverage Messages
+    runs-on: ${{ matrix.os }}
+    permissions:
+      pull-requests: write
+      contents: read
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: [ubuntu-latest]
+    steps:
+      - name: Wait for unit tests to succeed
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Python Unit Tests'
+          repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          wait-interval: 10
+      - uses: actions/checkout@v4
+      - name: Download coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}   
+      - name: Download pytest
+        uses: actions/download-artifact@v4
+        with:
+          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+      - name: Pytest coverage comment
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          pytest-coverage-path: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          coverage-path-prefix: "python/"
+          title: "Python Test Coverage Report"
+          badge-title: "Python Test Coverage"
+          report-only-changed-files: true
+          junitxml-title: "Python Unit Test Overview"
+          junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          default-branch: "main"
+          unique-id-for-comment: python-${{ matrix.python-version }}
           
