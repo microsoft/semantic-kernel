@@ -274,7 +274,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             return;
         }
 
-        // Find the function in the kernel and populate the arguments.
+        // Ensure the provided function exists for calling
         if (!state.Kernel!.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? functionArgs))
         {
             this.AddToolResponseMessage(state.ChatHistory, state.GeminiRequest, toolCall, functionResponse: null,
