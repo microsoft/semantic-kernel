@@ -7,15 +7,15 @@ using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;
+namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core;
 
-public sealed class GeminiStreamJsonParserTests
+public sealed class StreamJsonParserTests
 {
     [Fact]
     public void ParseWhenStreamIsEmptyReturnsEmptyEnumerable()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
 
         // Act
@@ -29,7 +29,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObject()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         string input = """{"foo":"bar"}""";
         WriteToStream(stream, input);
@@ -45,7 +45,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWhenStreamContainsArrayWithOnlyOneObjectReturnsEnumerableWithOneObject()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         string input = """{"foo":"bar"}""";
         WriteToStream(stream, $"[{input}]");
@@ -61,7 +61,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWhenStreamContainsArrayOfTwoObjectsReturnsEnumerableWithTwoObjects()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         using var stream = new MemoryStream();
         string firstInput = """{"foo":"bar"}""";
         string secondInput = """{"foods":"base"}""";
@@ -80,7 +80,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWhenStreamContainsArrayOfTwoObjectsWithNestedObjectsReturnsEnumerableWithTwoObjects()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         using var stream = new MemoryStream();
         string firstInput = """{"foo":"bar","nested":{"foo":"bar"}}""";
         string secondInput = """{"foods":"base","nested":{"foo":"bar"}}""";
@@ -99,7 +99,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedQuotes()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         string input = """{"foo":"be\"r"}""";
         WriteToStream(stream, input);
@@ -115,7 +115,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslash()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         string input = """{"foo":"be\\r"}""";
         WriteToStream(stream, input);
@@ -131,7 +131,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslashAndQuotes()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         string input = """{"foo":"be\\\"r"}""";
         WriteToStream(stream, input);
@@ -147,7 +147,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWithJsonValidationWhenStreamContainsInvalidJsonThrowsJsonException()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         string input = """{"foo":,"bar"}""";
         WriteToStream(stream, input);
@@ -164,7 +164,7 @@ public sealed class GeminiStreamJsonParserTests
     public void ParseWithoutJsonValidationWhenStreamContainsInvalidJsonDoesntThrow()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         string input = """{"foo":,"bar"}""";
         WriteToStream(stream, input);

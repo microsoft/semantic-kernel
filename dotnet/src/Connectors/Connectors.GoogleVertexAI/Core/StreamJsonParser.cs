@@ -9,11 +9,16 @@ using System.Text.Json.Nodes;
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
-/// Internal class for parsing a GEMINI JSON stream into separate GEMINI JSON objects.
+/// Internal class for parsing a stream of jsons into separate json objects.
 /// </summary>
-internal sealed class GeminiStreamJsonParser : IStreamJsonParser
+internal sealed class StreamJsonParser
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Parses a Stream containing JSON data and yields the individual JSON objects.
+    /// </summary>
+    /// <param name="stream">The Stream containing the JSON data.</param>
+    /// <param name="validateJson">Set to true to enable JSON validation. Default is false.</param>
+    /// <returns>An enumerable collection of string representing the individual JSON objects.</returns>
     public IEnumerable<string> Parse(Stream stream, bool validateJson = false)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);

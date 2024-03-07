@@ -10,7 +10,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;
 
 /// <summary>
-/// Tests for parsing <see cref="GeminiResponse"/> with <see cref="GeminiStreamJsonParser"/>.
+/// Tests for parsing <see cref="GeminiResponse"/> with <see cref="StreamJsonParser"/>.
 /// </summary>
 public sealed class GeminiStreamResponseTests
 {
@@ -20,7 +20,7 @@ public sealed class GeminiStreamResponseTests
     public void SerializationShouldPopulateAllProperties()
     {
         // Arrange
-        var parser = new GeminiStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         var streamExample = File.ReadAllText(StreamTestDataFilePath);
         var sampleResponses = JsonSerializer.Deserialize<List<GeminiResponse>>(streamExample)!;

@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 /// </summary>
 internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionClient
 {
-    private readonly IStreamJsonParser _streamJsonParser;
+    private readonly StreamJsonParser _streamJsonParser;
     private readonly string _modelId;
     private readonly Uri _chatGenerationEndpoint;
     private readonly Uri _chatStreamingEndpoint;
@@ -94,7 +94,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         string modelId,
         IHttpRequestFactory httpRequestFactory,
         IEndpointProvider endpointProvider,
-        IStreamJsonParser? streamJsonParser = null,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -105,7 +104,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         Verify.NotNullOrWhiteSpace(modelId);
 
         this._modelId = modelId;
-        this._streamJsonParser = streamJsonParser ?? new GeminiStreamJsonParser();
+        this._streamJsonParser = new StreamJsonParser();
         this._chatGenerationEndpoint = this.EndpointProvider.GetGeminiChatCompletionEndpoint(this._modelId);
         this._chatStreamingEndpoint = this.EndpointProvider.GetGeminiStreamChatCompletionEndpoint(this._modelId);
     }
