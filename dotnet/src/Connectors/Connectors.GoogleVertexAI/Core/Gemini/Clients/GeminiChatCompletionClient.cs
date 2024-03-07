@@ -140,6 +140,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
                 return chatResponses;
             }
 
+            Verify.NotNull(state.ExecutionSettings.ToolCallBehavior);
+
             state.AddLastMessageToChatHistoryAndRequest();
             await this.ProcessFunctionsAsync(state, cancellationToken).ConfigureAwait(false);
         }
@@ -171,6 +173,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             {
                 yield break;
             }
+
+            Verify.NotNull(state.ExecutionSettings.ToolCallBehavior);
 
             state.AddLastMessageToChatHistoryAndRequest();
             await this.ProcessFunctionsAsync(state, cancellationToken).ConfigureAwait(false);
