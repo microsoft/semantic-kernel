@@ -227,7 +227,7 @@ def test_chat_history_to_prompt(chat_history: ChatHistory):
     prompt = str(chat_history)
     assert (
         prompt
-        == '<message role="system" metadata="{}">I am an AI assistant</message>\n<message role="user" metadata="{}">What can you do?</message>'
+        == '<message role="system" metadata="{}">I am an AI assistant</message>\n<message role="user" metadata="{}">What can you do?</message>'  # noqa: E501
     )
 
 
