@@ -55,6 +55,7 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.AzureCosmosDBMongoVCore\Connectors.Memory.AzureCosmosDBMongoVCore.csproj" />
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />

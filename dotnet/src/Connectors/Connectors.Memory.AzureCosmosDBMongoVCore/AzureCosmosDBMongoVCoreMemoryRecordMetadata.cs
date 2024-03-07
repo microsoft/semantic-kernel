@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
 
 /// <summary>
 /// A MongoDB record metadata.
@@ -55,7 +55,7 @@ public struct AzureCosmosDBMongoVCoreMemoryRecordMetadata
     /// <summary>
     /// Initializes a new instance of <see cref="MongoDBMemoryRecordMetadata"/> structure.
     /// </summary>
-    public AzureCosmosDBMongoVCoreMemoryRecordMetadata(AzureCosmosDBMongoVCoreMemoryRecordMetadata memoryRecordMetadata)
+    public AzureCosmosDBMongoVCoreMemoryRecordMetadata(MemoryRecordMetadata memoryRecordMetadata)
     {
         this.IsReference = memoryRecordMetadata.IsReference;
         this.ExternalSourceName = memoryRecordMetadata.ExternalSourceName;
@@ -68,6 +68,6 @@ public struct AzureCosmosDBMongoVCoreMemoryRecordMetadata
     /// <summary>
     /// Returns mapped <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata"/>.
     /// </summary>
-    public AzureCosmosDBMongoVCoreMemoryRecordMetadata ToMemoryRecordMetadata() =>
-        new(this.IsReference, this.Id, this.Text, this.Description, this.ExternalSourceName, this.AdditionalMetadata);
+    public MemoryRecordMetadata ToMemoryRecordMetadata() =>
+        new(this.IsReference, this.ExternalSourceName, this.Id, this.Description, this.Text, this.AdditionalMetadata);
 }

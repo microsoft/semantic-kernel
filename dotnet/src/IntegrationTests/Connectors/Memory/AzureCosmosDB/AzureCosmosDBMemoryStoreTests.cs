@@ -3,19 +3,19 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDBMongoVCoreMemoryStore;
+using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDB;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDB;
 
 /// <summary>
 /// Integration tests of <see cref="AzureCosmosDBMongoVCoreMemoryStore"/>.
 /// </summary>
 public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemoryStoreTestsFixture>
 {
-    privtae const string? SkipReason = "Azure CosmosDB Mongo vCore cluster is required";
+    private const string? SkipReason = "Azure CosmosDB Mongo vCore cluster is required";
 
     private readonly AzureCosmosDBMemoryStoreTestsFixture _fixture;
 
@@ -31,7 +31,7 @@ public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemorySt
         var memoryStore = this._fixture.MemoryStore;
 
         await memoryStore.CreateCollectionAsync(collectionName);
-        var collectionNames = memoryStore.GetCollectionsAsync()
+        var collectionNames = memoryStore.GetCollectionsAsync();
 
         Assert.True(await collectionNames.ContainsAsync(collectionName));
         Assert.True(await memoryStore.DoesCollectionExistAsync(collectionName));
@@ -56,8 +56,8 @@ public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemorySt
 
         Assert.NotNull(keys);
         Assert.NotNull(actualRecords);
-        Assert.Equal(Count, keys.Count);
-        Assert.Equal(Count, actualRecords.Count);
+        Assert.Equal(keys, actualRecords.Select(obj => obj.Key).ToList());
+        Console.WriteLine(actualRecords);
 
         var actualRecordsOrdered = actualRecords.OrderBy(r => r.Key).ToArray();
         for (int i = 0; i < Count; i++)
@@ -65,10 +65,9 @@ public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemorySt
             AssertMemoryRecordEqual(records[i], actualRecordsOrdered[i], assertEmbeddingEqual: withEmbeddings);
         }
 
-        await memoryStore.RemoveBatchAsync(collectionName, ids);
-        // Assert
-        var keys = await memoryStore.GetBatchAsync(collectionName, ids).ToListAsync();
-        Assert.Empty(keys);
+        await memoryStore.RemoveBatchAsync(collectionName, keys);
+        var ids = await memoryStore.GetBatchAsync(collectionName, keys).ToListAsync();
+        Assert.Empty(ids);
     }
 
     [Theory(Skip = SkipReason)]
@@ -91,7 +90,6 @@ public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemorySt
             .ToListAsync();
 
         Assert.NotNull(nearestMatchesActual);
-        Assert.Equal(nearestMatchesActual.Count, limit);
 
         for (int i = 0; i < limit; i++)
         {

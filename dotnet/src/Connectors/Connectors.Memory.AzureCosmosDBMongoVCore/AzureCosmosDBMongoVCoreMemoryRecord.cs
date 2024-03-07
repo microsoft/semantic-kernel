@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDBMongoVCore;
+namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
 
 public sealed class AzureCosmosDBMongoVCoreMemoryRecord
 {
@@ -25,8 +27,6 @@ public sealed class AzureCosmosDBMongoVCoreMemoryRecord
     /// Source content embedding.
     /// </summary>
 #pragma warning disable CA1819 // Properties should not return arrays
-    // AzureCosmosDBMongoVCoreMemoryRecord class is not part of public API, and its usage correctness is ensured by AzureCosmosDBMongoVCoreStore.
-    // This is an interim solution until ReadOnlyMemory<T> serialization is supported natively by MongoDB Driver (https://jira.mongodb.org/browse/CSHARP-4807).
     [BsonElement("embedding")]
     public float[] Embedding { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
@@ -53,18 +53,24 @@ public sealed class AzureCosmosDBMongoVCoreMemoryRecord
     /// <summary>
     /// Returns mapped <see cref="MemoryRecord"/>.
     /// </summary>
-    public MemoryRecord ToMemoryRecord(bool withEmbedding) =>
-        MemoryRecord result = new()
-        {
-            Metadata = this.Metadata.ToMemoryRecordMetadata();
-            Key = this.Id;
-            Timestamp = this.Timestamp?.ToLocalTime()
-        }    
+    public static MemoryRecord ToMemoryRecord(BsonDocument doc, bool withEmbedding) 
+    {
+        return new (
+            BsonSerializer.Deserialize<AzureCosmosDBMongoVCoreMemoryRecordMetadata>(doc["metadata"].AsBsonDocument).ToMemoryRecordMetadata(),
+            withEmbedding ? doc["embedding"].AsBsonArray.Select(x => (float)x.AsDouble).ToArray() : null,
+            doc["_id"].AsString,
+            doc["timestamp"]?.ToUniversalTime()
+        );
 
-        if (withEmbedding)
-        {
-            result.Embedding = this.Embedding;
-        }
-        return result;
+        // return result;
+    }
+
+    /// <summary>
+    /// Returns mapped <see cref="MemoryRecord"/>.
+    /// </summary>
+    public MemoryRecord ToMemoryRecord(bool withEmbedding)
+    {
+        return new(this.Metadata.ToMemoryRecordMetadata(), withEmbedding ? this.Embedding : null, this.Id, this.Timestamp?.ToLocalTime());
+    }
 
 }
