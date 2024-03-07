@@ -50,12 +50,13 @@ jobs:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           pytest-coverage-path: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
           coverage-path-prefix: "python/"
-          title: "Python Test Coverage Report"
-          badge-title: "Python Test Coverage"
+          title: "Python ${{ matrix.python-version }} Test Coverage Report"
+          badge-title: "Py${{ matrix.python-version }} Test Coverage"
           report-only-changed-files: true
-          junitxml-title: "Python Unit Test Overview"
+          junitxml-title: "Python ${{ matrix.python-version }} Unit Test Overview"
           junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           default-branch: "main"
           unique-id-for-comment: python-${{ matrix.python-version }}
+          
           
           
