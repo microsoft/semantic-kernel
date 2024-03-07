@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 

@@ -4,6 +4,7 @@ using System;
 using System.Net.Http;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests;
 

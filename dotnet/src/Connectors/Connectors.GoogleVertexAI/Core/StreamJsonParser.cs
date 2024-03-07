@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
 /// Internal class for parsing a stream of jsons into separate json objects.

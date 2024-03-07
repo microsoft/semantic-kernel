@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 

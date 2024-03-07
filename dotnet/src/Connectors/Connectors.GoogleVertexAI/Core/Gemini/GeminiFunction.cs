@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Json.Schema;
 using Json.Schema.Generation;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 

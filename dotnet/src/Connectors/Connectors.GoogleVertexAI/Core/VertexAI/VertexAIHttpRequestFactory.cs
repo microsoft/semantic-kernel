@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 internal sealed class VertexAIHttpRequestFactory : IHttpRequestFactory
 {

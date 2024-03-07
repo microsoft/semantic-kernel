@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests;
 
