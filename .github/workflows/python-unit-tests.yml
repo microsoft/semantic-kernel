@@ -1,7 +1,6 @@
 name: Python Unit Tests
 
 on:
-  workflow_dispatch:
   pull_request:
     branches: ["main", "feature*"]
     paths:
@@ -9,13 +8,15 @@ on:
 
 jobs:
   python-unit-tests:
+    name: Python Unit Tests
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, windows-latest, macos-latest]
-
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
@@ -28,4 +29,56 @@ jobs:
       - name: Install dependencies
         run: cd python && poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
       - name: Test with pytest
-        run: cd python && poetry run pytest ./tests/unit
+        run: cd python && poetry run pytest -q --junitxml=pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee pytest-coverage=-${{ matrix.os }}-${{ matrix.python-version }}.txt
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          path: python/pytest-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          overwrite: true
+          retention-days: 1  
+      - name: Upload pytest.xml
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          path: python/pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          overwrite: true
+          retention-days: 1
+  python-tests-coverage:
+    name: Create Test Coverage Messages
+    if: 
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: [ubuntu-latest]
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}   
+      - name: Download coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pytest coverage comment
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pytest-coverage-path: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          coverage-path-prefix: "python/"
+          title: "Python Test Coverage Report"
+          badge-title: "Python Test Coverage"
+          report-only-changed-files: true
+          junitxml-title: "Python Unit Test Overview"
+          junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          default-branch: "main"
+          unique-id-for-comment: python-${{ matrix.python-version }}
+          
