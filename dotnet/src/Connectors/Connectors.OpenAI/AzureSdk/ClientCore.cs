@@ -656,7 +656,6 @@ internal abstract class ClientCore
             }
             else
             {
-
                 // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
                 // what functions are available in the kernel.
                 chatExecutionSettings.ToolCallBehavior.ConfigureOptions(kernel, chatOptions);
