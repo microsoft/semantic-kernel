@@ -62,6 +62,10 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     def __init__(self, service_id: str, options: Optional[FunctionCallingStepwisePlannerOptions] = None):
         """Initialize a new instance of the FunctionCallingStepwisePlanner
 
+        If the options are configured to use callbacks to get the initial plan and the step prompt,
+        the planner will use those provided callbacks to get that information. Otherwise it will
+        read from the default yaml plan file and the step prompt file.
+
         Args:
             service_id (str): The service id
             options (Optional[FunctionCallingStepwisePlannerOptions], optional): The options for
@@ -71,12 +75,12 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         generate_plan_yaml = (
             options.get_initial_plan()
             if options.get_initial_plan
-            else (lambda path: open(path).read())(PLAN_YAML_FILE_PATH)
+            else open(PLAN_YAML_FILE_PATH).read()
         )
         step_prompt = (
             options.get_step_prompt()
             if options.get_step_prompt
-            else (lambda path: open(path).read())(STEP_PROMPT_FILE_PATH)
+            else open(STEP_PROMPT_FILE_PATH).read()
         )
         options.excluded_plugins.add(STEPWISE_PLANNER_PLUGIN_NAME)
 
