@@ -21,7 +21,7 @@ jobs:
       - name: Wait for unit tests to succeed
         uses: lewagon/wait-on-check-action@v1.3.3
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.sha }}
           check-name: 'Python Unit Tests'
           repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           wait-interval: 10
