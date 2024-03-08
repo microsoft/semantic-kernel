@@ -40,6 +40,8 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(bearerKey);
+        Verify.NotNullOrWhiteSpace(location);
+        Verify.NotNullOrWhiteSpace(projectId);
 
         this._embeddingClient = new VertexAIEmbeddingClient(
 #pragma warning disable CA2000
@@ -47,7 +49,8 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
 #pragma warning restore CA2000
             embeddingModelId: model,
             httpRequestFactory: new VertexAIHttpRequestFactory(bearerKey),
-            embeddingEndpoint: new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{model}:predict"),
+            location: location,
+            projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAITextEmbeddingGenerationService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }

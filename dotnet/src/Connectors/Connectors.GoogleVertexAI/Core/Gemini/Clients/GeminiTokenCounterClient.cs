@@ -18,18 +18,18 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     private readonly Uri _tokenCountingEndpoint;
 
     /// <summary>
-    /// Represents a client for token counting gemini model.
+    /// Represents a client for token counting gemini via GoogleAI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model to use to counting tokens</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
-    /// <param name="tokenCountingEndpoint">The endpoint for token counting</param>
+    /// <param name="apiKey">Api key for GoogleAI endpoint</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiTokenCounterClient(
         HttpClient httpClient,
         string modelId,
         IHttpRequestFactory httpRequestFactory,
-        Uri tokenCountingEndpoint,
+        string apiKey,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -37,10 +37,39 @@ internal sealed class GeminiTokenCounterClient : ClientBase
             logger: logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNull(tokenCountingEndpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._modelId = modelId;
-        this._tokenCountingEndpoint = tokenCountingEndpoint;
+        this._tokenCountingEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._modelId}:countTokens?key={apiKey}");
+    }
+
+    /// <summary>
+    /// Represents a client for token counting gemini via VertexAI.
+    /// </summary>
+    /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
+    /// <param name="modelId">Id of the model to use to counting tokens</param>
+    /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
+    /// <param name="location">The region to process the request</param>
+    /// <param name="projectId">Project ID from google cloud</param>
+    /// <param name="logger">Logger instance used for logging (optional)</param>
+    public GeminiTokenCounterClient(
+        HttpClient httpClient,
+        string modelId,
+        IHttpRequestFactory httpRequestFactory,
+        string location,
+        string projectId,
+        ILogger? logger = null)
+        : base(
+            httpClient: httpClient,
+            httpRequestFactory: httpRequestFactory,
+            logger: logger)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(location);
+        Verify.NotNullOrWhiteSpace(projectId);
+
+        this._modelId = modelId;
+        this._tokenCountingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:countTokens");
     }
 
     /// <summary>

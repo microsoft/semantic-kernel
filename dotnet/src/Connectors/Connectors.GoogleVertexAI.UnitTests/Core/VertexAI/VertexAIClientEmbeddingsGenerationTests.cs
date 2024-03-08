@@ -76,7 +76,8 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
             httpClient: this._httpClient,
             embeddingModelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            embeddingEndpoint: new Uri("https://example.com/models/sample_model"));
+            location: "us-central1",
+            projectId: "fake-project-id");
         return client;
     }
 

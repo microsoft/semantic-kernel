@@ -64,7 +64,7 @@ public sealed class GeminiCountingTokensTests : IDisposable
             httpClient: this._httpClient,
             modelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            tokenCountingEndpoint: new Uri("https://example.com/models/sample_model"));
+            apiKey: "fake-key");
         return client;
     }
 

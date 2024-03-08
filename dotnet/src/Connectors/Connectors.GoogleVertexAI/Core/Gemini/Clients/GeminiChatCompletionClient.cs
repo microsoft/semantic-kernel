@@ -81,20 +81,18 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             description: "Number of tokens used");
 
     /// <summary>
-    /// Represents a client for interacting with the chat completion gemini model.
+    /// Represents a client for interacting with the chat completion gemini model via GoogleAI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
-    /// <param name="chatGenerationEndpoint">The URI endpoint for streaming chat completion</param>
-    /// <param name="chatStreamingEndpoint">The URI endpoint for chat completion</param>
+    /// <param name="apiKey">Api key for GoogleAI endpoint</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiChatCompletionClient(
         HttpClient httpClient,
         string modelId,
         IHttpRequestFactory httpRequestFactory,
-        Uri chatGenerationEndpoint,
-        Uri chatStreamingEndpoint,
+        string apiKey,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -102,13 +100,43 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             logger: logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNull(chatGenerationEndpoint);
-        Verify.NotNull(chatStreamingEndpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._modelId = modelId;
         this._streamJsonParser = new StreamJsonParser();
-        this._chatGenerationEndpoint = chatGenerationEndpoint;
-        this._chatStreamingEndpoint = chatStreamingEndpoint;
+        this._chatGenerationEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._modelId}:generateContent?key={apiKey}");
+        this._chatStreamingEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._modelId}:streamGenerateContent?key={apiKey}&alt=sse");
+    }
+
+    /// <summary>
+    /// Represents a client for interacting with the chat completion gemini model via VertexAI.
+    /// </summary>
+    /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
+    /// <param name="modelId">Id of the model supporting chat completion</param>
+    /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
+    /// <param name="location">The region to process the request</param>
+    /// <param name="projectId">Project ID from google cloud</param>
+    /// <param name="logger">Logger instance used for logging (optional)</param>
+    public GeminiChatCompletionClient(
+        HttpClient httpClient,
+        string modelId,
+        IHttpRequestFactory httpRequestFactory,
+        string location,
+        string projectId,
+        ILogger? logger = null)
+        : base(
+            httpClient: httpClient,
+            httpRequestFactory: httpRequestFactory,
+            logger: logger)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(location);
+        Verify.NotNullOrWhiteSpace(projectId);
+
+        this._modelId = modelId;
+        this._streamJsonParser = new StreamJsonParser();
+        this._chatGenerationEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:generateContent");
+        this._chatStreamingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:streamGenerateContent?alt=sse");
     }
 
     /// <inheritdoc/>

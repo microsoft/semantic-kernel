@@ -24,13 +24,15 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="embeddingModelId">Embeddings generation model id</param>
     /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
-    /// <param name="embeddingEndpoint">Endpoint for embeddings generation</param>
+    /// <param name="location">The region to process the request</param>
+    /// <param name="projectId">Project ID from google cloud</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public VertexAIEmbeddingClient(
         HttpClient httpClient,
         string embeddingModelId,
         IHttpRequestFactory httpRequestFactory,
-        Uri embeddingEndpoint,
+        string location,
+        string projectId,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -39,10 +41,11 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
             logger: logger)
     {
         Verify.NotNullOrWhiteSpace(embeddingModelId);
-        Verify.NotNull(embeddingEndpoint);
+        Verify.NotNullOrWhiteSpace(location);
+        Verify.NotNullOrWhiteSpace(projectId);
 
         this._embeddingModelId = embeddingModelId;
-        this._embeddingEndpoint = embeddingEndpoint;
+        this._embeddingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:predict");
     }
 
     /// <summary>

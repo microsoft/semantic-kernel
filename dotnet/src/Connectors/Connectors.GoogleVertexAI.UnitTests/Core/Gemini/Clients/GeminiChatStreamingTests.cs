@@ -284,8 +284,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
             httpClient: this._httpClient,
             modelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            chatGenerationEndpoint: new Uri("https://example.com/models/sample_model"),
-            chatStreamingEndpoint: new Uri("https://example.com/models/sample_model/stream"));
+            apiKey: "fake-key");
     }
 
     public void Dispose()

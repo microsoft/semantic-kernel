@@ -99,7 +99,7 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
             httpClient: this._httpClient,
             embeddingModelId: modelId,
             httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            embeddingEndpoint: new Uri("https://example.com/models/sample_model"));
+            apiKey: "fake-key");
         return client;
     }
 

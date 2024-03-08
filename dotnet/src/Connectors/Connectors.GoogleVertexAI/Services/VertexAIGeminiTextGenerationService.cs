@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -49,8 +48,8 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
 #pragma warning restore CA2000
             modelId: model,
             httpRequestFactory: new VertexAIHttpRequestFactory(bearerKey),
-            chatGenerationEndpoint: new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{model}:generateContent"),
-            chatStreamingEndpoint: new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{model}:streamGenerateContent?alt=sse"),
+            location: location,
+            projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiTextGenerationService))));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
