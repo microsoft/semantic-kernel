@@ -128,7 +128,7 @@ async def chat() -> bool:
 async def main() -> None:
     chatting = True
     while chatting:
-        chatting = await chat_history()
+        chatting = await chat()
 
 
 if __name__ == "__main__":
