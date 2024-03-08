@@ -118,8 +118,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if function_call := getattr(message, "function_call", None):
                 msg["function_call"] = function_call.model_dump_json()
         if message.role == "tool":
-            if message.metadata and "tool_call_id" in message.metadata:
-                msg["tool_call_id"] = message.metadata["tool_call_id"]
+            if tool_call_id := getattr(message, "tool_call_id", None):
+                msg["tool_call_id"] = tool_call_id
             if message.metadata and "function" in message.metadata:
                 msg["name"] = message.metadata["function_name"]
         return msg
@@ -342,7 +342,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             msg = OpenAIChatMessageContent(
                 role=ChatRole.TOOL,
                 content=str(func_result),
-                metadata={"tool_call_id": tool_call.id, "function_name": tool_call.function.name},
+                tool_call_id=tool_call.id,
+                metadata={"function_name": tool_call.function.name},
             )
             chat_history.add_message(message=msg)
 

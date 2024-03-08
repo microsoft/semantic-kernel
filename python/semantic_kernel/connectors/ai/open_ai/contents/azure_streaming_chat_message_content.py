@@ -76,5 +76,6 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
             finish_reason=self.finish_reason or other.finish_reason,
             function_call=fc,
             tool_calls=tc_list,
+            tool_call_id=self.tool_call_id or other.tool_call_id,
             tool_message=(self.tool_message or "") + (other.tool_message or ""),
         )

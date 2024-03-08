@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-import json
 from typing import List, Optional
 from xml.etree.ElementTree import Element
 
@@ -41,6 +40,7 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
     inner_content: ChatCompletionChunk
     function_call: Optional[FunctionCall] = None
     tool_calls: Optional[List[ToolCall]] = None
+    tool_call_id: Optional[str] = None
 
     def __add__(self, other: "OpenAIStreamingChatMessageContent") -> "OpenAIStreamingChatMessageContent":
         """When combining two OpenAIStreamingChatMessageContent instances,
@@ -83,6 +83,7 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
             finish_reason=self.finish_reason or other.finish_reason,
             function_call=fc,
             tool_calls=tc_list,
+            tool_call_id=self.tool_call_id or other.tool_call_id,
         )
 
     def to_prompt(self, root_key: str) -> str:
@@ -95,11 +96,12 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
         root = Element(root_key)
         if self.role:
             root.set("role", self.role.value)
-        root.set("metadata", json.dumps(self.metadata))
         if self.function_call:
             root.set("function_call", self.function_call.model_dump_json(exclude_none=True))
         if self.tool_calls:
             root.set("tool_calls", "|".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
+        if self.tool_call_id:
+            root.set("tool_call_id", self.tool_call_id)
         root.text = self.content or ""
         return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
@@ -114,10 +116,10 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
             ChatMessageContent - The new instance of ChatMessageContent.
         """
         args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
-        if metadata := element.get("metadata"):
-            args["metadata"] = json.loads(metadata)
         if function_call := element.get("function_call"):
             args["function_call"] = FunctionCall.model_validate_json(function_call)
         if tool_calls := element.get("tool_calls"):
             args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split("|")]
+        if tool_call_id := element.get("tool_call_id"):
+            args["tool_call_id"] = tool_call_id
         return cls(**args)
