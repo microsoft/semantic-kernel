@@ -16,10 +16,11 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 |-------|--------------------------------|
 | SKEXP0001 | Semantic Kernel core features |
 | SKEXP0010 | OpenAI and Azure OpenAI services |
-| SKEXP0020 | Memory abstractions |
+| SKEXP0020 | Memory connectors |
 | SKEXP0040 | Function types |
 | SKEXP0050 | Out-of-the-box plugins |
 | SKEXP0060 | Planners |
+| SKEXP0070 | AI connectors |
 | SKEXP0100 | Advanced Semantic Kernel features |
 
 ## Experimental Features Tracking
@@ -67,6 +68,10 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | | | | | | | |
 | SKEXP0060 | Handlebars planner | | | | | |
 | SKEXP0060 | OpenAI Stepwise planner | | | | | |
+| | | | | | | |
+| SKEXP0070 | Ollama AI connector | | | | | |
+| SKEXP0070 | Gemini AI connector | | | | | |
+| SKEXP0070 | Mistral AI connector | | | | | |
 | | | | | | | |
 | SKEXP0101 | Experiment with Assistants | | | | | |
 | SKEXP0101 | Experiment with Flow Orchestration | | | | | |
