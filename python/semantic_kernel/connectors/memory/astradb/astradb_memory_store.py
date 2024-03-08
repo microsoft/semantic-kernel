@@ -12,6 +12,7 @@ from semantic_kernel.connectors.memory.astradb.utils import (
     build_payload,
     parse_payload,
 )
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -54,7 +55,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         self._session = session
 
         if self._embedding_dim > MAX_DIMENSIONALITY:
-            raise ValueError(
+            raise ServiceInitializationError(
                 f"Dimensionality of {self._embedding_dim} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
@@ -69,7 +70,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             session=self._session,
         )
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         """Gets the list of collections.
 
         Returns:
@@ -77,7 +78,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         return await self._client.find_collections(False)
 
-    async def create_collection_async(
+    async def create_collection(
         self,
         collection_name: str,
         dimension_num: Optional[int] = None,
@@ -105,7 +106,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         if result is True:
             logger.info(f"Collection {collection_name} created.")
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
         Arguments:
@@ -120,7 +121,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             f"Collection {collection_name} {'deleted.' if result is True else 'does not exist.'}",
         )
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
         Arguments:
@@ -131,7 +132,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         return await self._client.find_collection(collection_name)
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a memory record into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -149,7 +150,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         return status["upsertedId"] if "upsertedId" in status else record._id
 
-    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a batch of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -161,9 +162,9 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unique identifiers for the memory record.
         """
-        return await asyncio.gather(*[self.upsert_async(collection_name, record) for record in records])
+        return await asyncio.gather(*[self.upsert(collection_name, record) for record in records])
 
-    async def get_async(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record. Does not guarantee that the collection exists.
 
         Arguments:
@@ -186,7 +187,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         return parse_payload(documents[0])
 
-    async def get_batch_async(
+    async def get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         """Gets a batch of records. Does not guarantee that the collection exists.
@@ -208,7 +209,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         )
         return [parse_payload(document) for document in documents]
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Removes a memory record from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -221,7 +222,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         filter = {"_id": key}
         await self._client.delete_documents(collection_name, filter)
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records. Does not guarantee that the collection exists.
 
         Arguments:
@@ -234,7 +235,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         filter = {"_id": {"$in": keys}}
         await self._client.delete_documents(collection_name, filter)
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -251,7 +252,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        matches = await self.get_nearest_matches_async(
+        matches = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
@@ -260,7 +261,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         )
         return matches[0]
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,

@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterable, List, Optional, Union
 from pydantic import Field, model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 # TODO: replace back with google types once pydantic issue is fixed.
 MessagesOptions = List[Dict[str, Any]]
@@ -38,4 +39,6 @@ class GooglePalmChatPromptExecutionSettings(GooglePalmPromptExecutionSettings):
     def validate_input(self):
         if self.prompt is not None:
             if self.messages or self.context or self.examples:
-                raise ValueError("Prompt cannot be used with messages, context or examples")
+                raise ServiceInvalidExecutionSettingsError(
+                    "Prompt cannot be used without messages, context or examples"
+                )

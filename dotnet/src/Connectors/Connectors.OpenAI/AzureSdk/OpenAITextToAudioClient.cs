@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -8,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -57,7 +55,7 @@ internal sealed class OpenAITextToAudioClient
         this._logger = logger ?? NullLogger.Instance;
     }
 
-    internal async Task<AudioContent> GetAudioContentAsync(
+    internal async Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string text,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
@@ -68,11 +66,9 @@ internal sealed class OpenAITextToAudioClient
 
         using var request = this.GetRequest(text, audioExecutionSettings);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        var data = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false);
 
-        var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
-
-        return new AudioContent(binaryData, this._modelId);
+        return new List<AudioContent> { new(data, this._modelId) };
     }
 
     internal void AddAttribute(string key, string? value)

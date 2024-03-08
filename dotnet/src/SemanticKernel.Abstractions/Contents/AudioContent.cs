@@ -3,8 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Contents;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents audio content.
@@ -18,9 +19,17 @@ public class AudioContent : KernelContent
     public Uri? Uri { get; set; }
 
     /// <summary>
-    /// The audio binary data.
+    /// The audio data.
     /// </summary>
-    public BinaryData? Data { get; set; }
+    public ReadOnlyMemory<byte>? Data { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    [JsonConstructor]
+    public AudioContent()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
@@ -30,24 +39,12 @@ public class AudioContent : KernelContent
     /// <param name="innerContent">Inner content,</param>
     /// <param name="metadata">Additional metadata</param>
     public AudioContent(
-        BinaryData data,
+        ReadOnlyMemory<byte> data,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        Verify.NotNull(data, nameof(data));
-
-        if (data!.IsEmpty)
-        {
-            throw new ArgumentException("Data cannot be empty", nameof(data));
-        }
-
-        if (string.IsNullOrWhiteSpace(data!.MediaType))
-        {
-            throw new ArgumentException("MediaType is needed for DataUri Audio", nameof(data));
-        }
-
         this.Data = data;
     }
 
@@ -66,28 +63,5 @@ public class AudioContent : KernelContent
         : base(innerContent, modelId, metadata)
     {
         this.Uri = uri;
-    }
-
-    /// <summary>
-    /// Returns the string representation of the audio.
-    /// BinaryData audio will be represented as DataUri
-    /// Remote Uri audio will be represented as is
-    /// </summary>
-    /// <remarks>
-    /// When Data is provided it takes precedence over URI
-    /// </remarks>
-    public override string ToString()
-    {
-        return this.BuildDataUri() ?? this.Uri?.ToString() ?? string.Empty;
-    }
-
-    private string? BuildDataUri()
-    {
-        if (this.Data is null)
-        {
-            return null;
-        }
-
-        return $"data:{this.Data.MediaType};base64,{Convert.ToBase64String(this.Data.ToArray())}";
     }
 }

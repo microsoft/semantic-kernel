@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using Azure.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -86,6 +87,11 @@ public abstract class ToolCallBehavior
     {
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
+
+    /// <summary>
+    /// Options to control tool call result serialization behavior.
+    /// </summary>
+    public virtual JsonSerializerOptions? ToolCallResultSerializerOptions { get; set; }
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
     /// <remarks>
