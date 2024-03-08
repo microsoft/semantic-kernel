@@ -10,5 +10,5 @@ class ConnectorBase(ABC):
     """
 
     @abstractmethod
-    async def search(self, query: str, num_results: str, offset: str) -> List[str]:
+    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:
         pass
