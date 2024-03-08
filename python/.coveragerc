@@ -8,7 +8,6 @@ omit =
     semantic_kernel/utils/logging.py
 
 
-
 [report]
 # Regexes for lines to exclude from consideration
 exclude_lines =

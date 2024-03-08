@@ -33,6 +33,7 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -137,8 +138,10 @@ class Kernel(KernelBaseModel):
 
     async def invoke_stream(
         self,
-        functions: Union[KernelFunction, List[KernelFunction]],
+        functions: Optional[Union[KernelFunction, List[KernelFunction]]] = None,
         arguments: Optional[KernelArguments] = None,
+        function_name: Optional[str] = None,
+        plugin_name: Optional[str] = None,
         return_function_results: Optional[bool] = False,
         **kwargs: Dict[str, Any],
     ) -> AsyncIterable[Union[List["StreamingKernelContent"], List[FunctionResult]]]:
@@ -148,8 +151,12 @@ class Kernel(KernelBaseModel):
         When multiple functions are provided only the last one is streamed, the rest is executed as a pipeline.
 
         Arguments:
-            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute
+            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute,
+            this value has precedence when supplying both this and using function_name and plugin_name,
+            if this is none, function_name and plugin_name are used and cannot be None.
             arguments (KernelArguments): The arguments to pass to the function(s), optional
+            function_name (Optional[str]): The name of the function to execute
+            plugin_name (Optional[str]): The name of the plugin to execute
             return_function_results (Optional[bool]): If True, the function results are returned in addition to
                 the streaming content, otherwise only the streaming content is returned.
             kwargs (Dict[str, Any]): arguments that can be used instead of supplying KernelArguments
@@ -160,6 +167,10 @@ class Kernel(KernelBaseModel):
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         results: List[FunctionResult] = []
+        if not functions:
+            if not function_name or not plugin_name:
+                raise KernelFunctionNotFoundError("No function(s) or function- and plugin-name provided")
+            functions = [self.func(plugin_name, function_name)]
         if isinstance(functions, KernelFunction):
             stream_function = functions
             pipeline_step = 0
@@ -168,14 +179,10 @@ class Kernel(KernelBaseModel):
             if len(functions) > 1:
                 pipeline_functions = functions[:-1]
                 # run pipeline functions
-                results = await self.invoke(pipeline_functions, arguments)
+                results = await self.invoke(functions=pipeline_functions, arguments=arguments)
                 # if invoke is called with one function, the result is not a list.
                 if isinstance(results, FunctionResult):
                     results = [results]
-            else:
-                raise KernelInvokeException("No functions passed to run")
-            if not results:
-                results = []
             pipeline_step = len(functions) - 1
         while True:
             function_invoking_args = self.on_function_invoking(stream_function.metadata, arguments)
@@ -256,8 +263,10 @@ class Kernel(KernelBaseModel):
 
     async def invoke(
         self,
-        functions: Union[KernelFunction, List[KernelFunction]],
+        functions: Optional[Union[KernelFunction, List[KernelFunction]]] = None,
         arguments: Optional[KernelArguments] = None,
+        function_name: Optional[str] = None,
+        plugin_name: Optional[str] = None,
         **kwargs: Dict[str, Any],
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """Execute one or more functions.
@@ -265,8 +274,12 @@ class Kernel(KernelBaseModel):
         When multiple functions are passed the FunctionResult of each is put into a list.
 
         Arguments:
-            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute
+            functions (Union[KernelFunction, List[KernelFunction]]): The function or functions to execute,
+            this value has precedence when supplying both this and using function_name and plugin_name,
+            if this is none, function_name and plugin_name are used and cannot be None.
             arguments (KernelArguments): The arguments to pass to the function(s), optional
+            function_name (Optional[str]): The name of the function to execute
+            plugin_name (Optional[str]): The name of the plugin to execute
             kwargs (Dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
@@ -277,6 +290,10 @@ class Kernel(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
         results = []
         pipeline_step = 0
+        if not functions:
+            if not function_name or not plugin_name:
+                raise KernelFunctionNotFoundError("No function or plugin name provided")
+            functions = [self.func(plugin_name, function_name)]
         if not isinstance(functions, list):
             functions = [functions]
             number_of_steps = 1
@@ -374,13 +391,14 @@ class Kernel(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
-        function = KernelFunction.from_prompt(
+
+        function = KernelFunctionFromPrompt(
             function_name=function_name,
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
         )
-        return await self.invoke(function, arguments)
+        return await self.invoke(functions=function, arguments=arguments)
 
     # endregion
     # region Function Invoking/Invoked Events
@@ -472,7 +490,7 @@ class Kernel(KernelBaseModel):
             raise PluginInvalidNameError("Plugin name cannot be empty")
         logger.debug(f"Importing plugin {plugin_name}")
 
-        functions = []
+        functions: Dict[str, KernelFunction] = {}
 
         if isinstance(plugin_instance, dict):
             candidates = plugin_instance.items()
@@ -484,16 +502,13 @@ class Kernel(KernelBaseModel):
             if not hasattr(candidate, "__kernel_function__"):
                 continue
 
-            functions.append(KernelFunction.from_method(plugin_name=plugin_name, method=candidate))
-
+            func = KernelFunctionFromMethod(plugin_name=plugin_name, method=candidate)
+            if func.name in functions:
+                raise FunctionNameNotUniqueError(
+                    "Overloaded functions are not supported, " "please differentiate function names."
+                )
+            functions[func.name] = func
         logger.debug(f"Methods imported: {len(functions)}")
-
-        # Uniqueness check on function names
-        function_names = [f.name for f in functions]
-        if len(function_names) != len(set(function_names)):
-            raise FunctionNameNotUniqueError(
-                "Overloaded functions are not supported, " "please differentiate function names."
-            )
 
         plugin = KernelPlugin(name=plugin_name, functions=functions)
         self.plugins.add(plugin)
@@ -525,7 +540,7 @@ class Kernel(KernelBaseModel):
             plugin_obj = getattr(module, class_name)()
             return self.import_plugin_from_object(plugin_obj, plugin_name)
 
-        return {}
+        return None
 
     def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         """
