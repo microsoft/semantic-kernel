@@ -5,6 +5,8 @@ from datetime import datetime
 import numpy as np
 import pytest
 
+from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import CosmosDBSimilarityType, \
+    CosmosDBVectorSearchType
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -29,7 +31,11 @@ cosmos_api = "mongo-vcore"
 index_name = "sk_test_vector_search_index"
 vector_dimensions = 1536
 num_lists = 1
-similarity = "COS"
+similarity = CosmosDBSimilarityType.COS
+kind = CosmosDBVectorSearchType.VECTOR_HNSW
+m = 16
+ef_construction = 64
+ef_search = 40
 collection_name = "sk_test_collection"
 database_name = "sk_test_database"
 
@@ -98,6 +104,10 @@ async def azurecosmosdb_memorystore() -> MemoryStoreBase:
         vector_dimensions=vector_dimensions,
         num_lists=num_lists,
         similarity=similarity,
+        kind=kind,
+        m=m,
+        ef_construction=ef_construction,
+        ef_search=ef_search,
     )
     return store
 
