@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: in review
+status: accepted
 date: 2023-11-8
 contact: alliscode
 deciders: markwallace, mabolan
@@ -155,7 +155,7 @@ public sealed record FunctionView(
 | JsonDocument              | Native C# type, fast and flexible                            | Not a Json Schema, but a Json DOM container for the schema |
 | String                    | Native C# type                                               | Not a Json Schema or Json DOM, very poor type hinting      |
 
-To avoid taking a dependency on 3rd party libraries in the core abstractions project, we will use a `JsonDocument` type to hold the Json Schemas that are created when loading remote plugins. The libraries needed to create or extract these schemas can be included in the packages that require them, namely Functions.OpenAPI, Planners.Core, and Connectors.AI.OpenAI. The `NativeType` property will be populated when loading native functions and will be used to generate a Json Schema when needed, as well as for hydrating native types from LLM responses in planners and sematic functions.
+To avoid taking a dependency on 3rd party libraries in the core abstractions project, we will use a `JsonDocument` type to hold the Json Schemas that are created when loading remote plugins. The libraries needed to create or extract these schemas can be included in the packages that require them, namely Functions.OpenAPI, Planners.Core, and Connectors.AI.OpenAI. The `NativeType` property will be populated when loading native functions and will be used to generate a Json Schema when needed, as well as for hydrating native types from LLM responses in planners and semantic functions.
 
 ```csharp
 public sealed record ParameterView(
