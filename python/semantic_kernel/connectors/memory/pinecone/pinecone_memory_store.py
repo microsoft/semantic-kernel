@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
+import logging
 from typing import List, Optional, Tuple
 
 import pinecone
@@ -11,9 +11,14 @@ from semantic_kernel.connectors.memory.pinecone.utils import (
     build_payload,
     parse_payload,
 )
+from semantic_kernel.exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidRequestError,
+    ServiceResourceNotFoundError,
+    ServiceResponseException,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 
 # Limitations set by Pinecone at https://docs.pinecone.io/docs/limits
 MAX_DIMENSIONALITY = 20000
@@ -23,11 +28,12 @@ MAX_QUERY_WITH_METADATA_BATCH_SIZE = 1000
 MAX_FETCH_BATCH_SIZE = 1000
 MAX_DELETE_BATCH_SIZE = 1000
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
 
-    _logger: Logger
     _pinecone_api_key: str
     _pinecone_environment: str
     _default_dimensionality: int
@@ -37,7 +43,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         api_key: str,
         environment: str,
         default_dimensionality: int,
-        logger: Optional[Logger] = None,
+        **kwargs,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
@@ -45,26 +51,21 @@ class PineconeMemoryStore(MemoryStoreBase):
             pinecone_api_key {str} -- The Pinecone API key.
             pinecone_environment {str} -- The Pinecone environment.
             default_dimensionality {int} -- The default dimensionality to use for new collections.
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
+        if kwargs.get("logger"):
+            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if default_dimensionality > MAX_DIMENSIONALITY:
-            raise ValueError(
+            raise ServiceInitializationError(
                 f"Dimensionality of {default_dimensionality} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         self._pinecone_api_key = api_key
         self._pinecone_environment = environment
         self._default_dimensionality = default_dimensionality
-        self._logger = logger or NullLogger()
 
-        pinecone.init(
-            api_key=self._pinecone_api_key, environment=self._pinecone_environment
-        )
+        pinecone.init(api_key=self._pinecone_api_key, environment=self._pinecone_environment)
 
-    def get_collections(self) -> List[str]:
-        return pinecone.list_indexes()
-
-    async def create_collection_async(
+    async def create_collection(
         self,
         collection_name: str,
         dimension_num: Optional[int] = None,
@@ -90,9 +91,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         if dimension_num is None:
             dimension_num = self._default_dimensionality
         if dimension_num > MAX_DIMENSIONALITY:
-            raise ValueError(
-                f"Dimensionality of {dimension_num} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+            raise ServiceInitializationError(
+                f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
         if collection_name not in pinecone.list_indexes():
@@ -106,9 +106,7 @@ class PineconeMemoryStore(MemoryStoreBase):
                 metadata_config=metadata_config,
             )
 
-    async def describe_collection_async(
-        self, collection_name: str
-    ) -> Optional[IndexDescription]:
+    async def describe_collection(self, collection_name: str) -> Optional[IndexDescription]:
         """Gets the description of the index.
         Arguments:
             collection_name {str} -- The name of the index to get.
@@ -119,7 +117,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             return pinecone.describe_index(collection_name)
         return None
 
-    async def get_collections_async(
+    async def get_collections(
         self,
     ) -> List[str]:
         """Gets the list of collections.
@@ -129,7 +127,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         """
         return list(pinecone.list_indexes())
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
         Arguments:
@@ -141,7 +139,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         if collection_name in pinecone.list_indexes():
             pinecone.delete_index(collection_name)
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
         Arguments:
@@ -152,7 +150,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         """
         return collection_name in pinecone.list_indexes()
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
 
         Arguments:
@@ -163,7 +161,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             str -- The unique database key of the record. In Pinecone, this is the record ID.
         """
         if collection_name not in pinecone.list_indexes():
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = pinecone.Index(collection_name)
 
@@ -173,13 +171,11 @@ class PineconeMemoryStore(MemoryStoreBase):
         )
 
         if upsert_response.upserted_count is None:
-            raise Exception(f"Error upserting record: {upsert_response.message}")
+            raise ServiceResponseException(f"Error upserting record: {upsert_response.message}")
 
         return record._id
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -190,7 +186,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             List[str] -- The unique database keys of the records.
         """
         if collection_name not in pinecone.list_indexes():
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = pinecone.Index(collection_name)
 
@@ -203,18 +199,14 @@ class PineconeMemoryStore(MemoryStoreBase):
             for record in records
         ]
 
-        upsert_response = collection.upsert(
-            vectors, namespace="", batch_size=MAX_UPSERT_BATCH_SIZE
-        )
+        upsert_response = collection.upsert(vectors, namespace="", batch_size=MAX_UPSERT_BATCH_SIZE)
 
         if upsert_response.upserted_count is None:
-            raise Exception(f"Error upserting record: {upsert_response.message}")
+            raise ServiceResponseException(f"Error upserting record: {upsert_response.message}")
         else:
             return [record._id for record in records]
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -226,17 +218,17 @@ class PineconeMemoryStore(MemoryStoreBase):
             MemoryRecord -- The record.
         """
         if collection_name not in pinecone.list_indexes():
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = pinecone.Index(collection_name)
         fetch_response = collection.fetch([key])
 
         if len(fetch_response.vectors) == 0:
-            raise KeyError(f"Record with key '{key}' does not exist")
+            raise ServiceResourceNotFoundError(f"Record with key '{key}' does not exist")
 
         return parse_payload(fetch_response.vectors[key], with_embedding)
 
-    async def get_batch_async(
+    async def get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         """Gets a batch of records.
@@ -250,17 +242,12 @@ class PineconeMemoryStore(MemoryStoreBase):
             List[MemoryRecord] -- The records.
         """
         if collection_name not in pinecone.list_indexes():
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
-        fetch_response = await self.__get_batch_async(
-            collection_name, keys, with_embeddings
-        )
-        return [
-            parse_payload(fetch_response.vectors[key], with_embeddings)
-            for key in fetch_response.vectors.keys()
-        ]
+        fetch_response = await self.__get_batch(collection_name, keys, with_embeddings)
+        return [parse_payload(fetch_response.vectors[key], with_embeddings) for key in fetch_response.vectors.keys()]
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
         Arguments:
@@ -271,12 +258,12 @@ class PineconeMemoryStore(MemoryStoreBase):
             None
         """
         if collection_name not in pinecone.list_indexes():
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = pinecone.Index(collection_name)
         collection.delete([key])
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -287,14 +274,14 @@ class PineconeMemoryStore(MemoryStoreBase):
             None
         """
         if collection_name not in pinecone.list_indexes():
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = pinecone.Index(collection_name)
         for i in range(0, len(keys), MAX_DELETE_BATCH_SIZE):
             collection.delete(keys[i : i + MAX_DELETE_BATCH_SIZE])
         collection.delete(keys)
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -312,7 +299,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        matches = await self.get_nearest_matches_async(
+        matches = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
@@ -321,7 +308,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         )
         return matches[0]
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -342,14 +329,13 @@ class PineconeMemoryStore(MemoryStoreBase):
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
         if collection_name not in pinecone.list_indexes():
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = pinecone.Index(collection_name)
 
         if limit > MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE:
-            raise Exception(
-                "Limit must be less than or equal to "
-                + f"{MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE}"
+            raise ServiceInvalidRequestError(
+                "Limit must be less than or equal to " + f"{MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE}"
             )
         elif limit > MAX_QUERY_WITH_METADATA_BATCH_SIZE:
             query_response = collection.query(
@@ -359,9 +345,7 @@ class PineconeMemoryStore(MemoryStoreBase):
                 include_metadata=False,
             )
             keys = [match.id for match in query_response.matches]
-            fetch_response = await self.__get_batch_async(
-                collection_name, keys, with_embeddings
-            )
+            fetch_response = await self.__get_batch(collection_name, keys, with_embeddings)
             vectors = fetch_response.vectors
             for match in query_response.matches:
                 vectors[match.id].update(match)
@@ -388,16 +372,14 @@ class PineconeMemoryStore(MemoryStoreBase):
             else []
         )
 
-    async def __get_batch_async(
+    async def __get_batch(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> "FetchResponse":
         index = pinecone.Index(collection_name)
         if len(keys) > MAX_FETCH_BATCH_SIZE:
             fetch_response = index.fetch(keys[0:MAX_FETCH_BATCH_SIZE])
             for i in range(MAX_FETCH_BATCH_SIZE, len(keys), MAX_FETCH_BATCH_SIZE):
-                fetch_response.vectors.update(
-                    index.fetch(keys[i : i + MAX_FETCH_BATCH_SIZE]).vectors
-                )
+                fetch_response.vectors.update(index.fetch(keys[i : i + MAX_FETCH_BATCH_SIZE]).vectors)
         else:
             fetch_response = index.fetch(keys)
         return fetch_response
