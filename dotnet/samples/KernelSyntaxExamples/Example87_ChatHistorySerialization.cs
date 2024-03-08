@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.SemanticKernel;
@@ -11,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example86_ChatHistorySerialization : BaseTest
+public class Example87_ChatHistorySerialization : BaseTest
 {
     /// <summary>
     /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
@@ -48,9 +49,9 @@ public class Example86_ChatHistorySerialization : BaseTest
 
         WriteLine($"Image content: {(deserializedMessage.Items![1]! as ImageContent)!.Uri}");
 
-        WriteLine($"Binary content: {(deserializedMessage.Items![2]! as BinaryContent)!.Content}");
+        WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Content!.Value.Span)}");
 
-        WriteLine($"Audio content: {(deserializedMessage.Items![3]! as AudioContent)!.Data}");
+        WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
     }
 
     /// <summary>
@@ -88,7 +89,7 @@ public class Example86_ChatHistorySerialization : BaseTest
         WriteLine($"Custom content: {(deserializedMessage.Items![1]! as CustomContent)!.Content}");
     }
 
-    public Example86_ChatHistorySerialization(ITestOutputHelper output) : base(output)
+    public Example87_ChatHistorySerialization(ITestOutputHelper output) : base(output)
     {
     }
 
