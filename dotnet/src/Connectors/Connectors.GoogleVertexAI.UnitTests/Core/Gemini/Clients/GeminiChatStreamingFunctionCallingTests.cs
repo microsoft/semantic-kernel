@@ -366,6 +366,9 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         Assert.NotNull(geminiMessage);
         Assert.NotNull(geminiMessage.ToolCalls);
         Assert.NotEmpty(geminiMessage.ToolCalls);
+
+        // Chat history should contain the tool call from first invocation
+        Assert.Contains(chatHistory, c => c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool);
     }
 
     private static ChatHistory CreateSampleChatHistory()
