@@ -5,9 +5,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Unio
 
 from pydantic import Field, ValidationError, model_validator
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )

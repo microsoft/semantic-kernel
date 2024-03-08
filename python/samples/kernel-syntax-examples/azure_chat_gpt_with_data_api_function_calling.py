@@ -68,11 +68,11 @@ kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 prompt_template_config = PromptTemplateConfig(
-    template="{{$user_input}}",
+    template="{{$chat_history}}{{$user_input}}",
     name="chat",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="history", description="The history of the conversation", is_required=True),
+        InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
         InputVariable(name="user_input", description="The user input", is_required=True),
     ],
 )
@@ -110,6 +110,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
+    arguments["chat_history"] = history
     arguments["user_input"] = user_input
     answer = await kernel.invoke(
         functions=chat_function,

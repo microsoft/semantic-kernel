@@ -51,6 +51,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
         Returns:
             ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk] -- The completion response.
         """
+
         try:
             if self.ai_model_type == OpenAIModelTypes.CHAT:
                 response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())

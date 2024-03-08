@@ -14,13 +14,10 @@ from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_messa
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import (
-    get_tool_call_object,
-)
+from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.input_variable import InputVariable
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -58,6 +55,11 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
 kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 
+chat_function = kernel.create_function_from_prompt(
+    prompt="{{$chat_history}}{{$user_input}}",
+    plugin_name="ChatBot",
+    function_name="Chat",
+)
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
@@ -68,6 +70,7 @@ kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 # If configured to be greater than one, this value will be overridden to 1.
 execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     service_id="chat",
+    ai_model_id="gpt-3.5-turbo-1106",
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
@@ -77,30 +80,13 @@ execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     max_auto_invoke_attempts=3,
 )
 
-prompt_template_config = sk.PromptTemplateConfig(
-    template="{{$user_input}}",
-    name="chat",
-    template_format="semantic-kernel",
-    input_variables=[
-        InputVariable(name="user_input", description="The user input", is_required=True),
-        InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
-    ],
-    execution_settings={"chat": execution_settings},
-)
-
 history = ChatHistory()
 
 history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-arguments = KernelArguments()
-
-chat_function = kernel.create_function_from_prompt(
-    prompt_template_config=prompt_template_config,
-    plugin_name="ChatBot",
-    function_name="Chat",
-)
+arguments = KernelArguments(settings=execution_settings)
 
 
 def print_tool_calls(message: Union[OpenAIChatMessageContent, OpenAIStreamingChatMessageContent]) -> None:
@@ -138,7 +124,7 @@ async def handle_streaming(
 
     print("Mosscap:> ", end="")
     streamed_chunks: List[OpenAIStreamingChatMessageContent] = []
-    tool_call_ids_by_index: Dict[int, Any] = {}
+    tool_call_ids_by_index: Dict[str, Any] = {}
 
     async for message in response:
         if not execution_settings.auto_invoke_kernel_functions and isinstance(
@@ -147,11 +133,11 @@ async def handle_streaming(
             streamed_chunks.append(message[0])
             if message[0].tool_calls is not None:
                 for tc in message[0].tool_calls:
-                    if tc.index not in tool_call_ids_by_index:
-                        tool_call_ids_by_index[tc.index] = tc
+                    if tc.id not in tool_call_ids_by_index:
+                        tool_call_ids_by_index[tc.id] = tc
                     else:
                         for tc in message[0].tool_calls:
-                            tool_call_ids_by_index[tc.index] += tc
+                            tool_call_ids_by_index[tc.id] += tc
         else:
             print(str(message[0]), end="")
 
@@ -178,7 +164,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = False
+    stream = True
     if stream:
         await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
     else:

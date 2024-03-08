@@ -9,6 +9,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
 from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
@@ -118,6 +119,11 @@ def create_mock_function() -> Callable:
         return mock_function
 
     return create_mock_function
+
+
+@pytest.fixture(scope="function")
+def chat_history():
+    return ChatHistory()
 
 
 @pytest.fixture(autouse=True)

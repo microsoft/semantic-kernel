@@ -14,3 +14,4 @@ class ToolCallBehavior(KernelBaseModel):
     """
 
     auto_invoke_kernel_functions: bool = False
+    max_auto_invoke_attempts: int = 1

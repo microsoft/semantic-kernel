@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from typing import Optional
+from xml.etree.ElementTree import Element
+
+from defusedxml import ElementTree
 
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.finish_reason import FinishReason
@@ -68,3 +72,31 @@ class StreamingChatMessageContent(StreamingKernelContent):
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )
+
+    def to_prompt(self, root_key: str) -> str:
+        """Convert the ChatMessageContent to a prompt.
+
+        Returns:
+            str - The prompt from the ChatMessageContent.
+        """
+
+        root = Element(root_key)
+        root.set("role", self.role.value)
+        root.set("metadata", json.dumps(self.metadata))
+        root.text = self.content or ""
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
+
+    @classmethod
+    def from_element(cls, element: Element) -> "StreamingChatMessageContent":
+        """Create a new instance of ChatMessageContent from a prompt.
+
+        Args:
+            prompt: str - The prompt to create the ChatMessageContent from.
+
+        Returns:
+            ChatMessageContent - The new instance of ChatMessageContent.
+        """
+        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        if metadata := element.get("metadata"):
+            args["metadata"] = json.loads(metadata)
+        return cls(**args)
