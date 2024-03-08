@@ -65,6 +65,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
     @staticmethod
     async def create(
         cosmos_connstr,
+        application_name,
         cosmos_api,
         database_name,
         collection_name,
@@ -81,7 +82,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-            mongodb_client = get_mongodb_search_client(cosmos_connstr)
+            mongodb_client = get_mongodb_search_client(cosmos_connstr, application_name)
             database = mongodb_client[database_name]
             apiStore = MongoStoreApi(
                 collection_name=collection_name,

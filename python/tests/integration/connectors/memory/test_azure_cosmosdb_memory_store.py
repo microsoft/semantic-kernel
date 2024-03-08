@@ -27,6 +27,7 @@ else:
 
 # Either add your azure connection string here, or set it in the environment variable AZCOSMOS_CONNSTR.
 cosmos_connstr = ""
+application_name = "PYTHON_SEMANTIC_KERNEL"
 cosmos_api = "mongo-vcore"
 index_name = "sk_test_vector_search_index"
 vector_dimensions = 1536
@@ -97,6 +98,7 @@ def memory_record3():
 async def azurecosmosdb_memorystore() -> MemoryStoreBase:
     store = await AzureCosmosDBMemoryStore.create(
         cosmos_connstr=cosmos_connstr,
+        application_name=application_name,
         cosmos_api=cosmos_api,
         database_name=database_name,
         collection_name=collection_name,

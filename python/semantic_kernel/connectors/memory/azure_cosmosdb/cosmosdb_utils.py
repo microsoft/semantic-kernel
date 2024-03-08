@@ -28,7 +28,7 @@ class CosmosDBVectorSearchType(str, Enum):
     """HNSW vector index"""
 
 
-def get_mongodb_search_client(connection_string: str):
+def get_mongodb_search_client(connection_string: str, application_name: str):
     """
     Returns a client for Azure Cosmos Mongo vCore Vector DB
 
@@ -50,6 +50,7 @@ def get_mongodb_search_client(connection_string: str):
         raise ServiceInitializationError("Error: missing Azure Cosmos Mongo vCore Connection String")
 
     if cosmos_conn_str:
-        return MongoClient(cosmos_conn_str)
+        app_name = application_name if application_name is not None else "PYTHON_SEMANTIC_KERNEL"
+        return MongoClient(cosmos_conn_str, appname=app_name)
 
     raise ServiceInitializationError("Error: unable to create Azure Cosmos Mongo vCore Vector DB client.")
