@@ -187,6 +187,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             ]
             if not tool_call_behavior or not tool_call_behavior.auto_invoke_kernel_functions:
                 yield contents
+                continue
             finish_reason = getattr(contents[0], "finish_reason", None)
             full_content = contents[0] if full_content is None else full_content + contents[0]
             if not contents[0].tool_calls or finish_reason not in (FinishReason.STOP, FinishReason.TOOL_CALLS, None):
