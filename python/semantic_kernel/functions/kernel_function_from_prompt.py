@@ -291,7 +291,7 @@ through prompt_template_config or in the prompt_template."
             return  # Exit after processing all iterations
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
     async def _handle_complete_text_stream(
         self,
@@ -306,7 +306,7 @@ through prompt_template_config or in the prompt_template."
             return
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
     def add_default_values(self, arguments: "KernelArguments") -> KernelArguments:
         """Gathers the function parameters from the arguments."""
