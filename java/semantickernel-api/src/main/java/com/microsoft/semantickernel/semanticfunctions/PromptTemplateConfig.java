@@ -41,6 +41,7 @@ public class PromptTemplateConfig {
      */
     public static final String SEMANTIC_KERNEL_TEMPLATE_FORMAT = "semantic-kernel";
 
+    private final int schema;
     @Nullable
     private final String name;
     @Nullable
@@ -92,6 +93,7 @@ public class PromptTemplateConfig {
         @Nullable @JsonProperty("input_variables") List<InputVariable> inputVariables,
         @Nullable @JsonProperty("output_variable") OutputVariable outputVariable,
         @Nullable @JsonProperty("execution_settings") Map<String, PromptExecutionSettings> executionSettings) {
+        this.schema = schema;
         this.name = name;
         this.template = template;
         if (templateFormat == null) {
@@ -299,6 +301,13 @@ public class PromptTemplateConfig {
     public String getTemplateFormat() {
         return templateFormat;
     }
+
+    /**
+     * Get the schema version of the prompt template config.
+     *
+     * @return The schema version of the prompt template config.
+     */
+    public int getSchema() { return schema; }
 
     /**
      * Create a builder for a prompt template config which is a clone of the current object.
