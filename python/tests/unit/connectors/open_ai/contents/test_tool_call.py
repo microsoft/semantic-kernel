@@ -13,9 +13,7 @@ def test_tool_call(tool_call: ToolCall):
 
 def test_add(tool_call: ToolCall):
     # Test adding two tool calls
-    tool_call2 = ToolCall(
-        id="5678", function=FunctionCall(name="Test-Function", arguments="""{"input2": "world2"}""")
-    )
+    tool_call2 = ToolCall(id="5678", function=FunctionCall(name="Test-Function", arguments="""{"input2": "world2"}"""))
     tool_call3 = tool_call + tool_call2
     assert tool_call3.id == "1234"
     assert tool_call3.type == "function"
@@ -36,5 +34,5 @@ def test_add_none(tool_call: ToolCall):
 def test_dump_json(tool_call: ToolCall):
     assert (
         tool_call.model_dump_json()
-        == """{"id":"1234","type":"function","function":{"name":"Test-Function","arguments":"{\\"input\\": \\"world\\"}"}}"""
+        == """{"id":"1234","type":"function","function":{"name":"Test-Function","arguments":"{\\"input\\": \\"world\\"}"}}"""  # noqa: E501
     )
