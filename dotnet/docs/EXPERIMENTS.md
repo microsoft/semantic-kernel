@@ -14,13 +14,13 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 | SKEXP​ | Experimental Features Category​​ |
 |-------|--------------------------------|
-| SKEXP0001 | Semantic Kernel core |
+| SKEXP0001 | Semantic Kernel core features |
 | SKEXP0010 | OpenAI and Azure OpenAI services |
-| SKEXP0020 | Memory connectors |
+| SKEXP0020 | Memory abstractions |
 | SKEXP0040 | Function types |
 | SKEXP0050 | Out-of-the-box plugins |
 | SKEXP0060 | Planners |
-| SKEXP0100 | Experiments |
+| SKEXP0100 | Advanced Semantic Kernel features |
 
 ## Experimental Features Tracking
 
