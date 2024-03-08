@@ -12,7 +12,7 @@
   "paths": {
     "/keys": {
       "get": {
-        "description": "List keys in the specified vault.  For details, see https://docs.microsoft.com/rest/api/keyvault/getkeys/getkeys.",
+        "description": "List keys in the specified vault.  For details, see https://learn.microsoft.com/en-us/rest/api/keyvault/keys/get-keys/get-keys.",
         "operationId": "ListKey",
         "parameters": [
           {
