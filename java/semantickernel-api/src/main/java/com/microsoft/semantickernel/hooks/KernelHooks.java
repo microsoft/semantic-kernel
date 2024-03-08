@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PostChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
@@ -99,6 +100,17 @@ public class KernelHooks {
     public String addPreChatCompletionHook(
         Function<PreChatCompletionEvent, PreChatCompletionEvent> function) {
         return addHook((PreChatCompletionHook) function::apply);
+    }
+
+    /**
+     * Add a {@link PostChatCompletionEvent} to the collection of hooks.
+     *
+     * @param function the function to add
+     * @return the key of the hook in the collection
+     */
+    public String addPostChatCompletionHook(
+        Function<PostChatCompletionEvent, PostChatCompletionEvent> function) {
+        return addHook((PostChatCompletionHook) function::apply);
     }
 
     /**
@@ -224,6 +236,12 @@ public class KernelHooks {
         @Override
         public String addPreChatCompletionHook(
             Function<PreChatCompletionEvent, PreChatCompletionEvent> function) {
+            throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
+        }
+
+        @Override
+        public String addPostChatCompletionHook(
+            Function<PostChatCompletionEvent, PostChatCompletionEvent> function) {
             throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
         }
 

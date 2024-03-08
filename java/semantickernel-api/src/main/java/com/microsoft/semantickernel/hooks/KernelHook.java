@@ -118,4 +118,17 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
             return PreChatCompletionEvent.class.isAssignableFrom(arguments.getClass());
         }
     }
+
+    /**
+     * A hook that accepts {@link PostChatCompletionEvent}
+     */
+    interface PostChatCompletionHook extends KernelHook<PostChatCompletionEvent> {
+
+        @Override
+        default boolean test(KernelHookEvent arguments) {
+            return PostChatCompletionEvent.class.isAssignableFrom(arguments.getClass());
+        }
+
+    }
+
 }
