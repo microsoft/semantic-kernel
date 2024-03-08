@@ -606,11 +606,71 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.Equal(2, messages.GetArrayLength());
 
-        Assert.Equal("This is test system message", messages[0].GetProperty("content").GetString());
+        Assert.Equal(SystemMessage, messages[0].GetProperty("content").GetString());
         Assert.Equal("system", messages[0].GetProperty("role").GetString());
 
-        Assert.Equal("This is test prompt", messages[1].GetProperty("content").GetString());
+        Assert.Equal(Prompt, messages[1].GetProperty("content").GetString());
         Assert.Equal("user", messages[1].GetProperty("role").GetString());
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsWithChatMessageContentItemCollectionAndSettingsCorrectlyAsync()
+    {
+        // Arrange
+        const string Prompt = "This is test prompt";
+        const string SystemMessage = "This is test system message";
+        const string AssistantMessage = "This is assistant message";
+        const string CollectionItemPrompt = "This is collection item prompt";
+
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings() { ChatSystemPrompt = SystemMessage };
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(Prompt);
+        chatHistory.AddAssistantMessage(AssistantMessage);
+        chatHistory.AddUserMessage(new ChatMessageContentItemCollection()
+        {
+            new TextContent(CollectionItemPrompt),
+            new ImageContent(new Uri("https://image"))
+        });
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, settings);
+
+        // Assert
+        Assert.True(result.Count > 0);
+        Assert.Equal("Test chat response", result[0].Content);
+
+        var requestContentByteArray = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContentByteArray);
+
+        var requestContent = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContentByteArray));
+
+        var messages = requestContent.GetProperty("messages");
+
+        Assert.Equal(4, messages.GetArrayLength());
+
+        Assert.Equal(SystemMessage, messages[0].GetProperty("content").GetString());
+        Assert.Equal("system", messages[0].GetProperty("role").GetString());
+
+        Assert.Equal(Prompt, messages[1].GetProperty("content").GetString());
+        Assert.Equal("user", messages[1].GetProperty("role").GetString());
+
+        Assert.Equal(AssistantMessage, messages[2].GetProperty("content").GetString());
+        Assert.Equal("assistant", messages[2].GetProperty("role").GetString());
+
+        var contentItems = messages[3].GetProperty("content");
+        Assert.Equal(2, contentItems.GetArrayLength());
+        Assert.Equal(CollectionItemPrompt, contentItems[0].GetProperty("text").GetString());
+        Assert.Equal("text", contentItems[0].GetProperty("type").GetString());
+        Assert.Equal("https://image/", contentItems[1].GetProperty("image_url").GetProperty("url").GetString());
+        Assert.Equal("image_url", contentItems[1].GetProperty("type").GetString());
     }
 
     public void Dispose()
