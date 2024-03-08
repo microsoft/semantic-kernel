@@ -11,7 +11,6 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AudioToText;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
@@ -45,19 +44,19 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     }
 
     /// <inheritdoc />
-    public async Task<TextContent> GetTextContentAsync(
+    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         AudioContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         Verify.NotNull(content);
 
         string uploadUrl;
         if (content.Data is not null)
         {
-            using var stream = content.Data!.ToStream();
-            uploadUrl = await this.UploadFileAsync(stream, cancellationToken).ConfigureAwait(false);
+            uploadUrl = await this.UploadFileAsync(content.Data.Value, cancellationToken).ConfigureAwait(false);
         }
         else if (content.Uri is not null)
         {
@@ -79,29 +78,26 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
             .ConfigureAwait(false);
 
-        return new TextContent(
-            text: transcript.RootElement.GetProperty("text").GetString(),
-            modelId: null,
-            // TODO: change to typed object when AAI SDK is shipped
-            innerContent: transcript,
-            encoding: Encoding.UTF8,
-            metadata: null
-        );
+        return new[]
+        {
+            new TextContent(
+                text: transcript.RootElement.GetProperty("text").GetString(),
+                modelId: null,
+                // TODO: change to typed object when AAI SDK is shipped
+                innerContent: transcript,
+                encoding: Encoding.UTF8,
+                metadata: null
+            )
+        };
     }
 
-    /// <summary>
-    /// Transcribe audio file.
-    /// </summary>
-    /// <param name="content">Stream of the audio file</param>
-    /// <param name="executionSettings">The AI execution settings (optional).</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Text content from audio content.</returns>
-    public async Task<TextContent> GetTextContentAsync(
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         AudioStreamContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         Verify.NotNull(content);
 
@@ -112,26 +108,41 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         var transcript = await this.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
             .ConfigureAwait(false);
 
-        return new TextContent(
-            text: transcript.RootElement.GetProperty("text").GetString(),
-            modelId: null,
-            // TODO: change to typed object when AAI SDK is shipped
-            innerContent: transcript,
-            encoding: Encoding.UTF8,
-            metadata: null
-        );
+        return new[]
+        {
+            new TextContent(
+                text: transcript.RootElement.GetProperty("text").GetString(),
+                modelId: null,
+                // TODO: change to typed object when AAI SDK is shipped
+                innerContent: transcript,
+                encoding: Encoding.UTF8,
+                metadata: null
+            )
+        };
+    }
+
+    private async Task<string> UploadFileAsync(ReadOnlyMemory<byte> audio, CancellationToken ct)
+    {
+        // Update to use ReadOnlyMemoryContent if library supports .NET Standard 2.1
+        using var content = new ByteArrayContent(audio.ToArray());
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        return await this.UploadFileAsync(content, ct).ConfigureAwait(false);
     }
 
     private async Task<string> UploadFileAsync(Stream audioStream, CancellationToken ct)
     {
-        var url = this.CreateUrl("v2/upload");
-
         using var content = new StreamContent(audioStream);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        return await this.UploadFileAsync(content, ct).ConfigureAwait(false);
+    }
+
+    private async Task<string> UploadFileAsync(HttpContent httpContent, CancellationToken ct)
+    {
+        var url = this.CreateUrl("v2/upload");
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         this.AddDefaultHeaders(request);
-        request.Content = content;
+        request.Content = httpContent;
 
         using var response = await this.HttpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
         using var jsonStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);

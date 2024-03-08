@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
-using Microsoft.SemanticKernel.Contents;
 using Xunit;
 
 namespace SemanticKernel.Connectors.AssemblyAI.UnitTests.AudioToText;
@@ -84,13 +83,14 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         ];
 
         // Act
-        var result = await service.GetTextContentAsync(
+        var result = await service.GetTextContentsAsync(
             new AudioContent(new BinaryData("data", "audio/wav"))
         ).ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(ExpectedTranscriptText, result.Text);
+        Assert.Single(result);
+        Assert.Equal(ExpectedTranscriptText, result[0].Text);
     }
 
     [Fact]
@@ -105,13 +105,14 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [transcribeResponse, transcribedResponse];
 
         // Act
-        var result = await service.GetTextContentAsync(
+        var result = await service.GetTextContentsAsync(
             new AudioContent(new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3"))
         ).ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(ExpectedTranscriptText, result.Text);
+        Assert.Single(result);
+        Assert.Equal(ExpectedTranscriptText, result[0].Text);
     }
 
     [Fact]
@@ -135,13 +136,15 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         using var ms = new MemoryStream();
 
         // Act
-        var result = await service.GetTextContentAsync(
+        var result = await service.GetTextContentsAsync(
             new AudioStreamContent(ms)
         ).ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(ExpectedTranscriptText, result.Text);
+        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(ExpectedTranscriptText, result[0].Text);
     }
 
     [Fact]
@@ -157,7 +160,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
-            async () => await service.GetTextContentAsync(
+            async () => await service.GetTextContentsAsync(
                 new AudioContent(new BinaryData("data", "audio/wav"))
             ).ConfigureAwait(true)
         ).ConfigureAwait(true);
@@ -186,8 +189,8 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
-            async () => await service.GetTextContentAsync(
-                new AudioContent(new BinaryData("data", "audio/wav"))
+            async () => await service.GetTextContentsAsync(
+                new AudioContent(new BinaryData("data"))
             ).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }

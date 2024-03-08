@@ -68,4 +68,8 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._core.GetTextContentFromAudioAsync(content, executionSettings, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(AudioStreamContent content, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.GetTextContentsAsync(content.ToAudioContent(), executionSettings, kernel, cancellationToken);
 }

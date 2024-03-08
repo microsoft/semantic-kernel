@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
-namespace Microsoft.SemanticKernel.Contents;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents audio content.
@@ -28,5 +28,21 @@ public class AudioStreamContent : KernelContent
         : base(stream, modelId, metadata)
     {
         this.Stream = stream;
+    }
+
+    /// <summary>
+    /// Converts an AudioStreamContent to AudioContent by loading the stream data into memory.
+    /// </summary>
+    /// <returns></returns>
+    public AudioContent ToAudioContent()
+    {
+        if (this.Stream is MemoryStream stream)
+        {
+            return new AudioContent(stream.ToArray());
+        }
+
+        using var memoryStream = new MemoryStream();
+        this.Stream.CopyTo(memoryStream);
+        return new AudioContent(memoryStream.ToArray());
     }
 }

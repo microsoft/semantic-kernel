@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
-using Microsoft.SemanticKernel.Contents;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -46,14 +45,14 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await BinaryData.FromStreamAsync(audio, "audio/wav");
+        var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(audioData));
+        var result = await service.GetTextContentsAsync(new AudioContent(audioData));
 
         // Assert
-        Console.WriteLine(result.Text);
-        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
+        Console.WriteLine(result[0].Text);
+        Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
     private string GetAssemblyAIApiKey()
@@ -80,10 +79,10 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
-        var audioData = await BinaryData.FromStreamAsync(audio, "audio/wav");
+        var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentAsync(
+        var result = await service.GetTextContentsAsync(
             new AudioContent(audioData),
             new AssemblyAIAudioToTextExecutionSettings
             {
@@ -92,8 +91,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
 
         // Assert
-        Console.WriteLine(result.Text);
-        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
+        Console.WriteLine(result[0].Text);
+        Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -111,11 +110,11 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioStreamContent(audio));
+        var result = await service.GetTextContentsAsync(new AudioStreamContent(audio));
 
         // Assert
-        Console.WriteLine(result.Text);
-        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
+        Console.WriteLine(result[0].Text);
+        Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -130,17 +129,17 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         // Act
-        var result = await service.GetTextContentAsync(
+        var result = await service.GetTextContentsAsync(
             new AudioContent(new Uri("https://storage.googleapis.com/aai-docs-samples/nbc.mp3"))
         );
 
         // Assert
         Assert.Contains(
             "There's the traditional red blue divide you're very familiar with. But there's a lot more below the surface going on in both parties. Let's set the table.",
-            result.Text,
+            result[0].Text,
             StringComparison.Ordinal
         );
-        Console.WriteLine(result.Text);
+        Console.WriteLine(result[0].Text);
     }
 
     [Fact]
@@ -156,7 +155,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.GetTextContentAsync(new AudioContent(new Uri("file://C:/file.mp3")))
+            async () => await service.GetTextContentsAsync(new AudioContent(new Uri("file://C:/file.mp3")))
         );
     }
 
@@ -182,11 +181,11 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioStreamContent(audio), textExecutionSettings);
+        var result = await service.GetTextContentsAsync(new AudioStreamContent(audio), textExecutionSettings);
 
         // Assert
-        Console.WriteLine(result.Text);
-        Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
+        Console.WriteLine(result[0].Text);
+        Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -212,7 +211,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
-            async () => await service.GetTextContentAsync(new AudioStreamContent(audio), textExecutionSettings)
+            async () => await service.GetTextContentsAsync(new AudioStreamContent(audio), textExecutionSettings)
         );
     }
 
@@ -233,7 +232,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<HttpOperationException>(
-            async () => await service.GetTextContentAsync(new AudioStreamContent(audio))
+            async () => await service.GetTextContentsAsync(new AudioStreamContent(audio))
         );
         Assert.Equal(
             "Connection refused (localhost:9999)",
