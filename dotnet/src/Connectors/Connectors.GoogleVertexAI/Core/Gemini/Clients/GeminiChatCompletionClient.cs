@@ -250,16 +250,23 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             await this.ProcessSingleToolCallAsync(state, toolCall, cancellationToken).ConfigureAwait(false);
         }
 
-        // If we've reached the maximum number of attempts for tools usage, we need to clear the tools
+        // Clear the tools. If we end up wanting to use tools, we'll reset it to the desired value.
+        state.GeminiRequest.Tools = null;
+
         if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
         {
-            // Clear the tools
-            state.GeminiRequest.Tools = null;
+            // Don't add any tools as we've reached the maximum attempts limit.
             this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.",
                 state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
         }
+        else
+        {
+            // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
+            // what functions are available in the kernel.
+            state.ExecutionSettings.ToolCallBehavior!.ConfigureGeminiRequest(state.Kernel, state.GeminiRequest);
+        }
 
-        // If we've reached the maximum number of attempts for auto-invoke, we need to disable auto-invoke
+        // Disable auto invocation if we've exceeded the allowed limit.
         if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
         {
             state.AutoInvoke = false;

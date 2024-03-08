@@ -41,7 +41,7 @@ public abstract class ToolCallBehavior
     /// <remarks>
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ToolCallBehavior EnableKernelFunctions { get; } = new KernelFunctions(autoInvoke: false);
+    public static ToolCallBehavior EnableKernelFunctions => new KernelFunctions(autoInvoke: false);
 
     /// <summary>
     /// Gets an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
@@ -52,7 +52,7 @@ public abstract class ToolCallBehavior
     /// handling invoking any requested functions and supplying the results back to the model.
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(autoInvoke: true);
+    public static ToolCallBehavior AutoInvokeKernelFunctions => new KernelFunctions(autoInvoke: true);
 
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>

@@ -271,6 +271,43 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
             Assert.False(string.IsNullOrWhiteSpace(item.Content)));
     }
 
+    [Fact]
+    public async Task IfAutoInvokeShouldPassToolsToEachRequestAsync()
+    {
+        // Arrange
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContent);
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
+        executionSettings.ToolCallBehavior.MaximumUseAttempts = 100;
+        executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts = 10;
+
+        // Act
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
+            .ToListAsync();
+
+        // Assert
+        var requests = handlerStub.RequestContents
+            .Select(bytes => JsonSerializer.Deserialize<GeminiRequest>(bytes)).ToList();
+        Assert.Collection(requests,
+            item => Assert.NotNull(item!.Tools),
+            item => Assert.NotNull(item!.Tools));
+        Assert.Collection(requests,
+            item => Assert.Collection(item!.Tools![0].Functions,
+                func => Assert.Equal(this._timePluginDate.FullyQualifiedName, func.Name),
+                func => Assert.Equal(this._timePluginNow.FullyQualifiedName, func.Name)),
+            item => Assert.Collection(item!.Tools![0].Functions,
+                func => Assert.Equal(this._timePluginDate.FullyQualifiedName, func.Name),
+                func => Assert.Equal(this._timePluginNow.FullyQualifiedName, func.Name)));
+    }
+
     private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();
