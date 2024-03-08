@@ -12,6 +12,7 @@ import yaml
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -106,10 +107,10 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         if not question:
             raise PlannerInvalidConfigurationError("Input question cannot be empty")
 
-        chat_completion = kernel.get_service(service_id=self.service_id)
+        chat_completion = kernel.get_service(service_id=self.service_id, type=OpenAIChatCompletion)
         prompt_execution_settings: OpenAIChatPromptExecutionSettings = (
             self.options.execution_settings
-            or kernel.get_service(self.service_id).get_prompt_execution_settings_class()(service_id=self.service_id)
+            or chat_completion.get_prompt_execution_settings_class()(service_id=self.service_id)
         )
 
         # Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
@@ -140,7 +141,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
 
             # Try to get the final answer out
             if chat_result.tool_calls[0].function.name == USER_INTERACTION_SEND_FINAL_ANSWER:
-                args = json.loads(chat_result.tool_calls[0].function.arguments)
+                args = chat_result.tool_calls[0].function.parse_arguments()
                 answer = args["answer"]
                 return FunctionCallingStepwisePlannerResult(
                     final_answer=answer,

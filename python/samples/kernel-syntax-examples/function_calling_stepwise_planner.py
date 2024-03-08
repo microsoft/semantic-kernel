@@ -97,7 +97,7 @@ async def main():
         print(f"Q: {question}\nA: {result.final_answer}\n")
 
         # Uncomment the following line to view the planner's process for completing the request
-        # print(f"Chat history: {result.chat_history}\n")
+        print(f"Chat history: {result.chat_history}\n")
 
 
 if __name__ == "__main__":

@@ -49,7 +49,7 @@ class OpenAIChatMessageContent(ChatMessageContent):
 
         root = Element(root_key)
         root.set("role", self.role.value)
-        root.set("metadata", json.dumps(self.metadata))
+        #root.set("metadata", json.dumps(self.metadata))
         if self.function_call:
             root.set("function_call", self.function_call.model_dump_json(exclude_none=True))
         if self.tool_calls:
