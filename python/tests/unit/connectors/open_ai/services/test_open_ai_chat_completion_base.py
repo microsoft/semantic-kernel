@@ -22,7 +22,7 @@ async def mock_async_process_chat_stream_response(arg1, response, tool_call_beha
 
 
 @pytest.mark.asyncio
-async def test_complete_chat_stream():
+async def test_complete_chat_stream(kernel: Kernel):
     chat_history = MagicMock()
     settings = MagicMock()
     mock_response = MagicMock()
@@ -40,8 +40,6 @@ async def test_complete_chat_stream():
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_chat_stream_response",
         new_callable=lambda: mock_async_process_chat_stream_response,
     ):
-        kernel = Kernel()
-
         chat_completion_base = OpenAIChatCompletionBase(
             ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
         )
