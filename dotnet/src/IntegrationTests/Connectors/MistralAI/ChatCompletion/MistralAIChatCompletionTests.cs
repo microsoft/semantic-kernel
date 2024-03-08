@@ -15,6 +15,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.MistralAI;
 public sealed class MistralAIChatCompletionTests
 {
     private readonly IConfigurationRoot _configuration;
+    private readonly MistralAIPromptExecutionSettings _executionSettings;
 
     public MistralAIChatCompletionTests()
     {
@@ -25,10 +26,15 @@ public sealed class MistralAIChatCompletionTests
             .AddEnvironmentVariables()
             .AddUserSecrets<MistralAIChatCompletionTests>()
             .Build();
+
+        this._executionSettings = new MistralAIPromptExecutionSettings
+        {
+            MaxTokens = 500,
+        };
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
-    public async Task MistralAIChatCompletionTestsAsync()
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task ValidChatCompletionAsync()
     {
         // Arrange
         var model = this._configuration["MistralAI:ChatModel"];
@@ -38,13 +44,38 @@ public sealed class MistralAIChatCompletionTests
         // Act
         var chatHistory = new ChatHistory
         {
+            new ChatMessageContent(AuthorRole.System, "Respond in French."),
             new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
         };
-        var response = await service.GetChatMessageContentsAsync(chatHistory);
+        var response = await service.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
 
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
         Assert.True(response[0].Content?.Length > 0);
+    }
+
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task ValidateChatPromptAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ChatModel"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var kernel = Kernel.CreateBuilder()
+            .AddMistralChatCompletion(model!, apiKey!)
+            .Build();
+
+        const string ChatPrompt = @"
+            <message role=""system"">Respond in French.</message>
+            <message role=""user"">What is the best French cheese?</message>
+        ";
+        var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt, this._executionSettings);
+
+        // Act
+        var response = await kernel.InvokeAsync(chatSemanticFunction);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.False(string.IsNullOrEmpty(response.ToString()));
     }
 }

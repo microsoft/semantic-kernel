@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -39,6 +40,7 @@ internal sealed class MistralClient
         this._apiKey = apiKey;
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
+        this._streamJsonParser = new ChatCompletionStreamJsonParser();
     }
 
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
@@ -55,9 +57,22 @@ internal sealed class MistralClient
         return response.Choices.Select(chatChoice => new ChatMessageContent(new AuthorRole(chatChoice.Message!.Role), chatChoice.Message!.Content, this._modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(response, chatChoice))).ToList();
     }
 
-    internal IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
+    internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
-        throw new NotImplementedException();
+        string modelId = executionSettings?.ModelId ?? this._modelId;
+        var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings);
+        var endpoint = new Uri($"{this._endpoint}{this._separator}chat/completions");
+
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, stream: true);
+
+        using var response = await this.SendStreamingRequestAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+
+        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        foreach (var streamingTextContent in this.ProcessResponseStream(responseStream, modelId))
+        {
+            yield return streamingTextContent;
+        }
     }
 
     internal async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken, Kernel? kernel = null)
@@ -78,6 +93,7 @@ internal sealed class MistralClient
     private readonly string _separator;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
+    private readonly IStreamJsonParser _streamJsonParser;
 
     private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings? executionSettings)
     {
@@ -123,6 +139,33 @@ internal sealed class MistralClient
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         return DeserializeResponse<T>(body);
+    }
+
+    private async Task<HttpResponseMessage> SendStreamingRequestAsync(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken)
+    {
+        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+    }
+
+    private IEnumerable<StreamingChatMessageContent> ProcessResponseStream(Stream stream, string modelId)
+        => from chatCompletionChunk in this.ParseTextResponseStream(stream)
+           from chatContent in this.GetStreamingChatMessageContentFromResponse(chatCompletionChunk, modelId)
+           select chatContent;
+
+    private IEnumerable<MistralChatCompletionChunk> ParseTextResponseStream(Stream responseStream)
+        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<MistralChatCompletionChunk>);
+
+    private List<StreamingChatMessageContent> GetStreamingChatMessageContentFromResponse(MistralChatCompletionChunk chunk, string modelId)
+    {
+        return new List<StreamingChatMessageContent>
+        {
+            new(role: chunk.GetRole(),
+                content: chunk.GetContent(),
+                choiceIndex: chunk.GetChoiceIndex(),
+                modelId: modelId,
+                encoding: chunk.GetEncoding(),
+                innerContent: chunk,
+                metadata: chunk.GetMetadata())
+        };
     }
 
     private static T DeserializeResponse<T>(string body)

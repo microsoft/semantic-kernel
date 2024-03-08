@@ -42,6 +42,7 @@ public sealed class TestConfiguration
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
     public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
+    public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -182,6 +183,13 @@ public sealed class TestConfiguration
     public class ChatGPTRetrievalPluginConfig
     {
         public string Token { get; set; }
+    }
+
+    public class MistralAIConfig
+    {
+        public string ApiKey { get; set; }
+        public string ChatModelId { get; set; }
+        public string EmbeddingModelId { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.

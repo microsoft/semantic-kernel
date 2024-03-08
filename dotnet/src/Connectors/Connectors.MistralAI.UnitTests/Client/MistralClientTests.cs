@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -20,7 +21,7 @@ namespace SemanticKernel.Connectors.MistralAI.UnitTests.Client;
 /// </summary>
 public sealed class MistralClientTests : IDisposable
 {
-    private AssertingDelegatingHandler? _delegatingHandler;
+    private DelegatingHandler? _delegatingHandler;
     private HttpClient? _httpClient;
 
     [Fact]
@@ -84,6 +85,32 @@ public sealed class MistralClientTests : IDisposable
         Assert.Equal(1024, response[1].Length);
     }
 
+    [Fact]
+    public async Task ValidateGetStreamingChatMessageContentsAsync()
+    {
+        // Arrange
+        var content = this.GetTestResponses("chat_completions_streaming_response.txt");
+        this._delegatingHandler = new AssertingStreamingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
+        this._httpClient = new HttpClient(this._delegatingHandler, false);
+        var client = new MistralClient("mistral-tiny", this._httpClient, "key");
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
+        };
+        var response = client.GetStreamingChatMessageContentsAsync(chatHistory, default);
+        var chunks = new List<StreamingChatMessageContent>();
+        await foreach (var chunk in response)
+        {
+            chunks.Add(chunk);
+        };
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Equal(10, chunks.Count);
+    }
+
     public void Dispose()
     {
         this._delegatingHandler?.Dispose();
@@ -93,6 +120,11 @@ public sealed class MistralClientTests : IDisposable
     private string GetTestResponse(string fileName)
     {
         return File.ReadAllText($"./TestData/{fileName}");
+    }
+
+    private string[] GetTestResponses(string fileName)
+    {
+        return File.ReadAllLines($"./TestData/{fileName}");
     }
 
     internal sealed class AssertingDelegatingHandler : DelegatingHandler
@@ -119,18 +151,63 @@ public sealed class MistralClientTests : IDisposable
 
             return await Task.FromResult(this.ResponseMessage);
         }
+    }
 
-        private static HttpRequestHeaders GetDefaultRequestHeaders(string key, bool stream)
+    internal sealed class AssertingStreamingDelegatingHandler : DelegatingHandler
+    {
+        public Uri RequestUri { get; init; }
+        public string[] Chunks { get; init; }
+        public HttpMethod Method { get; init; } = HttpMethod.Post;
+        public HttpRequestHeaders RequestHeaders { get; init; } = GetDefaultRequestHeaders("key", false);
+        public HttpResponseMessage ResponseMessage { get; init; } = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+
+        internal AssertingStreamingDelegatingHandler(string requestUri, string[] chunks)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            var requestHeaders = new HttpRequestMessage().Headers;
-#pragma warning restore CA2000 // Dispose objects before losing scope
-            requestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-            requestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(MistralClient)));
-            requestHeaders.Add("Accept", stream ? "text/event-stream" : "application/json");
-            requestHeaders.Add("Authorization", $"Bearer {key}");
-
-            return requestHeaders;
+            this.RequestUri = new Uri(requestUri);
+            this.Chunks = chunks;
         }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Assert.Equal(this.RequestUri, request.RequestUri);
+            Assert.Equal(this.Method, request.Method);
+            Assert.Equal(this.RequestHeaders, request.Headers);
+
+            this.ResponseMessage.Content = new PushStreamContent(async (stream, content, context) =>
+            {
+                foreach (var chunk in this.Chunks)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(chunk))
+                    {
+                        continue;
+                    }
+
+                    var buffer = Encoding.UTF8.GetBytes(chunk);
+                    await stream.WriteAsync(new ReadOnlyMemory<byte>(buffer), cancellationToken);
+
+                    await Task.Delay(100, cancellationToken);
+                }
+            });
+
+            return await Task.FromResult(this.ResponseMessage);
+        }
+    }
+
+    private static HttpRequestHeaders GetDefaultRequestHeaders(string key, bool stream)
+    {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        var requestHeaders = new HttpRequestMessage().Headers;
+#pragma warning restore CA2000 // Dispose objects before losing scope
+        requestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        requestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(MistralClient)));
+        requestHeaders.Add("Accept", stream ? "text/event-stream" : "application/json");
+        requestHeaders.Add("Authorization", $"Bearer {key}");
+
+        return requestHeaders;
     }
 }
