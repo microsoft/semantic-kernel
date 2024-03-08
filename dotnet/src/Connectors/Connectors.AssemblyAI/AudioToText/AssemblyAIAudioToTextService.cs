@@ -54,7 +54,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         Verify.NotNull(content);
 
         string uploadUrl;
-        if (content.Data is not null)
+        if (content.Data is { IsEmpty: false })
         {
             uploadUrl = await this.UploadFileAsync(content.Data.Value, cancellationToken).ConfigureAwait(false);
         }
@@ -100,6 +100,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     )
     {
         Verify.NotNull(content);
+        Verify.NotNull(content.Stream);
 
         string uploadUrl = await this.UploadFileAsync(content.Stream, cancellationToken).ConfigureAwait(false);
 

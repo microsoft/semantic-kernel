@@ -31,7 +31,7 @@ public interface IAudioToTextService : IAIService
     /// <summary>
     /// Get text contents from audio content.
     /// </summary>
-    /// <param name="content">Audio content.</param>
+    /// <param name="content">Audio stream content.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

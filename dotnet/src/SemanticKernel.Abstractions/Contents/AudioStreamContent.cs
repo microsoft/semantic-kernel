@@ -29,20 +29,4 @@ public class AudioStreamContent : KernelContent
     {
         this.Stream = stream;
     }
-
-    /// <summary>
-    /// Converts an AudioStreamContent to AudioContent by loading the stream data into memory.
-    /// </summary>
-    /// <returns></returns>
-    public AudioContent ToAudioContent()
-    {
-        if (this.Stream is MemoryStream stream)
-        {
-            return new AudioContent(stream.ToArray());
-        }
-
-        using var memoryStream = new MemoryStream();
-        this.Stream.CopyTo(memoryStream);
-        return new AudioContent(memoryStream.ToArray());
-    }
 }
