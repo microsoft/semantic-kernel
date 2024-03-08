@@ -19,9 +19,10 @@ public sealed class ChatCompletionAgent : KernelAgent
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="instructions">The instructions for the agent.</param>
+    /// <param name="name">The agent name.</param>
     /// <param name="description">The agent description.</param>
     /// <param name="executionSettings">The optional execution settings for the agent. If not provided, default settings will be used.</param>
-    public ChatCompletionAgent(Kernel kernel, string instructions, string? description, PromptExecutionSettings? executionSettings = null) : base(kernel, description)
+    public ChatCompletionAgent(Kernel kernel, string instructions, string name, string? description, PromptExecutionSettings? executionSettings = null) : base(kernel, name, description)
     {
         Verify.NotNullOrWhiteSpace(instructions, nameof(instructions));
         this._kernel = kernel;

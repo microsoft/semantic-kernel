@@ -31,6 +31,7 @@ public class Example79_ChatCompletionAgent : BaseTest
     {
         var agent = new ChatCompletionAgent(
             kernel: this._kernel,
+            name: "Financial Adviser",
             instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
             description: "Financial Adviser",
             executionSettings: new OpenAIPromptExecutionSettings
@@ -55,6 +56,7 @@ public class Example79_ChatCompletionAgent : BaseTest
     {
         var agent = new ChatCompletionAgent(
             kernel: this._kernel,
+            name: "Financial Adviser",
             instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
             description: "Financial Adviser",
             executionSettings: new OpenAIPromptExecutionSettings
@@ -88,23 +90,27 @@ public class Example79_ChatCompletionAgent : BaseTest
 
         var fitnessTrainer = new ChatCompletionAgent(
             kernel: this._kernel,
-            instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
-            "You are not a stress management expert, so refrain from recommending stress management strategies. " +
-            "Collaborate with the stress management expert to create a holistic wellness plan." +
-            "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
-            "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
+            name: "Fitness Trainer",
+            instructions:
+                "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
+                "You are not a stress management expert, so refrain from recommending stress management strategies. " +
+                "Collaborate with the stress management expert to create a holistic wellness plan." +
+                "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
+                "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
             description: "Fitness Trainer",
             executionSettings: settings
         );
 
         var stressManagementExpert = new ChatCompletionAgent(
             kernel: this._kernel,
-            instructions: "As a stress management expert, provide guidance on stress reduction strategies. " +
-            "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
-            "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
-            "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
-            "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
-            "Always include your role at the beginning of each response such as 'As a stress management expert.",
+            name: "Stress Management Expert",
+            instructions:
+                "As a stress management expert, provide guidance on stress reduction strategies. " +
+                "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
+                "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
+                "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
+                "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
+                "Always include your role at the beginning of each response such as 'As a stress management expert.",
             description: "Stress Management Expert",
             executionSettings: settings
          );
@@ -133,23 +139,27 @@ public class Example79_ChatCompletionAgent : BaseTest
 
         var fitnessTrainer = new ChatCompletionAgent(
             kernel: this._kernel,
-            instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
-            "You are not a stress management expert, so refrain from recommending stress management strategies. " +
-            "Collaborate with the stress management expert to create a holistic wellness plan." +
-            "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
-            "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
+            name: "Fitness Trainer",
+            instructions:
+                "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
+                "You are not a stress management expert, so refrain from recommending stress management strategies. " +
+                "Collaborate with the stress management expert to create a holistic wellness plan." +
+                "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
+                "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
             description: "Fitness Trainer",
             executionSettings: settings
         );
 
         var stressManagementExpert = new ChatCompletionAgent(
             kernel: this._kernel,
-            instructions: "As a stress management expert, provide guidance on stress reduction strategies. " +
-            "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
-            "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
-            "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
-            "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
-            "Always include your role at the beginning of each response such as 'As a stress management expert.",
+            name: "Stress Management Expert",
+            instructions:
+                "As a stress management expert, provide guidance on stress reduction strategies. " +
+                "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
+                "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
+                "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
+                "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
+                "Always include your role at the beginning of each response such as 'As a stress management expert.",
             description: "Stress Management Expert",
             executionSettings: settings
          );
@@ -184,6 +194,7 @@ public class Example79_ChatCompletionAgent : BaseTest
 
         var agent = new ChatCompletionAgent(
             kernel: this._kernel,
+            name: "Fitness Trainer",
             instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners.",
             description: "Fitness Trainer",
             executionSettings: settings);
@@ -213,6 +224,7 @@ public class Example79_ChatCompletionAgent : BaseTest
 
         KernelAgent agent = new ChatCompletionAgent(
             kernel: this._kernel,
+            name: "Fitness Trainer",
             instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners.",
             description: "Fitness Trainer",
             executionSettings: settings);
@@ -267,6 +279,70 @@ public class Example79_ChatCompletionAgent : BaseTest
     }
 
     /// <summary>
+    /// This example demonstrates a chat between agents that is coordinated by the oordinator agent.
+    /// </summary>
+    [Theory]
+    [InlineData("RE: Thread conversation; AI assigned a task to you: https://office.com/PlanViews/123?Type=AssignedTo&Channel=OdspNotify")]
+    [InlineData("type:`#Microsoft.Graph.chatMessage`; changeType:`created`; resource: `chats('19:123@unq.gbl.spaces')/messages('345')`")]
+    public async Task AgentRoutingAsync(string message)
+    {
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            MaxTokens = 1500,
+            Temperature = 0.7,
+            TopP = 1.0,
+            PresencePenalty = 0.0,
+            FrequencyPenalty = 0.0,
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ResultsPerPrompt = 1
+        };
+
+        var coordinator = new ChatCompletionAgent(
+            kernel: this._kernel,
+            name: "Message Categorization Agent",
+            description: "This Agent knows how to recognize different types of messages.",
+            instructions: "Decide on an agent to handle the provided message by selecting agent name from the list of available agents. Return original agent name.",
+            executionSettings: settings);
+
+        var teamsKernel = this._kernel.Clone();
+        teamsKernel.ImportPluginFromType<TeamsPlugin>();
+        var teamsHandler = new ChatCompletionAgent(
+            kernel: teamsKernel,
+            name: "Teams Message Agent",
+            description: "This Agent knows how to handle a new Teams message and respond to the message.",
+            instructions:
+                "As the Teams Manager, your objective is to analyze the chat history and determine the most appropriate " +
+                "course of action. To achieve this, carefully review the chat discussions and choose the relevant tools " +
+                "available to handle changes to the Microsoft Teams resource in question. Once an action is completed, " +
+                "include the TASK_IS_COMPLETE marker in the response.\"",
+            executionSettings: settings);
+
+        var plannerKernel = this._kernel.Clone();
+        plannerKernel.ImportPluginFromType<PlannerPlugin>();
+        var plannerAgent = new ChatCompletionAgent(
+            kernel: plannerKernel,
+            name: "Planner Email Agent",
+            description: "This Agent knows how to handle Planner emails and can extract information like the task url from them",
+            instructions:
+                "As a task manager for Microsoft Planner, your objective is to examine chat history and determine " +
+                "the most suitable course of action. To accomplish this, review the chat discussions thoroughly and select " +
+                "the relevant tools at your disposal to address the Microsoft Planner task in question. " +
+                "When an action is completed, add the TASK_IS_COMPLETE marker to the response.\"",
+            executionSettings: settings);
+
+        var chat = new AgentsChat(
+            coordinator: coordinator,
+            agents: new[] { teamsHandler, plannerAgent },
+            exitPredicate: (chat, result, turn) =>
+                turn > 1 ||
+                result.Any(
+                    message => message.Role == AuthorRole.Assistant &&
+                    message.Items.OfType<TextContent>().Any(c => c.Text!.Contains("TASK_IS_COMPLETE", StringComparison.InvariantCulture))));
+
+        PrintConversation(await chat.SendMessageAsync(message));
+    }
+
+    /// <summary>
     /// This example demonstrates the chat completion agent's registration in DI/ServiceCollection.
     /// </summary>
     [Fact]
@@ -281,6 +357,7 @@ public class Example79_ChatCompletionAgent : BaseTest
 
             return new ChatCompletionAgent(
                 kernel: kernel,
+                name: "Fitness Trainer",
                 instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",
                 description: "Financial Adviser",
                 executionSettings: new OpenAIPromptExecutionSettings
@@ -378,6 +455,61 @@ public class Example79_ChatCompletionAgent : BaseTest
     }
 
     /// <summary>
+    /// The agents chat.  For demonstration purposes only.
+    /// </summary>
+    public sealed class AgentsChat
+    {
+        public AgentsChat(KernelAgent coordinator, IEnumerable<KernelAgent> agents, Func<IReadOnlyList<ChatMessageContent>, IEnumerable<ChatMessageContent>, int, bool> exitPredicate)
+        {
+            this._coordinator = coordinator;
+            this._agents = agents.ToArray();
+            this._exitCondition = exitPredicate;
+        }
+
+        public async Task<IReadOnlyList<ChatMessageContent>> SendMessageAsync(string message, CancellationToken cancellationToken = default)
+        {
+            var chat = new List<ChatMessageContent>();
+            chat.Add(new ChatMessageContent(AuthorRole.User, message));
+
+            IReadOnlyList<ChatMessageContent> result = new List<ChatMessageContent>();
+
+            var turn = 0;
+
+            do
+            {
+                var agent = await this.GetAgentAsync(chat, cancellationToken);
+
+                result = await agent.InvokeAsync(chat, cancellationToken: cancellationToken);
+
+                chat.AddRange(result);
+
+                turn++;
+            }
+            while (!this._exitCondition(chat, result, turn));
+
+            return chat;
+        }
+
+        private async Task<KernelAgent> GetAgentAsync(List<ChatMessageContent> chat, CancellationToken cancellationToken)
+        {
+            var listOfAgentNames = string.Join(",", this._agents.Select(a => $"name - {a.Name}; description - {a.Description}"));
+
+            var coordinatorChat = new List<ChatMessageContent>(chat);
+            coordinatorChat.Add(new ChatMessageContent(AuthorRole.User, $"List of available agents - {listOfAgentNames}"));
+
+            var result = await this._coordinator.InvokeAsync(coordinatorChat, cancellationToken: cancellationToken);
+
+            var agentName = result.Single().Content;
+
+            return this._agents.Single(a => a.Name == agentName);
+        }
+
+        private readonly KernelAgent _coordinator;
+        private readonly KernelAgent[] _agents;
+        private readonly Func<IReadOnlyList<ChatMessageContent>, IEnumerable<ChatMessageContent>, int, bool> _exitCondition;
+    }
+
+    /// <summary>
     /// The agent decorator for pre/post-processing agent messages. This is for demonstration purposes only.
     /// </summary>
     private sealed class AgentDecorator : KernelAgent
@@ -391,7 +523,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             KernelAgent agent,
             Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? preProcessor = null,
             Func<IReadOnlyList<ChatMessageContent>, Task<IReadOnlyList<ChatMessageContent>>>? postProcessor = null,
-            Func<IAsyncEnumerable<StreamingChatMessageContent>, IAsyncEnumerable<StreamingChatMessageContent>>? streamingPostProcessor = null) : base(agent.Kernel, agent.Description)
+            Func<IAsyncEnumerable<StreamingChatMessageContent>, IAsyncEnumerable<StreamingChatMessageContent>>? streamingPostProcessor = null) : base(agent.Kernel, agent.Name, agent.Description)
         {
             this._agent = agent;
             this._preProcessor = preProcessor;
@@ -448,6 +580,22 @@ public class Example79_ChatCompletionAgent : BaseTest
                 "James" => new ClientDetails { Name = name, Age = 60 },
                 _ => throw new NotSupportedException($"Unknown client '{name}'."),
             };
+        }
+    }
+
+    private sealed class TeamsPlugin
+    {
+        [KernelFunction, Description("Handles Teams newly created message")]
+        public static void HandleNewlyCreatedMessage(string resource)
+        {
+        }
+    }
+
+    private sealed class PlannerPlugin
+    {
+        [KernelFunction, Description("Handles task assignment for MS planner")]
+        public void HandleTaskAssignment(string taskUri)
+        {
         }
     }
 
