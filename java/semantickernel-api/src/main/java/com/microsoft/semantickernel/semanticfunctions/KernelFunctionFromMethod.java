@@ -340,6 +340,18 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         String variableName = getGetVariableName(parameter);
 
         ContextVariable<?> arg = context == null ? null : context.get(variableName);
+
+        // If there is 1 argument use "input" or the only argument
+        if (arg == null && method.getParameters().length == 1) {
+            if (context != null) {
+                if (context.containsKey(KernelFunctionArguments.MAIN_KEY)) {
+                    arg = context.get(KernelFunctionArguments.MAIN_KEY);
+                } else if (context.size() == 1) {
+                    arg = context.values().iterator().next();
+                }
+            }
+        }
+
         if (arg == null) {
             KernelFunctionParameter annotation = parameter
                 .getAnnotation(KernelFunctionParameter.class);
@@ -451,6 +463,13 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                         + arg);
             }
         }
+
+        if (value == null && type.equals(String.class)) {
+            ContextVariableTypeConverter c = arg.getType().getConverter();
+
+            value = c.toPromptString(arg.getValue());
+        }
+
         return value;
     }
 

@@ -208,7 +208,6 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
          */
         public Builder() {
             variables = new HashMap<>();
-            this.variables.put(MAIN_KEY, ContextVariable.of(""));
         }
 
         /**
