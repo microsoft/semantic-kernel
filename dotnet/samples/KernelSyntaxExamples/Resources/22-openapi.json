@@ -401,7 +401,7 @@
     },
     "/keys/{key-name}/encrypt": {
       "post": {
-        "description": "Encrypts an arbitrary sequence of bytes using an encryption key that is stored in a key vault.  For details, see: https://docs.microsoft.com/rest/api/keyvault/encrypt/encrypt.",
+        "description": "Encrypts an arbitrary sequence of bytes using an encryption key that is stored in a key vault.  For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/keys/encrypt/encrypt.",
         "operationId": "Encrypt",
         "parameters": [
           {
