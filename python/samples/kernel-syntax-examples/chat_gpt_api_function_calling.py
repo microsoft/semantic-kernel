@@ -168,17 +168,17 @@ async def chat() -> bool:
 
     stream = True
     if stream:
-        # await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
-        answer = kernel.invoke_stream(
-            chat_function,
-            user_input=user_input,
-            chat_history=history,
-        )
-        print("Mosscap:> ", end="")
-        async for message in answer:
-            print(str(message[0]), end="")
-        print("\n")
-        return True
+        await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
+        # answer = kernel.invoke_stream(
+        #     chat_function,
+        #     user_input=user_input,
+        #     chat_history=history,
+        # )
+        # print("Mosscap:> ", end="")
+        # async for message in answer:
+        #     print(str(message[0]), end="")
+        # print("\n")
+        # return True
     else:
         result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
 
