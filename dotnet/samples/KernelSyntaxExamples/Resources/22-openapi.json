@@ -331,7 +331,7 @@
     },
     "/keys/{key-name}/decrypt": {
       "post": {
-        "description": "Decrypts a single block of encrypted data.  For details, see: https://docs.microsoft.com/rest/api/keyvault/decrypt/decrypt.",
+        "description": "Decrypts a single block of encrypted data.  For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/keys/decrypt/decrypt.",
         "operationId": "Decrypt",
         "parameters": [
           {
