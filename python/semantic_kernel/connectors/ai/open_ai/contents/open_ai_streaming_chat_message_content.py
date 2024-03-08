@@ -1,12 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
+import json
 from copy import copy
 from typing import List, Optional
+from xml.etree.ElementTree import Element
 
+from defusedxml import ElementTree
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents import StreamingChatMessageContent
+from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.exceptions import ContentAdditionException
 
 
@@ -80,3 +84,40 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
             function_call=fc,
             tool_calls=tc,
         )
+
+    def to_prompt(self, root_key: str) -> str:
+        """Convert the OpenAIChatMessageContent to a prompt.
+
+        Returns:
+            str - The prompt from the ChatMessageContent.
+        """
+
+        root = Element(root_key)
+        if self.role:
+            root.set("role", self.role.value)
+        root.set("metadata", json.dumps(self.metadata))
+        if self.function_call:
+            root.set("function_call", self.function_call.model_dump_json(exclude_none=True))
+        if self.tool_calls:
+            root.set("tool_calls", "|".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
+        root.text = self.content or ""
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
+
+    @classmethod
+    def from_element(cls, element: Element) -> "StreamingChatMessageContent":
+        """Create a new instance of OpenAIChatMessageContent from a prompt.
+
+        Args:
+            prompt: str - The prompt to create the ChatMessageContent from.
+
+        Returns:
+            ChatMessageContent - The new instance of ChatMessageContent.
+        """
+        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        if metadata := element.get("metadata"):
+            args["metadata"] = json.loads(metadata)
+        if function_call := element.get("function_call"):
+            args["function_call"] = FunctionCall.model_validate_json(function_call)
+        if tool_calls := element.get("tool_calls"):
+            args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split("|")]
+        return cls(**args)

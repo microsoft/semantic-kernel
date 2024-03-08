@@ -728,7 +728,7 @@ class Kernel(KernelBaseModel):
             ValueError: If no service is found that matches the type.
 
         """
-        if not service_id:
+        if not service_id or service_id == "default":
             if not type:
                 if default_service := self.services.get("default"):
                     return default_service

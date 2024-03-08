@@ -17,11 +17,15 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.settings import (
+    azure_aisearch_settings_from_dot_env_as_dict,
+    azure_openai_settings_from_dot_env_as_dict,
+)
 
 kernel = sk.Kernel()
 
 # Load Azure OpenAI Settings
-deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+aoai_settings = azure_openai_settings_from_dot_env_as_dict()
 
 # For example, AI Search index may contain the following document:
 
@@ -29,7 +33,7 @@ deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
+azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
 
 # Our example index has fields "source_title", "source_text", "source_url", and "source_file".
 # Add fields mapping to the settings to indicate which fields to use for the title, content, URL, and file path.
@@ -49,11 +53,8 @@ req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body
 # When using data, set use_extensions=True and use the 2023-12-01-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
     service_id="chat-gpt",
-    deployment_name=deployment,
-    api_key=api_key,
-    endpoint=endpoint,
-    api_version="2023-12-01-preview",
     use_extensions=True,
+    **aoai_settings,
 )
 kernel.add_service(chat_service)
 
