@@ -356,7 +356,8 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         Assert.NotEmpty(geminiMessage.ToolCalls);
 
         // Chat history should contain the tool call from first invocation
-        Assert.Contains(chatHistory, c => c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool);
+        Assert.Contains(chatHistory, c =>
+            c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool && gm.CalledTool is not null);
     }
 
     private static ChatHistory CreateSampleChatHistory()
