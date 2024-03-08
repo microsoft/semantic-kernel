@@ -611,7 +611,7 @@
         "summary": "Get secret"
       },
       "put": {
-        "description": "Sets a secret in a specified key vault. This operation adds a secret to the Azure Key Vault. If the named secret already exists, Azure Key Vault creates a new version of that secret. This operation requires the secrets/set permission. For details, see: https://docs.microsoft.com/rest/api/keyvault/setsecret/setsecret.",
+        "description": "Sets a secret in a specified key vault. This operation adds a secret to the Azure Key Vault. If the named secret already exists, Azure Key Vault creates a new version of that secret. This operation requires the secrets/set permission. For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/set-secret/set-secret.",
         "operationId": "SetSecret",
         "parameters": [
           {
