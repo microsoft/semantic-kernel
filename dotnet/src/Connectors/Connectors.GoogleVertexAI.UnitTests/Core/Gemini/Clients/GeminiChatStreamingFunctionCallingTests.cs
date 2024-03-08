@@ -308,6 +308,66 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
                 func => Assert.Equal(this._timePluginNow.FullyQualifiedName, func.Name)));
     }
 
+    [Fact]
+    public async Task IfAutoInvokeMaximumUseAttemptsReachedShouldNotPassToolsToSubsequentRequestsAsync()
+    {
+        // Arrange
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContent);
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
+        executionSettings.ToolCallBehavior.MaximumUseAttempts = 1;
+        executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts = 1;
+
+        // Act
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
+            .ToListAsync();
+
+        // Assert
+        var requests = handlerStub.RequestContents
+            .Select(bytes => JsonSerializer.Deserialize<GeminiRequest>(bytes)).ToList();
+        Assert.Collection(requests,
+            item => Assert.NotNull(item!.Tools),
+            item => Assert.Null(item!.Tools));
+    }
+
+    [Fact]
+    public async Task IfAutoInvokeMaximumAutoInvokeAttemptsReachedShouldStopInvokingAndReturnToolCallsAsync()
+    {
+        // Arrange
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
+        executionSettings.ToolCallBehavior.MaximumUseAttempts = 100;
+        executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts = 1;
+
+        // Act
+        var messages =
+            await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions)
+                .ToListAsync();
+
+        // Assert
+        var geminiMessage = messages[0] as GeminiStreamingChatMessageContent;
+        Assert.NotNull(geminiMessage);
+        Assert.NotNull(geminiMessage.ToolCalls);
+        Assert.NotEmpty(geminiMessage.ToolCalls);
+    }
+
     private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();
