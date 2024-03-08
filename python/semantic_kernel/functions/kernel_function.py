@@ -122,7 +122,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: Optional[KernelArguments] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> "FunctionResult":
         """Invoke the function with the given arguments.
 
@@ -149,7 +149,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: Optional[KernelArguments] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> "FunctionResult":
         """Invoke the function with the given arguments.
 
@@ -184,7 +184,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: Optional[KernelArguments] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
         """
         Invoke a stream async function with the given arguments.

@@ -2,21 +2,15 @@
 
 import json
 import logging
-from typing import Any, AsyncIterable, Dict, List, Optional
+from typing import Any, AsyncIterable, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
-    OllamaChatPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -45,7 +39,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> List[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -78,7 +72,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> AsyncIterable[List[StreamingChatMessageContent]]:
         """
         Streams a text completion using a Ollama model.

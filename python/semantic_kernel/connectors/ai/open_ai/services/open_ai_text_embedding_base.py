@@ -1,25 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIHandler,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
-    async def generate_embeddings(
-        self, texts: List[str], batch_size: Optional[int] = None, **kwargs: Dict[str, Any]
-    ) -> ndarray:
+    async def generate_embeddings(self, texts: List[str], batch_size: Optional[int] = None, **kwargs: Any) -> ndarray:
         """Generates embeddings for the given texts.
 
         Arguments:
