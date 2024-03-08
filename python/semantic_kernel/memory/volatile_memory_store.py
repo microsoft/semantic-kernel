@@ -6,6 +6,7 @@ from typing import Dict, List, Tuple
 
 from numpy import array, linalg, ndarray
 
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -77,7 +78,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             str -- The unique database key of the record.
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         record._key = record._id
         self._store[collection_name][record._key] = record
@@ -94,7 +95,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             List[str] -- The unique database keys of the records.
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         for record in records:
             record._key = record._id
@@ -113,10 +114,10 @@ class VolatileMemoryStore(MemoryStoreBase):
             MemoryRecord -- The record.
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         if key not in self._store[collection_name]:
-            raise Exception(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
 
         result = self._store[collection_name][key]
 
@@ -140,7 +141,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             List[MemoryRecord] -- The records.
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         results = [self._store[collection_name][key] for key in keys if key in self._store[collection_name]]
 
@@ -162,10 +163,10 @@ class VolatileMemoryStore(MemoryStoreBase):
             None
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         if key not in self._store[collection_name]:
-            raise Exception(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
 
         del self._store[collection_name][key]
 
@@ -180,7 +181,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             None
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         for key in keys:
             if key in self._store[collection_name]:

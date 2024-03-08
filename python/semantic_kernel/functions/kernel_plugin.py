@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
-from typing import TYPE_CHECKING, Dict, List, Optional
-
-from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -12,7 +10,9 @@ else:
 
 from pydantic import Field, StringConstraints
 
+from semantic_kernel.exceptions import FunctionInvalidNameError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -36,7 +36,10 @@ class KernelPlugin(KernelBaseModel):
     functions: Optional[Dict[str, "KernelFunction"]] = Field(default_factory=dict)
 
     def __init__(
-        self, name: str, description: Optional[str] = None, functions: Optional[List["KernelFunction"]] = None
+        self,
+        name: str,
+        description: Optional[str] = None,
+        functions: Optional[Union[List["KernelFunction"], Dict[str, "KernelFunction"]]] = None,
     ):
         """
         Initialize a new instance of the KernelPlugin class
@@ -51,10 +54,13 @@ class KernelPlugin(KernelBaseModel):
         """
         functions_dict = {}
         if functions is not None:
-            for function in functions:
-                if function.name in functions_dict:
-                    raise ValueError(f"Duplicate function name detected: {function.name}")
-                functions_dict[function.name] = function
+            if isinstance(functions, list):
+                for function in functions:
+                    if function.name in functions_dict:
+                        raise FunctionInvalidNameError(f"Duplicate function name detected: {function.name}")
+                    functions_dict[function.name] = function
+            else:
+                functions_dict = functions
         super().__init__(name=name, description=description, functions=functions_dict)
 
     def __len__(self) -> int:

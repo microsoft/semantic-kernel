@@ -57,7 +57,11 @@ async def main():
     )
 
     question = "What is Semantic Kernel?"
-    qna = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    qna = kernel.create_function_from_prompt(
+        function_name="qna",
+        plugin_name="WebSearch",
+        prompt_template_config=prompt_template_config,
+    )
     result = await qna.invoke(kernel, question=question, num_results=10, offset=0)
 
     print(f"Question: {question}\n")

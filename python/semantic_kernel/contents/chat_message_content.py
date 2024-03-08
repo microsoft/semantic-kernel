@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+import json
 from typing import Optional
-from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
+
+from defusedxml import ElementTree
 
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.kernel_content import KernelContent
@@ -43,8 +45,9 @@ class ChatMessageContent(KernelContent):
 
         root = Element(root_key)
         root.set("role", self.role.value)
+        root.set("metadata", json.dumps(self.metadata))
         root.text = self.content or ""
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode")
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
     @classmethod
     def from_element(cls, element: Element) -> "ChatMessageContent":
@@ -57,4 +60,6 @@ class ChatMessageContent(KernelContent):
             ChatMessageContent - The new instance of ChatMessageContent.
         """
         args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        if metadata := element.get("metadata"):
+            args["metadata"] = json.loads(metadata)
         return cls(**args)

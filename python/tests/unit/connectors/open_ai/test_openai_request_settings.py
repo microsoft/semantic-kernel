@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSources,
@@ -14,6 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 
 def test_default_openai_chat_prompt_execution_settings():
@@ -75,13 +75,13 @@ def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_sett
 
 
 def test_openai_text_prompt_execution_settings_validation():
-    with pytest.raises(ValidationError, match="best_of must be greater than number_of_responses"):
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
         OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=2)
 
 
 def test_openai_text_prompt_execution_settings_validation_manual():
     text_oai = OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=1)
-    with pytest.raises(ValidationError, match="best_of must be greater than number_of_responses"):
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
         text_oai.number_of_responses = 2
 
 

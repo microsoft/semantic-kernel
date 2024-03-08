@@ -1,17 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import logging
-import xml.etree.ElementTree as ET
 from typing import Any, Dict, Final, Iterator, List, Optional, Tuple, Type, Union
+
+import defusedxml.ElementTree as ET
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
 ROOT_KEY_MESSAGE: Final[str] = "message"
+START_TAG: Final[str] = f"<{ROOT_KEY_MESSAGE}"
+END_TAG: Final[str] = f"</{ROOT_KEY_MESSAGE}>"
+LEN_END_TAG: Final[int] = len(END_TAG)
 
 
 class ChatHistory(KernelBaseModel):
@@ -75,7 +80,7 @@ class ChatHistory(KernelBaseModel):
         """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content))
 
-    def add_tool_message(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> None:
+    def add_tool_message(self, content: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content), metadata=metadata)
 
@@ -96,11 +101,11 @@ class ChatHistory(KernelBaseModel):
             encoding (Optional[str]): The encoding of the message. Required if 'message' is a dict.
             metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
         """
-        if isinstance(message, ChatMessageContent):
+        if isinstance(message, ChatMessageContent) or isinstance(message, StreamingChatMessageContent):
             self.messages.append(message)
             return
         if "role" not in message:
-            raise ValueError(f"Dictionary must contain at least the role. Got: {message}")
+            raise ContentInitializationError(f"Dictionary must contain at least the role. Got: {message}")
         if encoding:
             message["encoding"] = encoding
         if metadata:
@@ -202,31 +207,19 @@ class ChatHistory(KernelBaseModel):
         if not prompt:
             return None, None
         prompt = prompt.strip()
-        start = prompt.find(f"<{ROOT_KEY_MESSAGE}")
-        end_tag = f"</{ROOT_KEY_MESSAGE}>"
-        single_item_end_tag = "/>"
-        end = prompt.find(end_tag)
-        end_of_tag = end + len(end_tag)
-        if end == -1:
-            end = prompt.find(single_item_end_tag)
-            end_of_tag = end + len(single_item_end_tag)
+        start = prompt.find(START_TAG)
+        end = prompt.find(END_TAG)
+        role = ChatRole.SYSTEM if first else ChatRole.USER
         if start == -1 or end == -1:
-            return chat_message_content_type(role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt), None
+            return chat_message_content_type(role=role, content=prompt), None
         if start > 0 and end > 0:
-            return (
-                chat_message_content_type(role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt[:start]),
-                prompt[start:],
-            )
+            return chat_message_content_type(role=role, content=prompt[:start]), prompt[start:]
+        end_of_tag = end + LEN_END_TAG
         try:
             return chat_message_content_type.from_element(ET.fromstring(prompt[start:end_of_tag])), prompt[end_of_tag:]
-        except ET.ParseError:
-            logger.warning(f"Unable to parse prompt: {prompt[start:end_of_tag]}, returning as content")
-            return (
-                chat_message_content_type(
-                    role=ChatRole.SYSTEM if first else ChatRole.USER, content=prompt[start:end_of_tag]
-                ),
-                prompt[end_of_tag:],
-            )
+        except Exception as exc:
+            logger.warning(f"Unable to parse prompt: {prompt[start:end_of_tag]}, returning as content", exc_info=exc)
+            return chat_message_content_type(role=role, content=prompt[start:end_of_tag]), prompt[end_of_tag:]
 
     def serialize(self) -> str:
         """
@@ -240,8 +233,8 @@ class ChatHistory(KernelBaseModel):
         """
         try:
             return self.model_dump_json(indent=4)
-        except TypeError as e:
-            raise ValueError(f"Unable to serialize ChatHistory to JSON: {e}")
+        except Exception as e:
+            raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}")
 
     @classmethod
     def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
@@ -261,8 +254,8 @@ class ChatHistory(KernelBaseModel):
         """
         try:
             return ChatHistory.model_validate_json(chat_history_json)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON format: {e}")
+        except Exception as e:
+            raise ContentInitializationError(f"Invalid JSON format: {e}")
 
     def store_chat_history_to_file(chat_history: "ChatHistory", file_path: str) -> None:
         """
