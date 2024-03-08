@@ -23,19 +23,15 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="embeddingModelId">Embeddings generation model id</param>
-    /// <param name="httpRequestFactory">Request factory for gemini rest api or gemini vertex ai</param>
     /// <param name="apiKey">Api key for GoogleAI endpoint</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GoogleAIEmbeddingClient(
         HttpClient httpClient,
         string embeddingModelId,
-        IHttpRequestFactory httpRequestFactory,
         string apiKey,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
-            httpRequestFactory:
-            httpRequestFactory,
             logger: logger)
     {
         Verify.NotNullOrWhiteSpace(embeddingModelId);
@@ -58,7 +54,7 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         Verify.NotNullOrEmpty(data);
 
         var geminiRequest = this.GetEmbeddingRequest(data);
-        using var httpRequestMessage = this.HttpRequestFactory.CreatePost(geminiRequest, this._embeddingEndpoint);
+        using var httpRequestMessage = this.CreateHttpRequest(geminiRequest, this._embeddingEndpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);

@@ -2,10 +2,11 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
-using Moq;
+using Microsoft.SemanticKernel.Http;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Clients;
@@ -39,33 +40,83 @@ public sealed class GeminiCountingTokensTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldCallCreatePostRequestAsync()
+    public async Task ItCreatesPostRequestIfBearerIsSpecifiedWithAuthorizationHeaderAsync()
     {
         // Arrange
-        var requestFactoryMock = new Mock<IHttpRequestFactory>();
-        requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
-#pragma warning disable CA2000
-            .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
-#pragma warning restore CA2000
-        var sut = this.CreateTokenCounterClient(httpRequestFactory: requestFactoryMock.Object);
+        string bearerKey = "fake-key";
+        var client = this.CreateTokenCounterClient(bearerKey: bearerKey);
 
         // Act
-        await sut.CountTokensAsync("fake-text");
+        await client.CountTokensAsync("fake-text");
 
         // Assert
-        requestFactoryMock.VerifyAll();
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders.Authorization);
+        Assert.Equal($"Bearer {bearerKey}", this._messageHandlerStub.RequestHeaders.Authorization.ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateTokenCounterClient();
+
+        // Act
+        await client.CountTokensAsync("fake-text");
+
+        // Assert
+        Assert.Equal(HttpMethod.Post, this._messageHandlerStub.Method);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithValidUserAgentAsync()
+    {
+        // Arrange
+        var client = this.CreateTokenCounterClient();
+
+        // Act
+        await client.CountTokensAsync("fake-text");
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
+    {
+        // Arrange
+        var client = this.CreateTokenCounterClient();
+        var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase));
+
+        // Act
+        await client.CountTokensAsync("fake-text");
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
+        Assert.NotNull(header);
+        Assert.Equal(expectedVersion, header);
     }
 
     private GeminiTokenCounterClient CreateTokenCounterClient(
         string modelId = "fake-model",
-        IHttpRequestFactory? httpRequestFactory = null)
+        string? bearerKey = null)
     {
-        var client = new GeminiTokenCounterClient(
+        if (bearerKey is not null)
+        {
+            return new GeminiTokenCounterClient(
+                httpClient: this._httpClient,
+                modelId: modelId,
+                bearerKey: bearerKey,
+                location: "fake-location",
+                projectId: "fake-project-id");
+        }
+
+        return new GeminiTokenCounterClient(
             httpClient: this._httpClient,
             modelId: modelId,
-            httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
             apiKey: "fake-key");
-        return client;
     }
 
     public void Dispose()

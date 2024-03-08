@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,20 +14,31 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 internal abstract class ClientBase
 {
-    protected IHttpRequestFactory HttpRequestFactory { get; }
+    private readonly string? _bearerKey;
+
     protected HttpClient HttpClient { get; }
     protected ILogger Logger { get; }
 
     protected ClientBase(
         HttpClient httpClient,
-        IHttpRequestFactory httpRequestFactory,
+        ILogger? logger,
+        string bearerKey)
+    {
+        Verify.NotNull(httpClient);
+        Verify.NotNullOrWhiteSpace(bearerKey);
+
+        this.HttpClient = httpClient;
+        this.Logger = logger ?? NullLogger.Instance;
+        this._bearerKey = bearerKey;
+    }
+
+    protected ClientBase(
+        HttpClient httpClient,
         ILogger? logger)
     {
         Verify.NotNull(httpClient);
-        Verify.NotNull(httpRequestFactory);
 
         this.HttpClient = httpClient;
-        this.HttpRequestFactory = httpRequestFactory;
         this.Logger = logger ?? NullLogger.Instance;
     }
 
@@ -77,5 +89,21 @@ internal abstract class ClientBase
                 Data = { { "ResponseData", body } },
             };
         }
+    }
+
+    protected HttpRequestMessage CreateHttpRequest(object requestData, Uri endpoint)
+    {
+        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
+            HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase)));
+
+        if (this._bearerKey is not null)
+        {
+            httpRequestMessage.Headers.Authorization =
+                new AuthenticationHeaderValue("Bearer", this._bearerKey);
+        }
+
+        return httpRequestMessage;
     }
 }

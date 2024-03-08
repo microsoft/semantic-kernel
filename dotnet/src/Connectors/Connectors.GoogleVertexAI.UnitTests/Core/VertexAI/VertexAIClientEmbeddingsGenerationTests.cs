@@ -3,11 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
-using Moq;
+using Microsoft.SemanticKernel.Http;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.VertexAI;
@@ -25,24 +26,6 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
             File.ReadAllText(TestDataFilePath));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
-    }
-
-    [Fact]
-    public async Task ShouldCallCreatePostRequestAsync()
-    {
-        // Arrange
-        var requestFactoryMock = new Mock<IHttpRequestFactory>();
-        requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
-#pragma warning disable CA2000
-            .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
-#pragma warning restore CA2000
-        var sut = this.CreateEmbeddingsClient(httpRequestFactory: requestFactoryMock.Object);
-
-        // Act
-        await sut.GenerateEmbeddingsAsync(["text1", "text2"]);
-
-        // Assert
-        requestFactoryMock.VerifyAll();
     }
 
     [Fact]
@@ -68,14 +51,78 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
             values => Assert.Equal(testDataResponse.Predictions[1].Embeddings.Values, values));
     }
 
+    [Fact]
+    public async Task ItCreatesPostRequestWithAuthorizationHeaderAsync()
+    {
+        // Arrange
+        string bearerKey = "sample-key";
+        var client = this.CreateEmbeddingsClient(bearerKey: bearerKey);
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders.Authorization);
+        Assert.Equal($"Bearer {bearerKey}", this._messageHandlerStub.RequestHeaders.Authorization.ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.Equal(HttpMethod.Post, this._messageHandlerStub.Method);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithValidUserAgentAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        IList<string> data = ["sample data"];
+        var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase));
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
+        Assert.NotNull(header);
+        Assert.Equal(expectedVersion, header);
+    }
+
     private VertexAIEmbeddingClient CreateEmbeddingsClient(
         string modelId = "fake-model",
-        IHttpRequestFactory? httpRequestFactory = null)
+        string? bearerKey = "fake-key")
     {
         var client = new VertexAIEmbeddingClient(
             httpClient: this._httpClient,
             embeddingModelId: modelId,
-            httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
+            bearerKey: bearerKey ?? "fake-key",
             location: "us-central1",
             projectId: "fake-project-id");
         return client;

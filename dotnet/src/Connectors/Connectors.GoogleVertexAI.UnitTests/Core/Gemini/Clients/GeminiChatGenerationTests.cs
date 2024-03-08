@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
-using Moq;
+using Microsoft.SemanticKernel.Http;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini.Clients;
@@ -317,21 +317,67 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldCallCreatePostRequestAsync()
+    public async Task ItCreatesPostRequestIfBearerIsSpecifiedWithAuthorizationHeaderAsync()
     {
         // Arrange
-        var requestFactoryMock = new Mock<IHttpRequestFactory>();
-        requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
-#pragma warning disable CA2000
-            .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
-#pragma warning restore CA2000
-        var sut = this.CreateChatCompletionClient(httpRequestFactory: requestFactoryMock.Object);
+        string bearerKey = "fake-key";
+        var client = this.CreateChatCompletionClient(bearerKey: bearerKey);
+        var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await sut.GenerateChatMessageAsync(CreateSampleChatHistory());
+        await client.GenerateChatMessageAsync(chatHistory);
 
         // Assert
-        requestFactoryMock.VerifyAll();
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders.Authorization);
+        Assert.Equal($"Bearer {bearerKey}", this._messageHandlerStub.RequestHeaders.Authorization.ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.Equal(HttpMethod.Post, this._messageHandlerStub.Method);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithValidUserAgentAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+        var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase));
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
+        Assert.NotNull(header);
+        Assert.Equal(expectedVersion, header);
     }
 
     private static ChatHistory CreateSampleChatHistory()
@@ -345,13 +391,22 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
     private GeminiChatCompletionClient CreateChatCompletionClient(
         string modelId = "fake-model",
-        HttpClient? httpClient = null,
-        IHttpRequestFactory? httpRequestFactory = null)
+        string? bearerKey = null,
+        HttpClient? httpClient = null)
     {
+        if (bearerKey is not null)
+        {
+            return new GeminiChatCompletionClient(
+                httpClient: httpClient ?? this._httpClient,
+                modelId: modelId,
+                bearerKey: bearerKey,
+                location: "fake-location",
+                projectId: "fake-project-id");
+        }
+
         return new GeminiChatCompletionClient(
             httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
-            httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
             apiKey: "fake-key");
     }
 

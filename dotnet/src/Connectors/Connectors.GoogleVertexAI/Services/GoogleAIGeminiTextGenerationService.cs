@@ -41,7 +41,6 @@ public sealed class GoogleAIGeminiTextGenerationService : ITextGenerationService
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new GoogleAIHttpRequestFactory(),
             apiKey: apiKey,
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiTextGenerationService))));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);

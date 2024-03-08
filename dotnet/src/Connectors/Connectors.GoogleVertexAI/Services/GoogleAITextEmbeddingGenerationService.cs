@@ -42,7 +42,6 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             embeddingModelId: model,
-            httpRequestFactory: new GoogleAIHttpRequestFactory(),
             apiKey: apiKey,
             logger: loggerFactory?.CreateLogger(typeof(GoogleAITextEmbeddingGenerationService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);

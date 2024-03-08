@@ -383,13 +383,11 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
 
     private GeminiChatCompletionClient CreateChatCompletionClient(
         string modelId = "fake-model",
-        HttpClient? httpClient = null,
-        IHttpRequestFactory? httpRequestFactory = null)
+        HttpClient? httpClient = null)
     {
         return new GeminiChatCompletionClient(
             httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
-            httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
             apiKey: "fake-key");
     }
 
