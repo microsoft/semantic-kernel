@@ -18,12 +18,7 @@ public static class AudioStreamContentExtensions
     {
         if (content is null) { throw new ArgumentNullException(nameof(content)); }
 
-        byte[] bytes;
-        using (var binaryReader = new BinaryReader(content.Stream))
-        {
-            bytes = binaryReader.ReadBytes((int)content.Stream.Length);
-        }
-
-        return new AudioContent(bytes);
+        using var binaryReader = new BinaryReader(content.Stream);
+        return new AudioContent(binaryReader.ReadBytes((int)content.Stream.Length));
     }
 }
