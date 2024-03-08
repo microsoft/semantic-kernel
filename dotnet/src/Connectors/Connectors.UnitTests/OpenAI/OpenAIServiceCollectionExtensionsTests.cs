@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.TextClassification;
 using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
@@ -649,6 +650,36 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 
         Assert.NotNull(service);
         Assert.True(service is OpenAIAudioToTextService);
+    }
+
+    [Fact]
+    public void KernelBuilderAddOpenAITextClassificationAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.AddOpenAITextClassification("model-id", "api-key");
+        var kernel = builder.Build();
+
+        // Assert
+        var service = kernel.GetRequiredService<ITextClassificationService>();
+        Assert.IsType<OpenAITextClassificationService>(service);
+    }
+
+    [Fact]
+    public void ServiceCollectionAddOpenAITextClassificationAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.Services.AddOpenAITextClassification("model-id", "api-key");
+        var kernel = builder.Build();
+
+        // Assert
+        var service = kernel.GetRequiredService<ITextClassificationService>();
+        Assert.IsType<OpenAITextClassificationService>(service);
     }
 
     public void Dispose()

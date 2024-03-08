@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.UnitTests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>

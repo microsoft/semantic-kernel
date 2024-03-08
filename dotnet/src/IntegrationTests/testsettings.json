@@ -44,6 +44,11 @@
     "Endpoint": "",
     "ApiKey": ""
   },
+  "OpenAIModeration": {
+    "ServiceId": "moderation",
+    "ModelId": "text-moderation-latest",
+    "ApiKey": ""
+  },
   "HuggingFace": {
     "ApiKey": ""
   },
