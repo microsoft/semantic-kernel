@@ -49,6 +49,9 @@ internal abstract class ClientCore
     /// </remarks>
     private const int MaxInflightAutoInvokes = 5;
 
+    /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
+    private static readonly ChatCompletionsFunctionToolDefinition s_nonInvocableFunctionTool = new() { Name = "NonInvocableTool" };
+
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
@@ -424,19 +427,37 @@ internal abstract class ClientCore
                 }
             }
 
-            // Respect the tool's maximum use attempts and maximum auto-invoke attempts.
+            // Update tool use information for the next go-around based on having completed another iteration.
             Debug.Assert(chatExecutionSettings.ToolCallBehavior is not null);
+
+            // Set the tool choice to none. If we end up wanting to use tools, we'll reset it to the desired value.
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+            chatOptions.Tools.Clear();
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
-                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
                 }
             }
+            else
+            {
+                // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
+                // what functions are available in the kernel.
+                chatExecutionSettings.ToolCallBehavior.ConfigureOptions(kernel, chatOptions);
+            }
 
+            // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
+            // if we don't send any tools in subsequent requests, even if we say not to use any.
+            if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
+            {
+                Debug.Assert(chatOptions.Tools.Count == 0);
+                chatOptions.Tools.Add(s_nonInvocableFunctionTool);
+            }
+
+            // Disable auto invocation if we've exceeded the allowed limit.
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
@@ -618,19 +639,37 @@ internal abstract class ClientCore
                 }
             }
 
-            // Respect the tool's maximum use attempts and maximum auto-invoke attempts.
+            // Update tool use information for the next go-around based on having completed another iteration.
             Debug.Assert(chatExecutionSettings.ToolCallBehavior is not null);
+
+            // Set the tool choice to none. If we end up wanting to use tools, we'll reset it to the desired value.
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+            chatOptions.Tools.Clear();
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
-                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
                 }
             }
+            else
+            {
+                // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
+                // what functions are available in the kernel.
+                chatExecutionSettings.ToolCallBehavior.ConfigureOptions(kernel, chatOptions);
+            }
 
+            // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
+            // if we don't send any tools in subsequent requests, even if we say not to use any.
+            if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
+            {
+                Debug.Assert(chatOptions.Tools.Count == 0);
+                chatOptions.Tools.Add(s_nonInvocableFunctionTool);
+            }
+
+            // Disable auto invocation if we've exceeded the allowed limit.
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
