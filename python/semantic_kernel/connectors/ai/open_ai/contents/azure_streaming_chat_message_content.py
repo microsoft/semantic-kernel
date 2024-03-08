@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from copy import copy
 from typing import Optional
 
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
@@ -52,18 +51,19 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
         if self.role and other.role and self.role != other.role:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
         fc = (self.function_call + other.function_call) if self.function_call else other.function_call
+        tc = {}
         if self.tool_calls:
+            tc = {t.id: t for t in self.tool_calls}
+            last_tc_id = list(tc.keys())[-1]
             if other.tool_calls:
-                tc = copy(self.tool_calls)
                 for new_tool in other.tool_calls:
-                    if new_tool.index >= len(self.tool_calls):
-                        tc.append(new_tool)
+                    if new_tool.id is None or new_tool.id == last_tc_id:
+                        tc[last_tc_id] += new_tool
                     else:
-                        tc[new_tool.index] += new_tool
-            else:
-                tc = copy(self.tool_calls)
-        else:
-            tc = copy(other.tool_calls)
+                        tc[new_tool.id] = new_tool
+        elif other.tool_calls:
+            tc = {t.id: t for t in other.tool_calls}
+        tc_list = list(tc.values())
 
         return AzureStreamingChatMessageContent(
             choice_index=self.choice_index,
@@ -75,6 +75,6 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
             function_call=fc,
-            tool_calls=tc,
+            tool_calls=tc_list,
             tool_message=(self.tool_message or "") + (other.tool_message or ""),
         )

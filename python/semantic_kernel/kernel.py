@@ -211,7 +211,7 @@ class Kernel(KernelBaseModel):
 
             async for stream_message in stream_function.invoke_stream(self, arguments):
                 if isinstance(stream_message, FunctionResult):
-                    exception = stream_message.metadata.get("exception", None)
+                    exception = stream_message.metadata.get("error", None)
                     if exception:
                         break
                 function_result.append(stream_message)

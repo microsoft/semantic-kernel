@@ -114,9 +114,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         msg = super()._chat_message_content_to_dict(message)
         if message.role == "assistant":
             if tool_calls := getattr(message, "tool_calls", None):
-                msg["tool_calls"] = tool_calls
+                msg["tool_calls"] = [tool_call.model_dump() for tool_call in tool_calls]
             if function_call := getattr(message, "function_call", None):
-                msg["function_call"] = function_call
+                msg["function_call"] = function_call.model_dump_json()
         if message.role == "tool":
             if message.metadata and "tool_call_id" in message.metadata:
                 msg["tool_call_id"] = message.metadata["tool_call_id"]
@@ -261,10 +261,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             return None
         return [
             ToolCall(
-                index=getattr(tool, "index", None),
                 id=tool.id,
                 type=tool.type,
-                function=FunctionCall(name=tool.function.name, arguments=tool.function.arguments, id=tool.id),
+                function=FunctionCall(name=tool.function.name, arguments=tool.function.arguments),
             )
             for tool in content.tool_calls
         ]

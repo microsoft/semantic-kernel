@@ -5,10 +5,10 @@ from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 
 
 @fixture(scope="module")
-def fc():
-    return FunctionCall(name="Test-Function", arguments="""{"input": "world"}""", id="1234")
+def function_call():
+    return FunctionCall(name="Test-Function", arguments='{"input": "world"}')
 
 
 @fixture(scope="module")
-def tc(fc: FunctionCall):
-    return ToolCall(index=1, id="1234", function=fc)
+def tool_call(function_call: FunctionCall):
+    return ToolCall(id="1234", function=function_call)

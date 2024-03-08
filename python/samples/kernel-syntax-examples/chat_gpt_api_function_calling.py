@@ -55,6 +55,11 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
 kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 
+chat_function = kernel.create_function_from_prompt(
+    prompt="{{$chat_history}}{{$user_input}}",
+    plugin_name="ChatBot",
+    function_name="Chat",
+)
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
@@ -81,14 +86,7 @@ history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-arguments = KernelArguments()
-
-chat_function = kernel.create_function_from_prompt(
-    prompt="{{$chat_history}}{{$user_input}}",
-    plugin_name="ChatBot",
-    function_name="Chat",
-    prompt_execution_settings={"chat": execution_settings},
-)
+arguments = KernelArguments(settings=execution_settings)
 
 
 def print_tool_calls(message: Union[OpenAIChatMessageContent, OpenAIStreamingChatMessageContent]) -> None:
@@ -126,7 +124,7 @@ async def handle_streaming(
 
     print("Mosscap:> ", end="")
     streamed_chunks: List[OpenAIStreamingChatMessageContent] = []
-    tool_call_ids_by_index: Dict[int, Any] = {}
+    tool_call_ids_by_index: Dict[str, Any] = {}
 
     async for message in response:
         if not execution_settings.auto_invoke_kernel_functions and isinstance(
@@ -135,11 +133,11 @@ async def handle_streaming(
             streamed_chunks.append(message[0])
             if message[0].tool_calls is not None:
                 for tc in message[0].tool_calls:
-                    if tc.index not in tool_call_ids_by_index:
-                        tool_call_ids_by_index[tc.index] = tc
+                    if tc.id not in tool_call_ids_by_index:
+                        tool_call_ids_by_index[tc.id] = tc
                     else:
                         for tc in message[0].tool_calls:
-                            tool_call_ids_by_index[tc.index] += tc
+                            tool_call_ids_by_index[tc.id] += tc
         else:
             print(str(message[0]), end="")
 
@@ -169,16 +167,6 @@ async def chat() -> bool:
     stream = True
     if stream:
         await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
-        # answer = kernel.invoke_stream(
-        #     chat_function,
-        #     user_input=user_input,
-        #     chat_history=history,
-        # )
-        # print("Mosscap:> ", end="")
-        # async for message in answer:
-        #     print(str(message[0]), end="")
-        # print("\n")
-        # return True
     else:
         result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
 
