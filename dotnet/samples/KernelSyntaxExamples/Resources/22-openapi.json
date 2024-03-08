@@ -471,7 +471,7 @@
     },
     "/secrets": {
       "get": {
-        "description": "List secrets in a specified key vault.  For details, see: https://docs.microsoft.com/rest/api/keyvault/getsecrets/getsecrets.",
+        "description": "List secrets in a specified key vault.  For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/get-secret/get-secret.",
         "operationId": "ListSecret",
         "parameters": [
           {
