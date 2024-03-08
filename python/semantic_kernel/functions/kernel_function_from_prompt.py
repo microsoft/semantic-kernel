@@ -5,9 +5,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Unio
 
 from pydantic import Field, ValidationError, model_validator
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -291,7 +289,7 @@ through prompt_template_config or in the prompt_template."
             return  # Exit after processing all iterations
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
     async def _handle_complete_text_stream(
         self,
@@ -306,7 +304,7 @@ through prompt_template_config or in the prompt_template."
             return
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
     def add_default_values(self, arguments: "KernelArguments") -> KernelArguments:
         """Gathers the function parameters from the arguments."""
