@@ -78,7 +78,7 @@ internal abstract class ClientCore
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    internal Dictionary<string, object?> Attributes { get; } = new();
+    internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.

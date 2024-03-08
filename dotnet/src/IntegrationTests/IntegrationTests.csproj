@@ -64,12 +64,6 @@
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->
-    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
-  </ItemGroup>
   
   <ItemGroup>
     <None Update="testsettings.json">

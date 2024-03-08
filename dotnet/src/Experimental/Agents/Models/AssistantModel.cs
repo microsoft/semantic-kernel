@@ -62,14 +62,14 @@ internal sealed record AssistantModel
     /// There can be a maximum of 128 tools per assistant.
     /// </summary>
     [JsonPropertyName("tools")]
-    public List<ToolModel> Tools { get; init; } = new List<ToolModel>();
+    public List<ToolModel> Tools { get; init; } = [];
 
     /// <summary>
     /// A list of file IDs attached to this assistant.
     /// There can be a maximum of 20 files attached to the assistant.
     /// </summary>
     [JsonPropertyName("file_ids")]
-    public List<string> FileIds { get; init; } = new List<string>();
+    public List<string> FileIds { get; init; } = [];
 
     /// <summary>
     /// Set of 16 key-value pairs that can be attached to an object.
@@ -79,7 +79,7 @@ internal sealed record AssistantModel
     /// maximum of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; init; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; init; } = [];
 
     /// <summary>
     /// Assistant file model.

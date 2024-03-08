@@ -55,7 +55,7 @@ public class WeaviateMemoryStore : IMemoryStore
     private readonly Uri? _endpoint = null;
     private readonly string? _apiVersion;
     private readonly string? _apiKey;
-    private static readonly string[] s_stringArray = { "vector" };
+    private static readonly string[] s_stringArray = ["vector"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateMemoryStore"/> class.
@@ -200,11 +200,8 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
 
-        GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonOptionsCache);
-        if (getSchemaResponse == null)
-        {
+        GetSchemaResponse getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonOptionsCache) ??
             throw new KernelException("Unable to deserialize list collections response");
-        }
 
         foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
         {
@@ -274,12 +271,8 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
 
-        BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonOptionsCache);
-
-        if (result == null)
-        {
+        BatchResponse[] result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonOptionsCache) ??
             throw new KernelException("Unable to deserialize batch response");
-        }
 
         foreach (BatchResponse batchResponse in result)
         {
@@ -414,7 +407,7 @@ public class WeaviateMemoryStore : IMemoryStore
             WithVector = withEmbeddings
         }.Build();
 
-        List<(MemoryRecord, double)> result = new();
+        List<(MemoryRecord, double)> result = [];
         try
         {
             (_, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);

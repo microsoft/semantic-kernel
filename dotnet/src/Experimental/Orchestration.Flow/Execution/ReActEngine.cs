@@ -274,7 +274,7 @@ internal sealed class ReActEngine
             {
                 // ignore the built-in context variables
                 var variablesToPrint = s.ActionVariables?.Where(v => !Constants.ActionVariableNames.All.Contains(v.Key)).ToDictionary(_ => _.Key, _ => _.Value);
-                scratchPadLines.Insert(insertPoint, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(variablesToPrint)}}}");
+                scratchPadLines.Insert(insertPoint, $$"""{{Action}} {"action": "{{s.Action}}","action_variables": {{JsonSerializer.Serialize(variablesToPrint)}}}""");
             }
 
             if (i != 0)
@@ -390,7 +390,7 @@ internal sealed class ReActEngine
         {
             Description = "The message to be shown to the user.",
             ParameterType = typeof(string),
-            Schema = KernelJsonSchema.Parse("{\"type\":\"string\"}"),
+            Schema = KernelJsonSchema.Parse("""{"type":"string"}"""),
         };
 
         return new KernelFunctionMetadata(Constants.StopAndPromptFunctionName)

@@ -140,7 +140,7 @@ public sealed class OpenAICompletionTests : IDisposable
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
             fullResult.Append(content);
-        };
+        }
 
         // Assert
         Assert.Contains(expectedAnswerContains, fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
@@ -374,7 +374,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt =
             "Given a json input and a request. Apply the request on the json input and return the result. " +
             $"Put the result in between <result></result> tags{lineEnding}" +
-            $"Input:{lineEnding}{{\"name\": \"John\", \"age\": 30}}{lineEnding}{lineEnding}Request:{lineEnding}name";
+            $$"""Input:{{lineEnding}}{"name": "John", "age": 30}{{lineEnding}}{{lineEnding}}Request:{{lineEnding}}name""";
 
         const string ExpectedAnswerContains = "<result>John</result>";
 
@@ -441,15 +441,16 @@ public sealed class OpenAICompletionTests : IDisposable
 
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
         var defaultPromptModel = new PromptTemplateConfig(prompt) { Name = "FishMarket1" };
-        var azurePromptModel = PromptTemplateConfig.FromJson(
-            @"{
-                ""name"": ""FishMarket2"",
-                ""execution_settings"": {
-                    ""azure-text-davinci-003"": {
-                        ""max_tokens"": 256
+        var azurePromptModel = PromptTemplateConfig.FromJson("""
+            {
+                "name": "FishMarket2",
+                "execution_settings": {
+                    "azure-text-davinci-003": {
+                        "max_tokens": 256
                     }
                 }
-            }");
+            }
+            """);
         azurePromptModel.Template = prompt;
 
         var defaultFunc = target.CreateFunctionFromPrompt(defaultPromptModel);
@@ -520,7 +521,7 @@ public sealed class OpenAICompletionTests : IDisposable
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
 
-    private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = new();
+    private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = [];
 
     public void Dispose()
     {

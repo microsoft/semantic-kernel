@@ -40,7 +40,7 @@ public sealed class Step8_Pipelining : BaseTest
             KernelFunction humanize = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig()
             {
                 Template = "Spell out this number in English: {{$number}}",
-                InputVariables = new() { new() { Name = "number" } },
+                InputVariables = [new() { Name = "number" }],
             });
             KernelFunction pipeline = KernelFunctionCombinators.Pipe(new[] { parseInt32, multiplyByN, truncate, humanize }, "pipeline");
 

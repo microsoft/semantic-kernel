@@ -56,7 +56,7 @@ internal sealed class UpsertRequest
     [JsonConstructor]
     private UpsertRequest()
     {
-        this.Vectors = new List<PineconeDocument>();
+        this.Vectors = [];
     }
 
     #endregion

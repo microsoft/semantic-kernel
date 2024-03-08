@@ -340,13 +340,13 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     private static readonly ColumnSchema s_embeddingColumn = new("Embedding", typeof(object).FullName);
     private static readonly ColumnSchema s_timestampColumn = new("Timestamp", typeof(DateTime).FullName);
 
-    private static readonly ColumnSchema[] s_collectionColumns = new ColumnSchema[]
-    {
+    private static readonly ColumnSchema[] s_collectionColumns =
+    [
         s_keyColumn,
         s_metadataColumn,
         s_embeddingColumn,
         s_timestampColumn
-    };
+    ];
 
     /// <summary>
     /// Converts collection name to Kusto table name.

@@ -18,7 +18,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     /// </summary>
     public ChatMessageContentItemCollection()
     {
-        this._items = new();
+        this._items = [];
     }
 
     /// <summary>

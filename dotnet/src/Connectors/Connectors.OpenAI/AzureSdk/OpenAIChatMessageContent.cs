@@ -70,7 +70,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         {
             if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
             {
-                (functionToolCallList ??= new List<OpenAIFunctionToolCall>()).Add(new OpenAIFunctionToolCall(functionToolCall));
+                (functionToolCallList ??= []).Add(new OpenAIFunctionToolCall(functionToolCall));
             }
         }
 

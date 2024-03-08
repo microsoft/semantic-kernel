@@ -230,7 +230,7 @@ public sealed class HandlebarsPlannerTests
 
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)
     {
-        plugins ??= new KernelPluginCollection();
+        plugins ??= [];
 
         var chatMessage = new ChatMessageContent(AuthorRole.Assistant, testPlanString);
 
@@ -241,9 +241,9 @@ public sealed class HandlebarsPlannerTests
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         IChatCompletionService resultService = chatCompletion.Object;
-        PromptExecutionSettings resultSettings = new();
+        PromptExecutionSettings? resultSettings = new();
         serviceSelector
-            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings!))
+            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings))
             .Returns(true);
 
         var serviceCollection = new ServiceCollection();
@@ -255,8 +255,8 @@ public sealed class HandlebarsPlannerTests
 
     private KernelPluginCollection CreatePluginCollection()
     {
-        return new()
-        {
+        return
+        [
             KernelPluginFactory.CreateFromFunctions("email", "Email functions", new[]
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
@@ -270,6 +270,6 @@ public sealed class HandlebarsPlannerTests
             {
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })
-        };
+        ];
     }
 }

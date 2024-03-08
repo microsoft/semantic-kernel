@@ -44,8 +44,10 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
             modelId: modelId);
         Kernel kernel = builder.Build();
 
-        var arguments = new KernelArguments();
-        arguments["word2"] = " Potter";
+        var arguments = new KernelArguments
+        {
+            ["word2"] = " Potter"
+        };
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"

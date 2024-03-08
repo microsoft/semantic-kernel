@@ -16,10 +16,8 @@ internal static class DataHelper
     static DataHelper()
     {
         VectorSearchTestRecords = CreateBatchRecords(8);
-        VectorSearchTestEmbedding = new[] { 1, 0.699f, 0.701f };
-        VectorSearchExpectedResults = VectorSearchTestRecords
-            .OrderByDescending(r => TensorPrimitives.CosineSimilarity(r.Embedding.Span, VectorSearchTestEmbedding))
-            .ToArray();
+        VectorSearchTestEmbedding = [1, 0.699f, 0.701f];
+        VectorSearchExpectedResults = [.. VectorSearchTestRecords.OrderByDescending(r => TensorPrimitives.CosineSimilarity(r.Embedding.Span, VectorSearchTestEmbedding))];
     }
 
     public static MemoryRecord CreateRecord(string id) =>

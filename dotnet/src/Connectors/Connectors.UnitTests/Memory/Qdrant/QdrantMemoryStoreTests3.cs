@@ -250,22 +250,21 @@ public class QdrantMemoryStoreTests3
                     "}]" +
             "}";
 
-        using (var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) })
+        using var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) };
+
+        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        mockHttpMessageHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(httpResponseMessage);
+
+        //Act
+        using var httpClient = new HttpClient(mockHttpMessageHandler.Object);
         {
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(httpResponseMessage);
+            var client = new QdrantVectorDbClient(httpClient, 1536, "https://fake-random-test-host");
+            var result = await client.GetVectorByPayloadIdAsync(payloadId, metadataId);
 
-            //Act
-            using var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-            {
-                var client = new QdrantVectorDbClient(httpClient, 1536, "https://fake-random-test-host");
-                var result = await client.GetVectorByPayloadIdAsync(payloadId, metadataId);
-
-                //Assert
-                Assert.Equal(result!.PointId, expectedId.ToString(CultureInfo.InvariantCulture));
-            }
+            //Assert
+            Assert.Equal(result!.PointId, expectedId.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

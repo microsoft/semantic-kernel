@@ -60,29 +60,28 @@ internal sealed class GrpcOperationRunner
 
         var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
 
-        using (var channel = GrpcChannel.ForAddress(address, channelOptions))
-        {
-            var requestType = BuildGrpcOperationDataContractType(operation.Request);
+        using var channel = GrpcChannel.ForAddress(address, channelOptions);
 
-            var responseType = BuildGrpcOperationDataContractType(operation.Response);
+        var requestType = BuildGrpcOperationDataContractType(operation.Request);
 
-            var method = new Method<object, object>
-            (
-                MethodType.Unary,
-                operation.FullServiceName,
-                operation.Name,
-                this.CreateMarshaller<object>(requestType),
-                this.CreateMarshaller<object>(responseType)
-            );
+        var responseType = BuildGrpcOperationDataContractType(operation.Response);
 
-            var invoker = channel.CreateCallInvoker();
+        var method = new Method<object, object>
+        (
+            MethodType.Unary,
+            operation.FullServiceName,
+            operation.Name,
+            this.CreateMarshaller<object>(requestType),
+            this.CreateMarshaller<object>(responseType)
+        );
 
-            var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
+        var invoker = channel.CreateCallInvoker();
 
-            var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
+        var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
 
-            return ConvertResponse(response, responseType);
-        }
+        var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
+
+        return ConvertResponse(response, responseType);
     }
 
     /// <summary>
@@ -116,9 +115,11 @@ internal sealed class GrpcOperationRunner
         var content = JsonSerializer.Serialize(response, responseType, s_camelCaseOptions);
 
         //First iteration allowing to associate additional metadata with the returned content.
-        var result = new JsonObject();
-        result.Add("content", content);
-        result.Add("contentType", "application/json; charset=utf-8");
+        var result = new JsonObject
+        {
+            { "content", content },
+            { "contentType", "application/json; charset=utf-8" }
+        };
         return result;
     }
 
@@ -225,7 +226,7 @@ internal sealed class GrpcOperationRunner
             getterIl.Emit(OpCodes.Ret);
 
             //Creating the property set method and binding it to the private filed
-            var setterBuilder = typeBuilder.DefineMethod("set_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, null, new[] { propertyType });
+            var setterBuilder = typeBuilder.DefineMethod("set_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, null, [propertyType]);
             var setterIl = setterBuilder.GetILGenerator();
             setterIl.Emit(OpCodes.Ldarg_0);
             setterIl.Emit(OpCodes.Ldarg_1);
@@ -237,12 +238,12 @@ internal sealed class GrpcOperationRunner
             propertyBuilder.SetSetMethod(setterBuilder);
 
             //Add ProtoMember attribute to the data contract with tag/number
-            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) })!, new object[] { field.Number });
+            var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor([typeof(int)])!, [field.Number]);
             propertyBuilder.SetCustomAttribute(dataMemberAttributeBuilder);
         }
 
         //Add ProtoContract attribute to the data contract
-        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object>());
+        var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, []);
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
         return typeBuilder.CreateTypeInfo() ??

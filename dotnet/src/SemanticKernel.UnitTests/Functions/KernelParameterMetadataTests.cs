@@ -39,19 +39,19 @@ public class KernelParameterMetadataTests
         Assert.Equal("v", m.DefaultValue);
         Assert.True(m.IsRequired);
         Assert.Equal(typeof(int), m.ParameterType);
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"object\" }")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"object" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
     [Fact]
     public void ItInfersSchemaFromType()
     {
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"integer\" }")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(int) }.Schema));
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"number\" }")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(double) }.Schema));
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"string\" }")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(string) }.Schema));
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"boolean\" }")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(bool) }.Schema));
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"object\" }")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(object) }.Schema));
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"array\",\"items\":{\"type\":\"boolean\"}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(bool[]) }.Schema));
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":\"string\"},\"Value2\":{\"type\":\"integer\"},\"Value3\":{\"type\":\"number\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer" }""")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(int) }.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"number" }""")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(double) }.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string" }""")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(string) }.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"boolean" }""")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(bool) }.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"object" }""")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(object) }.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"array","items":{"type":"boolean"}}""")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(bool[]) }.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"type":"object","properties":{"Value1":{"type":"string"},"Value2":{"type":"integer"},"Value3":{"type":"number"}}}""")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
     }
 
     [Fact]
@@ -65,21 +65,21 @@ public class KernelParameterMetadataTests
     public void ItIncludesDescriptionInSchema()
     {
         var m = new KernelParameterMetadata("p") { Description = "something neat", ParameterType = typeof(int) };
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"integer\", \"description\":\"something neat\" }")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
     [Fact]
     public void ItIncludesDefaultValueInSchema()
     {
         var m = new KernelParameterMetadata("p") { DefaultValue = "42", ParameterType = typeof(int) };
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"integer\", \"description\":\"(default value: 42)\" }")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"(default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
     [Fact]
     public void ItIncludesDescriptionAndDefaultValueInSchema()
     {
         var m = new KernelParameterMetadata("p") { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) };
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"integer\", \"description\":\"something neat (default value: 42)\" }")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat (default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
     [Fact]

@@ -378,7 +378,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
     /// <param name="indexName">Value to normalize</param>
     /// <param name="parameterName">The name of the argument used with <paramref name="indexName"/>.</param>
     /// <returns>Normalized name</returns>
-    private string NormalizeIndexName(string indexName, [CallerArgumentExpression("indexName")] string? parameterName = null)
+    private string NormalizeIndexName(string indexName, [CallerArgumentExpression(nameof(indexName))] string? parameterName = null)
     {
         if (indexName.Length > 128)
         {
@@ -466,7 +466,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
     {
         // Azure AI Search score formula. The min value is 0.333 for cosine similarity -1.
         score = Math.Max(score, 1.0 / 3);
-        return 2 - 1 / score;
+        return 2 - (1 / score);
     }
 
     private static double CosineSimilarityToScore(double similarity)

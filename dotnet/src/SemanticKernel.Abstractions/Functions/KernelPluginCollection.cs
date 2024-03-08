@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 #pragma warning disable RCS1168 // Parameter name differs from base name.
 #pragma warning disable CA1725 // Parameter names should match base declaration
@@ -148,6 +147,6 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         public TypeProxy(KernelPluginCollection collection) => this._collection = collection;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KernelPlugin[] Plugins => this._collection._plugins.Values.ToArray();
+        public KernelPlugin[] Plugins => [.. this._collection._plugins.Values];
     }
 }

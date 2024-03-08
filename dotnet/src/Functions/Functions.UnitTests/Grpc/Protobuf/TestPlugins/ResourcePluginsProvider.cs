@@ -16,12 +16,7 @@ internal static class ResourcePluginsProvider
     {
         var type = typeof(ResourcePluginsProvider);
 
-        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
-        if (stream == null)
-        {
+        return type.Assembly.GetManifestResourceStream(type, resourceName) ??
             throw new MissingManifestResourceException($"Unable to load gRPC plugin from assembly resource '{resourceName}'.");
-        }
-
-        return stream;
     }
 }

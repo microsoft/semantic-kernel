@@ -32,10 +32,10 @@ internal sealed class CreateCollectionRequest
             payload: this);
     }
 
-    internal sealed class VectorSettings
+    internal sealed class VectorSettings(int vectorSize, QdrantDistanceType distanceType)
     {
         [JsonPropertyName("size")]
-        public int? Size { get; set; }
+        public int? Size { get; set; } = vectorSize;
 
         [JsonPropertyName("distance")]
         public string? DistanceAsString
@@ -44,13 +44,7 @@ internal sealed class CreateCollectionRequest
         }
 
         [JsonIgnore]
-        private QdrantDistanceType DistanceType { get; set; }
-
-        public VectorSettings(int vectorSize, QdrantDistanceType distanceType)
-        {
-            this.Size = vectorSize;
-            this.DistanceType = distanceType;
-        }
+        private QdrantDistanceType DistanceType { get; set; } = distanceType;
 
         private static string DistanceTypeToString(QdrantDistanceType x)
         {

@@ -58,10 +58,10 @@ internal sealed class ProtoDocumentParser
 
                 var responseContract = this.CreateDataContract(model.MessageTypes, method.OutputType, model.Package, method.Name);
 
-                var operation = new GrpcOperation(service.Name, method.Name, requestContract, responseContract);
-                operation.Package = model.Package;
-
-                operations.Add(operation);
+                operations.Add(new GrpcOperation(service.Name, method.Name, requestContract, responseContract)
+                {
+                    Package = model.Package
+                });
             }
         }
 
@@ -87,11 +87,8 @@ internal sealed class ProtoDocumentParser
             typeName = fullTypeName.Replace($"{package}.", "");
         }
 
-        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName);
-        if (messageType == null)
-        {
+        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName) ??
             throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
-        }
 
         var fields = this.GetDataContractFields(messageType.Fields);
 

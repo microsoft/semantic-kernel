@@ -155,8 +155,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        List<PineconeDocument> upsertDocuments = new();
-        List<PineconeDocument> updateDocuments = new();
+        List<PineconeDocument> upsertDocuments = [];
+        List<PineconeDocument> updateDocuments = [];
 
         foreach (MemoryRecord? record in records)
         {
@@ -184,7 +184,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             }
         }
 
-        List<Task> tasks = new();
+        List<Task> tasks = [];
 
         if (upsertDocuments.Count > 0)
         {
@@ -199,7 +199,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             tasks.AddRange(updates);
         }
 
-        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
+        PineconeDocument[] vectorData = [.. upsertDocuments, .. updateDocuments];
 
         try
         {
@@ -248,7 +248,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                                withEmbedding,
                                cancellationToken))
             {
-                return record?.ToMemoryRecord(transferVectorOwnership: true);
+                return record?.ToMemoryRecord();
             }
         }
         catch (HttpOperationException ex)
@@ -379,7 +379,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         foreach (PineconeDocument? record in vectorDataList)
         {
-            yield return record?.ToMemoryRecord(transferVectorOwnership: true);
+            yield return record?.ToMemoryRecord();
         }
     }
 
@@ -552,7 +552,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken))
         {
-            yield return (result.Item1.ToMemoryRecord(transferVectorOwnership: true), result.Item2);
+            yield return (result.Item1.ToMemoryRecord(), result.Item2);
         }
     }
 
@@ -625,7 +625,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken))
         {
-            yield return (result.Item1.ToMemoryRecord(transferVectorOwnership: true), result.Item2);
+            yield return (result.Item1.ToMemoryRecord(), result.Item2);
         }
     }
 

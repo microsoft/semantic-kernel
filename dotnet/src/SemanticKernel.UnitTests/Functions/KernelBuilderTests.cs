@@ -146,7 +146,7 @@ public class KernelBuilderTests
     [Fact]
     public void ItIsntNeededInDIContexts()
     {
-        KernelPluginCollection plugins = new() { KernelPluginFactory.CreateFromFunctions("plugin1") };
+        KernelPluginCollection plugins = [KernelPluginFactory.CreateFromFunctions("plugin1")];
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
@@ -174,12 +174,12 @@ public class KernelBuilderTests
         // but it's not recommended.
 
         //** WORKAROUND
-        Dictionary<Type, HashSet<object?>> mapping = new();
+        Dictionary<Type, HashSet<object?>> mapping = [];
         foreach (var descriptor in serviceCollection)
         {
             if (!mapping.TryGetValue(descriptor.ServiceType, out HashSet<object?>? keys))
             {
-                mapping[descriptor.ServiceType] = keys = new HashSet<object?>();
+                mapping[descriptor.ServiceType] = keys = [];
             }
             keys.Add(descriptor.ServiceKey);
         }
@@ -234,7 +234,7 @@ public class KernelBuilderTests
         Assert.NotNull(builder);
         Assert.Throws<InvalidOperationException>(() => builder.Build());
 
-        builder.Services.AddSingleton<Dictionary<string, string>>(new Dictionary<string, string>());
+        builder.Services.AddSingleton<Dictionary<string, string>>([]);
 
         IServiceProvider provider = sc.BuildServiceProvider();
 

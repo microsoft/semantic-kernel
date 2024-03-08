@@ -119,8 +119,10 @@ public class CodeTokenizerTests
     {
         // Arrange
         var template1 = "x.y first=$foo second='bar'";
-        var arguments = new KernelArguments();
-        arguments["foo"] = "fooValue";
+        var arguments = new KernelArguments
+        {
+            ["foo"] = "fooValue"
+        };
 
         // Act
         var blocks1 = this._target.Tokenize(template1);
