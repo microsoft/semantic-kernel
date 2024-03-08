@@ -142,7 +142,7 @@ async def test_invoke_non_async():
     assert result.value == ""
 
     async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
-        assert isinstance(partial_result.metadata["error"], NotImplementedError)
+        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
 
 
 @pytest.mark.asyncio
@@ -157,7 +157,7 @@ async def test_invoke_async():
     assert result.value == ""
 
     async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
-        assert isinstance(partial_result.metadata["error"], NotImplementedError)
+        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
 
 
 @pytest.mark.asyncio
@@ -227,7 +227,7 @@ async def test_required_param_not_supplied():
     func = KernelFunction.from_method(my_function, "test")
 
     result = await func.invoke(kernel=None, arguments=KernelArguments())
-    assert isinstance(result.metadata["error"], FunctionExecutionException)
+    assert isinstance(result.metadata["exception"], FunctionExecutionException)
 
 
 @pytest.mark.asyncio

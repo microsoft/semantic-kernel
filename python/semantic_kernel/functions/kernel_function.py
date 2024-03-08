@@ -168,7 +168,9 @@ class KernelFunction(KernelBaseModel):
             return await self._invoke_internal(kernel, arguments)
         except Exception as exc:
             logger.error(f"Error occurred while invoking function {self.name}: {exc}")
-            return FunctionResult(function=self.metadata, value=None, metadata={"error": exc, "arguments": arguments})
+            return FunctionResult(
+                function=self.metadata, value=None, metadata={"exception": exc, "arguments": arguments}
+            )
 
     @abstractmethod
     async def _invoke_internal_stream(
@@ -204,4 +206,4 @@ class KernelFunction(KernelBaseModel):
                 yield partial_result
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e, "arguments": arguments})
+            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e, "arguments": arguments})

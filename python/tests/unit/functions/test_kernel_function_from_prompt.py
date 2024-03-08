@@ -183,7 +183,7 @@ async def test_invoke_exception():
     ) as mock:
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
-        assert isinstance(result.metadata["error"], Exception)
+        assert isinstance(result.metadata["exception"], Exception)
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat_stream",
@@ -193,7 +193,7 @@ async def test_invoke_exception():
             StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})
         ]
         async for result in function.invoke_stream(kernel=kernel):
-            assert isinstance(result.metadata["error"], Exception)
+            assert isinstance(result.metadata["exception"], Exception)
 
 
 @pytest.mark.asyncio
@@ -237,7 +237,7 @@ async def test_invoke_exception_text():
     ) as mock:
         mock.return_value = [TextContent(text="test", metadata={})]
         result = await function.invoke(kernel=kernel)
-        assert isinstance(result.metadata["error"], Exception)
+        assert isinstance(result.metadata["exception"], Exception)
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.complete_stream",
@@ -245,7 +245,7 @@ async def test_invoke_exception_text():
     ) as mock:
         mock.__iter__.return_value = []
         async for result in function.invoke_stream(kernel=kernel):
-            assert isinstance(result.metadata["error"], Exception)
+            assert isinstance(result.metadata["exception"], Exception)
 
 
 @pytest.mark.asyncio

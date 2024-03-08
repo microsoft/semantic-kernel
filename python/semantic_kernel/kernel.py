@@ -415,7 +415,7 @@ class Kernel(KernelBaseModel):
             kernel_function_metadata=kernel_function_metadata,
             arguments=arguments,
             function_result=function_result,
-            exception=exception,
+            exception=exception or function_result.metadata.get("exception", None) if function_result else None,
         )
         if self.function_invoked_handlers:
             for handler in self.function_invoked_handlers.values():

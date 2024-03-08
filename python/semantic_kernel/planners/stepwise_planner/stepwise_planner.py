@@ -121,7 +121,7 @@ class StepwisePlanner:
         plan_step._outputs.append("plugin_count")
         plan_step._outputs.append("steps_taken")
 
-        plan = Plan(goal)
+        plan = Plan(description=goal)
 
         plan.add_steps([plan_step])
 
