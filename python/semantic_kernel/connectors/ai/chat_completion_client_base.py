@@ -22,7 +22,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> List["ChatMessageContent"]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -43,7 +43,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> AsyncIterable[List["StreamingChatMessageContent"]]:
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.

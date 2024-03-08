@@ -44,6 +44,7 @@ req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=s
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
+req_settings.auto_invoke_kernel_functions = True
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
 

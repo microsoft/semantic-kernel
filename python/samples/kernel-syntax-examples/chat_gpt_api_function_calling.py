@@ -14,13 +14,10 @@ from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_messa
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import (
-    get_tool_call_object,
-)
+from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.input_variable import InputVariable
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -68,6 +65,7 @@ kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 # If configured to be greater than one, this value will be overridden to 1.
 execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     service_id="chat",
+    ai_model_id="gpt-3.5-turbo-1106",
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
@@ -75,17 +73,6 @@ execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
     tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
     auto_invoke_kernel_functions=True,
     max_auto_invoke_attempts=3,
-)
-
-prompt_template_config = sk.PromptTemplateConfig(
-    template="{{$user_input}}",
-    name="chat",
-    template_format="semantic-kernel",
-    input_variables=[
-        InputVariable(name="user_input", description="The user input", is_required=True),
-        InputVariable(name="chat_history", description="The history of the conversation", is_required=True),
-    ],
-    execution_settings={"chat": execution_settings},
 )
 
 history = ChatHistory()
@@ -97,9 +84,10 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 arguments = KernelArguments()
 
 chat_function = kernel.create_function_from_prompt(
-    prompt_template_config=prompt_template_config,
+    prompt="{{$chat_history}}{{$user_input}}",
     plugin_name="ChatBot",
     function_name="Chat",
+    prompt_execution_settings={"chat": execution_settings},
 )
 
 
@@ -178,9 +166,19 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = False
+    stream = True
     if stream:
-        await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
+        # await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
+        answer = kernel.invoke_stream(
+            chat_function,
+            user_input=user_input,
+            chat_history=history,
+        )
+        print("Mosscap:> ", end="")
+        async for message in answer:
+            print(str(message[0]), end="")
+        print("\n")
+        return True
     else:
         result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
 

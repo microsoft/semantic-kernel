@@ -151,15 +151,15 @@ def test_azure_chat_completion_init_with_base_url() -> None:
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
+async def test_azure_chat_completion_call_with_parameters(
+    mock_create, kernel: Kernel, chat_history: ChatHistory
+) -> None:
     deployment_name = "test_deployment"
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
-    messages = ChatHistory()
-    messages.add_user_message("hello world")
+    chat_history.add_user_message("hello world")
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(service_id="test_service_id")
-    kernel = Kernel()
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -168,7 +168,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         api_key=api_key,
     )
     await azure_chat_completion.complete_chat(
-        chat_history=messages, settings=complete_prompt_execution_settings, kernel=kernel
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
     )
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -180,7 +180,7 @@ async def test_azure_chat_completion_call_with_parameters(mock_create) -> None:
         stream=False,
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
-        messages=azure_chat_completion._prepare_chat_history_for_request(messages),
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
     )
 
 
@@ -615,17 +615,14 @@ async def test_azure_chat_completion_bad_request_non_content_filter(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
-async def test_azure_chat_completion_no_kernel_provided_throws_error(
-    mock_create,
-) -> None:
+async def test_azure_chat_completion_no_kernel_provided_throws_error(mock_create, chat_history: ChatHistory) -> None:
     deployment_name = "test_deployment"
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     prompt = "some prompt that would trigger the content filtering"
-    messages = ChatHistory()
-    messages.add_user_message(prompt)
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
+    chat_history.add_user_message(prompt)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(auto_invoke_kernel_functions=True)
 
     mock_create.side_effect = openai.BadRequestError(
         "The request was bad.", response=Response(400, request=Request("POST", endpoint)), body={}
@@ -641,4 +638,4 @@ async def test_azure_chat_completion_no_kernel_provided_throws_error(
     with pytest.raises(
         ServiceInvalidExecutionSettingsError, match="The kernel argument is required for OpenAI tool calling"
     ):
-        await azure_chat_completion.complete_chat(messages, complete_prompt_execution_settings)
+        await azure_chat_completion.complete_chat(chat_history, complete_prompt_execution_settings)

@@ -143,7 +143,7 @@ class Kernel(KernelBaseModel):
         function_name: Optional[str] = None,
         plugin_name: Optional[str] = None,
         return_function_results: Optional[bool] = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> AsyncIterable[Union[List["StreamingKernelContent"], List[FunctionResult]]]:
         """Execute one or more stream functions.
 
@@ -267,7 +267,7 @@ class Kernel(KernelBaseModel):
         arguments: Optional[KernelArguments] = None,
         function_name: Optional[str] = None,
         plugin_name: Optional[str] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """Execute one or more functions.
 
@@ -371,7 +371,7 @@ class Kernel(KernelBaseModel):
         prompt: str,
         arguments: Optional[KernelArguments] = None,
         template_format: Optional[str] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """
         Invoke a function from the provided prompt
