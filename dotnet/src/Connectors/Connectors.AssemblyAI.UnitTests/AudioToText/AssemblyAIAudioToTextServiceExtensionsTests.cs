@@ -17,18 +17,18 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
     private const string ApiKey = "Test123";
     private const string Endpoint = "http://localhost:1234/";
     private const string ServiceId = "AssemblyAI";
-    private static readonly HttpClient s_httpClient = new();
 
     [Fact]
     public void AddServiceToKernelBuilder()
     {
         // Arrange & Act
+        using var httpClient = new HttpClient();
         var kernel = Kernel.CreateBuilder()
             .AddAssemblyAIAudioToText(
                 apiKey: ApiKey,
                 endpoint: Endpoint,
                 serviceId: ServiceId,
-                httpClient: s_httpClient
+                httpClient: httpClient
             )
             .Build();
 
@@ -40,13 +40,6 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         service = kernel.GetRequiredService<IAudioToTextService>(ServiceId);
         Assert.NotNull(service);
         Assert.IsType<AssemblyAIAudioToTextService>(service);
-
-        var aaiService = (AssemblyAIAudioToTextService)service;
-        Assert.Equal(ApiKey, aaiService.ApiKey);
-        Assert.NotNull(aaiService.HttpClient);
-        Assert.Equal(s_httpClient, aaiService.HttpClient);
-        Assert.NotNull(aaiService.HttpClient.BaseAddress);
-        Assert.Equal(Endpoint, aaiService.HttpClient.BaseAddress!.ToString());
     }
 
     [Fact]
@@ -65,11 +58,5 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         var service = provider.GetRequiredKeyedService<IAudioToTextService>(ServiceId);
         Assert.NotNull(service);
         Assert.IsType<AssemblyAIAudioToTextService>(service);
-
-        var aaiService = (AssemblyAIAudioToTextService)service;
-        Assert.Equal(ApiKey, aaiService.ApiKey);
-        Assert.NotNull(aaiService.HttpClient);
-        Assert.NotNull(aaiService.HttpClient.BaseAddress);
-        Assert.Equal(Endpoint, aaiService.HttpClient.BaseAddress!.ToString());
     }
 }

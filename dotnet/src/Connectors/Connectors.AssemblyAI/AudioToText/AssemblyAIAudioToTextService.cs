@@ -21,8 +21,8 @@ namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 {
     private const string FallbackBaseUrl = "https://api.assemblyai.com/";
-    internal string ApiKey { get; }
-    internal HttpClient HttpClient { get; }
+    private readonly string _apiKey;
+    private readonly HttpClient _httpClient;
 
     /// <summary>
     /// Attributes is not used by AssemblyAIAudioToTextService.
@@ -39,8 +39,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         HttpClient? httpClient = null
     )
     {
-        this.ApiKey = apiKey;
-        this.HttpClient = HttpClientProvider.GetHttpClient(httpClient);
+        this._apiKey = apiKey;
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
     }
 
     /// <inheritdoc />
@@ -145,7 +145,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         this.AddDefaultHeaders(request);
         request.Content = httpContent;
 
-        using var response = await this.HttpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
         using var jsonStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
 
         var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
@@ -174,7 +174,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         using var request = HttpRequest.CreatePostRequest(url, jsonRequest);
         this.AddDefaultHeaders(request);
 
-        using var response = await this.HttpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
         using var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
         using var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
@@ -207,7 +207,7 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             using var request = HttpRequest.CreateGetRequest(url);
             this.AddDefaultHeaders(request);
 
-            using var response = await this.HttpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
+            using var response = await this._httpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
             using var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
             var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
@@ -237,12 +237,12 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
     /// <returns>URL with or without BaseUrl.</returns>
     private string CreateUrl(string url)
     {
-        return this.HttpClient.BaseAddress is null ? $"{FallbackBaseUrl}{url}" : url;
+        return this._httpClient.BaseAddress is null ? $"{FallbackBaseUrl}{url}" : url;
     }
 
     private void AddDefaultHeaders(HttpRequestMessage request)
     {
-        request.Headers.Authorization = new AuthenticationHeaderValue(this.ApiKey);
+        request.Headers.Authorization = new AuthenticationHeaderValue(this._apiKey);
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AssemblyAIAudioToTextService)));
