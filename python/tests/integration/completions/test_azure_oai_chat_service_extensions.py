@@ -14,11 +14,11 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     ExtraBody,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.contents.chat_history import ChatHistory
 
 try:
     from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (

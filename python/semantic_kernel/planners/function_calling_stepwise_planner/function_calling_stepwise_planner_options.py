@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
-from pydantic import field_validator
+from pydantic import model_validator
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIPromptExecutionSettings,
@@ -14,7 +14,7 @@ class FunctionCallingStepwisePlannerOptions(PlannerOptions):
     """The Function Calling Stepwise Planner Options."""
 
     max_tokens: Optional[int] = None
-    max_tokens_ratio: Optional[int] = 0.1
+    max_tokens_ratio: Optional[float] = 0.1
     max_completion_tokens: Optional[int] = None
     max_prompt_tokens: Optional[int] = None
     get_initial_plan: Optional[Callable[[], str]] = None
@@ -23,15 +23,20 @@ class FunctionCallingStepwisePlannerOptions(PlannerOptions):
     min_iteration_time_ms: Optional[int] = 100
     execution_settings: Optional[OpenAIPromptExecutionSettings] = None
 
-    @field_validator("max_tokens", "max_prompt_tokens", mode="after")
+    @model_validator(mode="before")
     @classmethod
-    def adjust_token_settings(cls, value, info):
-        max_tokens = info.data.get("max_tokens")
-        max_tokens_ratio = info.data.get("max_tokens_ratio", 0.1)
+    def calculate_token_limits(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            max_tokens = data.get("max_tokens")
+            # Ensure max_tokens_ratio has a default value if not provided
+            max_tokens_ratio = data.get("max_tokens_ratio", 0.1)
 
-        if max_tokens is not None and info.field_name == "max_tokens":
-            return int(max_tokens * max_tokens_ratio)
-        elif max_tokens is not None and info.field_name == "max_prompt_tokens":
-            return int(max_tokens * (1 - max_tokens_ratio))
+            if max_tokens is not None:
+                data["max_completion_tokens"] = int(max_tokens * max_tokens_ratio)
+                data["max_prompt_tokens"] = int(max_tokens * (1 - max_tokens_ratio))
+            else:
+                # Explicitly setting them to None if max_tokens is None, for clarity
+                data["max_completion_tokens"] = None
+                data["max_prompt_tokens"] = None
 
-        return value
+        return data
