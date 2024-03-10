@@ -11,28 +11,26 @@ from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_messa
     OpenAIStreamingChatMessageContent,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
+from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.kernel import Kernel
 
 
 async def mock_async_process_chat_stream_response(arg1, response, tool_call_behavior, chat_history, kernel):
     mock_content = MagicMock(spec=OpenAIStreamingChatMessageContent)
-    yield [mock_content]
+    yield [mock_content], None
 
 
 @pytest.mark.asyncio
-async def test_complete_chat_stream():
+async def test_complete_chat_stream(kernel: Kernel):
     chat_history = MagicMock()
     settings = MagicMock()
     mock_response = MagicMock()
 
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._get_auto_invoke_execution_settings",
-        return_value=(True, 3),
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._get_tool_call_behavior",
+        return_value=ToolCallBehavior(auto_invoke_kernel_functions=True, max_auto_invoke_attempts=3),
     ) as settings_mock, patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._validate_kernel_for_tool_calling",
-        return_value=MagicMock(),
-    ) as validate_kernel_mock, patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._prepare_settings",
         return_value=settings,
     ) as prepare_settings_mock, patch(
@@ -42,8 +40,6 @@ async def test_complete_chat_stream():
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_chat_stream_response",
         new_callable=lambda: mock_async_process_chat_stream_response,
     ):
-        kernel = Kernel()
-
         chat_completion_base = OpenAIChatCompletionBase(
             ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
         )
@@ -52,25 +48,21 @@ async def test_complete_chat_stream():
             assert content is not None
 
         settings_mock.assert_called_once_with(settings)
-        validate_kernel_mock.assert_called_once_with(kernel=kernel)
         prepare_settings_mock.assert_called_with(settings, chat_history, stream_request=True)
         mock_send_chat_stream_request.assert_called_with(settings)
 
 
 @pytest.mark.parametrize("tool_call", [False, True])
 @pytest.mark.asyncio
-async def test_complete_chat(tool_call):
+async def test_complete_chat(tool_call, kernel: Kernel):
     chat_history = MagicMock()
     settings = MagicMock()
     mock_message_content = MagicMock(spec=List[OpenAIChatMessageContent])
 
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._get_auto_invoke_execution_settings",
-        return_value=(True, 3),
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._get_tool_call_behavior",
+        return_value=ToolCallBehavior(auto_invoke_kernel_functions=True, max_auto_invoke_attempts=3),
     ) as settings_mock, patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._validate_kernel_for_tool_calling",
-        return_value=MagicMock(),
-    ) as validate_kernel_mock, patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._prepare_settings",
         return_value=settings,
     ) as prepare_settings_mock, patch(
@@ -82,8 +74,6 @@ async def test_complete_chat(tool_call):
     ), patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._process_chat_response_with_tool_call",
     ) as mock_process_chat_response_with_tool_call:
-        kernel = Kernel()
-
         chat_completion_base = OpenAIChatCompletionBase(
             ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
         )
@@ -96,7 +86,6 @@ async def test_complete_chat(tool_call):
             assert result is not None
 
         settings_mock.assert_called_once_with(settings)
-        validate_kernel_mock.assert_called_once_with(kernel=kernel)
         prepare_settings_mock.assert_called_with(settings, chat_history, stream_request=False)
         mock_send_chat_request.assert_called_with(settings)
         if tool_call:
@@ -142,28 +131,48 @@ async def test_process_tool_calls():
 
 
 @pytest.mark.parametrize(
-    "completions,auto_invoke_kernel_functions,expected_result",
+    "completions,tool_call_behavior,expected_result",
     [
         # Case 1: Empty completions, auto_invoke_kernel_functions=False
-        ([], False, True),
+        ([], ToolCallBehavior(auto_invoke_kernel_functions=False), True),
         # Case 2: Completions with OpenAIChatMessageContent, auto_invoke_kernel_functions=True
-        ([MagicMock(spec=OpenAIChatMessageContent)], True, True),
+        ([MagicMock(spec=OpenAIChatMessageContent)], ToolCallBehavior(auto_invoke_kernel_functions=True), True),
         # Case 3: Completions with OpenAIChatMessageContent, no tool_calls, auto_invoke_kernel_functions=True
-        ([MagicMock(spec=OpenAIChatMessageContent, tool_calls=[])], True, True),
+        (
+            [MagicMock(spec=OpenAIChatMessageContent, tool_calls=[])],
+            ToolCallBehavior(auto_invoke_kernel_functions=True),
+            True,
+        ),
         # Case 4: Completions with OpenAIStreamingChatMessageContent, auto_invoke_kernel_functions=True
-        ([MagicMock(spec=OpenAIStreamingChatMessageContent)], True, True),
+        (
+            [MagicMock(spec=OpenAIStreamingChatMessageContent)],
+            ToolCallBehavior(auto_invoke_kernel_functions=True),
+            True,
+        ),
         # Case 5: Completions with OpenAIStreamingChatMessageContent, auto_invoke_kernel_functions=False
-        ([MagicMock(spec=OpenAIStreamingChatMessageContent)], False, True),
+        (
+            [MagicMock(spec=OpenAIStreamingChatMessageContent)],
+            ToolCallBehavior(auto_invoke_kernel_functions=False),
+            True,
+        ),
         # Case 6: Completions with both types, auto_invoke_kernel_functions=True
-        ([MagicMock(spec=OpenAIChatMessageContent), MagicMock(spec=OpenAIStreamingChatMessageContent)], True, True),
+        (
+            [MagicMock(spec=OpenAIChatMessageContent), MagicMock(spec=OpenAIStreamingChatMessageContent)],
+            ToolCallBehavior(auto_invoke_kernel_functions=True),
+            True,
+        ),
         # Case 7: Completions with OpenAIChatMessageContent with tool_calls, auto_invoke_kernel_functions=True
-        ([MagicMock(spec=OpenAIChatMessageContent, tool_calls=[{}])], True, False),
+        (
+            [MagicMock(spec=OpenAIChatMessageContent, tool_calls=[{}])],
+            ToolCallBehavior(auto_invoke_kernel_functions=True),
+            False,
+        ),
     ],
 )
 @pytest.mark.asyncio
-async def test_should_return_completions_response(completions, auto_invoke_kernel_functions, expected_result):
+async def test_should_return_completions_response(completions, tool_call_behavior, expected_result):
     chat_completion_base = OpenAIChatCompletionBase(
         ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
     )
-    result = chat_completion_base._should_return_completions_response(completions, auto_invoke_kernel_functions)
+    result = chat_completion_base._should_return_completions_response(completions, tool_call_behavior)
     assert result == expected_result
