@@ -31,6 +31,22 @@ public sealed class GeminiChatStreamingTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldContainModelInRequestUriAsync()
+    {
+        // Arrange
+        string modelId = "fake-model234";
+        var client = this.CreateChatCompletionClient(modelId: modelId);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.Contains(modelId, this._messageHandlerStub.RequestUri.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ShouldContainRolesInRequestAsync()
     {
         // Arrange

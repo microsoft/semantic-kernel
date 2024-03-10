@@ -27,6 +27,21 @@ public sealed class GeminiCountingTokensTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldContainModelInRequestUriAsync()
+    {
+        // Arrange
+        string modelId = "fake-model234";
+        var client = this.CreateTokenCounterClient(modelId: modelId);
+
+        // Act
+        await client.CountTokensAsync("fake-text");
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.Contains(modelId, this._messageHandlerStub.RequestUri.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ShouldReturnGreaterThanZeroTokenCountAsync()
     {
         // Arrange

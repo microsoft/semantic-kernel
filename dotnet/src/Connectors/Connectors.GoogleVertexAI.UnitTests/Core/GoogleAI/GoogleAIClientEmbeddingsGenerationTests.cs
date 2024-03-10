@@ -29,6 +29,26 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldContainModelInRequestUriAsync()
+    {
+        // Arrange
+        string modelId = "fake-model234";
+        var client = this.CreateEmbeddingsClient(modelId: modelId);
+        List<string> dataToEmbed =
+        [
+            "Write a story about a magic backpack.",
+            "Print color of backpack."
+        ];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(dataToEmbed);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.Contains(modelId, this._messageHandlerStub.RequestUri.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ShouldSendModelIdInEachEmbeddingRequestAsync()
     {
         // Arrange
