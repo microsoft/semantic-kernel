@@ -44,6 +44,7 @@ internal abstract class ClientBase
 
     protected static void ValidateMaxTokens(int? maxTokens)
     {
+        // If maxTokens is null, it means that the user wants to use the default model value
         if (maxTokens is < 1)
         {
             throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
