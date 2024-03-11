@@ -961,17 +961,17 @@ internal abstract class ClientCore
                 return new ChatRequestToolMessage(message.Content, toolIdString);
             }
 
-            if (message.Items is { Count: > 0 })
+            if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
-                return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
-                {
-                    TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
-                    ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
-                    _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
-                })));
+                return new ChatRequestUserMessage(textContent.Text);
             }
 
-            return new ChatRequestUserMessage(message.Content);
+            return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
+            {
+                TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
+                ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
+                _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
+            })));
         }
 
         if (message.Role == AuthorRole.Assistant)

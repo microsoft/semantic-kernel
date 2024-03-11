@@ -23,7 +23,7 @@ Other providers may also offer some type of file-service, such as Gemini.
 ## Decision Outcome
 
 > Option 3. **Add OpenAI file service support without abstraction**
-> Mark code as experimental using label: `SKEXP0015`
+> Mark code as experimental using label: `SKEXP0010`
 
 Defining a generalized file service interface provides an extensibility point for other vendors, in addition to *OpenAI*.
 
