@@ -12,7 +12,7 @@
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.4" />
     <PackageVersion Include="Markdig" Version="0.35.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
-    <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.1" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="4.1.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.1.0" />
@@ -71,7 +71,7 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.13" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.60.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.61.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="13.7.1" />
