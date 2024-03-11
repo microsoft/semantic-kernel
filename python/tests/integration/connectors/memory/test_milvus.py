@@ -28,38 +28,10 @@ def setup_milvus():
     default_server.cleanup()
     default_server.start()
     host = "http://127.0.0.1:" + str(default_server.listen_port)
-    port = None
-    yield host, port
+    token = None
+    yield host, token
     default_server.stop()
     default_server.cleanup()
-
-
-@pytest.fixture
-def memory_record1():
-    return MemoryRecord(
-        id="test_id1",
-        text="sample text1",
-        is_reference=False,
-        embedding=np.array([0.5, 0.5]),
-        description="description",
-        external_source_name="external source",
-        additional_metadata="additional metadata",
-        timestamp="timestamp",
-    )
-
-
-@pytest.fixture
-def memory_record2():
-    return MemoryRecord(
-        id="test_id2",
-        text="sample text2",
-        is_reference=False,
-        embedding=np.array([0.25, 0.75]),
-        description="description",
-        external_source_name="external source",
-        additional_metadata="additional metadata",
-        timestamp="timestamp",
-    )
 
 
 @pytest.mark.asyncio
