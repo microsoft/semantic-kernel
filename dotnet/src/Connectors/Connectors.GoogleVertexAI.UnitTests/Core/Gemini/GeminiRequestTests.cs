@@ -243,9 +243,9 @@ public sealed class GeminiRequestTests
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
         var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
         var toolCallPart = new GeminiPart.FunctionCallPart
-            { FunctionName = "function-name", Arguments = expectedArgs };
+        { FunctionName = "function-name", Arguments = expectedArgs };
         var toolCallPart2 = new GeminiPart.FunctionCallPart
-            { FunctionName = "function2-name", Arguments = expectedArgs };
+        { FunctionName = "function2-name", Arguments = expectedArgs };
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message", "model-id", functionsToolCalls: [toolCallPart]));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message2", "model-id2", functionsToolCalls: [toolCallPart2]));
         var executionSettings = new GeminiPromptExecutionSettings();
