@@ -12,13 +12,13 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-// The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
+// The following example shows how to use Semantic Kernel with OpenAI DALL-E 2 to create images
 public class Example18_DallE : BaseTest
 {
     [Fact]
     public async Task OpenAIDallEAsync()
     {
-        WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
+        WriteLine("======== OpenAI DALL-E 2 Text To Image ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey) // Add your text to image service
@@ -85,15 +85,15 @@ public class Example18_DallE : BaseTest
     [Fact(Skip = "Generating the Image can take too long and often break the test")]
     public async Task AzureOpenAIDallEAsync()
     {
-        WriteLine("========Azure OpenAI Dall-E 3 Text To Image ========");
+        WriteLine("========Azure OpenAI DALL-E 3 Text To Image ========");
 
         var builder = Kernel.CreateBuilder()
             .AddAzureOpenAITextToImage( // Add your text to image service
-                deploymentName: TestConfiguration.AzureOpenAI.ImageModelId,
+                deploymentName: TestConfiguration.AzureOpenAI.ImageDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ImageApiKey,
                 modelId: TestConfiguration.AzureOpenAI.ImageModelId,
-                apiVersion: "2023-12-01-preview") //Dall-E 3 is only supported in this version
+                apiVersion: "2024-02-15-preview") //DALL-E 3 is only supported in this version
             .AddAzureOpenAIChatCompletion( // Add your chat completion service
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,

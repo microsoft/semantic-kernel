@@ -131,7 +131,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     {
         OpenAIClientOptions.ServiceVersion version = apiVersion switch
         {
-            // Dalle-E-3 is only supported post 2023-12-01-preview
+            // DALL-E 3 is only supported post 2023-12-01-preview
             _ => OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview
         };
 
