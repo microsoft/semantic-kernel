@@ -69,7 +69,7 @@ public sealed class GeminiRequestTests
         var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
 
         // Assert
-        Assert.Equal(prompt, request.Contents[0].Parts[0].Text);
+        Assert.Equal(prompt, request.Contents[0].Parts![0].Text);
     }
 
     [Fact]
@@ -137,9 +137,9 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.Collection(request.Contents,
-            c => Assert.Equal(chatHistory[0].Content, c.Parts[0].Text),
-            c => Assert.Equal(chatHistory[1].Content, c.Parts[0].Text),
-            c => Assert.Equal(chatHistory[2].Content, c.Parts[0].Text));
+            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[2].Content, c.Parts![0].Text));
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[0].Role, c.Role),
             c => Assert.Equal(chatHistory[1].Role, c.Role),
@@ -161,9 +161,9 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.Collection(request.Contents,
-            c => Assert.Equal(chatHistory[0].Content, c.Parts[0].Text),
-            c => Assert.Equal(chatHistory[1].Content, c.Parts[0].Text),
-            c => Assert.Equal(chatHistory[2].Items!.Cast<TextContent>().Single().Text, c.Parts[0].Text));
+            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[2].Items!.Cast<TextContent>().Single().Text, c.Parts![0].Text));
     }
 
     [Fact]
@@ -185,12 +185,12 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.Collection(request.Contents,
-            c => Assert.Equal(chatHistory[0].Content, c.Parts[0].Text),
-            c => Assert.Equal(chatHistory[1].Content, c.Parts[0].Text),
+            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
             c => Assert.Equal(chatHistory[2].Items!.Cast<ImageContent>().Single().Uri,
-                c.Parts[0].FileData!.FileUri),
+                c.Parts![0].FileData!.FileUri),
             c => Assert.True(imageAsBytes.ToArray()
-                .SequenceEqual(Convert.FromBase64String(c.Parts[0].InlineData!.InlineData))));
+                .SequenceEqual(Convert.FromBase64String(c.Parts![0].InlineData!.InlineData))));
     }
 
     [Fact]
@@ -230,10 +230,10 @@ public sealed class GeminiRequestTests
         Assert.Single(request.Contents,
             c => c.Role == AuthorRole.Tool);
         Assert.Single(request.Contents,
-            c => c.Parts[0].FunctionResponse != null);
+            c => c.Parts![0].FunctionResponse != null);
         Assert.Single(request.Contents,
-            c => string.Equals(c.Parts[0].FunctionResponse!.FunctionName, toolCallResult.FullyQualifiedName, StringComparison.Ordinal));
-        var args = request.Contents[0].Parts[0].FunctionResponse!.Response.Arguments;
+            c => string.Equals(c.Parts![0].FunctionResponse!.FunctionName, toolCallResult.FullyQualifiedName, StringComparison.Ordinal));
+        var args = request.Contents[0].Parts![0].FunctionResponse!.Response.Arguments;
         Assert.Equal(expectedArgs.ToJsonString(), args.ToJsonString());
     }
 
@@ -260,16 +260,16 @@ public sealed class GeminiRequestTests
             c => Assert.Equal(chatHistory[0].Role, c.Role),
             c => Assert.Equal(chatHistory[1].Role, c.Role));
         Assert.Collection(request.Contents,
-            c => Assert.NotNull(c.Parts[0].FunctionCall),
-            c => Assert.NotNull(c.Parts[0].FunctionCall));
+            c => Assert.NotNull(c.Parts![0].FunctionCall),
+            c => Assert.NotNull(c.Parts![0].FunctionCall));
         Assert.Collection(request.Contents,
-            c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart.FunctionName),
-            c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart2.FunctionName));
+            c => Assert.Equal(c.Parts![0].FunctionCall!.FunctionName, toolCallPart.FunctionName),
+            c => Assert.Equal(c.Parts![0].FunctionCall!.FunctionName, toolCallPart2.FunctionName));
         Assert.Collection(request.Contents,
             c => Assert.Equal(expectedArgs.ToJsonString(),
-                c.Parts[0].FunctionCall!.Arguments!.ToJsonString()),
+                c.Parts![0].FunctionCall!.Arguments!.ToJsonString()),
             c => Assert.Equal(expectedArgs.ToJsonString(),
-                c.Parts[0].FunctionCall!.Arguments!.ToJsonString()));
+                c.Parts![0].FunctionCall!.Arguments!.ToJsonString()));
     }
 
     [Fact]
@@ -321,7 +321,7 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.Single(request.Contents,
-            c => string.Equals(message.Content, c.Parts[0].Text, StringComparison.Ordinal));
+            c => string.Equals(message.Content, c.Parts![0].Text, StringComparison.Ordinal));
         Assert.Single(request.Contents,
             c => Equals(message.Role, c.Role));
     }

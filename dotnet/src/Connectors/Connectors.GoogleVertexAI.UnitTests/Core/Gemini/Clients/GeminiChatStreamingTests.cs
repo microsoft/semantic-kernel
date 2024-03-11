@@ -107,7 +107,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
         for (int i = 0; i < testDataResponse.Count; i++)
         {
             Assert.Equal(
-                testDataResponse[i].Candidates![0].Content!.Parts[0].Text,
+                testDataResponse[i].Candidates![0].Content!.Parts![0].Text,
                 chatMessageContents[i].Content);
             Assert.Equal(
                 testDataResponse[i].Candidates![0].Content!.Role,
@@ -262,7 +262,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-        var systemMessage = request.Contents[0].Parts[0].Text;
+        var systemMessage = request.Contents[0].Parts![0].Text;
         var messageRole = request.Contents[0].Role;
         Assert.Equal(AuthorRole.User, messageRole);
         Assert.Equal(message, systemMessage);

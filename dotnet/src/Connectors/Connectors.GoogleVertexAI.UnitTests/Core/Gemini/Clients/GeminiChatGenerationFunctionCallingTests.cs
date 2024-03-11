@@ -110,7 +110,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         var content = request.Contents.LastOrDefault();
         Assert.NotNull(content);
         Assert.Equal(AuthorRole.Assistant, content.Role);
-        var functionCall = content.Parts[0].FunctionCall;
+        var functionCall = content.Parts![0].FunctionCall;
         Assert.NotNull(functionCall);
         Assert.Equal(functionCallPart.FunctionName, functionCall.FunctionName);
         Assert.Equal(JsonSerializer.Serialize(functionCallPart.Arguments), functionCall.Arguments!.ToJsonString());
@@ -147,7 +147,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         var content = request.Contents.LastOrDefault();
         Assert.NotNull(content);
         Assert.Equal(AuthorRole.Tool, content.Role);
-        var functionResponse = content.Parts[0].FunctionResponse;
+        var functionResponse = content.Parts![0].FunctionResponse;
         Assert.NotNull(functionResponse);
         Assert.Equal(toolCallResponse.FullyQualifiedName, functionResponse.FunctionName);
         Assert.Equal(JsonSerializer.Serialize(toolCallResponse.FunctionResult.GetValue<object>()), functionResponse.Response.Arguments.ToJsonString());

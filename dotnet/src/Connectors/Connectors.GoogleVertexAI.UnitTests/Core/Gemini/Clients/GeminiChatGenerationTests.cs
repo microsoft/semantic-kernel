@@ -287,7 +287,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-        var systemMessage = request.Contents[0].Parts[0].Text;
+        var systemMessage = request.Contents[0].Parts![0].Text;
         var messageRole = request.Contents[0].Role;
         Assert.Equal(AuthorRole.User, messageRole);
         Assert.Equal(message, systemMessage);
