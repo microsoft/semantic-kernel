@@ -217,7 +217,8 @@ public sealed class GeminiRequestTests
         ChatHistory chatHistory = [];
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
         var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
-        GeminiFunctionToolResult toolCallResult = new("function-name", expectedArgs);
+        var kernelFunction = KernelFunctionFactory.CreateFromMethod(() => "");
+        GeminiFunctionToolResult toolCallResult = new("function-name", new FunctionResult(kernelFunction, expectedArgs));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
         var executionSettings = new GeminiPromptExecutionSettings();
 

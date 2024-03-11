@@ -170,7 +170,7 @@ internal sealed class GeminiPart : IJsonOnDeserialized
             [JsonConstructor]
             public FunctionResponseEntity() { }
 
-            public FunctionResponseEntity(object response)
+            public FunctionResponseEntity(object? response)
             {
                 this.Arguments = JsonSerializer.SerializeToNode(response) ?? new JsonObject();
             }

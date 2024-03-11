@@ -133,7 +133,7 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
                         continue;
                     }
 
-                    object? functionResponse = (await function.InvokeAsync(kernel, arguments)).GetValue<object>();
+                    var functionResponse = await function.InvokeAsync(kernel, arguments);
                     Assert.NotNull(functionResponse);
 
                     var calledToolResult = new GeminiFunctionToolResult(toolCall.FullyQualifiedName, functionResponse);

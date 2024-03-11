@@ -323,14 +323,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
         // Now, invoke the function, and add the resulting tool call message to the chat history.
         s_inflightAutoInvokes.Value++;
-        object? functionResult;
+        FunctionResult? functionResult;
         try
         {
             // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
             // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
             // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-            functionResult = (await function.InvokeAsync(state.Kernel, functionArgs, cancellationToken: cancellationToken)
-                .ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+            functionResult = await function.InvokeAsync(state.Kernel, functionArgs, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
 #pragma warning disable CA1031 // Do not catch general exception types
         catch (Exception e)
@@ -371,7 +371,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         ChatHistory chat,
         GeminiRequest request,
         GeminiFunctionToolCall tool,
-        object? functionResponse,
+        FunctionResult? functionResponse,
         string? errorMessage)
     {
         if (errorMessage is not null)

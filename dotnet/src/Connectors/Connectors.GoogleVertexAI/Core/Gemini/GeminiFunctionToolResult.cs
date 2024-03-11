@@ -12,7 +12,7 @@ public sealed class GeminiFunctionToolResult
     /// </summary>
     /// <param name="toolName">The fully-qualified name of the function.</param>
     /// <param name="functionResult">The result of the function.</param>
-    public GeminiFunctionToolResult(string toolName, object functionResult)
+    public GeminiFunctionToolResult(string toolName, FunctionResult functionResult)
     {
         this.FunctionResult = functionResult;
         this.FullyQualifiedName = toolName;
@@ -21,7 +21,7 @@ public sealed class GeminiFunctionToolResult
     /// <summary>
     /// Gets the result of the function.
     /// </summary>
-    public object FunctionResult { get; }
+    public FunctionResult FunctionResult { get; }
 
     /// <summary>Gets the fully-qualified name of the function.</summary>
     /// <remarks>

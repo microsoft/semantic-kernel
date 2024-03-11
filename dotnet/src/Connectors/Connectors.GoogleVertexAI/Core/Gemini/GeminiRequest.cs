@@ -128,7 +128,7 @@ internal sealed class GeminiRequest
                     FunctionResponse = new GeminiPart.FunctionResponsePart
                     {
                         FunctionName = contentWithCalledTool.CalledToolResult.FullyQualifiedName,
-                        Response = new(contentWithCalledTool.CalledToolResult.FunctionResult)
+                        Response = new(contentWithCalledTool.CalledToolResult.FunctionResult.GetValue<object>())
                     }
                 });
                 break;
