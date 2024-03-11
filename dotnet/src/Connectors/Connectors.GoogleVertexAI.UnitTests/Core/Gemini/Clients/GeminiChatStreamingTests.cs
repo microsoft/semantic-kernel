@@ -19,15 +19,35 @@ public sealed class GeminiChatStreamingTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly string _responseContentFinishReasonOther;
     private const string StreamTestDataFilePath = "./TestData/chat_stream_response.json";
+    private const string StreamTestDataFinishReasonOtherFilePath = "./TestData/chat_stream_finish_reason_other_response.json";
 
     public GeminiChatStreamingTests()
     {
+        this._responseContentFinishReasonOther = File.ReadAllText(StreamTestDataFinishReasonOtherFilePath);
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
             File.ReadAllText(StreamTestDataFilePath));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+    }
+
+    [Fact]
+    public async Task ShouldReturnEmptyMessageContentIfNoContentInResponseAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(this._responseContentFinishReasonOther);
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var messages = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.Single(messages, item =>
+            item.Role == AuthorRole.Assistant && string.IsNullOrEmpty(item.Content) &&
+            ((GeminiMetadata)item.Metadata!).FinishReason == GeminiFinishReason.Other);
     }
 
     [Fact]
@@ -87,7 +107,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
         for (int i = 0; i < testDataResponse.Count; i++)
         {
             Assert.Equal(
-                testDataResponse[i].Candidates![0].Content!.Parts[0].Text,
+                testDataResponse[i].Candidates![0].Content!.Parts![0].Text,
                 chatMessageContents[i].Content);
             Assert.Equal(
                 testDataResponse[i].Candidates![0].Content!.Role,
@@ -242,7 +262,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-        var systemMessage = request.Contents[0].Parts[0].Text;
+        var systemMessage = request.Contents[0].Parts![0].Text;
         var messageRole = request.Contents[0].Role;
         Assert.Equal(AuthorRole.User, messageRole);
         Assert.Equal(message, systemMessage);

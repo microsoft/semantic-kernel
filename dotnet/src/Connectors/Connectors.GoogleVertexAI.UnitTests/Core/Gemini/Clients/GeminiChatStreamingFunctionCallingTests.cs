@@ -112,7 +112,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var content = request.Contents.LastOrDefault();
         Assert.NotNull(content);
         Assert.Equal(AuthorRole.Assistant, content.Role);
-        var functionCall = content.Parts[0].FunctionCall;
+        var functionCall = content.Parts![0].FunctionCall;
         Assert.NotNull(functionCall);
         Assert.Equal(functionCallPart.FunctionName, functionCall.FunctionName);
         Assert.Equal(JsonSerializer.Serialize(functionCallPart.Arguments), functionCall.Arguments!.ToJsonString());
@@ -129,11 +129,11 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
             FunctionName = this._timePluginNow.FullyQualifiedName,
             Arguments = JsonSerializer.SerializeToNode(new { param1 = "hello" })
         };
-        var toolCallResponse = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart()
-        {
-            FunctionName = this._timePluginNow.FullyQualifiedName,
-            Arguments = JsonSerializer.SerializeToNode(new { time = "Time now" })
-        });
+        var toolCall = new GeminiFunctionToolCall(functionCallPart);
+        this._kernelWithFunctions.Plugins["TimePlugin"].TryGetFunction("Now", out var timeNowFunction);
+        var toolCallResponse = new GeminiFunctionToolResult(
+            toolCall,
+            new FunctionResult(timeNowFunction!, new { time = "Time now" }));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, string.Empty, "modelId", [functionCallPart]));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResponse));
         var executionSettings = new GeminiPromptExecutionSettings
@@ -150,10 +150,10 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var content = request.Contents.LastOrDefault();
         Assert.NotNull(content);
         Assert.Equal(AuthorRole.Tool, content.Role);
-        var functionResponse = content.Parts[0].FunctionResponse;
+        var functionResponse = content.Parts![0].FunctionResponse;
         Assert.NotNull(functionResponse);
         Assert.Equal(toolCallResponse.FullyQualifiedName, functionResponse.FunctionName);
-        Assert.Equal(JsonSerializer.Serialize(toolCallResponse.Arguments), functionResponse.ResponseArguments.ToJsonString());
+        Assert.Equal(JsonSerializer.Serialize(toolCallResponse.FunctionResult.GetValue<object>()), functionResponse.Response.Arguments.ToJsonString());
     }
 
     [Fact]
@@ -237,9 +237,9 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var messages = chatHistory.OfType<GeminiChatMessageContent>();
         var contents = messages.Where(item =>
             item.Role == AuthorRole.Tool &&
-            item.CalledTool is not null &&
-            item.CalledTool.FullyQualifiedName == this._timePluginNow.FullyQualifiedName &&
-            item.CalledTool.Arguments!.ContainsKey("response"));
+            item.CalledToolResult is not null &&
+            item.CalledToolResult.FullyQualifiedName == this._timePluginNow.FullyQualifiedName &&
+            DateTime.TryParse(item.CalledToolResult.FunctionResult.ToString(), out _));
         Assert.Single(contents);
     }
 
@@ -369,7 +369,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
 
         // Chat history should contain the tool call from first invocation
         Assert.Contains(chatHistory, c =>
-            c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool && gm.CalledTool is not null);
+            c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool && gm.CalledToolResult is not null);
     }
 
     private static ChatHistory CreateSampleChatHistory()

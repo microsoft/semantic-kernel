@@ -159,10 +159,28 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         public string FunctionName { get; set; } = null!;
 
         /// <summary>
-        /// Required. The function response in JSON object format.
+        /// Required. The function response.
         /// </summary>
         [JsonPropertyName("response")]
         [JsonRequired]
-        public JsonNode ResponseArguments { get; set; } = null!;
+        public FunctionResponseEntity Response { get; set; } = null!;
+
+        internal sealed class FunctionResponseEntity
+        {
+            [JsonConstructor]
+            public FunctionResponseEntity() { }
+
+            public FunctionResponseEntity(object? response)
+            {
+                this.Arguments = JsonSerializer.SerializeToNode(response) ?? new JsonObject();
+            }
+
+            /// <summary>
+            /// Required. The function response in JSON object format.
+            /// </summary>
+            [JsonPropertyName("content")]
+            [JsonRequired]
+            public JsonNode Arguments { get; set; } = null!;
+        }
     }
 }

@@ -323,14 +323,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
         // Now, invoke the function, and add the resulting tool call message to the chat history.
         s_inflightAutoInvokes.Value++;
-        object? functionResult;
+        FunctionResult? functionResult;
         try
         {
             // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
             // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
             // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-            functionResult = (await function.InvokeAsync(state.Kernel, functionArgs, cancellationToken: cancellationToken)
-                .ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+            functionResult = await function.InvokeAsync(state.Kernel, functionArgs, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
 #pragma warning disable CA1031 // Do not catch general exception types
         catch (Exception e)
@@ -371,7 +371,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         ChatHistory chat,
         GeminiRequest request,
         GeminiFunctionToolCall tool,
-        object? functionResponse,
+        FunctionResult? functionResponse,
         string? errorMessage)
     {
         if (errorMessage is not null)
@@ -379,14 +379,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             this.Logger.LogDebug("Failed to handle tool request ({ToolName}). {Error}", tool.FullyQualifiedName, errorMessage);
         }
 
-        if (functionResponse is not null)
-        {
-            tool = new GeminiFunctionToolCall(tool, functionResponse);
-        }
-
         var message = new GeminiChatMessageContent(AuthorRole.Tool,
             content: errorMessage ?? string.Empty,
-            modelId: this._modelId, calledTool: tool, metadata: null);
+            modelId: this._modelId,
+            calledToolResult: functionResponse != null ? new(tool, functionResponse) : null,
+            metadata: null);
         chat.Add(message);
         request.AddChatMessage(message);
     }
@@ -497,7 +494,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
-        GeminiPart? part = candidate.Content?.Parts[0];
+        GeminiPart? part = candidate.Content?.Parts?[0];
         GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function ? new[] { function } : null;
         return new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
@@ -519,13 +516,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message)
     {
-        if (message.CalledTool != null)
+        if (message.CalledToolResult != null)
         {
             return new GeminiStreamingChatMessageContent(
                 role: message.Role,
                 content: message.Content,
                 modelId: this._modelId,
-                calledTool: message.CalledTool,
+                calledToolResult: message.CalledToolResult,
                 metadata: message.Metadata,
                 choiceIndex: message.Metadata!.Index);
         }
