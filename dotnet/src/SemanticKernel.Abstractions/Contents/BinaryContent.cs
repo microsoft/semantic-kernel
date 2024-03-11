@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
-[Experimental("SKEXP0015")]
+[Experimental("SKEXP0010")]
 public class BinaryContent : KernelContent
 {
     private readonly Func<Task<Stream>>? _streamProvider;

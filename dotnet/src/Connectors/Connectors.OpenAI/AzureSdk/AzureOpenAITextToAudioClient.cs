@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Azure OpenAI text-to-audio client for HTTP operations.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 internal sealed class AzureOpenAITextToAudioClient
 {
     private readonly ILogger _logger;
