@@ -137,7 +137,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
-    [Experimental("SKEXP0013")]
+    [Experimental("SKEXP0010")]
     [JsonPropertyName("seed")]
     public long? Seed
     {
@@ -156,7 +156,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <remarks>
     /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
     /// </remarks>
-    [Experimental("SKEXP0013")]
+    [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
     public object? ResponseFormat
     {
