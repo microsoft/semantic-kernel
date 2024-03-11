@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -18,7 +19,7 @@ public static class AudioStreamContentExtensions
     {
         if (content is null) { throw new ArgumentNullException(nameof(content)); }
 
-        using var binaryReader = new BinaryReader(content.Stream);
+        using var binaryReader = new BinaryReader(content.Stream, Encoding.Default, leaveOpen: true);
         return new AudioContent(binaryReader.ReadBytes((int)content.Stream.Length));
     }
 }
