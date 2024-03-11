@@ -22,7 +22,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> List["ChatMessageContent"]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -43,7 +43,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> AsyncIterable[List["StreamingChatMessageContent"]]:
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
@@ -82,5 +82,5 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     def _chat_message_content_to_dict(self, message: ChatMessageContent) -> Dict[str, Optional[str]]:
         """can be overridden to customize the serialization of the chat message content"""
-        msg = message.model_dump(exclude_none=True, include=["role", "content"])
+        msg = message.model_dump(include=["role", "content"])
         return msg
