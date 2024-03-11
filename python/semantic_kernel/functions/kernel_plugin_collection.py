@@ -77,8 +77,8 @@ class KernelPluginCollection(KernelBaseModel):
         Raises:
             ValueError: If the plugin or plugin.name is None.
         """
-        # if plugin.name in self.plugins.keys():
-        #     logger.warning(f'Overwriting plugin "{plugin.name}" in collection')
+        if plugin.name in self.plugins.keys():
+            logger.warning(f'Overwriting plugin "{plugin.name}" in collection')
         self.plugins[plugin.name] = plugin
 
     def add_plugin_from_functions(self, plugin_name: str, functions: List["KernelFunction"]) -> None:
@@ -118,8 +118,8 @@ class KernelPluginCollection(KernelBaseModel):
             return
 
         for func in functions:
-            # if func.name in self.plugins[plugin_name].functions:
-            #     logger.warning(f'Overwriting function "{func.name}" in collection')
+            if func.name in self.plugins[plugin_name].functions:
+                logger.warning(f'Overwriting function "{func.name}" in collection')
             self.plugins[plugin_name].functions[func.name] = func
 
     def add_list_of_plugins(self, plugins: List["KernelPlugin"]) -> None:
