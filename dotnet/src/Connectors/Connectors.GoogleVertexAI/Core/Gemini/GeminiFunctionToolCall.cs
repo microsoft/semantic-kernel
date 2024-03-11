@@ -42,7 +42,7 @@ public sealed class GeminiFunctionToolCall
     }
 
     /// <summary>
-    /// Initialize the <see cref="GeminiFunctionToolCall"/> from a <see cref="GeminiPart.FunctionCallPart"/>.
+    /// Initialize the <see cref="GeminiFunctionToolCall"/> from a <see cref="GeminiFunctionToolCall"/>.
     /// </summary>
     /// <param name="source">Tool call source to copy data</param>
     /// <param name="responseArguments">Response of invocation of tool</param>
