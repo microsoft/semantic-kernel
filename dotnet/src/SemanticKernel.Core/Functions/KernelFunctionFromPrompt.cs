@@ -236,7 +236,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this._logger);
     }
 
-
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
