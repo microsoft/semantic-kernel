@@ -18,14 +18,14 @@ public sealed class GeminiStreamingChatMessageContent : StreamingChatMessageCont
     /// <param name="content">Content of the message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="choiceIndex">Choice index</param>
-    /// <param name="calledTool">The tool called by the kernel with response data.</param>
+    /// <param name="calledToolResult">The result of tool called by the kernel.</param>
     /// <param name="metadata">Additional metadata</param>
     internal GeminiStreamingChatMessageContent(
         AuthorRole? role,
         string? content,
         string modelId,
         int choiceIndex,
-        GeminiFunctionToolCall? calledTool = null,
+        GeminiFunctionToolResult? calledToolResult = null,
         GeminiMetadata? metadata = null)
         : base(
             role: role,
@@ -36,7 +36,7 @@ public sealed class GeminiStreamingChatMessageContent : StreamingChatMessageCont
             encoding: Encoding.UTF8,
             metadata: metadata)
     {
-        this.CalledTool = calledTool;
+        this.CalledToolResult = calledToolResult;
     }
 
     /// <summary>
@@ -73,9 +73,9 @@ public sealed class GeminiStreamingChatMessageContent : StreamingChatMessageCont
     public IReadOnlyList<GeminiFunctionToolCall>? ToolCalls { get; }
 
     /// <summary>
-    /// The tool called by the kernel with response data.
+    /// The result of tool called by the kernel.
     /// </summary>
-    public GeminiFunctionToolCall? CalledTool { get; }
+    public GeminiFunctionToolResult? CalledToolResult { get; }
 
     /// <summary>
     /// The metadata associated with the content.

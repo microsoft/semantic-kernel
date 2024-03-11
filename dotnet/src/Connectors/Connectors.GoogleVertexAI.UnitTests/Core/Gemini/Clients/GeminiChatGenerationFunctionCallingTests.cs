@@ -231,9 +231,9 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         var messages = chatHistory.OfType<GeminiChatMessageContent>();
         var contents = messages.Where(item =>
             item.Role == AuthorRole.Tool &&
-            item.CalledTool is not null &&
-            item.CalledTool.FullyQualifiedName == this._timePluginNow.FullyQualifiedName &&
-            item.CalledTool.Arguments!.ContainsKey("response"));
+            item.CalledToolResult is not null &&
+            item.CalledToolResult.FullyQualifiedName == this._timePluginNow.FullyQualifiedName &&
+            item.CalledToolResult.Arguments!.ContainsKey("response"));
         Assert.Single(contents);
     }
 
@@ -357,7 +357,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
 
         // Chat history should contain the tool call from first invocation
         Assert.Contains(chatHistory, c =>
-            c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool && gm.CalledTool is not null);
+            c is GeminiChatMessageContent gm && gm.Role == AuthorRole.Tool && gm.CalledToolResult is not null);
     }
 
     private static ChatHistory CreateSampleChatHistory()

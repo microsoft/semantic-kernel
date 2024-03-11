@@ -19,13 +19,13 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="calledTool">The tool called by the kernel with response data.</param>
+    /// <param name="calledToolResult">The result of tool called by the kernel.</param>
     /// <param name="metadata">Additional metadata</param>
-    public GeminiChatMessageContent(
+    internal GeminiChatMessageContent(
         AuthorRole role,
         string? content,
         string modelId,
-        GeminiFunctionToolCall? calledTool = null,
+        GeminiFunctionToolResult? calledToolResult = null,
         GeminiMetadata? metadata = null)
         : base(
             role: role,
@@ -35,7 +35,25 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
             encoding: Encoding.UTF8,
             metadata: metadata)
     {
-        this.CalledTool = calledTool;
+        this.CalledToolResult = calledToolResult;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class.
+    /// </summary>
+    /// <param name="calledToolResult">The result of tool called by the kernel.</param>
+    public GeminiChatMessageContent(GeminiFunctionToolResult calledToolResult)
+        : base(
+            role: AuthorRole.Tool,
+            content: null,
+            modelId: null,
+            innerContent: null,
+            encoding: Encoding.UTF8,
+            metadata: null)
+    {
+        Verify.NotNull(calledToolResult);
+
+        this.CalledToolResult = calledToolResult;
     }
 
     /// <summary>
@@ -69,9 +87,9 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     public IReadOnlyList<GeminiFunctionToolCall>? ToolCalls { get; }
 
     /// <summary>
-    /// The tool called by the kernel with response data.
+    /// The result of tool called by the kernel.
     /// </summary>
-    public GeminiFunctionToolCall? CalledTool { get; }
+    public GeminiFunctionToolResult? CalledToolResult { get; }
 
     /// <summary>
     /// The metadata associated with the content.

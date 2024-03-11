@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -123,15 +122,13 @@ internal sealed class GeminiRequest
         List<GeminiPart> parts = new();
         switch (content)
         {
-            case GeminiChatMessageContent { CalledTool: not null } contentWithCalledTool:
+            case GeminiChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
                 parts.Add(new GeminiPart
                 {
                     FunctionResponse = new GeminiPart.FunctionResponsePart
                     {
-                        FunctionName = contentWithCalledTool.CalledTool.FullyQualifiedName,
-                        ResponseArguments = contentWithCalledTool.CalledTool.Arguments is not null
-                            ? JsonSerializer.SerializeToNode(contentWithCalledTool.CalledTool.Arguments)!
-                            : new JsonObject()
+                        FunctionName = contentWithCalledTool.CalledToolResult.FullyQualifiedName,
+                        FunctionResponse = new(contentWithCalledTool.CalledToolResult.FunctionResult)
                     }
                 });
                 break;

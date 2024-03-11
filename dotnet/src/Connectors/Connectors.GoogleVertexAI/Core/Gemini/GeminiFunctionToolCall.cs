@@ -41,22 +41,6 @@ public sealed class GeminiFunctionToolCall
         }
     }
 
-    /// <summary>
-    /// Initialize the <see cref="GeminiFunctionToolCall"/> from a <see cref="GeminiFunctionToolCall"/>.
-    /// </summary>
-    /// <param name="source">Tool call source to copy data</param>
-    /// <param name="responseArguments">Response of invocation of tool</param>
-    public GeminiFunctionToolCall(GeminiFunctionToolCall source, object? responseArguments)
-    {
-        this._fullyQualifiedFunctionName = source._fullyQualifiedFunctionName;
-        this.PluginName = source.PluginName;
-        this.FunctionName = source.FunctionName;
-        if (responseArguments != null)
-        {
-            this.Arguments = new Dictionary<string, object?> { { "response", responseArguments } };
-        }
-    }
-
     /// <summary>Gets the name of the plugin with which this function is associated, if any.</summary>
     public string? PluginName { get; }
 
