@@ -3,7 +3,7 @@
 import os
 import sys
 from typing import Union
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from pydantic import ValidationError
@@ -26,6 +26,7 @@ from semantic_kernel.exceptions.function_exceptions import (
 )
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -129,6 +130,25 @@ async def test_invoke_stream_functions(kernel: Kernel, pipeline_count: int, crea
         assert part[0].text == "test"
 
     assert mock_function.invoke.call_count == pipeline_count - 1
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_functions_throws_exception(kernel: Kernel, create_mock_function):
+    mock_function = create_mock_function(name="test_function")
+    kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
+    functions = [mock_function]
+
+    function_result_with_exception = FunctionResult(
+        value="", function=mock_function.metadata, output=None, metadata={"exception": "Test Exception"}
+    )
+
+    with patch("semantic_kernel.kernel.Kernel.invoke_stream", return_value=AsyncMock()) as mocked_invoke_stream:
+        mocked_invoke_stream.return_value.__aiter__.return_value = [function_result_with_exception]
+
+        async for part in kernel.invoke_stream(functions, input="test"):
+            assert "exception" in part.metadata, "Expected exception metadata in the FunctionResult."
+            assert part.metadata["exception"] == "Test Exception", "The exception message does not match."
+            break
 
 
 @pytest.mark.asyncio
