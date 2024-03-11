@@ -148,7 +148,8 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                     iterations=i + 1,
                 )
 
-            chat_history_for_steps = await self._process_tool_calls(chat_result, cloned_kernel, chat_history_for_steps)
+            await chat_completion._process_tool_calls(chat_result, cloned_kernel, chat_history_for_steps)
+            #chat_history_for_steps = await self._process_tool_calls(chat_result, cloned_kernel, chat_history_for_steps)
 
         # We're done, but the model hasn't returned a final answer.
         return FunctionCallingStepwisePlannerResult(
@@ -207,10 +208,11 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             goal=goal,
             initial_plan=initial_plan,
         )
-        prompt_template_config = PromptTemplateConfig(
-            template=self.step_prompt,
+        kernel_prompt_template = KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(
+                template=self.step_prompt,
+            )
         )
-        kernel_prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
         system_message = await kernel_prompt_template.render(kernel, arguments)
         chat_history.add_system_message(system_message)
         return chat_history
