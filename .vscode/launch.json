@@ -2,6 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "com.microsoft.semantickernel.skills.random.Main",
+      "projectName": "JavaReferenceSkill"
+    },
+    {
       "name": "Attach to .NET Functions",
       "type": "coreclr",
       "request": "attach",

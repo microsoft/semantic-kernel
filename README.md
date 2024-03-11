@@ -23,11 +23,9 @@ plugins with AI. With Semantic Kernel
 can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards,
 Semantic Kernel will execute the plan for the user.
 
-#### Please star the repo to show your support for this project!
+#### Please star the repo to show your support for this project
 
 ![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
-
-
 
 ## Getting started with Semantic Kernel
 
@@ -62,7 +60,7 @@ feature parity between our currently supported languages.
 The quickest way to get started with the basics is to get an API key
 from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java console applications/scripts below.
 
-### For C#:
+### For C #
 
 1. Create a new console app.
 2. Add the semantic kernel nuget [Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/).
@@ -70,7 +68,7 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 4. Replace the configuration placeholders for API key and other params with your key and settings.
 5. Run with `F5` or `dotnet run`
 
-### For Python:
+### For Python
 
 1. Install the pip package: `python -m pip install semantic-kernel`.
 2. Create a new script e.g. `hello-world.py`.
@@ -78,7 +76,7 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 4. Copy the code from [here](python/README.md) into the `hello-world.py` script.
 5. Run the python script.
 
-### For Java:
+### For Java
 
 1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
     1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
@@ -136,7 +134,7 @@ In the above screenshot, you can see the extension in action:
 - LLM model picker
 - Run button to test the semantic function with your input data
 
-## Check out our other repos!
+## Check out our other repos
 
 If you like Semantic Kernel, you may also be interested in other repos the Semantic Kernel team supports:
 

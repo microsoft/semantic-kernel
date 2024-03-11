@@ -76,6 +76,19 @@
       "command": "host start",
       "isBackground": true,
       "problemMatcher": "$func-dotnet-watch"
+    },
+    {
+      "type": "go",
+      "label": "go: build package",
+      "command": "build",
+      "args": [
+        "${fileDirname}"
+      ],
+      "problemMatcher": [
+        "$go"
+      ],
+      "group": "build",
+      "detail": "cd /workspaces/semantic-kernel; go build ${fileDirname}"
     }
   ]
 }

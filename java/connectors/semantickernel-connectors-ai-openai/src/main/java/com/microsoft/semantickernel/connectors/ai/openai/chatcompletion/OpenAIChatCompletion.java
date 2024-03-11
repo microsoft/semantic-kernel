@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.chatcompletion;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
@@ -17,13 +26,7 @@ import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionType;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
