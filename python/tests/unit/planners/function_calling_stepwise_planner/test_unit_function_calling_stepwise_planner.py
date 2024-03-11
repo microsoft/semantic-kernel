@@ -5,13 +5,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
