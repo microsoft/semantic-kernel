@@ -19,10 +19,12 @@
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
+            <version>0.2.10-alpha-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
