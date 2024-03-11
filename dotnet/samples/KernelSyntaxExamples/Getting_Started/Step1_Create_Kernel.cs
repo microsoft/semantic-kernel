@@ -49,7 +49,7 @@ public sealed class Step1_Create_Kernel : BaseTest
         WriteLine(await kernel.InvokePromptAsync("Tell me a story about {{$topic}}", arguments));
 
         // Example 5. Invoke the kernel with a templated prompt and execution settings configured to return JSON
-#pragma warning disable SKEXP0013
+#pragma warning disable SKEXP0010
         arguments = new(new OpenAIPromptExecutionSettings { ResponseFormat = "json_object" }) { { "topic", "chocolate" } };
         WriteLine(await kernel.InvokePromptAsync("Create a recipe for a {{$topic}} cake in JSON format", arguments));
     }

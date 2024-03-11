@@ -339,7 +339,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
@@ -376,7 +376,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -411,7 +411,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
@@ -448,7 +448,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -481,7 +481,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
@@ -511,7 +511,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -540,7 +540,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -573,7 +573,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
@@ -602,7 +602,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -629,7 +629,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
@@ -1060,7 +1060,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="apiVersion">Azure OpenAI API version</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0012")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToImage(
         this IKernelBuilder builder,
         string deploymentName,
@@ -1099,7 +1099,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0012")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
         string deploymentName,
@@ -1132,7 +1132,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0012")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextToImage(
         this IKernelBuilder builder,
         string apiKey,
@@ -1161,7 +1161,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0012")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextToImage(this IServiceCollection services,
         string apiKey,
         string? orgId = null,
@@ -1191,7 +1191,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0015")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIFiles(
         this IKernelBuilder builder,
         string apiKey,
@@ -1220,7 +1220,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0015")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAIFiles(
         this IServiceCollection services,
         string apiKey,
@@ -1255,7 +1255,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IKernelBuilder AddAzureOpenAITextToAudio(
         this IKernelBuilder builder,
         string deploymentName,
@@ -1293,7 +1293,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddAzureOpenAITextToAudio(
         this IServiceCollection services,
         string deploymentName,
@@ -1328,7 +1328,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IKernelBuilder AddOpenAITextToAudio(
         this IKernelBuilder builder,
         string modelId,
@@ -1361,7 +1361,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddOpenAITextToAudio(
         this IServiceCollection services,
         string modelId,
@@ -1397,7 +1397,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IKernelBuilder AddAzureOpenAIAudioToText(
         this IKernelBuilder builder,
         string deploymentName,
@@ -1436,7 +1436,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddAzureOpenAIAudioToText(
         this IServiceCollection services,
         string deploymentName,
@@ -1475,7 +1475,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IKernelBuilder AddAzureOpenAIAudioToText(
         this IKernelBuilder builder,
         string deploymentName,
@@ -1514,7 +1514,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddAzureOpenAIAudioToText(
         this IServiceCollection services,
         string deploymentName,
@@ -1551,7 +1551,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IKernelBuilder AddAzureOpenAIAudioToText(
         this IKernelBuilder builder,
         string deploymentName,
@@ -1579,7 +1579,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddAzureOpenAIAudioToText(
         this IServiceCollection services,
         string deploymentName,
@@ -1608,7 +1608,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IKernelBuilder AddOpenAIAudioToText(
         this IKernelBuilder builder,
         string modelId,
@@ -1642,7 +1642,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddOpenAIAudioToText(
         this IServiceCollection services,
         string modelId,
@@ -1674,7 +1674,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IKernelBuilder AddOpenAIAudioToText(
         this IKernelBuilder builder,
         string modelId,
@@ -1700,7 +1700,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0005")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddOpenAIAudioToText(
         this IServiceCollection services,
         string modelId,

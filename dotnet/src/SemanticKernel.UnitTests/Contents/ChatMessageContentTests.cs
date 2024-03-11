@@ -157,20 +157,20 @@ public class ChatMessageContentTests
             ["metadata-key-2"] = "metadata-value-2"
         })
         { MimeType = "mime-type-2" });
-#pragma warning disable SKEXP0015
+#pragma warning disable SKEXP0010
         items.Add(new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), "model-3", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-3"] = "metadata-value-3"
         })
         { MimeType = "mime-type-3" });
-#pragma warning restore SKEXP0015
-#pragma warning disable SKEXP0005
+#pragma warning restore SKEXP0010
+#pragma warning disable SKEXP0001
         items.Add(new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-4"] = "metadata-value-4"
         })
         { MimeType = "mime-type-4" });
-#pragma warning restore SKEXP0005
+#pragma warning restore SKEXP0001
         items.Add(new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-5"] = "metadata-value-5"
@@ -222,9 +222,9 @@ public class ChatMessageContentTests
         Assert.Single(imageContent.Metadata);
         Assert.Equal("metadata-value-2", imageContent.Metadata["metadata-key-2"]?.ToString());
 
-#pragma warning disable SKEXP0015
+#pragma warning disable SKEXP0010
         var binaryContent = deserializedMessage.Items[2] as BinaryContent;
-#pragma warning restore SKEXP0015
+#pragma warning restore SKEXP0010
         Assert.NotNull(binaryContent);
         Assert.True(binaryContent.Content?.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
         Assert.Equal("model-3", binaryContent.ModelId);
@@ -233,9 +233,9 @@ public class ChatMessageContentTests
         Assert.Single(binaryContent.Metadata);
         Assert.Equal("metadata-value-3", binaryContent.Metadata["metadata-key-3"]?.ToString());
 
-#pragma warning disable SKEXP0005 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var audioContent = deserializedMessage.Items[3] as AudioContent;
-#pragma warning restore SKEXP0005 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         Assert.NotNull(audioContent);
         Assert.True(audioContent.Data!.Value.Span.SequenceEqual(new BinaryData(new[] { 3, 2, 1 })));
         Assert.Equal("model-4", audioContent.ModelId);

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// References an uploaded file by id.
 /// </summary>
-[Experimental("SKEXP0015")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAIFileReference
 {
     /// <summary>

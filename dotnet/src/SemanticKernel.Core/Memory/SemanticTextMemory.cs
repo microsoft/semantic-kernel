@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Implementation of <see cref="ISemanticTextMemory"/>. Provides methods to save, retrieve, and search for text information
 /// in a semantic memory store.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class SemanticTextMemory : ISemanticTextMemory
 {
     private readonly ITextEmbeddingGenerationService _embeddingGenerator;

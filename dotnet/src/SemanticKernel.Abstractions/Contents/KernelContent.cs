@@ -11,12 +11,12 @@ namespace Microsoft.SemanticKernel;
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
 [JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
-#pragma warning disable SKEXP0015
+#pragma warning disable SKEXP0010
 [JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
-#pragma warning restore SKEXP0015
-#pragma warning disable SKEXP0005
+#pragma warning restore SKEXP0010
+#pragma warning disable SKEXP0001
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
-#pragma warning restore SKEXP0005
+#pragma warning restore SKEXP0001
 public abstract class KernelContent
 {
     /// <summary>

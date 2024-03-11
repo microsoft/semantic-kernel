@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to prompt after rendering.
 /// </summary>
-[Experimental("SKEXP0004")]
+[Experimental("SKEXP0001")]
 public sealed class PromptRenderedContext : PromptFilterContext
 {
     private string _renderedPrompt;

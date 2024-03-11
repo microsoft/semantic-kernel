@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Interface for filtering actions during function invocation.
 /// </summary>
-[Experimental("SKEXP0004")]
+[Experimental("SKEXP0001")]
 public interface IFunctionFilter
 {
     /// <summary>

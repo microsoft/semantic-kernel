@@ -29,9 +29,9 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
 
         var expectedPayload = HuggingFaceTestHelper.GetTestResponseBytes("imagetotext_test_request.jpg");
-#pragma warning disable SKEXP0015
+#pragma warning disable SKEXP0010
         this._imageContentInput = new ImageContent(expectedPayload, "model") { MimeType = "image/jpeg" };
-#pragma warning restore SKEXP0015
+#pragma warning restore SKEXP0010
     }
 
     [Fact]

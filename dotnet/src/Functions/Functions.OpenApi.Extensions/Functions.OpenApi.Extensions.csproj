@@ -5,7 +5,7 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <VersionSuffix>alpha</VersionSuffix>
-    <NoWarn>SKEXP0042</NoWarn>
+    <NoWarn>SKEXP0040</NoWarn>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <PropertyGroup>

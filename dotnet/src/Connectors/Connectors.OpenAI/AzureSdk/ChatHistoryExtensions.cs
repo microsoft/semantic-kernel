@@ -20,7 +20,7 @@ public static class ChatHistoryExtensions
     /// <param name="chatHistory">Target chat history</param>
     /// <param name="streamingMessageContents"><see cref="IAsyncEnumerator{T}"/> list of streaming message contents</param>
     /// <returns>Returns the original streaming results with some message processing</returns>
-    [Experimental("SKEXP0014")]
+    [Experimental("SKEXP0010")]
     public static async IAsyncEnumerable<StreamingChatMessageContent> AddStreamingMessageAsync(this ChatHistory chatHistory, IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents)
     {
         List<StreamingChatMessageContent> messageContents = new();

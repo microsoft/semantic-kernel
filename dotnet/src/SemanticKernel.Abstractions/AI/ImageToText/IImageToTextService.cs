@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.ImageToText;
 /// <summary>
 /// Interface for image-to-text services.
 /// </summary>
-[Experimental("SKEXP0002")]
+[Experimental("SKEXP0001")]
 public interface IImageToTextService : IAIService
 {
     /// <summary>

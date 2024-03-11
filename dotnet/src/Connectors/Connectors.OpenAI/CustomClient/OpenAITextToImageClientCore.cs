@@ -43,7 +43,7 @@ internal sealed class OpenAITextToImageClientCore
     /// <param name="extractResponseFunc">Function to invoke to extract the desired portion of the text to image response.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
-    [Experimental("SKEXP0012")]
+    [Experimental("SKEXP0010")]
     internal async Task<IList<string>> ExecuteImageGenerationRequestAsync(
         string url,
         string requestBody,

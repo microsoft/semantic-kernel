@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// OpenAI text to image service.
 /// </summary>
-[Experimental("SKEXP0012")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAITextToImageClientCore _core;

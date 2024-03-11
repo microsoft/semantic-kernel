@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Plugins.Memory;
 /// <summary>
 /// TextMemoryPlugin provides a plugin to save or recall information from the long or short term memory.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class TextMemoryPlugin
 {
     /// <summary>

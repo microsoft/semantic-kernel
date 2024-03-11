@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Azure OpenAI Image generation
 /// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
 /// </summary>
-[Experimental("SKEXP0012")]
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAIClient _client;

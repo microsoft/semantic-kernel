@@ -4,7 +4,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);SKEXP0004</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
