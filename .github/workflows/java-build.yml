@@ -21,7 +21,7 @@ jobs:
       javaChanges: ${{ steps.filter.outputs.java }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
