@@ -63,7 +63,7 @@ public class Example14_SemanticMemory : BaseTest
 
         // Uncomment the following line to use GoogleAI embeddings
         // var memoryWithCustomDb = new MemoryBuilder()
-        //     .WithGoogleAIEmbeddingGeneration(TestConfiguration.GoogleAI.EmbeddingModelId, TestConfiguration.GoogleAI.ApiKey)
+        //     .WithGoogleAITextEmbeddingGeneration(TestConfiguration.GoogleAI.EmbeddingModelId, TestConfiguration.GoogleAI.ApiKey)
         //     .WithMemoryStore(new VolatileMemoryStore())
         //     .Build();
 

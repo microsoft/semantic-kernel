@@ -22,7 +22,7 @@ public static class VertexAIMemoryBuilderExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated memory builder.</returns>
-    public static MemoryBuilder WithVertexAIEmbeddingGeneration(
+    public static MemoryBuilder WithVertexAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
         string bearerKey,

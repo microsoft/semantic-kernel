@@ -20,7 +20,7 @@ public static class GoogleAIMemoryBuilderExtensions
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated memory builder.</returns>
-    public static MemoryBuilder WithGoogleAIEmbeddingGeneration(
+    public static MemoryBuilder WithGoogleAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
         string apiKey,
