@@ -74,7 +74,7 @@ azure-search-documents = {version = "11.4.0b9", allow-prereleases = true}
 azure-core = "^1.28.0"
 
 [tool.poetry.group.usearch.dependencies]
-usearch = "1.1.1"
+usearch = "^2.9"
 pyarrow = ">=12.0.1,<15.0.0"
 
 [tool.ruff]
