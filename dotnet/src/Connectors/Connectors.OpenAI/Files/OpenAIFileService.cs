@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// File service access for OpenAI: https://api.openai.com/v1/files
 /// </summary>
-[Experimental("SKEXP0015")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAIFileService
 {
     private const string OpenAIApiEndpoint = "https://api.openai.com/v1/";
