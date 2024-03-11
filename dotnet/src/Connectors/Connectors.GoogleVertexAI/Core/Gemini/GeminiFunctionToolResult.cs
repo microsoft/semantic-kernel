@@ -24,11 +24,6 @@ public sealed class GeminiFunctionToolResult
     public FunctionResult FunctionResult { get; }
 
     /// <summary>Gets the fully-qualified name of the function.</summary>
-    /// <remarks>
-    /// This is the concatenation of the <see cref="KernelPlugin"/>.<see cref="KernelPlugin.Name"/>
-    /// and the <see cref="KernelFunction"/>.<see cref="KernelFunction.Name"/>,
-    /// separated by <see cref="GeminiFunction.NameSeparator"/>. If there is no <see cref="KernelPlugin"/>.<see cref="KernelPlugin.Name"/>,
-    /// this is the same as <see cref="KernelFunction"/>.<see cref="KernelFunction.Name"/>.
-    /// </remarks>
+    /// <seealso cref="GeminiFunctionToolCall.FullyQualifiedName">GeminiFunctionToolCall.FullyQualifiedName</seealso>
     public string FullyQualifiedName { get; }
 }
