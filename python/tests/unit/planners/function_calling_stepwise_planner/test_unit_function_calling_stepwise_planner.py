@@ -34,7 +34,7 @@ async def test_execute_with_empty_question_raises_error():
     planner = FunctionCallingStepwisePlanner(service_id="test-service", options=None)
     kernel_mock = AsyncMock(Kernel)
     with pytest.raises(PlannerInvalidConfigurationError):
-        await planner.execute(kernel_mock, "")
+        await planner.invoke(kernel_mock, "")
 
 
 @pytest.mark.asyncio

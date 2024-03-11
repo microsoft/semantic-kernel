@@ -93,11 +93,11 @@ async def main():
     planner = FunctionCallingStepwisePlanner(service_id=service_id, options=options)
 
     for question in questions:
-        result = await planner.execute(kernel, question)
+        result = await planner.invoke(kernel, question)
         print(f"Q: {question}\nA: {result.final_answer}\n")
 
         # Uncomment the following line to view the planner's process for completing the request
-        print(f"Chat history: {result.chat_history}\n")
+        # print(f"Chat history: {result.chat_history}\n")
 
 
 if __name__ == "__main__":

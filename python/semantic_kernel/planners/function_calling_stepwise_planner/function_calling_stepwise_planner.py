@@ -8,10 +8,6 @@ from typing import Optional
 
 import yaml
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -85,7 +81,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             step_prompt=step_prompt,
         )
 
-    async def execute(
+    async def invoke(
         self,
         kernel: Kernel,
         question: str,
@@ -128,8 +124,10 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 await asyncio.sleep(self.options.min_iteration_time_ms / 1000.0)  # convert ms to sec
             # For each step, request another completion to select a function for that step
             chat_history_for_steps.add_user_message(STEPWISE_USER_MESSAGE)
-            chat_result = await self._get_completion_with_functions(
-                chat_history_for_steps, cloned_kernel, chat_completion, prompt_execution_settings
+            chat_result = await chat_completion.complete_chat(
+                chat_history=chat_history_for_steps,
+                settings=prompt_execution_settings,
+                kernel=cloned_kernel,
             )
             chat_result = chat_result[0]
             chat_history_for_steps.add_message(chat_result)
@@ -148,52 +146,17 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                     iterations=i + 1,
                 )
 
-            await chat_completion._process_tool_calls(chat_result, cloned_kernel, chat_history_for_steps)
-            #chat_history_for_steps = await self._process_tool_calls(chat_result, cloned_kernel, chat_history_for_steps)
+            try:
+                await chat_completion._process_tool_calls(chat_result, cloned_kernel, chat_history_for_steps)
+            except Exception as exc:
+                chat_history_for_steps.add_user_message(f"An error occurred during planner invocation: {exc}")
+                continue
 
         # We're done, but the model hasn't returned a final answer.
         return FunctionCallingStepwisePlannerResult(
             final_answer="",
             chat_history=chat_history_for_steps,
             iterations=i + 1,
-        )
-
-    async def _process_tool_calls(
-        self,
-        chat_result: OpenAIChatMessageContent,
-        kernel: Kernel,
-        chat_history: ChatHistory,
-    ) -> ChatHistory:
-        """Process the tool calls in the chat result and return the chat history for the steps"""
-        logger.info(f"processing {len(chat_result.tool_calls)} tool calls")
-        for tool_call in chat_result.tool_calls:
-            func = kernel.func(**tool_call.function.split_name_dict())
-            if func is None:
-                chat_history.add_user_message(
-                    f"Function {tool_call.function.name} not found in the kernel. Try something else!"
-                )
-                continue
-            arguments = tool_call.function.to_kernel_arguments()
-            logger.info(f"Calling {tool_call.function.name} function with args: {arguments}")
-            func_result = await kernel.invoke(func, arguments)
-            chat_history.add_tool_message(
-                str(func_result.value),
-                metadata={"tool_call_id": tool_call.id, "function_name": tool_call.function.name},
-            )
-        return chat_history
-
-    async def _get_completion_with_functions(
-        self,
-        chat_history: ChatHistory,
-        kernel: Kernel,
-        chat_completion: ChatCompletionClientBase,
-        execution_settings: OpenAIChatPromptExecutionSettings,
-    ) -> OpenAIChatMessageContent:
-        """Get the completions with functions"""
-        return await chat_completion.complete_chat(
-            chat_history=chat_history,
-            settings=execution_settings,
-            kernel=kernel,
         )
 
     async def _build_chat_history_for_step(

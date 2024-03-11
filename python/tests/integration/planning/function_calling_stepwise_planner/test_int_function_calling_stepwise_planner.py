@@ -49,7 +49,7 @@ async def test_can_execute_function_calling_stepwise_plan(get_oai_config):
     planner = FunctionCallingStepwisePlanner(service_id=service_id, options=options)
 
     for question in questions:
-        result = await planner.execute(kernel, question)
+        result = await planner.invoke(kernel, question)
         print(f"Q: {question}\nA: {result.final_answer}\n")
         assert isinstance(result, FunctionCallingStepwisePlannerResult)
         assert 0 < len(result.final_answer) < 100
