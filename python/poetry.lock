@@ -378,11 +378,16 @@ msal-extensions = ">=0.3.0"
 
 [[package]]
 name = "azure-search-documents"
+<<<<<<< HEAD
 version = "11.6.0b4"
+=======
+version = "11.6.0b2"
+>>>>>>> d6adcaf8b (Bump azure-search-documents from 11.4.0b9 to 11.6.0b2 in /python)
 description = "Microsoft Azure Cognitive Search Client Library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
+<<<<<<< HEAD
     {file = "azure-search-documents-11.6.0b4.tar.gz", hash = "sha256:b09fc3fa2813e83e7177874b352c84462fb86934d9f4299775361e1dfccc3f8f"},
     {file = "azure_search_documents-11.6.0b4-py3-none-any.whl", hash = "sha256:9590392464f882762ce6bad03613c822d4423f09f311c275b833de25398c00c1"},
 ]
@@ -390,6 +395,15 @@ files = [
 [package.dependencies]
 azure-common = ">=1.1"
 azure-core = ">=1.28.0"
+=======
+    {file = "azure-search-documents-11.6.0b2.tar.gz", hash = "sha256:ba9abf3aacd7acfadc747480073f5351b6d266954ea91e251406b55d3e066db0"},
+    {file = "azure_search_documents-11.6.0b2-py3-none-any.whl", hash = "sha256:3586610d385a388d2a3aac91e7392e2c3bc3ace66e607e98ae54582280173834"},
+]
+
+[package.dependencies]
+azure-common = ">=1.1,<2.0"
+azure-core = ">=1.28.0,<2.0.0"
+>>>>>>> d6adcaf8b (Bump azure-search-documents from 11.4.0b9 to 11.6.0b2 in /python)
 isodate = ">=0.6.0"
 
 [[package]]
@@ -8380,6 +8394,7 @@ python-versions = "^3.10,<3.13"
 content-hash = "dbda04832ee7c4fb83b8a7b67725e39acd6a2049e89b1ced807898903a7b71e5"
 =======
 python-versions = "^3.8"
+<<<<<<< HEAD
 content-hash = "f2f47952e4d2992ba5a85f3783c4b3fee98e5cd9c2b38df7a23b32bcd2edc62f"
 >>>>>>> 827e7d76b (Bump torch from 2.2.0 to 2.2.1 in /python)
 =======
@@ -8390,3 +8405,6 @@ python-versions = "^3.10,<3.13"
 content-hash = "fdbcf390a64ef822a68574bf4d0444c7a111d0dcf426a9dc9d333c6fae236b9b"
 >>>>>>> origin/main-auto-tune
 >>>>>>> 9dd36f0bab1f89e6890be823f5df467f99dc8b8d
+=======
+content-hash = "b0c817a469c2acaef44800d2b0b500fc82b0f484c4f84cdf13d8b92a5673719d"
+>>>>>>> d6adcaf8b (Bump azure-search-documents from 11.4.0b9 to 11.6.0b2 in /python)
