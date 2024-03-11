@@ -130,7 +130,7 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
                     if (!kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments))
                     {
                         this.WriteLine("Unable to find function. Please try again!");
-                        break;
+                        continue;
                     }
 
                     object? functionResponse = (await function.InvokeAsync(kernel, arguments)).GetValue<object>();
