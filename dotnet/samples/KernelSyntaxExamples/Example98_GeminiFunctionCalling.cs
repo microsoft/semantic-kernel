@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using xRetry;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Examples;
@@ -126,24 +127,18 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
                 chatHistory.Add(result);
                 foreach (var toolCall in result.ToolCalls)
                 {
-                    string content = string.Empty;
-                    object? functionResponse = null;
                     if (!kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments))
                     {
-                        content = "Unable to find function. Please try again!";
-                    }
-                    else
-                    {
-                        functionResponse = (await function.InvokeAsync(kernel, arguments)).GetValue<object>();
+                        this.WriteLine("Unable to find function. Please try again!");
+                        break;
                     }
 
-                    var calledTool = new GeminiFunctionToolCall(toolCall, functionResponse);
+                    object? functionResponse = (await function.InvokeAsync(kernel, arguments)).GetValue<object>();
+                    Assert.NotNull(functionResponse);
 
-                    chatHistory.Add(new GeminiChatMessageContent(
-                        role: AuthorRole.Tool,
-                        content: content,
-                        modelId: result.ModelId!,
-                        calledTool: calledTool));
+                    var calledToolResult = new GeminiFunctionToolResult(toolCall.FullyQualifiedName, functionResponse);
+
+                    chatHistory.Add(new GeminiChatMessageContent(calledToolResult));
                 }
             }
 

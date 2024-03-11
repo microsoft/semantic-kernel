@@ -129,11 +129,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
             FunctionName = this._timePluginNow.FullyQualifiedName,
             Arguments = JsonSerializer.SerializeToNode(new { param1 = "hello" })
         };
-        var toolCallResponse = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart()
-        {
-            FunctionName = this._timePluginNow.FullyQualifiedName,
-            Arguments = JsonSerializer.SerializeToNode(new { time = "Time now" })
-        });
+        var toolCallResponse = new GeminiFunctionToolResult(this._timePluginNow.FullyQualifiedName, new { time = "Time now" });
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, string.Empty, "modelId", [functionCallPart]));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResponse));
         var executionSettings = new GeminiPromptExecutionSettings
@@ -153,7 +149,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var functionResponse = content.Parts[0].FunctionResponse;
         Assert.NotNull(functionResponse);
         Assert.Equal(toolCallResponse.FullyQualifiedName, functionResponse.FunctionName);
-        Assert.Equal(JsonSerializer.Serialize(toolCallResponse.Arguments), functionResponse.ResponseArguments.ToJsonString());
+        Assert.Equal(JsonSerializer.Serialize(toolCallResponse.FunctionResult), functionResponse.Response.Arguments.ToJsonString());
     }
 
     [Fact]
@@ -239,7 +235,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
             item.Role == AuthorRole.Tool &&
             item.CalledToolResult is not null &&
             item.CalledToolResult.FullyQualifiedName == this._timePluginNow.FullyQualifiedName &&
-            item.CalledToolResult.Arguments!.ContainsKey("response"));
+            DateTime.TryParse(item.CalledToolResult.FunctionResult.ToString(), out _));
         Assert.Single(contents);
     }
 

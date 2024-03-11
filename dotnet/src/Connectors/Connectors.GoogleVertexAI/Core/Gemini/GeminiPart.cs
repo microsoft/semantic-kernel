@@ -163,13 +163,16 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("response")]
         [JsonRequired]
-        public FunctionResponseEntity FunctionResponse { get; set; } = null!;
+        public FunctionResponseEntity Response { get; set; } = null!;
 
         internal sealed class FunctionResponseEntity
         {
+            [JsonConstructor]
+            public FunctionResponseEntity() { }
+
             public FunctionResponseEntity(object response)
             {
-                this.ResponseArguments = JsonSerializer.SerializeToNode(response) ?? new JsonObject();
+                this.Arguments = JsonSerializer.SerializeToNode(response) ?? new JsonObject();
             }
 
             /// <summary>
@@ -177,7 +180,7 @@ internal sealed class GeminiPart : IJsonOnDeserialized
             /// </summary>
             [JsonPropertyName("content")]
             [JsonRequired]
-            public JsonNode ResponseArguments { get; set; }
+            public JsonNode Arguments { get; set; } = null!;
         }
     }
 }

@@ -382,7 +382,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         var message = new GeminiChatMessageContent(AuthorRole.Tool,
             content: errorMessage ?? string.Empty,
             modelId: this._modelId,
-            calledToolResult: functionResponse != null ? new(functionResponse, tool.FullyQualifiedName) : null,
+            calledToolResult: functionResponse != null ? new(tool.FullyQualifiedName, functionResponse) : null,
             metadata: null);
         chat.Add(message);
         request.AddChatMessage(message);

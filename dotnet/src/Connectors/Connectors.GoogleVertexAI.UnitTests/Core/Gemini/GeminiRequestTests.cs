@@ -217,9 +217,8 @@ public sealed class GeminiRequestTests
         ChatHistory chatHistory = [];
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
         var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
-        GeminiFunctionToolCall toolCall = new(new GeminiPart.FunctionCallPart
-        { FunctionName = "function-name", Arguments = expectedArgs });
-        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, "tool-message", "model-id", toolCall));
+        GeminiFunctionToolResult toolCallResult = new("function-name", expectedArgs);
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
         var executionSettings = new GeminiPromptExecutionSettings();
 
         // Act
@@ -231,8 +230,8 @@ public sealed class GeminiRequestTests
         Assert.Single(request.Contents,
             c => c.Parts[0].FunctionResponse != null);
         Assert.Single(request.Contents,
-            c => string.Equals(c.Parts[0].FunctionResponse!.FunctionName, toolCall.FullyQualifiedName, StringComparison.Ordinal));
-        var args = request.Contents[0].Parts[0].FunctionResponse!.ResponseArguments;
+            c => string.Equals(c.Parts[0].FunctionResponse!.FunctionName, toolCallResult.FullyQualifiedName, StringComparison.Ordinal));
+        var args = request.Contents[0].Parts[0].FunctionResponse!.Response.Arguments;
         Assert.Equal(expectedArgs.ToJsonString(), args.ToJsonString());
     }
 
@@ -244,9 +243,9 @@ public sealed class GeminiRequestTests
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
         var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
         var toolCallPart = new GeminiPart.FunctionCallPart
-        { FunctionName = "function-name", Arguments = expectedArgs };
+            { FunctionName = "function-name", Arguments = expectedArgs };
         var toolCallPart2 = new GeminiPart.FunctionCallPart
-        { FunctionName = "function2-name", Arguments = expectedArgs };
+            { FunctionName = "function2-name", Arguments = expectedArgs };
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message", "model-id", functionsToolCalls: [toolCallPart]));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message2", "model-id2", functionsToolCalls: [toolCallPart2]));
         var executionSettings = new GeminiPromptExecutionSettings();
