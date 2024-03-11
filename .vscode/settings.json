@@ -96,5 +96,11 @@
     "python/tests"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "azureFunctions.deploySubpath": "dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function/bin/Release/net6.0/publish",
+  "azureFunctions.projectLanguage": "C#",
+  "azureFunctions.projectRuntime": "~4",
+  "debug.internalConsoleOptions": "neverOpen",
+  "azureFunctions.projectSubpath": "dotnet/samples/CreateChatGptPlugin/MathPlugin/azure-function",
+  "azureFunctions.preDeployTask": "publish (functions)"
 }
