@@ -112,7 +112,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return new KernelFunctionFromPrompt(
             template: promptTemplate,
             promptConfig: promptConfig,
-            loggerFactory: loggerFactory);
+            logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
     }
 
     /// <inheritdoc/>j
@@ -155,6 +155,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
     }
 
+    /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
         KernelArguments arguments,
@@ -217,6 +218,25 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
+    /// <inheritdoc/>
+    public override KernelFunction CloneForPlugin(string pluginName)
+    {
+        var promptConfig = new PromptTemplateConfig
+        {
+            Name = this.Name,
+            Description = this.Description,
+            InputVariables = this._inputVariables,
+            ExecutionSettings = this.ExecutionSettings.ToDictionary(kv => kv.Key, kv => kv.Value),
+        };
+
+        return new KernelFunctionFromPrompt(
+            this._promptTemplate,
+            promptConfig,
+            pluginName,
+            this._logger);
+    }
+
+
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
@@ -225,14 +245,24 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
-        ILoggerFactory? loggerFactory = null) : base(
+        ILogger logger) : this(
+            template, promptConfig, null, logger)
+    {
+    }
+
+    private KernelFunctionFromPrompt(
+        IPromptTemplate template,
+        PromptTemplateConfig promptConfig,
+        string? pluginName,
+        ILogger logger) : base(
             promptConfig.Name ?? CreateRandomFunctionName(),
+            pluginName,
             promptConfig.Description ?? string.Empty,
             promptConfig.GetKernelParametersMetadata(),
             promptConfig.GetKernelReturnParameterMetadata(),
             promptConfig.ExecutionSettings)
     {
-        this._logger = loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance;
+        this._logger = logger;
 
         this._promptTemplate = template;
         this._inputVariables = promptConfig.InputVariables.Select(iv => new InputVariable(iv)).ToList();

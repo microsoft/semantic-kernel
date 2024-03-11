@@ -57,6 +57,15 @@ public abstract class KernelFunction
     public string Name => this.Metadata.Name;
 
     /// <summary>
+    /// Gets the name of the plugin this function was added to.
+    /// </summary>
+    /// <remarks>
+    /// The plugin name will be null if the function has not been added to a plugin.
+    /// When a function is added to a plugin it will be cloned and the plugin name will be set.
+    /// </remarks>
+    public string? PluginName => this.Metadata.PluginName;
+
+    /// <summary>
     /// Gets a description of the function.
     /// </summary>
     /// <remarks>
@@ -91,12 +100,30 @@ public abstract class KernelFunction
     /// overridden by settings passed into the invocation of the function.
     /// </param>
     internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
+        : this(name, null, description, parameters, returnParameter, executionSettings)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelFunction"/> class.
+    /// </summary>
+    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
+    /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
+    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="parameters">The metadata describing the parameters to the function.</param>
+    /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
+    /// <param name="executionSettings">
+    /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
+    /// overridden by settings passed into the invocation of the function.
+    /// </param>
+    internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
         this.Metadata = new KernelFunctionMetadata(name)
         {
+            PluginName = pluginName,
             Description = description,
             Parameters = parameters,
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
@@ -374,6 +401,12 @@ public abstract class KernelFunction
     protected abstract IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance.
+    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
+    /// </summary>
+    public abstract KernelFunction CloneForPlugin(string pluginName);
 
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
     private static void HandleException(

@@ -125,6 +125,18 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // We don't invoke the hook here as the InvokeCoreAsync will do that for us
     }
 
+    /// <inheritdoc/>
+    public override KernelFunction CloneForPlugin(string pluginName)
+    {
+        return new KernelFunctionFromMethod(
+            this._function,
+            this.Name,
+            pluginName,
+            this.Description,
+            this.Metadata.Parameters,
+            this.Metadata.ReturnParameter);
+    }
+
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
@@ -150,7 +162,18 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter) :
-        base(functionName, description, parameters, returnParameter)
+        this(implementationFunc, functionName, null, description, parameters, returnParameter)
+    {
+    }
+
+    private KernelFunctionFromMethod(
+        ImplementationFunc implementationFunc,
+        string functionName,
+        string? pluginName,
+        string description,
+        IReadOnlyList<KernelParameterMetadata> parameters,
+        KernelReturnParameterMetadata returnParameter) :
+        base(functionName, pluginName, description, parameters, returnParameter)
     {
         Verify.ValidFunctionName(functionName);
 

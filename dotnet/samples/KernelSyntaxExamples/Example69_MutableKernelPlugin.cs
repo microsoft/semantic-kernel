@@ -52,7 +52,9 @@ public class Example69_MutableKernelPlugin : BaseTest
                 foreach (KernelFunction f in functions)
                 {
                     ArgumentNullException.ThrowIfNull(f);
-                    this._functions.Add(f.Name, f);
+
+                    var cloned = f.CloneForPlugin(name);
+                    this._functions.Add(cloned.Name, cloned);
                 }
             }
         }
@@ -72,7 +74,9 @@ public class Example69_MutableKernelPlugin : BaseTest
         public void AddFunction(KernelFunction function)
         {
             ArgumentNullException.ThrowIfNull(function);
-            this._functions.Add(function.Name, function);
+
+            var cloned = function.CloneForPlugin(this.Name);
+            this._functions.Add(cloned.Name, cloned);
         }
 
         /// <inheritdoc/>
