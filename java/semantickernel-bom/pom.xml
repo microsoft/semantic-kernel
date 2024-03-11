@@ -164,7 +164,7 @@
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>42.6.0</version>
+                <version>42.6.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

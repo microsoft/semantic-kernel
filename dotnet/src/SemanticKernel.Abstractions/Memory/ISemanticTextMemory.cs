@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// An interface for semantic memory that creates and recalls memories associated with text.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public interface ISemanticTextMemory
 {
     /// <summary>

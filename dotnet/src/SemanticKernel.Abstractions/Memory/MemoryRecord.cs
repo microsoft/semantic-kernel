@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class MemoryRecord : DataEntryBase
 {
     /// <summary>

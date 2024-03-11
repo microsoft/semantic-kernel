@@ -63,7 +63,7 @@ jobs:
             echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
           distribution: microsoft
@@ -77,7 +77,7 @@ jobs:
         run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
         working-directory: java
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test_output_sk_jdk${{ matrix.java-versions }}u
