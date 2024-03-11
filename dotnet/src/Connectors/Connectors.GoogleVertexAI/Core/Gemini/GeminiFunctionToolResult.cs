@@ -14,6 +14,9 @@ public sealed class GeminiFunctionToolResult
     /// <param name="functionResult">The result of the function.</param>
     public GeminiFunctionToolResult(GeminiFunctionToolCall toolCall, FunctionResult functionResult)
     {
+        Verify.NotNull(toolCall);
+        Verify.NotNull(functionResult);
+
         this.FunctionResult = functionResult;
         this.FullyQualifiedName = toolCall.FullyQualifiedName;
     }
