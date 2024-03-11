@@ -14,8 +14,9 @@ from azure.search.documents.indexes.models import (
     SearchIndex,
     SearchResourceEncryptionKey,
     VectorSearch,
+    VectorSearchProfile,
 )
-from azure.search.documents.models import VectorQuery
+from azure.search.documents.models import VectorizedQuery
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
@@ -93,13 +94,22 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
+        vector_search_profile_name = "az-vector-config"
         if vector_config:
-            vector_search = VectorSearch(algorithms=[vector_config])
+            vector_search_profile = VectorSearchProfile(
+                name=vector_search_profile_name, algorithm_configuration_name=vector_config.name
+            )
+            vector_search = VectorSearch(profiles=[vector_search_profile], algorithms=[vector_config])
         else:
+            vector_search_algorithm_name = "az-vector-hnsw-config"
+            vector_search_profile = VectorSearchProfile(
+                name=vector_search_profile_name, algorithm_configuration_name=vector_search_algorithm_name
+            )
             vector_search = VectorSearch(
+                profiles=[vector_search_profile],
                 algorithms=[
                     HnswAlgorithmConfiguration(
-                        name="az-vector-config",
+                        name=vector_search_algorithm_name,
                         kind="hnsw",
                         parameters=HnswParameters(
                             m=4,  # Number of bi-directional links, typically between 4 and 10
@@ -108,7 +118,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                             metric="cosine",  # Can be "cosine", "dotProduct", or "euclidean"
                         ),
                     )
-                ]
+                ],
             )
 
         if not self._search_index_client:
@@ -125,7 +135,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             # Create the search index with the semantic settings
             index = SearchIndex(
                 name=collection_name.lower(),
-                fields=get_index_schema(self._vector_size),
+                fields=get_index_schema(self._vector_size, vector_search_profile_name),
                 vector_search=vector_search,
                 encryption_key=search_resource_encryption_key,
             )
@@ -375,12 +385,12 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
 
-        vector = VectorQuery(value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING)
+        vector = VectorizedQuery(vector=embedding.flatten(), k_nearest_neighbors=limit, fields=SEARCH_FIELD_EMBEDDING)
 
         search_results = await search_client.search(
             search_text="*",
-            vectors=[vector],
             select=get_field_selection(with_embeddings),
+            vector_queries=[vector],
         )
 
         if not search_results or search_results is None:
