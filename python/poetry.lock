@@ -6192,43 +6192,6 @@ files = [
 ]
 
 [[package]]
-name = "ucall"
-version = "0.5.3"
-description = "Up to 100x Faster FastAPI. JSON-RPC with io_uring, SIMD-acceleration, and pure CPython bindings"
-optional = false
-python-versions = ">=3.9"
-files = [
-    {file = "ucall-0.5.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:d1d2217d1f63fb5e1fcdf9b0815b66498f11767fff3100305a55ae6fc7cf9cb4"},
-    {file = "ucall-0.5.3-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:975bb623d19b84e60752b592ce07e1d0fa9391cb8058106ec9b876e2b26a2503"},
-    {file = "ucall-0.5.3-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:d1a07e199c44217fca174a3ef273f977aa8b13169271fa12d2b8325b879fd7b4"},
-    {file = "ucall-0.5.3-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:32d5b7754440c5dea2b12527691243d955ce14cda8d48ecff16ad3670e877bd4"},
-    {file = "ucall-0.5.3-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:d817f4605947f1557809e510446298647442d63b240d202dab8fdc29a59895eb"},
-    {file = "ucall-0.5.3-cp310-cp310-win_amd64.whl", hash = "sha256:3f14b2a7511acbba1103b53ee55e0a6f53e0f2dd0f4c0e22bac2c7231d1f48fe"},
-    {file = "ucall-0.5.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:d52bc1a0d902e5ca0dbeb60ddd89a171bff523f7f2015c1e4882d64bd0a43f5e"},
-    {file = "ucall-0.5.3-cp311-cp311-macosx_11_0_universal2.whl", hash = "sha256:0b8281c8713fcb70afa2bf98ce1844d2ba90a04b9be356f32303c7ebc319a73c"},
-    {file = "ucall-0.5.3-cp311-cp311-macosx_11_0_x86_64.whl", hash = "sha256:9393a6ded6decc3032cbad1393f95694a057d0c504353e0a245b8174b594739b"},
-    {file = "ucall-0.5.3-cp311-cp311-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:027f4ae8b5554229b17257c6d576e983806eda9b5e673283f6fce95b9d95c366"},
-    {file = "ucall-0.5.3-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b9c7722ce74d3cc9879ef6b31eb425e04b8428f8d3b0b95460b02b075dc428a6"},
-    {file = "ucall-0.5.3-cp311-cp311-win_amd64.whl", hash = "sha256:b7db829d8b59917f4a2fc44ee976d9d1ee53d1dab3da771065c8baf1f3ef0fd2"},
-    {file = "ucall-0.5.3-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:7fdd8a982f9a7e8980d214a4d06509f1fb86a06357b15c97a40de69a333e2d0d"},
-    {file = "ucall-0.5.3-cp312-cp312-macosx_11_0_universal2.whl", hash = "sha256:71656896631712c97bf2b9323fe6c3fb14701f40dd406326bc466d5ffbeabe60"},
-    {file = "ucall-0.5.3-cp312-cp312-macosx_11_0_x86_64.whl", hash = "sha256:be95b8349c21481a453352f0ea58db06fa593a7521e068fdd16a936a491bf658"},
-    {file = "ucall-0.5.3-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:20232c3d1b799d719127fe32ebbacb9507e8d06d3cc77a4c136d202c6ad11148"},
-    {file = "ucall-0.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:fb6feabc29849d40d2da245480619ee9551de30ad1e1c604ee9856cbb810562b"},
-    {file = "ucall-0.5.3-cp312-cp312-win_amd64.whl", hash = "sha256:dd03e0d920794f5d29c92067236e2f080f48e4a9cfcf2717363e484083530021"},
-    {file = "ucall-0.5.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:05f21fb2ace0fbde57b195977907b33c3ee49539887a6f0ff5a762f03a3efb69"},
-    {file = "ucall-0.5.3-cp39-cp39-macosx_11_0_universal2.whl", hash = "sha256:087e13b7ef1ba3a4028697866987a3b631683ebe1eabc0a907fb8759e01c54be"},
-    {file = "ucall-0.5.3-cp39-cp39-macosx_11_0_x86_64.whl", hash = "sha256:4199aecb916f6c00d63bc2db29fa33d16f380f72fed4569755c947d25b92f97a"},
-    {file = "ucall-0.5.3-cp39-cp39-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:13454c53e8073ccaaf98364853f6899e16fb5198664c645b9468b1962b02bf14"},
-    {file = "ucall-0.5.3-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:59fad369bde946fcc8f1589954eadebc543198f767e76880b7a0821745524789"},
-    {file = "ucall-0.5.3-cp39-cp39-win_amd64.whl", hash = "sha256:8126c70ffdf19d0023f5eaeff1f128298c030bb63301a99d98454d70ecba27ed"},
-]
-
-[package.dependencies]
-numpy = "*"
-pillow = "*"
-
-[[package]]
 name = "ujson"
 version = "5.9.0"
 description = "Ultra fast JSON encoder and decoder for Python"
@@ -6365,7 +6328,6 @@ files = [
 [package.dependencies]
 numpy = "*"
 tqdm = "*"
-ucall = {version = "*", markers = "python_version >= \"3.9\""}
 
 [[package]]
 name = "uvicorn"
