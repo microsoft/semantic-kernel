@@ -136,7 +136,7 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
                     var functionResponse = await function.InvokeAsync(kernel, arguments);
                     Assert.NotNull(functionResponse);
 
-                    var calledToolResult = new GeminiFunctionToolResult(toolCall.FullyQualifiedName, functionResponse);
+                    var calledToolResult = new GeminiFunctionToolResult(toolCall, functionResponse);
 
                     chatHistory.Add(new GeminiChatMessageContent(calledToolResult));
                 }

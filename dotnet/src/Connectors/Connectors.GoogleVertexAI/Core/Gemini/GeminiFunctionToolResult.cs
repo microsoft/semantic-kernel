@@ -10,12 +10,12 @@ public sealed class GeminiFunctionToolResult
     /// <summary>
     /// Initializes a new instance of the <see cref="GeminiFunctionToolResult"/> class.
     /// </summary>
-    /// <param name="toolName">The fully-qualified name of the function.</param>
+    /// <param name="toolCall">The called function.</param>
     /// <param name="functionResult">The result of the function.</param>
-    public GeminiFunctionToolResult(string toolName, FunctionResult functionResult)
+    public GeminiFunctionToolResult(GeminiFunctionToolCall toolCall, FunctionResult functionResult)
     {
         this.FunctionResult = functionResult;
-        this.FullyQualifiedName = toolName;
+        this.FullyQualifiedName = toolCall.FullyQualifiedName;
     }
 
     /// <summary>

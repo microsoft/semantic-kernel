@@ -218,7 +218,8 @@ public sealed class GeminiRequestTests
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
         var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
         var kernelFunction = KernelFunctionFactory.CreateFromMethod(() => "");
-        GeminiFunctionToolResult toolCallResult = new("function-name", new FunctionResult(kernelFunction, expectedArgs));
+        var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "function-name" });
+        GeminiFunctionToolResult toolCallResult = new(toolCall, new FunctionResult(kernelFunction, expectedArgs));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResult));
         var executionSettings = new GeminiPromptExecutionSettings();
 

@@ -129,9 +129,10 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
             FunctionName = this._timePluginNow.FullyQualifiedName,
             Arguments = JsonSerializer.SerializeToNode(new { param1 = "hello" })
         };
+        var toolCall = new GeminiFunctionToolCall(functionCallPart);
         this._kernelWithFunctions.Plugins["TimePlugin"].TryGetFunction("Now", out var timeNowFunction);
         var toolCallResponse = new GeminiFunctionToolResult(
-            this._timePluginNow.FullyQualifiedName,
+            toolCall,
             new FunctionResult(timeNowFunction!, new { time = "Time now" }));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, string.Empty, "modelId", [functionCallPart]));
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResponse));
