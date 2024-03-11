@@ -12,11 +12,11 @@ public class KernelExtensionsTests
     {
         Kernel kernel = new();
 
-        KernelPlugin plugin = kernel.CreatePluginFromFunctions("coolplugin", new[]
-        {
+        KernelPlugin plugin = kernel.CreatePluginFromFunctions("coolplugin",
+        [
             kernel.CreateFunctionFromMethod(() => { }, "Function1"),
             kernel.CreateFunctionFromMethod(() => { }, "Function2"),
-        });
+        ]);
 
         Assert.NotNull(plugin);
         Assert.Empty(kernel.Plugins);
@@ -49,11 +49,11 @@ public class KernelExtensionsTests
     {
         Kernel kernel = new();
 
-        KernelPlugin plugin = kernel.CreatePluginFromFunctions("coolplugin", "the description", new[]
-        {
+        KernelPlugin plugin = kernel.CreatePluginFromFunctions("coolplugin", "the description",
+        [
             kernel.CreateFunctionFromMethod(() => { }, "Function1"),
             kernel.CreateFunctionFromMethod(() => { }, "Function2"),
-        });
+        ]);
 
         Assert.NotNull(plugin);
         Assert.Empty(kernel.Plugins);
@@ -70,11 +70,11 @@ public class KernelExtensionsTests
     {
         Kernel kernel = new();
 
-        kernel.ImportPluginFromFunctions("coolplugin", new[]
-        {
+        kernel.ImportPluginFromFunctions("coolplugin",
+        [
             kernel.CreateFunctionFromMethod(() => { }, "Function1"),
             kernel.CreateFunctionFromMethod(() => { }, "Function2"),
-        });
+        ]);
 
         Assert.Single(kernel.Plugins);
 
@@ -93,11 +93,11 @@ public class KernelExtensionsTests
     {
         Kernel kernel = new();
 
-        kernel.ImportPluginFromFunctions("coolplugin", "the description", new[]
-        {
+        kernel.ImportPluginFromFunctions("coolplugin", "the description",
+        [
             kernel.CreateFunctionFromMethod(() => { }, "Function1"),
             kernel.CreateFunctionFromMethod(() => { }, "Function2"),
-        });
+        ]);
 
         Assert.Single(kernel.Plugins);
 
@@ -116,11 +116,11 @@ public class KernelExtensionsTests
     {
         Kernel kernel = new();
 
-        kernel.Plugins.AddFromFunctions("coolplugin", new[]
-        {
+        kernel.Plugins.AddFromFunctions("coolplugin",
+        [
             kernel.CreateFunctionFromMethod(() => { }, "Function1"),
             kernel.CreateFunctionFromMethod(() => { }, "Function2"),
-        });
+        ]);
 
         Assert.Single(kernel.Plugins);
 
@@ -139,11 +139,11 @@ public class KernelExtensionsTests
     {
         Kernel kernel = new();
 
-        kernel.Plugins.AddFromFunctions("coolplugin", "the description", new[]
-        {
+        kernel.Plugins.AddFromFunctions("coolplugin", "the description",
+        [
             kernel.CreateFunctionFromMethod(() => { }, "Function1"),
             kernel.CreateFunctionFromMethod(() => { }, "Function2"),
-        });
+        ]);
 
         Assert.Single(kernel.Plugins);
 

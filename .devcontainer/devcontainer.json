@@ -13,7 +13,8 @@
 				"ms-dotnettools.dotnet-interactive-vscode",
 				"ms-semantic-kernel.semantic-kernel",
 				"esbenp.prettier-vscode",
-				"ms-dotnettools.csdevkit"
+				"ms-dotnettools.csdevkit",
+				"franneck94.c-cpp-runner"
 			]
 		}
 	},

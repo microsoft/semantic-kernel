@@ -6,7 +6,11 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
+<<<<<<< HEAD
         <version>0.2.10-alpha-SNAPSHOT</version>
+=======
+        <version>0.2.9-alpha-SNAPSHOT</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -20,15 +24,20 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
+<<<<<<< HEAD
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-ai-openai</artifactId>
             <scope>test</scope>
         </dependency>
+=======
+
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-search-documents</artifactId>
         </dependency>
+<<<<<<< HEAD
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -66,3 +75,8 @@
     </dependencies>
 
 </project>
+=======
+    </dependencies>
+
+</project>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f

@@ -34,7 +34,7 @@ sk_demo=# CREATE EXTENSION vector;
 > Note, "Azure Cosmos DB for PostgreSQL" uses `SELECT CREATE_EXTENSION('vector');` to enable the extension.
 
 3. To use Postgres as a semantic memory store:
-   > See [Example 14](../../../samples/KernelSyntaxExamples/Example14_SemanticMemory.cs) and [Example 15](../../../samples/KernelSyntaxExamples/Example15_TextMemoryPlugin.cs) for more memory usage examples with the kernel.
+   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
 ```csharp
 NpgsqlDataSourceBuilder dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Port=5432;Database=sk_demo;User Id=postgres;Password=mysecretpassword");

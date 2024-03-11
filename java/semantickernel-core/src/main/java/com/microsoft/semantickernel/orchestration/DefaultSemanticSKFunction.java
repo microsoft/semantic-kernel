@@ -5,7 +5,10 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
+<<<<<<< HEAD
 import java.util.Collections;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 import java.util.List;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -26,6 +29,7 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
             String functionName,
             String description,
             @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
+<<<<<<< HEAD
         super(
                 parameters,
                 skillName,
@@ -33,6 +37,9 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
                 description,
                 Collections.emptyList(),
                 kernelSkillsSupplier);
+=======
+        super(parameters, skillName, functionName, description, kernelSkillsSupplier);
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     }
 
     @Override

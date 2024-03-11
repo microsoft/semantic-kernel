@@ -72,6 +72,8 @@ public class VolatileMemoryStore implements MemoryStore {
 
                     Map<String, MemoryRecord> collection =
                             _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
+                    // getCollection throws MemoryException if the collection does not exist.
+                    Map<String, MemoryRecord> collection = getCollection(collectionName);
 
                     String key = record.getMetadata().getId();
                     // Assumption is that MemoryRecord will always have a non-null id.
@@ -193,6 +195,7 @@ public class VolatileMemoryStore implements MemoryStore {
             @Nonnull Embedding embedding,
             int limit,
             float minRelevanceScore,
+            double minRelevanceScore,
             boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
@@ -254,6 +257,7 @@ public class VolatileMemoryStore implements MemoryStore {
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             float minRelevanceScore,
+            double minRelevanceScore,
             boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
@@ -283,6 +287,9 @@ public class VolatileMemoryStore implements MemoryStore {
     public static class Builder implements MemoryStore.Builder<VolatileMemoryStore> {
         @Override
         public VolatileMemoryStore build() {
+    public static class Builder implements MemoryStore.Builder {
+        @Override
+        public MemoryStore build() {
             return new VolatileMemoryStore();
         }
     }

@@ -89,7 +89,11 @@ public interface SemanticTextMemory extends Buildable {
             String collection,
             String query,
             int limit,
+<<<<<<< HEAD
             float minRelevanceScore,
+=======
+            double minRelevanceScore,
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
             boolean withEmbeddings);
 
     /**

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import Field
 
@@ -10,10 +11,27 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 class KernelContent(KernelBaseModel, ABC):
     """Base class for all kernel contents."""
 
-    inner_content: Optional[Any] = None
-    ai_model_id: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    inner_content: Any | None = None
+    ai_model_id: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @abstractmethod
     def __str__(self) -> str:
+        """Return the string representation of the content."""
+        pass
+
+    @abstractmethod
+    def to_element(self) -> Any:
+        """Convert the instance to an Element."""
+        pass
+
+    @classmethod
+    @abstractmethod
+    def from_element(cls, element: Any) -> "KernelContent":
+        """Create an instance from an Element."""
+        pass
+
+    @abstractmethod
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the instance to a dictionary."""
         pass

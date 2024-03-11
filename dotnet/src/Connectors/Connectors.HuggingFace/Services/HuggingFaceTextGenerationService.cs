@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// </summary>
 public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
     private HuggingFaceClient Client { get; }
 
     /// <inheritdoc />
@@ -43,7 +43,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         Verify.NotNullOrWhiteSpace(model);
 
         this.Client = new HuggingFaceClient(
-        modelId: model,
+            modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),

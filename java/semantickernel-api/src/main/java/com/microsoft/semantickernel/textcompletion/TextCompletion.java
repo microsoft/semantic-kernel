@@ -8,7 +8,10 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.AIService;
 import java.util.List;
 import javax.annotation.Nonnull;
+<<<<<<< HEAD
 import reactor.core.publisher.Flux;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 import reactor.core.publisher.Mono;
 
 /** Interface for text completion services */
@@ -24,6 +27,7 @@ public interface TextCompletion extends AIService, Buildable {
     Mono<List<String>> completeAsync(
             @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings);
 
+<<<<<<< HEAD
     /**
      * Creates a completion for the prompt and settings.
      *
@@ -34,10 +38,13 @@ public interface TextCompletion extends AIService, Buildable {
     Flux<String> completeStreamAsync(
             @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings);
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     static Builder builder() {
         return BuildersSingleton.INST.getInstance(Builder.class);
     }
 
+<<<<<<< HEAD
     /**
      * Returns the default completion type for this service. This will be the type of request used
      * (streaming or non-streaming) when calls to this service are made. Defaults to {@link
@@ -47,11 +54,14 @@ public interface TextCompletion extends AIService, Buildable {
      */
     CompletionType defaultCompletionType();
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     interface Builder extends SemanticKernelBuilder<TextCompletion> {
 
         Builder withOpenAIClient(OpenAIAsyncClient client);
 
         Builder withModelId(String modelId);
+<<<<<<< HEAD
 
         /**
          * Sets the default completion type for this service. This will be the type of request used
@@ -59,5 +69,7 @@ public interface TextCompletion extends AIService, Buildable {
          * CompletionType#STREAMING}.
          */
         Builder withDefaultCompletionType(CompletionType completionType);
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     }
 }

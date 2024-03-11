@@ -1,0 +1,25 @@
+openapi: 3.0.2
+servers:
+  - url: /
+info:
+  description: |-
+    Example of an authenticated api
+  version: 1.0.1-SNAPSHOT
+  title: Auth Example
+paths:
+  /state:
+    get:
+      summary: Get the latest state of the system
+      description: The current state the system
+      operationId: getState
+      responses:
+        '200':
+          description: The current state of the system
+      security:
+        - BearerAuth:
+            - 'read'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

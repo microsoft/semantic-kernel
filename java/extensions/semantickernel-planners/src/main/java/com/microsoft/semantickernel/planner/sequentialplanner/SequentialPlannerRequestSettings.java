@@ -19,7 +19,11 @@ public class SequentialPlannerRequestSettings {
     /// and the functions available, this value may need to be adjusted.
     /// For default, this is set to null to exhibit previous behavior.
     /// </remarks>
+<<<<<<< HEAD
     @Nullable private Float relevancyThreshold = null;
+=======
+    @Nullable private Double relevancyThreshold = null;
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 
     /*
         /// <summary>
@@ -54,7 +58,11 @@ public class SequentialPlannerRequestSettings {
     private int maxTokens = 1024;
 
     public SequentialPlannerRequestSettings(
+<<<<<<< HEAD
             @Nullable Float relevancyThreshold,
+=======
+            @Nullable Double relevancyThreshold,
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
             int maxRelevantFunctions,
             Set<String> excludedSkills,
             Set<String> excludedFunctions,
@@ -71,7 +79,11 @@ public class SequentialPlannerRequestSettings {
     public SequentialPlannerRequestSettings() {}
 
     @Nullable
+<<<<<<< HEAD
     public Float getRelevancyThreshold() {
+=======
+    public Double getRelevancyThreshold() {
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         return relevancyThreshold;
     }
 

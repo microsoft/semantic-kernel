@@ -29,13 +29,17 @@ public class SequentialPlanner {
     private final CompletionSKFunction functionFlowFunction;
     private final Kernel kernel;
 
+<<<<<<< HEAD
     /** Whether to include function outputs in the function manual. */
     private final boolean includeFunctionOutputs;
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     public SequentialPlanner(
             Kernel kernel,
             @Nullable SequentialPlannerRequestSettings config,
             @Nullable String prompt) {
+<<<<<<< HEAD
         this(kernel, config, prompt, false);
     }
 
@@ -44,6 +48,8 @@ public class SequentialPlanner {
             @Nullable SequentialPlannerRequestSettings config,
             @Nullable String prompt,
             boolean includeFunctionOutputs) {
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         // Verify.NotNull(kernel);
 
         if (config == null) {
@@ -74,7 +80,10 @@ public class SequentialPlanner {
                         .build();
 
         this.kernel = kernel;
+<<<<<<< HEAD
         this.includeFunctionOutputs = includeFunctionOutputs;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     }
 
     /**
@@ -102,7 +111,11 @@ public class SequentialPlanner {
 
         try {
             return new DefaultSequentialPlannerSKContext(context)
+<<<<<<< HEAD
                     .getFunctionsManualAsync(goal, this.config, includeFunctionOutputs)
+=======
+                    .getFunctionsManualAsync(goal, this.config)
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
                     .flatMap(
                             relevantFunctionsManual -> {
                                 SKContext updatedContext =

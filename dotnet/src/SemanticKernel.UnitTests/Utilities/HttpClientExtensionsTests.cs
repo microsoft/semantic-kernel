@@ -56,8 +56,10 @@ public sealed class HttpClientExtensionsTests : IDisposable
     public async Task ShouldThrowHttpOperationExceptionForFailedRequestAsync()
     {
         //Arrange
-        this._httpMessageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("{\"details\": \"fake-response-content\"}", Encoding.UTF8, "application/json");
+        this._httpMessageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError)
+        {
+            Content = new StringContent("""{"details": "fake-response-content"}""", Encoding.UTF8, "application/json")
+        };
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
 
@@ -71,7 +73,7 @@ public sealed class HttpClientExtensionsTests : IDisposable
 
         Assert.Equal("Response status code does not indicate success: 500 (Internal Server Error).", exception.Message);
 
-        Assert.Equal("{\"details\": \"fake-response-content\"}", exception.ResponseContent);
+        Assert.Equal("""{"details": "fake-response-content"}""", exception.ResponseContent);
 
         Assert.True(exception.InnerException is HttpRequestException);
     }

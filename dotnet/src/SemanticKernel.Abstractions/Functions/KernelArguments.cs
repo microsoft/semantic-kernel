@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
@@ -24,8 +25,17 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
+    [JsonConstructor]
+    public KernelArguments()
+    {
+        this._arguments = new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
+    /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>
-    public KernelArguments(PromptExecutionSettings? executionSettings = null)
+    public KernelArguments(PromptExecutionSettings? executionSettings)
     {
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
 

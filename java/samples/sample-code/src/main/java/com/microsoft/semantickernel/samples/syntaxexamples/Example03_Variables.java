@@ -13,10 +13,13 @@ import reactor.core.publisher.Mono;
 
 import java.util.Locale;
 
+<<<<<<< HEAD
 /**
  * Demonstrates running a pipeline (a sequence of functions) on a
  * {@code com.microsoft.semantickernel.orchestration.SKContext}
  */
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 public class Example03_Variables {
 
     public static class StaticTextSkill {

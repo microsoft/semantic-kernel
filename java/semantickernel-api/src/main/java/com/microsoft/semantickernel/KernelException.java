@@ -36,7 +36,11 @@ public class KernelException extends SKException {
         /// <summary>
         /// Unknown error.
         /// </summary>
+<<<<<<< HEAD
         UNKNOWN_ERROR("Unknown error"),
+=======
+        UNKOWN_ERROR("Unknown error"),
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 
         INVALID_FUNCTION_DESCRIPTION("Invalid function description"),
 
@@ -46,8 +50,11 @@ public class KernelException extends SKException {
 
         FUNCTION_TYPE_NOT_SUPPORTED("Function type not supported"),
 
+<<<<<<< HEAD
         FUNCTION_CONFIGURATION_ERROR("Function configuration is not valid"),
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         INVALID_FUNCTION_TYPE("Invalid function type"),
 
         INVALID_SERVICE_CONFIGURATION("Invalid service configuration"),

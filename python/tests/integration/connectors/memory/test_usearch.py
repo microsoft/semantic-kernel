@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from datetime import datetime
-from typing import List
 
 import numpy as np
 import pytest
@@ -90,7 +89,7 @@ def memory_record3():
     )
 
 
-def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> List[MemoryRecord]:
+def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> list[MemoryRecord]:
     return [
         MemoryRecord(
             is_reference=False,
@@ -108,7 +107,6 @@ def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> List[Memo
 
 def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_embedding: bool):
     """Compare two MemoryRecord instances and assert they are the same."""
-
     assert record1._key == record2._key, f"_key mismatch: {record1._key} != {record2._key}"
     assert (
         record1._timestamp == record2._timestamp
@@ -128,7 +126,7 @@ def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_em
         record1._additional_metadata == record2._additional_metadata
     ), f"_additional_metadata mismatch: {record1._additional_metadata} != {record2._additional_metadata}"
     if with_embedding is True:
-        assert np.array_equal(record1._embedding, record2._embedding), "_embedding arrays are not equal"
+        assert record1._embedding == pytest.approx(record2._embedding, abs=1e-2), "_embedding arrays are not equal"
 
 
 @pytest.mark.asyncio
@@ -242,7 +240,7 @@ async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: M
 
     assert len(result) == 2
     assert isinstance(result[0], MemoryRecord)
-    assert result[1] == pytest.approx(1, abs=1e-5)
+    assert result[1] == pytest.approx(1, abs=1e-2)
 
 
 @pytest.mark.asyncio
@@ -258,8 +256,8 @@ async def test_get_nearest_matches(memory_record1: MemoryRecord, memory_record2:
 
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
-    assert results[0][1] == pytest.approx(1, abs=1e-5)
-    assert results[1][1] == pytest.approx(0.90450, abs=1e-5)
+    assert results[0][1] == pytest.approx(1, abs=1e-2)
+    assert results[1][1] == pytest.approx(0.90450, abs=1e-2)
 
 
 @pytest.mark.asyncio

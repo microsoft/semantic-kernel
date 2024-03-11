@@ -10,25 +10,15 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Automatically flushes out any not in the top N.
 /// By default, items are not sorted by score until you call <see cref="TopNCollection{T}.SortByScore"/>.
 /// </summary>
-internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
+internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<T>>
 {
-    private readonly MinHeap<ScoredValue<T>> _heap;
+    private readonly MinHeap<ScoredValue<T>> _heap = new(ScoredValue<T>.Min(), maxItems);
     private bool _sorted = false;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TopNCollection{T}"/> class.
-    /// </summary>
-    /// <param name="maxItems">The maximum number of items to keep in the collection.</param>
-    public TopNCollection(int maxItems)
-    {
-        this.MaxItems = maxItems;
-        this._heap = new MinHeap<ScoredValue<T>>(ScoredValue<T>.Min(), maxItems);
-    }
 
     /// <summary>
     /// Gets the maximum number of items allowed in the collection.
     /// </summary>
-    public int MaxItems { get; }
+    public int MaxItems { get; } = maxItems;
 
     /// <summary>
     /// Gets the current number of items in the collection.

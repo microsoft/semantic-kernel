@@ -35,7 +35,6 @@ import reactor.core.publisher.Mono;
 public class DefaultCompletionSKFunction
         extends DefaultSemanticSKFunction<CompletionRequestSettings>
         implements CompletionSKFunction {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);
 
     private final SemanticFunctionConfig functionConfig;
@@ -193,6 +192,16 @@ public class DefaultCompletionSKFunction
                                     prompt ->
                                             performCompletionRequest(
                                                     client, requestSettings, prompt, context))
+                            .flatMapMany(
+                                    prompt -> {
+                                        LOGGER.debug("RENDERED PROMPT: \n" + prompt);
+                                        return client.completeAsync(prompt, requestSettings);
+                                    })
+                            .single()
+                            .map(
+                                    completion -> {
+                                        return context.update(completion.get(0));
+                                    })
                             .doOnError(
                                     ex -> {
                                         LOGGER.warn(
@@ -278,7 +287,6 @@ public class DefaultCompletionSKFunction
     }
 
     public static class Builder implements CompletionSKFunction.Builder {
-
         private Kernel kernel;
         @Nullable private String promptTemplate = null;
         @Nullable private String functionName = null;

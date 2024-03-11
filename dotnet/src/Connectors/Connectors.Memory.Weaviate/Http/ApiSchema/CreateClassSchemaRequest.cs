@@ -12,38 +12,38 @@ internal sealed class CreateClassSchemaRequest
         this.Description = description;
         this.Vectorizer = "none";
         // See: MemoryRecordMetadata, we also store the timestamp
-        this.Properties = new[]
-        {
+        this.Properties =
+        [
             new Property
             {
                 Name = "sk_timestamp",
-                DataType = new[] { "date" }
+                DataType = ["date"]
             },
             new Property
             {
                 Name = "sk_id",
-                DataType = new[] { "string" },
+                DataType = ["string"],
                 IndexInverted = false
             },
             new Property
             {
                 Name = "sk_description",
-                DataType = new[] { "string" },
+                DataType = ["string"],
                 IndexInverted = false
             },
             new Property
             {
                 Name = "sk_text",
-                DataType = new[] { "string" },
+                DataType = ["string"],
                 IndexInverted = false
             },
             new Property
             {
                 Name = "sk_additional_metadata",
-                DataType = new[] { "string" },
+                DataType = ["string"],
                 IndexInverted = false
             }
-        };
+        ];
     }
 
     public string Class { get; set; }
