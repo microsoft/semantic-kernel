@@ -15,11 +15,6 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
-@pytest.fixture(scope="function")
-def chat_history():
-    return ChatHistory()
-
-
 def test_init_with_system_message_only():
     system_msg = "test message"
     chat_history = ChatHistory(system_message=system_msg)

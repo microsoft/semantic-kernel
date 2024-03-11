@@ -143,7 +143,7 @@ class Kernel(KernelBaseModel):
         function_name: Optional[str] = None,
         plugin_name: Optional[str] = None,
         return_function_results: Optional[bool] = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> AsyncIterable[Union[List["StreamingKernelContent"], List[FunctionResult]]]:
         """Execute one or more stream functions.
 
@@ -211,7 +211,7 @@ class Kernel(KernelBaseModel):
 
             async for stream_message in stream_function.invoke_stream(self, arguments):
                 if isinstance(stream_message, FunctionResult):
-                    exception = stream_message.metadata.get("exception", None)
+                    exception = stream_message.metadata.get("error", None)
                     if exception:
                         break
                 function_result.append(stream_message)
@@ -267,7 +267,7 @@ class Kernel(KernelBaseModel):
         arguments: Optional[KernelArguments] = None,
         function_name: Optional[str] = None,
         plugin_name: Optional[str] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """Execute one or more functions.
 
@@ -371,7 +371,7 @@ class Kernel(KernelBaseModel):
         prompt: str,
         arguments: Optional[KernelArguments] = None,
         template_format: Optional[str] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """
         Invoke a function from the provided prompt
@@ -415,7 +415,7 @@ class Kernel(KernelBaseModel):
             kernel_function_metadata=kernel_function_metadata,
             arguments=arguments,
             function_result=function_result,
-            exception=exception,
+            exception=exception or function_result.metadata.get("exception", None) if function_result else None,
         )
         if self.function_invoked_handlers:
             for handler in self.function_invoked_handlers.values():
@@ -728,7 +728,7 @@ class Kernel(KernelBaseModel):
             ValueError: If no service is found that matches the type.
 
         """
-        if not service_id:
+        if not service_id or service_id == "default":
             if not type:
                 if default_service := self.services.get("default"):
                     return default_service
