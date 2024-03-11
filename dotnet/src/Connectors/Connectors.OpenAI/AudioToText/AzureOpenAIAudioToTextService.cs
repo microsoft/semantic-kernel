@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Azure OpenAI audio-to-text service.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
 {
     /// <summary>Core implementation shared by Azure OpenAI services.</summary>
