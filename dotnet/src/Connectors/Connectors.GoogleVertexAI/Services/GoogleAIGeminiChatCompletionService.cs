@@ -23,27 +23,27 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleAIGeminiChatCompletionService"/> class.
     /// </summary>
-    /// <param name="model">The Gemini model for the chat completion service.</param>
+    /// <param name="modelId">The Gemini model for the chat completion service.</param>
     /// <param name="apiKey">The API key for authentication.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public GoogleAIGeminiChatCompletionService(
-        string model,
+        string modelId,
         string apiKey,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         this._chatCompletionClient = new GeminiChatCompletionClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
-            modelId: model,
+            modelId: modelId,
             apiKey: apiKey,
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiChatCompletionService)));
-        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc />

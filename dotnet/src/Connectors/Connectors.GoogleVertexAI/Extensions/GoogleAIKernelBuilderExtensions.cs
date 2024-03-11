@@ -38,7 +38,7 @@ public static class GoogleAIKernelBuilderExtensions
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new GoogleAIGeminiTextGenerationService(
-                model: modelId,
+                modelId: modelId,
                 apiKey: apiKey,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
@@ -67,7 +67,7 @@ public static class GoogleAIKernelBuilderExtensions
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new GoogleAIGeminiChatCompletionService(
-                model: modelId,
+                modelId: modelId,
                 apiKey: apiKey,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
@@ -96,7 +96,7 @@ public static class GoogleAIKernelBuilderExtensions
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new GoogleAITextEmbeddingGenerationService(
-                model: modelId,
+                modelId: modelId,
                 apiKey: apiKey,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));

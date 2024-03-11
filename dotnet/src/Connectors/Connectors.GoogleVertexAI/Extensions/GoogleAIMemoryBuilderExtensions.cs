@@ -32,7 +32,7 @@ public static class GoogleAIMemoryBuilderExtensions
 
         return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
             new GoogleAITextEmbeddingGenerationService(
-                model: modelId,
+                modelId: modelId,
                 apiKey: apiKey,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory: loggerFactory));

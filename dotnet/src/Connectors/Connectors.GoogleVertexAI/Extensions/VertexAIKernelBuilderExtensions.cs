@@ -44,7 +44,7 @@ public static class VertexAIKernelBuilderExtensions
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new VertexAIGeminiTextGenerationService(
-                model: modelId,
+                modelId: modelId,
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
@@ -81,7 +81,7 @@ public static class VertexAIKernelBuilderExtensions
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new VertexAIGeminiChatCompletionService(
-                model: modelId,
+                modelId: modelId,
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
@@ -118,7 +118,7 @@ public static class VertexAIKernelBuilderExtensions
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new VertexAITextEmbeddingGenerationService(
-                model: modelId,
+                modelId: modelId,
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,

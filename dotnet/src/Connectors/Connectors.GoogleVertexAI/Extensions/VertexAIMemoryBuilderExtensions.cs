@@ -38,7 +38,7 @@ public static class VertexAIMemoryBuilderExtensions
 
         return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
             new VertexAITextEmbeddingGenerationService(
-                model: modelId,
+                modelId: modelId,
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,

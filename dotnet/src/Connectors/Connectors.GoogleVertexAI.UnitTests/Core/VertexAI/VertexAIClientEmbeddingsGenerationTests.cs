@@ -141,7 +141,7 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
     {
         var client = new VertexAIEmbeddingClient(
             httpClient: this._httpClient,
-            embeddingModelId: modelId,
+            modelId: modelId,
             bearerKey: bearerKey ?? "fake-key",
             location: "us-central1",
             projectId: "fake-project-id");

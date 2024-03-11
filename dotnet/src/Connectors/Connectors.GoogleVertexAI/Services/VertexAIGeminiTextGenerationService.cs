@@ -23,21 +23,21 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
     /// <summary>
     /// Initializes a new instance of the <see cref="VertexAIGeminiTextGenerationService"/> class.
     /// </summary>
-    /// <param name="model">The model identifier.</param>
+    /// <param name="modelId">The model identifier.</param>
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The region to process the request.</param>
     /// <param name="projectId">Your Project Id.</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public VertexAIGeminiTextGenerationService(
-        string model,
+        string modelId,
         string bearerKey,
         string location,
         string projectId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(bearerKey);
         Verify.NotNullOrWhiteSpace(location);
         Verify.NotNullOrWhiteSpace(projectId);
@@ -46,12 +46,12 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
-            modelId: model,
+            modelId: modelId,
             bearerKey: bearerKey,
             location: location,
             projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiTextGenerationService))));
-        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc />

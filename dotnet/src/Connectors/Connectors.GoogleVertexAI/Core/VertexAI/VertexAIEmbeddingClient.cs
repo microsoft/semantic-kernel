@@ -22,14 +22,14 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     /// Represents a client for interacting with the embeddings models by Vertex AI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
-    /// <param name="embeddingModelId">Embeddings generation model id</param>
+    /// <param name="modelId">Embeddings generation model id</param>
     /// <param name="bearerKey">Bearer key used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public VertexAIEmbeddingClient(
         HttpClient httpClient,
-        string embeddingModelId,
+        string modelId,
         string bearerKey,
         string location,
         string projectId,
@@ -39,11 +39,11 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
             logger: logger,
             bearerKey: bearerKey)
     {
-        Verify.NotNullOrWhiteSpace(embeddingModelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
-        this._embeddingModelId = embeddingModelId;
+        this._embeddingModelId = modelId;
         this._embeddingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:predict");
     }
 
