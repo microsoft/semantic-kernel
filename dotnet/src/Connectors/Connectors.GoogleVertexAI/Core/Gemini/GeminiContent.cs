@@ -15,8 +15,7 @@ internal sealed class GeminiContent
     /// Ordered Parts that constitute a single message. Parts may have different MIME types.
     /// </summary>
     [JsonPropertyName("parts")]
-    [JsonRequired]
-    public IList<GeminiPart> Parts { get; set; } = null!;
+    public IList<GeminiPart>? Parts { get; set; }
 
     /// <summary>
     /// Optional. The producer of the content. Must be either 'user' or 'model'.

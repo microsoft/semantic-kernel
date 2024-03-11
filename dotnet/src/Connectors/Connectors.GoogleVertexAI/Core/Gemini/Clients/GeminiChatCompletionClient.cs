@@ -494,7 +494,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
-        GeminiPart? part = candidate.Content?.Parts[0];
+        GeminiPart? part = candidate.Content?.Parts?[0];
         GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function ? new[] { function } : null;
         return new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
