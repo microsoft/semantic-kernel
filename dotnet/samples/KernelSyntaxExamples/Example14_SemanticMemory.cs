@@ -61,6 +61,12 @@ public class Example14_SemanticMemory : BaseTest
             .WithMemoryStore(new VolatileMemoryStore())
             .Build();
 
+        // Uncomment the following line to use GoogleAI embeddings
+        // var memoryWithCustomDb = new MemoryBuilder()
+        //     .WithGoogleAITextEmbeddingGeneration(TestConfiguration.GoogleAI.EmbeddingModelId, TestConfiguration.GoogleAI.ApiKey)
+        //     .WithMemoryStore(new VolatileMemoryStore())
+        //     .Build();
+
         await RunExampleAsync(memoryWithCustomDb);
     }
 
@@ -167,7 +173,5 @@ public class Example14_SemanticMemory : BaseTest
         };
     }
 
-    public Example14_SemanticMemory(ITestOutputHelper output) : base(output)
-    {
-    }
+    public Example14_SemanticMemory(ITestOutputHelper output) : base(output) { }
 }
