@@ -23,7 +23,7 @@ def test_initialization():
 
 
 @pytest.mark.asyncio
-async def test_execute_with_empty_question_raises_error():
+async def test_invoke_with_empty_question_raises_error():
     planner = FunctionCallingStepwisePlanner(service_id="test-service", options=None)
     kernel_mock = AsyncMock(Kernel)
     with pytest.raises(PlannerInvalidConfigurationError):
@@ -77,3 +77,10 @@ async def test_generate_plan():
         mock_create_yaml_config.assert_called_once_with(kernel_mock)
         mock_get_functions_manual.assert_awaited_once()
         assert result is not None
+
+
+@pytest.mark.asyncio
+async def test_invoke_with_no_configured_AI_service_raises_exception(kernel: Kernel):
+    planner = FunctionCallingStepwisePlanner(service_id="test", options=None)
+    with pytest.raises(PlannerInvalidConfigurationError):
+        await planner.invoke(kernel, "test question")

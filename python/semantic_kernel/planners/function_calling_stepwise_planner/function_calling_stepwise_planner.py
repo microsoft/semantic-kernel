@@ -58,6 +58,9 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     def __init__(self, service_id: str, options: Optional[FunctionCallingStepwisePlannerOptions] = None):
         """Initialize a new instance of the FunctionCallingStepwisePlanner
 
+        The FunctionCallingStepwisePlanner is a planner based on top of an OpenAI Chat Completion service
+        (whether it be AzureOpenAI or OpenAI), so that we can use tools.
+
         If the options are configured to use callbacks to get the initial plan and the step prompt,
         the planner will use those provided callbacks to get that information. Otherwise it will
         read from the default yaml plan file and the step prompt file.
@@ -102,7 +105,13 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         if not question:
             raise PlannerInvalidConfigurationError("Input question cannot be empty")
 
-        chat_completion = kernel.get_service(service_id=self.service_id, type=OpenAIChatCompletion)
+        try:
+            chat_completion = kernel.get_service(service_id=self.service_id, type=OpenAIChatCompletion)
+        except Exception as exc:
+            raise PlannerInvalidConfigurationError(
+                f"The OpenAI service `{self.service_id}` is not available. Please configure the AI service."
+            ) from exc
+
         prompt_execution_settings: OpenAIChatPromptExecutionSettings = (
             self.options.execution_settings
             or chat_completion.get_prompt_execution_settings_class()(service_id=self.service_id)
