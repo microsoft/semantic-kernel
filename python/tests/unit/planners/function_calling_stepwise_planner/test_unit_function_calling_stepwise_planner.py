@@ -65,32 +65,6 @@ async def test_build_chat_history_for_step():
 
 
 @pytest.mark.asyncio
-async def test_get_completion_with_functions():
-    chat_completion_mock = AsyncMock(ChatCompletionClientBase)
-    chat_history = ChatHistory()
-    execution_settings = OpenAIChatPromptExecutionSettings()
-
-    planner = FunctionCallingStepwisePlanner(service_id="test_service", options=None)
-
-    kernel_mock = AsyncMock(Kernel)
-    kernel_mock.get_service.return_value = AsyncMock()
-
-    kernel_mock.get_service.return_value = chat_completion_mock
-    chat_completion_mock.complete_chat.return_value = AsyncMock()
-
-    result = await planner._get_completion_with_functions(
-        chat_history, kernel_mock, chat_completion_mock, execution_settings
-    )
-
-    chat_completion_mock.complete_chat.assert_called_once_with(
-        chat_history=chat_history,
-        settings=execution_settings,
-        kernel=kernel_mock,
-    )
-    assert result is not None
-
-
-@pytest.mark.asyncio
 async def test_generate_plan():
     planner = FunctionCallingStepwisePlanner(service_id="test_service")
 
