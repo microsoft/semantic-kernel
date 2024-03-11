@@ -351,18 +351,18 @@ msal-extensions = ">=0.3.0,<2.0.0"
 
 [[package]]
 name = "azure-search-documents"
-version = "11.4.0b9"
+version = "11.6.0b2"
 description = "Microsoft Azure Cognitive Search Client Library for Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "azure-search-documents-11.4.0b9.tar.gz", hash = "sha256:c1b65c0385b52428bee9f3b2bdd5ffe61b46efbacdd2d1f39f825b416cf24e95"},
-    {file = "azure_search_documents-11.4.0b9-py3-none-any.whl", hash = "sha256:37e85587c138557aef7a748bb71338daec7681b8732936658cbb67d900f090c4"},
+    {file = "azure-search-documents-11.6.0b2.tar.gz", hash = "sha256:ba9abf3aacd7acfadc747480073f5351b6d266954ea91e251406b55d3e066db0"},
+    {file = "azure_search_documents-11.6.0b2-py3-none-any.whl", hash = "sha256:3586610d385a388d2a3aac91e7392e2c3bc3ace66e607e98ae54582280173834"},
 ]
 
 [package.dependencies]
 azure-common = ">=1.1,<2.0"
-azure-core = ">=1.24.0,<2.0.0"
+azure-core = ">=1.28.0,<2.0.0"
 isodate = ">=0.6.0"
 
 [[package]]
