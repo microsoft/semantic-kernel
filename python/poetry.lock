@@ -1649,13 +1649,13 @@ test = ["Cython (>=0.29.24,<0.30.0)"]
 
 [[package]]
 name = "httpx"
-version = "0.26.0"
+version = "0.27.0"
 description = "The next generation HTTP client."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "httpx-0.26.0-py3-none-any.whl", hash = "sha256:8915f5a3627c4d47b73e8202457cb28f1266982d1159bd5779d86a80c0eab1cd"},
-    {file = "httpx-0.26.0.tar.gz", hash = "sha256:451b55c30d5185ea6b23c2c793abf9bb237d2a7dfb901ced6ff69ad37ec1dfaf"},
+    {file = "httpx-0.27.0-py3-none-any.whl", hash = "sha256:71d5465162c13681bff01ad59b2cc68dd838ea1f10e51574bac27103f00c91a5"},
+    {file = "httpx-0.27.0.tar.gz", hash = "sha256:a0cb88a46f32dc874e04ee956e4c2764aba2aa228f650b06788ba6bda2962ab5"},
 ]
 
 [package.dependencies]
@@ -5839,13 +5839,13 @@ files = [
 
 [[package]]
 name = "weaviate-client"
-version = "4.4.4"
+version = "4.5.1"
 description = "A python native Weaviate client"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "weaviate-client-4.4.4.tar.gz", hash = "sha256:572f98edc5aecb83be818540903e5cb632351bfbfa9da30717a527396238c7fb"},
-    {file = "weaviate_client-4.4.4-py3-none-any.whl", hash = "sha256:77ca7c382ef5652a176e044c7fedf292f91cc8e58d747dda361de3a3cc221962"},
+    {file = "weaviate-client-4.5.1.tar.gz", hash = "sha256:80495ba0523010c8b037a1e1a4f3d3fad726874a4c8838eaed1f131b678c30a2"},
+    {file = "weaviate_client-4.5.1-py3-none-any.whl", hash = "sha256:4eefa8d156ebc28b81fcea2716d923428fd7cc2e0b6fd738b2b33a49c46db2e9"},
 ]
 
 [package.dependencies]
@@ -5853,7 +5853,7 @@ authlib = ">=1.2.1,<2.0.0"
 grpcio = ">=1.57.0,<2.0.0"
 grpcio-health-checking = ">=1.57.0,<2.0.0"
 grpcio-tools = ">=1.57.0,<2.0.0"
-httpx = "0.26.0"
+httpx = "0.27.0"
 pydantic = ">=2.5.0,<3.0.0"
 requests = ">=2.30.0,<3.0.0"
 validators = "0.22.0"
@@ -6091,4 +6091,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "925ce9e6adba636fd2704d0a98e756f735b680a1173ce6d1e0b128ecce60122b"
+content-hash = "b31ecfacdf70ed85053e21c5f6153df98d0c06a7b82524a029d74dc20b85a8f3"
