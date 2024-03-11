@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;
@@ -206,6 +208,121 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.Throws<NotSupportedException>(Act);
+    }
+
+    [Fact]
+    public void FromChatHistoryCalledToolNotNullAddsFunctionResponse()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
+        var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
+        GeminiFunctionToolCall toolCall = new(new GeminiPart.FunctionCallPart
+        { FunctionName = "function-name", Arguments = expectedArgs });
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, "tool-message", "model-id", toolCall));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Single(request.Contents,
+            c => c.Role == AuthorRole.Tool);
+        Assert.Single(request.Contents,
+            c => c.Parts[0].FunctionResponse != null);
+        Assert.Single(request.Contents,
+            c => string.Equals(c.Parts[0].FunctionResponse!.FunctionName, toolCall.FullyQualifiedName, StringComparison.Ordinal));
+        var args = request.Contents[0].Parts[0].FunctionResponse!.ResponseArguments;
+        Assert.Equal(expectedArgs.ToJsonString(), args.ToJsonString());
+    }
+
+    [Fact]
+    public void FromChatHistoryToolCallsNotNullAddsFunctionCalls()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
+        var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
+        var toolCallPart = new GeminiPart.FunctionCallPart
+        { FunctionName = "function-name", Arguments = expectedArgs };
+        var toolCallPart2 = new GeminiPart.FunctionCallPart
+        { FunctionName = "function2-name", Arguments = expectedArgs };
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message", "model-id", functionsToolCalls: [toolCallPart]));
+        chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, "tool-message2", "model-id2", functionsToolCalls: [toolCallPart2]));
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Collection(request.Contents,
+            c => Assert.Equal(chatHistory[0].Role, c.Role),
+            c => Assert.Equal(chatHistory[1].Role, c.Role));
+        Assert.Collection(request.Contents,
+            c => Assert.NotNull(c.Parts[0].FunctionCall),
+            c => Assert.NotNull(c.Parts[0].FunctionCall));
+        Assert.Collection(request.Contents,
+            c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart.FunctionName),
+            c => Assert.Equal(c.Parts[0].FunctionCall!.FunctionName, toolCallPart2.FunctionName));
+        Assert.Collection(request.Contents,
+            c => Assert.Equal(expectedArgs.ToJsonString(),
+                c.Parts[0].FunctionCall!.Arguments!.ToJsonString()),
+            c => Assert.Equal(expectedArgs.ToJsonString(),
+                c.Parts[0].FunctionCall!.Arguments!.ToJsonString()));
+    }
+
+    [Fact]
+    public void AddFunctionItAddsFunctionToGeminiRequest()
+    {
+        // Arrange
+        var request = new GeminiRequest();
+        var function = new GeminiFunction("function-name", "function-description", "desc", null, null);
+
+        // Act
+        request.AddFunction(function);
+
+        // Assert
+        Assert.Collection(request.Tools!.Single().Functions,
+            func => Assert.Equivalent(function.ToFunctionDeclaration(), func, strict: true));
+    }
+
+    [Fact]
+    public void AddMultipleFunctionsItAddsFunctionsToGeminiRequest()
+    {
+        // Arrange
+        var request = new GeminiRequest();
+        var functions = new[]
+        {
+            new GeminiFunction("function-name", "function-description", "desc", null, null),
+            new GeminiFunction("function-name2", "function-description2", "desc2", null, null)
+        };
+
+        // Act
+        request.AddFunction(functions[0]);
+        request.AddFunction(functions[1]);
+
+        // Assert
+        Assert.Collection(request.Tools!.Single().Functions,
+            func => Assert.Equivalent(functions[0].ToFunctionDeclaration(), func, strict: true),
+            func => Assert.Equivalent(functions[1].ToFunctionDeclaration(), func, strict: true));
+    }
+
+    [Fact]
+    public void AddChatMessageToRequestItAddsChatMessageToGeminiRequest()
+    {
+        // Arrange
+        ChatHistory chat = [];
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chat, new GeminiPromptExecutionSettings());
+        var message = new GeminiChatMessageContent(AuthorRole.User, "user-message", "model-id");
+
+        // Act
+        request.AddChatMessage(message);
+
+        // Assert
+        Assert.Single(request.Contents,
+            c => string.Equals(message.Content, c.Parts[0].Text, StringComparison.Ordinal));
+        Assert.Single(request.Contents,
+            c => Equals(message.Role, c.Role));
     }
 
     private sealed class DummyContent : KernelContent

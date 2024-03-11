@@ -90,6 +90,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D
 		src\InternalUtilities\test\AssertExtensions.cs = src\InternalUtilities\test\AssertExtensions.cs
 		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
 		src\InternalUtilities\test\HttpMessageHandlerStub.cs = src\InternalUtilities\test\HttpMessageHandlerStub.cs
+		src\InternalUtilities\test\MultipleHttpMessageHandlerStub.cs = src\InternalUtilities\test\MultipleHttpMessageHandlerStub.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{958AD708-F048-4FAF-94ED-D2F2B92748B9}"

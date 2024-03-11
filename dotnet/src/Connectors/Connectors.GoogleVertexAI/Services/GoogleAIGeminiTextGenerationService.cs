@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -40,8 +41,7 @@ public sealed class GoogleAIGeminiTextGenerationService : ITextGenerationService
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new GoogleAIHttpRequestFactory(),
-            endpointProvider: new GoogleAIEndpointProvider(apiKey),
+            apiKey: apiKey,
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiTextGenerationService))));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
@@ -56,7 +56,7 @@ public sealed class GoogleAIGeminiTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._textGenerationClient.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this._textGenerationClient.GenerateTextAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -66,6 +66,6 @@ public sealed class GoogleAIGeminiTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._textGenerationClient.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+        return this._textGenerationClient.StreamGenerateTextAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 }

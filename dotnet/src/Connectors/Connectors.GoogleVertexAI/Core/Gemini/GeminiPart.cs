@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
 /// Union field data can be only one of properties in class GeminiPart
@@ -137,7 +136,13 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("args")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IList<JsonNode>? Arguments { get; set; }
+        public JsonNode? Arguments { get; set; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"FunctionName={this.FunctionName}, Arguments={this.Arguments}";
+        }
     }
 
     /// <summary>
@@ -158,6 +163,6 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("response")]
         [JsonRequired]
-        public IList<JsonNode> Response { get; set; } = null!;
+        public JsonNode ResponseArguments { get; set; } = null!;
     }
 }

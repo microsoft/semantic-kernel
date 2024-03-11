@@ -11,17 +11,9 @@ namespace Examples;
 public sealed class Example95_GeminiTextGeneration : BaseTest
 {
     [Fact]
-    public async Task RunAsync()
+    public async Task GoogleAIAsync()
     {
-        this.WriteLine("============= Gemini Text Generation =============");
-
-        await GoogleAIGeminiAsync();
-        await VertexAIGeminiAsync();
-    }
-
-    private async Task GoogleAIGeminiAsync()
-    {
-        this.WriteLine("===== Google AI Gemini API =====");
+        this.WriteLine("============= Google AI - Gemini Text Generation =============");
 
         string geminiApiKey = TestConfiguration.GoogleAI.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
@@ -41,9 +33,10 @@ public sealed class Example95_GeminiTextGeneration : BaseTest
         await RunSampleAsync(kernel);
     }
 
-    private async Task VertexAIGeminiAsync()
+    [Fact]
+    public async Task VertexAIAsync()
     {
-        this.WriteLine("===== Vertex AI Gemini API =====");
+        this.WriteLine("============= Vertex AI - Gemini Text Generation =============");
 
         string geminiApiKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
@@ -136,8 +129,8 @@ Event: {{$input}}
     {
         this.WriteLine("======== Simple Prompt ========");
 
-        string? response = await kernel.InvokePromptAsync<string>("Hi Gemini, what can you do for me?",
-            new KernelArguments(new GeminiPromptExecutionSettings() { MaxTokens = 120 }));
+        var response = await kernel.InvokePromptAsync<string>("Hi Gemini, what can you do for me?",
+            new KernelArguments(new GeminiPromptExecutionSettings() { MaxTokens = 600 }));
         this.WriteLine(response);
     }
 

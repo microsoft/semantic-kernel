@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -40,8 +41,7 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new GoogleAIHttpRequestFactory(),
-            endpointProvider: new GoogleAIEndpointProvider(apiKey),
+            apiKey: apiKey,
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
@@ -56,7 +56,7 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -66,6 +66,6 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        return this._chatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -39,14 +40,17 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(bearerKey);
+        Verify.NotNullOrWhiteSpace(location);
+        Verify.NotNullOrWhiteSpace(projectId);
 
         this._embeddingClient = new VertexAIEmbeddingClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             embeddingModelId: model,
-            httpRequestFactory: new VertexAIHttpRequestFactory(bearerKey),
-            endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
+            bearerKey: bearerKey,
+            location: location,
+            projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAITextEmbeddingGenerationService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }

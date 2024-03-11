@@ -14,17 +14,9 @@ namespace Examples;
 public sealed class Example96_GeminiChatCompletion : BaseTest
 {
     [Fact]
-    public async Task RunAsync()
+    public async Task GoogleAIAsync()
     {
-        this.WriteLine("======== Gemini Chat Completion ========");
-
-        await GoogleAIGeminiAsync();
-        await VertexAIGeminiAsync();
-    }
-
-    private async Task GoogleAIGeminiAsync()
-    {
-        this.WriteLine("===== Google AI Gemini API =====");
+        this.WriteLine("============= Google AI - Gemini Chat Completion =============");
 
         string geminiApiKey = TestConfiguration.GoogleAI.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
@@ -44,9 +36,10 @@ public sealed class Example96_GeminiChatCompletion : BaseTest
         await RunSampleAsync(kernel);
     }
 
-    private async Task VertexAIGeminiAsync()
+    [Fact]
+    public async Task VertexAIAsync()
     {
-        this.WriteLine("===== Vertex AI Gemini API =====");
+        this.WriteLine("============= Vertex AI - Gemini Chat Completion =============");
 
         string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;

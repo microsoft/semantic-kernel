@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
@@ -12,6 +14,8 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
 {
     internal GeminiMetadata() : base(new Dictionary<string, object?>()) { }
+
+    private GeminiMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
 
     /// <summary>
     /// Reason why the processing was finished.
@@ -93,6 +97,17 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
         get => this.GetValueFromDictionary() as IReadOnlyList<GeminiSafetyRating>;
         internal init => this.SetValueInDictionary(value);
     }
+
+    /// <summary>
+    /// Converts a dictionary to a <see cref="GeminiMetadata"/> object.
+    /// </summary>
+    public static GeminiMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
+    {
+        null => throw new ArgumentNullException(nameof(dictionary)),
+        GeminiMetadata metadata => metadata,
+        IDictionary<string, object?> metadata => new GeminiMetadata(metadata),
+        _ => new GeminiMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
+    };
 
     private void SetValueInDictionary(object? value, [CallerMemberName] string propertyName = "")
         => this.Dictionary[propertyName] = value;

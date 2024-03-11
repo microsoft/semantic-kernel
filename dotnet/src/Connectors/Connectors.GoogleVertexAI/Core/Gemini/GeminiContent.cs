@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
 /// The base structured datatype containing multi-part content of a message.

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -38,14 +39,17 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(bearerKey);
+        Verify.NotNullOrWhiteSpace(location);
+        Verify.NotNullOrWhiteSpace(projectId);
 
         this._chatCompletionClient = new GeminiChatCompletionClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new VertexAIHttpRequestFactory(bearerKey),
-            endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
+            bearerKey: bearerKey,
+            location: location,
+            projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
@@ -60,7 +64,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -70,6 +74,6 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        return this._chatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

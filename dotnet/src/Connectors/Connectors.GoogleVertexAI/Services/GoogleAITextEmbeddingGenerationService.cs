@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -41,8 +42,7 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             embeddingModelId: model,
-            httpRequestFactory: new GoogleAIHttpRequestFactory(),
-            endpointProvider: new GoogleAIEndpointProvider(apiKey),
+            apiKey: apiKey,
             logger: loggerFactory?.CreateLogger(typeof(GoogleAITextEmbeddingGenerationService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -38,14 +39,17 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(bearerKey);
+        Verify.NotNullOrWhiteSpace(location);
+        Verify.NotNullOrWhiteSpace(projectId);
 
         this._textGenerationClient = new GeminiTextGenerationClient(new GeminiChatCompletionClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: model,
-            httpRequestFactory: new VertexAIHttpRequestFactory(bearerKey),
-            endpointProvider: new VertexAIEndpointProvider(new VertexAIConfiguration(location, projectId)),
+            bearerKey: bearerKey,
+            location: location,
+            projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiTextGenerationService))));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
@@ -59,9 +63,7 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-    {
-        return this._textGenerationClient.GenerateTextAsync(prompt, executionSettings, cancellationToken);
-    }
+        => this._textGenerationClient.GenerateTextAsync(prompt, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc />
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -69,7 +71,5 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-    {
-        return this._textGenerationClient.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
-    }
+        => this._textGenerationClient.StreamGenerateTextAsync(prompt, executionSettings, kernel, cancellationToken);
 }
