@@ -85,7 +85,10 @@ internal abstract class ClientBase
         }
         catch (JsonException exc)
         {
-            throw new KernelException("Unexpected response from model", exc);
+            throw new KernelException("Unexpected response from model")
+            {
+                Data = { { "ResponseData", body } },
+            };
         }
     }
 
