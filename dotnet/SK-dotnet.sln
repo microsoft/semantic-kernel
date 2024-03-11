@@ -226,6 +226,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AssemblyAI", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AssemblyAI.UnitTests", "src\Connectors\Connectors.AssemblyAI.UnitTests\Connectors.AssemblyAI.UnitTests.csproj", "{91D98EEA-3397-4516-AC38-31D97CDB3CEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.HuggingFace.UnitTests", "src\Connectors\Connectors.HuggingFace.UnitTests\Connectors.HuggingFace.UnitTests.csproj", "{D544F344-B34F-47F9-B4FE-BD3CA299BB3A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -543,6 +545,12 @@ Global
 		{91D98EEA-3397-4516-AC38-31D97CDB3CEB}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{91D98EEA-3397-4516-AC38-31D97CDB3CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91D98EEA-3397-4516-AC38-31D97CDB3CEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D544F344-B34F-47F9-B4FE-BD3CA299BB3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D544F344-B34F-47F9-B4FE-BD3CA299BB3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D544F344-B34F-47F9-B4FE-BD3CA299BB3A}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{D544F344-B34F-47F9-B4FE-BD3CA299BB3A}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{D544F344-B34F-47F9-B4FE-BD3CA299BB3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D544F344-B34F-47F9-B4FE-BD3CA299BB3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -619,6 +627,7 @@ Global
 		{BCDD5B96-CCC3-46B9-8217-89CD5885F6A2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{E7065416-1965-4B31-B07E-F93D06952474} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{91D98EEA-3397-4516-AC38-31D97CDB3CEB} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{D544F344-B34F-47F9-B4FE-BD3CA299BB3A} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
