@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from numpy import array, expand_dims, ndarray
@@ -59,6 +60,8 @@ def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> Dict[str, Any]:
     for key, val in vars(mem).items():
         if val is not None:
             # Remove underscore
+            if isinstance(val, datetime):
+                val = val.isoformat()
             ret_dict[key[1:]] = val
     return ret_dict
 

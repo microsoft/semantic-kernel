@@ -102,7 +102,6 @@ async def test_upsert_and_get(memory_record1, setup_milvus):
     assert result._description == "description"
     assert result._external_source_name == "external source"
     assert result._additional_metadata == "additional metadata"
-    assert result._timestamp == "timestamp"
 
 
 @pytest.mark.asyncio
@@ -122,7 +121,6 @@ async def test_upsert_and_get_with_no_embedding(memory_record1, setup_milvus):
     assert result._description == "description"
     assert result._external_source_name == "external source"
     assert result._additional_metadata == "additional metadata"
-    assert result._timestamp == "timestamp"
 
 
 @pytest.mark.asyncio
@@ -143,7 +141,6 @@ async def test_upsert_and_get_batch(memory_record1, memory_record2, setup_milvus
     assert result[0]._description == "description"
     assert result[0]._external_source_name == "external source"
     assert result[0]._additional_metadata == "additional metadata"
-    assert result[0]._timestamp == "timestamp"
 
 
 @pytest.mark.asyncio

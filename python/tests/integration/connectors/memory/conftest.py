@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from datetime import datetime
+
 import numpy as np
 import pytest
 
@@ -17,7 +19,7 @@ def memory_record1():
         description="description",
         external_source_name="external source",
         additional_metadata="additional metadata",
-        timestamp="timestamp",
+        timestamp=datetime.now(),
     )
 
 
@@ -31,7 +33,7 @@ def memory_record2():
         description="description",
         external_source_name="external source",
         additional_metadata="additional metadata",
-        timestamp="timestamp",
+        timestamp=datetime.now(),
     )
 
 
@@ -45,5 +47,5 @@ def memory_record3():
         description="description",
         additional_metadata="additional metadata",
         external_source_name="external source",
-        timestamp="timestamp",
+        timestamp=datetime.now(),
     )
