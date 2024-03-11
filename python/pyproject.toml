@@ -32,7 +32,7 @@ pytest-cov = ">=4.1.0"
 mypy = ">=1.8.0"
 
 [tool.poetry.group.google_palm.dependencies]
-google-generativeai = { version = ">=0.1,<0.4", markers = "python_version >= '3.9'" }
+google-generativeai = { version = ">=0.1,<0.5", markers = "python_version >= '3.9'" }
 grpcio-status = { version = "^1.53.0", markers = "python_version >= '3.9'" }
 
 [tool.poetry.group.hugging_face.dependencies]
