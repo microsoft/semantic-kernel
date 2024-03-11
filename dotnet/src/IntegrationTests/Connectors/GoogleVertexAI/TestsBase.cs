@@ -15,6 +15,7 @@ public abstract class TestsBase
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddUserSecrets<TestsBase>()
         .AddEnvironmentVariables()
         .Build();
 
@@ -32,7 +33,7 @@ public abstract class TestsBase
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
             model: this.VertexAIGetGeminiModel(),
-            apiKey: this.VertexAIGetApiKey(),
+            bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
@@ -45,7 +46,7 @@ public abstract class TestsBase
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
             model: this.VertexAIGetGeminiVisionModel(),
-            apiKey: this.VertexAIGetApiKey(),
+            bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
@@ -58,7 +59,7 @@ public abstract class TestsBase
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAIGeminiTextGenerationService(
             model: this.VertexAIGetGeminiModel(),
-            apiKey: this.VertexAIGetApiKey(),
+            bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
@@ -71,7 +72,7 @@ public abstract class TestsBase
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAITextEmbeddingGenerationService(
             model: this.VertexAIGetEmbeddingModel(),
-            apiKey: this.VertexAIGetApiKey(),
+            bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
@@ -90,7 +91,7 @@ public abstract class TestsBase
     private string VertexAIGetGeminiModel() => this._configuration.GetSection("VertexAI:Gemini:ModelId").Get<string>()!;
     private string VertexAIGetGeminiVisionModel() => this._configuration.GetSection("VertexAI:Gemini:VisionModelId").Get<string>()!;
     private string VertexAIGetEmbeddingModel() => this._configuration.GetSection("VertexAI:EmbeddingModelId").Get<string>()!;
-    private string VertexAIGetApiKey() => this._configuration.GetSection("VertexAI:BearerKey").Get<string>()!;
+    private string VertexAIGetBearerKey() => this._configuration.GetSection("VertexAI:BearerKey").Get<string>()!;
     private string VertexAIGetLocation() => this._configuration.GetSection("VertexAI:Location").Get<string>()!;
     private string VertexAIGetProjectId() => this._configuration.GetSection("VertexAI:ProjectId").Get<string>()!;
 }

@@ -17,6 +17,11 @@ from semantic_kernel.connectors.memory.redis.utils import (
     get_redis_key,
     serialize_record_to_redis,
 )
+from semantic_kernel.exceptions import (
+    ServiceInitializationError,
+    ServiceResourceNotFoundError,
+    ServiceResponseException,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -64,7 +69,7 @@ class RedisMemoryStore(MemoryStoreBase):
         if kwargs.get("logger"):
             logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if vector_size <= 0:
-            raise ValueError("Vector dimension must be a positive integer")
+            raise ServiceInitializationError("Vector dimension must be a positive integer")
 
         self._database = redis.Redis.from_url(connection_string)
         self._ft = self._database.ft
@@ -115,8 +120,7 @@ class RedisMemoryStore(MemoryStoreBase):
             try:
                 self._ft(collection_name).create_index(definition=index_def, fields=schema)
             except Exception as e:
-                logger.error(e)
-                raise e
+                raise ServiceResponseException(f"Failed to create collection {collection_name}") from e
 
     async def get_collections(self) -> List[str]:
         """
@@ -175,8 +179,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
 
         if not await self.does_collection_exist(collection_name):
-            logger.error(f'Collection "{collection_name}" does not exist')
-            raise Exception(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
 
         # Typical Redis key structure: collection_name:{some identifier}
         record._key = get_redis_key(collection_name, record._id)
@@ -190,8 +193,7 @@ class RedisMemoryStore(MemoryStoreBase):
             )
             return record._key
         except Exception as e:
-            logger.error(e)
-            raise e
+            raise ServiceResponseException("Could not upsert messages.") from e
 
     async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """
@@ -231,8 +233,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
 
         if not await self.does_collection_exist(collection_name):
-            logger.error(f'Collection "{collection_name}" does not exist')
-            raise Exception(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
 
         internal_key = get_redis_key(collection_name, key)
         fields = self._database.hgetall(internal_key)
@@ -279,8 +280,7 @@ class RedisMemoryStore(MemoryStoreBase):
             key {str} -- ID associated with the memory to remove
         """
         if not await self.does_collection_exist(collection_name):
-            logger.error(f'Collection "{collection_name}" does not exist')
-            raise Exception(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
 
         self._database.delete(get_redis_key(collection_name, key))
 
@@ -293,8 +293,7 @@ class RedisMemoryStore(MemoryStoreBase):
             keys {List[str]} -- IDs associated with the memory records to remove
         """
         if not await self.does_collection_exist(collection_name):
-            logger.error(f'Collection "{collection_name}" does not exist')
-            raise Exception(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
 
         self._database.delete(*[get_redis_key(collection_name, key) for key in keys])
 
@@ -321,8 +320,7 @@ class RedisMemoryStore(MemoryStoreBase):
                 order, or an empty list if no relevant matches are found
         """
         if not await self.does_collection_exist(collection_name):
-            logger.error(f'Collection "{collection_name}" does not exist')
-            raise Exception(f'Collection "{collection_name}" does not exist')
+            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
 
         # Perform a k-nearest neighbors query, score by similarity
         query = (

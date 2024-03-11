@@ -1,0 +1,14 @@
+{
+    "black": {
+        "repo": "https://github.com/psf/black",
+        "rev": "${rev}"
+    },
+    "mypy": {
+        "repo": "https://github.com/pre-commit/mirrors-mypy",
+        "rev": "v${rev}"
+    },
+    "ruff": {
+        "repo": "https://github.com/astral-sh/ruff-pre-commit",
+        "rev": "v${rev}"
+    }
+}

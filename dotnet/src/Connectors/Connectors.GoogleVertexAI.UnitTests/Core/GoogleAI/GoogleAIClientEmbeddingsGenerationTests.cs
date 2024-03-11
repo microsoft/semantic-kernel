@@ -2,18 +2,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
-using Moq;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
+using Microsoft.SemanticKernel.Http;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.GoogleAI;
 
-[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
 public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
 {
     private readonly HttpClient _httpClient;
@@ -30,35 +29,23 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldCallGetEndpointAsync()
+    public async Task ShouldContainModelInRequestUriAsync()
     {
         // Arrange
-        var endpointProviderMock = new Mock<IEndpointProvider>();
-        endpointProviderMock.Setup(x => x.GetEmbeddingsEndpoint(It.IsAny<string>()))
-            .Returns(new Uri("https://fake-endpoint.com/"));
-        var sut = this.CreateEmbeddingsClient(endpointProvider: endpointProviderMock.Object);
+        string modelId = "fake-model234";
+        var client = this.CreateEmbeddingsClient(modelId: modelId);
+        List<string> dataToEmbed =
+        [
+            "Write a story about a magic backpack.",
+            "Print color of backpack."
+        ];
 
         // Act
-        await sut.GenerateEmbeddingsAsync(["text1", "text2"]);
+        await client.GenerateEmbeddingsAsync(dataToEmbed);
 
         // Assert
-        endpointProviderMock.VerifyAll();
-    }
-
-    [Fact]
-    public async Task ShouldCallCreatePostRequestAsync()
-    {
-        // Arrange
-        var requestFactoryMock = new Mock<IHttpRequestFactory>();
-        requestFactoryMock.Setup(x => x.CreatePost(It.IsAny<object>(), It.IsAny<Uri>()))
-            .Returns(new HttpRequestMessage(HttpMethod.Post, new Uri("https://fake-endpoint.com/")));
-        var sut = this.CreateEmbeddingsClient(httpRequestFactory: requestFactoryMock.Object);
-
-        // Act
-        await sut.GenerateEmbeddingsAsync(["text1", "text2"]);
-
-        // Assert
-        requestFactoryMock.VerifyAll();
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.Contains(modelId, this._messageHandlerStub.RequestUri.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -107,17 +94,60 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
             values => Assert.Equal(testDataResponse.Embeddings[1].Values, values));
     }
 
+    [Fact]
+    public async Task ItCreatesPostRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.Equal(HttpMethod.Post, this._messageHandlerStub.Method);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithValidUserAgentAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        IList<string> data = ["sample data"];
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        IList<string> data = ["sample data"];
+        var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase));
+
+        // Act
+        await client.GenerateEmbeddingsAsync(data);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
+        Assert.NotNull(header);
+        Assert.Equal(expectedVersion, header);
+    }
+
     private GoogleAIEmbeddingClient CreateEmbeddingsClient(
-        string modelId = "fake-model",
-        string apiKey = "fake-api-key",
-        IEndpointProvider? endpointProvider = null,
-        IHttpRequestFactory? httpRequestFactory = null)
+        string modelId = "fake-model")
     {
         var client = new GoogleAIEmbeddingClient(
             httpClient: this._httpClient,
             embeddingModelId: modelId,
-            httpRequestFactory: httpRequestFactory ?? new FakeHttpRequestFactory(),
-            endpointProvider: endpointProvider ?? new FakeEndpointProvider());
+            apiKey: "fake-key");
         return client;
     }
 

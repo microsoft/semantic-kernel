@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core.Gemini;
@@ -87,7 +87,7 @@ public sealed class GeminiPartTests
 
     [Theory]
     [ClassData(typeof(GeminiPartTestData))]
-    public void IsInvalidWhenMoreThanOnePropertyIsNotNull(GeminiPart sut)
+    internal void IsInvalidWhenMoreThanOnePropertyIsNotNull(GeminiPart sut)
     {
         // Act
         var result = sut.IsValid();

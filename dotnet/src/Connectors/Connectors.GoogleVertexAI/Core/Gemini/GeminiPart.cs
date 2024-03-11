@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
 /// Union field data can be only one of properties in class GeminiPart
 /// </summary>
-public sealed class GeminiPart : IJsonOnDeserialized
+internal sealed class GeminiPart : IJsonOnDeserialized
 {
     /// <summary>
     /// Gets or sets the text data.
@@ -75,7 +74,7 @@ public sealed class GeminiPart : IJsonOnDeserialized
     /// <summary>
     /// Inline media bytes like image or video data.
     /// </summary>
-    public sealed class InlineDataPart
+    internal sealed class InlineDataPart
     {
         /// <summary>
         /// The IANA standard MIME type of the source data.
@@ -98,7 +97,7 @@ public sealed class GeminiPart : IJsonOnDeserialized
     /// <summary>
     /// File media bytes like image or video data.
     /// </summary>
-    public sealed class FileDataPart
+    internal sealed class FileDataPart
     {
         /// <summary>
         /// The IANA standard MIME type of the source data.
@@ -123,7 +122,7 @@ public sealed class GeminiPart : IJsonOnDeserialized
     /// A predicted FunctionCall returned from the model that contains a
     /// string representing the FunctionDeclaration.name with the arguments and their values.
     /// </summary>
-    public sealed class FunctionCallPart
+    internal sealed class FunctionCallPart
     {
         /// <summary>
         /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
@@ -137,14 +136,20 @@ public sealed class GeminiPart : IJsonOnDeserialized
         /// </summary>
         [JsonPropertyName("args")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IList<JsonNode>? Arguments { get; set; }
+        public JsonNode? Arguments { get; set; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"FunctionName={this.FunctionName}, Arguments={this.Arguments}";
+        }
     }
 
     /// <summary>
     /// The result output of a FunctionCall that contains a string representing the FunctionDeclaration.name and
     /// a structured JSON object containing any output from the function is used as context to the model.
     /// </summary>
-    public sealed class FunctionResponsePart
+    internal sealed class FunctionResponsePart
     {
         /// <summary>
         /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
@@ -154,10 +159,28 @@ public sealed class GeminiPart : IJsonOnDeserialized
         public string FunctionName { get; set; } = null!;
 
         /// <summary>
-        /// Required. The function response in JSON object format.
+        /// Required. The function response.
         /// </summary>
         [JsonPropertyName("response")]
         [JsonRequired]
-        public IList<JsonNode> Response { get; set; } = null!;
+        public FunctionResponseEntity Response { get; set; } = null!;
+
+        internal sealed class FunctionResponseEntity
+        {
+            [JsonConstructor]
+            public FunctionResponseEntity() { }
+
+            public FunctionResponseEntity(object? response)
+            {
+                this.Arguments = JsonSerializer.SerializeToNode(response) ?? new JsonObject();
+            }
+
+            /// <summary>
+            /// Required. The function response in JSON object format.
+            /// </summary>
+            [JsonPropertyName("content")]
+            [JsonRequired]
+            public JsonNode Arguments { get; set; } = null!;
+        }
     }
 }

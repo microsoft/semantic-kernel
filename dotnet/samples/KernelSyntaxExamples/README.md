@@ -59,6 +59,7 @@ dotnet user-secrets set "KeyVault:TenantId" "..."
 
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ModelId" "..."
+dotnet user-secrets set "HuggingFace:EmbeddingModelId" "facebook/bart-base"
 
 dotnet user-secrets set "GoogleAI:ApiKey" "..."
 dotnet user-secrets set "GoogleAI:EmbeddingModelId" "..."

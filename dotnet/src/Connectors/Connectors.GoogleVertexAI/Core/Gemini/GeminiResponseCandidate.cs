@@ -3,12 +3,12 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
 /// A response candidate generated from the model.
 /// </summary>
-public sealed class GeminiResponseCandidate
+internal sealed class GeminiResponseCandidate
 {
     /// <summary>
     /// Generated content returned from the model.
