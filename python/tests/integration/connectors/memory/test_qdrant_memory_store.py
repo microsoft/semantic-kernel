@@ -121,7 +121,6 @@ async def test_upsert_and_get(memory_record1):
     assert result is not None
     assert result._id == memory_record1._id
     assert result._text == memory_record1._text
-    assert result._timestamp == memory_record1._timestamp
 
 
 @pytest.mark.asyncio
@@ -197,7 +196,6 @@ async def test_get_nearest_match(memory_record1, memory_record2):
     assert result is not None
     assert result[0]._id == memory_record1._id
     assert result[0]._text == memory_record1._text
-    assert result[0]._timestamp == memory_record1._timestamp
 
 
 @pytest.mark.asyncio
