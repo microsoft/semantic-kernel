@@ -5,6 +5,7 @@ import sys
 import pytest
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if sys.version_info >= (3, 9):
@@ -12,9 +13,7 @@ if sys.version_info >= (3, 9):
 
 
 @pytest.fixture(scope="function")
-def setup_tldr_function_for_oai_models(create_kernel):
-    kernel = create_kernel
-
+def setup_tldr_function_for_oai_models(kernel: Kernel):
     # Define semantic function using SK prompt template language
     prompt = """
     {{$input}}
@@ -42,8 +41,7 @@ def setup_tldr_function_for_oai_models(create_kernel):
 
 
 @pytest.fixture(scope="function")
-def setup_summarize_conversation_using_plugin(create_kernel):
-    kernel = create_kernel
+def setup_summarize_conversation_using_plugin(kernel: Kernel):
     ChatTranscript = """John: Hello, how are you?
         Jane: I'm fine, thanks. How are you?
         John: I'm doing well, writing some example code.
@@ -86,8 +84,7 @@ def setup_summarize_conversation_using_plugin(create_kernel):
 
 
 @pytest.fixture(scope="function")
-def setup_gp_text_completion_function(create_kernel, get_gp_config):
-    kernel = create_kernel
+def setup_gp_text_completion_function(kernel: Kernel, get_gp_config):
     api_key = get_gp_config
     # Configure LLM service
     palm_text_completion = sk_gp.GooglePalmTextCompletion(ai_model_id="models/text-bison-001", api_key=api_key)

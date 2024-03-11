@@ -10,7 +10,7 @@ class KernelArguments(dict):
     def __init__(
         self,
         settings: Optional[Union["PromptExecutionSettings", List["PromptExecutionSettings"]]] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         """Initializes a new instance of the KernelArguments class,
         this is a dict-like class with the additional field for the execution_settings.

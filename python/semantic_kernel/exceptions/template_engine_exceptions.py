@@ -25,6 +25,10 @@ The content provided was: {content}",
         )
 
 
+class VarBlockRenderError(BlockRenderException):
+    pass
+
+
 class ValBlockSyntaxError(BlockSyntaxError):
     def __init__(self, content: str) -> None:
         super().__init__(
@@ -80,6 +84,7 @@ __all__ = [
     "BlockSyntaxError",
     "BlockRenderException",
     "VarBlockSyntaxError",
+    "VarBlockRenderError",
     "ValBlockSyntaxError",
     "NamedArgBlockSyntaxError",
     "FunctionIdBlockSyntaxError",
