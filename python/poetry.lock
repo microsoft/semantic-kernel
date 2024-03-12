@@ -3547,7 +3547,11 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=1.20.3", markers = "python_version < \"3.10\""}
+numpy = [
+    {version = ">=1.20.3", markers = "python_version < \"3.10\""},
+    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
+    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
+]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.1"
@@ -6881,7 +6885,21 @@ files = [
 docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
+[extras]
+all = ["azure-core", "azure-identity", "azure-search-documents", "chromadb", "google-generativeai", "grpcio-status", "milvus", "pinecone-client", "psycopg", "psycopg-binary", "psycopg-pool", "pyarrow", "pymilvus", "qdrant-client", "redis", "sentence-transformers", "torch", "transformers", "usearch", "weaviate-client"]
+azure = ["azure-core", "azure-identity", "azure-search-documents"]
+chromadb = ["chromadb"]
+google = ["google-generativeai", "grpcio-status"]
+hugging-face = ["sentence-transformers", "torch", "transformers"]
+milvus = ["milvus", "pymilvus"]
+pinecone = ["pinecone-client"]
+postgres = ["psycopg", "psycopg-binary", "psycopg-pool"]
+qdrant = ["qdrant-client"]
+redis = ["redis"]
+usearch = ["pyarrow", "usearch"]
+weaviate = ["weaviate-client"]
+
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.8,<3.13"
-content-hash = "5bd0bcfcf45ba366f828cc60995d35561602566fb97b8810e8a525acd58dd840"
+python-versions = "^3.8"
+content-hash = "35d5a6356589dea975088c6d390d8dbd495d87372439cc411919df27b99a8791"
