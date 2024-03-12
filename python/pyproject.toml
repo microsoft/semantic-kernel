@@ -78,6 +78,7 @@ mypy = ">=1.9.0"
 optional = true
 
 [tool.poetry.group.unit-tests.dependencies]
+google-generativeai = { version = ">=0.1,<0.4", markers = "python_version >= '3.9'"}
 azure-search-documents = {version = "11.6.0b1", allow-prereleases = true}
 azure-core = "^1.28.0"
 transformers = "^4.28.1"
