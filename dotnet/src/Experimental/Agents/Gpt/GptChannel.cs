@@ -163,11 +163,15 @@ public sealed class GptChannel : AgentChannel
                     {
                         if (content is MessageTextContent contentMessage)
                         {
-                            yield return
-                                new ChatMessageContent(role, contentMessage.Text.Trim(), name: agent.Name)
-                                {
-                                    Source = new AgentMessageSource(agent.Id, message.Id).ToJson()
-                                };
+                            var textContent = contentMessage.Text.Trim();
+                            if (!string.IsNullOrWhiteSpace(textContent))
+                            {
+                                yield return
+                                    new ChatMessageContent(role, textContent, name: agent.Name)
+                                    {
+                                        Source = new AgentMessageSource(agent.Id, message.Id).ToJson()
+                                    };
+                            }
                         }
 
                         if (content is MessageImageFileContent contentImage)

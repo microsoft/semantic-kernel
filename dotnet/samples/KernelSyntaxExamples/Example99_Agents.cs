@@ -248,7 +248,7 @@ public class Example99_Agents : BaseTest
     /// Demonstrate semantic completion strategy with mixed agents.
     /// </summary>
     [Fact]
-    public async Task RunMixedAgentSelectionStrategyAsync() // $$$ IMPROVE
+    public async Task RunMixedAgentSelectionStrategyAsync() // $$$ IMPROVE / BROKE
     {
         WriteLine("======== Run:Agents in SelectionStrategy Nexus ========");
 
@@ -317,13 +317,13 @@ public class Example99_Agents : BaseTest
         NexusExecutionSettings settings,
         params KernelAgent[] agents)
     {
-        return RunStrategyAsync(input, settings, seletionStrategy: null, agents);
+        return RunStrategyAsync(input, settings, selectionStrategy: null, agents);
     }
 
     private async Task RunStrategyAsync(
         string? input,
         NexusExecutionSettings settings,
-        SelectionStrategy? seletionStrategy,
+        SelectionStrategy? selectionStrategy,
         params KernelAgent[] agents)
     {
         this.WriteLine("[TEST]");
@@ -332,7 +332,7 @@ public class Example99_Agents : BaseTest
             WriteAgent(agent);
         }
 
-        var nexus = new StrategyNexus(seletionStrategy ?? new SequentialSelectionStrategy(), agents);
+        var nexus = new StrategyNexus(selectionStrategy ?? new SequentialSelectionStrategy(), agents);
 
         await InvokeAgentAsync(nexus, input, settings); // $$$ USER PROXY
 
