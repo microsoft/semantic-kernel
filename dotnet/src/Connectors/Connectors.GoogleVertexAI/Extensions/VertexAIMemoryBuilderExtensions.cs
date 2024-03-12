@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Microsoft.SemanticKernel.Http;
@@ -12,6 +13,40 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class VertexAIMemoryBuilderExtensions
 {
+    /// <summary>
+    /// Add VertexAI embeddings generation service to the memory builder.
+    /// </summary>
+    /// <param name="builder">The <see cref="MemoryBuilder"/> instance</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="bearerKeyProvider">The Bearer Key provider for authentication.</param>
+    /// <param name="location">The location to process the request</param>
+    /// <param name="projectId">Your project ID</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <returns>The updated memory builder.</returns>
+    public static MemoryBuilder WithVertexAITextEmbeddingGeneration(
+        this MemoryBuilder builder,
+        string modelId,
+        Func<string> bearerKeyProvider,
+        string location,
+        string projectId,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(modelId);
+        Verify.NotNull(bearerKeyProvider);
+        Verify.NotNull(location);
+        Verify.NotNull(projectId);
+
+        return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
+            new VertexAITextEmbeddingGenerationService(
+                modelId: modelId,
+                bearerKeyProvider: bearerKeyProvider,
+                location: location,
+                projectId: projectId,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
+                loggerFactory: loggerFactory));
+    }
+
     /// <summary>
     /// Add VertexAI embeddings generation service to the memory builder.
     /// </summary>

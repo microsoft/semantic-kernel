@@ -15,7 +15,7 @@ public sealed class VertexAIMemoryBuilderExtensionsTests
     private readonly Mock<IMemoryStore> _mockMemoryStore = new();
 
     [Fact]
-    public void ShouldBuildMemoryWithVertexAIEmbeddingGenerator()
+    public void ShouldBuildMemoryWithVertexAIEmbeddingGeneratorBearerAsString()
     {
         // Arrange
         var builder = new MemoryBuilder();
@@ -23,6 +23,22 @@ public sealed class VertexAIMemoryBuilderExtensionsTests
         // Act
         var memory = builder
             .WithVertexAITextEmbeddingGeneration("fake-model", "fake-bearer-key", "fake-location", "fake-project")
+            .WithMemoryStore(this._mockMemoryStore.Object)
+            .Build();
+
+        // Assert
+        Assert.NotNull(memory);
+    }
+
+    [Fact]
+    public void ShouldBuildMemoryWithVertexAIEmbeddingGeneratorBearerAsFunc()
+    {
+        // Arrange
+        var builder = new MemoryBuilder();
+
+        // Act
+        var memory = builder
+            .WithVertexAITextEmbeddingGeneration("fake-model", () => "fake-bearer-key", "fake-location", "fake-project")
             .WithMemoryStore(this._mockMemoryStore.Object)
             .Build();
 
