@@ -3513,7 +3513,11 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=1.20.3", markers = "python_version < \"3.10\""}
+numpy = [
+    {version = ">=1.20.3", markers = "python_version < \"3.10\""},
+    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
+    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
+]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.1"
@@ -4263,6 +4267,19 @@ files = [
 pyasn1 = ">=0.4.6,<0.6.0"
 
 [[package]]
+name = "pybars4"
+version = "0.9.13"
+description = "Handlebars.js templating for Python 3"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pybars4-0.9.13.tar.gz", hash = "sha256:425817da20d4ad320bc9b8e77a60cab1bb9d3c677df3dce224925c3310fcd635"},
+]
+
+[package.dependencies]
+PyMeta3 = ">=0.5.1"
+
+[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
@@ -4458,6 +4475,16 @@ crypto = ["cryptography (>=3.4.0)"]
 dev = ["coverage[toml] (==5.0.4)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=6.0.0,<7.0.0)", "sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme", "zope.interface"]
 docs = ["sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
+
+[[package]]
+name = "pymeta3"
+version = "0.5.1"
+description = "Pattern-matching language based on OMeta for Python 3 and 2"
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyMeta3-0.5.1.tar.gz", hash = "sha256:18bda326d9a9bbf587bfc0ee0bc96864964d78b067288bcf55d4d98681d05bcb"},
+]
 
 [[package]]
 name = "pymilvus"
