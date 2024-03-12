@@ -16,17 +16,13 @@ from semantic_kernel.planners.function_calling_stepwise_planner.function_calling
 from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner_result import (
     FunctionCallingStepwisePlannerResult,
 )
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 @pytest.mark.asyncio
-async def test_can_execute_function_calling_stepwise_plan(get_oai_config):
-    kernel = Kernel()
-
+async def test_can_execute_function_calling_stepwise_plan(kernel: Kernel, get_oai_config):
     api_key, _ = get_oai_config
 
     service_id = "planner"
-    api_key, _ = openai_settings_from_dot_env()
     kernel.add_service(
         OpenAIChatCompletion(
             service_id=service_id,
