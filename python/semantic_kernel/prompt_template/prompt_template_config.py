@@ -20,7 +20,7 @@ class PromptTemplateConfig(KernelBaseModel):
     name: Optional[str] = ""
     description: Optional[str] = ""
     template: Optional[str] = None
-    template_format: Optional[str] = "semantic-kernel"
+    template_format: Optional[Union[Literal["semantic-kernel"], Literal["handlebars"]]] = "semantic-kernel"
     input_variables: List[InputVariable] = Field(default_factory=list)
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
