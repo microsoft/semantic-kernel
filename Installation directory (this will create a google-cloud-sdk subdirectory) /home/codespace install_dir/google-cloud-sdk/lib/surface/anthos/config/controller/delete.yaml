@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Delete Anthos Config Controller instances
+    description: Delete an Anthos Config Controller instance.
+    examples: |
+      To delete an Anthos Config Controller instance, run:
+
+        $ {command} NAME --location=LOCATION
+  request:
+    collection: krmapihosting.projects.locations.krmApiHosts
+    method: delete
+
+  async:
+    collection: krmapihosting.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The identifier for an Anthos Config Controller instance.
+      spec: !REF googlecloudsdk.command_lib.anthos.config.controller.resources:instance

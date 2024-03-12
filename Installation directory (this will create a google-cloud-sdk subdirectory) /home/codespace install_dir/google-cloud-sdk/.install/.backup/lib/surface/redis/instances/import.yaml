@@ -1,0 +1,34 @@
+- release_tracks: [GA, BETA, ALPHA]
+  command_type: GENERIC
+  help_text:
+    brief: Import data to a Memorystore Redis instance from Google Cloud Storage.
+    description: |
+      Import data to a Memorystore Redis instance from Google Cloud Storage.
+    examples: |
+      To import to the instance with the name `my-redis-instance` in region
+      `us-central1` from Cloud Storage object
+      gs://my-bucket/my-redis-instance.rdb run:
+
+        $ {command} gs://my-bucket/my-redis-instance.rdb my-redis-instance --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:instance
+      help_text: |
+        Arguments and flags that specify the Memorystore Redis instance you want
+        to import to.
+    params:
+    - arg_name: source
+      api_field: importInstanceRequest.inputConfig.gcsSource.uri
+      help_text: |
+        The Cloud Storage object path to import the instance from. Must have
+        the redis DB file extension *.rdb*.
+      is_positional: true
+
+  async:
+    collection: redis.projects.locations.operations
+
+  request:
+    collection: redis.projects.locations.instances
+    api_version: v1
+    method: import

@@ -1,0 +1,32 @@
+- release_tracks: [GA]
+  help_text:
+    brief: |
+      Get metadata for a certificate.
+    description: |
+      Returns metadata for the given certificate.
+    examples: |
+      To get metadata for the 'frontend-server-tls' certificate:
+
+        $ {command} frontend-server-tls \
+            --issuer-pool=my-pool --issuer-location=us-west1
+
+      To download the PEM-encoded certificate for the 'frontend-server-tls'
+      certificate to a file
+      called 'frontend-server-tls.crt':
+
+        $ {command} frontend-server-tls \
+            --issuer-pool=my-pool --issuer-location=us-west1 \
+            --format="value(pemCertificate)" > ./frontend-server-tls.crt
+
+  request:
+    collection: privateca.projects.locations.caPools.certificates
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The certificate for which to obtain metadata.
+      spec: !REF googlecloudsdk.command_lib.privateca.resources:cert
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.privateca.hooks:ConvertCertificateLifetimeToIso8601

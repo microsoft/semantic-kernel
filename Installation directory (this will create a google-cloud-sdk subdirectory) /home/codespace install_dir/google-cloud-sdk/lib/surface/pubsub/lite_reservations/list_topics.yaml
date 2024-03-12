@@ -1,0 +1,26 @@
+release_tracks: [ALPHA, BETA, GA]
+command_type: LIST
+help_text:
+  brief: List Pub/Sub Lite topics for a given Lite reservation.
+  description: List Pub/Sub Lite topics for a given Lite reservation.
+  examples: |
+    To list Pub/Sub Lite topics for a given Lite reservation, run:
+
+        $ {command} myreservation \
+            --location=us-central1
+
+request:
+  collection: pubsublite.admin.projects.locations.reservations.topics
+  method: list
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+
+arguments:
+  resource:
+    help_text: Reservation to list topics for.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_reservation
+    is_parent_resource: true
+    is_positional: true
+
+response:
+  result_attribute: topics

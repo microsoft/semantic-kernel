@@ -1,0 +1,22 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: Get the IAM policy for a BeyondCorp client gateway (Deprecated).
+    description: Gets the IAM policy for the given BeyondCorp client gateway.
+    examples: |
+      To get the IAM policy for a client gateway ``my-client-gateway'' run:
+
+      $ {command} my-client-gateway --project=consumer-project-id --location=us-central1
+
+  request:
+    collection: beyondcorp.projects.locations.clientGateways
+    BETA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The BeyondCorp client gateway for which to get the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:client_gateway
+
+  output:
+    format: json

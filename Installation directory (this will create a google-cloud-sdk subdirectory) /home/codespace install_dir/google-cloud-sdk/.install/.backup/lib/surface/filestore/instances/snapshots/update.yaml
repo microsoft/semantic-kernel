@@ -1,0 +1,63 @@
+- release_tracks: [BETA, GA]
+  help_text:
+    brief: |
+      Update the description or labels of a Filestore snapshot.
+    description: |
+      Update the metadata of a Filestore snapshot.
+
+      This command can fail for the following reasons:
+        * The snapshot or instance specified does not exist.
+        * The active account does not have permission to update the given
+          snapshot.
+    examples: |
+      To update the description of a snapshot named ``my-snapshot'' for the
+      instance ``my-instance'' from ``us-central1'', run:
+
+        $ {command} my-snapshot --instance=my-instance --instance-region=us-central1 --description="A new description."
+
+  arguments:
+    params:
+    - arg_name: snapshot
+      is_positional: true
+      required: true
+      help_text: |
+        Name of the Filestore snapshot to be updated.
+    - arg_name: instance
+      required: true
+      help_text: |
+        Name of the Filestore instance the snapshot belongs to.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: instance-region
+          help_text: |
+            Region of the Filestore instance.
+        - arg_name: instance-location
+          help_text: |
+            Location of the Filestore instance.
+    - arg_name: description
+      api_field: snapshot.description
+      help_text: |
+        Description of the snapshot.
+    additional_arguments_hook: googlecloudsdk.command_lib.filestore.update_util:UpdateLabelsFlags
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:FormatSnapshotUpdateResponse
+
+  async:
+    collection: file.projects.locations.operations
+
+  request:
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    display_resource_type: snapshot
+    collection: file.projects.locations.instances.snapshots
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:FormatSnapshotAccessRequest
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:GetExistingSnapshot
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:AddDescription
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:UpdateLabels

@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: List VPN connections.
+    description: |
+      List VPN connections.
+    examples: |
+      To list the VPN connections at region us-central1, run:
+
+        $ {command} --location=us-central
+
+  request:
+    collection: edgecontainer.projects.locations.vpnConnections
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent location to list all contained VPN connections.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:location
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        cluster.basename():label=CLUSTER,
+        vpc.basename():label=VPC,
+        labels:label=LABELS,
+        createTime.date():label=CREATED
+      )

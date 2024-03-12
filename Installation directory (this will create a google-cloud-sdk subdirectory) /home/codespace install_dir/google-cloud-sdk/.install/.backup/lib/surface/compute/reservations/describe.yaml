@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Show details about a Compute Engine reservation.
+    description: Show details about a Compute Engine reservation.
+    examples: |
+      To describe a given Compute Engine reservation, run:
+
+        $ {command} my-reservation --zone=ZONE
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.compute.resources:reservation
+      help_text: The name of the reservation to describe.
+
+  request:
+    collection: compute.reservations
+    api_version: v1
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha

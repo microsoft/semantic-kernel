@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Set the IAM policy for a Cloud Billing account.
+
+    description: |
+      *{command}* sets the IAM policy for a Cloud Billing account given an
+      account ID and a JSON or YAML file that describes the IAM policy.
+
+      Note: Setting the IAM policy for a Cloud Billing account replaces existing IAM bindings for
+      that account.
+
+    examples: |
+      The following command reads an IAM policy defined in the JSON file
+      `policy.json` and sets it for a Billing account ID *123456-789876-543210*:
+
+        $ {command} 123456-789876-543210 policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for policy file
+      format and content details.
+
+  request:
+    collection: cloudbilling.billingAccounts
+
+  arguments:
+    resource:
+      help_text: The Cloud Billing account for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.billing.resources:account

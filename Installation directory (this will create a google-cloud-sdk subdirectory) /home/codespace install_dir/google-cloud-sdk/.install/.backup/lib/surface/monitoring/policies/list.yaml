@@ -1,0 +1,40 @@
+- help_text:
+    brief: List alerting policies.
+    description: List alerting policies.
+    examples: |
+      To order your results first by the team key in user_labels and
+      then the policy's display name:
+
+        $ {command} --sort-by user_label.team,display_name
+
+      To order your results in reverse order, you can add either '~' or '-'
+      in front of the field name:
+
+        $ {command} --sort-by "-display_name"
+
+      To return results with non-empty display names or descriptions:
+
+        $ {command} --filter "(NOT display_name.empty OR NOT description.empty)"
+
+      To return results whose descriptions contain the word 'cloud':
+
+        $ {command} --filter "description:(cloud)"
+
+      Please find all supported fields at
+      https://cloud.google.com/monitoring/api/v3/sorting-and-filtering#alertpolicy.
+
+  request:
+    collection: monitoring.projects.alertPolicies
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.monitoring.hooks:AddOrderByToListRequest
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The Cloud Monitoring Workspace from which to list policies from.
+      spec: !REF googlecloudsdk.command_lib.monitoring.resources:project
+
+  output:
+    format: yaml

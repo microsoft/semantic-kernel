@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Backup a service.
+    description: |
+      Backup metadata and the resource configuration of a service.
+
+    examples: |
+      To make a backup named `my-backup` and description `test description`
+      of the service `my-service`, run:
+
+          $ {command} my-backup --service=my-service --description='test description'
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: metastore.projects.locations.services.backups
+
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the backup
+        you want to create.
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:backup
+    params:
+    - arg_name: description
+      api_field: backup.description
+      help_text: |
+        The description of this backup.
+
+  async:
+    collection: metastore.projects.locations.operations

@@ -1,0 +1,69 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute alpha WarningsValueListEntry export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  code:
+    description: |-
+      [Output Only] A warning code, if applicable. For example, Compute Engine
+      returns NO_RESULTS_ON_PAGE if there are no results in the response.
+    type: string
+    enum:
+    - CLEANUP_FAILED
+    - DEPRECATED_RESOURCE_USED
+    - DEPRECATED_TYPE_USED
+    - DISK_SIZE_LARGER_THAN_IMAGE_SIZE
+    - EXPERIMENTAL_TYPE_USED
+    - EXTERNAL_API_WARNING
+    - FIELD_VALUE_OVERRIDEN
+    - INJECTED_KERNELS_DEPRECATED
+    - LARGE_DEPLOYMENT_WARNING
+    - MISSING_TYPE_DEPENDENCY
+    - NEXT_HOP_ADDRESS_NOT_ASSIGNED
+    - NEXT_HOP_CANNOT_IP_FORWARD
+    - NEXT_HOP_INSTANCE_NOT_FOUND
+    - NEXT_HOP_INSTANCE_NOT_ON_NETWORK
+    - NEXT_HOP_NOT_RUNNING
+    - NOT_CRITICAL_ERROR
+    - NO_RESULTS_ON_PAGE
+    - PARTIAL_SUCCESS
+    - REQUIRED_TOS_AGREEMENT
+    - RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING
+    - RESOURCE_NOT_DELETED
+    - SCHEMA_VALIDATION_IGNORED
+    - SINGLE_INSTANCE_PROPERTY_TEMPLATE
+    - UNDECLARED_PROPERTIES
+    - UNREACHABLE
+  data:
+    description: |-
+      [Output Only] Metadata about this warning in key: value format. For
+      example: "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+    type: array
+    items:
+      $ref: DataValueListEntry.yaml
+  message:
+    description: |-
+      [Output Only] A human-readable description of the warning code.
+    type: string

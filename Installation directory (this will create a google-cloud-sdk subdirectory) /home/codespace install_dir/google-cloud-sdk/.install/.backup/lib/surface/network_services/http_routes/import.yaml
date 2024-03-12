@@ -1,0 +1,37 @@
+release_tracks: [ALPHA, GA]
+help_text:
+  brief: |
+    Import http route.
+  description: |
+    Import a http route.
+  examples: |
+      To import a route named 'my-route' from a YAML file, run:
+
+        $ {command} my-route --source=my-route.yaml --location=global
+
+request:
+  collection: networkservices.projects.locations.httpRoutes
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:httpRoute
+    help_text: |
+      Name of the http route to import.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.httpRoutes
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    method: create

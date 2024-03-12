@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Get the IAM policy for a Fleet Scope.
+    description: |
+      This command gets the IAM policy for a scope.
+    examples: |
+      To print the IAM policy for a given scope, run:
+
+        $ {command} my-scope
+
+  request:
+    collection: gkehub.projects.locations.scopes
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The scope for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
+      arg_name: scope
+      removed_flags: ['location']

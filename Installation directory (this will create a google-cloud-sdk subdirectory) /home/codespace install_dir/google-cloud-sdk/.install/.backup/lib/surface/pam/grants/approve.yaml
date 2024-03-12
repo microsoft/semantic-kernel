@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Approve a grant.
+    description: |
+      Approve a grant with a given name and reason.
+    examples: |
+      The following command approves a grant with a given name and provides a reason for approval:
+
+      $ {command} grant-name --reason approval-reason
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    method: approve
+    collection:
+    - privilegedaccessmanager.projects.locations.entitlements.grants
+    - privilegedaccessmanager.folders.locations.entitlements.grants
+    - privilegedaccessmanager.organizations.locations.entitlements.grants
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:grant
+      help_text: |
+        The name of the grant to approve.
+    params:
+    - api_field: approveGrantRequest.reason
+      arg_name: reason
+      help_text: The reason for approving the grant.

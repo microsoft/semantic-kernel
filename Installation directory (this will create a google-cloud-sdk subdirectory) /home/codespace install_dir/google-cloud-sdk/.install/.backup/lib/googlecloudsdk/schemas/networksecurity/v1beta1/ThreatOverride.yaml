@@ -1,0 +1,41 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1beta1 ThreatOverride export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  action:
+    description: |-
+      Threat action override. For some threat types, only a subset of actions
+      applies.
+    type: string
+    enum:
+    - ALERT
+    - ALLOW
+    - DEFAULT_ACTION
+    - DENY
+    - THREAT_ACTION_UNSPECIFIED
+  threatId:
+    description: Vendor-specific ID of a threat to override.
+    type: string

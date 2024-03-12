@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      List Dataplex Environments.
+    description: |
+      List Dataplex Environments based on project, location and lake.
+
+    examples: |
+      To list all Dataplex Environments in lake `test-lake` under location `us-central1`, run :-
+
+         $ {command} --project=test-project --location=us-central1 --lake=test-lake
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.environments
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Environments you want to list.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        displayName:label=DISPLAY_NAME,
+        state:label=ENVIRONMENT_STATUS,
+        infrastructureSpec.compute.diskSizeGb:label=COMPUTE_DISK_SIZE_GB,
+        infrastructureSpec.compute.nodeCount:label=COMPUTE_NODE_COUNT,
+        infrastructureSpec.compute.maxNodeCount:label=COMPUTE_MAX_NODE_COUNT,
+        infrastructureSpec.osImage.imageVersion:label=OS_IMAGE_VERSION,
+        sessionSpec.maxIdleDuration:label=SESSION_MAX_IDLE_DURATION
+      )

@@ -1,0 +1,56 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta HttpHeaderAction export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  requestHeadersToAdd:
+    description: |-
+      Headers to add to a matching request before forwarding the request to the
+      backendService.
+    type: array
+    items:
+      $ref: HttpHeaderOption.yaml
+  requestHeadersToRemove:
+    description: |-
+      A list of header names for headers that need to be removed from the
+      request before forwarding the request to the backendService.
+    type: array
+    items:
+      type: string
+  responseHeadersToAdd:
+    description: |-
+      Headers to add the response before sending the response back to
+      the client.
+    type: array
+    items:
+      $ref: HttpHeaderOption.yaml
+  responseHeadersToRemove:
+    description: |-
+      A list of header names for headers that need to be removed
+      from the response before sending the response back to the
+      client.
+    type: array
+    items:
+      type: string

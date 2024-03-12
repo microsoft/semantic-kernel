@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Add an IAM policy binding to a Cloud Healthcare API consent store.
+    description: |
+      Add an IAM policy binding to a Cloud Healthcare API consent store.
+    examples: |
+      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+      on the consent store 'test-consent-store', run:
+
+        $ {command} test-consent-store --dataset=test-dataset --member='user:test-user@gmail.com' --role='roles/editor'
+
+      To add an IAM policy binding for the role of 'roles/healthcare.consentEditor' for the user
+      'test-user@gmail.com' on the consent store 'test-consent-store', and have it expire at the end
+      of the year 2020, run:
+
+        $ {command} test-consent-store --dataset=test-dataset --member='user:test-user@gmail.com' --role='roles/healthcare.consentEditor' --condition='expression=request.time < timestamp("2021-01-01T00:00:00Z"),title=expires_end_of_2020,description=Expires at midnight on 2020-12-31'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  request:
+    collection: healthcare.projects.locations.datasets.consentStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API consent store to add an IAM policy binding to.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:consent_store
+
+  iam:
+    enable_condition: true

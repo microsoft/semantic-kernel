@@ -1,0 +1,188 @@
+project:
+  name: project
+  collection: vmwareengine.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: Project ID.
+    property: core/project
+  disable_auto_completers: false
+
+location:
+  name: location
+  collection: vmwareengine.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: Location of the private cloud or cluster.
+    property: compute/zone
+  disable_auto_completers: false
+
+private_cloud:
+  name: private cloud
+  collection: vmwareengine.projects.locations.privateClouds
+  attributes:
+  - *project
+  - *location
+  - &private_cloud
+    parameter_name: privateCloudsId
+    attribute_name: private-cloud
+    help: VMware Engine private cloud.
+  disable_auto_completers: false
+
+cluster:
+  name: cluster
+  collection: vmwareengine.projects.locations.privateClouds.clusters
+  attributes:
+  - *project
+  - *location
+  - *private_cloud
+  - &cluster
+    parameter_name: clustersId
+    attribute_name: cluster
+    help: Resource ID of the cluster
+  disable_auto_completers: false
+
+hcx_activation_key:
+  name: HCX activation key
+  collection: vmwareengine.projects.locations.privateClouds.hcxActivationKeys
+  attributes:
+  - *project
+  - *location
+  - *private_cloud
+  - &hcx_activation_key
+    parameter_name: hcxActivationKeysId
+    attribute_name: hcx-activation-key
+    help: Resource ID of the HCX activation key
+  disable_auto_completers: false
+
+operation:
+  name: operation
+  collection: vmwareengine.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      The name of the VMware Engine operation.
+  disable_auto_completers: false
+
+node_type:
+  name: node type
+  collection: vmwareengine.projects.locations.nodeTypes
+  attributes:
+  - *project
+  - *location
+  - &node_type
+    parameter_name: nodeTypesId
+    attribute_name: node-type
+    help: |
+      Node Type in a VMware Engine cluster.
+  disable_auto_completers: false
+
+external_address:
+  name: external address
+  collection: vmwareengine.projects.locations.privateClouds.externalAddresses
+  attributes:
+  - *project
+  - *location
+  - *private_cloud
+  - &external_address
+    parameter_name: externalAddressesId
+    attribute_name: external-address
+    help: Resource ID of the ExternalAddress
+  disable_auto_completers: false
+
+subnet:
+  name: subnet
+  collection: vmwareengine.projects.locations.privateClouds.subnets
+  attributes:
+  - *project
+  - *location
+  - *private_cloud
+  - &subnet
+    parameter_name: subnetsId
+    attribute_name: subnet
+    help: Resource ID of the Subnet
+  disable_auto_completers: false
+
+management_dns_zone_binding:
+  name: management DNS zone binding
+  collection: vmwareengine.projects.locations.privateClouds.managementDnsZoneBindings
+  attributes:
+  - *project
+  - *location
+  - *private_cloud
+  - &management_dns_zone_binding
+    parameter_name: managementDnsZoneBindingsId
+    attribute_name: management-dns-zone-binding
+    help: Resource ID of the Management DNS zone binding
+  disable_auto_completers: false
+
+regional_location:
+  name: regional location
+  collection: vmwareengine.projects.locations
+  attributes:
+  - *project
+  - &regional_location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The resource name of the location.
+    property: compute/region
+  disable_auto_completers: false
+
+private_connection:
+  name: Private Connection
+  collection: vmwareengine.projects.locations.privateConnections
+  attributes:
+  - *project
+  - *regional_location
+  - &private_connection
+    parameter_name: privateConnectionsId
+    attribute_name: private-connection
+    help: Private Connection
+  disable_auto_completers: false
+
+logging_server:
+  name: Logging Server
+  collection: vmwareengine.projects.locations.privateClouds.loggingServers
+  attributes:
+  - *project
+  - *location
+  - *private_cloud
+  - &logging_server
+    parameter_name: loggingServersId
+    attribute_name: logging-server
+    help: Resource ID of the Logging Server
+  disable_auto_completers: false
+
+identity_source:
+  name: Identity Source
+  collection: vmwareengine.projects.locations.privateClouds.identitySources
+  attributes:
+  - *project
+  - *location
+  - *private_cloud
+  - &identity_source
+    parameter_name: identitySourcesId
+    attribute_name: identity-source
+    help: Resource ID of the Identity Source
+  disable_auto_completers: false
+
+node:
+  name: node
+  collection: vmwareengine.projects.locations.privateClouds.clusters.nodes
+  attributes:
+  - *project
+  - *location
+  - *private_cloud
+  - *cluster
+  - &node
+    parameter_name: nodesId
+    attribute_name: node
+    help: Resource ID of the Node
+  disable_auto_completers: false

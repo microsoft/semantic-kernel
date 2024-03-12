@@ -1,0 +1,100 @@
+- help_text:
+    brief: Create a Cloud Scheduler job that triggers an action via HTTP.
+    description: Create a Cloud Scheduler job that triggers an action via HTTP.
+    examples: |
+      The following command creates a job that sends a HTTP GET request to
+      'http://example.com/path' every 3 hours:
+
+        $ {command} my-job --schedule="0 */3 * * *"
+          --uri="http://example.com/path" --http-method=GET
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+    method: create
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scheduler.util:ModifyCreateJobRequest
+
+  arguments:
+    resource:
+      help_text: Job to create.
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:schedule
+      required: true
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:timezone
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:description
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:attempt_deadline
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_attempts
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_duration
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:min_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_doublings
+    - api_field: job.httpTarget.uri
+      arg_name: uri
+      required: true
+      # Can't use : in argument hooks so omit it both from regex and help
+      # message.
+      type:
+        googlecloudsdk.calliope.arg_parsers:RegexpValidator:pattern=^https?.//.*,description=Must
+        be a valid HTTP or HTTPS URL.
+      help_text: |
+        The full URI path that the request will be sent to. This string must
+        begin with either "http://" or "https://". For example,
+        `http://acme.com` or `https://acme.com/sales:8080`. Cloud Scheduler will
+        encode some characters for safety and compatibility. The maximum allowed
+        URL length is 2083 characters after encoding.
+    - api_field: job.httpTarget.httpMethod
+      arg_name: http-method
+      default: post
+      choices:
+      - arg_value: post
+        enum_value: POST
+      - arg_value: head
+        enum_value: HEAD
+      - arg_value: get
+        enum_value: GET
+      - arg_value: put
+        enum_value: PUT
+      - arg_value: delete
+        enum_value: DELETE
+      help_text: |
+        HTTP method to use for the request.
+    - api_field: job.httpTarget.headers.additionalProperties
+      arg_name: headers
+      metavar: KEY=VALUE
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+      help_text: |
+        KEY=VALUE pairs of HTTP headers to include in the request.
+        *Cannot be repeated*. For example:
+        `--headers Accept-Language=en-us,Accept=text/plain`
+    - group:
+        mutex: true
+        params:
+        - api_field: job.httpTarget.body
+          arg_name: message-body
+          help_text: |
+            Data payload to be included as the body of the HTTP
+            request. May only be given with compatible HTTP methods (PUT
+            or POST).
+        - api_field: job.httpTarget.body
+          arg_name: message-body-from-file
+          type:
+            googlecloudsdk.calliope.arg_parsers:FileContents:binary=True
+          help_text: |
+            Path to file containing the data payload to be included as the
+            body of the HTTP request. May only be given with compatible HTTP
+            methods (PUT or POST).
+    - group:
+        help_text: |
+          How the request sent to the target when executing the job should be
+          authenticated.
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.scheduler.flags:auth_token_openid
+        - _REF_: googlecloudsdk.command_lib.scheduler.flags:auth_token_oauth

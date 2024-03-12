@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Show details about a `WasmAction` resource.
+    description: Show details about a `WasmAction` resource.
+    examples: |
+      To show details about a `WasmAction`, run:
+
+        $ {command} my-wasm-action
+
+  request:
+    collection: networkservices.projects.locations.wasmActions
+    ALPHA:
+      api_version: v1alpha1
+
+  arguments:
+    resource:
+      help_text: The `WasmAction` resource that you want to describe.
+      spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmAction

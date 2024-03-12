@@ -1,0 +1,24 @@
+location:
+  name: location
+  collection: cloudscheduler.projects.locations
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The location of the job. By default, uses the location of the current project's App Engine app
+      if there is an associated app.
+    fallthroughs:
+    # Called when location is not specified.
+    - hook: "googlecloudsdk.command_lib.scheduler.util:AppLocationResolver:"
+      hint: defaults to App Engine's app location if not provided & an app exists
+
+job:
+  name: job
+  collection: cloudscheduler.projects.locations.jobs
+  request_id_field: job.name
+  attributes:
+  - *location
+  - parameter_name: jobsId
+    attribute_name: job
+    help: The ID of the job.

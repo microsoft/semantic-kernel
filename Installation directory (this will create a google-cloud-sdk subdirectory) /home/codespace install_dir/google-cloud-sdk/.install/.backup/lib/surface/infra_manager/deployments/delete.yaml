@@ -1,0 +1,28 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Delete deployments
+    description: Delete a deployment
+    examples: |-
+      To delete the deployment `example-deployment` at location `us-central1`, run:
+
+      $ {command} projects/example-project/locations/us-central1/deployments/example-deployment
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:deployment
+      help_text: deployments TBD
+    params:
+    - arg_name: delete-policy
+      api_field: deletePolicy
+      help_text: |-
+        Policy on how resources actuated by the deployment should be deleted. The accepted values are DELETE, ABANDON.
+        DELETE = Delete resources actuated by the deployment.
+        ABANDON = Abandon resources and only delete deployment metadata.
+  request:
+    collection: config.projects.locations.deployments
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.infra_manager.deploy_util:UpdateDeploymentDeleteRequestWithForce
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.infra_manager.deploy_util:DeleteCleanupStagedObjects
+  async:
+    collection: config.projects.locations.operations

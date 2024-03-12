@@ -1,0 +1,3 @@
+urllib3
+# Relative path to google-auth-python's source.
+../../..

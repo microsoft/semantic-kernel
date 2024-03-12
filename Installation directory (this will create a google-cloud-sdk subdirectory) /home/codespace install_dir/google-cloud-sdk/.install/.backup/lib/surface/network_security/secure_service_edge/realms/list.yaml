@@ -1,0 +1,22 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List SSE realms.
+  description: |
+    List all SSE realms within a given project.
+  examples: |
+    To list all realms in the current project, run:
+
+      $ {command}
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:globalDefaultLocation
+    help_text: |
+      The project (and optional location) of the realms to display.
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.sseRealms

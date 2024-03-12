@@ -1,0 +1,78 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Validates a Security Health Analytics custom module.
+    description: Validates a given Security Health Analytics custom module and resource.
+    examples: |
+      To validate a Security Health Analytics custom module against a custom resource for
+      organization `123`, run:
+
+        $ {command} \
+            --organization=organizations/123 \
+            --custom-config-from-file=/tmp/custom_config.yaml \
+            --resource-from-file=/tmp/resource.yaml
+
+      To validate a Security Health Analytics custom module against a custom resource for
+      folder `456`, run:
+
+        $ {command} \
+            --folder=folders/456 \
+            --custom-config-from-file=/tmp/custom_config.yaml \
+            --resource-from-file=/tmp/resource.yaml
+
+      To validate a Security Health Analytics custom module against a custom resource for
+      project `789`, run:
+
+        $ {command} \
+            --project=projects/789 \
+            --custom-config-from-file=/tmp/custom_config.yaml \
+            --resource-from-file=/tmp/resource.yaml
+
+  request:
+    collection: securitycenter.organizations.securityHealthAnalyticsSettings.customModules
+    disable_resource_check: true
+    api_version: v1
+    method: simulate
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.sha.request_hooks:SimulateSecurityHealthAnalyticsCustomModulesReqHook
+
+  arguments:
+    params:
+    - group:
+        required: true
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: parent
+          help_text: |
+            Organization that will own the Security Health Analytics custom module. Formatted as `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: parent
+          help_text: |
+            Folder that will own the Security Health Analytics custom module. Formatted as `folders/456` or just `456`.
+
+        - arg_name: project
+          api_field: parent
+          help_text: |
+            ID or number of the project that will own the Security Health Analytics custom module. Formatted as `projects/789` or just `789`.
+
+    - arg_name: custom-config-from-file
+      api_field: simulateSecurityHealthAnalyticsCustomModuleRequest.customConfig
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+      processor: googlecloudsdk.command_lib.scc.hooks:ProcessCustomConfigFile
+      is_positional: false
+      required: true
+      repeated: false
+      help_text: |
+        Path to a YAML file that contains the configuration for the Security Health Analytics custom module.
+
+    - arg_name: resource-from-file
+      api_field: simulateSecurityHealthAnalyticsCustomModuleRequest.resource
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+      processor: googlecloudsdk.command_lib.scc.hooks:ProcessSimulatedResourceFile
+      is_positional: false
+      required: true
+      repeated: false
+      help_text: |
+        Path to a YAML file that contains the resource data to validate the Security Health Analytics custom module against.

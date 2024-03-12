@@ -1,0 +1,56 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 ObservabilityPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- name
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  description:
+    description: |-
+      A free-text description of the resource. Max length 1024 characters.
+    type: string
+  labels:
+    description: |-
+      Set of label tags associated with the ObservabilityPolicy resource.
+    $ref: LabelsValue.yaml
+  name:
+    description: |-
+      Name of the ObservabilityPolicy resource. It matches pattern
+      `projects/*/locations/global/observabilityPolicies/`.
+    type: string
+  scope:
+    description: |-
+      Scope of the observability policy resource indicates its granularity. If
+      not specified, the policy will have no effect, unless linked to another
+      resource.
+    type: string
+    enum:
+    - PROJECT
+    - SCOPE_UNSPECIFIED
+  serviceGraph:
+    description: |-
+      Service graph represents a graph visualization of services defined by the
+      user in a scope (e.g in the project).
+    $ref: ServiceGraph.yaml

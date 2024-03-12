@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Compute Engine disk.
+  description: |
+    *{command}* exports the configuration for a Compute Engine disk.
+
+    Disk configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    disks within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a disk, run:
+
+      $ {command} my-disk
+
+    To export the configuration for a disk to a file, run:
+
+      $ {command} my-disk --path=/path/to/dir/
+
+    To export the configuration for a disk in Terraform
+    HCL format, run:
+
+      $ {command} my-disk --resource-format=terraform
+
+    To export the configurations for all disks within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Disk to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:disk

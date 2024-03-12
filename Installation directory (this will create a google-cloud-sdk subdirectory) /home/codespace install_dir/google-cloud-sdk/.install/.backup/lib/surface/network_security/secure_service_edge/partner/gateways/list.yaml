@@ -1,0 +1,22 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List partner SSE gateways.
+  description: |
+    List all partner SSE gateways within a given location.
+  examples: |
+    To list all partner gateways in the location `us-central1`, run:
+
+      $ {command} --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:location
+    help_text: |
+      The location of the partner gateways to display.
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.partnerSSEGateways

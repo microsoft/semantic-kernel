@@ -1,0 +1,63 @@
+- release_tracks: [ALPHA, GA]
+  command_type: GENERIC
+  help_text:
+    brief: Create a Cloud Security Command Center (SCC) posture deployment.
+    description: |
+      Create a  Cloud Security Command Center (SCC) posture deployment. First argument is the parent of the posture deployment to
+      be created. Second argument is the name of the posture deployment to be created. It is followed by details of the posture to be deployed and the target_resource to be deployed on.
+
+      LRO operation ID is returned as the response of the command.
+    examples: |
+     Create a posture deployment named `posture-deployment-foo-1` within parent `organizations/123/locations/global` on resource `folders/456` (i.e. a posture-deployment in organization `123`, location `global`, with id `posture-deployment-foo-1`, which deploys posture `organizations/123/locations/foo-posture` with revision-id `foo-posture-revision-id` on `folders/456`):
+
+        $ {command} organizations/123/locations/global/postureDeployments/posture-deployment-foo-1 --posture-name=organizations/123/locations/global/foo-posture --posture-revision-id=foo-posture-revision-id --target-resource=projects/456
+
+  request:
+    collection: securityposture.organizations.locations.postureDeployments
+    api_version: v1alpha
+    method: create
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture_deployment
+      help_text: |
+          The name of the posture deployment to be created. For example organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.
+
+    params:
+    - arg_name: posture-name
+      api_field: postureDeployment.postureId
+      required: true
+      help_text: |
+        Posture that needs to be deployed. Format:
+        organizations/<organizationID>/locations/<location>/postures/<postureID>
+
+    - arg_name: posture-revision-id
+      api_field: postureDeployment.postureRevisionId
+      required: true
+      help_text: |
+        Posture revision that needs to be deployed.
+
+    - arg_name: target-resource
+      api_field: postureDeployment.targetResource
+      required: true
+      help_text: |
+        Name of the workload on which posture deployment is to be created. It could be an organization, folder or a project.
+        Possible formats: |
+          organizations/<organizationID> |
+          folders/<folderID> |
+          projects/<projectID>
+        The above mentioned IDs need to have numeric format.
+
+    - arg_name: description
+      api_field: postureDeployment.description
+      help_text: |
+        User-provided description of the posture deployment.
+
+  async:
+    collection: securityposture.organizations.locations.operations
+    extract_resource_result: false
+
+  output:
+    format: yaml

@@ -1,0 +1,66 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: |
+      De-identify data from the source store and write it to the destination store.
+    description: |
+      De-identify data from the source store and write it to the destination store.
+    examples: |
+      To generate a de-identified version of the DICOM store 'test-dicom-store', run the command below.
+
+        $ {command} test-dicom-store --destination-store=projects/{projectId}/locations/us-central1/datasets/{datasetId}/dicomStores/test-deid-dicom-store --dicom-filter-tags=MediaStorageSOPClassUID,SeriesInstanceUID,StudyInstanceUID
+  request:
+    collection: healthcare.projects.locations.datasets.dicomStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    method: deidentify
+
+  arguments:
+    resource:
+      help_text: Source Cloud Healthcare API DICOM store to deidentify.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:dicom_store
+
+    params:
+    - arg_name: destination-store
+      api_field: deidentifyDicomStoreRequest.destinationStore
+      required: true
+      help_text: |
+        The name of the DICOM store to which the redacted data should be written
+        (e.g., projects/{projectId}/locations/{locationId}/datasets/{datasetId}/dicomStores/{dicomStoreId}).
+        The destination DICOM store must already exist, or the request will fail.
+    - arg_name: dicom-filter-tags
+      api_field: deidentifyDicomStoreRequest.config.dicom.keepList.tags
+      help_text: |
+        Tags to be filtered. Tags must be DICOM Data Elements, File Meta Elements, or
+        Directory Structuring Elements, as defined at:
+        http://dicom.nema.org/medical/dicom/current/output/html/part06.html#table_6-1,.
+        They may be provided by "Keyword" or "Tag". For example "PatientID", "0010,0010".
+    - arg_name: text-redaction-mode
+      api_field: deidentifyDicomStoreRequest.config.image.textRedactionMode
+      choices:
+      - arg_value: all
+        enum_value: REDACT_ALL_TEXT
+        help_text: |
+          Redact all text.
+      help_text: |
+        Determines how to redact text from image.
+    - arg_name: annotation-store
+      release_tracks: [ALPHA, BETA]
+      ALPHA:
+        processor: googlecloudsdk.command_lib.healthcare.util:InsertAnnotationConfig:api_version=v1alpha2
+      BETA:
+        processor: googlecloudsdk.command_lib.healthcare.util:InsertAnnotationConfig:api_version=v1beta1
+      api_field: deidentifyDicomStoreRequest.config.annotation
+      help_text: |
+        The name of the annotation store to output the location of sensitive data
+        (e.g., projects/{projectId}/locations/{locationId}/datasets/{datasetId}/annotationStores/{annotationStoreId}).
+        The annotation store must already exist. The generated annotations will contain the original
+        values of the de-identified data in the 'quote' field. See
+        https://cloud.google.com/healthcare/docs/how-tos/annotations-deidentify for more details.
+
+  async:
+    collection: healthcare.projects.locations.datasets.operations

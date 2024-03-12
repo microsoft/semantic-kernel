@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="IBM866"?>
+<!--
+Source: http://www.greek.ru/news/ya/yagreek
+Expect: IBM866
+-->
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://my.netscape.com/publish/formats/rss-0.91.dtd">
+<rss version="0.91">
+    <channel>
+        <title>Greek.Ru</title>
+        <description>Почти все о греческом на русском. Греция. Кипр</description>
+        <link>http://www.greek.ru</link>
+    </channel>
+    
+    <image>
+        <title>Greek.Ru</title>
+        <url>http://www.greek.ru/ru/news/ya/grekru.gif</url>
+        <link>http://www.greek.ru</link>
+        <width>88</width>
+        <height>31</height>
+    </image>
+
+    <item>
+        <title>Греция сегодня: АФИНЫ БОРЯТСЯ С ПРОСТИТУЦИЕЙ</title>
+        <link>http://www.greek.ru/ru/news/news_detail.php?ID=994</link>
+        <description> Власти Афин начали кампанию "по ограничению проституции и незаконной активности индустрии секса". </description>
+    </item>
+    
+    <item>
+        <title>Греция сегодня: В Греции арестованы четверо британцев за избиение владельца одного из магазинов</title>
+        <link>http://www.greek.ru/ru/news/news_detail.php?ID=996</link>
+        <description> В Греции арестованы четверо британцев - все члены одной семьи, которые сильно избили владельца небольшого магазинчика близ "туристической Мекки" - афинского Акрополя. 
+</description>
+    </item>
+
+    <item>
+        <title>Кипр сегодня: Турки-киприоты предлагают освободить Кипр от мин</title>
+        <link>http://www.greek.ru/ru/news/news_detail.php?ID=990</link>
+        <description> Лидер турок-киприотов Рауф Денкташ высказался за ликвидацию минных полей вдоль демаркационной линии, разделяющей остров на греческую и турецкую части. 
+</description>
+    </item>
+    
+    <item>
+        <title>Кипр сегодня: АТТИЛА НАНЕС УДАР ПО КИПРУ 29 ЛЕТ НАЗАД</title>
+        <link>http://www.greek.ru/ru/news/news_detail.php?ID=952</link>
+        <description> Республика Кипр и весь греческий мир отметили 20 июля траурную дату своей истории. Ровно 29 лет назад в ходе операции ╚Аттила╩ на остров высадились турецкие войска, что привело к массовой гибели населения и оккупации северной части Кипра. 
+</description>
+    </item>
+
+    <item>
+        <title>События. Спектакли. Выставки:  Выставка ╚Морские пути┘От Сидона до Хуэлвы. Взаимосвязи народов Средиземноморья в 16 - 6 в.в. до н. э.╩</title>
+        <link>http://www.greek.ru/ru/news/news_detail.php?ID=983</link>
+        <description> В рамках Культурной Олимпиады в Афинах, в Музее Кикладского Искусства с 3.06.03 по 28.10.03 проходит эта выставка. 
+</description>
+    </item>
+    
+    <item>
+        <title>События. Спектакли. Выставки: ОТМЕТИЛ 95-ЛЕТИЕ ГРЕЧЕСКИЙ ДИРИЖЕР</title>
+        <link>http://www.greek.ru/ru/news/news_detail.php?ID=979</link>
+        <description> В июле 2003 года исполняется 95 лет Одиссею Димитриади - композитору, дирижеру, народному артисту СССР. Его хорошо помнят и любят в Большом театре, где он работал с 1968 года. 
+</description>
+    </item>   
+    
+    <item>
+        <title>Путешествия и туризм: Про Родос</title>
+        <link>http://www.greek.ru/ru/greece/impression/detail.php?ID=986</link>
+        <description> Никогда еще солнце не поднималось так высоко над этим островом. Оно обнимало своими нежными руками крышу каждого дома, каждый листочек, каждую капельку воды в соленом море. P.S. эта сказка посвящается самому сказочному месту в мире √ острову Родос :))) 
+</description>
+    </item>      
+    
+    <item>
+        <title>Олимпийские игры 2004: Летняя Олимпиада-2004 претендует на рекорд</title>
+        <link>http://www.greek.ru/ru/news/news_detail.php?ID=958</link>
+        <description> В летней Олимпиаде-2004, которая пройдет в Афинах, будут участвовать спортсмены из 201 страны.  
+</description>
+    </item>  
+    
+    <item>
+        <title>История. Культура. Язык. Музыка: БУБУЛИНА: РУССКИЙ АДМИРАЛ</title>
+        <link>http://www.greek.ru/ru/news/news_detail.php?ID=991</link>
+        <description> Во всем мире есть только одна женщина-адмирал. Причем, адмирал Российского флота. И она √ гречанка, Ласкарина Бубулина, героиня освободительной борьбы греческого народа с турками. Она тоже, как и Орловы, с острова Спецес... 
+</description>
+    </item>                
+
+</rss>

@@ -1,0 +1,70 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: datastream v1 Stream export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- destinationConfig
+- displayName
+- sourceConfig
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  backfillAll:
+    description: |-
+      Automatically backfill objects included in the stream source
+      configuration. Specific objects can be excluded.
+    $ref: BackfillAllStrategy.yaml
+  backfillNone:
+    description: Do not automatically backfill any objects.
+    type: backfillnonestrategy
+  customerManagedEncryptionKey:
+    description: |-
+      Immutable. A reference to a KMS encryption key. If provided, it will be
+      used to encrypt the data. If left blank, data will be encrypted using an
+      internal Stream-specific encryption key provisioned through KMS.
+    type: string
+  destinationConfig:
+    description: Destination connection profile configuration.
+    $ref: DestinationConfig.yaml
+  displayName:
+    description: Display name.
+    type: string
+  labels:
+    description: Labels.
+    $ref: LabelsValue.yaml
+  sourceConfig:
+    description: Source connection profile configuration.
+    $ref: SourceConfig.yaml
+  state:
+    description: The state of the stream.
+    type: string
+    enum:
+    - DRAINING
+    - FAILED
+    - FAILED_PERMANENTLY
+    - MAINTENANCE
+    - NOT_STARTED
+    - PAUSED
+    - RUNNING
+    - STARTING
+    - STATE_UNSPECIFIED

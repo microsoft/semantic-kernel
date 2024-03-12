@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="ref.css" type='text/css' />
+<link rel="first" href="ref.html" title='The httplib2 Library' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<link rel="prev" href="response-objects.html" />
+<link rel="parent" href="module-httplib2.html" />
+<link rel="next" href="about.html" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name='aesop' content='information' />
+<title>1.1.4 Examples </title>
+</head>
+<body>
+<div class="navigation">
+<div id='top-navigation-panel' xml:id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="1.1.3 response Objects"
+  href="response-objects.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="1.1 httplib2 A comprehensive"
+  href="module-httplib2.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="About this document ..."
+  href="about.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">The httplib2 Library</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents"
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></a></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="response-objects.html">1.1.3 Response Objects</a>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="module-httplib2.html">1.1 httplib2 A comprehensive</a>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="about.html">About this document ...</a>
+</div>
+<hr /></div>
+</div>
+<!--End of Navigation Panel-->
+
+<h2><a name="SECTION002140000000000000000"></a><a name="httplib2-example"></a>
+<br>
+1.1.4 Examples
+</h2>
+
+<p>
+To do a simple <code>GET</code> request just supply the absolute URI
+of the resource:
+
+<p>
+<div class="verbatim"><pre>
+import httplib2
+h = httplib2.Http()
+resp, content = h.request("http://bitworking.org/")
+assert resp.status == 200
+assert resp['content-type'] == 'text/html'
+</pre></div>
+
+<p>
+Here is more complex example that does a PUT
+of some text to a resource that requires authentication.
+The Http instance also uses a file cache
+in the directory <code>.cache</code>.
+
+<p>
+<div class="verbatim"><pre>
+import httplib2
+h = httplib2.Http(".cache")
+h.add_credentials('name', 'password')
+resp, content = h.request("https://example.org/chap/2",
+    "PUT", body="This is text",
+    headers={'content-type':'text/plain'} )
+</pre></div>
+
+<p>
+Here is an example that connects to a server that
+supports the Atom Publishing Protocol.
+
+<p>
+<div class="verbatim"><pre>
+import httplib2
+h = httplib2.Http()
+h.add_credentials(myname, mypasswd)
+h.follow_all_redirects = True
+headers = {'Content-Type': 'application/atom+xml'}
+body    = """&lt;?xml version="1.0" ?&gt;
+    &lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;
+      &lt;title&gt;Atom-Powered Robots Run Amok&lt;/title&gt;
+      &lt;id&gt;urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a&lt;/id&gt;
+      &lt;updated&gt;2003-12-13T18:30:02Z&lt;/updated&gt;
+      &lt;author&gt;&lt;name&gt;John Doe&lt;/name&gt;&lt;/author&gt;
+      &lt;content&gt;Some text.&lt;/content&gt;
+&lt;/entry&gt;
+"""
+uri     = "http://www.example.com/collection/"
+resp, content = h.request(uri, "POST", body=body, headers=headers)
+</pre></div>
+
+<p>
+Here is an example of providing data to an HTML form processor.
+In this case we presume this is a POST form. We need to take our
+data and format it as "application/x-www-form-urlencoded" data and use that as a
+body for a POST request.
+
+<p>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; import httplib2
+&gt;&gt;&gt; import urllib
+&gt;&gt;&gt; data = {'name': 'fred', 'address': '123 shady lane'}
+&gt;&gt;&gt; body = urllib.urlencode(data)
+&gt;&gt;&gt; body
+'name=fred&amp;address=123+shady+lane'
+&gt;&gt;&gt; h = httplib2.Http()
+&gt;&gt;&gt; resp, content = h.request("http://example.com", method="POST", body=body)
+</pre></div>
+
+<p>
+Here is an example of using a proxy server:
+<div class="verbatim"><pre>
+import httplib2
+import socks
+
+httplib2.debuglevel=4
+h = httplib2.Http(proxy_info = httplib2.ProxyInfo(socks.PROXY_TYPE_HTTP, 'localhost', 8000))
+r,c = h.request("http://bitworking.org/news/")
+</pre></div>
+
+<p>
+
+<p>
+<IMG
+ WIDTH="556" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img1.png"
+ ALT="\begin{center}\vbox{\input{modref.ind}
+}\end{center}">
+<p>
+
+<p>
+
+<div class="navigation">
+<div class='online-navigation'>
+<p></p><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="1.1.3 response Objects"
+  href="response-objects.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="1.1 httplib2 A comprehensive"
+  href="module-httplib2.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="About this document ..."
+  href="about.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">The httplib2 Library</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents"
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></a></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="response-objects.html">1.1.3 Response Objects</a>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="module-httplib2.html">1.1 httplib2 A comprehensive</a>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="about.html">About this document ...</a>
+</div>
+</div>
+<hr />
+<span class="release-info">Release 0.3, documentation updated on Mar 8, 2007.</span>
+</div>
+<!--End of Navigation Panel-->
+
+</body>
+</html>

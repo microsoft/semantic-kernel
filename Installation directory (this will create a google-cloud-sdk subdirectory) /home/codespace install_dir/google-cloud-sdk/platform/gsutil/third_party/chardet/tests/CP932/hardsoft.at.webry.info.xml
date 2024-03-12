@@ -1,0 +1,911 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<base href="http://webryblog.biglobe.ne.jp" />
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta name="description" content="ハードなソフトの話のPerl 5.8.x で shiftjis 、CP932、MacJapanese の違いに関する詳細記事。（Powered by BIGLOBEウェブリブログ）perldoc の Encode::JP を読むと、Shift JISには3種類ある。shiftjis - MS KanjiCP932 - CODE PAGE 932 = Shift JIS + MS/IBM vendor mappingsMacJapanese -  Shift JIS + Apple vendor mappingsうっすらとわかっているけれど、気持ち悪いので調べてみた。Wikipedia に詳しい解説があった。shiftjis - http://ja.w..." />
+<meta name="robots" content="index,follow" />
+<meta name="robots" content="NOYDIR,NOODP" />
+<meta name="keywords" content="Shift JIS,Perl,日本語,ブログ,ブログ 無料" />
+<title>Perl 5.8.x で shiftjis 、CP932、MacJapanese の違い ハードなソフトの話/ウェブリブログ</title>
+<script type="text/javascript" src="/bblog.js"></script>
+<script type="text/javascript" src="/include_logic.js"></script>
+<script type="text/javascript" src="/footerlink/footerlink.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="http://hardsoft.at.webry.info/index_css.js"></script>
+<script type="text/javascript" src="/articles_jss/blank.js"></script>
+<script type="text/javascript" src="/snsMenu.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/articles.new/common.css" />
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://hardsoft.at.webry.info/rss/index.rdf" />
+<link rel="stylesheet" type="text/css" href="/css/articles.new/plain_basic.css" />
+<link rel="alternate" media="handheld" type="application/xhtml+xml" href="http://m.webry.info/at/hardsoft/200802/article_1.htm" />
+<script language="JavaScript">
+<!--
+  include_article_css("article");
+// -->
+</script>
+<style type="text/css">
+table.preview { border: 1px solid #000; }
+td.preview { border-width: 0; }
+</style>
+</head>
+
+<body>
+
+	<!-- free space E07 -->
+
+<!-- RDF area start -->
+<!--
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/">
+<rdf:Description
+    rdf:about="http://hardsoft.at.webry.info/200802/article_1.html"
+    dc:identifier="http://hardsoft.at.webry.info/200802/article_1.html"
+    dc:title="Perl 5.8.x で shiftjis 、CP932、MacJapanese の違い"
+    dc:date="2008-02-05T00:14:00+09:00"
+    trackback:ping="http://tb.bblog.biglobe.ne.jp/ap/tb/049eb1ab85" />
+</rdf:RDF>
+-->
+<!-- RDF area end -->
+
+<!-- main area start -->
+<div id="container">
+	<script type="text/javascript" src="/searchengine.js"></script>
+	<script type="text/javascript" charset="Shift_JIS" src="/searchbox.js"></script>
+
+
+<table id="link-bar" cellpadding="3" cellspacing="0" border="0">
+	<!--colgroup>
+	<col width="20%" />
+	<col width="50%" />
+	<col width="30%" />
+	</colgroup-->
+<script type="text/javascript">
+<!--
+  dispSpChangeButton();
+// -->
+</script>
+    <tr>
+      <td><a href="http://webryblog.biglobe.ne.jp/">ブログ ログイン</a></td>
+      <td id="linkunit" align="center">
+      <script type="text/javascript">
+      <!--
+		var firstView = true;
+		function google_ad_request_done(ads) {}
+		function google_radlink_request_done(radlinks) {
+			if (firstView) {
+				firstView = false;
+				if (radlinks.length < 1) {
+					document.write(' <a href="http://webryblog.biglobe.ne.jp/campaign/">ウェブリブログのキャンペーンに応募しよう！</a> ');
+					return;
+				}
+				document.write("<h4>Ads by Google</h4>\n");
+				for(i=0; i < radlinks.length; ++i) {
+					document.write(' <a target="_top" href="http://map.bblog.biglobe.ne.jp/ap/tool/show_ads.jsp?ch=t&google_kw=' + radlinks[i].url_escaped_term + '&google_rt=' + radlinks[i].radlink_token + '&google_page_url=' + encodeURIComponent(window.location) + '">' + radlinks[i].term + '</a>\n');
+				}
+			}
+		}
+      // -->
+      </script>
+    <script type="text/javascript">
+      <!--
+        google_ad_client = "ca-nec_radlinks_js";
+        google_ad_channel = 'top';
+        google_page_url = 'http://hardsoft.at.webry.info/200802/article_1.html';
+        google_language = 'ja';
+        google_encoding = 'sjis';
+        google_ad_output = 'js';
+        google_safe = 'high';
+        google_num_radlinks = '3';
+        google_max_radlink_len = '20';
+        google_max_num_ads = '0';
+        google_rl_mode = 'default';
+        google_ad_section = 'section1 section2';
+      // -->
+      </script>
+      [ <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script> ]
+      </td>
+      <td align="right">
+      <a href="http://hardsoft.at.webry.info/">トップ</a>&nbsp;
+      <a href="http://hardsoft.at.webry.info/profile.html">プロフ</a>&nbsp;
+      <a href="http://hardsoft.at.webry.info/friendlist.html">フレンド</a>&nbsp;
+      <a href="http://hardsoft.at.webry.info/joincirclelist.html">サークル</a>
+      </td></tr>
+</table>
+
+  <!-- title banner start -->
+  <div id="subbanner">
+    <h1><a href="http://hardsoft.at.webry.info/" title="このブログのトップへ">ハードなソフトの話</a></h1>
+
+    <!-- top links start -->
+    <script type="text/javascript">
+    <!--
+      topLinks();
+    // -->
+    </script>
+      <!-- top links end -->
+
+<script language="JavaScript">
+<!--
+  loginLink("bblog.sso.biglobe.ne.jp/ap");
+// -->
+</script>
+
+  </div>
+  <!-- title banner end -->
+
+  <!-- counter start -->
+  <p id="counter"><img id="counterimg" src="http://webryblog.biglobe.ne.jp/cgi-bin/Count.cgi?trgb=ffffff&ft=0&df=h/a/hardsoft.at.webry.info/NEWS/049eb1ab85.dat" height="9" alt="アクセスカウンタ" /></p>
+  <!-- counter end -->
+
+	<!-- free space E08 -->
+
+  <!-- utilities2 start -->
+  <div id="utilities2" class="utiloff">
+    <script type="text/javascript"><!--
+        forced_disp_ad2();
+    // --></script>
+    <script type="text/javascript" src="/sidebar.js"></script>
+    <script type="text/javascript">
+    <!--
+      load_sidebar_info('hardsoft.at.webry.info');
+    // -->
+    </script>
+
+    <script type="text/javascript"><!--
+        include_compo_left(1);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(2);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(3);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(4);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(5);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(6);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(7);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(8);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(9);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(10);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(11);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(12);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(13);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(14);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(15);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(16);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(17);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(18);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(19);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo_left(20);
+    // --></script>
+    </div>
+  </div>
+  <!-- utilities2 end -->
+
+  <!-- blog start -->
+  <div id="blog">
+
+	<script type="text/javascript" src="http://hardsoft.at.webry.info/themetab_data.js"></script>
+	<script type="text/javascript">
+	<!--
+		insertThemeTabNews('hardsoft.at.webry.info');
+	// -->
+	</script>
+
+	<!-- free space E09 -->
+
+    <!-- blog-head start -->
+    <div id="blog-head">
+      <h2>
+    <a href="javascript:void(0)" onclick="helpWin('general_cont.html#rss')">
+    <img width="30" height="14" border="0" hspace="1" align="right" src="/images/img/help.gif" alt="help" /></a>
+    <a href="http://hardsoft.at.webry.info/rss/index.rdf">
+    <img width="30" height="14" border="0" hspace="1" align="right" src="/images/img/rss.gif" alt="RSS" /></a>
+  <!-- google_ad_section_start(name=section1) -->
+    Perl 5.8.x で shiftjis 、CP932、MacJapanese の違い
+  <!-- google_ad_section_end(name=section1) -->
+      </h2>
+
+      <p class="date">
+        <a href="http://hardsoft.at.webry.info/200801/article_6.html" title="前記事">&lt;&lt;</a>
+        &nbsp;
+        作成日時 ： 2008/02/05 00:14
+        &nbsp;
+        <a href="http://hardsoft.at.webry.info/200802/article_2.html" title="後記事">&gt;&gt;</a>
+      </p>
+      <p class="response" style="text-align:right">
+            <a href="http://hardsoft.at.webry.info/200802/article_1.html#kimochi">
+            <img src="/images/article/kimochi_aha.png" width="24" height="24" border="0" alt="なるほど（納得、参考になった、ヘー）" title="なるほど（納得、参考になった、ヘー）" />
+            ブログ気持玉 4</a> /
+            <a href="http://hardsoft.at.webry.info/200802/article_1.html#trackback">トラックバック 1</a> /
+      <a href="http://hardsoft.at.webry.info/200802/article_1.html#comment">コメント 0</a></p>
+    </div>
+    <!-- blog-head end -->
+
+    <!-- blog-body start -->
+    <table id="blog-body-container" cellpadding="0" cellspacing="0" border="0">
+    <tr><td id="blog-body">
+    <!-- google_ad_section_start(name=section2) -->
+      perldoc の Encode::JP を読むと、Shift JISには3種類ある。<br />
+<ul><li>shiftjis - MS Kanji</li><li>CP932 - CODE PAGE 932 = Shift JIS + MS/IBM vendor mappings</li><li>MacJapanese -  Shift JIS + Apple vendor mappings</li></ul><br />
+うっすらとわかっているけれど、気持ち悪いので調べてみた。<br />
+Wikipedia に詳しい解説があった。<br />
+<ul><li>shiftjis - <A HREF="http://ja.wikipedia.org/wiki/Shift_JIS" TARGET="_blank">http://ja.wikipedia.org/wiki/Shift_JIS</A></li><li>CP932 - <A HREF="http://ja.wikipedia.org/wiki/CP932" TARGET="_blank">http://ja.wikipedia.org/wiki/CP932</A></li><li>MacJapanese - <A HREF="http://ja.wikipedia.org/wiki/MacJapanese" TARGET="_blank">http://ja.wikipedia.org/wiki/MacJapanese</A></li></ul><br />
+この3つの encoding について具体的に把握する方法を考えてみた。3種類のencoding に含まれる文字をUnicodeテキストファイルに保存して Perl でそれぞれの encoding でShift JISテキストファイルを作成して、どの文字がエラーになるか調べてみればいい。<br />
+こんなプログラムを作ってみた。<br />
+<br />
+<blockquote><code>use&nbsp;utf8;<br />
+use&nbsp;strict;<br />
+use&nbsp;warnings;<br />
+<br />
+open&nbsp;my&nbsp;$fin,&nbsp;"&lt;:encoding(utf16BE)",&nbsp;"test_u2s_utf16be.txt"&nbsp;or&nbsp;die;<br />
+my&nbsp;@lines&nbsp;=&nbsp;&lt;$fin&gt;;<br />
+close&nbsp;$fin;<br />
+$lines[0]&nbsp;=~&nbsp;s/\x{feff}//;<br />
+exit;<br />
+foreach&nbsp;my&nbsp;$name&nbsp;(&nbsp;qw/shiftjis&nbsp;cp932&nbsp;MacJapanese/&nbsp;){<br />
+&nbsp;&nbsp;open&nbsp;&nbsp;my&nbsp;$fout,&nbsp;"&gt;:encoding($name)","test_u2s_$name.txt"&nbsp;or&nbsp;die;<br />
+&nbsp;&nbsp;print&nbsp;$fout&nbsp;@lines;<br />
+&nbsp;&nbsp;close&nbsp;$fout;<br />
+}<br />
+</code></blockquote><br />
+<br />
+このプログラムを実行すると、Unicode のファイルを読み込んで3種類のテキストファイルを出力する。<br />
+<br />
+次のようなテキストファイルを作成してUTF-16BEでファイル名をtest_u2s_utf16be.txtとして保存した。<br />
+<blockquote><br />
+NEC: JIS X 0212-1990<br />
+&#8470;<br />
+NEC: JIS X 0213:2004<br />
+&#9312; &#9313; &#9314; &#9315; &#9316; &#9317; &#9318; &#9319; &#9320; &#9321; &#9322; &#9323; &#9324; &#9325; &#9326; &#9327; &#9328; &#9329; &#9330; &#9331; &#8544; &#8545; &#8546; &#8547; &#8548; &#8549; &#8550; &#8551; &#8552; &#8553; &#13129; &#13076; &#13090; &#13133; &#13080; &#13095; &#13059; &#13110; &#13137; &#13143; &#13069; &#13094; &#13091; &#13099; &#13130; &#13115; &#13212; &#13213; &#13214; &#13198; &#13199; &#13252; &#13217; &#13179; &#12317; &#12319; &#8470; &#13261; &#8481; &#12964; &#12965; &#12966; &#12967; &#12968; &#12849; &#12850; &#12857; &#13182; &#13181; &#13180; &#8786; &#8801; &#8747; &#8750; &#8730; &#8869; &#8736; &#8735; &#8895; &#8757; &#8745; &#8746;<br />
+<br />
+IBM: &#20154;&#21517;&#29992;&#28450;&#23383;&#65288;2004&#24180;&#25913;&#27491;&#65289;<br />
+&#23532; &#34224; &#28712; &#22686; &#24503; &#36084; &#63785; &#27243; &#40657; &#32214; &#64034; &#64026; &#64025; &#64038; &#64027; &#37086;<br />
+<br />
+IBM: JIS X 0212-1990<br />
+&#8470; &#20008; &#20193; &#20224; &#20227; &#20281; &#20310; &#20362; &#20370; &#20372; &#20378; &#20425; &#20429; &#20479; &#20510; &#20514; &#20544; &#20546; &#20550; &#20592; &#20628; &#20696; &#20810; &#20836; &#20893; &#20926; &#21013; &#21148; &#21158; &#21167; &#21184; &#21211; &#21248; &#21362; &#21395; &#21426; &#21469; &#21660; &#21673; &#21759; &#21894; &#22373; &#22444; &#22471; &#22472; &#22706; &#22795; &#22867; &#22875; &#22877; &#22883; &#22948; &#22970; &#23382; &#23488; &#23512; &#23582; &#23718; &#23738; &#23847; &#23874; &#23917; &#23992; &#23993; &#24016; &#24353; &#24372; &#24389; &#24423; &#24542; &#24669; &#24714; &#24789; &#24798; &#24818; &#24849; &#24880; &#24887; &#24984; &#25107; &#25254; &#25589; &#25696; &#25757; &#25806; &#26112; &#26121; &#26133; &#26142; &#26148; &#26158; &#26161; &#26199; &#26201; &#26363; &#26227; &#26265; &#26272; &#26290; &#26303; &#26362; &#26382; &#26470; &#26555; &#26560; &#26706; &#26692; &#26824; &#26831; &#26984; &#27032; &#27106; &#27184; &#27206; &#27251; &#27262; &#27364; &#27606; &#27711; &#27740; &#27759; &#27782; &#27866; &#27908; &#28015; &#28039; &#28054; &#28076; &#28111; &#28156; &#28199; &#28217; &#28220; &#28252; &#28351; &#28552; &#28597; &#28661; &#28677; &#28679; &#28805; &#28843; &#28932; &#28943; &#28998; &#28999; &#29020; &#29121; &#29182; &#29361; &#29374; &#29476; &#29559; &#29629; &#29641; &#29650; &#29654; &#29667; &#29685; &#29703; &#29734; &#29737; &#29738; &#29742; &#29794; &#29833; &#29855; &#29999; &#30063; &#30363; &#30364; &#30374; &#30534; &#30753; &#30798; &#30820; &#30842; &#31124; &#31131; &#31441; &#31467; &#31646; &#32072; &#32092; &#32183; &#32338; &#32394; &#32583; &#32673; &#33537; &#33663; &#33735; &#33782; &#33864; &#33972; &#34012; &#34131; &#34137; &#34155; &#35061; &#35100; &#35346; &#35383; &#35449; &#35495; &#35518; &#35551; &#35574; &#35667; &#36080; &#36114; &#36559; &#36967; &#37159; &#37335; &#37338; &#37342; &#37348; &#37349; &#37357; &#37358; &#37382; &#37386; &#37392; &#37433; &#37434; &#37436; &#37440; &#37454; &#37457; &#37465; &#37479; &#37495; &#37496; &#37512; &#37543; &#37584; &#37587; &#37589; &#37591; &#37593; &#37600; &#37607; &#37625; &#37627; &#37631; &#37634; &#37661; &#37662; &#37665; &#37669; &#37704; &#37719; &#37744; &#37796; &#37830; &#37854; &#37880; &#37937; &#37957; &#37960; &#38557; &#38575; &#38707; &#38723; &#38735; &#38741; &#38999; &#39013; &#39207; &#39502; &#39644; &#39797; &#39823; &#39857; &#39867; &#39936; &#40299; &#40304; &#40473;<br />
+<br />
+IBM JIS X 0213:2004<br />
+&#8560; &#8561; &#8562; &#8563; &#8564; &#8565; &#8566; &#8567; &#8568; &#8569; &#8544; &#8545; &#8546; &#8547; &#8548; &#8549; &#8550; &#8551; &#8552; &#8553; &#65506; &#65508; &#65287; &#65282; &#12849; &#8470; &#8481; &#8757; &#20008; &#20193; &#20227; &#20310; &#20362; &#20372; &#20425; &#20544; &#20628; &#20810; &#20893; &#21013; &#21211; &#21248; &#21255; &#21395; &#21426; &#21660; &#21673; &#21759; &#21894; &#64015; &#22471; &#22472; &#64016; &#22686; &#22877; &#22948; &#23382; &#23512; &#23532; &#23582; &#23738; &#23847; &#64017; &#23891; &#23917; &#23992; &#24372; &#24389; &#24423; &#24503; &#24542; &#24789; &#24880; &#24887; &#25589; &#25696; &#25806; &#26112; &#26121; &#26133; &#26142; &#26148; &#26161; &#26363; &#26201; &#26213; &#26227; &#26272; &#26290; &#26362; &#63785; &#26470; &#26555; &#26560; &#26625; &#26706; &#26824; &#26984; &#64020; &#27106; &#27243; &#27251; &#27364; &#27606; &#27740; &#27782; &#27908; &#28039; &#28076; &#28156; &#28252; &#28552; &#28661; &#28677; &#28712; &#28805; &#28843; &#28943; &#28998; &#28999; &#29020; &#64021; &#29121; &#29182; &#29374; &#64022; &#29641; &#29654; &#29667; &#29703; &#29734; &#29738; &#29742; &#29794; &#29833; &#29855; &#29953; &#29999; &#30063; &#30363; &#30366; &#30374; &#30534; &#30798; &#64025; &#64026; &#64027; &#31467; &#31646; &#32072; &#32092; &#32160; &#32214; &#32338; &#32394; &#32583; &#33537; &#33634; &#33735; &#33864; &#33972; &#34137; &#64031; &#34224; &#35061; &#35100; &#35346; &#35383; &#35449; &#35495; &#35551; &#35574; &#64034; &#36084; &#36114; &#37086; &#64038; &#37141; &#37159; &#37335; &#37348; &#37349; &#37357; &#37392; &#37433; &#37434; &#37436; &#37440; &#37496; &#37512; &#37587; &#37600; &#37631; &#37665; &#37669; &#37704; &#37744; &#37830; &#37854; &#63964; &#38557; &#38707; &#38715; &#38733; &#38735; &#38999; &#39013; &#39326; &#39502; &#39794; &#39797; &#39823; &#39936; &#40304; &#40657; &#20224; &#20370; &#20378; &#20510; &#20514; &#20546; &#20550; &#20592; &#21158; &#21167; &#21284; &#21642; &#22444; &#22795; &#22875; &#23488; &#23718; &#23874; &#23993; &#24714; &#24818; &#24984; &#25254; &#25757; &#26199; &#26265; &#26303; &#26692; &#64019; &#26831; &#27032; &#27184; &#27206; &#27262; &#27711; &#27866; &#28111; &#28199; &#28220; &#28351; &#28597; &#28679; &#28859; &#28932; &#29361; &#29559; &#30364; &#30753; &#30820; &#31024; &#31124; &#31131; &#31441; &#31463; &#32183; &#33663; &#34012; &#34131; &#64032; &#64033; &#35518; &#35711; &#36080; &#64036; &#37338; &#37358; &#37386; &#37454; &#37457; &#37465; &#37479; &#37543; &#37584; &#37591; &#37593; &#37607; &#37625; &#37627; &#37634; &#37661; &#37662; &#37719; &#37957; &#38575; &#38741; &#39644; &#39857; &#40299; &#40473;<br />
+<br />
+MAC:<br />
+&#9312; &#9313; &#9314; &#9315; &#9316; &#9317; &#9318; &#9319; &#9320; &#9321; &#9322; &#9323; &#9324; &#9325; &#9326; &#9327; &#9328; &#9329; &#9330; &#9331;<br />
+&#9332; &#9333; &#9334; &#9335; &#9336; &#9337; &#9338; &#9339; &#9340; &#10121; &#9342; &#9343; &#9344; &#9345; &#9346; &#9347; &#9348; &#9349; &#9350; &#9351;<br />
+&#10102; &#10123; &#10104; &#10105; &#10106; &#10107; &#10108; &#10109; &#10110; &#10111; <br />
+&#9352; &#9353; &#9354; &#9355; &#9356; &#9357; &#9358; &#9359; &#9360; &#9361; &#9362; &#9363; &#9364; &#9365; &#9366; &#9367; &#9368; &#9369; &#9370; &#9371;<br />
+&#8544; &#8545; &#8546; &#8547; &#8548; &#8549; &#8550; &#8551; &#8552; &#8553;<br />
+&#13198; &#13199; &#13212; &#13213; &#13217; &#13252;<br />
+&#8470; &#8481;<br />
+&#9824;  &#9828;  &#9829;  &#9825;  &#9830;  &#9826;  &#9827;  &#9831; <br />
+&#12320; &#9742; &#12292; <br />
+&#9757; &#9759; &#9758; &#9756; &#8679;  &#8681;  &#8680;  &#8678;<br />
+&#12857; &#12849; &#12850;<br />
+&#12964; &#12966; &#12968; &#12967; <br />
+&#13090; &#13059; &#13069; &#13076; &#13080; &#13090; &#13183;<br />
+&#8750;  <br />
+&#12436; &#12535; &#12536; &#12537; &#12538; <br />
+</blockquote><br />
+<br />
+変換できなかった文字は \x{0123}という感じで16進数で表示される。<br />
+<br />
+test_u2s_shiftjis.txt の結果は次の通り。<br />
+<blockquote><br />
+NEC: JIS X 0212-1990<br />
+\x{2116}<br />
+NEC: JIS X 0213:2004<br />
+\x{2460} \x{2461} \x{2462} \x{2463} \x{2464} \x{2465} \x{2466} \x{2467} \x{2468} \x{2469} \x{246a} \x{246b} \x{246c} \x{246d} \x{246e} \x{246f} \x{2470} \x{2471} \x{2472} \x{2473} \x{2160} \x{2161} \x{2162} \x{2163} \x{2164} \x{2165} \x{2166} \x{2167} \x{2168} \x{2169} \x{3349} \x{3314} \x{3322} \x{334d} \x{3318} \x{3327} \x{3303} \x{3336} \x{3351} \x{3357} \x{330d} \x{3326} \x{3323} \x{332b} \x{334a} \x{333b} \x{339c} \x{339d} \x{339e} \x{338e} \x{338f} \x{33c4} \x{33a1} \x{337b} \x{301d} \x{301f} \x{2116} \x{33cd} \x{2121} \x{32a4} \x{32a5} \x{32a6} \x{32a7} \x{32a8} \x{3231} \x{3232} \x{3239} \x{337e} \x{337d} \x{337c} ≒ ≡ ∫ \x{222e} √ ⊥ ∠ \x{221f} \x{22bf} ∵ ∩ ∪<br />
+(...以下省略...) <br />
+</blockquote><br />
+ほぼ、変換できなかった。拡張文字はほぼ変換しない。環境に依存する拡張文字を厳格にチェックしたい時に使える。<br />
+<br />
+HP-UXなんかにファイルをもってくときはいいかもしれない。<br />
+<br />
+test_u2s_cp932.txtの結果は次の通り。<br />
+<br />
+<blockquote><br />
+NEC: JIS X 0212-1990<br />
+№<br />
+NEC: JIS X 0213:2004<br />
+① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨ ⑩ ⑪ ⑫ ⑬ ⑭ ⑮ ⑯ ⑰ ⑱ ⑲ ⑳ Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ ㍉ ㌔ ㌢ ㍍ ㌘ ㌧ ㌃ ㌶ ㍑ ㍗ ㌍ ㌦ ㌣ ㌫ ㍊ ㌻ ㎜ ㎝ ㎞ ㎎ ㎏ ㏄ ㎡ ㍻ 〝 〟 № ㏍ ℡ ㊤ ㊥ ㊦ ㊧ ㊨ ㈱ ㈲ ㈹ ㍾ ㍽ ㍼ ≒ ≡ ∫ ∮ √ ⊥ ∠ ∟ ⊿ ∵ ∩ ∪<br />
+<br />
+IBM: 人名用漢字（2004年改正）<br />
+寬 薰 瀨 增 德 賴 朗 橫 黑 緖 諸 祥 神 都 福 郞<br />
+<br />
+IBM: JIS X 0212-1990<br />
+№ 丨 仡 伀 伃 伹 佖 侊 侒 侔 侚 俉 俍 俿 倞 倢 偀 偂 偆 偰 傔 僘 兊 兤 冝 冾 刕 劜 劦 劯 勀 勛 匀 卲 厓 厲 叝 咜 咩 哿 喆 坥 垬 埇 埈 墲 夋 奓 奛 奝 奣 妤 妺 孖 寀 寘 尞 岦 岺 崧 嵂 嵭 嶸 嶹 巐 弡 弴 彅 彧 忞 恝 悊 惕 惞 惲 愑 愰 愷 憘 戓 抦 揵 摠 撝 擎 昀 昉 昕 昞 昤 昮 昱 晗 晙 曻 晳 暙 暠 暲 暿 曺 朎 杦 枻 柀 桒 桄 棈 棏 楨 榘 槢 樰 橆 橳 橾 櫤 毖 氿 汜 汯 沆 泚 洄 浯 涇 涖 涬 淏 淼 渧 渹 渼 湜 溿 澈 澵 濵 瀅 瀇 炅 炫 焄 焏 煆 煇 煜 燁 燾 犱 犾 猤 獷 玽 珉 珒 珖 珣 珵 琇 琦 琩 琪 琮 瑢 璉 璟 甯 畯 皛 皜 皦 睆 砡 硎 硤 硺 禔 禛 竑 竫 箞 絈 絜 綷 繒 纊 罇 羡 茁 荿 菇 菶 葈 蒴 蓜 蕓 蕙 蕫 裵 褜 訒 訷 詹 誧 誾 諟 諶 譓 賰 贒 軏 遧 鄧 釗 釚 釞 釤 釥 釭 釮 鈆 鈊 鈐 鈹 鈺 鈼 鉀 鉎 鉑 鉙 鉧 鉷 鉸 銈 銧 鋐 鋓 鋕 鋗 鋙 鋠 鋧 鋹 鋻 鋿 錂 錝 錞 錡 錥 鍈 鍗 鍰 鎤 鏆 鏞 鏸 鐱 鑅 鑈 隝 隯 霳 靃 靏 靕 顗 顥 餧 驎 髜 魵 鮏 鮱 鮻 鰀 鵫 鵰 鸙<br />
+<br />
+IBM JIS X 0213:2004<br />
+ⅰ ⅱ ⅲ ⅳ ⅴ ⅵ ⅶ ⅷ ⅸ ⅹ Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ ￢ ￤ ＇ ＂ ㈱ № ℡ ∵ 丨 仡 伃 佖 侊 侔 俉 偀 傔 兊 冝 刕 勛 匀 匇 厓 厲 咜 咩 哿 喆 﨏 埇 埈 塚 增 奝 妤 孖 寘 寬 尞 岺 崧 﨑 嵓 嵭 嶸 弴 彅 彧 德 忞 惕 愰 愷 揵 摠 擎 昀 昉 昕 昞 昤 昱 曻 晙 晥 晳 暠 暲 曺 朗 杦 枻 柀 栁 桒 棈 楨 﨔 槢 橫 橳 櫤 毖 汜 沆 洄 涇 涬 淼 湜 澈 濵 瀅 瀨 炅 炫 焏 煆 煇 煜 凞 燁 燾 犾 猪 珉 珖 珣 琇 琦 琪 琮 瑢 璉 璟 甁 甯 畯 皛 皞 皦 睆 硎 神 祥 福 竫 箞 絈 絜 綠 緖 繒 纊 罇 茁 荢 菇 葈 蒴 蕙 﨟 薰 裵 褜 訒 訷 詹 誧 諟 諶 諸 賴 贒 郞 都 鄕 鄧 釗 釤 釥 釭 鈐 鈹 鈺 鈼 鉀 鉸 銈 鋓 鋠 鋿 錡 錥 鍈 鍰 鏆 鏞 隆 隝 霳 霻 靍 靏 顗 顥 馞 驎 魲 魵 鮏 鰀 鵰 黑 伀 侒 侚 倞 倢 偂 偆 偰 劦 劯 匤 咊 垬 夋 奛 寀 岦 嵂 嶹 悊 惲 憘 抦 撝 晗 暙 暿 桄 﨓 棏 榘 樰 橆 橾 氿 泚 淏 渧 渼 溿 澵 瀇 炻 焄 犱 獷 皜 砡 硤 礰 禔 禛 竑 竧 綷 荿 蓜 蕓 蘒 﨡 誾 譿 賰 﨤 釚 釮 鈊 鉎 鉑 鉙 鉧 銧 鋐 鋗 鋙 鋧 鋹 鋻 錂 錝 錞 鍗 鑅 隯 靕 髜 鮱 鵫 鸙<br />
+<br />
+MAC:<br />
+① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨ ⑩ ⑪ ⑫ ⑬ ⑭ ⑮ ⑯ ⑰ ⑱ ⑲ ⑳<br />
+\x{2474} \x{2475} \x{2476} \x{2477} \x{2478} \x{2479} \x{247a} \x{247b} \x{247c} \x{2789} \x{247e} \x{247f} \x{2480} \x{2481} \x{2482} \x{2483} \x{2484} \x{2485} \x{2486} \x{2487}<br />
+\x{2776} \x{278b} \x{2778} \x{2779} \x{277a} \x{277b} \x{277c} \x{277d} \x{277e} \x{277f} <br />
+\x{2488} \x{2489} \x{248a} \x{248b} \x{248c} \x{248d} \x{248e} \x{248f} \x{2490} \x{2491} \x{2492} \x{2493} \x{2494} \x{2495} \x{2496} \x{2497} \x{2498} \x{2499} \x{249a} \x{249b}<br />
+Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ<br />
+㎎ ㎏ ㎜ ㎝ ㎡ ㏄<br />
+№ ℡<br />
+\x{2660}  \x{2664}  \x{2665}  \x{2661}  \x{2666}  \x{2662}  \x{2663}  \x{2667} <br />
+\x{3020} \x{260e} \x{3004} <br />
+\x{261d} \x{261f} \x{261e} \x{261c} \x{21e7}  \x{21e9}  \x{21e8}  \x{21e6}<br />
+㈹ ㈱ ㈲<br />
+㊤ ㊦ ㊨ ㊧ <br />
+㌢ ㌃ ㌍ ㌔ ㌘ ㌢ \x{337f}<br />
+∮  <br />
+ヴ \x{30f7} \x{30f8} \x{30f9} \x{30fa} <br />
+</blockquote><br />
+<br />
+Windows の範囲で文字コードを交換するには一番いいと思われる。<br />
+携帯電話用のCGIにCP932を使う人もいるけれど機種別対応をしないのなら shiftjisにして encoding エラーをきちんと処理したほうがいいかもしれない。この件は、もう少し詳しく調べないとわからないなあ…。<br />
+<br />
+test_u2s_MacJapanese.txt の結果は、Macがないので表示できない。<br />
+IBM拡張漢字は全滅だった。<br />
+<br />
+なんだかんだでShift JISはトラブルメーカーなので Shift JISのテキストファイルがあったら早めに Unicodeに変換して使ったほうが柔軟性が高いと思われる。<br />
+
+    <!-- google_ad_section_end(name=section2) -->
+      </td></tr>
+    </table>
+    <!-- blog-body end -->
+
+	<!-- free space E04 -->
+
+    <!-- blog-foot start -->
+    <div id="blog-foot">
+
+      <!-- theme start -->
+    <script type="text/javascript" src="http://webryblog.biglobe.ne.jp/beacon/theme/blogentrycount/themeid/275a986d99/url/hardsoft.at.webry.info/200802/article_1.html"></script>
+    <script type="text/javascript" src="http://webryblog.biglobe.ne.jp/beacon/theme/blogentrycount/themeid/2d5396c6b9/url/hardsoft.at.webry.info/200802/article_1.html"></script>
+    <script type="text/javascript" src="http://webryblog.biglobe.ne.jp/beacon/theme/blogentrycount/themeid/75575704c2/url/hardsoft.at.webry.info/200802/article_1.html"></script>
+      <form name="themeradar" method="post" action="http://map.bblog.biglobe.ne.jp/ap/themeradar.do">
+      <input type="hidden" name="newsid" value="049eb1ab85" />
+      <table id="theme">
+      <tr valign="top">
+        <td>
+        <h2>テーマ</h2>
+        <ul>
+        <li><a href="http://hardsoft.at.webry.info/theme/275a986d99.html"><strong>Shift JIS</strong></a></li>
+        <li><a href="http://hardsoft.at.webry.info/theme/2d5396c6b9.html"><strong>Perl</strong></a></li>
+        <li><a href="http://hardsoft.at.webry.info/theme/75575704c2.html"><strong>日本語</strong></a></li>
+        </ul>
+        </td>
+        <td>
+        <h2>関連テーマ <a href="javascript:document.themeradar.submit()">一覧</a></h2>
+        <ul>
+        <li><a href="http://webryblog.biglobe.ne.jp/3/3/331f1b774e.html"><strong>クイズ</strong></a></li>
+        <li><a href="http://webryblog.biglobe.ne.jp/e/0/e067f2104c.html"><strong>漢字</strong></a></li>
+        <li><a href="http://webryblog.biglobe.ne.jp/2/7/27dd3423e6.html"><strong>英語</strong></a></li>
+        </ul>
+        </td>
+        </tr>
+      </table>
+      </form>
+      <!-- theme end -->
+
+	<!-- free space E05 -->
+
+
+      <script type="text/javascript">
+      <!--
+      google_ad_client = 'ca-nec-cgm_js';
+      google_ad_output = 'js';
+      google_ad_type = 'text';
+      google_max_num_ads = 4;
+      google_safe = 'high';
+      google_language = 'ja';
+      google_encoding = 'sjis';
+      google_ad_section = 'section1 section2';
+
+      google_ad_channel = 'ad4';
+      // -->
+      </script>
+
+      <script type="text/javascript" src="/searchengine.js"></script>
+      <script type="text/javascript">
+      <!--
+      if (searchEngineFlag) {
+          google_max_num_ads = '6';
+          google_ad_type = 'text,image,flash,html';
+          google_image_size = '336x280';
+      }
+      if(! (navigator.appVersion.charAt(0) <= 4 && navigator.appName.charAt(0) == "N"))
+        document.write('<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script\>');
+      function google_ad_request_done(google_ads) {
+        var i;
+        if( google_ads[0] ){
+document.write("<div class=\"g-ads\">");
+document.write("<h2><a href=\""+google_info.feedback_url+"\" target=\"_blank\">Ads by Google</a></h2>");
+document.write("<ul>");
+        }
+
+        // GoogleAdsense
+		for(i = 0; i < google_ads.length; ++i) {
+          if (! google_ads[i] ) { break ; }
+            if ( google_ads[i].type == 'image' ) {
+              document.write("<li><a href=\"" +google_ads[i].url+ "\"><img src=\"" +google_ads[i].image_url+ "\" width=\"" +google_ads[i].image_width+ "\" height=\"" +google_ads[i].image_height+ "\" border=\"0\" /></a><br /><a href=\"" +google_ads[i].url+ "\">" + google_ads[i].visible_url + "</a></li>");
+            } else if ( google_ads[i].type == 'flash' ) {
+              document.write( '<li><OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" WIDTH="'+google_ads[i].image_width+'" HEIGHT="'+google_ads[i].image_height+'"><PARAM NAME=movie VALUE="'+google_ads[i].image_url+'"><PARAM NAME=quality VALUE="high"><PARAM NAME="AllowScriptAccess" VALUE="never"><EMBED src="'+google_ads[i].image_url+'" WIDTH="'+google_ads[i].image_width+'" HEIGHT="'+google_ads[i].image_height+'" TYPE="application/x-shockwave-flash" AllowScriptAccess="never" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"></EMBED></OBJECT><br /><a href="' +google_ads[i].url+ '">' + google_ads[i].visible_url + '</a></li>' );
+            } else if ( google_ads[i].type == 'html' ) {
+              document.write( google_ads[i].snippet + '<br /><a href="' +google_ads[i].url+ '">' + google_ads[i].visible_url + '</a>' );
+            } else {
+              document.write("<li><a href=\"" + google_ads[i].url + "\">");
+              document.write("<span class=\"line1\">" + google_ads[i].line1 + "</span></a><br />");
+              document.write("<span class=\"line2\">" + google_ads[i].line2 + "&nbsp;" + google_ads[i].line3 + "</span><br />");
+              document.write("<span class=\"url\"><a href=\"" + google_ads[i].url + "\">" + google_ads[i].visible_url + "</a></span></li>");
+            }
+        }
+
+        if( google_ads[0] ){
+          document.write("</ul>");
+          document.write("</div>");
+        }
+      }
+      // -->
+      </script>
+
+
+      <!-- related theme start -->
+<div id="related">
+      <h2>同じテーマのブログ記事</h2>
+
+
+		<h3>
+            「Shift JIS」
+			<p class="links" style="float:right">→&nbsp;<a
+			href="http://hardsoft.at.webry.info/theme/275a986d99.html">もっと見る</a>&nbsp;			</p>
+		</h3>
+        <ul>
+            <script type="text/javascript" src="http://hardsoft.at.webry.info/theme/275a986d99.js"></script>
+            <script type="text/javascript">
+          <!--
+            include_relatednews_list2(3, "http://hardsoft.at.webry.info/200802/article_1.html");
+          // -->
+          </script>
+        </ul>
+
+		<h3>
+            「Perl」
+			<p class="links" style="float:right">→&nbsp;<a
+			href="http://hardsoft.at.webry.info/theme/2d5396c6b9.html">もっと見る</a>&nbsp;			<a href="http://webryblog.biglobe.ne.jp/2/d/2d5396c6b9.html">みんなの「Perl」ブログ</a>			</p>
+		</h3>
+        <ul>
+            <script type="text/javascript" src="http://hardsoft.at.webry.info/theme/2d5396c6b9.js"></script>
+            <script type="text/javascript">
+          <!--
+            include_relatednews_list2(3, "http://hardsoft.at.webry.info/200802/article_1.html");
+          // -->
+          </script>
+        </ul>
+
+		<h3>
+            「日本語」
+			<p class="links" style="float:right">→&nbsp;<a
+			href="http://hardsoft.at.webry.info/theme/75575704c2.html">もっと見る</a>&nbsp;			<a href="http://webryblog.biglobe.ne.jp/7/5/75575704c2.html">みんなの「日本語」ブログ</a>			</p>
+		</h3>
+        <ul>
+            <script type="text/javascript" src="http://hardsoft.at.webry.info/theme/75575704c2.js"></script>
+            <script type="text/javascript">
+          <!--
+            include_relatednews_list2(3, "http://hardsoft.at.webry.info/200802/article_1.html");
+          // -->
+          </script>
+        </ul>
+</div>
+      <!-- related theme end -->
+
+    </div>
+    <!-- blog-foot end -->
+
+    <!-- navigation start -->
+    <table class="navi">
+    <tr><td align="right" >
+      <a href="http://hardsoft.at.webry.info/200801/article_6.html" title="ブログの前記事">&lt;&lt; 前記事(2008/01/31)</a>
+      </td>
+      <td align="center"><a href="http://hardsoft.at.webry.info/" title="このブログのトップへ">ブログのトップへ</a></td>
+      <td align="left"  >
+      <a href="http://hardsoft.at.webry.info/200802/article_2.html" title="ブログの後記事">後記事(2008/02/08) &gt;&gt;</a>
+      </td>
+    </tr></table>
+    <!-- navigation end -->
+
+    <!-- archives start -->
+    <div id="archives">
+      <h2>月別リンク</h2>
+      <ul>
+    <script type="text/javascript" src="http://hardsoft.at.webry.info/monthly_link.js"></script>
+    <script type="text/javascript">
+    <!--
+      include_monthly_link_top(12);
+    // -->
+    </script>
+      </ul>
+    </div>
+    <!-- archives end -->
+
+    		<!-- kimochidama start -->
+		    <div id="kimochi" class="box-unit">
+			        <h2 class="h2-general">
+				            ブログ気持玉
+				            <a href="javascript:void(0)" onclick="helpWin('general_cont.html#blog_feeling')"><img src="../images/img/help.gif" width="30" height="14" border="0" align="absmiddle" /></a>
+			        </h2>
+
+			        <div class="box">
+								            <strong>クリックして気持ちを伝えよう！</strong><br />
+            ログインしてクリックすれば、自分のブログへのリンクが付きます。<br /><a href="http://webryblog.biglobe.ne.jp/">→ログインへ</a>
+            <script type="text/javascript">
+                <!--
+                  var blogtop_tooldomain = "bblog.sso.biglobe.ne.jp/ap";
+                  include_feeling_btn('049eb1ab85');
+                // -->
+            </script>
+									            <div id="k-list">
+					                気持玉数 ： 4
+										                <div class="k-unit">
+											                    <img src="/images/article/kimochi_aha.png"	 width="24" height="24" alt="なるほど（納得、参考になった、ヘー）" />
+																		                    <img src="/images/article/kimochi_aha.png"	 width="24" height="24" alt="なるほど（納得、参考になった、ヘー）" />
+																		                    <img src="/images/article/kimochi_aha.png"	 width="24" height="24" alt="なるほど（納得、参考になった、ヘー）" />
+																		                    <div class="ns-bg"></div>
+					                </div>
+										                <div class="k-unit">
+											                    <img src="/images/article/kimochi_funny.png"	 width="24" height="24" alt="面白い" />
+																		                    <div class="ns-bg"></div>
+					                </div>
+					            </div>
+							        </div>
+    </div>
+	    	<!-- kimochidama end -->
+
+    <!-- trackback start -->
+    <div id="trackback">
+      <h2>トラックバック<span class="supple">（1件）</span></h2>
+      <table cellpadding="0" cellspacing="0" border="0">
+      <tr><th class="cont">タイトル （本文）</th>
+        <th class="sub">ブログ名／日時</th></tr>
+
+      <tr><td class="cont" style="vertical-align:top"><a href="http://hardsoft.at.webry.info/200505/article_5.html">ActivePerl 5.8.X　で日本語処理をする</a>
+        <blockquote style="margin-top:8px">
+        Windows で ActivePerl 5.8.X 以降を使う場合、次のように宣言すると、標準入出力やPerl/Tkも日本語で使えるようになる。ソースプログラムも Shift-JISコードで保存できるようになって便利。
+        <span class="more"><a href="http://hardsoft.at.webry.info/200505/article_5.html">...続きを見る</a></span>
+        </blockquote></td>
+        <td class="sub">ハードなソフトの話<br />2008/02/06 22:24</td></tr>
+      </table>
+      <form name="atcl1" method="post" action="https://bblog.sso.biglobe.ne.jp/ap/tool/bblogwrite.do" onsubmit="javascript:if(articlePageValueCheck1() == false){return false;}">
+      <div id="trackback_form">
+      <div class="tbkurl">
+        <h2>トラックバック用URL
+        <a href="javascript:void(0)" onclick="helpWin('general_cont.html#trackback_url')"><img src="/images/img/help.gif" width="30" height="14" border="0" align="absmiddle" alt="help" /></a></h2>
+        <input type="text" class="urlstring" value="http://tb.bblog.biglobe.ne.jp/ap/tb/049eb1ab85" />
+      </div><br />
+
+      <h2>自分のブログにトラックバック記事作成<span class="supple">（会員用）</span>
+      <a href="javascript:void(0)" onclick="helpWin('general_cont.html#boomcomment')"><img src="/images/img/help.gif" width="30" height="14" border="0" align="absmiddle" alt="help" /></a>
+      </h2>
+      <input type="hidden" name="newsid" value="049eb1ab85" />
+      <input name="themename" type="hidden" value="Shift JIS" />
+      <input name="themename" type="hidden" value="Perl" />
+      <input name="themename" type="hidden" value="日本語" />
+      <table cellspacing="5" cellpadding="0" border="0">
+      <tr><td align="right" width="18%">タイトル</td>
+        <td><input name="title" type="text" class="txt" size="50" maxlength="50" value="「Perl 5.8.x で shiftjis 、CP932、MacJapanese の違い」について" /></td></tr>
+      <tr><td align="right">本　文</td>
+        <td><textarea name="textbody" cols="100" rows="9"></textarea></td></tr>
+      <tr><td colspan="2" align="right"><input type="button" class="btn" value="記事作成（会員用）" onclick="javascript:if(articlePageValueCheck1()){onMySubmit(document.atcl1,'https://bblog.sso.biglobe.ne.jp/ap/tool/bblogwrite.do')}" /></td></tr>
+      </table>
+      </div>
+      </form>
+    </div>
+    <!-- trackback end -->
+    <!-- comment start -->
+    <div id="comment">
+      <h2>コメント<span class="supple">（0件）</span></h2>
+      <table cellpadding="0" cellspacing="0" border="0">
+      <tr><th class="cont">内 容</th>
+        <th class="sub">ニックネーム／日時</th></tr>
+
+
+      </table>
+      <form name="atcl2" method="post" action="http://cmt.bblog.biglobe.ne.jp/ap/commentwrite.do" onsubmit="javascript:if(articlePageValueCheck3()){onMySubmit(document.atcl2, 'http://cmt.bblog.biglobe.ne.jp/ap/commentwrite.do')}else{return false}">
+      <div id="comment_form">
+      <h2>コメントする
+  <a href="javascript:void(0)" onclick="helpWin('general_cont.html#comment')"><img src="/images/img/help.gif" width="30" height="14" border="0" align="absmiddle" alt="help" /></a>
+      </h2>
+      <input type="hidden" name="newsid" value="049eb1ab85" />
+      <input type="hidden" name="srcurl" value="http://hardsoft.at.webry.info/200802/article_1.html" />
+      <input type="hidden" name="lastcmtdate" value="" />
+
+
+      <table cellspacing="5" cellpadding="0" border="0">
+      <tr><td align="right" width="18%">ニックネーム</td>
+        <td><input name="nickname" type="text" class="txt" value="" size="50" maxlength="25" /></td></tr>
+	 <tr><td></td>
+	 <script type="text/javascript">
+      <!--
+        insertEmoji('hardsoft.at.webry.info', 'commentbody');
+      // -->
+	 </script>
+	 </tr>
+
+      <tr><td align="right">本　文</td>
+        <td><textarea name="comment" id="commentbody" cols="100" rows="5"></textarea></td></tr>
+      <tr>
+
+      <td colspan="2" align="right">
+	<!-- free space E06 -->
+        <input type="button" class="btn" value="コメント（会員用）" onclick="javascript:if(articlePageValueCheck2(1)){onMySubmit(document.atcl2, 'https://bblog.sso.biglobe.ne.jp/ap/tool/authcommentwrite.do')}" />
+        <input type="button" class="btn" value="　　　コメント　　　" onclick="javascript:if(articlePageValueCheck3()){onMySubmit(document.atcl2, 'http://cmt.bblog.biglobe.ne.jp/ap/commentwrite.do')}" /></td>
+	  </tr>
+      </table>
+
+      </div>
+      </form>
+    </div>
+    <!-- comment link area end -->
+
+    <!-- navigation start -->
+    <table class="navi"><tr>
+      <td align="right" >
+      <a href="http://hardsoft.at.webry.info/200801/article_6.html" title="ブログの前記事">&lt;&lt; 前記事(2008/01/31)</a>
+      </td>
+      <td align="center"><a href="http://hardsoft.at.webry.info/" title="このブログのトップへ">ブログのトップへ</a></td>
+      <td align="left"  >
+      <a href="http://hardsoft.at.webry.info/200802/article_2.html" title="ブログの後記事">後記事(2008/02/08) &gt;&gt;</a>
+      </td>
+    </tr></table>
+    <!-- navigation end -->
+
+	<!-- free space E10 -->
+
+  </div>
+  <!-- contents end -->
+
+  <!-- utilities start -->
+  <script type="text/javascript"><!--
+    forced_disp_ad3();
+  // --></script>
+  <div id="utilities" class="utiloff">
+
+
+    <div id="sidenews"></div>
+    <script type="text/javascript"><!--
+      forced_disp_ad();
+    // --></script>
+    <script type="text/javascript" src="/sidebar.js"></script>
+    <script type="text/javascript">
+    <!--
+      load_sidebar_info('hardsoft.at.webry.info');
+    // -->
+    </script>
+    <script type="text/javascript"><!--
+        include_compo(1);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(2);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(3);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(4);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(5);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(6);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(7);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(8);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(9);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(10);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(11);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(12);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(13);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(14);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(15);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(16);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(17);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(18);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(19);
+    // --></script>
+    </div>
+    <script type="text/javascript"><!--
+        include_compo(20);
+    // --></script>
+    </div>
+
+    <div id="side-image"></div>
+
+  </div>
+  <!-- utilities end -->
+  <div class="ns-bg"></div>
+
+	<!-- free space E11 -->
+
+<div align="center">Perl 5.8.x で shiftjis 、CP932、MacJapanese の違い&nbsp;ハードなソフトの話/BIGLOBEウェブリブログ</div>
+
+  <div id="linkunit" align="center">
+      <script type="text/javascript">
+      <!--
+		var firstView = true;
+		function google_ad_request_done(ads) {}
+		function google_radlink_request_done(radlinks) {
+			if (firstView) {
+				firstView = false;
+				if (radlinks.length < 1) {
+					document.write(' <a href="http://webryblog.biglobe.ne.jp/campaign/">ウェブリブログのキャンペーンに応募しよう！</a> ');
+					return;
+				}
+				document.write("<h4>Ads by Google</h4>\n");
+				for(i=0; i < radlinks.length; ++i) {
+					document.write(' <a target="_top" href="http://map.bblog.biglobe.ne.jp/ap/tool/show_ads.jsp?ch=b&google_kw=' + radlinks[i].url_escaped_term + '&google_rt=' + radlinks[i].radlink_token + '&google_page_url=' + encodeURIComponent(window.location) + '">' + radlinks[i].term + '</a>\n');
+				}
+			}
+		}
+      // -->
+      </script>
+    <script type="text/javascript">
+      <!--
+        google_ad_client = "ca-nec_radlinks_js";
+        google_ad_channel = 'bottom';
+        google_page_url = 'http://hardsoft.at.webry.info/200802/article_1.html';
+        google_language = 'ja';
+        google_encoding = 'sjis';
+        google_ad_output = 'js';
+        google_safe = 'high';
+        google_num_radlinks = '3';
+        google_max_radlink_len = '20';
+        google_max_num_ads = '0';
+        google_rl_mode = 'default';
+        google_ad_section = 'section1 section2';
+      // -->
+    </script>
+      [ <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script> ]
+  </div>
+
+
+</div>
+<!-- main area end -->
+
+<!-- footer start -->
+<div id="footer" style="display:block;visibility:visible">
+  <!-- links start -->
+  <div id="links" style="display:block;visibility:visible">
+    <a href="http://webryblog.biglobe.ne.jp/">ウェブリブログ(ブログ 無料)</a> ｜
+    <a href="http://www.biglobe.ne.jp/">BIGLOBEトップ</a> ｜
+    <a href="http://news.biglobe.ne.jp/">ニュース</a> ｜
+    <a href="http://house.biglobe.ne.jp/">住宅情報</a> ｜
+    <a href="http://webryblog.biglobe.ne.jp/nicotto/"><img width="20" height="20" align="absmiddle" style="margin-right: 3px; border: 0pt none;" src="/images/img/nicotto_20x20.gif">ニコッとタウン</a> ｜
+    <a href="http://join.biglobe.ne.jp/index.html">入会案内</a>
+    <script type="text/javascript">
+    <!--
+      footerLink();
+    // -->
+    </script>
+  </div>
+  <!-- links end -->
+
+  <!-- powered start -->
+  <div id="sbanner" style="display:block;visibility:visible">
+    <!-- copyright start -->
+    <script type="text/javascript">
+    <!--
+      footCopyright();
+      insert_SocialButton();
+    // -->
+    </script>
+    <!-- copyright end -->
+
+    <a href="http://webryblog.biglobe.ne.jp/" style="display:block;visibility:visible;width:190px;height:30px"><img src="/images/article/sbanner-m.gif" width="190" height="30" alt="ウェブリブログ：高機能ブログを無料で！" style="display:block;visibility:visible;width:190px;height:30px" /></a>
+  </div>
+  <!-- powered end -->
+</div>
+<!-- footer end -->
+
+	<!-- free space E12 -->
+
+<!-- beacon start -->
+ <!-- beacon standard_ad contents  -->
+<img src="http://webryblog.biglobe.ne.jp/beacon_img/hardsoft.at.webry.info/200802/article_1.html" height="1" width="1" />
+<!-- beacon end -->
+
+</body>
+</html>

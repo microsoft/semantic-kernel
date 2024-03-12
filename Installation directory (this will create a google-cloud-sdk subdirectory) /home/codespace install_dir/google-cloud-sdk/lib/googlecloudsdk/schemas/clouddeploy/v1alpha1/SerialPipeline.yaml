@@ -1,0 +1,34 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: clouddeploy v1alpha1 SerialPipeline export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  stages:
+    description: |-
+      Each stage specifies configuration for a `Target`. The ordering of this
+      list defines the promotion flow.
+    type: array
+    items:
+      $ref: Stage.yaml

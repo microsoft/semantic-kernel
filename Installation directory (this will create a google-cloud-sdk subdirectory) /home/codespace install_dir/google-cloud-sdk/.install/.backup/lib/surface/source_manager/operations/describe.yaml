@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Describe a Secure Source Manager operation
+    description: Get details of a Secure Source Manager operation.
+    examples: |
+      To describe a Secure Source Manager operation named 'my-operation' in location 'us-central1' under the current project, run:
+
+      $ {command} my-operation --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The operation you want to describe.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:operation

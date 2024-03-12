@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: |
+      List Looker instances.
+    description: |
+      List all Looker instances under the specified project and region.
+
+      To specify the maximum number of instances to list, use the --limit flag.
+    examples: |
+      To list up to five instances, run:
+
+          $ {command} --limit=5
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:region
+      help_text: |
+        The region of the instances to display.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: looker.projects.locations.instances
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME:sort=2,
+        lookerUri:label=INSTANCE_URL,
+        lookerVersion:label=VERSION,
+        name.segment(3):label=REGION,
+        platformEdition:label=EDITION,
+        state:label=STATUS,
+        createTime.date(),
+        updateTime.date()
+      )

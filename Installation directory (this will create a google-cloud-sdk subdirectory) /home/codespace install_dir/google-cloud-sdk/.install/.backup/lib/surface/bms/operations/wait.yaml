@@ -1,0 +1,25 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Poll a long-running Bare Metal Solution operation until it completes.
+    description: |
+      Poll a long-running Bare Metal Solution operation until it completes. When
+      the operation is complete, this command will display the results of the
+      operation.
+    examples: |
+      To poll a long-running Bare Metal Solution operation named 'my-operation' until it completes, run the following:
+
+        $ {command} my-operation
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.bms.resources:operation
+      help_text: |
+        Arguments and flags that specify the Bare Metal Solution operation you
+        want to wait for.
+
+  request:
+    api_version: v2
+    collection: baremetalsolution.projects.locations.operations
+
+  async:
+    collection: baremetalsolution.projects.locations.operations

@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "View storage pools."
+    description: "View storage pools."
+    examples: |
+        To display all storage pools in all regions and zones, run the following command:
+
+        $ {command}
+
+  request:
+    collection: compute.storagePools
+    api_version: alpha
+    method: aggregatedList
+
+  arguments:
+    resource:
+      help_text: |
+        The project of the storage pools to list.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:compute_project
+      override_resource_collection: true
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.api_lib.compute.response_hooks:flatten_aggregated_list:field_name=storagePools
+
+  output:
+    format: |
+      table(
+        name,
+        zone.scope("zones"),
+        storage_pool_type.scope("storagePoolTypes"),
+        sizeGb.size(
+          precision=3,
+          units_in="gb",
+          units_out="tb"):label=SIZE_TB,
+        status.usedBytes.size(
+          precision=3,
+          units_in="b",
+          units_out="tb"):label=USED_TB,
+        provisionedIops.yesno(no="<n/a>"),
+        provisionedThroughput.yesno(no="<n/a>"),
+        state)

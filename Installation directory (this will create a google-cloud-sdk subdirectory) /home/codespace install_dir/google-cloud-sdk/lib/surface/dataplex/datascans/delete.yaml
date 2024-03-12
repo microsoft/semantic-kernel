@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Delete a Dataplex Datascan resource.
+    description: |
+      Delete a Dataplex Datascan resource.
+
+    examples: |
+      To delete a Dataplex Datascan `test-datascan` in location `us-central1`, run:
+
+          $ {command} test-datascan --location=us-central1
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataScans
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Datascan you want to delete.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:datascan
+  async:
+    collection: dataplex.projects.locations.operations

@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Delete an existing backup.
+    description: Delete an existing backup.
+    examples: |
+      To delete a backup, run:
+
+        $ {command} BACKUP_NAME --instance=INSTANCE_NAME
+
+  request:
+    collection: spanner.projects.instances.backups
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.spanner.backups:CheckBackupExists
+  arguments:
+    resource:
+      help_text: Cloud Spanner backup to delete.
+      spec: !REF googlecloudsdk.command_lib.spanner.resources:backup

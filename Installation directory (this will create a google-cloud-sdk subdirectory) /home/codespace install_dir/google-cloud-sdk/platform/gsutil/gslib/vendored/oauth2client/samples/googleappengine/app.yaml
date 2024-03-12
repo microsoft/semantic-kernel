@@ -1,0 +1,10 @@
+application: bamboo-machine-422
+version: 2
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /.*
+  script: call_compute_service_from_gae.app
+

@@ -1,0 +1,25 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: |
+      Delete a regional endpoint.
+    description: |
+      Delete the specified regional endpoint.
+    examples: |
+      To delete a regional endpoint named 'my-regional-endpoint' in us-central1:
+
+        $ {command} my-regional-endpoint
+          --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:regionalEndpoint
+      help_text: Name of the regional endpoint to be deleted.
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request: &request
+    BETA:
+      api_version: v1beta
+      collection: networkconnectivity.projects.locations.regionalEndpoints

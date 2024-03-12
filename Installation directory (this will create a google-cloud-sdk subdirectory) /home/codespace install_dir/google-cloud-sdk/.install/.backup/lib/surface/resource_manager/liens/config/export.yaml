@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Cloud Resource Manager lien.
+  description: |
+    *{command}* exports the configuration for a Cloud Resource Manager lien.
+
+    Lien configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    liens within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a lien, run:
+
+      $ {command} my-lien
+
+    To export the configuration for a lien to a file, run:
+
+      $ {command} my-lien --path=/path/to/dir/
+
+    To export the configuration for a lien in Terraform
+    HCL format, run:
+
+      $ {command} my-lien --resource-format=terraform
+
+    To export the configurations for all liens within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Lien to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.resource_manager.resources:lien

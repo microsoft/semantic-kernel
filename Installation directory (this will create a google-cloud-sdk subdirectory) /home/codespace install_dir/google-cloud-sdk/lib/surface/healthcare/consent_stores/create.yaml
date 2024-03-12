@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief:  Create a Cloud Healthcare API consent store.
+    description: |
+      Create a Cloud Healthcare API consent store.
+    examples: |
+      To create an consent store called 'test-consent-store' with labels
+      {"key1":"value1", "key2":"value2"}, run:
+
+        $ {command} test-consent-store --labels=key1=value1,key2=value2 --dataset=test-dataset
+  request:
+    collection: healthcare.projects.locations.datasets.consentStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API consent store to create.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:consent_store
+
+    labels:
+      api_field: consentStore.labels

@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Delete a simulation.
+    description: |
+      Delete the specified simulation.
+
+    examples: |
+      The following command deletes the simulation with id `1234`.
+
+        $ {command} 1234
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    collection: networkmanagement.projects.locations.simulations
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_management.simulation.resources:simulation
+      help_text: |
+        ID of the simulation to delete.
+
+  async:
+    collection: networkmanagement.projects.locations.operations

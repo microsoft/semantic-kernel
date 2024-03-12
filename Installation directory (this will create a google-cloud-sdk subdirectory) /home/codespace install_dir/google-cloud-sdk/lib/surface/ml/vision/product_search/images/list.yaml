@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: list all reference images for a product.
+    description: list all reference images for a product.
+    examples: |
+      To list all reference images in product 'my-product' and 'my-product' is in 'us-east1', run:
+
+        $ {command} --location=us-east1 --product=my-product
+
+  request:
+    collection: vision.projects.locations.products.referenceImages
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The product of reference images to list.
+      spec: !REF googlecloudsdk.command_lib.ml.vision.resources:product
+      is_positional: false
+
+  output:
+    format: |
+      table(
+        name.scope("referenceImages"):label=NAME,
+        name.scope("products").segment(0):label=PRODUCT,
+        uri:label=IMAGE_LOCATION
+      )

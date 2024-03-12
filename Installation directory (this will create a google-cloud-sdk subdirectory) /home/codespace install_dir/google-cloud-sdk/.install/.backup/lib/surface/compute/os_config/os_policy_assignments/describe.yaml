@@ -1,0 +1,38 @@
+- release_tracks: [GA, ALPHA]
+
+  help_text:
+    brief: Describe an OS policy assignment
+    description: |
+      Describe an OS policy assignment
+      ## EXAMPLES
+
+      To describe an OS policy `my-assignment` in location `us-central1-a`:
+
+        $ {command} my-assignment --location=us-central1-a
+
+  request:
+    collection: osconfig.projects.locations.osPolicyAssignments
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: OS policy assignment to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:os_policy_assignment
+
+  output:
+    format: |
+      default(
+        baseline,
+        description,
+        instanceFilter,
+        name,
+        osPolicies,
+        revisionCreateTime.date("%Y-%m-%dT%H:%M:%SZ"),
+        revisionId,
+        rollout,
+        rolloutState,
+        uid
+      )

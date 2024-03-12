@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief:  Export Cloud Healthcare API Annotation records to Google Cloud Storage.
+    description: Export Cloud Healthcare API Annotation records to Google Cloud Storage.
+    examples: |
+      To export the annotation-store 'test-annotation-store' to the existing bucket 'testGcsBucket' in the folder 'someFolder', run:
+
+        $ {command} test-annotation-store --gcs-uri=gs://testGcsBucket/someFolder --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.annotationStores
+    method: export
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API Annotation store to export annotations from.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:annotation_store
+
+
+    params:
+    - arg_name: gcs-uri
+      api_field: exportAnnotationsRequest.gcsDestination.uriPrefix
+      required: true
+      help_text: |
+        The Cloud Storage destination location. Specify a path to a Cloud
+        Storage bucket or folder rather than a concrete object. The server
+        creates one object per annotation record. Each object contains
+        a JSON-formatted text file of an Annotation record.
+
+  async:
+    collection: healthcare.projects.locations.datasets.operations

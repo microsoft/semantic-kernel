@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List Cloud Deploy delivery pipelines.
+    description: |
+      List your Cloud Deploy delivery pipelines.
+    examples: |
+      To list the delivery pipelines in region 'us-central1', run:
+
+        $ {command} --region=us-central1
+
+  request:
+    collection: clouddeploy.projects.locations.deliveryPipelines
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location for which you want to list the delivery pipelines.
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:location

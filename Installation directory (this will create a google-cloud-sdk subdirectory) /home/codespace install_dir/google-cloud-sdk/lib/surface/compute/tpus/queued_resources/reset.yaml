@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Reset a Queued Resource.
+    description: |
+      Reset an existing Queued Resource.
+
+      To get a list of Queued Resources for resetting, run:
+
+        $ {parent_command} list
+    examples: |
+      To reset a Queued Resource in zone `us-central1-b` and project `my-project`, run:
+
+        $ {command} --zone=us-central1-b --project=my-project
+
+  request:
+    collection: tpu.projects.locations.queuedResources
+    method: reset
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
+
+  async:
+    collection: tpu.projects.locations.operations
+    extract_resource_result: false
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
+
+  arguments:
+    resource:
+      help_text: The Queued Resource you want to reset.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.queued_resources.resources:queuedresource
+
+  input:
+    confirmation_prompt: "You are about to reset queued_resource [{__name__}]"

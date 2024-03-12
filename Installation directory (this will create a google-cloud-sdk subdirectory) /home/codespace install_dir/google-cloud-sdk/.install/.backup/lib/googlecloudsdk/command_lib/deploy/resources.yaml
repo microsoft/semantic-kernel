@@ -1,0 +1,170 @@
+project:
+  name: project
+  collection: clouddeploy.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      Project of the {resource}.
+  disable_auto_completers: false
+
+location:
+  name: location
+  collection: clouddeploy.projects.locations
+  disable_auto_completers: false
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: region
+    help: |
+      Location of the {resource}.
+    property: deploy/region
+
+operation:
+  name: operation
+  collection: clouddeploy.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      Operation of the {resource}.
+  disable_auto_completers: true
+
+delivery_pipeline:
+  name: delivery_pipeline
+  collection: clouddeploy.projects.locations.deliveryPipelines
+  request_id_field: deliveryPipelineId
+  attributes:
+  - *project
+  - *location
+  - &delivery_pipeline
+    parameter_name: deliveryPipelinesId
+    attribute_name: delivery_pipeline
+    help: |
+      The name of the Cloud Deploy delivery pipeline.
+    property: deploy/delivery_pipeline
+  disable_auto_completers: false
+
+release:
+  name: release
+  collection: clouddeploy.projects.locations.deliveryPipelines.releases
+  request_id_field: releaseId
+  attributes:
+  - *project
+  - *location
+  - *delivery_pipeline
+  - &release
+    parameter_name: releasesId
+    attribute_name: release
+    help: |
+      The name of the Cloud Deploy release.
+  disable_auto_completers: false
+
+target:
+  name: target
+  collection: clouddeploy.projects.locations.targets
+  request_id_field: targetId
+  attributes:
+  - *project
+  - *location
+  - parameter_name: targetsId
+    attribute_name: target
+    help: |
+      The name of the Cloud Deploy target.
+  disable_auto_completers: false
+
+rollout:
+  name: rollout
+  collection: clouddeploy.projects.locations.deliveryPipelines.releases.rollouts
+  request_id_field: rolloutId
+  attributes:
+  - *project
+  - *location
+  - *delivery_pipeline
+  - *release
+  - &rollout
+    parameter_name: rolloutsId
+    attribute_name: rollout
+    help: |
+      The name of the Cloud Deploy rollout.
+  disable_auto_completers: false
+
+job_run:
+  name: job run
+  collection: clouddeploy.projects.locations.deliveryPipelines.releases.rollouts.jobRuns
+  request_id_field: jobRunId
+  attributes:
+  - *project
+  - *location
+  - *delivery_pipeline
+  - *release
+  - *rollout
+  - &job_run
+    parameter_name: jobRunsId
+    attribute_name: job_run
+    help: |
+      The name of the Cloud Deploy job run.
+  disable_auto_completers: false
+
+automation_run:
+  name: automation run
+  collection: clouddeploy.projects.locations.deliveryPipelines.automationRuns
+  request_id_field: automationRunId
+  attributes:
+  - *project
+  - *location
+  - *delivery_pipeline
+  - &automation_run
+    parameter_name: automationRunsId
+    attribute_name: automation_run
+    help: |
+      The name of the Cloud Deploy automation run.
+  disable_auto_completers: false
+
+automation:
+  name: automation
+  collection: clouddeploy.projects.locations.deliveryPipelines.automations
+  request_id_field: automationId
+  attributes:
+  - *project
+  - *location
+  - *delivery_pipeline
+  - &automation
+    parameter_name: automationsId
+    attribute_name: automation
+    help: |
+      The name of the Cloud Deploy automation.
+  disable_auto_completers: false
+
+custom_target_type:
+  name: custom target type
+  collection: clouddeploy.projects.locations.customTargetTypes
+  request_id_field: customTargetTypeId
+  attributes:
+  - *project
+  - *location
+  - &custom_target_type
+    parameter_name: customTargetTypesId
+    attribute_name: custom_target_type
+    help: |
+      The name of the Cloud Deploy custom target type.
+  disable_auto_completers: false
+
+deploy_policy:
+  name: deploy policy
+  collection: clouddeploy.projects.locations.deployPolicies
+  # The field in the create request that holds the name of the Deploy Policy being created.
+  request_id_field: deployPolicyId
+  attributes:
+  - *project
+  - *location
+  - &deploy_policy
+    parameter_name: deployPoliciesId
+    attribute_name: deploy_policy
+    help: |
+      The name of the Cloud Deploy Deploy Policy.
+  disable_auto_completers: false

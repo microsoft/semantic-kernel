@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Show metadata for a Dataproc Metastore operation.
+    description: |
+      Display all metadata associated with a Metastore operation given a valid
+      operation name.
+    examples: |
+      To display the metadata for an operation named `my-operation` in the default region,
+      run:
+
+        $ {command} my-operation
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:operation
+      help_text: |
+        Arguments and flags that specify the Dataproc Metastore operation you
+        want to describe.
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: metastore.projects.locations.operations

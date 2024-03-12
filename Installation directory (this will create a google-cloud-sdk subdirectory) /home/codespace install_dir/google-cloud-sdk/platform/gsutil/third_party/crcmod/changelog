@@ -1,0 +1,38 @@
+1.7 Enhancement Release - Jun 27, 2010
+
+* Improve the installation process.
+* For Python3 don't allow unicode and require an object that supports the
+  buffer interface.
+* Added Sphinx documentation.
+* Added LICENSE file.
+
+1.6.1 Enhancement Release - Mar 7, 2010
+
+Enhancements made by Craig McQueen
+
+* Code cleanup
+* Updated database of pre-defined CRC algorithms
+
+1.6 Enhancement Release - Jan 24, 2010
+
+Enhancements made by Craig McQueen
+
+* Added XOR out feature to allow creation of standard CRC algorithms
+* Added a database of pre-defined CRC algorithms
+
+1.5 Enhancement Release - Mar 7, 2009
+
+* Added Python 3.x version.
+* Upgraded some unit tests.
+
+1.4 Enhancement Release - Jul 28, 2007
+
+* Add 24-bit CRCs as one of the options.
+
+1.3 Enhancement Release - Apr 22, 2006
+
+* Make compatible with Python 2.5 on 64-bit platforms.
+* Improve the install procedure.
+
+1.2 Initial Public Release - Jul 10, 2004
+

@@ -1,0 +1,23 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: List service connection policies.
+    description: Retrieve and display a list of all service connection policies in the specified project.
+    examples: |
+      To list all service connection policies in region ``us-central1'', run:
+
+        $ {command} --region=us-central1
+
+  request: &request
+    GA:
+      api_version: v1
+    collection: networkconnectivity.projects.locations.serviceConnectionPolicies
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:region
+      help_text: A Google Cloud region. Use this flag to filter the list of service connection policies to a specific region or to all regions. Use ``-`` to specify all regions.
+
+  output:
+    ALPHA:
+      format: table(name.basename(), description, network.basename())

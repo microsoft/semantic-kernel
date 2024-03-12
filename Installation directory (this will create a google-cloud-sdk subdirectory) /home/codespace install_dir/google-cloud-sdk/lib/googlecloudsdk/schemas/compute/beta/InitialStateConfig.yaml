@@ -1,0 +1,45 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta InitialStateConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  dbs:
+    description: The Key Database (db).
+    type: array
+    items:
+      $ref: FileContentBuffer.yaml
+  dbxs:
+    description: The forbidden key database (dbx).
+    type: array
+    items:
+      $ref: FileContentBuffer.yaml
+  keks:
+    description: The Key Exchange Key (KEK).
+    type: array
+    items:
+      $ref: FileContentBuffer.yaml
+  pk:
+    description: The Platform Key (PK).
+    $ref: FileContentBuffer.yaml

@@ -1,0 +1,42 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 GrpcRouteRouteRule export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- action
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  action:
+    description: |-
+      A detailed rule defining how to route traffic. This field is required.
+    $ref: GrpcRouteRouteAction.yaml
+  matches:
+    description: |-
+      Matches define conditions used for matching the rule against incoming gRPC
+      requests. Each match is independent, i.e. this rule will be matched if ANY
+      one of the matches is satisfied. If no matches field is specified, this
+      rule will unconditionally match traffic.
+    type: array
+    items:
+      $ref: GrpcRouteRouteMatch.yaml

@@ -1,0 +1,49 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Move table to another database.
+    description: |
+      Move table to another database from a Dataproc Metastore service's underlying metadata store.
+
+      If run asynchronously with `--async`, exits after printing
+      one operation name that can be used to poll the status of the
+      creation via:
+
+        {top_command} metastore operations describe
+    examples: |
+      To move table to database with the table_name, source_db_name, and destination_db_name in location `us-central`, run:
+
+          $ {command} my-metastore-service --location=us-central1 --table_name=table_name_to_move
+            --source_db_name=database_name_to_move --destination_db_name=destination_database_name
+  request:
+    method: moveTableToDatabase
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: metastore.projects.locations.services
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the table and the destination database you want to move to.
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:service
+    params:
+    - arg_name: table_name
+      api_field: moveTableToDatabaseRequest.tableName
+      help_text: |
+        The name of the table to be moved.
+      required: true
+    - arg_name: source_db_name
+      api_field: moveTableToDatabaseRequest.dbName
+      help_text: |
+        The name of the database where the table resides.
+      required: true
+    - arg_name: destination_db_name
+      api_field: moveTableToDatabaseRequest.destinationDbName
+      help_text: |
+        The name of the database where the table should be moved.
+      required: true
+  async:
+    collection: metastore.projects.locations.operations

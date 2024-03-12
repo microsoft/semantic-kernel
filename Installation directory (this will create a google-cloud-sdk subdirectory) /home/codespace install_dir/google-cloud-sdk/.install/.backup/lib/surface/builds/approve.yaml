@@ -1,0 +1,65 @@
+- release_tracks: [BETA]
+  command_type: GENERIC
+  help_text:
+    brief: Approve a pending build.
+    description: Approve a pending build.
+    examples: |
+      To approve a pending build with its ID, run:
+
+        $ {command} build-id
+
+      To approve multiple pending builds, run the command in a for loop:
+
+        $ for i in $(cat build-ids.txt); do {command} $i; done
+
+  request:
+    collection: cloudbuild.projects.builds
+    api_version: v1
+    method: approve
+    static_fields:
+      approveBuildRequest.approvalResult.decision: APPROVED
+  arguments:
+    resource:
+      help_text: "Build."
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:build
+
+    params:
+    - api_field: approveBuildRequest.approvalResult.comment
+      arg_name: comment
+      help_text: Optional comment to annotate the build's approval.
+    - api_field: approveBuildRequest.approvalResult.url
+      arg_name: url
+      help_text: Optional URL to annotate the build's approval.
+
+- release_tracks: [ALPHA]
+  command_type: GENERIC
+  help_text:
+    brief: Approve a pending build.
+    description: Approve a pending build.
+    examples: |
+      To approve a pending build with its ID, run:
+
+        $ {command} projects/{project-id}/locations/{location}/builds/{build-id}
+
+      To approve multiple pending builds, run the command in a for loop:
+
+        $ for i in $(cat builds.txt); do {command} $i; done
+
+  request:
+    collection: cloudbuild.projects.locations.builds
+    api_version: v1
+    method: approve
+    static_fields:
+      approveBuildRequest.approvalResult.decision: APPROVED
+  arguments:
+    resource:
+      help_text: "Build."
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.regional_approval:build
+
+    params:
+    - api_field: approveBuildRequest.approvalResult.comment
+      arg_name: comment
+      help_text: Optional comment to annotate the build's approval.
+    - api_field: approveBuildRequest.approvalResult.url
+      arg_name: url
+      help_text: Optional URL to annotate the build's approval.

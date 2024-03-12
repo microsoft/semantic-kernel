@@ -1,0 +1,37 @@
+# Copyright 2019 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List all scan configs.
+    description: List all scan configs.
+    examples: |
+      The following commands list all the scan configs in the given project:
+
+        $ {command} --project=testProject
+
+        $ {command} --project=testProject --limit=5
+
+  request:
+    collection: websecurityscanner.projects.scanConfigs
+    api_version: v1beta
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Project to list scan configs for.
+      spec: !REF googlecloudsdk.command_lib.web_security_scanner.resources:project

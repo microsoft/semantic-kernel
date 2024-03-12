@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Get the IAM policy for a Dataplex asset resource.
+    description: |
+      Displays the IAM policy associated with a Dataplex asset resource.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates.
+    examples: |
+      To print the IAM policy for Dataplex asset `test-asset` within zone `test-zone` in lake
+      `test-lake` in location `us-central1`, run:
+
+          $ {command} test-asset --location=us-central1 --lake=test-lake --zone=test-zone
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.zones.assets
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex asset IAM policy you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:asset

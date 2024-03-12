@@ -1,0 +1,31 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Create a new BeyondCorp client gateway (Deprecated).
+    description: Create a new BeyondCorp client gateway.
+    examples: |
+      The following command creates a client gateway with ID ``my-client-gateway'' in the default user project and location us-central1:
+
+        $ {command} my-client-gateway --location=us-central1 \
+        --client-connector-service=projects/consumer-project-id/locations/us-central1/clientConnectorServices/my-service-resource
+
+      The following command creates a client gateway with ID ``my-client-gateway'' with explicit values
+      for all required and optional parameters:
+
+        $ {command} my-client-gateway --project=consumer-project-id --location=us-central1 \
+        --client-connector-service=projects/consumer-project-id/locations/us-central1/clientConnectorServices/my-service-resource
+
+  request:
+    collection: beyondcorp.projects.locations.clientGateways
+    BETA:
+      api_version: v1
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The BeyondCorp client gateway you want to create.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:client_gateway
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.client_connector.gateways.flags:client_connector_service

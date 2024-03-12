@@ -1,0 +1,53 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Update a hub.
+    description: Update the details of a hub.
+
+    examples: |
+      To update the description of a hub named ``my-hub'', run:
+
+        $ {command} my-hub --description="The new description of my-hub".
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hub
+      help_text: Name of the hub to be updated.
+    params:
+    - arg_name: description
+      api_field: hub.description
+      help_text: New description of the hub.
+    - arg_name: labels
+      release_tracks: [ALPHA]
+      api_field: hub.labels.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+    - arg_name: export-psc
+      release_tracks: [GA]
+      api_field: hub.exportPsc
+      hidden: true
+      help_text: Whether Private Service Connect transitivity is enabled for the hub.
+    GA:
+      labels:
+        api_field: hub.labels
+
+  update:
+    read_modify_update: true
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: networkconnectivity.projects.locations.global.hubs
+    method: patch

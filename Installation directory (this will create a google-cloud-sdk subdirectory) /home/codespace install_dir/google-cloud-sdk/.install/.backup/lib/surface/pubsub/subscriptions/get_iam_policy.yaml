@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get the IAM policy for a subscription.
+    description: |
+      *{command}* displays the IAM policy associated with a subscription.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates; see
+      $ {parent} set-iam-policy for additional details.
+    examples: |
+      To print the IAM policy for a given subscription, run:
+
+        $ {command} my-subscription
+
+  request:
+    collection: pubsub.projects.subscriptions
+
+  arguments:
+    resource:
+      help_text: The subscription for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.pubsub.resources:subscription

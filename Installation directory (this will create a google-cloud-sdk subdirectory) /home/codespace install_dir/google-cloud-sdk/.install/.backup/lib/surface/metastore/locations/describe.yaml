@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Show metadata for a Dataproc Metastore location.
+    description: |
+      Display all metadata associated with a Metastore location given a valid
+      location name.
+    examples: |
+      To display the metadata for a location named `us-central1` in the default project,
+      run:
+
+        $ {command} us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:location
+      help_text: |
+        Dataproc Metastore location to describe.
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: metastore.projects.locations

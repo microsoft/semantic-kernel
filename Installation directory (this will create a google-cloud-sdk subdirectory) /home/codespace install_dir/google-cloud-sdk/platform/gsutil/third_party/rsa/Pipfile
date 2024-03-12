@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"pyasn1" = ">=0.1.3"
+
+[dev-packages]
+tox = "*"
+mock = ">=2.0.0"
+Sphinx = "*"
+coveralls = "*"
+pytest = "*"
+pytest-cov = "*"
+pathlib2 = {version = "*", markers="python_version < '3.6'"}
+
+[requires]
+python_version = "2.7"

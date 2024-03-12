@@ -1,0 +1,19 @@
+- help_text:
+    brief: List available Tensorflow versions.
+    description: List Tensorflow versions available for Cloud TPUs.
+    examples: |
+      The following command lists all of the TensorFlow versions available in zone `us-central1-b`:
+
+        $ {command} --zone=us-central1-b
+
+  request:
+    collection: tpu.projects.locations.tensorflowVersions
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The zone to list Tensorflow versions for.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:location
+
+  output:
+    format: table(version:label=TENSORFLOW_VERSION:sort=1)

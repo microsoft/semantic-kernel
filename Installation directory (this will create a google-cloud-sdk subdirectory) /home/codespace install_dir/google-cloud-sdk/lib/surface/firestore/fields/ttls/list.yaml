@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: List all fields used as a Time To Live expiration setting.
+    description: |
+      List fields that give an expiration timestamp for documents in a collection group or kind.
+    examples: |
+      The following command lists all TTL fields for the whole database:
+
+        $ {command}
+
+  request:
+    collection: firestore.projects.databases.collectionGroups.fields
+    static_fields:
+      filter: ttlConfig:*
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        Collection group of the ttl.
+
+        This can be omitted to include fields across all collection groups (kinds).
+      is_positional: false
+      # By using collection_group_with_default this resource arg is correctly determined to be
+      # optional and can use the special '-' collection group if it's not specified.
+      spec: !REF googlecloudsdk.command_lib.firestore.resources:collection_group_with_default
+
+  output:
+    format: yaml(name, ttlConfig)

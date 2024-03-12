@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Source: http://balatonblog.typepad.com/balatonblog/index.rdf
+Expect: UTF-8
+-->
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+  xmlns:admin="http://webns.net/mvcb/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:cc="http://web.resource.org/cc/"
+  xmlns="http://purl.org/rss/1.0/">
+
+<channel rdf:about="http://balatonblog.typepad.com/balatonblog/">
+<title>BalatonOnLine</title>
+<link>http://balatonblog.typepad.com/balatonblog/</link>
+<description>avagy a BalatonBLOG másképp: bővebben, kategórizálva, tematikus alblogokkal. 
+RSS = &quot;Subscribe to this blog&apos;s feed&quot;, + képtárak...</description>
+<dc:language>hu</dc:language>
+<dc:creator></dc:creator>
+<dc:date>2006-01-04T11:38:54+01:00</dc:date>
+<admin:generatorAgent rdf:resource="http://www.typepad.com/" />
+
+
+<items>
+<rdf:Seq><rdf:li rdf:resource="http://balatonblog.typepad.com/balatonblog/2006/01/vllus_a_megbv.html" />
+<rdf:li rdf:resource="http://balatonblog.typepad.com/balatonblog/2006/01/vrvlgy.html" />
+<rdf:li rdf:resource="http://balatonblog.typepad.com/balatonblog/2006/01/uzsa_a_rgi_s_az.html" />
+<rdf:li rdf:resource="http://balatonblog.typepad.com/balatonblog/2006/01/szolglati_klemn.html" />
+<rdf:li rdf:resource="http://balatonblog.typepad.com/balatonblog/2005/12/lesenceistvnd.html" />
+</rdf:Seq>
+</items>
+
+</channel>
+
+<item rdf:about="http://balatonblog.typepad.com/balatonblog/2006/01/vllus_a_megbv.html">
+<title>Vállus a megbúvó</title>
+<link>http://balatonblog.typepad.com/balatonblog/2006/01/vllus_a_megbv.html</link>
+<description> Vállus a Keszthelyi-hegységben fekvő kis település Zala megye Veszprém megyével határos szélén található. A községet ma 158-an lakják. A hegyek közt meghúzódó település római katolikus templomát 1836-ban építették, későbarokk és klasszicizáló stíluselemekkel. [terkepcentrum.hu] Ennyi és nem több, amit első nekifutásra megtudhatunk a település jelenéről. Múltja azonban fordulatokban gazdag derül ki honlapján, ahol az önkormányzat alpinformációit is megtalálhatjuk. A wikipedia is bőven hoz adatokat múltjára vonatkozólag. Azt azonban, hogy miért érdemes ide látogatni csak sejteni lehet. Válluson vezet át az országos kék túra útvonala, bélyegzőhely a volt vegyesbolt falán dobozban. [termeszetjaro.hu] Két túra ajánlatot is találtam: Gyenesdiás - Vállus (9,0 km) Vállus - Lesenceistvánd (6,8 km) A környéken elrejtett geoláda leírása szerint: A Szent Miklós forrástól indul északra a Vállus faluig tartó Szent Miklós szurdokvölgy. A forrás környékén régen kolostor állt, melynek mára már romjait sem találni. Érdemes felkeresni a hegység eme nyugodt zugát. [geocaching.hu] Ugyanitt derül ki, hogy ezen az a szakaszon kell keresnünk a hős kutyák temetőjét. (Az ilyesmi mégiscsak ritkaságszámba megy, környezete pedig minden évszakban gyönyörű.) A zsákfalu hétköznapjairól annyit tudni, hogy régi álmuk egy a Balatonparttal (Gyenesdiással) őket összekötő kerékpárút. 2003-ban pályázatuk el lett utasítva Vállus Község Önkormányzata - Balatongyörök-Vállus útvonalon kerékpárút tervezése - forráshiány miatt...</description>
+<content:encoded><![CDATA[<p><a onclick="window.open(this.href, '_blank', 'width=450,height=600,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/kep_15.jpg"><img width="180" height="240" border="0" src="http://balatonblog.typepad.com/balatonblog/images/kep_15.jpg" title="Kep_15" alt="Kep_15" /></a>
+
+<br />
+&quot;Vállus a Keszthelyi-hegységben fekvő kis település Zala megye Veszprém
+megyével határos szélén található. A községet ma 158-an lakják. A
+hegyek közt meghúzódó település római katolikus templomát 1836-ban
+építették, későbarokk és klasszicizáló stíluselemekkel.&quot; [<a href="http://www.terkepcentrum.hu/index.asp?tid=10685">terkepcentrum.hu</a>]</p>
+
+<p><a onclick="window.open(this.href, '_blank', 'width=145,height=150,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/vallus.jpg"><img width="180" height="186" border="0" src="http://balatonblog.typepad.com/balatonblog/images/vallus.jpg" title="Vallus" alt="Vallus" /></a>
+
+<br />
+Ennyi és nem több, amit első nekifutásra megtudhatunk a település jelenéről. Múltja azonban fordulatokban gazdag <a href="http://www.vallus.hu/telepules.html">derül ki honlapján</a>, ahol az önkormányzat alpinformációit is megtalálhatjuk. A <a href="http://hu.wikipedia.org/wiki/V%C3%A1llus">wikipedia is bőven hoz adatokat</a> múltjára vonatkozólag. </p>
+
+<p>
+Azt azonban, hogy miért érdemes ide látogatni csak sejteni lehet.</p>
+
+<p><a onclick="window.open(this.href, '_blank', 'width=600,height=450,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/060104mjvirg.jpg"><img width="180" height="135" border="0" src="http://balatonblog.typepad.com/balatonblog/images/060104mjvirg.jpg" title="060104mjvirg" alt="060104mjvirg" /></a>
+
+<br />
+Válluson vezet át az országos kék túra útvonala,<strong> bélyegzőhely</strong> &quot;a volt vegyesbolt falán dobozban&quot;. [<a href="http://www.termeszetjaro.hu/alap/menu/okttura/oktbejhe.htm">termeszetjaro.hu</a>]</p>
+
+<p>
+Két <strong>túra ajánlatot is találtam</strong>:</p>
+<p><a href="http://www.c3.hu/%7Ekvte/okt/okt0214.htm">Gyenesdiás - Vállus</a> (9,0 km)</p>
+<p><a href="http://www.c3.hu/%7Ekvte/okt/okt0215.htm">Vállus - Lesenceistvánd</a> (6,8 km)</p>
+
+<p><a onclick="window.open(this.href, '_blank', 'width=600,height=450,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/060104.jpg"><img width="180" height="135" border="0" src="http://balatonblog.typepad.com/balatonblog/images/060104.jpg" title="060104" alt="060104" /></a>
+
+<br />
+A környéken elrejtett geoláda leírása szerint:<br />
+&quot;A <strong>Szent Miklós forrástól</strong> indul északra a Vállus faluig tartó <strong>Szent Miklós szurdokvölgy</strong>. A forrás <strong>környékén régen kolostor állt</strong>, melynek mára már romjait sem találni. Érdemes felkeresni a hegység eme nyugodt zugát.&quot; [<a href="http://www.geocaching.hu/caches.geo?id=1310">geocaching.hu</a>]</p>
+
+<p><a onclick="window.open(this.href, '_blank', 'width=600,height=450,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/060104kutyatemet.jpg"><img width="180" height="135" border="0" src="http://balatonblog.typepad.com/balatonblog/images/060104kutyatemet.jpg" title="060104kutyatemet" alt="060104kutyatemet" /></a>
+
+<br />
+Ugyanitt derül ki, hogy <strong>ezen az a szakaszon kell keresnünk a hős kutyák temetőjét</strong>. (Az ilyesmi mégiscsak ritkaságszámba megy, környezete pedig minden évszakban gyönyörű.)</p>
+
+<p>
+A zsákfalu hétköznapjairól annyit tudni, hogy régi álmuk egy a
+Balatonparttal (Gyenesdiással) őket összekötő kerékpárút. 
+2003-ban pályázatuk el lett utasítva <br />
+&quot;Vállus Község Önkormányzata - Balatongyörök-Vállus útvonalon
+kerékpárút tervezése - forráshiány miatt támogatásban nem
+részesült&quot;--http://www.balatonregion.hu/balaton.phtml?cat=0&amp;doc=palya/eredmenyek/2003/gyujtout_2003.html</p>
+
+<p><a onclick="window.open(this.href, '_blank', 'width=450,height=338,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/060104vlltur.jpg"><img width="180" height="135" border="0" src="http://balatonblog.typepad.com/balatonblog/images/060104vlltur.jpg" title="060104vlltur" alt="060104vlltur" /></a>
+
+<br />
+Egy évre rá a Zalamédiában ezt olvashattuk:<br />
+&quot;Vállus község önkormányzatával összefogva pedig beadtunk egy
+Regionális Operatív Program megvalósítását célul kitűző pályázatot egy
+erdei kerékpárút 400 milliót meghaladó megvalósítására. Vállus, mint
+zsáktelepülés nyitottá válik a turisták előtt, kerekes kirándulások
+célpontja lehet, bekapcsolódhat a turizmus áramkörébe úgy, hogy közben
+az erdők-mezők szépségeit is megmutathatja. A mindössze 2,5 százalékos
+önerőt megkövetelő projektben partnerséget vállalt a
+Nemzeti Park
+is.&quot;--http://64.233.183.104/search?q=cache:5NZGcxQpe-IJ:www.zalamedia.hu/naplo/041124/t.html+v%C3%A1llus&amp;hl=hu&amp;client=firefox-a</p>
+
+<p>
+Hogy mi lett az álmokból? Van e szálláslehetőség? Májusban megmondom. Addig még néhány információ:</p>
+<p><a href="http://www.terkepcentrum.hu/index.asp?tid=10685"><span style="font-size: 1.2em;"><strong>TÉRKÉP</strong></span></a></p>
+<p><a href="http://www.kozinfo.hu/onkadat.asp?Xksh=10685"><span style="font-size: 1.2em;"><strong>Az önkormányzat adatai</strong></span></a> </p>]]></content:encoded>
+
+
+<dc:subject>&quot;Balatonikum&quot;</dc:subject>
+<dc:subject>Ajánló</dc:subject>
+<dc:subject>Balaton</dc:subject>
+<dc:subject>Balatoni Gyalog</dc:subject>
+<dc:subject>Balatoni Látnivaló</dc:subject>
+<dc:subject>Balatoni Szállás</dc:subject>
+<dc:subject>Balatoni Térkép</dc:subject>
+<dc:subject>Bicikli Balatoni </dc:subject>
+<dc:subject>Falusi turizmus</dc:subject>
+<dc:subject>Keszthelyi-hegység</dc:subject>
+<dc:subject>Pályázatok</dc:subject>
+<dc:subject>Tudástár</dc:subject>
+<dc:subject>Turizmus</dc:subject>
+<dc:subject>Tájak, települések</dc:subject>
+<dc:subject>Zöld: zöldebb</dc:subject>
+<dc:subject>Önkormányzó</dc:subject>
+
+<dc:creator>ivcsek</dc:creator>
+<dc:date>2006-01-04T11:38:54+01:00</dc:date>
+</item>
+<item rdf:about="http://balatonblog.typepad.com/balatonblog/2006/01/vrvlgy.html">
+<title>Várvölgy</title>
+<link>http://balatonblog.typepad.com/balatonblog/2006/01/vrvlgy.html</link>
+<description>Már a település neve is természeti környezetére utal, hiszen a község alatt elterülő széles völgy nyugalmát egykor két oldalról is egy-egy erősség őrizte, Rezi és Tátika vára. A Keszthelytől északi irányban, mintegy 15 kilométerre fekvő Várvölgy ideális környezetben várja a falusi turizmus kedvelőit. Ehhez minden adottsága megvan, a szálláshelyek kínálata, a szubmediterrán éghajlat és jó kirándulási lehetőségek a szélrózsa minden irányában. A túrázók innen könynyen elérhetik Sümeget, a közeli Zalaszántót és a már említett várakat. [hajo.sailing.hu] A Várvölgytől északkeletre lévő Kis-Lázhegyről már 1934-ben feltételezte Dornyay B., hogy őskori földvár... A bánya falában megfigyelt gödrök anyaga alapján a terület a későbronzkorban, az urnamezős kultúra idején volt lakott. Kiterjedése alapján a lelőhely a Dunántúl legnagyobb későbronzkori magaslati telepe. A terület védelmét a hegyet övező meredek bazalt fal biztosította, a plató belsejében található tavak pedig az élethez nélkülözhetetlen vizet szolgáltatták. Az erődített telep főbejárata a délii oldalon lehetett, ... a bejárati kaput két máig 4-5 m-t a környezete fölé magasodó, rövid mesterségesen emelt sánc, - a helybeliek Ördökköveknek nevezik – védte. A lelőhely fontosságát jelzi, hogy közvetlen körzetében 1879 óta három bronz- és egy arany kincslelet került elő. [zmmi.hu] Várvölgy a Keszthelyi-hegység közepén található, festői szépségű kisközség. Régi neve Zsid, amely a latin...</description>
+<content:encoded><![CDATA[<p>&quot;Már a település neve is természeti környezetére utal, hiszen a község alatt elterülő széles völgy nyugalmát egykor két oldalról is egy-egy erősség őrizte, Rezi és Tátika vára. A Keszthelytől északi irányban, mintegy 15 kilométerre fekvő <strong>Várvölgy ideális környezetben várja a falusi turizmus kedvelőit</strong>. Ehhez minden adottsága megvan, a szálláshelyek kínálata, a szubmediterrán éghajlat és jó kirándulási lehetőségek a szélrózsa minden irányában. A túrázók innen könynyen elérhetik Sümeget, a közeli Zalaszántót és a már említett várakat.&quot; [<a href="http://hajo.sailing.hu/tura/keszthelyihegyseg.htm">hajo.sailing.hu</a>]</p>
+
+<p><a onclick="window.open(this.href, '_blank', 'width=145,height=150,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/varvolgy5k.jpg"><img width="180" height="186" border="0" src="http://balatonblog.typepad.com/balatonblog/images/varvolgy5k.jpg" title="Varvolgy5k" alt="Varvolgy5k" /></a>
+
+<br />&quot;A Várvölgytől északkeletre lévő Kis-Lázhegyről már 1934-ben feltételezte Dornyay B., hogy őskori földvár... A bánya falában megfigyelt gödrök anyaga alapján a terület a későbronzkorban, az urnamezős kultúra idején volt lakott. Kiterjedése alapján a lelőhely <strong>a Dunántúl legnagyobb későbronzkori magaslati telepe</strong>. A terület védelmét a hegyet övező meredek bazalt fal biztosította, a plató belsejében található tavak pedig az élethez nélkülözhetetlen vizet szolgáltatták. Az erődített telep főbejárata a délii oldalon lehetett, ... a bejárati kaput két máig 4-5 m-t a környezete fölé magasodó, rövid mesterségesen emelt sánc, - <strong>a helybeliek Ördökköveknek nevezik</strong> – védte. A lelőhely fontosságát jelzi, hogy közvetlen körzetében 1879 óta három bronz- és egy arany kincslelet került elő.&quot; [<a href="http://www.zmmi.hu/bm/images/asatasok/varvolgy/asatasok_kozep.html">zmmi.hu</a>]</p>
+
+<p><a onclick="window.open(this.href, '_blank', 'width=639,height=1086,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/060102var.jpg"><img width="180" height="305" border="0" src="http://balatonblog.typepad.com/balatonblog/images/060102var.jpg" title="060102var" alt="060102var" /></a>
+
+<br />&quot;Várvölgy a Keszthelyi-hegység közepén található, festői szépségű kisközség. Régi neve Zsid, amely a latin Sidoniusból származik. A község nevével először az almádi monostor alapítólevelében találkozunk 1121-ben. Várát 1244-ben IV. Béla király a johannitáknak adományozta. A XV. században a Rezi vár tartozéka, majd a várral együtt királyi adományként Gersei Pethő László tulajdonába kerül. 1740-től 200 éven át a Festetics-családé.&quot; [<a href="http://ujember.katolikus.hu/Archivum/2001.06.17/0405.html">ujember.katolikus.hu</a>]</p>
+
+<p><a onclick="window.open(this.href, '_blank', 'width=283,height=425,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/060102101_keszthelykapolna.jpg"><img width="180" height="270" border="0" src="http://balatonblog.typepad.com/balatonblog/images/060102101_keszthelykapolna.jpg" title="060102101_keszthelykapolna" alt="060102101_keszthelykapolna" /></a>
+
+<br />&quot;A falu műemlék templomát a XIV. század elején Károly Róbert uralkodása idején építették gótikus stílusban, a jelenlegi romantikus formáját 1899-ben kapta. <strong>Tornyában van az ország legrégibb harangja, melyet 1524-ben öntöttek</strong>. A ma is megtekinthető barokk temetőkápolna a XVIII. századból származik.&quot; [<a href="http://www.iranymagyarorszag.hu/info/varvolgy/">iranymagyarorszag.hu</a>]</p>
+
+<p>&quot;Az 1960-as években a falu lakossága nagyban csökkent, de az ott maradók is máshol kerestek munkát. 1976-ban Vállussal egyesítették, majd 1990-től újból önálló település. <strong>Azóta komoly falusi turizmus épült ki a községben</strong>.&quot; [<a href="http://hu.wikipedia.org/wiki/V%C3%A1rv%C3%B6lgy">hu.wikipedia.org</a>]</p>
+
+<p><span style="font-size: 1.2em;"><strong>Önkormányzati információk</strong></span></p>
+
+<p><strong>Polgármesteri Hivatal</strong><br />8316 Várvölgy, Kossuth u. 67.<br />Tel:83/371-401, 83/371-519<br />Fax:83/371-401<br />Email: varvolgy@axelero.hu</p>
+
+<p><a href="http://www.kozinfo.hu/onkadat.asp?Xksh=14182">Az önkormányzat adatai</a><br />Az önkormányzat a <strong>Tátika-Rezi Kistérségi Társulás tagja</strong>. </p>
+
+<p><span style="font-size: 1.2em;"><strong>Szállás</strong></span></p>
+
+<p><a href="http://www.varvolgy.hu/docs/indegenforgalom.htm">Szállásadók, sátorozóhely</a></p>
+
+<p>Van <a href="http://www.iranymagyarorszag.hu/polgarmesteri_hivatal_varvolgy/I305434/">40 fős ifjúsági szállása az iskolában</a>, ahol nyári táboroztatást is szerveznek.</p>
+
+<p><a href="http://www.turistakalauz.hu/?base=szallashelyek&amp;id=52">Hegyi Lovaspanzió</a><br />-<br /><a href="http://www.iranymagyarorszag.hu/vida_vendeghaz/I308645/">Vida Vendégház</a></p>
+
+<p><strong>Egyéb információ:</strong><br />
+Várvölgy Hegyközség:<br />
+Kovács Péter Várvölgy Kossuth u. 110. 06-30-265-5085</p>
+
+<p><a href="http://www.emagyarorszag.hu/terkep/zala/varvolgy.html"><strong>eMagyarország pont</strong></a></p>
+
+<p><a href="http://www.terkepcentrum.hu/index.asp?tid=14182"><span style="font-size: 1.4em;"><strong>TÉRKÉP</strong></span></a><br /></p>
+
+<p>&quot;Vizsgálat alá kell venni a mai Várvölgy (korábban Zsid) falu környékét is. A helységnévben ugyanis szintén a &quot;séd&quot; (-syth, zsid) összetételt sejtjük. Vállus és Várvölgy községek között félúton, az erdőben szintén van egy pálos kolostorhely (alapfalai felismerhetők). Ennek adata csak 1429-től ismert, az elrendezés alapján viszont inkább XIII. századi eredetűnek tartjuk. Itt ellentmondást csak az jelent, hogy a vállusi kolostor titulusa Sz.Miklós volt.&quot; [<a href="http://arch.eptort.bme.hu/epitesz5.html#1">arch.eptort.bme.hu</a>] </p>
+
+<p>&quot;Minap böngésztem a Balaton felvidék térképét és nem messze a 84 főúttól szemembe ötlött egy kis felirat &quot;szép kilátás&quot; Nosza felkerestük a megjelölt helyet, és a felirat /szerintünk/ nem hazudott. A Kő-orra nevezetű hegytetőről volna szó, mely megközelíthető Lesenceistvándról, és Lesencetomajról is. Helyszíni szemle alapján azonban mégsem oda rejtettünk, mert ahogy a turista atlasz is írja: &quot;a felnövekvő fák miatt nem teljes a kilátás róla&quot;. Inkább a Kis púp magassági pontja közelébe raktuk a ládát, ahol majdnem 360 fokos kilátásban gyönyörködhetünk. Tiszta időben látni a Tapolcai medencét, a tanúhegyeket, átlátni a káli medence egyes részeire, látni az edericsi vonulat innenső lapját, és persze egy darabot a Balatonból. Ha Ék-re , a Bakony felé fordulunk, az Agár tetőn túl, még a Somlóig is ellátunk. Nyugat felé már feltűnik a Vállus mögötti vonulat, a falu szélső háza, a hosszú hát, melynek északi csücskén a Rezi várának romjai ülnek.&quot; [<a href="http://www.geocaching.hu/caches.geo?id=1019">geocaching.hu</a>] </p>]]></content:encoded>
+
+
+<dc:subject>Ajánló</dc:subject>
+<dc:subject>Balaton</dc:subject>
+<dc:subject>Balaton &amp; internet</dc:subject>
+<dc:subject>Balatoni Gyalog</dc:subject>
+<dc:subject>Balatoni Lovas</dc:subject>
+<dc:subject>Balatoni Látnivaló</dc:subject>
+<dc:subject>Balatoni Szállás</dc:subject>
+<dc:subject>Balatoni Térkép</dc:subject>
+<dc:subject>Balatoni bor</dc:subject>
+<dc:subject>Falusi turizmus</dc:subject>
+<dc:subject>Keszthelyi-hegység</dc:subject>
+<dc:subject>Tudástár</dc:subject>
+<dc:subject>Turizmus</dc:subject>
+<dc:subject>Tájak, települések</dc:subject>
+<dc:subject>VÁRVÖLGY</dc:subject>
+<dc:subject>Zöld: zöldebb</dc:subject>
+<dc:subject>Önkormányzó</dc:subject>
+
+<dc:creator>ivcsek</dc:creator>
+<dc:date>2006-01-03T08:41:05+01:00</dc:date>
+</item>
+<item rdf:about="http://balatonblog.typepad.com/balatonblog/2006/01/uzsa_a_rgi_s_az.html">
+<title>Uzsa: a régi és az új</title>
+<link>http://balatonblog.typepad.com/balatonblog/2006/01/uzsa_a_rgi_s_az.html</link>
+<description>Uzsa község a Tapolcai-medence északnyugati peremén található. Nevében és természeti környezetében a régmúlthoz kötődik, míg jelenében a jövőjüket kereső falvak közé tartozik. Mai formáját az 1950-es években nyitott kőbányának köszönheti. Tipikus bánásztelepülés, 1995. augusztus 20-án nyilvánították önálló községgé. A környező erdők maradandó élményt nyújtanak a természet kedvelőinek. A község melletti hegytetőről belátható az egész Tapolcai-medence. [balatone.hu] A Balatontól és Tapolcától 12 km-re fekszik... Neve egy ősi magyar személynévből, az Uzából származik. 1247-ben említik elsőízben Usa néven. Az Uzsa-völgyben, a Lesence-patak új medrében kimosott bronzkincsek felszínre kerülése őskori település kultúrájának létét üzenik. A bő vízű Szentlélek forrás közelében a középkori pálos kolostor romjai látszanak. Az uzsai erdőrengeteg gazdag vadállománnyal bír. A településnek több mint 400 lakója van. A 84. számú főútról jól megközelíthető, a Sarvay forrás vidéke kellemes kirándulóhely. [iranymagyarorszag.hu] Elsődleges vonzerejét az erdészet útjai mentén felfedezhető növény és állatvilága, a magaslatokról feltáruló balatoni panoráma és a vadász és kiránduló turizmust kiszolgáló létesítményei jelentik. A Balatontól 15 km-re, a Bakonyban fekvõ 11.300 hektár nagyságú uzsai vadászterületet csaknem 7.400 ha-on erdõ borítja. Erdeinek kiváló vadeltartó képessége fõleg a nagyvadnak kedvez. Állandó vadfajunk a gím, a vaddisznó, a muflon és az õz. Az éves teríték meghaladja az 500 db-ot. Az Uzsai égeres-t ritka...</description>
+<content:encoded><![CDATA[<p>Uzsa község a Tapolcai-medence északnyugati peremén található. <strong>Nevében és természeti környezetében a régmúlthoz kötődik, míg jelenében a jövőjüket kereső falvak közé tartozik. </strong><br />&quot;Mai formáját az 1950-es években nyitott kőbányának köszönheti. Tipikus bánásztelepülés, 1995. augusztus 20-án nyilvánították önálló községgé. A környező erdők maradandó élményt nyújtanak a természet kedvelőinek. A község melletti hegytetőről belátható az egész Tapolcai-medence.&quot; [<a href="http://www.balatone.hu/lesence/uzsa.htm">balatone.hu</a>]</p>
+
+<p><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/306358j.jpg" onclick="window.open(this.href, '_blank', 'width=300,height=298,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="280" height="278" border="0" alt="306358j" title="306358j" src="http://balatonblog.typepad.com/balatonblog/images/306358j.jpg" /></a>
+
+</p>
+
+<p>&quot;A Balatontól és Tapolcától 12 km-re fekszik... Neve egy ősi magyar személynévből, az Uzából származik. 1247-ben említik elsőízben Usa néven. Az Uzsa-völgyben, a Lesence-patak új medrében kimosott bronzkincsek felszínre kerülése őskori település kultúrájának létét üzenik. A bő vízű Szentlélek forrás közelében a középkori pálos kolostor romjai látszanak. Az uzsai erdőrengeteg gazdag vadállománnyal bír. A településnek több mint 400 lakója van. A 84. számú főútról jól megközelíthető, a Sarvay forrás vidéke kellemes kirándulóhely.&quot; [<a href="http://www.iranymagyarorszag.hu/info/uzsa/">iranymagyarorszag.hu</a>]</p>
+
+<p><strong>Elsődleges vonzerejét az erdészet útjai mentén felfedezhető növény és állatvilága, a magaslatokról feltáruló balatoni panoráma és a vadász és kiránduló turizmust kiszolgáló létesítményei jelentik.</strong></p>
+
+<p>&quot;A Balatontól 15 km-re, a Bakonyban fekvõ 11.300 hektár nagyságú uzsai vadászterületet csaknem 7.400 ha-on erdõ borítja. Erdeinek kiváló vadeltartó képessége fõleg a nagyvadnak kedvez. Állandó vadfajunk a gím, a vaddisznó, a muflon és az õz. Az éves teríték meghaladja az 500 db-ot.&quot;<br /><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/uzsa1erdszhz.gif" onclick="window.open(this.href, '_blank', 'width=210,height=150,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="180" height="128" border="0" alt="Uzsa1erdszhz" title="Uzsa1erdszhz" src="http://balatonblog.typepad.com/balatonblog/images/uzsa1erdszhz.gif" /></a>
+
+</p>
+
+<p>Az &quot;Uzsai égeres&quot;-t ritka növényei (páfrányok stb.) miatt védetté nyilvánították. A mellette lévõ csarabos (Calluna vulgaris nevû örökzöld törpecserje-állomány) elterjedésének ez a legkeletibb dunántúli pontja. Nagyon mutatós, amikor nyárutón halovány lilásrózsaszín virágainak tömege nyílik. A keleti oldalán levõ lápfolt alhavasi és egyéb növényritkaságok tenyészhelye.&quot; [<a href="http://www.bp-erdo.hu/html/uzsa.html">bp-erdo.hu</a>]<br /><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/uzsa04.gif" onclick="window.open(this.href, '_blank', 'width=210,height=150,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="180" height="128" border="0" alt="Uzsa04" title="Uzsa04" src="http://balatonblog.typepad.com/balatonblog/images/uzsa04.gif" /></a>
+
+</p>
+
+<p>Szállás és vendéglátás</p>
+
+<p><a href="http://www.iranymagyarorszag.hu/szent_hubertus_panzio_es_etterem/I307150/">Szent Hubertus Panzió és Étterem</a><br />Étterem, Különterem, Tenisz, Lovaglás, Tévé, Kutya, macska bevihető, Büfé, Tollaslabda, Parkoló, Fürdőszobás szoba, Reggeli, Nyitott uszoda, Pihenőpark, Ifjúsági szállás, Játszótér, Konferenciatechnika, Ifjúsági programok, Kirándulás, Gyalogtúra, Gyermektábor</p>
+
+<p><a href="http://www.iranymagyarorszag.hu/urberi_vadaszhaz/I309145/">Úrbéri Vadászház</a><br />Nyitvatartás szezonban</p>
+
+<p><a href="http://www.1hungary.com/polgarmesteri_hivatal_uzsa/I306358/">Polgármesteri Hivatal</a><br />8321&nbsp; Uzsa,&nbsp; Lázhegy u. 19.<br />Email: PmhUzsa@hu.inter.net<br />Phone: (70) 319-0397&nbsp; P/F: (87) 436-140</p>
+
+<p><a href="Uzsa Ãnko adat gyaloglÃ³--http://www.kozinfo.hu/onkadat.asp?Xksh=34218">Az önkormányzat adatai </a></p>
+
+<p><a href="http://www.emagyarorszag.hu/terkep/veszprem/uzsa.html">eMagyarország pont</a></p>
+
+<p><a href="http://www.basalt.hu/">Basalt-Középkő Kőbányák Kft.</a></p>
+
+<p><strong>Uzsa a Lesence karnyújtásnyira lévő településeivel közösen a Balaton közelségével gazdag programokat kínál a természet szerelmeseinek.</strong><br />Jó példa erre, a Lesencéktől a Balatonig elnevezésű hagyományőrző szüreti felvonulás a Lesence-térségben.&quot; A központi rendezvénynek a felvonulások történetében először Uzsa adott otthont. (2004) A lovasokkal, traktorokkal, vidám maskarákba öltözött emberekkel tarkított menet Szigligetről indulva Hegymagason át a Lesence-régió falvait érintve jutott el Uzsára...<br /><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/maskara.jpeg" onclick="window.open(this.href, '_blank', 'width=200,height=131,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="180" height="117" border="0" alt="Maskara" title="Maskara" src="http://balatonblog.typepad.com/balatonblog/images/maskara.jpeg" /></a>
+
+<br />Kovács Károly köszöntőjében elmondta, bár a településen a szüretnek nincsenek hagyományai, mégis örül annak, hogy a kistérség tagjaként házigazdái lehetnek ennek az eseménynek. A szőlőt ugyan nem termesztik, de a bort az uzsaiak is nagyon szeretik.&quot; [<a href="http://www.balatonpress.com/print_ver.php?ID=37207">balatonpress.com</a>]</p>
+
+<p><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/uzsa1.jpg" onclick="window.open(this.href, '_blank', 'width=550,height=381,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="280" height="193" border="0" alt="Uzsa1" title="Uzsa1" src="http://balatonblog.typepad.com/balatonblog/images/uzsa1.jpg" /></a>
+
+<br /><a href="http://gportal.hu/gindex.php?pg=185489&amp;nid=1111792">Az uzsai vadászterület eddigi legnagyobb szarvasbikája</a></p>]]></content:encoded>
+
+
+<dc:subject>&quot;Balatonikum&quot;</dc:subject>
+<dc:subject>Ajánló</dc:subject>
+<dc:subject>Balaton</dc:subject>
+<dc:subject>Balaton &amp; internet</dc:subject>
+<dc:subject>Balatoni Látnivaló</dc:subject>
+<dc:subject>Balatoni Szállás</dc:subject>
+<dc:subject>Falusi turizmus</dc:subject>
+<dc:subject>Programok</dc:subject>
+<dc:subject>Tapolcai-medence</dc:subject>
+<dc:subject>Turizmus</dc:subject>
+<dc:subject>Tájak, települések</dc:subject>
+<dc:subject>UZSA</dc:subject>
+<dc:subject>VadÁsz</dc:subject>
+<dc:subject>Zöld: zöldebb</dc:subject>
+<dc:subject>Önkormányzó</dc:subject>
+
+<dc:creator>ivcsek</dc:creator>
+<dc:date>2006-01-02T07:24:32+01:00</dc:date>
+</item>
+<item rdf:about="http://balatonblog.typepad.com/balatonblog/2006/01/szolglati_klemn.html">
+<title>Szolgálati kölemény: 2006</title>
+<link>http://balatonblog.typepad.com/balatonblog/2006/01/szolglati_klemn.html</link>
+<description>Az ide visszatérő olvasók majd egy hónapon át nem találtak friss tartalmakat, azonban a statisztikák azt mutatják: aki kereset talált érdeklődésének megfelelő anyagokat az archív bejegyzések között. A látogatók nagy része végigböngészte a Balaton-felvidék kistelepüléseit bemutató szemelvényeket. A közel egy hónapos kiállást követően mától naponta újabb és újabb települések kerülnek sorra, hogy áprilisig virtuális sétámon elérjük kiindulópontunkat. Miért e falujárás? Mert május első napjaiban EXPEDÍCIÓRA indulok, hogy még bővebben - személyes benyomásaim alapján - számolhassak be e tájegységek látnivalóiról, mindennapjairól. A napi aktualitások továbbra is a megszokott helyen találhatók, aki pedig BALATONIKUMokra vágyik az kutakodjék. Felkutattam ezen felül néhány Balatonimádót, hogy körüket tovább bővíthessem......</description>
+<content:encoded><![CDATA[<p>Az ide visszatérő olvasók majd egy hónapon át nem találtak friss
+tartalmakat, azonban a statisztikák azt mutatják: aki kereset talált
+érdeklődésének megfelelő anyagokat az archív bejegyzések között. <br />
+A látogatók nagy része végigböngészte <strong>a Balaton-felvidék kistelepüléseit bemutató szemelvényeket</strong>.</p>
+<p><strong><a onclick="window.open(this.href, '_blank', 'width=484,height=367,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false" href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/4_2.gif"><img width="180" height="136" border="0" src="http://balatonblog.typepad.com/balatonblog/images/4_2.gif" title="4_2" alt="4_2" /></a>
+
+<br />
+A közel egy hónapos kiállást követően mától naponta </strong>újabb és újabb
+települések kerülnek sorra, hogy áprilisig virtuális sétámon elérjük
+kiindulópontunkat. <br /><a href="http://balatonon.freeblog.hu/">
+Miért e falujárás?</a> Mert május első napjaiban<a href="http://balatonblog.typepad.com/balatonexpedicio/"> EXPEDÍCIÓRA</a> indulok, hogy
+még bővebben - személyes benyomásaim alapján - számolhassak be e
+tájegységek látnivalóiról, mindennapjairól.</p>
+
+<p>
+A <a href="http://balatonblog.typepad.com/szemle/">napi aktualitások</a> továbbra is a megszokott helyen találhatók, aki pedig <a href="http://www.balatoni.blogter.com/">BALATONIKUMokra</a> vágyik az kutakodjék. Felkutattam ezen felül <a href="http://balatonblog.typepad.com/balcsi/">néhány Balatonimádót</a>, hogy körüket tovább bővíthessem...</p><br />
+ <br />
+]]></content:encoded>
+
+
+
+<dc:creator>ivcsek</dc:creator>
+<dc:date>2006-01-02T04:58:06+01:00</dc:date>
+</item>
+<item rdf:about="http://balatonblog.typepad.com/balatonblog/2005/12/lesenceistvnd.html">
+<title>LESENCEISTVÁND</title>
+<link>http://balatonblog.typepad.com/balatonblog/2005/12/lesenceistvnd.html</link>
+<description>A település a tapolcai medence peremén a keszthelyi hegység lábainál fekszik.Kelet felõl vulkanikus hegyek láncolata és a Bakony erdõi övezik. Sümeg felől a 84-es számú fõút határolja, amely csatlakozik a Balaton északi partján húzódó 71-es fõúthoz. A Keszthely felõl ide érkezõk szõlõhelyek között kanyarogva, csodálatos panorámában gyönyörködhetnek. Lakóinak száma 1999. január 1-én 946 fõ. A neve elõször 1328-ban Lessenche-Istvand néven fordul elõ. Az Istvánd helységnév az István személynévbõl képzõdött, a Lesence-elõtag a patak mellékre utal. A falu Lesence-patak mellé települt, határa dombok alatt, erdõk és nádasok között fekszik. A település urai a XIV. században a Dersfiek voltak, a XVI. században Csoron András és leszármazói voltak a birtokosok, majd a falu és környéke 1600-tól folyamatosan az Esterházy család birtoka volt. A török már 1545-ben elfoglalta a települést. 1553-tól a XVII. századig az egész szántói járás a töröknek hódolt és fizette az adót.A hosszabb lakott idõszak után, a török uralom végén Lesenceistvánd elnéptelenedett. 1692-ben kezdték újratelepíteni magyar lakossággal.[balatonfelvidek.celodin.hu] Lesenceistvánd területe a Balaton vízgyűjtőjéhez tartozik. Legmagasabb pontja a Kő-orra hegy, amely 499 m magas. Ezen a hegyen megy keresztül az országos Kék-túra útvonal is, mely fontos összeköttetést jelent a Keszthelyi-hegység két oldala között a gyalogos kiránduló turizmusban. Kiemelt rendezvényei: a Mézga-fesztivál (házi készítésű...</description>
+<content:encoded><![CDATA[<p>A település&nbsp; &quot;a tapolcai medence peremén a keszthelyi hegység lábainál fekszik.<br />Kelet
+felõl vulkanikus hegyek láncolata és a Bakony erdõi övezik. Sümeg felől
+a 84-es számú fõút határolja, amely csatlakozik a Balaton északi
+partján húzódó 71-es fõúthoz. A Keszthely felõl ide érkezõk szõlõhelyek
+között kanyarogva, csodálatos panorámában gyönyörködhetnek. Lakóinak
+száma 1999. január 1-én 946 fõ. </p>
+
+<p><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/x2lesenceistvand5k.jpg" onclick="window.open(this.href, '_blank', 'width=145,height=150,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="120" height="124" border="0" alt="X2lesenceistvand5k" title="X2lesenceistvand5k" src="http://balatonblog.typepad.com/balatonblog/images/x2lesenceistvand5k.jpg" style="margin: 0px 5px 5px 0px; float: left;" /></a></p>
+
+<p>A neve elõször 1328-ban Lessenche-Istvand néven fordul elõ. Az
+Istvánd helységnév az István személynévbõl képzõdött, a Lesence-elõtag
+a patak mellékre utal. A falu Lesence-patak mellé települt, határa
+dombok alatt, erdõk és nádasok között fekszik. </p>
+
+<p>A település urai a XIV. században a Dersfiek voltak, a XVI.
+században Csoron András és leszármazói voltak a birtokosok, majd a falu
+és környéke 1600-tól folyamatosan az Esterházy család birtoka volt.</p>
+
+<p>A török már 1545-ben elfoglalta a települést. 1553-tól a XVII.
+századig az egész szántói járás a töröknek hódolt és fizette az adót.<br />A
+hosszabb lakott idõszak után, a török uralom végén Lesenceistvánd
+elnéptelenedett. 1692-ben kezdték újratelepíteni magyar lakossággal.&quot;<br />[<a href="http://www.balatonfelvidek.celodin.hu/lesence.htm">balatonfelvidek.celodin.hu</a>]</p>
+
+<p><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/x1keszhelyihegys1.jpg" onclick="window.open(this.href, '_blank', 'width=291,height=193,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="280" height="185" border="0" alt="X1keszhelyihegys1" title="X1keszhelyihegys1" src="http://balatonblog.typepad.com/balatonblog/images/x1keszhelyihegys1.jpg" /></a>
+
+</p>
+
+<p>&quot;Lesenceistvánd területe a Balaton vízgyűjtőjéhez tartozik.
+Legmagasabb pontja a Kő-orra hegy, amely 499 m magas. Ezen a hegyen
+megy keresztül az országos Kék-túra útvonal is, mely fontos
+összeköttetést jelent a Keszthelyi-hegység két oldala között a gyalogos
+kiránduló turizmusban.</p>
+
+<p><strong>Kiemelt rendezvényei:</strong> a
+Mézga-fesztivál (házi készítésű traktorok bemutatója és versenye),
+BMW-találkozó, Falunap, és a Hagyományos Szüreti Felvonulás (a
+szomszédos községekkel együtt)&quot; [<a href="http://www.iranymagyarorszag.hu/info/lesenceistvand/">iranymagyarorszag.hu</a>]</p>
+
+<p>Látnivalók:</p>
+
+<p><strong>A pálos kolostort 1330 körül alapították</strong>, de az egyetlen
+magyar alapítású szerzetesrend itteni tagjai a török veszély miatt
+elhagyták az épületet, mely így az enyészeté lett. [<a href="http://www.vendegvaro.hu/31-10301">vendegvaro.hu</a>]</p>
+
+<p><strong>A Szent Jakab apostol tiszteletére szentelt római katolikus temploma középkori eredetű</strong>,
+(műemléki vörösmárvány keresztelőkút és a szintén műemlékként védett
+fasípos orgona) 1755-ben építették újra; végleges, késő barokk formáját
+1788-ban nyerte el. [<a href="http://www.vendegvaro.hu/31-4962">vendegvaro.hu</a>]</p>
+
+<p><strong><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/x4304442c3.jpg" onclick="window.open(this.href, '_blank', 'width=100,height=149,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="100" height="149" border="0" alt="X4304442c3" title="X4304442c3" src="http://balatonblog.typepad.com/balatonblog/images/x4304442c3.jpg" style="margin: 0px 5px 5px 0px; float: left;" /></a>Bálint Sándor Egyházi Gyűjtemény</strong> <br /><strong>Mária-kápolna kilátó</strong><br /><strong>Máté-kút forrás</strong><br /><strong>Szentháromság-szobor</strong><br />az I. és II. világháborúban elhunyt hősök emlékművei</p>
+
+<p><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/x9105002.jpg" onclick="window.open(this.href, '_blank', 'width=250,height=326,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="180" height="234" border="0" alt="X9105002" title="X9105002" src="http://balatonblog.typepad.com/balatonblog/images/x9105002.jpg" /></a>
+
+</p>
+
+<p>Említést érdemelnek <strong>a kavicsbányák</strong> melyek a hozzáértő érdeklődők számára <strong>földtani bemutatóul szolgálhatnak</strong>. Mindkét bánya a Balatonfelvidéki Nemzeti Park területére esik. Ez a Billegén lévő földtani örökségünk ritka különlegesség , <a href="http://www.sulinet.hu/termeszetvilaga/archiv/2001/0102/24.html">egy tanösvényt&nbsp; mindenképpen megérdemelne</a>.</p>
+
+<p><a href="http://balatonblog.typepad.com/.shared/image.html?/photos/uncategorized/x3madbull.jpg" onclick="window.open(this.href, '_blank', 'width=320,height=240,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); return false"><img width="180" height="135" border="0" alt="X3madbull" title="X3madbull" src="http://balatonblog.typepad.com/balatonblog/images/x3madbull.jpg" /></a>
+
+</p>
+
+<p>Ha valami, akkor a helyi <strong>serdülő baseball csapat</strong> (országos
+2.) tevékenysége biztató perspektívát mutat, ígéretes
+település-marketing elemmé válhat: a média figyelmét Lesenceistvándra
+vonhatja.</p>
+
+<p>Mint a környéken általában itt is <a href="http://www.kee.hu/borinfo/borvers/borver02/02bv07/02b07nev.htm">találunk minőségi borokat</a>, <a href="http://www.emagyarorszag.hu/terkep/veszprem/lesenceistvand.html">eMagyarország pontot pont</a>. A falun áthaladó <strong>túraútvonallal kapcsolatos információkat </strong>pedig <a href="http://216.239.59.104/search?q=cache:6TVu3ptYJFQJ:ttt.tr.hu/okt/forum.php%3Fa%3Dds%26id%3D4+lesenceistv%C3%A1nd&amp;hl=hu&amp;client=firefox-a">itt találhatjuk.</a> Szálláshelyről nem szereztem tudomást, a közeli településeken biztosan találunk szobát.</p>
+
+<p><a href="http://www.iranymagyarorszag.hu/polgarmesteri_hivatal_lesenceistvand/I304442/">Az önkormányzat és adatai</a></p>
+
+<p><a href="http://www.terkepcentrum.hu/index.asp?tid=21962">TÉRKÉP</a> </p>
+
+<p><strong>Eladó:</strong><br /><a href="http://www.elvit.hu/ingatlan/ingatlan/1344/">Eladó nyaraló</a>, Lesenceistvánd<br />Tapolcától 4 km-re 2004-ben <a href="http://www.ingatlanhalo.hu/index.php?sid=&amp;lang=HU&amp;page=hirdetes_nezo&amp;hID=53627227">újjáépített patakpartján álló malomépületet</a><br />Lesenceistvándhegyen egy <a href="http://www.probiteingatlan.hu/keresoeredmeny.php">nádtetős présház</a> nagy és bővíthető telekkel eladó.</p>]]></content:encoded>
+
+
+<dc:subject>Ajánló</dc:subject>
+<dc:subject>Aktív &amp; Sport</dc:subject>
+<dc:subject>Balaton</dc:subject>
+<dc:subject>Balaton &amp; internet</dc:subject>
+<dc:subject>Balatoni Gyalog</dc:subject>
+<dc:subject>Balatoni Látnivaló</dc:subject>
+<dc:subject>Balatoni Térkép</dc:subject>
+<dc:subject>Balatoni bor</dc:subject>
+<dc:subject>Bicikli Balatoni </dc:subject>
+<dc:subject>Falusi turizmus</dc:subject>
+<dc:subject>Ingatlan</dc:subject>
+<dc:subject>Programok</dc:subject>
+<dc:subject>Tapolcai-medence</dc:subject>
+<dc:subject>Tájak, települések</dc:subject>
+<dc:subject>Zöld: zöldebb</dc:subject>
+<dc:subject>Önkormányzó</dc:subject>
+
+<dc:creator>ivcsek</dc:creator>
+<dc:date>2005-12-05T18:26:59+01:00</dc:date>
+</item>
+
+
+</rdf:RDF>

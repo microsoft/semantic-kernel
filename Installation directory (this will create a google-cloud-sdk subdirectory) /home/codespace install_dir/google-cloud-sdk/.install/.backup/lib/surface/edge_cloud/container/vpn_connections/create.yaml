@@ -1,0 +1,69 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Create a VPN connection between an Edge Container cluster and a VPC network.
+    description: |
+      Creates a new VPN connection.
+    examples: |
+      To create a connection called 'my-vpn-connection' between the VPC network 'my-vpc' and
+      the Edge Container cluster 'my-cluster' which is at region us-central1, run:
+
+        $ {command} my-vpn-connection --location=us-central1 --vpc-network='my-vpc' --cluster='my-cluster'
+
+      Here VPC network and cluster should be under the same project.
+
+  request:
+    collection: edgecontainer.projects.locations.vpnConnections
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    params:
+    - arg_name: vpn_connection
+      help_text: VPN connection to create.
+      required: true
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:vpnConnection
+    - arg_name: cluster
+      help_text: |
+        The name of the cluster to be connected under current project.
+      resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:cluster
+      required: true
+      resource_method_params:
+        vpnConnection.cluster: "{__relative_name__}"
+    - arg_name: vpc-network
+      api_field: vpnConnection.vpc
+      help_text: |
+        The name of the VPC network to be connected. By default it is assumed to be under the same
+        project as cluster. If this VPC network is under a different project, `vpc-project` is
+        required.
+      required: true
+    - arg_name: nat-gateway-ip
+      api_field: vpnConnection.natGatewayIp
+      help_text: |
+        The NAT gateway IP for the gateway floating IPs. Required if cluster sits behind NAT.
+    - arg_name: high-availability
+      api_field: vpnConnection.enableHighAvailability
+      type: bool
+      help_text: |
+        Enables high availability on cluster side. This creates an additional VPN endpoint in
+        cluster. Multiple Nodes/NodePools are required to enable this feature.
+    - arg_name: vpc-project
+      api_field: vpnConnection.vpcProject.projectId
+      help_text: |
+        The project of the VPC network. Required if the project of VPC network differs from the
+        project of the cluster.
+    - arg_name: router
+      api_field: vpnConnection.router
+      help_text: |
+        Name of the Cloud Router to use when creating the VPN connection. This Cloud Router must be
+        in the same region as the cluster and connected to the provided VPC network. If not
+        provided, a service-managed Cloud Router will either be created or reused to create the VPN
+        connection.
+    labels:
+      api_field: vpnConnection.labels
+
+  async:
+    collection: edgecontainer.projects.locations.operations

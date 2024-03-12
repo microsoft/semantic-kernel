@@ -1,0 +1,189 @@
+# Copyright 2018 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+accelerator_type:
+  api_field: node.acceleratorType
+  arg_name: accelerator-type
+  required: false
+  help_text: |
+    TPU accelerator type for the TPU.
+    If not specified, this defaults to `v2-8`.
+
+    For a list of available accelerator types run:
+
+    `{parent_command} accelerator-types list`
+  type: googlecloudsdk.command_lib.util.hooks.types:LowerCaseType
+  default: 'v2-8'
+
+description:
+  api_field: node.description
+  arg_name: description
+  required: false
+  help_text: |
+    Specifies a text description of the TPU.
+
+network:
+  api_field: node.network
+  arg_name: network
+  required: false
+  help_text: |
+    Specifies the network that this TPU will be a part of.
+  default: 'default'
+
+version:
+  api_field: node.tensorflowVersion
+  arg_name: version
+  required: true
+  help_text: |
+    TensorFlow version for the TPU, such as `1.14`. For a list of available
+    TensorFlow versions please see https://www.tensorflow.org/versions/.
+
+range: &range
+  api_field: node.cidrBlock
+  arg_name: range
+  help_text: |
+    CIDR Range for the TPU.
+
+    The IP range that the TPU will select an IP address from.
+    Must be in CIDR notation and a `/29` range, for example
+    `192.168.0.0/29`. Errors will occur if the CIDR range has already been
+    used for a currently existing TPU, the CIDR range conflicts with any
+    networks in the user's provided network, or the provided network is
+    peered with another network that is using that CIDR range.
+
+preemptible:
+  api_field: node.schedulingConfig.preemptible
+  arg_name: preemptible
+  type: bool
+  default: false
+  required: false
+  help_text: |
+    If provided, the TPU will be preemptible and time-limited. It may be
+    preempted to free up resources for standard TPUs, and will only be able
+    to run for a limited amount of time.
+
+    Preemptible TPUs cannot be restarted.
+
+service_networking:
+  api_field: node.useServiceNetworking
+  arg_name: use-service-networking
+  type: bool
+  default: false
+  help_text: |-
+    If provided, the TPU will be configured via the Service Networking (SN) API instead of
+    using a CIDR range. The Service Networking API should be enabled on the project before
+    creating the TPU.
+
+    For more information on Service Networking see https://cloud.google.com/service-infrastructure/docs/service-networking/getting-started.
+
+reserved:
+  api_field: node.schedulingConfig.reserved
+  arg_name: reserved
+  type: bool
+  default: false
+  required: false
+  help_text: |
+    When specified, will attempt to create the TPU node under reservations made in the current
+    project. The reservations can be made separately but used in aggregated form. i.e., the user can
+    make a reservation of 128 V2 TPUs and later on make another reservation of 128 V2 TPUs then
+    creates a v2-256 TPU instance. If there exists no reservation or not sufficient amount of
+    reserved cores under the project, the request will fail due to lack of capacity.
+
+metadata:
+  arg_name: metadata
+  metavar: KEY=VALUE
+  type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+  required: false
+  help_text: |
+    List of comma-separated metadata key-value pairs for the Cloud TPU VM node.
+    Example: `--metadata='key1=value1,key2=value2'`
+
+metadata_from_file:
+  arg_name: metadata-from-file
+  metavar: KEY=VALUE
+  type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+  required: false
+  help_text: |
+    Same as `--metadata` except the value for the entry will be read from a local file.
+    Example: `--metadata-from-file='key1=value1.txt'`
+
+update_metadata:
+  arg_name: update-metadata
+  type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+  required: false
+  metavar: KEY=VALUE
+  help_text: |
+    List of comma-separated metadata key-value pairs for the Cloud TPU VM node. If a key exists, its
+    value is modified. Otherwise, a new key-value pair is created.
+
+clear_metadata:
+  arg_name: clear-metadata
+  type: bool
+  default: false
+  required: false
+  help_text: |
+    Remove all metadata. If `--update-metadata` is also specified then `--clear-metadata` is applied
+    first.
+
+    For example, to remove all metadata:
+
+      $ {command} --clear-metadata
+
+    To remove all existing metadata and create two new metadata key-value pairs, 'foo=bar' and
+    'baz=qux':
+
+      $ {command} --clear-metadata --update-metadata foo=bar,baz=qux
+
+remove_metadata:
+  arg_name: remove-metadata
+  type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+  required: false
+  metavar: KEY
+  help_text: |
+    List of comma-separated metadata keys to remove. If a key does not exist it is silently ignored.
+    If `--update-metadata` is also specified then `--update-metadata` is applied first.
+
+topology:
+  arg_name: topology
+  help_text: |
+    Chip topology for TPU.
+  type: googlecloudsdk.command_lib.util.hooks.types:LowerCaseType
+
+type:
+  arg_name: type
+  help_text: |
+    Type of TPU.
+  choices:
+  - arg_value: v2
+    enum_value: V2
+  - arg_value: v3
+    enum_value: V3
+  - arg_value: v4
+    enum_value: V4
+  - arg_value: v5litepod
+    enum_value: V5LITE_POD
+  - arg_value: v5p
+    enum_value: V5P
+
+ga-type:
+  arg_name: type
+  help_text: |
+    Type of TPU.
+  choices:
+  - arg_value: v2
+    enum_value: V2
+  - arg_value: v3
+    enum_value: V3
+  - arg_value: v4
+    enum_value: V4

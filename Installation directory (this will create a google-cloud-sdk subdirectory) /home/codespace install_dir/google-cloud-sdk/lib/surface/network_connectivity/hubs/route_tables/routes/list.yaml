@@ -1,0 +1,35 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: List routes.
+    description: Retrieve and display a list of all routes in the specified route table.
+
+    examples: |
+      To list all routes across all route tables, run:
+
+        $ {command} --hub=- --route_table=-
+
+      To list all routes in route table `my-route-table`, run:
+
+        ${command} --hub=my-hub --route_table=my-route-table
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:routeTable
+      help_text: Parent route table of the routes to display.
+
+  request: &request
+    api_version: v1
+    collection: networkconnectivity.projects.locations.global.hubs.routeTables.routes
+
+  output:
+    # Columns: IP_CIDR_RANGE, STATE, TYPE, NEXT_HOP, HUB, ROUTE_TABLE
+    format: |
+      table(
+        ipCidrRange,
+        state,
+        type,
+        firstof(nextHopVpcNetwork.uri).basename():label=NEXT_HOP,
+        name.segment(5):label=HUB,
+        name.segment(7):label=ROUTE_TABLE
+      )

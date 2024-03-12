@@ -1,0 +1,180 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Create a Memorystore Memcached instance.
+    description: |
+      Create a new Memorystore Memcached instance.
+
+      This command can fail for the following reasons:
+        * An instance with the same name already exists.
+        * The active account does not have the necessary permissions to create instances.
+    examples: |
+      To create a Memcached instance named 'my-memcache-instance' in region 'us-central1'
+      with 3 nodes, each with 2 CPUs and 2GB of memory, run:
+
+        $ {command} my-memcache-instance --region=us-central1 \
+            --node-count=3 --node-cpu=2 --node-memory=2GB
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.memcache.resources:instance
+      help_text: |
+        Arguments and flags that specify the Memcached instance to create.
+    params:
+    - arg_name: display-name
+      api_field: instance.displayName
+      help_text: An arbitrary and optional user provided name for the instance.
+    - arg_name: labels
+      api_field: instance.labels.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+    - arg_name: authorized-network
+      api_field: instance.authorizedNetwork
+      help_text: |
+        Full name of the Google Compute Engine network to which the instance
+        is connected. If unspecified, the default network will be used.
+    - arg_name: zones
+      api_field: instance.zones
+      type: arg_list
+      help_text: |
+        List of zones for the memcache nodes. The nodes will be divided
+        equally across the given zones up to --node-count value. If not
+        provided, the service will by default create nodes in all zones in the
+        region specified by --region flag.
+    - arg_name: node-count
+      help_text: Number of memcache nodes in this instance. Valid values range from 1 to 20.
+      api_field: instance.nodeCount
+      required: true
+    - arg_name: node-cpu
+      api_field: instance.nodeConfig.cpuCount
+      help_text: |
+        Number of cpus per node in this instance. Valid values are 1 or even
+        number between 2-32. Value of 1 is not supported in all regions.
+      required: true
+    # Check the range on this flag and then set it in the parser
+    - arg_name: node-memory
+      api_field: instance.nodeConfig.memorySizeMb
+      required: true
+      help_text: |
+        Amount of memory allocated per node in this instance. The value must be a whole number
+        followed by a size unit of 'MB' for megabyte, or 'GB' for gigabyte, ie '3072MB' or '9GB'.
+        The value must be between 1024MB and 307200MB.
+      default: 1024MB
+      type: googlecloudsdk.command_lib.memcache.instances_util:NodeMemory
+    - arg_name: memcached-version
+      api_field: instance.memcacheVersion
+      help_text: |
+        Optional major version of Memcached software to use with the instance.
+        If not provided, default of "1.5" will be used.
+      choices:
+      - arg_value: '1.5'
+        enum_value: MEMCACHE_1_5
+        help_text: Memcached major version 1.5
+      - arg_value: '1.6.15'
+        enum_value: MEMCACHE_1_6_15
+        help_text: Memcached version 1.6.15
+    - arg_name: maintenance-window-day
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
+      release_tracks: [ALPHA, BETA, GA]
+      choices:
+      - arg_value: monday
+        enum_value: MONDAY
+      - arg_value: tuesday
+        enum_value: TUESDAY
+      - arg_value: wednesday
+        enum_value: WEDNESDAY
+      - arg_value: thursday
+        enum_value: THURSDAY
+      - arg_value: friday
+        enum_value: FRIDAY
+      - arg_value: saturday
+        enum_value: SATURDAY
+      - arg_value: sunday
+        enum_value: SUNDAY
+      help_text: |
+        The day of week when the window starts, e.g. `sunday`.
+    - arg_name: maintenance-window-start-time
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
+      release_tracks: [ALPHA, BETA, GA]
+      help_text: |
+        Hour of day (`0` to `23`) for the start of maintenance window, in UTC time zone.
+      processor: googlecloudsdk.command_lib.memcache.instances_util:CheckMaintenanceWindowStartTimeField
+    - arg_name: maintenance-window-duration
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.duration
+      release_tracks: [ALPHA, BETA, GA]
+      type: int
+      help_text: |
+        Duration in integer hours (`3` to `8`) of the maintenance window.
+      processor: googlecloudsdk.command_lib.memcache.instances_util:ConvertDurationToJsonFormat
+    - arg_name: parameters
+      api_field: instance.parameters.params
+      metavar: KEY=VALUE
+      help_text: |
+        User defined parameters to apply to the memcached process on each node. Possible attributes include:
+
+        *listen-backlog*::: The backlog queue limit for the instance.
+
+        *disable-flush-all*::: If enabled, flush_all command will be disabled. Applicable to
+        1.4.24 and higher.
+
+        *max-item-size*::: Max bytes of the instnace. Must at least be equal to slab_chunk_max
+        (which defaults to 524288 bytes) and less than 134217728 bytes. Additionally it must
+        be a multiple of slab_chunk_max.
+
+        *slab-min-size*::: This is an integer in the range [1, 1024].
+
+        *slab-growth-factor*::: This is a float in the range [1.01, 100].
+
+        *protocol*::: This is an enum with acceptable values of ["ascii", "auto"].
+
+        *disable-cas*::: This is a boolean value.
+
+        *disable-evictions*::: This is a boolean value.
+
+        *max-reqs-per-event*::: This is an integer in the range [1, 1000].
+
+        *track-sizes*::: This is a boolean value.
+
+        *worker-logbuf-size*::: This is an integer in the range [48, 524288].
+
+        *watcher-logbuf-size*::: This is an integer in the range [0, 2097151].
+
+        *lru-crawler*::: This is a boolean value.
+
+        *idle-timeout*::: This is an integer in the range [1,86400].
+
+        *lru-maintainer*::: This is a boolean value.
+
+        *maxconns-fast*::: This is a boolean value.
+
+        *hash-algorithm*::: This is an enum with accepted values of ["jenkins", "murmur3"].
+      type: "googlecloudsdk.command_lib.memcache.instances_util:Parameters"
+    - arg_name: reserved-ip-range-id
+      api_field: instance.reservedIpRangeId
+      release_tracks: [ALPHA, BETA, GA]
+      help_text: |
+        Contains the name of allocated IP address ranges associated with
+        the private service access connection for example, "test-default"
+        associated with IP range 10.0.0.0/29.
+
+  async:
+    collection: memcache.projects.locations.operations
+
+  request:
+    ALPHA:
+      api_version: v1beta2
+    BETA:
+      api_version: v1beta2
+    GA:
+      api_version: v1
+    collection: memcache.projects.locations.instances
+
+  output:
+    format: yaml

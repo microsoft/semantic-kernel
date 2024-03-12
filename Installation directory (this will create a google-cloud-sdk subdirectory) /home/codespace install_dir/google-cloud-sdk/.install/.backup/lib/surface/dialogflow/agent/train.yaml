@@ -1,0 +1,30 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Train the Dialogflow agent of the current project.
+  description: |
+    Train the Dialogflow agent of the current project with its current intents and entities.
+  examples: |
+    To train the agent for the current project:
+
+      $ {command}
+
+arguments:
+  resource:
+    help_text: The agent to train.
+    spec: !REF googlecloudsdk.command_lib.dialogflow.resources:project
+    is_parent_resource: true
+
+request:
+  collection: dialogflow.projects.agent
+  method: train
+
+async:
+  collection: dialogflow.projects.operations
+  extract_resource_result: false
+
+response:
+  modify_response_hooks:
+  - googlecloudsdk.command_lib.dialogflow.agent.hooks:LogTrainSuccess
+
+output:
+  format: none

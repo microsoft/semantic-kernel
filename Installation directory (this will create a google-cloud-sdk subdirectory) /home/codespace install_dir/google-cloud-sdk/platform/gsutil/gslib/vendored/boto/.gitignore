@@ -1,0 +1,17 @@
+*.pyc
+.*.swp
+*.log
+*~
+boto.egg-info
+build/
+dist/
+MANIFEST
+.DS_Store
+.idea
+.tox
+.coverage
+*flymake.py
+.vscode/
+venv*
+venv-2.5
+env-2.5

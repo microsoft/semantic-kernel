@@ -1,0 +1,54 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta ReservationAffinity export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  consumeReservationType:
+    description: |-
+      Specifies the type of reservation from which this instance can consume
+      resources: ANY_RESERVATION (default), SPECIFIC_RESERVATION, or
+      NO_RESERVATION. See Consuming reserved instances for examples.
+    type: string
+    enum:
+    - ANY_RESERVATION
+    - NO_RESERVATION
+    - SPECIFIC_RESERVATION
+    - SPECIFIC_THEN_ANY_RESERVATION
+    - UNSPECIFIED
+  key:
+    description: |-
+      Corresponds to the label key of a reservation resource. To target a
+      SPECIFIC_RESERVATION by name, specify googleapis.com/reservation-name as
+      the key and specify the name of your reservation as its value.
+    type: string
+  values:
+    description: |-
+      Corresponds to the label values of a reservation resource. This can be
+      either a name to a reservation in the same project or "projects/different-
+      project/reservations/some-reservation-name" to target a shared reservation
+      in the same zone but in a different project.
+    type: array
+    items:
+      type: string

@@ -1,0 +1,38 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 BareMetalNodeConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  labels:
+    description: |-
+      The labels assigned to this node. An object containing a list of key/value
+      pairs. The labels here, unioned with the labels set on
+      BareMetalNodePoolConfig are the set of labels that will be applied to the
+      node. If there are any conflicts, the BareMetalNodeConfig labels take
+      precedence. Example: { "name": "wrench", "mass": "1.3kg", "count": "3" }.
+    $ref: LabelsValue.yaml
+  nodeIp:
+    description: The default IPv4 address for SSH access and Kubernetes node.
+    type: string

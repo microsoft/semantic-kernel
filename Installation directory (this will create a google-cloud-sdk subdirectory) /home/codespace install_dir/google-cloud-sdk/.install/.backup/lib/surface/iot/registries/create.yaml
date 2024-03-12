@@ -1,0 +1,85 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Create a new device registry.
+    description: Create a new device registry.
+    examples: |
+     To create a new device registry 'my-registry' in region 'us-central1', run:
+
+       $ {command} --region=us-central1 my-registry
+
+     The following command creates a new device registry 'my-registry' in region 'us-central1', enables MQTT and HTTP connections, and sets 'pubsub-topic-name' as the Cloud Pub/Sub topic for state notifications.
+
+       $ {command} my-registry --region=us-central1 --enable-http-config --enable-mqtt-config --state-pubsub-topic=pubsub-topic-name
+
+  request:
+    collection: cloudiot.projects.locations.registries
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iot.util:AddEventNotificationConfigsToRequest
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.iot.flags:_GetEventNotificationConfigFlags
+    resource:
+      help_text: The registry you want to create.
+      spec: !REF googlecloudsdk.command_lib.iot.resources:registry
+
+    params:
+    - api_field: deviceRegistry.mqttConfig.mqttEnabledState
+      arg_name: enable-mqtt-config
+      help_text: Whether to allow MQTT connections to this device registry.
+      action: store_true
+      default: true
+      choices:
+      - arg_value: true
+        enum_value: MQTT_ENABLED
+      - arg_value: false
+        enum_value: MQTT_DISABLED
+
+    - api_field: deviceRegistry.httpConfig.httpEnabledState
+      arg_name: enable-http-config
+      help_text: Whether to allow device connections to the HTTP bridge.
+      action: store_true
+      default: true
+      choices:
+      - arg_value: true
+        enum_value: HTTP_ENABLED
+      - arg_value: false
+        enum_value: HTTP_DISABLED
+
+    - api_field: deviceRegistry.stateNotificationConfig.pubsubTopicName
+      arg_name: state-pubsub-topic
+      type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
+      processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
+      help_text: A Google Cloud Pub/Sub topic name for state notifications.
+
+    - api_field: deviceRegistry.credentials
+      arg_name: public-key-path
+      repeated: false
+      processor: googlecloudsdk.command_lib.iot.util:ParseRegistryCredential
+      help_text: |
+        Path to a file containing an X.509v3 certificate
+        ([RFC5280](https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64,
+        and wrapped by `-----BEGIN CERTIFICATE-----` and
+        `-----END CERTIFICATE-----`.
+
+    - api_field: deviceRegistry.logLevel
+      arg_name: log-level
+      help_text: |
+        The default logging verbosity for activity from devices in this
+        registry. The verbosity level can be overridden by setting a specific
+        device's log level.
+      choices:
+      - arg_value: none
+        help_text: Disables logging.
+        enum_value: NONE
+      - arg_value: info
+        help_text:
+          Informational events will be logged, such as connections and
+          disconnections. Also includes error events.
+        enum_value: INFO
+      - arg_value: error
+        enum_value: ERROR
+        help_text: Error events will be logged.
+      - arg_value: debug
+        enum_value: DEBUG
+        help_text: All events will be logged.

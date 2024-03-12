@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Enable a service account key.
+    description: |
+      Enable a service account key.
+
+      If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
+    examples: |
+      To enable a key with ID `b4f1037aeef9ab37deee9` for the service
+      account `my-iam-account@my-project.iam.gserviceaccount.com`, run:
+
+        {command} b4f1037aeef9ab37deee9 --iam-account=my-iam-account@my-project.iam.gserviceaccount.com
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.iam.resources:iam_key
+      is_positional: true
+      help_text: |
+        The id of the key to disable.
+
+  request:
+    collection: iam.projects.serviceAccounts.keys
+    method: enable
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:EnableIamKeyConfirmation

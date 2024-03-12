@@ -1,0 +1,23 @@
+release_tracks: [GA, ALPHA]
+help_text:
+  brief: |
+    Export grpc route.
+  description: |
+    Export a grpc route.
+  examples: |
+      To export a grpc route named 'my-grpc-route' to a YAML file, run:
+
+        $ {command} my-grpc-route --destination=my-grpc-route.yaml --location=global
+
+request:
+  collection: networkservices.projects.locations.grpcRoutes
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:grpcRoute
+    help_text: |
+      Name of the grpc route to export.

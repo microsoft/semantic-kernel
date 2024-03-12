@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Delete a Dataplex entry.
+    description: Delete a Dataplex entry.
+    examples: |-
+      To delete the entry 'entry1', run:
+
+        $ {command} entry1 --entry-group=entry-group1 --location=us-central1 --project=test-project
+
+  request:
+    collection: dataplex.projects.locations.entryGroups.entries
+
+  arguments:
+    resource:
+      help_text: Entry to delete.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:entry
+      is_positional: true

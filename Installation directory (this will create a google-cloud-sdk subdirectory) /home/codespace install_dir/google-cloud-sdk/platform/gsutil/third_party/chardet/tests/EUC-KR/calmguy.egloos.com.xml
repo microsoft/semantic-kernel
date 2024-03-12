@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!--
+Source: http://calmguy.egloos.com/index.xml
+Expect: EUC-KR
+-->
+<rss version="2.0">
+<channel>
+	<title>瞼を閉じれば 遙かな歌聲...</title>
+	<link>http://calmguy.egloos.com</link>
+	<description>ラストダンスを私に...</description>
+	<language>ko</language>
+	<pubDate>Wed, 14 Jul 2004 00:52:26 GMT</pubDate>
+	<image>
+		<title>瞼を閉じれば 遙かな歌聲...</title>
+		<url>http://pds.egloos.com/logo/1/200407/14/60/b0012760.jpg</url>
+		<link>http://calmguy.egloos.com</link>
+		<width>80</width>
+		<height>60</height>
+		<description>ラストダンスを私に...</description>
+	</image>
+	<item>
+		<title><![CDATA[ Galzoo 아일랜드 공략 ]]> </title>
+		<link>http://calmguy.egloos.com/2041159</link>
+		<description>
+			<![CDATA[ 
+# 본 공략은 초스피드 할렘에 이르는 길입니다. <BR>
+무리해서 따라갈 필요는 없어요 :D<BR>
+할렘엔딩 및 에리나 엔딩을 제외하고는 '니맘대로'플레이하시길 권합니다.<BR>
+<BR>
+#기본지식<BR>
+-본 게임은 시간과의 전쟁입니다. 시간 낭비는 절대 금물~!<BR>
+하루의 첫일과는 무조건 가까운 미궁가서 채집(H용 몬스터 엑기스 재료수집-첫번째로 채집을 선택하지 않으면 엑기스 재료수집 불가)<BR>
+이후 SAVE(안하면 눈물 흘릴 일이 종종^^)<BR>
+기타 쿠스시 및 바닐라의 방에 갈것(쿠스시: 아이템 조합, 바닐라: 레벨업)<BR>
+이하 미궁 돌입<BR>
+미궁 돌입시 특별한 경우가 없는 한 황혼녁(몬스터 파워 강화시) 정도에 나오는 걸 추천합니다.<BR>
+밧줄은 저항도가 2개 이하일 경우 일반, 3개면 강화, 4개 이상이면 그냥 일반 로프로...<BR>
+<BR>
+@ 가까운 숲<BR>
+1일차 - 컁컁 포획<BR>
+적당히 주변에서 놀면서 아이템 수집하고 몬스터랑 싸워주면 됩니다.<BR>
+저녁 먹기 전 정도에 에너지 거의 바닥인 상태에서 싸워주면 OK<BR>
+<BR>
+2일차 - 메이드 포획<BR>
+숲의 우측에 가면 메이드가 있습니다.<BR>
+한번 싸워서 이기면 메이드가 그냥 갑니다.<BR>
+두번째로 다시 우연히 만납니다(안 싸움)<BR>
+세번째로 만나서 싸우면 포획.<BR>
+최초의 치유계 캐릭이니 중반까지 유용히 쓰시길...<BR>
+이날은 수집보다 포획에 전념하길...<BR>
+<BR>
+3일차 - 야모링 포획<BR>
+메이드가 같이 있으면 독무효가 되므로 이제 야모링을 잡으러 갑시다<BR>
+한판 붙고 나서 도주... 그 뒤를 따라가면 독버섯 때문에 동료들이 쓰러지는데<BR>
+2회까지 컁컁과 메이드가 몸빵하니 그냥 갑시다<BR>
+길끝에서 악마 키라와 만나면 치료해주니 OK<BR>
+에너지가 3개 이하이면 강화 로프를 사용해 잡읍시다.(노가다 하기 싫죠? ^^ 물론 하나일 경우 일반로프)<BR>
+<BR>
+4일차 - 숲속맵 컴플리트<BR>
+숲속을 돌아다니며 아이템을 전부 정리합시다.<BR>
+<BR>
+@ 수수께끼의 거대 석상<BR>
+5일차 - 섹시나이트 포획, 스케치 포획 준비<BR>
+쿠스시의 방에 가서 강화로프 및 발광탄을 만듭니다(발광탄은 필히 2개 이상)<BR>
+미궁을 들어가서 오른쪽으로 갑니다.<BR>
+도중에 '낙서개'를 만나서 스케치 포획 준비 끝.<BR>
+오른쪽 끝으로 가서 어두운 지역으로 들어가면 섹시나이트가 랜덤하게 출현합니다.(말그대로 랜덤입니다... 간다고 무조건 나오는게 아니라)<BR>
+반드시 발광탄을 터트리고 포획합니다. 발광탄이 없으면 쓰러트려도 어두워서 안보이므로 그대로 도망.<BR>
+쉽게 포획하려면 첫번째 만남에서 발광탄을 사용해 쓰러트리고 강화로프 사용<BR>
+향후 파괴력면에서 발군이므로 포획 추천합니다.<BR>
+<BR>
+6일차: 스케치 포획, 사와 포획 준비<BR>
+스케치는 랜덤하게 나타나므로 우선 오른쪽으로 가다가 우측 상단의 에스컬레이트 사용해서 돌아가시길...(사와 포획 준비) 에스컬레이트를 타면 사와가 나타나는데 불한번 쏘고 도망가니까 레오로 한방씩 쳐줄것.<BR>
+상단 중간을 돌아서 좌상단의 에스컬레이트 사용, 좌중간으로 이동<BR>
+좌중간의 방에 들어가서 거대낙서괴물과 조우, 격투가 되면 바로 '도망간다' 선택지로 빠질것<BR>
+좌하단으로 이동, 에스컬레이트 3번 돌면 사와 공략준비 끝<BR>
+(이때쯤이면 스케치와 한두번은 만날텐데 거의 2번째포획에서 잡습니다.)<BR>
+우측 중단의 방에서 워프 포인트를 이용해서 다시 중앙으로 이동. 아직까지 스케치 포획이 안되어 있으면 정중앙 통로를 이용하여 굼벵이동합시다.(굼벵이동: 랜덤으로 케릭터가 등장하므로 한 장소에서 적당히 시간 때우며 이동)<BR>
+스케치를 포획하면 밤의 이벤트에서 반드시 선택하여 대화할것(거대낙서괴물 퇴치)<BR>
+<BR>
+7일차: 사와 포획<BR>
+이번에는 좌측으로 이동, 좌중단의 방에 들어가서 낙서괴물 처리하고, 하단으로 이동하면 방이 나옵니다(에레나의 키가 필요)<BR>
+되짚어 나와서 좌하단의 방에 들어갑니다(샘의 요정 요코 이벤트)<BR>
+적당히 아이템 수집하고 에스컬레이트 타면 사와 자동 포획<BR>
+<BR>
+8일차: 하니와 이벤트<BR>
+아침에 쿠스시를 만나 메모지 하나 만듭니다.<BR>
+이걸 가지고 숲에 가서 아이템 수집 및 사냥하다 적당히 시간 맞춰 '봄의 수호목'과 대화(우측 상단)<BR>
+이하 귀환<BR>
+<BR>
+9일차: 에레나와 대결, 곶으로 가는 사다리 발견<BR>
+좌측으로 이동하며 좌하단의 방앞에서 에레나 발견, 전투<BR>
+쓰러트리면 에레나의 키 입수<BR>
+요코에게 사인지 갖다 주면 아이템 입수<BR>
+이후 좌하단의 방에 가서 저스티스를 쓰러트리고 사다리 입수<BR>
+<BR>
+@곶<BR>
+10일차: 바닐라 포획 및 콘티 포획 준비<BR>
+곶에 들어가서 바닐라와 만나 전투, 포획<BR>
+이후 가능한한 곶의 맵 탐색<BR>
+(콘티의 무덤까지 가서 콘티를 1번 만나면 OK)<BR>
+<BR>
+11일차: 카메코 포획<BR>
+카메코를 만나서 전투 후 포획합니다. 그 이전에 프리덤을 두번 만나 전투(산의진미를 포획하는 정보 입수에 필요)<BR>
+카메코와의 전투는 전부 3번이므로 로프를 많이 준비할 것, 처음 두번은 포획해도 도망가므로 일반 로프 사용<BR>
+3번째 도망간 다음 랜덤으로 만나므로 알아서 포획<BR>
+<BR>
+12일차: 콘티 포획<BR>
+쿠스시를 만나서 영혼포획로프를 입수.<BR>
+콘티를 포획하러 가기 전에 맵중단 아래쪽에 가면 상인을 만납니다(정보7 구매)<BR>
+이후 묘지로 가서 콘티 포획<BR>
+<BR>
+13일차: 산의진미 포획<BR>
+쿠스시를 만나 투명스프레이 입수(사용하면 몬스터 눈에 안보임)<BR>
+맵좌하단까지 이동하여 정보7을 이용하고 난 후 투명스프레이 사용, 언덕을 돌아다니다 산의 진미 포획<BR>
+<BR>
+14일차: 맵 중단의 코카트리스가 있는 지점 공략<BR>
+아침에 일어나서 피라미드에 가서 스핑크스의 수수께끼를 들을것<BR>
+코카트리스를 쓰러뜨리고 카미나리타이코와 격돌 이벤트(못 이기니까 알아서 쓰러질 것)<BR>
+이후 발키리 등장 후 탐험을 계속하여 다리 건널것<BR>
+변태 유령쥐와 콘티 이벤트 끝나고 탐험을 하다 에리나와 격돌<BR>
+전투 후 중단 언덕에 올라가 책꽂이에서 수수께끼의 해답 입수(피라미드 출입 가능)<BR>
+<BR>
+@ 피라미드<BR>
+15일차: 초칭 및 네코마타마타 포획 준비<BR>
+오른쪽&nbsp;계단을 오르면 초칭 이벤트, 이후에 1일지나 고문이벤트 보고 포획가능<BR>
+네코마타마타는 랜덤이벤트로 게이츠95를 쓰러뜨리는 이벤트를 보고 나서 포획가능<BR>
+(15일은 어디까지나 준비의 날^^)<BR>
+오른쪽으로 이동하여 헝겊을 만나면 물을 끼얹어 미이라맨을 부활시키고 샘의 요정 요코짱을 만날것<BR>
+이후 오른쪽 중간의 워프의식의 방에 가서 의식이 필요하다는 말을 들을 것<BR>
+오른쪽 하단의 방에 들어가서 석판1 입수(방에 들어가려면 레버를 눌러놀 것), <BR>
+석판을 가지고 미이라맨에게 갈것, 이후 워프의방에 가면 이벤트후 타 포인트로 이동가능<BR>
+<BR>
+16-17일: 초칭 및 네코마타마타 포획<BR>
+어느쪽이나 랜덤 이벤트로 만나므로 잡히는 쪽 먼저 포획<BR>
+초칭은 한번으로 안 잡히므로 로프 사용을 신중히...<BR>
+피라미드 공략을 위해서 의식을 치르면 좌후단으로 가는 워프게이트가 열림<BR>
+좌후단에 가서 석판 2입수, 단 방으로 들어가기 위해서는 레버를 눌러야 하는데<BR>
+레오, 사와(성인), 기타 전생을 통해 어린이가 된 캐릭만 레버로 가는 다리가 통과 가능<BR>
+<BR>
+18일-21일: 프로즌 포획 및 피라미드 맵공략<BR>
+프로즌은 눈의강아지를 입수하지 않으면 포획이 안되므로<BR>
+강아지를 얻지 못했을 경우 알아서 도망갈것<BR>
+피라미드 맵공략은 석판입수 --&gt; 미이라맨에게 질문 --&gt;의식(워프의 방)<BR>
+중간에 에리나와 텐텐의 레즈 이벤트 후 피라미드에 들어가면 지진이 일어나 벽이 무너져서<BR>
+지금까지 가지 못하던 곳에 갈수있게 되므로 필히 들어가 아이템 입수<BR>
+<BR>
+@ 모래사장<BR>
+22일: 쿠스시 포획 및 챠부챠부 포획<BR>
+해변의 오른쪽으로 이동하여 에리나의 해수욕 이벤트 볼것(스캇파의 밤 출현 사실 확인)<BR>
+쿠스시는 배를 타고 중앙의 섬에 가면 포획<BR>
+챠부챠부는 배를 타고 섬을 이동하며 아이템 수집 및 경험치 획득 중 랜덤하게 포획<BR>
+<BR>
+23일: 스캇파 포획 준비<BR>
+챠부챠부를 파티에 넣고 수중탐험 및 공략<BR>
+스캇파는 21시 이에 좌측의 나루터에 나타남(포획 준비 조건)<BR>
+<BR>
+24일: 스캇파 포획, 에리나와 전투<BR>
+챠부챠부를 넣고 수중을 이동하여 에리나와 만나 전투, 이후 문어왕과 만나 이야기(나루터 하단에 워프 포인트 생성)<BR>
+스캇파는 랜덤하게 출현하나 물속에서는 나타나지 않으므로 주의(주로 좌측 나루터)<BR>
+<BR>
+25일-26일: 해저 공략 및 바다의 진미 포획<BR>
+워프 포인트를 통해 해저로 이동, 4군데의 '해류'몬스터 제거(해저 신전 돌입 조건)<BR>
+해저신전 돌입후 카미나리타이코이벤트 후 해저 공략 끝.<BR>
+해저신전 북부의 타임슬립 이벤트 후 나루터의 뱃사공에게 돌파조건 들음<BR>
+레오 및&nbsp; 유아몬스터로 돌파 가능(단, 유아몬스터 중 하나는 반드시 해저이동 가능해야 할것)<BR>
+*바다의진미는 이후에도 포획가능하니 무리하지 말것<BR>
+<BR>
+@ 안개의 숲<BR>
+27일: 코토다마 포획<BR>
+좌측으로 들어가 숲의 지하도를 통과하면 바로 만나 포획<BR>
+단, 독버섯 및 독무효 캐릭터를 파티에 넣을 것<BR>
+<BR>
+28-32일: 마지션, 뱀녀 포획<BR>
+마지션은 전투후 레오를 찾는 이벤트&nbsp; 3회 후 랜덤, 뱀녀는 랜덤으로 나와 2회째에 포획 가능(뱀녀를 포획하지 않을 경우 에리나 &amp; 뱀녀 레즈 이벤트)<BR>
+숲중앙 상단의 지옥반지는 만나고 난후(바로 도망)&nbsp;뿌리를 두번 접촉하면 뿌리와 전투 가능<BR>
+(4군데의 뿌리를 무너뜨리면 지옥반지의 회복력 상실, 이후 종마총공격으로 가볍게 터치)<BR>
+지옥반지를 쓰러뜨리면 키라와의 이벤트 후, 상단으로 이동... 여자몬스터 포획가능... 후후후<BR>
+반드시 포획바란다^^)<BR>
+<BR>
+@ 만리장성<BR>
+33일: 하리마오 포획<BR>
+맵좌상단으로 이동하여 집에 들어가면 하리마오 이벤트<BR>
+하리마오는 파티원 중의 하나가 병에 걸리지 않으면 상대하지 않으므로 주의.<BR>
+2회 이벤트 후 대전, 포획<BR>
+<BR>
+34일: 맵이동 및 투옥 이벤트<BR>
+맵우하단으로 이동하며 랜덤 결투 및 이벤트<BR>
+투옥 이벤트 후 동료들의 구출 이벤트<BR>
+<BR>
+35일:토코 포획<BR>
+바닥에 떨어진 종이학을 따라가면 토코와 만납니다.<BR>
+1회 대결 후 포획<BR>
+<BR>
+36일: 살파 공략<BR>
+맵우하단의 방에 가서 전투 후 포획<BR>
+단, 저녁때 가면 살파가 강해지므로 반드시 낮에 기습^^<BR>
+<BR>
+37일: 무기고 공략<BR>
+적당히 탐색 후 무기고를 지키는 가디언과 대결(종마총공격으로 낙승)<BR>
+<BR>
+38일: 에리나 이벤트<BR>
+만리장성 수집 및 탐색<BR>
+에리나의 돌격 이벤트 <BR>
+<BR>
+@화산<BR>
+39일 이후 -56일까지<BR>
+에리나 이벤트 후 크라켄이 사자로 와서 에리나와 여자몬스터 교환 요구(교환에 응하면 게임 오버)<BR>
+화산에 들어가면 발키리, 카미나리타이고, 배틀노트 포획<BR>
+화산은 아이템사용불가, 맵사용불가, 귀환나뭇가지 사용불가(공략에 따라 하나씩 가능해짐)<BR>
+발키리부터 포획해서 차후 포획의 기초로... 카미나리타이고는 4회 전투후, 배틀노트는 최후에 격투<BR>
+(배틀노트에까지 가는 길에는 여자살인마가 나타나 우리편 전력을 갉아먹으므로 투명스프레이 사용해줄것)<BR>
+<BR>
+@이카 저택<BR>
+56일 이후<BR>
+던젼에 3회 이상 들어가면 에리나가 몬스터가 되버리니 알아서 하시길...<BR>
+이카 저택의 전투는 1회는 요코의 샘까지 가는 루트 개척, 2회에는 쇼부 보시는 쪽으로 하시길...<BR>
+<BR>
+*거대이카남작과의 전투<BR>
+- 어짜피 쓰러트리기 글렀으니까 크라켄을 도웁시다.<BR>
+전투가 시작되면 크라켄이 나타나 이카 남작의 머리로 이동해서 보석을 뽑으려고 합니다.<BR>
+이때 강한 타격을 가하면 크라켄이 떨어지니까 그냥 레오로 삽질 공격만 계속하고 HP나 채워줍시다<BR>
+<BR>
+엔딩은 다음 3가지<BR>
+1. 할렘 엔딩: 모든 여자애 몬스터를 포획할 경우<BR>
+2. 에리나 엔딩: 에리나가 인간으로, 다른 몬스터와 中出 0<BR>
+3. 개별 엔딩: 조건 충족 몬스터와 개별...(일단 엔딩보면 조건 충족되는 애들은 다 오마케 회상에 등록되니... 삽질 금지)<BR>
+<BR>
+<BR>
+PS. 앨리스 게임중 서비스 최고군요.<BR>
+풀음성에 남자캐릭까지 보이스... 거의 모든 신에 음성채용에... 성우는 호쿠토 미나미, 잇시키 히카루, 쿠사야나기 준코 등등... 이 바닥의 메이저 성우진 총출동... 가히 초호화판이라고 해도 과언이 아닙니다.<BR>
+<BR>
+PS2. 란스7 만세^^<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Tue, 20 Dec 2005 10:01:25 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 인터넷과 방관, 그리고 나 ]]> </title>
+		<link>http://calmguy.egloos.com/2027275</link>
+		<description>
+			<![CDATA[ 
+<span class="de_bl"><b><a class="hb" href="'javascript:flink(""spectator");'><span style="FONT-SIZE: 100%">spec·ta·tor</span></a></b></span><main></main><span style="FONT-SIZE: 100%"><span class="de_gg">〔<img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fb.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0f9.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e1a8.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0f4.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fc.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0ee.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0f2.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fc.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0d4.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0e3.gif" align="absMiddle" />, <img src="http://sstatic.naver.com/endic/2005/images/font/syn/e1ba.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0e9.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e1ba.gif" align="absMiddle" />│<img src="http://sstatic.naver.com/endic/2005/images/font/syn/e1ba.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0e9.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e1ba.gif" align="absMiddle" />〕</span>&nbsp;</span><a class="hb" href="'javascript:flink(""n");'><span style="FONT-SIZE: 100%">n</span></a><span style="FONT-SIZE: 100%">. (</span><a class="hb" href="'javascript:flink(""fem");'><span style="FONT-SIZE: 100%">fem</span></a><span style="FONT-SIZE: 100%">. <b><a class="hb" href="'javascript:flink(""tress");'>-tress</a></b>[<img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0d2.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fc.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fa.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0f2.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fb.gif" align="absMiddle" />]) <b><a class="hb" href="'javascript:flink(""%B1%B8%B0%E6%B2%DB");'>구경꾼</a></b>, </span><a class="hb" href="'javascript:flink(""%B0%FC%B0%B4");'><span style="FONT-SIZE: 100%">관객</span></a><span style="FONT-SIZE: 100%">;</span><a class="hb" href="'javascript:flink(""%B9%E6%B0%FC%C0%DA");'><span style="FONT-SIZE: 100%">방관자</span></a><span style="FONT-SIZE: 100%">, </span><a class="hb" href="'javascript:flink(""%B8%F1%B0%DD%C0%DA");'><span style="FONT-SIZE: 100%">목격자</span></a><BR>
+<b><a class="hb" href="'javascript:flink(""spectator");'><span style="FONT-SIZE: 100%">spec·ta·to·ri·al</span></a></b><span style="FONT-SIZE: 100%">[<img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fb.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0f9.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e1a9.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0f4.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fc.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0d4.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fc.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0da.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0d8.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0fa.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0f2.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0d4.gif" align="absMiddle" /><img src="http://sstatic.naver.com/endic/2005/images/font/syn/e0f5.gif" align="absMiddle" />] </span><a class="hb" href="'javascript:flink(""a");'><span style="FONT-SIZE: 100%">a</span></a><span style="FONT-SIZE: 100%">. </span><BR>
+<span style="FONT-SIZE: 100%"></span>&nbsp;<BR>
+<span style="FONT-SIZE: 100%">내가 영어단어 spectator를 알게 된 것은 아마 중학교 때의 일이었던 것으로 기억한다. 그때의 뜻이 구경꾼, 혹은 방관자였었다.</span><BR>
+<span style="FONT-SIZE: 100%">무슨 사고가 나서 사람들이 둘러서서 지켜보고 있는 것 그것이 방관자이다. 방관자는 무슨 일이 일어나고 있으나 단지 그 사실은 인지하고 있을 뿐 그 사건에 영향을 미치기 위한 어떤 일을 하지는 않는다. 즉, 그들은 있으나 없으나한 존재일 뿐이다.</span><BR>
+<span style="FONT-SIZE: 100%">인터넷이라는 매체는 사람들을 방관자로 만드는 힘을 가지고 있다. 어떤 것을 자유로이 열람할 수 있으나 뭔가를 해도 되고 안해도 되는 애매한 상황, 익명성, 그런 것들이 사람들로 하여금 인터넷으로는 무엇을 해도 괜찮다는 느낌을 갖게한다.</span><BR>
+<span style="FONT-SIZE: 100%"></span>&nbsp;<BR>
+<span style="FONT-SIZE: 100%">(continue...)</span><BR>
+<span style="FONT-SIZE: 100%"></span><!-- //뜻풀이-->
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Thu, 15 Dec 2005 13:45:44 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 지르는 자의 결말이 알고 싶더냐? ]]> </title>
+		<link>http://calmguy.egloos.com/2017199</link>
+		<description>
+			<![CDATA[ 
+내가 좋아하는 금강제화의 세일이 돌아왔다.<BR>
+난 머지않아 일본에 갈 예정이기 때문에 그전에 거기에 쏟아버린 돈이 꽤 되었다.<BR>
+그리고, 많이 돌아다닐 것이기 때문에 랜드로바를 하나 샀으면 했고...<BR>
+그러나... 산골짜기 티켓에 수십만원의 돈을 쏟아버린 상황이라 돈이 없었다. <BR>
+랜드로바... 사고 싶었다. 크흑...<BR>
+문득, 방한구석에 놓인 플스 50005(화이트플스)가 눈에 들어왔다.<BR>
+이건 새 물건으로 전에 쓰던 3만번 플스가 맛가면 바로 기계를 바꿔치기 할려고 가지고 있던 것이다.<BR>
+아... 저게 내게 무슨 소용있을까하는 생각이 든 순간<BR>
+나는 **웹에 그 물건은 매물로 내놓았다.<BR>
+마침 절묘하게 지역이 맞아 떨어지는 사람이 있어 애초 제시가에서 5천원 빼고 팔았다.<BR>
+흥정을 마치고 차를 몰고... 그 사람이 있다는 데까지 갔다 주었다.<BR>
+그 사람은 무슨 컴터 가게를 하고 있었는데 점심으로 싸구려 김치찌게인가를 먹다가 웃는 얼굴로 나를 반겼다.<BR>
+차를 몰고 간 피곤함과 기름값이라는게 있는지라 그냥 5천원 더 붙일까 하다가 측은한 마음이 들어 그냥 돈 받고 나왔다.<BR>
+애초 구매가 20만 + 3만 5천(새플스+새추가패드)이던걸 반년 사이에 14만 5천이라... 허허(9만원의 적자, 참고로 내 플스는 한번 돌린 신삥이었다)<BR>
+플스 살돈 있으면 밥이나 좋은거 먹지...<BR>
+플스 살거면 아껴서 옷이라도 좋은걸 살걸 했나?<BR>
+문득 그 사람도 측은하고 나도 측은했다.<BR>
+차를 몰고 나오니 눈앞에 로또 백화점이 있어 별생각없이 들어갔다.<BR>
+그리고, 제법 튼튼해보이는 심플한 디자인의 랜드로바를 하나 샀다.(지금 글을 쓰고 있는 시점에도 편안한 발에는 그게 신겨져있다)<BR>
+지금, 나는 걸을때 편하다.<BR>
+과연 방한구석에 놓여있던 플스는 내게 무슨 효용(use)이 있던 것일까?<BR>
+지르는 자여, 지르기 전에는 과연 그것이 내게 주는 정신적 효용과<BR>
+당장 필요한 물리적 효용중에 어느 것이 더 중요한 지를 생각해봐야 할 것이다.<BR>
+<BR>
+PS. 한줄 요약<BR>
+돈 아껴써라~ :D
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Mon, 12 Dec 2005 09:02:12 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 아주 오랜만에 와서 쓰는 글... ]]> </title>
+		<link>http://calmguy.egloos.com/1921543</link>
+		<description>
+			<![CDATA[ 
+내 블로그가 조용한 블로그가 된 것은 나조차 상당히 유감스런 일이다.<BR>
+그러나... 요즘은 반쯤은 현실에 파묻혀버린 생활을 하고있는데다<BR>
+딱히 에로게를 하고 싶다는 생각이 들지 않으니 자연스레 글쓸 일도 없어져 조용히 있을 따름이다. <BR>
+가끔 링크된 이글루를 순회하기는 한다. 하지만 그럴때마다 느끼는 것은 초창기에 비해서 그렇게 읽을법한 글들은 많이 사라졌다는 것이다. 물론 그것은 내가 관심있는 에로게나 아니메, 종합하여 일본 영상물에 관한 것들이다.<BR>
+에로게를 하면서 우리가 몰랐던 숨겨진 명작이나 주목해봐야 할 점들을 이야기하던 그런 깊이있는 시선은 사라지고<BR>
+이제는 에로게에 대한 얘기란 그저 어느 그림이 화려해서 해보고 싶다던가 일본에서 미소녀 관련 상품을 샀다는 '질러라' 유형의 글이 많아서 그다지 눈둘곳도 없어진 것이 사실이다.<BR>
+&nbsp;<BR>
+현대에 살면서 사람이 점점 더 바쁜 삶을 사는 것은 사실이다. 그래서 필연적으로 사람들의 생활이라는 것이 순간적인 것이 되어버렸다는 것에 대해 공감을 한다. 그렇지만 이런 식으로 살다간 어떤 것에 대해 생각해 볼 시간이라는 것조차 없어지고 결국 삶 자체가 인스턴트 햄버거처럼 겉만 화려하고 내실이 없는 것은 참으로 경계할 일이 아닐까 한다. <BR>
+&nbsp;<BR>
+어느덧 바쁜 생활에 빠져서 거의 일에 대한 생각이 80% 이상의 시간동안 머리속에 달라붙어서<BR>
+이제는 20%라도 독특하고 얾매이지 않는 생각에 대한 영역으로 보존하고 싶어진 C&amp;W 적음.
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Fri, 11 Nov 2005 04:55:23 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 미국 애들이 생각하는 한국 애니메이션계 =_=; ]]> </title>
+		<link>http://calmguy.egloos.com/1803071</link>
+		<description>
+			<![CDATA[ 
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds2.egloos.com/pds/1/200510/04/60/b0012760_14374743.jpg" BORDER=0 WIDTH=500 HEIGHT=375></CENTER><BR>
+<BR>
+뭐 대략 이런 곳이었던 것이다.<BR>
+과거 한때 그랬던 적이 있었을지도 모른다고 생각한다. <BR>
+그러나 요즘까지 이럴려나? =_=;<BR>
+(출처: 'South Park')
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Tue, 4 Oct 2005 05:35:49 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 최근의 근황 ]]> </title>
+		<link>http://calmguy.egloos.com/1696319</link>
+		<description>
+			<![CDATA[ 
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds.egloos.com/pds/1/200508/30/60/b0012760_1625569.jpg" BORDER=0 WIDTH=255 HEIGHT=383></CENTER><BR>
+<BR>
+1. 요즘은 이 애니 밖에 보지 않는다. 기회되는 분들은 꼭 보시기 바란다.<BR>
+양키 센스도 그다지 나쁘지 않다는 생각이 들고 있는 중...<BR>
+지금까지 보아왔던 영상물중에 이처럼 자연스러우면서도 노골적인 건 처음 본 것 같다.<BR>
+어학 실력 배양을 위해 보았건만 욕만 배운것 같다.<BR>
+U~BASTARD~!!!<BR>
+<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds.egloos.com/pds/1/200508/30/60/b0012760_16723.jpg" BORDER=0 WIDTH=299 HEIGHT=300></CENTER><BR>
+<BR>
+2. 호평을 받고 있다는 니네히메 플스판을 GET.<BR>
+어쨌거나 내용은 건전한거 같은데... 무슨 재미가 있을려나? =_=a<BR>
+성우 정보는 맘에 든다. 요즘 자주보는 나카하라 마이, 시미즈 아이, 치바 사에코... 등등<BR>
+오프닝 보고 봉인중...<BR>
+<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds.egloos.com/pds/1/200508/30/60/b0012760_16172671.jpg" BORDER=0 WIDTH=500 HEIGHT=375></CENTER><BR>
+<BR>
+3.  가을이 되어 날씨 선선하니 다시 잡아보고 싶기도 하다만...<BR>
+인연이 없는 건지, 땡기질 않는건지.<BR>
+<BR>
+4. 이제 미소녀 게임의 독보적인 존재가 되버린 '그분'의 소식을 들었다.<BR>
+'이스' 패치를 만들다 누가 자기 패치 베타판을 크랙했다고 열받아서 작업 그만둔다고 투정을 부리더구만.<BR>
+하하~ 적반하장, 똥묻은 개... 등등의 속담이 머리 속을 맴돌았다.<BR>
+아아~ 그런 위대한 '그분'과 한때 작업했다는 것이 참으로 영광이로소이다.<BR>
+=_=)ㅗ<BR>
+<BR>
+5. EASY COME, EASY GO.<BR>
+<BR>
+ 애로겜이 많다하나 권태아래 쓰레기로다<BR>
+ 스킵하고 스킵하면 못 끝낼리 없건마는<BR>
+ 가진 게 많은 자가 할게 많다 하더라.<BR>
+<BR>
+-역시 돈주고 사야 게임을 제대로 할 것인가? =_=;<BR>
+
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Tue, 30 Aug 2005 07:25:52 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 추천한다 꼭봐라~ ]]> </title>
+		<link>http://calmguy.egloos.com/1502040</link>
+		<description>
+			<![CDATA[ 
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds.egloos.com/pds/1/200507/03/60/b0012760_171210100.jpg" BORDER=0 WIDTH=500 HEIGHT=282></CENTER><BR>
+<BR>
+아 정말 재미있었다. <위기의 주부들: desperate house wives><BR>
+이건 최근에 영어공부를 위해 보는 것인데<BR>
+정말로 잘 짜여진 구성때문에 3일안에 1시즌을 다본 작품이다.<BR>
+무엇이 그렇게 매력적이냐고?<BR>
+일단 구성이 탄탄하고 전혀 뜬금없는 듯한 소재들을 이리 엮고 저리 엮고 하면서도<BR>
+산만하지 않고 지루하지 않고 전체적으로 균형있는 시각으로 드라마를 그려간다는 점이다.<BR>
+이 드라마에서 한명도 쓸모없는 배역은 없다고 할 정도로 배우도 적재적소였다.<BR>
+무엇보다 매력적인건 괜히 이야기를 해피엔딩으로 끌고 갈려고 하지 않는다는 점이다.<BR>
+그러니까... 너무 어둡지도 않고 너무 밝지도 않고... 우리들이 어떤 상황을 판단할때 흔히 느끼는 그 느낌.<BR>
+바로 "잘 된건지 모르겠다"라는 점이다.<BR>
+추천이다 꼭봐라.
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Sun, 3 Jul 2005 08:21:51 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 나의 에로게 고르는 방법 ]]> </title>
+		<link>http://calmguy.egloos.com/1491304</link>
+		<description>
+			<![CDATA[ 
+예전에는 무턱대고 많이 받아 많이 뿌렸다.<BR>
+근데 요즘은 재미도 시들하고 피곤하다.<BR>
+게다가 매월말에 쏟아지는 날에는 무얼 받아야 할지도 참 난감하다.<BR>
+그럴때는 그냥 별생각없이 안 받고 만다.<BR>
+안받고 1주일만 지나가보자.<BR>
+그러면 웬만큼 활발한 커뮤니티에서는 다 평가가 나온다.<BR>
+적어도 그게 폭탄인지 할만한 건지 정도는 결론이 내려진다.<BR>
+그러면 그럴때 쓸만하다는 거 한두개 받고 조용히 사라진다.<BR>
+나에게 딱 맞는 게임이 그 중에는 없을지도 모르고<BR>
+내가 감명깊게 할 게임이 사람들에게 좋은 평가를 못 받을런지도 모른다.<BR>
+단, 나는 어쩌다 놓쳐버릴지도 모르는 명작 게임 하나를 위해 <BR>
+위에 열거한 바보짓을 할 생각은 이제 조금도 없다.
+			 ]]> 
+		</description>
+		<category>日常茶飯事</category>
+		<pubDate>Thu, 30 Jun 2005 05:50:37 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[  NTR 수치 대폭 증대중... ]]> </title>
+		<link>http://calmguy.egloos.com/1458321</link>
+		<description>
+			<![CDATA[ 
+최근에 잡고 있는 게임이 있다.<BR>
+이름하여 innocent blue...<BR>
+음... 이름만 보면 '순수의 시대'나 뭐 비스무리한 뭔가 순애의 이미지를 풍길런지 모르겠으나...<BR>
+이 게임... 근래 나온 NTR물이다. =_=;<BR>
+NTR이 뭔지는 자세한 설명을 생략하겠다.<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds.egloos.com/pds/1/200506/21/60/b0012760_145149.jpg" BORDER=0 WIDTH=500 HEIGHT=364></CENTER><BR>
+<P ALIGN="CENTER"><B>뭐... 이 그림을 보면 감이 올것이다.</B></P><BR>
+일단 어제 엔딩 두개째 보고...<BR>
+"그래 너 짱먹어라~" -_-;<BR>
+나선회랑도 속 긁을대로 긁는 부분이 있으나 이 게임은 뭔가 묘한 부분이 있다.<BR>
+즉, 공포영화에서 어떤 부분을 멀리서 점점 더 클로즈업해주면서 혐오스런 느낌을 증폭하는 신들이 있는데<BR>
+이 게임은 그런 세세한 부분을 일일이 묘사해가면서 계속적인 혐오감을 준다.(뭐 혐오감이란 말이 지나칠지 모르겠으나 하는 내내 느끼는 신경이 거슬리는 느낌은 이루 표현할 수 없다.)<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds.egloos.com/pds/1/200506/21/60/b0012760_14115997.jpg" BORDER=0 WIDTH=380 HEIGHT=285></CENTER><BR>
+<P ALIGN="CENTER"><B>이렇게 귀엽고 발랄한 여동생이... 흑흑 ㅠㅠ</B></P><BR>
+자신의 소중한 누이동생이 다른 숫x들에게 빼았겼을 때의 그 느낌이란...(어이 식칼 어딨냐? --)+<BR>
+본인이 아직 TRUE BLUE를 못해서 객관적 비교는 못하겠으나 ANGELS BLUE보다는 확실히 임팩트가 있는 것 같다.<BR>
+<BR>
+PS. NTR에 패륜까지... LILIM 니네 짱먹어라~
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Tue, 21 Jun 2005 05:19:50 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ I'm Back~! ]]> </title>
+		<link>http://calmguy.egloos.com/1432720</link>
+		<description>
+			<![CDATA[ 
+오랜 동안의 침묵을 깨고 돌아왔습니다.(뭐, 이 이글루에서 한정해서 하는 말이겠지만...)<BR>
+일단 그간 어떻게 지냈냐를 좀 얘기해보자면<BR>
+결론적으로 조용히 살았고... 에로게는 전보다 훨씬 덜하게 되었다고 해두죠.<BR>
+그리고 어른한테 필요한 일을 이것저것 하다보니까... 세상은 정말 살기 힘든 곳이라는 교훈을 얻었고<BR>
+때로는 이런 글을 쓰는 시간과 에로게를 하는 시간도 정말 아깝다고 느끼게 되었습니다.<BR>
+에로게에 미치고 지름에 미치고... 물론 그런 활동이 곧 쾌감을 주기 때문이라는 것은 저도 동의합니다.<BR>
+쾌감을 얻기 위해서 어른이 술을 마시고 도박을 하고 여자끼고 자러가고 하는 것과 다를 것이 없는 행동입니다.<BR>
+단, 그것을 하는 대상이 나이 어린 청소년이라는 사실이 문제인거죠.(제가 청소년이라고 오해는 마시길 --;)<BR>
+뭐 긴말 안하겠습니다.<BR>
+나이 어린 분들은 삼가하세요.<BR>
+여러분이 이런 것에 빠져서 희희덕거릴때 여러분은 뭔가를 등가교환하고 있는 겁니다.<BR>
+그 등가교환하는게 무엇이냐구요?<BR>
+바로 여러분의 '시간'<BR>
+그리고 그 시간을 무언가 다른 일에 썼으면 변했을 여러분의 인생의 '가능성'입니다.<BR>
+<더 이상의 자세한 설명은 생략한다><BR>
+<BR>
+앞으로 개근 포스팅 같은 것은 없습니다.<BR>
+저는 어른으로서 에로게를 즐기고 가끔 게임에서 느낀 점을 적고자 합니다.<BR>
+어른이 아니거나 적어도 다른 사람의 의견에 관용할 수 없는 초딩들은 오지마세요.<BR>
+이 공간은 저의 'world'니까요~ ^^<BR>
+에로게를 생활의 재미로 받아들일 수 있는 분은 언제라도 환영입니다.<BR>
+
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Tue, 14 Jun 2005 04:24:28 GMT</pubDate>
+	</item>
+	</channel>
+</rss>

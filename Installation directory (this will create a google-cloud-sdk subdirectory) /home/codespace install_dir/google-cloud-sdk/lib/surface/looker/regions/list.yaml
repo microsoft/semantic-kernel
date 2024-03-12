@@ -1,0 +1,32 @@
+- help_text:
+    brief: |
+      List Looker regions.
+    description: |
+      List all available Looker regions.
+
+    examples: |
+      To list all available Looker regions, run:
+
+          $ {command}
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:project
+      help_text: |
+        The project to list available Looker regions.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: looker.projects.locations
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        locationId:label=NAME:sort=1
+      )

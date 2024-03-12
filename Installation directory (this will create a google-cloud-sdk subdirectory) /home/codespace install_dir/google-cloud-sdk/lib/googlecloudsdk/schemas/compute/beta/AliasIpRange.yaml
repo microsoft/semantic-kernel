@@ -1,0 +1,41 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta AliasIpRange export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  ipCidrRange:
+    description: |-
+      The IP alias ranges to allocate for this interface. This IP CIDR range
+      must belong to the specified subnetwork and cannot contain IP addresses
+      reserved by system or used by other network interfaces. This range may be
+      a single IP address (such as 10.2.3.4), a netmask (such as /24) or a CIDR-
+      formatted string (such as 10.1.2.0/24).
+    type: string
+  subnetworkRangeName:
+    description: |-
+      The name of a subnetwork secondary IP range from which to allocate an IP
+      alias range. If not specified, the primary range of the subnetwork is
+      used.
+    type: string

@@ -1,0 +1,41 @@
+- help_text:
+    brief: Update a Cloud Build Connection of type GitHub.
+    description: |
+      Update a Cloud Build Connection of type GitHub (for github.com).
+
+    examples: |
+        To update the authorizer token, provide the connection name and the authorizer token secret:
+
+          $ {command} myconn --region=us-central1 \
+            --authorizer-token-secret-version=projects/myproj/secrets/mytoken/versions/1
+
+        To update the installation id, provide the connection name and the installation id of the
+        Cloud Build GitHub app.
+
+          $ {command} myconn --region=us-central1 --app-installation-id=1234
+
+  command_type: UPDATE
+  request:
+    collection: cloudbuild.projects.locations.connections
+    api_version: v2
+    static_fields:
+      "connection.githubConfig": {}
+
+  arguments:
+    resource:
+      help_text: Connection to update.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources_v2:connection
+    params:
+    - api_field: connection.githubConfig.authorizerCredential.oauthTokenSecretVersion
+      arg_name: authorizer-token-secret-version
+      help_text: Secret containing the authorizer user's token.
+    - api_field: connection.githubConfig.appInstallationId
+      arg_name: app-installation-id
+      help_text: Installation ID of the Cloud Build GitHub App.
+
+  output:
+    # Print the installation instruction and link (if any) after updating.
+    format: 'csv[no-heading,separator="\\n"](installationState.stage,installationState.message,installationState.actionUri)'
+
+  async:
+    collection: cloudbuild.projects.locations.operations

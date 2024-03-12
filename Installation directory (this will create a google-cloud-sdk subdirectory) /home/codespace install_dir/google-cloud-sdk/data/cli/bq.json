@@ -1,0 +1,869 @@
+{
+  "CLI_VERSION": "2.0.101",
+  "VERSION": "1",
+  "capsule": "",
+  "commands": {
+    "add-iam-policy-binding": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "add-iam-policy-binding"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Add a binding to a BigQuery resource's policy in IAM.\n\nUsage:\nadd-iam-policy-binding --member=<member>\n--role=<role> <identifier>\n\nOne binding consists of a member and a role, which\nare specified with (required) flags.\n",
+        "EXAMPLES": "\nbq add-iam-policy-binding \\\n--member='user:myaccount@gmail.com' \\\n--role='roles/bigquery.dataViewer' \\\ntable1\n\nbq add-iam-policy-binding \\\n--member='serviceAccount:my.service.account@my-\ndomain.com' \\\n--role='roles/bigquery.dataEditor' \\\nproject1:dataset1.table1\n\nbq add-iam-policy-binding \\\n--member='allAuthenticatedUsers' \\\n--role='roles/bigquery.dataViewer' \\\n--project_id=proj -t ds.table1\n"
+      }
+    },
+    "cancel": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "cancel"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Request a cancel and waits for the job to be\ncancelled.\n\nRequests a cancel and then either: a) waits until the\njob is done if the sync flag is set [default], or b)\nreturns immediately if the sync flag is not set. Not\nall job types support a cancel, an error is returned\nif it cannot be cancelled. Even for jobs that support\na cancel, success is not guaranteed, the job may have\ncompleted by the time the cancel request is noticed,\nor the job may be in a stage where it cannot be\ncancelled.\n",
+        "EXAMPLES": "bq cancel job_id  # Requests a cancel and waits until\nthe job is done.\nbq --nosync cancel job_id  # Requests a cancel and\nreturns immediately.\n"
+      }
+    },
+    "cp": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "cp"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Copies one table to another.\n",
+        "EXAMPLES": "bq cp dataset.old_table dataset2.new_table\nbq cp --destination_kms_key=kms_key dataset.old_table\ndataset2.new_table\n"
+      }
+    },
+    "extract": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "extract"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Perform an extract operation of source into\ndestination_uris.\n\nUsage:\nextract <source_table> <destination_uris>\n\nUse -m option to extract a source_model.\n",
+        "EXAMPLES": "bq extract ds.table gs://mybucket/table.csv\nbq extract -m ds.model gs://mybucket/model\n"
+      }
+    },
+    "get-iam-policy": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "get-iam-policy"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Get the IAM policy for a resource.\n\nGets the IAM policy for a dataset, table or\nconnection resource, and prints it to stdout. The\npolicy is in JSON format.\n\nUsage: get-iam-policy <identifier>\n",
+        "EXAMPLES": "bq get-iam-policy ds.table1\nbq get-iam-policy --project_id=proj -t ds.table1\nbq get-iam-policy proj:ds.table1\n"
+      }
+    },
+    "head": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "head"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Displays rows in a table.\n",
+        "EXAMPLES": "bq head dataset.table\nbq head -j job\nbq head -n 10 dataset.table\nbq head -s 5 -n 10 dataset.table\n"
+      }
+    },
+    "help": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "help"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Help for all or selected command:\nbq help [<command>]\n\nTo retrieve help with global flags:\nbq --help\n\nTo retrieve help with flags only from the main\nmodule:\nbq --helpshort [<command>]\n"
+      }
+    },
+    "info": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "info"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Return the execution information of bq.\n"
+      }
+    },
+    "init": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "init"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Authenticate and create a default .bigqueryrc file.\n"
+      }
+    },
+    "insert": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "insert"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Inserts rows in a table.\n\nInserts the records formatted as newline delimited\nJSON from file into the specified table. If file is\nnot specified, reads from stdin. If there were any\ninsert errors it prints the errors to stdout.\n",
+        "EXAMPLES": "bq insert dataset.table /tmp/mydata.json\necho '{\"a\":1, \"b\":2}' | bq insert dataset.table\n\nTemplate table examples: Insert to\ndataset.template_suffix table using dataset.template\ntable as its template.\nbq insert -x=_suffix dataset.table /tmp/mydata.json\n"
+      }
+    },
+    "load": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "load"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Perform a load operation of source into\ndestination_table.\n\nUsage:\nload <destination_table> <source> [<schema>]\n[--session_id=[session]]\n\nThe <destination_table> is the fully-qualified table\nname of table to create, or append to if the table\nalready exists.\n\nTo load to a temporary table, specify the table name\nin <destination_table> without a dataset and specify\nthe session id with --session_id.\n\nThe <source> argument can be a path to a single local\nfile, or a comma-separated list of URIs.\n\nThe <schema> argument should be either the name of a\nJSON file or a text schema. This schema should be\nomitted if the table already has one.\n\nIn the case that the schema is provided in text form,\nit should be a comma-separated list of entries of the\nform name[:type], where type will default to string\nif not specified.\n\nIn the case that <schema> is a filename, it should be\na JSON file containing a single array, each entry of\nwhich should be an object with properties 'name',\n'type', and (optionally) 'mode'. For more detail: htt\nps://cloud.google.com/bigquery/docs/schemas#specifyin\ng_a_json_schema_file\n\nNote: the case of a single-entry schema with no type\nspecified is ambiguous; one can use name:string to\nforce interpretation as a text schema.\n",
+        "EXAMPLES": "bq load ds.new_tbl ./info.csv ./info_schema.json\nbq load ds.new_tbl gs://mybucket/info.csv\n./info_schema.json\nbq load ds.small gs://mybucket/small.csv\nname:integer,value:string\nbq load ds.small gs://mybucket/small.csv\nfield1,field2,field3\nbq load temp_tbl --session_id=my_session ./info.csv\n./info_schema.json\n"
+      }
+    },
+    "ls": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "ls"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "List the objects contained in the named collection.\n\nList the objects in the named project or dataset. A\ntrailing : or . can be used to signify a project or\ndataset.\n* With -j, show the jobs in the named project.\n* With -p, show all projects.\n",
+        "EXAMPLES": "bq ls\nbq ls -j proj\nbq ls -p -n 1000\nbq ls mydataset\nbq ls -a\nbq ls -m mydataset\nbq ls --routines mydataset\nbq ls --row_access_policies mytable (requires\nwhitelisting)\nbq ls --filter labels.color:red\nbq ls --filter 'labels.color:red labels.size:*'\nbq ls --transfer_config --transfer_location='us'\n--filter='dataSourceIds:play,adwords'\nbq ls --transfer_run\n--filter='states:SUCCESSED,PENDING'\n--run_attempt='LATEST'\nprojects/p/locations/l/transferConfigs/c\nbq ls --transfer_log\n--message_type='messageTypes:INFO,ERROR'\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq ls --capacity_commitment --project_id=proj\n--location='us'\nbq ls --reservation --project_id=proj --location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\n<reservation_id>\nbq ls --connection --project_id=proj --location=us\n"
+      }
+    },
+    "mk": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "mk"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Create a dataset, table, view, or transfer\nconfiguration with this name.\n\nSee 'bq help load' for more information on specifying\nthe schema.\n",
+        "EXAMPLES": "bq mk new_dataset\nbq mk new_dataset.new_table\nbq --dataset_id=new_dataset mk table\nbq mk -t new_dataset.newtable\nname:integer,value:string\nbq mk --view='select 1 as num' new_dataset.newview\n(--view_udf_resource=path/to/file.js)\nbq mk --materialized_view='select sum(x) as sum_x\nfrom dataset.table'\nnew_dataset.newview\nbq mk -d --data_location=EU new_dataset\nbq mk -d --source_dataset=src_dataset new_dataset\n(requires allowlisting)\nbq mk -d\n--external_source=aws-\nglue://<aws_arn_of_glue_database>\n--connection_id=<connection>\nnew_dataset\nbq mk --transfer_config --target_dataset=dataset\n--display_name=name\n-p='{\"param\":\"value\"}' --data_source=source\n--schedule_start_time={schedule_start_time}\n--schedule_end_time={schedule_end_time}\nbq mk --transfer_run --start_time={start_time}\n--end_time={end_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk --transfer_run --run_time={run_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk --reservation --project_id=project\n--location=us reservation_name\nbq mk --reservation_assignment\n--reservation_id=project:us.dev\n--job_type=QUERY --assignee_type=PROJECT\n--assignee_id=myproject\nbq mk --reservation_assignment\n--reservation_id=project:us.dev\n--job_type=QUERY --assignee_type=FOLDER\n--assignee_id=123\nbq mk --reservation_assignment\n--reservation_id=project:us.dev\n--job_type=QUERY --assignee_type=ORGANIZATION\n--assignee_id=456\nbq mk --connection --connection_type='CLOUD_SQL'\n--properties='{\"instanceId\" : \"instance\",\n\"database\" : \"db\", \"type\" : \"MYSQL\" }'\n--connection_credential='{\"username\":\"u\",\n\"password\":\"p\"}'\n--project_id=proj --location=us --display_name=name\nnew_connection\n"
+      }
+    },
+    "mkdef": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "mkdef"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Emits a definition in JSON for an external table,\nsuch as GCS.\n\nThe output of this command can be redirected to a\nfile and used for the external_table_definition flag\nwith the \"bq query\" and \"bq mk\" commands. It produces\na definition with the most commonly used values for\noptions. You can modify the output to override option\nvalues.\n\nThe <source_uris> argument is a comma-separated list\nof URIs indicating the data referenced by this\nexternal table.\n\nThe <schema> argument should be either the name of a\nJSON file or a text schema.\n\nIn the case that the schema is provided in text form,\nit should be a comma-separated list of entries of the\nform name[:type], where type will default to string\nif not specified.\n\nIn the case that <schema> is a filename, it should be\na JSON file containing a single array, each entry of\nwhich should be an object with properties 'name',\n'type', and (optionally) 'mode'. For more detail: htt\nps://cloud.google.com/bigquery/docs/schemas#specifyin\ng_a_json_schema_file\n\nNote: the case of a single-entry schema with no type\nspecified is ambiguous; one can use name:string to\nforce interpretation as a text schema.\n\nUsage:\nmkdef <source_uris> [<schema>]\n",
+        "EXAMPLES": "bq mkdef 'gs://bucket/file.csv'\nfield1:integer,field2:string\n"
+      }
+    },
+    "partition": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "partition"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Copies source tables into partitioned tables.\n\nUsage: bq partition <source_table_prefix>\n<destination_partitioned_table>\n\nCopies tables of the format\n<source_table_prefix><time_unit_suffix> to a\ndestination partitioned table, with the\n<time_unit_suffix> of the source tables becoming the\npartition ID of the destination table partitions. The\nsuffix is <YYYYmmdd> by default, <YYYY> if the\ntime_partitioning_type flag is set to YEAR, <YYYYmm>\nif set to MONTH, and <YYYYmmddHH> if set to HOUR.\n\nIf the destination table does not exist, one will be\ncreated with a schema and that matches the last table\nthat matches the supplied prefix.\n",
+        "EXAMPLES": "bq partition dataset1.sharded_\ndataset2.partitioned_table\n"
+      }
+    },
+    "query": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "query"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Execute a query.\n\nQuery should be specified on command line, or passed\non stdin.\n",
+        "EXAMPLES": "bq query 'select count(*) from\npublicdata:samples.shakespeare'\necho 'select count(*) from\npublicdata:samples.shakespeare' | bq query\n\nUsage:\nquery [<sql_query>]\n"
+      }
+    },
+    "remove-iam-policy-binding": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "remove-iam-policy-binding"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Remove a binding from a BigQuery resource's policy in\nIAM.\n\nUsage:\nremove-iam-policy-binding --member=<member>\n--role=<role> <identifier>\n\nOne binding consists of a member and a role, which\nare specified with (required) flags.\n",
+        "EXAMPLES": "\nbq remove-iam-policy-binding \\\n--member='user:myaccount@gmail.com' \\\n--role='roles/bigquery.dataViewer' \\\ntable1\n\nbq remove-iam-policy-binding \\\n--member='serviceAccount:my.service.account@my-\ndomain.com' \\\n--role='roles/bigquery.dataEditor' \\\nproject1:dataset1.table1\n\nbq remove-iam-policy-binding \\\n--member='allAuthenticatedUsers' \\\n--role='roles/bigquery.dataViewer' \\\n--project_id=proj -t ds.table1\n"
+      }
+    },
+    "rm": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "rm"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Delete the dataset, table, transfer config, or\nreservation described by identifier.\n\nAlways requires an identifier, unlike the show and ls\ncommands. By default, also requires confirmation\nbefore deleting. Supports the -d -t flags to signify\nthat the identifier is a dataset or table.\n* With -f, don't ask for confirmation before\ndeleting.\n* With -r, remove all tables in the named dataset.\n",
+        "EXAMPLES": "bq rm ds.table\nbq rm -m ds.model\nbq rm --routine ds.routine\nbq rm -r -f old_dataset\nbq rm --transfer_config=projects/p/locations/l/transf\nerConfigs/c\nbq rm --connection --project_id=proj --location=us\ncon\nbq rm --capacity_commitment\nproj:US.capacity_commitment_id\nbq rm --reservation --project_id=proj --location=us\nreservation_name\nbq rm --reservation_assignment --project_id=proj\n--location=us\nassignment_name\n"
+      }
+    },
+    "set-iam-policy": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "set-iam-policy"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Set the IAM policy for a resource.\n\nSets the IAM policy for a dataset, table or\nconnection resource. After setting the policy, the\nnew policy is printed to stdout. Policies are in JSON\nformat.\n\nIf the 'etag' field is present in the policy, it must\nmatch the value in the current policy, which can be\nobtained with 'bq get-iam-policy'. Otherwise this\ncommand will fail. This feature allows users to\nprevent concurrent updates.\n\nUsage: set-iam-policy <identifier> <filename>\n",
+        "EXAMPLES": "bq set-iam-policy ds.table1 /tmp/policy.json\nbq set-iam-policy --project_id=proj -t ds.table1\n/tmp/policy.json\nbq set-iam-policy proj:ds.table1 /tmp/policy.json\n"
+      }
+    },
+    "shell": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "shell"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Start an interactive bq session.\n"
+      }
+    },
+    "show": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "show"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Show all information about an object.\n",
+        "EXAMPLES": "bq show -j <job_id>\nbq show dataset\nbq show [--schema] dataset.table\nbq show [--view] dataset.view\nbq show [--materialized_view]\ndataset.materialized_view\nbq show -m ds.model\nbq show --routine ds.routine\nbq show --transfer_config\nprojects/p/locations/l/transferConfigs/c\nbq show --transfer_run\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq show --encryption_service_account\nbq show --connection --project_id=project\n--location=us connection\nbq show --capacity_commitment\nproject:US.capacity_commitment_id\nbq show --reservation --location=US\n--project_id=project reservation_name\nbq show --reservation_assignment --project_id=project\n--location=US\n--assignee_type=PROJECT --assignee_id=myproject\n--job_type=QUERY\nbq show --reservation_assignment --project_id=project\n--location=US\n--assignee_type=FOLDER --assignee_id=123\n--job_type=QUERY\nbq show --reservation_assignment --project_id=project\n--location=US\n--assignee_type=ORGANIZATION --assignee_id=456\n--job_type=QUERY\n"
+      }
+    },
+    "truncate": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "truncate"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Truncates table/dataset/project to a particular\ntimestamp.\n",
+        "EXAMPLES": "bq truncate project_id:dataset\nbq truncate --overwrite project_id:dataset\n--timestamp 123456789\nbq truncate --skip_fully_replicated_tables=false\nproject_id:dataset\n"
+      }
+    },
+    "update": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "update"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Updates a dataset, table, view or transfer\nconfiguration with this name.\n\nSee 'bq help load' for more information on specifying\nthe schema.\n",
+        "EXAMPLES": "bq update --description \"Dataset description\"\nexisting_dataset\nbq update --description \"My table\"\nexisting_dataset.existing_table\nbq update --description \"My model\" -m\nexisting_dataset.existing_model\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num'\nexisting_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US\n--project_id=my-project\n--bi_reservation_size=2G\nbq update --capacity_commitment --location=US\n--project_id=my-project\n--plan=MONTHLY --renewal_plan=FLEX commitment_id\nbq update --capacity_commitment --location=US\n--project_id=my-project\n--split --slots=500 commitment_id\nbq update --capacity_commitment --location=US\n--project_id=my-project\n--merge commitment_id1,commitment_id2\nbq update --reservation_assignment\n--destination_reservation_id=proj:US.new_reservation\nproj:US.old_reservation.assignment_id\nbq update --connection_credential='{\"username\":\"u\",\n\"password\":\"p\"}'\n--location=US --project_id=my-project\nexisting_connection\n"
+      }
+    },
+    "version": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "version"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Return the version of bq.\n"
+      }
+    },
+    "wait": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "wait"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Wait some number of seconds for a job to finish.\n\nPoll job_id until either (1) the job is DONE or (2)\nthe specified number of seconds have elapsed. Waits\nforever if unspecified. If no job_id is specified,\nand there is only one running job, we poll that job.\n",
+        "EXAMPLES": "bq wait # Waits forever for the currently running\njob.\nbq wait job_id  # Waits forever\nbq wait job_id 100  # Waits 100 seconds\nbq wait job_id 0  # Polls if a job is done, then\nreturns immediately.\n# These may exit with a non-zero status code to\nindicate \"failure\":\nbq wait --fail_on_error job_id  # Succeeds if job\nsucceeds.\nbq wait --fail_on_error job_id 100  # Succeeds if job\nsucceeds in 100 sec.\n"
+      }
+    }
+  },
+  "flags": {
+    "--api": {
+      "attr": {},
+      "category": "",
+      "default": "'https://www.googleapis.com'",
+      "description": "API endpoint to talk to.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--api",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--api_version": {
+      "attr": {},
+      "category": "",
+      "default": "'v2'",
+      "description": "API version to use.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--api_version",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--apilog": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "Log all API requests and responses to the file specified by this flag. Also accepts \"stdout\" and \"stderr\". Specifying the empty string will direct to stdout.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--apilog",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--bigqueryrc": {
+      "attr": {},
+      "category": "",
+      "default": "'/user/forge-00/.bigqueryrc'",
+      "description": "Path to configuration file. The configuration file specifies new defaults for any flags, and can be overrridden by specifying the flag on the command line. If the --bigqueryrc flag is not specified, the BIGQUERYRC environment variable is used. If that is not specified, the path \"~/.bigqueryrc\" is used.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--bigqueryrc",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--ca_certificates_file": {
+      "attr": {},
+      "category": "",
+      "default": "''",
+      "description": "Location of CA certificates file.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--ca_certificates_file",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--dataset_id": {
+      "attr": {},
+      "category": "",
+      "default": "''",
+      "description": "Default dataset reference to use for requests (Ignored when not applicable.). Can be set as \"project:dataset\" or \"dataset\". If project is missing, the value of the project_id flag will be used.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--dataset_id",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--debug_mode": {
+      "attr": {},
+      "category": "",
+      "default": "'false'",
+      "description": "Show tracebacks on Python exceptions.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--debug_mode",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--disable_ssl_validation": {
+      "attr": {},
+      "category": "",
+      "default": "'false'",
+      "description": "Disables HTTPS certificates validation. This is off by default.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--disable_ssl_validation",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--discovery_file": {
+      "attr": {},
+      "category": "",
+      "default": "''",
+      "description": "Filename for JSON document to read for the base BigQuery API discovery, excluding Model, Routine, RowAccessPolicy, and IAMPolicy APIs.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--discovery_file",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--enable_gdrive": {
+      "attr": {},
+      "category": "",
+      "default": "'true'",
+      "description": "When set to true, requests new OAuth token with GDrive scope. When set to false, requests new OAuth token without GDrive scope.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--enable_gdrive",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--enable_resumable_uploads": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "Enables resumable uploads over HTTP (Only applies to load jobs that load data from local files.). Defaults to True.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--enable_resumable_uploads",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--fingerprint_job_id": {
+      "attr": {},
+      "category": "",
+      "default": "'false'",
+      "description": "Whether to use a job id that is derived from a fingerprint of the job configuration. This will prevent the same job from running multiple times accidentally.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--fingerprint_job_id",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--format": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "<none|json|prettyjson|csv|sparse|pretty>: Format for command output. Options include: pretty: formatted table output sparse: simpler table output prettyjson: easy-to-read JSON format json: maximally compact JSON csv: csv format with header The first three are intended to be human-readable, and the latter three are for passing to another program. If no format is selected, one will be chosen based on the command run.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--format",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--headless": {
+      "attr": {},
+      "category": "",
+      "default": "'false'",
+      "description": "Whether this bq session is running without user interaction. This affects behavior that expects user interaction, like whether debug_mode will break into the debugger and lowers the frequency of informational printing.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--headless",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--httplib2_debuglevel": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "Instruct httplib2 to print debugging messages by setting debuglevel to the given value. (an integer)",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--httplib2_debuglevel",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--job_id": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "A unique job_id to use for the request. If not specified, this client will generate a job_id. Applies only to commands that launch jobs, such as cp, extract, load, and query.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--job_id",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--job_property": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "Additional key-value pairs to include in the properties field of the job configuration; repeat this option to specify a list of values",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--job_property",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--jobs_query_use_request_id": {
+      "attr": {},
+      "category": "",
+      "default": "'false'",
+      "description": "If true, sends request_id in jobs.query request.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--jobs_query_use_request_id",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--jobs_query_use_results_from_response": {
+      "attr": {},
+      "category": "",
+      "default": "'true'",
+      "description": "If true, results from jobs.query response are used.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--jobs_query_use_results_from_response",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--location": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "Default geographic location to use when creating datasets or determining where jobs should run (Ignored when not applicable.)",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--location",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--max_rows_per_request": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "Specifies the max number of rows to return per read. (an integer)",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--max_rows_per_request",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--mtls": {
+      "attr": {},
+      "category": "",
+      "default": "'false'",
+      "description": "If set will use mtls client certificate on connections to BigQuery.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--mtls",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--project_id": {
+      "attr": {},
+      "category": "",
+      "default": "''",
+      "description": "Default project to use for requests.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--project_id",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--proxy_address": {
+      "attr": {},
+      "category": "",
+      "default": "''",
+      "description": "The name or IP address of the proxy host to use for connecting to GCP.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--proxy_address",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--proxy_password": {
+      "attr": {},
+      "category": "",
+      "default": "''",
+      "description": "The password to use when authenticating with proxy host.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--proxy_password",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--proxy_port": {
+      "attr": {},
+      "category": "",
+      "default": "''",
+      "description": "The port number to use to connect to the proxy host.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--proxy_port",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--proxy_username": {
+      "attr": {},
+      "category": "",
+      "default": "'true'",
+      "description": "The user name to use when authenticating with proxy host. -q,--[no]quiet: If True, ignore status updates while jobs are running. -sync,--[no]synchronous_mode: If True, wait for command completion before returning, and use the job completion status for error codes. If False, simply create the job, and use the success of job creation as the error code.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--proxy_username",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--trace": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "A tracing token to include in api requests.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--trace",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--use_regional_endpoints": {
+      "attr": {},
+      "category": "",
+      "default": "'false'",
+      "description": "Use a regional endpoint based on the operation's location.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--use_regional_endpoints",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    }
+  },
+  "groups": {},
+  "is_group": true,
+  "is_hidden": false,
+  "path": [
+    "bq"
+  ],
+  "positionals": [],
+  "release": "GA",
+  "sections": {}
+}

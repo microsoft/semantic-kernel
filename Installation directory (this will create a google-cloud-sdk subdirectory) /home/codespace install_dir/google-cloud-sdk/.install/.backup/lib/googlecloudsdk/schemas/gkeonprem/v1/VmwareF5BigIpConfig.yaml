@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 VmwareF5BigIpConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  address:
+    description: The load balancer's IP address.
+    type: string
+  partition:
+    description: |-
+      The preexisting partition to be used by the load balancer. This partition
+      is usually created for the admin cluster for example: 'my-f5-admin-
+      partition'.
+    type: string
+  snatPool:
+    description: The pool name. Only necessary, if using SNAT.
+    type: string

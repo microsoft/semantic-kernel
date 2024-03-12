@@ -1,0 +1,38 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 TlsRouteRouteDestination export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- serviceName
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  serviceName:
+    description: The URL of a BackendService to route traffic to.
+    type: string
+  weight:
+    description: |-
+      Specifies the proportion of requests forwareded to the backend referenced
+      by the service_name field. This is computed as: - weight/Sum(weights in
+      destinations) Weights in all destinations does not need to sum up to 100.
+    type: integer

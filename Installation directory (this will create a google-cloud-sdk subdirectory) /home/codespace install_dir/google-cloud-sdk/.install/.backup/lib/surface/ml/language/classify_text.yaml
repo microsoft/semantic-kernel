@@ -1,0 +1,55 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Classifies input document into categories.
+    description: |
+      Classifies input document into categories. Returns a list of categories
+      representing the document. Only the most relevant categories a document
+      are returned e.g. if  `/Science` and `/Science/Astronomy` both apply to a
+      document, then only the `/Science/Astronomy` category is returned, as it
+      is the more specific result.
+
+      Currently only English is supported for this feature.
+    examples: !COMMON help_text.language_examples.CT
+
+  request:
+    _COMMON_: request
+    api_version: v1
+    method: classifyText
+
+  arguments:
+    params:
+    - _COMMON_: args.content_group
+    - _COMMON_: args.content
+    - _COMMON_: args.language
+
+  output:
+    format: json
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Classifies input document into categories.
+    description: |
+      Classifies input document into categories. Returns a list of categories
+      representing the document. Only the most relevant categories a document
+      are returned e.g. if  `/Science` and `/Science/Astronomy` both apply to a
+      document, then only the `/Science/Astronomy` category is returned, as it
+      is the more specific result.
+
+      Currently only English is supported for this feature.
+    examples: !COMMON help_text.language_examples.CT
+
+  request:
+    _COMMON_: request
+    api_version: v1beta2
+    method: classifyText
+
+  arguments:
+    params:
+    - _COMMON_: args.content_group
+    - _COMMON_: args.content
+    - _COMMON_: args.language
+
+  output:
+    format: json

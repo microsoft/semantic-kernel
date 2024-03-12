@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Describe an existing certificate.
+    description: |
+      This command fetches and prints information about an existing certificate.
+    examples: |
+      To describe a certificate with name my-cert, run:
+
+        $ {command} my-cert
+
+  request:
+    collection: certificatemanager.projects.locations.certificates
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The certificate you want to describe.
+      spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:certificate

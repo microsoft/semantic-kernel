@@ -1,0 +1,91 @@
+% Complete documentation on the extended LaTeX markup used for Python
+% documentation is available in ``Documenting Python'', which is part
+% of the standard documentation for Python.  It may be found online
+% at:
+%
+%     http://www.python.org/doc/current/doc/doc.html
+
+\documentclass{manual}
+
+\title{The httplib2 Library}
+
+\author{Joe Gregorio}
+
+% Please at least include a long-lived email address;
+% the rest is at your discretion.
+\authoraddress{
+%   Organization name, if applicable \\
+%   Street address, if you want to use it \\
+    Email: \email{joe@bitworking.org}
+}
+
+\date{Mar 8, 2007}       % update before release!
+
+\release{0.3}     % release version; this is used to define the
+                  % \version macro
+
+\makeindex          % tell \index to actually write the .idx file
+\makemodindex       % If this contains a lot of module sections.
+
+
+\begin{document}
+
+\maketitle
+
+% This makes the contents more accessible from the front page of the HTML.
+%\ifhtml
+%\chapter*{Front Matter\label{front}}
+%\fi
+
+%\input{copyright}
+
+\begin{abstract}
+\noindent
+
+The \module{httplib2} module is a comprehensive HTTP client library
+that handles caching, keep-alive, compression, redirects and
+many kinds of authentication.
+
+
+\end{abstract}
+
+\tableofcontents
+
+\chapter{Reference}
+
+\input{libhttplib2.tex}
+
+%\appendix
+%\chapter{...}
+
+%My appendix.
+
+%The \code{\e appendix} markup need not be repeated for additional
+%appendices.
+
+
+
+
+
+
+
+
+%
+%  The ugly "%begin{latexonly}" pseudo-environments are really just to
+%  keep LaTeX2HTML quiet during the \renewcommand{} macros; they're
+%  not really valuable.
+%
+%  If you don't want the Module Index, you can remove all of this up
+%  until the second \input line.
+%
+%begin{latexonly}
+\renewcommand{\indexname}{Module Index}
+%end{latexonly}
+\input{mod\jobname.ind}     % Module Index
+
+%begin{latexonly}
+\renewcommand{\indexname}{Index}
+%end{latexonly}
+\input{\jobname.ind}        % Index
+
+\end{document}

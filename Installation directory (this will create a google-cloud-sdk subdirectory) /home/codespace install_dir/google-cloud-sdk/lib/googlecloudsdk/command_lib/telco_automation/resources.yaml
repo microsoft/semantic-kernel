@@ -1,0 +1,43 @@
+project:
+  name: project
+  collection: telcoautomation.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project name.
+    property: core/project
+
+location:
+  name: location
+  collection: telcoautomation.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location name.
+
+operation:
+  name: operation
+  collection: telcoautomation.projects.locations.operations
+  request_id_field: operationId
+  attributes:
+  - *project
+  - *location
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: Telco Automation long-running operation.
+  disable_auto_completers: false
+
+orchestrationCluster:
+  name: Orchestration Cluster
+  collection: telcoautomation.projects.locations.orchestrationClusters
+  request_id_field: orchestrationClusterId
+  attributes:
+  - *project
+  - *location
+  - &orchestration_cluster
+    parameter_name: orchestrationClustersId
+    attribute_name: orchestration_cluster
+    help: The TelcoAutomation OrchestrationCluster.

@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Show details about a `WasmPlugin` resource.
+    description: Show details about a `WasmPlugin` resource.
+    examples: |
+      To show details about a `WasmPlugin`, run:
+
+        $ {command} my-plugin
+
+  request:
+    collection: networkservices.projects.locations.wasmPlugins
+    ALPHA:
+      api_version: v1alpha1
+
+  arguments:
+    resource:
+      help_text: The `WasmPlugin` resource that you want to describe.
+      spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmPlugin
+      is_positional: true

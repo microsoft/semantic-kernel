@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Delete a policy based route.
+    description: Delete the specified policy based route.
+
+    examples: |
+      To delete a policy based route named ``my-pbr'', run:
+
+        $ {command} my-pbr
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:policyBasedRoute
+      help_text: Name of the policy based route to be deleted.
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request: &request
+    ALPHA:
+      api_version: v1
+    GA:
+      api_version: v1
+    collection: networkconnectivity.projects.locations.global.policyBasedRoutes

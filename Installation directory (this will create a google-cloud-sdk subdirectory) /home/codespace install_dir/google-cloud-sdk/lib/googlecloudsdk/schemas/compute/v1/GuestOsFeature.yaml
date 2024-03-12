@@ -1,0 +1,47 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute v1 GuestOsFeature export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  type:
+    description: |-
+      The ID of a supported feature. To add multiple values, use commas to
+      separate values. Set to one or more of the following values: -
+      VIRTIO_SCSI_MULTIQUEUE - WINDOWS - MULTI_IP_SUBNET - UEFI_COMPATIBLE -
+      SECURE_BOOT - GVNIC - SEV_CAPABLE - SUSPEND_RESUME_COMPATIBLE For more
+      information, see Enabling guest operating system features.
+    type: string
+    enum:
+    - FEATURE_TYPE_UNSPECIFIED
+    - GVNIC
+    - MULTI_IP_SUBNET
+    - SECURE_BOOT
+    - SEV_CAPABLE
+    - UEFI_COMPATIBLE
+    - VIRTIO_SCSI_MULTIQUEUE
+    - WINDOWS
+    - SEV_LIVE_MIGRATABLE
+    - SEV_SNP_CAPABLE
+    - SEV_LIVE_MIGRATABLE_V2

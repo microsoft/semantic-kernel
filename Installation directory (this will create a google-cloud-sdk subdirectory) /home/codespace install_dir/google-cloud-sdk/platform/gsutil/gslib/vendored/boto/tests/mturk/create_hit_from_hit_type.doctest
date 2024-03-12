@@ -1,0 +1,103 @@
+>>> import uuid
+>>> import datetime
+>>> from _init_environment import MTurkConnection, mturk_host
+>>> from boto.mturk.question import Question, QuestionContent, AnswerSpecification, FreeTextAnswer
+>>> 
+>>> conn = MTurkConnection(host=mturk_host)
+>>> keywords=['boto', 'test', 'doctest']
+>>> hit_type_rs = conn.register_hit_type('Boto Test HIT type',
+...                                      'HIT Type for testing Boto',
+...                                      0.12,
+...                                      60*6,
+...                                      keywords=keywords,
+...                                      approval_delay=60*60)
+
+# this was a valid request
+>>> hit_type_rs.status
+True
+
+# the HIT Type Id is a unicode string
+>>> hit_type_id = hit_type_rs.HITTypeId
+>>> hit_type_id # doctest: +ELLIPSIS
+u'...'
+
+# create content for a question
+>>> qn_content = QuestionContent()
+>>> qn_content.append_field('Title', 'Boto question content create_hit_from_hit_type')
+>>> qn_content.append_field('Text', 'What is a boto create_hit_from_hit_type?')
+
+# create the question specification
+>>> qn = Question(identifier=str(uuid.uuid4()),
+...               content=qn_content,
+...               answer_spec=AnswerSpecification(FreeTextAnswer()))
+
+# now, create the actual HIT for the question using the HIT type
+# NOTE - the response_groups are specified to get back additional information for testing
+>>> create_hit_rs = conn.create_hit(hit_type=hit_type_rs.HITTypeId,
+...                                 question=qn,
+...                                 lifetime=60*65,
+...                                 max_assignments=2,
+...                                 annotation='An annotation from boto create_hit_from_hit_type test',
+...                                 response_groups=['Minimal',
+...                                                  'HITDetail',
+...                                                  'HITQuestion',
+...                                                  'HITAssignmentSummary',])
+
+# this is a valid request
+>>> create_hit_rs.status
+True
+
+>>> len(create_hit_rs)
+1
+
+>>> hit = create_hit_rs[0]
+
+# for the requested hit type id
+>>> hit.HITTypeId == hit_type_id
+True
+
+# with the correct number of maximum assignments
+>>> hit.MaxAssignments
+u'2'
+
+# and the approval delay
+>>> hit.AutoApprovalDelayInSeconds
+u'3600'
+
+# expiration should be very close to now + the lifetime in seconds
+>>> expected_datetime = datetime.datetime.utcnow() + datetime.timedelta(seconds=3900)
+>>> expiration_datetime = datetime.datetime.strptime(hit.Expiration, '%Y-%m-%dT%H:%M:%SZ')
+>>> delta = expected_datetime - expiration_datetime
+>>> abs(delta).seconds < 5
+True
+
+# duration is as specified for the HIT type
+>>> hit.AssignmentDurationInSeconds
+u'360'
+
+# the reward has been set correctly
+>>> float(hit.Amount) == 0.12
+True
+
+>>> hit.FormattedPrice
+u'$0.12'
+
+# only US currency supported at present
+>>> hit.CurrencyCode
+u'USD'
+
+# title is the HIT type title
+>>> hit.Title
+u'Boto Test HIT type'
+
+# title is the HIT type description
+>>> hit.Description
+u'HIT Type for testing Boto'
+
+# annotation is correct
+>>> hit.RequesterAnnotation
+u'An annotation from boto create_hit_from_hit_type test'
+
+# not reviewed yet
+>>> hit.HITReviewStatus
+u'NotReviewed'

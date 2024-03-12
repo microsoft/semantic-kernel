@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Update an existing Beyondcorp application legacy connector.
+    description: Update an existing Beyondcorp application legacy connector.
+    examples: |
+      To modify the legacy connector ``my-connector'' in 'us-central1' by adding
+      labels 'k0', with value 'value1' and label 'k1' with value 'value2' and
+      removing labels with key 'k3', run:
+
+        $ {command} my-connector \
+            --location=us-central1 \
+            --display-name=new-display-name \
+            --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+  request:
+    collection: beyondcorp.projects.locations.connectors
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:CheckFieldsSpecified
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:UpdateLegacyLabels
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The Beyondcorp connector you want to update.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connector
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:legacy_display_name
+
+    additional_arguments_hook: googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:UpdateLabelsFlags

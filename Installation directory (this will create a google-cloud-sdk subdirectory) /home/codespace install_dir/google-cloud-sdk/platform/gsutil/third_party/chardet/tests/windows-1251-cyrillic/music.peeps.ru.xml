@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<!--
+Source: http://music.peeps.ru/news/action_rss.xml
+Expect: windows-1251
+-->
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://my.netscape.com/publish/formats/rss-0.91.dtd">
+<rss version="0.91">
+	<channel>
+		<title>Музыка на PeePs.ru: рецензии</title>
+		<description>Ежедневное музыкальное издание</description>
+		<link>http://music.peeps.ru</link>
+
+		<image>
+			<title>Музыка на PeePs.ru</title>
+			<url>http://www.peeps.ru/banners/our/zn.gif</url>
+			<link>http://music.peeps.ru</link>
+			<width>88</width>
+			<height>31</height>
+		</image>
+
+		<item>
+			<title>"SMASH!" - Freeway</title>
+			<link>http://music.peeps.ru/news/s/2003/03/19/1432.html</link>
+			<description>Факт, что бывшие &laquo;Непоседы&raquo;, а&nbsp;ныне &laquo;Smash!&raquo; ввалились в&nbsp;котел шоу-бизнеса благодаря победе в&nbsp;престижном музыкальном конкурсе, ни&nbsp;коим образом не&nbsp;позволяет ставить их&nbsp;в один уровень с&nbsp;&laquo;Другими правилами&raquo;, &laquo;Корнями&raquo; или &laquo;Фабрикой&raquo;. Во-первых, &laquo;Smash!&raquo; поют на&nbsp;английском, во-вторых, поют просто здорово!</description>
+		</item>
+
+		<item>
+			<title>БОЛЬШАЯ СТИРКА 3 Artist : V / A</title>
+			<link>http://music.peeps.ru/news/s/2003/03/19/1431.html</link>
+			<description>Всем телезрителям, а&nbsp;также телезрительницам! Благодаря своему сборнику и&nbsp;программе &laquo;Большая стирка&raquo; А.Малахов дарит весеннее настроение! На&nbsp;массовую &laquo;Стирку&raquo; приглашены домохозяйки Алсу с&nbsp;песней &laquo;Вчера&raquo;, Света с&nbsp;хитом &laquo;Все-таки можно&raquo;, Маша Распутина с&nbsp;&laquo;Сумасшедшим дождем&raquo;, Таня Буланова с&nbsp;треком </description>
+		</item>
+
+		<item>
+			<title>"BENEFIT"</title>
+			<link>http://music.peeps.ru/news/s/2003/03/19/1430.html</link>
+			<description>Слово benefit с&nbsp;английского означает &laquo;польза&raquo;, &laquo;выгода&raquo;. Уж&nbsp;не знаю, на&nbsp;сколько выгодно было продюсерам дуэта оставлять пластинку без названия, но&nbsp;то, что сингл &laquo;Sex Sells&raquo; долго не&nbsp;сползал с&nbsp;топ-позиций, явно не&nbsp;оставило &laquo;Benefit&raquo; в&nbsp;проигрыше.</description>
+		</item>
+
+		<item>
+			<title>"ОКЕАН ЕЛЬЗИ" - Суперсиметрiя</title>
+			<link>http://music.peeps.ru/news/s/2003/03/19/1429.html</link>
+			<description>Первое, что бросается в&nbsp;глаза -&nbsp;обложка диска: клавиши фортепиано на&nbsp;черном фоне -&nbsp;видимо, это выражение той самой &laquo;симметрии&raquo; с&nbsp;приставкой &laquo;супер&raquo;, образованной в&nbsp;названии альбома. Но, что такое суперсимметрия?</description>
+		</item>
+
+		<item>
+			<title>TLC 3D</title>
+			<link>http://music.peeps.ru/news/s/2003/03/19/1425.html</link>
+			<description>Новый альбом американок TLC 3D&nbsp;- четвертый по&nbsp;счету в&nbsp;дискографии трио. В&nbsp;результате трагической  гибели в&nbsp;автокатастрофе одной из&nbsp;участниц группы Лизы Left Eye Лопес трио превратилось в&nbsp;дуэт. Chilli и&nbsp;T-Boz решили продолжать совместную работу без третьей участницы, но, естественно, что 3D&nbsp;посвящен ее&nbsp;памяти.</description>
+		</item>
+
+		<item>
+			<title>DJ Tomekk - Beat Of Life, vol.1</title>
+			<link>http://music.peeps.ru/news/s/2003/03/19/1424.html</link>
+			<description>Диджей Томекк -&nbsp;мастер европейского уровня, выступавший вместе с&nbsp;такими титанами рэпа, как RunDMC, Wu-tang Clan, LL&nbsp;Cool J&nbsp;и KRS-One, сделавший ремиксы на&nbsp;песни Brandy, Fugees и&nbsp;даже Jay-Z. Вот и&nbsp;новый его альбом -&nbsp;Beat Of&nbsp;Life vol.1</description>
+		</item>
+
+		<item>
+			<title>Dieter Bohlen - Greatest Hits</title>
+			<link>http://music.peeps.ru/news/s/2003/03/19/1423.html</link>
+			<description>Выпущенный компанией BMG сборник лучших песен певца, композитора и&nbsp;продюсера Дитера Болена  -&nbsp;радость для романтичных поклонниц сладкоголосого немца. Да&nbsp;и не&nbsp;только для них: сборник непритязательной мелодичной поп-музыки отлично подойдет для вечеринок с&nbsp;танцами.</description>
+		</item>
+
+		<item>
+			<title>Круто ты попал. ФАБРИКА ЗВЕЗД</title>
+			<link>http://music.peeps.ru/news/s/2003/03/12/1366.html</link>
+			<description>Фабричное производство не&nbsp;стоит на&nbsp;месте, а&nbsp;выходит на&nbsp;новые рельсы -&nbsp;&laquo;звезданутые&raquo; &laquo;круто попали&raquo; теперь не&nbsp;только на&nbsp;тв-экран, но&nbsp;и на&nbsp;компакт-диск. Результат, говорящий сам за&nbsp;себя -&nbsp;&laquo;фабрика&raquo; им. Матвиенко работает стабильно и&nbsp;продуктивно. </description>
+		</item>
+
+		<item>
+			<title>"Звери" - "голод"</title>
+			<link>http://music.peeps.ru/news/s/2003/02/26/1293.html</link>
+			<description>13 треков дебютного альбома группы  &laquo;Звери&raquo; в&nbsp;целом оставляют приятное впечатление, но&nbsp;же время не&nbsp;покидает ощущение некоторого однообразия. Где-то на&nbsp;середине прослушивания диска появляется ощущение, что играет одна и&nbsp;та же&nbsp;песня</description>
+		</item>
+
+		<item>
+			<title>Moral Codex - The best</title>
+			<link>http://music.peeps.ru/news/s/2003/02/26/1292.html</link>
+			<description>Сборник The Best, выпущенный фирмой CD&nbsp;Land в&nbsp;2002 году, представляет собой подборку лучших хитов группы &laquo;Моральный Кодекс&raquo;. Думается, мэтры &laquo;Моральный Кодекс&raquo; в&nbsp;особом представлении не&nbsp;нуждаются. </description>
+		</item>
+
+		<item>
+			<title>'Тень - 64' - 'Обрывки фраз'</title>
+			<link>http://music.peeps.ru/news/s/2003/02/26/1291.html</link>
+			<description>Дебютный альбом группы из&nbsp;Нового Оскола &laquo;Тень -&nbsp;64&raquo; под названием &laquo;Обрывки фраз&raquo; отмечен всеобщей болезнью молодых российских команд: вроде бы&nbsp;и гитарные соло присутствуют, и&nbsp;вокал хорош, и&nbsp;играют неплохо, и&nbsp;песни сочиняют красивые.</description>
+		</item>
+
+		<item>
+			<title>Angelight - Дети Океана</title>
+			<link>http://music.peeps.ru/news/s/2003/02/23/1257.html</link>
+			<description>Доморощённые недоброжелатели музыки нью-эйдж давно уже окрестили её&nbsp;нудной, однообразной и&nbsp;бессмысленной. И&nbsp;это невзирая на&nbsp;то, что самый последовательный её&nbsp;российский адепт Angelight преследует каждым своим альбомом вполне конкретные цели.</description>
+		</item>
+
+		<item>
+			<title>NOFX "Pump Up The Valuum"</title>
+			<link>http://music.peeps.ru/news/s/2003/02/11/1199.html</link>
+			<description>Похоже, добившись звездного статуса, и&nbsp;став своего рода законодателями жанра, NOFX решили полностью погрузиться в&nbsp;дураковаляние и&nbsp;самопародирование. Лирика типа: &laquo;She's got a&nbsp;silicone cock sticking in&nbsp;her ass &nbsp;one in&nbsp;her cunt&raquo; или &laquo;there's nothing finer than having a&nbsp;vagina&raquo; врядли придется по&nbsp;вкусу утонченным интеллектуалам, но&nbsp;чего вы&nbsp;хотели, это же&nbsp;все-таки панк-рок.</description>
+		</item>
+
+		<item>
+			<title>No Use For A Name "More Betterness" CD</title>
+			<link>http://music.peeps.ru/news/s/2003/02/11/1198.html</link>
+			<description>Прогрессируя с&nbsp;каждым новым альбомом NUFN похоже достигли совершенства. В&nbsp;отличие от&nbsp;большинства однообразно веселых поп-панк групп, NUFN кладут в&nbsp;основы своей музыки грустные мелодии, которые в&nbsp;сочетании проникновенным вокалом и&nbsp;мягким гитарным звуком производят неизгладимое впечатление. </description>
+		</item>
+
+		<item>
+			<title>Good Riddance "Operation phoenix" CD</title>
+			<link>http://music.peeps.ru/news/s/2003/02/11/1197.html</link>
+			<description>Удачно сочетая типично калифорнийскую панковскую мелодичность с&nbsp;упругим хардкоровым звучанием (в&nbsp;музыке) и&nbsp;социально-политическую тематику с&nbsp;личными переживаниями (в&nbsp;текстах), GR&nbsp;не в&nbsp;первый раз доказывают, что являются одной из&nbsp;самых сильных и&nbsp;незаурядных панк-групп 90-х. </description>
+		</item>
+
+	</channel>
+</rss>

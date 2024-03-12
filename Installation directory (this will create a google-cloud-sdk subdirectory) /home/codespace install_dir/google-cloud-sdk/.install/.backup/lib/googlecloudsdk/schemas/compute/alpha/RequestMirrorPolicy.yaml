@@ -1,0 +1,35 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute alpha RequestMirrorPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  backendService:
+    description: |-
+      The full or partial URL to the BackendService resource being mirrored to.
+      The backend service configured for a mirroring policy must reference
+      backends that are of the same type as the original backend service matched
+      in the URL map. Serverless NEG backends are not currently supported as a
+      mirrored backend service.
+    type: string

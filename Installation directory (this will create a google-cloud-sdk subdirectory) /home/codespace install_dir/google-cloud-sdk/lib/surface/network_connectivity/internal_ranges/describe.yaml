@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: |
+      Describe an internal range.
+    description: |
+      Retrieve and display details about an internal range.
+    examples: |
+      Display details about an internal range named ``my-range'':
+
+        $ {command} my-range
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:internalRange
+      help_text: Name of the internal range to be described.
+
+  request: &request
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: networkconnectivity.projects.locations.internalRanges

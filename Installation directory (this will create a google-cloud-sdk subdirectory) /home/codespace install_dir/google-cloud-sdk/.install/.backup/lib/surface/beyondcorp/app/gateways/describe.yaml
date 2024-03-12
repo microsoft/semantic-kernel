@@ -1,0 +1,31 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: Describe a single AppConnector Gateway.
+    description: Describe a single AppConnector Gateway.
+    examples: |
+      To describe a gateway ``my-gateway'' run:
+
+      $ {command} my-gateway --project={project} --location={location}
+
+      To describe a gateway in a project for location us-central1 in table form, run:
+
+        $ {command} --project=projectId \
+            --location=us-central1 \
+            --format=json(displayName, name, state, type, hostType, updateTime, labels)
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.appGateways
+    BETA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:appgateway
+      help_text: The Beyondcorp appconnector gateway you want to get details about.
+
+  output:
+    format: json

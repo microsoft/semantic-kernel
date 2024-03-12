@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Show details about a device registry.
+    description: Show details about a device registry.
+    examples: |
+      To show details about a device registry, run:
+
+        $ {command} my-registry --region=us-central1
+
+  request:
+    collection: cloudiot.projects.locations.registries
+
+  arguments:
+    resource:
+      help_text: The registry you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.iot.resources:registry

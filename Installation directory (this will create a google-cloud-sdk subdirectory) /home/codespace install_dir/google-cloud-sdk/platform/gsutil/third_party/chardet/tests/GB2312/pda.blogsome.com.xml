@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="gb2312"?><!-- generator="wordpress/1.5.1-alpha" -->
+<!--
+Source: http://pda.blogsome.com/feed/rss/
+Expect: GB18030
+-->
+<rss version="0.92">
+<channel>
+	<title>My live,My Pda</title>
+	<link>http://pda.blogsome.com</link>
+	<description>留下我们最真的回忆</description>
+	<lastBuildDate>Wed, 29 Dec 2004 12:39:33 +0000</lastBuildDate>
+	<docs>http://backend.userland.com/rss092</docs>
+	<language>en</language>
+
+	<item>
+		<title>并未绝无可能：采用非Palm操作系统的Palm</title>
+		<description>	预置Linux，或者是Symbian，甚至是Windows CE的Palm，听起来有些不可思议，但是这确实有出现的可能：PalmOne的负责人曾在年初就透露过Palm产品采用其他操作系统的设想，本周他们的CEO再次就这一设想给出了答案。
+	PalmOne的CEO兼总裁Todd Bradley是在一次电话会议中就PalmOne将会推出一款采用PPC操作系统Tero 600的传言是否属实做出答复的，他表示：不同的操作系统将会为其目标客户优化产品，PalmOne并未宣布过推出基于微软操作系统的产品，但是并不排除这种可能性，包括Symbian、Linux和其他操作系统都有机会。
+	值得关注的是，微软方面在得知这一消息后，立即表示出与PalmOne合作的积极态度
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/cioitheaueoacpalmuiuiuapalm/</link>
+	</item>
+	<item>
+		<title></title>
+		<description>	Sandisk目前计划推出一种新的SD存储卡产品，该产品集合了存储以及Wi-fi模块。
+
+这个产品有必要吗，目前市面上的很多小产品只有1个SD卡插槽，拥有一块集合了存储以及WLAN的SD卡，用户就不仅仅是能够存储数据，还能够让自己的PDA也上线了。
+	Sandisk公司目前正在等待微软公司推出支持双模式SD卡的Windows Mobile 2003更新程序，Sandisk基于Wi-fi的SDIO卡256MB容量预计售价约在150美元
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29//</link>
+	</item>
+	<item>
+		<title>其实俺也想要个TC</title>
+		<description>	
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/aeaeuoieootc/</link>
+	</item>
+	<item>
+		<title>索尼：推出车载3D导航设备</title>
+		<description>	索尼在近日推出三款车载导航、信息设备NV-XYZ 33、55和77，均采用Linux操作系统（2.4版内核），带有硬盘，可与PC连接，提供3D地图导航、多媒体部分、GPS等功能。
+
+
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/eaaiaeouoo3duee/</link>
+	</item>
+	<item>
+		<title>AMD：新款掌上电脑现身</title>
+		<description>	AMD在近日展示了他们新款掌上电脑产品，该产品采用了AMD自己的Alchemy AU1100处理器，工作频率400Mhz，但最大功耗仅有250mW。
+
+AU1100处理器支持MIPS32操作系统，而这款掌上电脑带有液晶屏，配有内存和USB控制器。这也是AMD展示的新一代工程样品，产品正式发布时间尚未确定。
+===========
+就是不知道软件支持的怎么样了。
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/amddhaioaeeiucaoioei/</link>
+	</item>
+	<item>
+		<title>CF的USB转换接口</title>
+		<description>	
+这是RATOC推出的采用CF Type II卡实现的USB适配器CFU1U，有了这种装置，只要是配备CF Type II的Palm、PPC以及其他手持设备都可使用USB接口进行外接扩展，不过CFU1U的售价高达139美金，看来也不太可能成为穷人发烧友的玩具了
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/cfuausbou/</link>
+	</item>
+	<item>
+		<title>TE好吗？本来想买来，最后还是1940</title>
+		<description>	
+尺寸 	115x78x12mm
+重量 	131g
+操作系统 	Palm OS 5.2.1
+处理器 	TI OMAP311 126MHz
+内存 	32MB(28.8MB用户可用)
+电池 	840mAh
+参考价格 	1850
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/teaadhaieaoaioec1940/</link>
+	</item>
+	<item>
+		<title>全球最小的盲人专用掌上电脑</title>
+		<description>	一款专为盲人用户设计的掌上电脑最近亮相，这也是全球最小的盲人PDA。
+
+这款名为BrailleNote PK机身尺寸174x92x32mm，重约450g，与普通掌上电脑最大的区别就是取消显示屏幕，而改以布莱叶盲文符号替代，并且内置语音合成芯片，以便帮助用户使用。硬件方面，BrailleNote PK采用Windows CE操作系统，配备16MB内存，支持蓝牙，并且内置网络端口，将于今年第四季度上市。
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/ecoidhuaaeeoaoaeeiucao/</link>
+	</item>
+	<item>
+		<title>我的爱机1940</title>
+		<description>	
+哈哈
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/iouau1940/</link>
+	</item>
+	<item>
+		<title>E-Ten发布新款手机M500</title>
+		<description>	
+最近，台湾一家名为E-Ten的公司发布了其最新款的智能手机M500。
+	　
+	新款手机采用了Windows Mobile 2003SE操作系统，内建了400MHz Samsung S3C2440 CPU，128MB RAM和64MB ROM，显示屏幕为2.8英寸QVGA液晶显示屏幕(240x320),并内建了蓝牙和130万像素的摄像头，最特别是其还提供一个USB接口，方便用户接泊更多的设备。
+	M500的整机尺寸为111.7x60.7x22mm ,整机的重量为170g，内建的1440mAh锂电池能支持4个小时的连续通话时间而大约200小时的待机时间。
+
+ </description>
+		<link>http://pda.blogsome.com/2004/12/29/e-tencdhaieoum500/</link>
+	</item>
+</channel>
+</rss>

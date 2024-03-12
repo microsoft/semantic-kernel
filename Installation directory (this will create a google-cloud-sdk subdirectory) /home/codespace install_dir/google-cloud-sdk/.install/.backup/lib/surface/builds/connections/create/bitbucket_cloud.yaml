@@ -1,0 +1,47 @@
+- help_text:
+    brief: Create a Cloud Build Connection for Bitbucket Cloud.
+    description: |
+      Create a Cloud Build Connection for Bitbucket Cloud.
+
+      A Bitbucket Cloud Connection can be created by using a repository/project/workspace access token with `repository_read`,`repository_admin`, `pullrequest_read`, `webhook`
+      scope permission and a repository/project/workspace access token with `repository_read` scope permission.
+
+    examples: |
+      To create a Bitbucket Cloud connection, provide all the required parameters:
+
+        $ {command} my-bitbucket-conn \
+          --project=myproj --region=us-central1 \
+          --workspace=my-workspace \
+          --read-authorizer-token-secret-version=projects/myproj/secrets/read-pat/versions/1 \
+          --authorizer-token-secret-version=projects/myproj/secrets/admin-pat/versions/1 \
+          --webhook-secret-secret-version=projects/myproj/secrets/whsecret/versions/1
+
+  command_type: CREATE
+  request:
+    collection: cloudbuild.projects.locations.connections
+    api_version: v2
+  arguments:
+    resource:
+      help_text: Connection to create.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources_v2:connection
+    params:
+    - api_field: connection.bitbucketCloudConfig.workspace
+      arg_name: workspace
+      help_text: Workspace of the Bitbucket Cloud instance.
+      required: true
+    - api_field: connection.bitbucketCloudConfig.authorizerCredential.userTokenSecretVersion
+      arg_name: authorizer-token-secret-version
+      help_text: Secret containing the `repository_read`,`repository_admin`, `pullrequest_read`, `webhook` repository/project/workspace access token.
+      required: true
+    - api_field: connection.bitbucketCloudConfig.readAuthorizerCredential.userTokenSecretVersion
+      arg_name: read-authorizer-token-secret-version
+      help_text: Secret containing the `repository_read` repository/project/workspace access token.
+      required: true
+    - api_field: connection.bitbucketCloudConfig.webhookSecretSecretVersion
+      arg_name: webhook-secret-secret-version
+      required: true
+      help_text: |-
+        Secret containing the webhook secret string for validating webhook events sent by
+        Bitbucket Cloud.
+  async:
+    collection: cloudbuild.projects.locations.operations

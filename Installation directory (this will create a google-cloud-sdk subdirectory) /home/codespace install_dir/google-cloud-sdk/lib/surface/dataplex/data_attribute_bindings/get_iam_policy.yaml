@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Retrieve a Dataplex Data Attribute Binding IAM policy.
+    description: |
+      Displays the IAM policy associated with a Dataplex Data Attribute Binding resource.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates.
+
+    examples: |
+      To get the IAM policy of a Dataplex Data Attribute Binding `test-attribute-binding` in project `test-project` under location `us-central1`
+
+        $ {command} test-attribute-binding --project=test-project --location=us-central1
+  request:
+    collection: dataplex.projects.locations.dataAttributeBindings
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Data Attribute Binding IAM policy you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_attribute_binding

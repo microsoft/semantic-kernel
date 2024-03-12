@@ -1,0 +1,27 @@
+release_tracks: [GA, BETA, ALPHA]
+help_text:
+  brief: Set an IAM policy on a Cloud Bigtable table.
+  description: |
+    Set an IAM policy on a Cloud Bigtable table.
+
+  examples: |
+    To set the IAM policy from file 'my-policy' on the table 'my-table' in
+    instance 'my-instance', run:
+
+      $ {command} my-table --instance='my-instance' my-policy
+
+    See https://cloud.google.com/iam/docs/managing-policies for more information.
+
+request:
+  collection: bigtableadmin.projects.instances.tables
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=setIamPolicyRequest.policy.version
+  - googlecloudsdk.command_lib.iam.hooks:AddVersionToUpdateMaskIfNotPresent:update_mask_path=setIamPolicyRequest.updateMask
+
+arguments:
+  resource:
+    help_text: Cloud Bigtable table to set the IAM policy on.
+    spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
+
+iam:
+  policy_version: 3

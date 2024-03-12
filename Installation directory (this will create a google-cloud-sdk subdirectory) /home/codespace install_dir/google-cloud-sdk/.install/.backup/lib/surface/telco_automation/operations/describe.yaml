@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Get description of a long-running telco automation operation.
+    description: |
+      Get information about a long-running telco automation operation.
+    examples: |-
+      To get information about a long-running operation with name `test-operation` in region `us-central1`, run the following command:
+
+        $ {command} test-operation --location=us-central1
+
+  request:
+    collection: telcoautomation.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The ID of the operation to describe.
+      spec: !REF googlecloudsdk.command_lib.telco_automation.resources:operation

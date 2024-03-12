@@ -1,0 +1,29 @@
+- release_tracks: [GA, BETA, ALPHA]
+
+  help_text:
+    brief: |
+      Describe a cluster.
+    description: |
+      Describe a cluster.
+    examples: |
+      To describe a cluster, run:
+
+        $ {command} CLUSTER
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.workstations.resources:cluster
+      help_text: |
+        The name of the cluster to display.
+
+  request:
+    GA:
+      api_version: v1
+    BETA:
+      api_version: v1beta
+    ALPHA:
+      api_version: v1beta
+    collection: workstations.projects.locations.workstationClusters
+
+  output:
+    format: json

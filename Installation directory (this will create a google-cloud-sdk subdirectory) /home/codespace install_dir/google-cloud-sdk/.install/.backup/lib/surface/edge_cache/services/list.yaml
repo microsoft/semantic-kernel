@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: List all EdgeCacheService resources in a project.
+    description: |
+      List EdgeCacheService resources.
+    examples: |
+      To list existing EdgeCacheService resources, run:
+
+        $ {command}
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheServices
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location (defaults to global) of the resources.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:location
+      removed_flags: [location]
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        ipv4Addresses.list():label=IPV4_ADDRESSES,
+        ipv6Addresses.list():label=IPV6_ADDRESSES,
+        edgeSecurityPolicy:label=EDGE_SECURITY_POLICY,
+        edgeSslCertificates:label=EDGE_SSL_CERTIFICATES,
+        logConfig.enabled:label=LOGGING_ENABLED,
+        updateTime:label=UPDATETIME
+      )

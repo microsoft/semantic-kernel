@@ -1,0 +1,20 @@
+- help_text:
+    brief: |
+      Describe a Cloud Bigtable operation.
+    description: |
+      Describe a Cloud Bigtable operation.
+    examples: |
+      To view details for operation 'OPERATION_ID', run:
+
+        $ {command} OPERATION_ID
+
+  request:
+    collection: bigtableadmin.operations
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.bigtable.operations:ModifyDescribeRequest
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:operation
+      help_text: |
+        Cloud Bigtable operation to describe.

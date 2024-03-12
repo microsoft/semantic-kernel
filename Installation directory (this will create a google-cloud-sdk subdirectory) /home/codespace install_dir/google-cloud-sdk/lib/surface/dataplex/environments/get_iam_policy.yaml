@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Retrieve a Dataplex Environment IAM policy.
+    description: |
+      Get a Dataplex Environment Iam Policy based on project_id, location, lake_id, and environment_id.
+
+    examples: |
+      To get the IAM policy of a Dataplex Environment `test-environment` in project `test-project` under location `us-central1` within lake `test-lake`, run:
+
+        $ {command} test-environment --project=test-project --location=us-central1 --lake=test-lake
+  request:
+    collection: dataplex.projects.locations.lakes.environments
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Environment IAM policy you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:environment

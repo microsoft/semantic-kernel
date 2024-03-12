@@ -1,0 +1,32 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: |
+      List BeyondCorp client gateway resources (Deprecated).
+    description: |
+      List BeyondCorp client gateway resources based on project and location.
+
+    examples: |
+      To list all client gateways in a project for location us-central1 in table form, run:
+
+        $ {command} --project=consumer-project-id --location=us-central1
+
+  request:
+    collection: beyondcorp.projects.locations.clientGateways
+    BETA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the BeyondCorp client gateways you want to list.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:location
+
+  output:
+    format: |
+        table(
+          name.basename():label=NAME,
+          state:label=STATE,
+          clientConnectorService:label=CLIENT_CONNECTOR_SERVICE,
+          createTime.date():label=CREATE_TIME,
+          updateTime.date():label=UPDATE_TIME
+        )

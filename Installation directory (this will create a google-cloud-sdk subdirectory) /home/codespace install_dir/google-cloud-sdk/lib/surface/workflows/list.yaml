@@ -1,0 +1,56 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      List workflows
+    description: |
+      List workflows under a project and location.
+    examples: |
+      To list workflows, run:
+
+          $ {command}
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.workflows.resources:location
+      help_text: |
+        The name of the location to list workflows from.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: workflows.projects.locations.workflows
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.workflows.hooks:print_default_location_warning
+
+  response:
+    id_field: name
+
+  output:
+    ALPHA:
+      format: |
+        table(
+          name,
+          state,
+          versionId,
+          updateTime
+        )
+    BETA:
+      format: |
+        table(
+          name,
+          state,
+          revisionId,
+          updateTime
+        )
+    GA:
+      format: |
+        table(
+          name,
+          state,
+          revisionId,
+          updateTime
+        )

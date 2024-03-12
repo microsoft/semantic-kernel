@@ -1,0 +1,23 @@
+release_tracks: [ALPHA, GA]
+
+help_text:
+  brief: |
+    Describe a HTTP route.
+  description: Show details of a HTTP route.
+
+  examples: |
+    Show details about a HTTP route named 'my-http-route'.
+
+      $ {command} my-http-route --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:httpRoute
+    help_text: Name of the HTTP route to be described.
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+  collection: networkservices.projects.locations.httpRoutes

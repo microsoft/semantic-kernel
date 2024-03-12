@@ -1,0 +1,33 @@
+- help_text:
+    brief: |
+      Delete a Redis instance.
+    description: |
+      Delete a Memorystore Redis instance.
+
+      This command can fail for the following reasons:
+        * The instance specified does not exist.
+        * The active account does not have permission to access the given
+          instance.
+    examples: |
+      To delete an instance with the name `my-redis-instance` in your default region, run:
+
+        $ {command} my-redis-instance
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:instance
+      help_text: |
+        Arguments and flags that specify the Memorystore Redis instance you want
+        to delete.
+
+  async:
+    collection: redis.projects.locations.operations
+
+  input:
+    confirmation_prompt: |
+      You are about to delete instance [{__name__}] in [{locationsId}].
+      Any associated data will be lost.
+
+  request:
+    api_version: v1
+    collection: redis.projects.locations.instances

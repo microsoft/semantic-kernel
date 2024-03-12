@@ -1,0 +1,302 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Create a budget.
+    description: Create a budget.
+    examples: |
+      To create a budget with the display name 'BUDGET1' in the amount of 100.75 in the default
+      currency ('USD'), to receive notifications when 50% of the current budget or 75% of the
+      forecasted budget is spent in the account '123', run:
+
+        $ {command} --billing-account=123 --display-name="BUDGET1" --budget-amount=100.75USD --threshold-rule=percent=0.50 --threshold-rule=percent=0.75,basis=forecasted-spend
+  request:
+    collection: billingbudgets.billingAccounts.budgets
+    ALPHA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.billingbudgets.hooks:CreateAllUpdatesRule
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
+    BETA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.billingbudgets.hooks:CreateAllUpdatesRule
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.billingbudgets.hooks:CreateNotificationsRule
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.billingbudgets.resources:billing-account
+      is_parent_resource: true
+      is_positional: false
+      help_text: |
+        Billing account under which to create the budget.
+    params:
+    - arg_name: display-name
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.displayName
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.displayName
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.displayName
+      required: true
+      help_text: |
+        User data for display name in UI. Must be less than or equal to 60 characters.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: budget-amount
+          help_text: |
+            Specify the amount of the budget. If a currency type is included, it must be the
+            currency associated with the billing account. If excluded, the currency used will be the
+            currency associated with the billing account.
+          ALPHA:
+            api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.amount.specifiedAmount
+            processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToMoneyTypeV1Beta1
+          BETA:
+            api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.amount.specifiedAmount
+            processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToMoneyTypeV1Beta1
+          GA:
+            api_field: googleCloudBillingBudgetsV1Budget.amount.specifiedAmount
+            processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToMoneyTypeV1
+        - arg_name: last-period-amount
+          ALPHA:
+            api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.amount.lastPeriodAmount
+            processor: googlecloudsdk.command_lib.billingbudgets.hooks:LastPeriodAmountV1Beta1
+          BETA:
+            api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.amount.lastPeriodAmount
+            processor: googlecloudsdk.command_lib.billingbudgets.hooks:LastPeriodAmountV1Beta1
+          GA:
+            api_field: googleCloudBillingBudgetsV1Budget.amount.lastPeriodAmount
+            processor: googlecloudsdk.command_lib.billingbudgets.hooks:LastPeriodAmountV1
+          action: store_true
+          default: false
+          help_text: |
+            Use the amount of last period's budget.
+    - arg_name: threshold-rule
+      repeated: true
+      help_text: |
+        Rule that triggers alerts (notifications of thresholds being crossed) when spend
+        exceeds the specified percentages of the budget. This flag can be repeated to provide
+        multiple thresholds above which an alert is sent.
+
+        *percent*::: Number between 0.0 and 1.0. This is a 1.0-based percentage; for example 0.5
+        equals 50 percent. An alert is sent for anything above the value set.
+
+        *basis*::: Type of basis used to determine if spend has passed the threshold. Must be
+        one of: 'current-spend' or 'forecasted-spend'. Behavior defaults to 'current-spend' if not
+        set.
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.thresholdRules
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.thresholdRules
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.thresholdRules
+      type:
+        arg_dict:
+          spec:
+          - api_field: spendBasis
+            arg_name: basis
+            required: false
+          - api_field: thresholdPercent
+            arg_name: percent
+    - arg_name: ownership-scope
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.ownershipScope
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.ownershipScope
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.ownershipScope
+      help_text: |
+        Sets the ownership scope of the budget. The ownership scope and users' IAM permissions
+        determine who has full access to the budget's data.
+
+        Must be one of: 'ALL_USERS' or 'BILLING_ACCOUNT'. Use 'ALL_USERS' to allow billing account-
+        level users and project-level users to have full access to the budget (if the users have
+        the required IAM permissions). Use 'BILLING_ACCOUNT' to allow only billing account-level
+        users to have full access to the budget. Project-level users will have read-only access,
+        even if they have the required IAM permissions.
+    - arg_name: filter-projects
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.projects
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.projects
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.projects
+      help_text: |
+        Set of projects in the form `projects/{project_id}`, specifying that usage from only this
+        set of projects should be included in the budget. If omitted, all projects will be included.
+    - arg_name: credit-types-treatment
+      repeated: false
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.creditTypesTreatment
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.creditTypesTreatment
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.creditTypesTreatment
+      help_text: |
+        Whether to include all credit types when calculating the actual spend against the budget. If
+        this is not specified, then all credit types are used in the calculation. If this is set to
+        include-specified-credits, then --filter-credit-types must be specified with a nonempty list
+        of credits.
+    - arg_name: filter-services
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.services
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.services
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.services
+      help_text: |
+        Set of services of the form `services/{service_id}`, specifying that usage from only this
+        set of services should be included in the budget. If omitted, the report will include usage
+        for all services. The service names are available through the Catalog API:
+        https://cloud.google.com/billing/v1/how-tos/catalog-api.
+    - arg_name: filter-resource-ancestors
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.resourceAncestors
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.resourceAncestors
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.resourceAncestors
+      help_text: |
+        A set of folder and organization names of the form `folders/{folderId}` or
+        `organizations/{organizationId}`, specifying that usage from only this set of folders and
+        organizations should be included in the budget. If omitted, the budget includes all usage
+        that the billing account pays for. If the folder or organization contains projects that are
+        paid for by a different Cloud Billing account, the budget doesn't apply to those projects.
+    - arg_name: filter-subaccounts
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.subaccounts
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.subaccounts
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.subaccounts
+      help_text: |
+        Set of subaccounts of the form `billingAccounts/{account_id}`, specifying that usage from
+        only this set of subaccounts should be included in the budget. If a subaccount is set to the
+        name of the parent account, usage from the parent account will be included. If omitted, the
+        report will include usage from the parent account and all subaccounts, if they exist.
+    - arg_name: filter-labels
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.labels.additionalProperties
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.labels.additionalProperties
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.labels.additionalProperties
+      metavar: KEY=VALUE
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+            type: arg_list
+      help_text: |
+        Single label and value pair specifying that usage from only this set of labeled resources
+        should be included in the budget. Currently, multiple entries or multiple values per entry
+        are not allowed. If omitted, the report will include all labeled and unlabeled usage.
+    - arg_name: filter-credit-types
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.creditTypes
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.creditTypes
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.creditTypes
+      help_text: |
+        Set of credit types, specifying that usage from only this set of credits should be included
+        in the budget. If a nonempty list is specified, then --credit-types-treatment must be
+        include-specified-credits.
+    - group:
+        mutex: true
+        params:
+        - arg_name: calendar-period
+          ALPHA:
+            api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.calendarPeriod
+          BETA:
+            api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.calendarPeriod
+          GA:
+            api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.calendarPeriod
+          help_text: |
+            Specifies to track usage over recurring calendar period. If you're creating a budget with a custom time period, omit this flag.
+        - group:
+            params:
+            - arg_name: start-date
+              ALPHA:
+                api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.customPeriod.startDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1Beta1
+              BETA:
+                api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.customPeriod.startDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1Beta1
+              GA:
+                api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.customPeriod.startDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1
+              required: true
+              help_text: |
+                Specifies to track usage after any start date. This time period is static, it does not
+                recur.
+            - arg_name: end-date
+              ALPHA:
+                api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.customPeriod.endDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1Beta1
+              BETA:
+                api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.customPeriod.endDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1Beta1
+              GA:
+                api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.customPeriod.endDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1
+              help_text: |
+                Specifies to track usage before any end date. This time period is static, it does not
+                recur. If specified, --start-date must also be specified.
+    - arg_name: all-updates-rule-pubsub-topic
+      release_tracks: [ALPHA, BETA]
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.allUpdatesRule.pubsubTopic
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.allUpdatesRule.pubsubTopic
+      help_text: |
+        Name of the Cloud Pub/Sub topic where budget related messages will be published, in
+        the form `projects/{project_id}/topics/{topic_id}`.
+    - arg_name: all-updates-rule-monitoring-notification-channels
+      release_tracks: [ALPHA, BETA]
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.allUpdatesRule.monitoringNotificationChannels
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.allUpdatesRule.monitoringNotificationChannels
+      help_text: |
+        Targets to send notifications to when a threshold is exceeded. This is in addition to
+        default recipients who have billing account IAM roles. The value is the full REST resource
+        name of a monitoring notification channel in the form
+        `projects/{project_id}/notificationChannels/{channel_id}`. A maximum of 5 channels is
+        allowed. See https://cloud.google.com/billing/docs/how-to/budgets-notification-recipients
+        for more details.
+    - arg_name: notifications-rule-pubsub-topic
+      release_tracks: [GA]
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.notificationsRule.pubsubTopic
+      help_text: |
+        Name of the Cloud Pub/Sub topic where budget related messages will be published, in
+        the form `projects/{project_id}/topics/{topic_id}`.
+    - arg_name: notifications-rule-monitoring-notification-channels
+      release_tracks: [GA]
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.notificationsRule.monitoringNotificationChannels
+      help_text: |
+        Targets to send notifications to when a threshold is exceeded. This is in addition to
+        default recipients who have billing account IAM roles. The value is the full REST resource
+        name of a monitoring notification channel in the form
+        `projects/{project_id}/notificationChannels/{channel_id}`. A maximum of 5 channels is
+        allowed. See https://cloud.google.com/billing/docs/how-to/budgets-notification-recipients
+        for more details.
+    - arg_name: disable-default-iam-recipients
+      ALPHA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.allUpdatesRule.disableDefaultIamRecipients
+      BETA:
+        api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.allUpdatesRule.disableDefaultIamRecipients
+      GA:
+        api_field: googleCloudBillingBudgetsV1Budget.notificationsRule.disableDefaultIamRecipients
+      help_text: |
+         When set to true, disables default notifications sent when a threshold is exceeded. Default
+         notifications are sent to those with Billing Account Administrator and Billing Account User
+         IAM roles for the target account.

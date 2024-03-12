@@ -1,0 +1,55 @@
+region:
+  name: region
+  collection: cloudiot.projects.locations
+  attributes:
+  - &region
+    parameter_name: locationsId
+    attribute_name: region
+    help: The name of the Cloud IoT region.
+  disable_auto_completers: false
+
+registry:
+  name: registry
+  collection: cloudiot.projects.locations.registries
+  request_id_field: deviceRegistry.id
+  attributes:
+  - *region
+  - &registry
+    parameter_name: registriesId
+    attribute_name: registry
+    help: The name of the Cloud IoT registry.
+  disable_auto_completers: false
+
+device:
+  name: device
+  collection: cloudiot.projects.locations.registries.devices
+  request_id_field: device.id
+  attributes:
+  - *region
+  - *registry
+  - &device
+    parameter_name: devicesId
+    attribute_name: device
+    help: The name of the Cloud IoT device.,
+    completion_request_params:
+    - fieldName: fieldMask
+      value: name
+    completion_id_field: id
+  disable_auto_completers: false
+
+gateway:
+  name: gateway
+  collection: cloudiot.projects.locations.registries.devices
+  request_id_field: gateway.id
+  attributes:
+  - *region
+  - *registry
+  - &gateway
+    parameter_name: devicesId
+    attribute_name: gateway
+    help: The name of the Cloud IoT gateway device.,
+    completion_request_params:
+    - fieldName: fieldMask
+      value: name
+    completion_id_field: id
+  disable_auto_completers: false

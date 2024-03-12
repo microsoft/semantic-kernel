@@ -1,0 +1,22 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List SSE gateways.
+  description: |
+    List all SSE gateways within a given location.
+  examples: |
+    To list all gateways in the location `us-central1`, run:
+
+      $ {command} --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:location
+    help_text: |
+      The location of the gateways to display.
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.sseGateways

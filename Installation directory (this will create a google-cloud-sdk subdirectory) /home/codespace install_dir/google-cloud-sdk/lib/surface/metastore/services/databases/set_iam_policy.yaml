@@ -1,0 +1,31 @@
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Set the IAM policy for a database.
+  description: |
+    Sets the IAM policy for the given database as defined in a JSON or YAML file.
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    the policy file format and contents.
+
+  examples: |
+    The following command will read an IAM policy defined in a JSON file
+    'policy.json' and set it for the database 'my-database':
+
+    $ {command} my-database policy.json
+
+request:
+  collection: metastore.projects.locations.services.databases
+  ALPHA:
+    api_version: v1alpha
+  BETA:
+    api_version: v1beta
+
+iam:
+  enable_condition: false
+  policy_version: 0
+  get_iam_policy_version_path: options.requestedPolicyVersion
+
+arguments:
+  resource:
+    help_text: Database for which to display the IAM policy.
+    spec: !REF googlecloudsdk.command_lib.metastore.resources:database

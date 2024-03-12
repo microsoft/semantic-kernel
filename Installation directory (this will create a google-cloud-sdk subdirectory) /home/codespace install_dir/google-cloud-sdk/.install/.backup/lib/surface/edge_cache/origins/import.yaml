@@ -1,0 +1,43 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Import an EdgeCacheOrigin resource.
+    description: |
+      Import an EdgeCacheOrigin resource. If the named EdgeCacheOrigin
+      resource already exists, the resource will be updated to match
+      the imported resource configuration.
+
+      If the named EdgeCacheOrigin resource does not already exist, a
+      new EdgeCacheOrigin resource will be created with that name.
+
+    examples: |
+      To import an EdgeCacheOrigin resource named 'my-origin' from a
+      YAML file, run:
+
+        $ {command} my-origin --source=my-origin.yaml
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheOrigins
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The EdgeCacheOrigin resource you want to import.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin
+
+  import:
+    abort_if_equivalent: true
+    create_if_not_exists: true
+    create_request:
+      collection: networkservices.projects.locations.edgeCacheOrigins
+      ALPHA:
+        api_version: v1alpha1
+      GA:
+        api_version: v1
+      method: create

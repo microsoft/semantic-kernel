@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a new Cloud Media Annotation.
+    description: Create a new Media Annotation.
+    examples: |
+      To create a new annotation with id my-ann with in the default project and 'us-central1' location, under annotation set my-annSet run:
+        $ {command} my-at --asset_type my-at --asset my-asset --annotation_set my-annSet --annotation-data-file ann-data.json --labels a=x,b=y
+
+  request:
+    collection: mediaasset.projects.locations.assetTypes.assets.annotationSets.annotations
+    method: create
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.media.asset.annotations.hooks:AddParentInfoToAnnotationRequests
+    - googlecloudsdk.command_lib.media.asset.annotations.hooks:ParseAnnotationRequest
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset annotation to create.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:annotation
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.media.asset.flags:annotation-data-file
+    labels:
+      api_field: annotation.labels

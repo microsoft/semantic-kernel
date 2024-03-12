@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: |
+      List Cloud SQL Integrations for a Managed Microsoft AD domain.
+    description: |
+      List all Cloud SQL integrations for a specified Managed Microsoft AD domain.
+
+    examples: |
+      The following command lists all Cloud SQL integrations in the `my-domain.com` domain created
+       in the `my-project` project.
+
+          $ {command} --project=my-project --domain=my-domain.com
+
+  request:
+    collection: managedidentities.projects.locations.global.domains.sqlIntegrations
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:domain
+      help_text: |
+        AD domain whose SQL integrations are to be listed.
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        sqlInstance:label=SQL_INSTANCE,
+        state:label=STATE,
+        createTime.date()
+      )

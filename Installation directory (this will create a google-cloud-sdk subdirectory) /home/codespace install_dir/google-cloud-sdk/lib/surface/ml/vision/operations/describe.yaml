@@ -1,0 +1,25 @@
+- release_tracks: [BETA, ALPHA]
+
+  help_text:
+    brief: describe a long-running operation
+    description: describe a long-running operation
+    examples: |-
+      To describe the long-running operation with name 'projects/my-project/locations/us-east1/operations/123', run:
+
+        $ {command} projects/my-project/locations/us-east1/operations/123
+
+  request:
+    collection: vision.operations
+    api_version: v1
+    disable_resource_check: true
+
+  arguments:
+    params:
+    - arg_name: operation
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        Full name of the operation to describe.
+  output:
+    format: json

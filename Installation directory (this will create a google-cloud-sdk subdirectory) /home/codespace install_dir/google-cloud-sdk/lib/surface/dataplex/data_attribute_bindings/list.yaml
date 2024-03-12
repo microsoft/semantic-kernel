@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List Data Attribute Bindings.
+    description: List Data Attribute Bindings.
+
+    examples: |
+      To List all the Data Attribute Bindings in project `test-dataplex` at location `us-central1`, run:
+
+        ${command} --project=test-dataplex --location=us-central1
+  request:
+    collection: dataplex.projects.locations.dataAttributeBindings
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Location in which to list Data Attribute Bindings.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:location

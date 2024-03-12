@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: clouddeploy v1 Stage export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  profiles:
+    description: |-
+      Profiles to use when rendering the manifest for this stage's `Target`.
+    type: array
+    items:
+      type: string
+  targetId:
+    description: |-
+      The target_id to which this stage points. Format is "targetName". The
+      parent of the `Target` is the `DeliveryPipeline` in which this stage
+      lives.
+    type: string

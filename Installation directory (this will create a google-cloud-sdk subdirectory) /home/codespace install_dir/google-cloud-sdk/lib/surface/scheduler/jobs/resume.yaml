@@ -1,0 +1,25 @@
+- help_text:
+    brief: Resume execution of a paused job.
+    description: Resume execution of a paused job.
+    examples: |
+      The following command resumes execution of a paused job:
+
+        $ {command} my-job
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+    method: resume
+    static_fields:
+      resumeJobRequest: {}
+
+  arguments:
+    resource:
+      help_text: The job to resume.
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.scheduler.util:LogResumeSuccess
+
+  output:
+    format: none

@@ -1,0 +1,151 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: |
+      Create a new internal range.
+    description: |
+      Create a new internal range with the given name.
+    examples: |
+      Create an internal range with name ``my-range'' and ip-cidr-range ``192.168.0.0/25'' in
+      network ``https://www.googleapis.com/compute/v1/projects/my-project/locations/global/networks/my-network'':
+
+        $ {command} my-range
+          --ip-cidr-range="192.168.0.0/25"
+          --network="https://www.googleapis.com/compute/v1/projects/my-project/locations/global/networks/my-network"
+          --project=my-project
+
+      Create an internal range with name ``my-range'' and auto-allocated /25 block (prefix-length
+      ``25'') in network ``my-network'':
+
+        $ {command} my-range
+          --prefix-length=25
+          --network="my-network"
+          --project=my-project
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:internalRange
+      help_text: |
+        Name of the internal range to be created.
+    params:
+    - arg_name: description
+      api_field: internalRange.description
+      help_text: |
+        Description of the internal range to be created.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: ip-cidr-range
+          api_field: internalRange.ipCidrRange
+          help_text: |
+            IP range that this internal range defines.
+        - group:
+            params:
+            - arg_name: prefix-length
+              api_field: internalRange.prefixLength
+              help_text: |
+                An alternative to ip-cidr-range.
+                Can be set when trying to create a reservation that automatically finds a free range of
+                the given size.
+              required: true
+            - arg_name: target-cidr-range
+              api_field: internalRange.targetCidrRange
+              help_text: |
+                Can be set to narrow down or pick a different address space while searching for a free
+                range.
+                If not set, defaults to the "10.0.0.0/8" address space. This can be used to search in
+                other rfc-1918 address spaces like "172.16.0.0/12" and "192.168.0.0/16" or non-rfc-1918
+                address spaces used in the VPC.
+              type: arg_list
+    - arg_name: labels
+      api_field: internalRange.labels.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+    - arg_name: network
+      api_field: internalRange.network
+      help_text: |
+        The URL or resource ID of the network in which to reserve the internal range.
+        Legacy network is not supported. This can only be specified for a global internal address.
+
+        For example:
+          - https://www.googleapis.com/compute/v1/projects/my-project/locations/global/networks/my-network
+          - /projects/my-project/locations/global/networks/my-network
+          - my-network
+      required: true
+    - arg_name: usage
+      api_field: internalRange.usage
+      help_text: |
+        The type of usage set for the internal range.
+      choices:
+      - arg_value: for-vpc
+        enum_value: FOR_VPC
+        help_text: |
+          A cloud resource can use the reserved CIDR block by associating it with the internal range
+          resource if usage is set to FOR_VPC.
+      - arg_value: external-to-vpc
+        enum_value: EXTERNAL_TO_VPC
+        help_text:  |
+          Ranges created with EXTERNAL_TO_VPC cannot be associated with cloud resources and are
+          meant to block out address ranges for various use cases, like for example, usage on-prem,
+          with dynamic route announcements via interconnect.
+      default: for-vpc
+    - arg_name: peering
+      api_field: internalRange.peering
+      help_text: |
+        The type of peering set for the internal range.
+      choices:
+      - arg_value: for-self
+        enum_value: FOR_SELF
+        help_text: |
+          This beharior represents the case that the internal range is intended to be used in the
+          VPC on which it is created and is accessible from its peers. This implies that peers or
+          peer-of-peers cannot use this range.
+      - arg_value: for-peer
+        enum_value: FOR_PEER
+        help_text: |
+          This behavior can be set when the internal range is being reserved for usage by the peers.
+          This means that no resource within the VPC in which it is being created can use this to
+          associate with a cloud resource, but one of the peers can. This represents "donating" a
+          range for peers to use.
+      - arg_value: not-shared
+        enum_value: NOT_SHARED
+        help_text: |
+          This behavior can be set when the internal range is being reserved for usage by the VPC on
+          which it is created but not shared with the peers. In a sense it is local to the VPC. This
+          can be used to create internal ranges for various purposes like
+          HTTP_INTERNAL_LOAD_BALANCER or for interconnect routes that are not shared with peers.
+          This also implies that peers cannot use this range in a way that is visible to this VPC,
+          but can re-use this range as long as it is NOT_SHARED from the peer VPC too.
+      default: for-self
+    - arg_name: overlaps
+      api_field: internalRange.overlaps
+      help_text: Overlap specifications for the range being created.
+      choices:
+      - arg_value: overlap-route-range
+        enum_value: OVERLAP_ROUTE_RANGE
+        help_text: |
+          Allows for creation or existence of routes that have a more specific destination
+          than the created range.
+      - arg_value: overlap-existing-subnet-range
+        enum_value: OVERLAP_EXISTING_SUBNET_RANGE
+        help_text: |
+          Allows for creation of internal ranges that overlap with existing subnets.
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request: &request
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: networkconnectivity.projects.locations.internalRanges
+    method: create

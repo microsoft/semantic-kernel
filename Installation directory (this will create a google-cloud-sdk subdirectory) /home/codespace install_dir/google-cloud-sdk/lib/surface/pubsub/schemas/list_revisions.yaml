@@ -1,0 +1,48 @@
+- release_tracks: [GA, ALPHA, BETA]
+  help_text:
+    brief: List revisions of a Pub/Sub schema.
+    description: |
+      List revisions of a Pub/Sub schema.
+    examples: |
+      To list the revisions for a schema, run:
+
+        $ {command} my-schema
+  command_type: LIST
+  request:
+    collection: pubsub.projects.schemas
+    api_version: v1
+    method: listRevisions
+    disable_pagination: true
+
+  response:
+    id_field: name
+    result_attribute: schemas
+
+  arguments:
+    resource:
+      help_text: Parent Pub/Sub schema to list all contained revisions.
+      spec: !REF googlecloudsdk.command_lib.pubsub.resources:schema
+    params:
+    - arg_name: view
+      api_field: view
+      help_text: |
+        There are two possible views, 'basic' and 'full', default is 'basic'
+      choices:
+      - enum_value: BASIC
+        arg_value: basic
+        help_text: |
+          Include the name and type of the schema, but not the definition.
+      - enum_value: FULL
+        arg_value: full
+        help_text: |
+          Include all Schema object fields.
+      default: basic
+
+  output:
+    format: |
+      table(
+        revisionId,
+        revisionCreateTime:label=CREATE_TIME,
+        type:label=TYPE,
+        definition:optional
+      )

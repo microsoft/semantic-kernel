@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Describe a location.
+    description: |
+      Describe a Backup for GKE location.
+
+      ## EXAMPLES
+
+      To describe a location 'us-central1' in project 'my-project', run:
+
+        $ {command} us-central1 --project=my-project
+
+  request:
+    collection: gkebackup.projects.locations
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: Location to describe.
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:location

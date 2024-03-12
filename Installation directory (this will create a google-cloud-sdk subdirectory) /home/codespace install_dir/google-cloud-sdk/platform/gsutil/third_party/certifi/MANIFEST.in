@@ -1,0 +1,4 @@
+include MANIFEST.in README.rst LICENSE certifi/cacert.pem certifi/py.typed
+
+exclude .github/
+recursive-exclude .github

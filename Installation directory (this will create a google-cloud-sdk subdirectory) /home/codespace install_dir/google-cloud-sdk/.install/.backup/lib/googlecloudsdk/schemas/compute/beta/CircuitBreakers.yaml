@@ -1,0 +1,59 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta CircuitBreakers export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  connectTimeout:
+    description: The timeout for new network connections to hosts.
+    $ref: Duration.yaml
+  maxConnections:
+    description: |-
+      Not supported when the backend service is referenced by a URL map that is
+      bound to target gRPC proxy that has validateForProxyless field set to
+      true.
+    type: integer
+  maxPendingRequests:
+    description: |-
+      Not supported when the backend service is referenced by a URL map that is
+      bound to target gRPC proxy that has validateForProxyless field set to
+      true.
+    type: integer
+  maxRequests:
+    description: |-
+      The maximum number of parallel requests that allowed to the backend
+      service. If not specified, there is no limit.
+    type: integer
+  maxRequestsPerConnection:
+    description: |-
+      Not supported when the backend service is referenced by a URL map that is
+      bound to target gRPC proxy that has validateForProxyless field set to
+      true.
+    type: integer
+  maxRetries:
+    description: |-
+      Not supported when the backend service is referenced by a URL map that is
+      bound to target gRPC proxy that has validateForProxyless field set to
+      true.
+    type: integer

@@ -1,0 +1,63 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Create a Dataproc Metastore federation.
+    description: |
+      Create a new Dataproc Metastore federation with the given name and configurations.
+
+      If run asynchronously with `--async`, exits after printing
+      one operation name that can be used to poll the status of the
+      creation via:
+
+        {top_command} metastore operations describe
+    examples: |
+      To create a Dataproc Metastore federation with the name `my-metastore-federation` in location
+      `us-central` with two backends `dpms1` and `dpms2`, run:
+
+          $ {command} my-metastore-federation --location=us-central1 --backends=1=dpms:dpms1,2=dpms:projects/my-project/locations/us-central1/services/dpms2
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.metastore.federations.util:GenerateCreateBackends
+    collection: metastore.projects.locations.federations
+
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the Dataproc Metastore federation
+        you want to create.
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:federation
+    params:
+    - arg_name: hive-metastore-version
+      api_field: federation.version
+      choices:
+      - arg_value: 3.1.2
+        enum_value: 3.1.2
+      - arg_value: 2.3.6
+        enum_value: 2.3.6
+      help_text:  |
+          Hive metastore schema version of the Metastore federation.
+    - arg_name: backends
+      api_field:  federation.backendMetastores
+      required: true
+      metavar: RANK=BACKEND
+      processor: googlecloudsdk.command_lib.metastore.validators:ValidateBackendsAndReturnMetastoreDict
+      help_text:  |
+          Backends from which the federation service serves metadata at query time. The backends are specified as a comma-separated
+          list of `RANK=BACKEND` pairs.
+          For example: `1=dpms:dpms1,2=dpms:projects/my-project/locations/us-central1/services/dpms2`.
+          `RANK` represents the rank of the backend metastore and is used to resolve database name collisions.
+          `BACKEND` is specified as `METASTORE_TYPE:METASTORE_NAME` where `METASTORE_TYPE` is the type of backend metastore and
+          `METASTORE_NAME` is the relative resource name of the metastore. If only the name of the metastore is specified (e.g. `dpms1`),
+          project and location will be inferred from the project and location used to create the federation.
+    labels:
+      api_field: federation.labels
+
+  async:
+    collection: metastore.projects.locations.operations

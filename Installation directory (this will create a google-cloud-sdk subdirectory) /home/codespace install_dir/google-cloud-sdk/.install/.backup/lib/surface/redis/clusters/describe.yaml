@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: |
+      Show metadata for a Memorystore for Redis Cluster instance.
+    description: |
+      Show metadata for a Memorystore for Redis Cluster instance.
+
+      Displays all metadata associated with a cluster given a valid
+      cluster name.
+
+      This command can fail for the following reasons:
+        * The cluster specified does not exist.
+        * The active account does not have permission to access the given
+          cluster.
+    examples: |
+      To display the metadata for a cluster with the name `my-redis-cluster`
+      in the default region, run:
+
+        $ {command} my-redis-cluster
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:cluster
+      help_text: |
+        Arguments and flags that specify the cluster you want to describe.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    collection: redis.projects.locations.clusters

@@ -1,0 +1,71 @@
+- release_tracks: [BETA, GA]
+  help_text:
+    brief:  Create a Filestore snapshot.
+    description: |
+      Create a Filestore snapshot of an instance.
+
+      This command can fail for the following reasons:
+        * A snapshot with the same name already exists.
+        * The active account does not have permission to create snapshots.
+        * Maximum number of snapshots for the instance has been reached.
+        * The service tier of the instance does not support snapshots.
+    examples: |
+      To create a snapshot with the name ``my-snapshot'' for an instance named
+      ``my-instance'' that's located in ``us-central1'', run:
+
+        $ {command} my-snapshot --instance=my-instance --instance-region=us-central1
+
+  arguments:
+    params:
+    - arg_name: snapshot
+      is_positional: true
+      required: true
+      help_text: |
+        Name of the Filestore snapshot to be created.
+    - arg_name: instance
+      required: true
+      help_text: |
+        Name of the Filestore instance that you want to create a snapshot of.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: instance-region
+          help_text: |
+            Region of the Filestore instance.
+        - arg_name: instance-location
+          help_text: |
+            Location of the Filestore instance.
+    - api_field: snapshot.description
+      arg_name: description
+      required: false
+      help_text: |
+        Description of the snapshot. Limit: 2048 characters.
+    - api_field: snapshot.labels.additionalProperties
+      arg_name: labels
+      metavar: KEY=VALUE
+      required: false
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+
+  async:
+    collection: file.projects.locations.operations
+
+  request:
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    display_resource_type: snapshot
+    collection: file.projects.locations.instances.snapshots
+    # Disable validating that a snapshot resource arg is specified (as we are using the
+    # file.projects.locations.instances.snapshots collection). This collection is populated manually.
+    disable_resource_check: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:FormatSnapshotCreateRequest

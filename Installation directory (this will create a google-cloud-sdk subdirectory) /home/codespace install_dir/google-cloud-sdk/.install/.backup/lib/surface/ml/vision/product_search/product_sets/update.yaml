@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Update a product set.
+    description: Update a product set.
+    examples: |
+      To change the display name to 'my favorite' of product set 'my-product-set'
+      in locaiton 'us-east1', run:
+
+        $ {command} my-produt-set --location=us-east1 --display-name='my favorite'
+
+  request:
+    collection: vision.projects.locations.productSets
+
+  arguments:
+    resource:
+      help_text: Product set to update.
+      spec: !REF googlecloudsdk.command_lib.ml.vision.resources:product_set
+
+    params:
+    - api_field: productSet.displayName
+      arg_name: display-name
+      help_text: |-
+        The user provided name for this product set. It must not be empty and must be at most 4096
+        characters long.

@@ -1,0 +1,23 @@
+release_tracks: [ALPHA, GA]
+
+help_text:
+  brief: Show details about the Distributed Cloud Edge Network interconnect.
+  description: Show details about the Distributed Cloud Edge Network interconnect.
+  examples: |
+    To show details about an interconnect called 'my-interconnect1' in edge zone 'us-central1-edge-den1', run:
+
+      $ {command} my-interconnect1 --location=us-central1 --zone=us-central1-edge-den1
+
+request:
+  collection: edgenetwork.projects.locations.zones.interconnects
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    help_text: The interconnect you want to describe.
+    # The following should point to the resource argument definition under your
+    # surface's command_lib directory.:
+    spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:interconnect

@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Describe an instance.
+    description: |
+      Describes the given instance.
+    examples: |
+      The following will describe the instance named 'instance1' for the active project:
+
+        $ {command} instance1
+
+      You can also provide the fully qualified resource name for the instance like so:
+
+        $ {command} projects/my_project/instances/instance1
+
+  request:
+    collection: remotebuildexecution.projects.instances
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.remote_build_execution.resources:instance
+      help_text: |
+        The instance to describe.

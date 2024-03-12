@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Detect text in videos.
+    description: |
+      Detect text in videos.
+    examples: |
+      To detect text in video file 'gs://my_bucket/input_file.mp4':
+
+        $ {command} gs://my_bucket/input_file.mp4
+
+  request:
+    _COMMON_: request
+    static_fields:
+      features: [TEXT_DETECTION]
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.ml.video.util:UpdateRequestWithInput
+
+  async:
+    _COMMON_: async
+
+  arguments:
+    params:
+    - _COMMON_args
+    - api_field: videoContext.textDetectionConfig.languageHints
+      arg_name: language-hints
+      default: []
+      help_text: Language hints can be specified if the languages to be detected are known
+        beforehand. It can increase the accuracy of the detection. Language hints must be language
+        codes in BCP-47 format. Automatic language detection is performed if no language hints are
+        provided.
+  output:
+    format: json

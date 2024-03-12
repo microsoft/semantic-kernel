@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Get the IAM policy for a Policy Tag Taxonomy.
+    description: |
+      *{command}* displays the IAM policy associated with a Policy Tag Taxonomy.  If
+      formatted as JSON, the output can be edited and used as a policy file for *set-iam-policy*.
+      The output includes an "etag" field identifying the version emitted and allowing detection of
+      concurrent policy updates; see $ {parent_command} set-iam-policy for additional details.
+    examples: |
+      To print the IAM policy for 'TAXONOMY' in 'LOCATION', run:
+
+        $ {command} TAXONOMY --location='LOCATION'
+
+  request:
+    collection: datacatalog.projects.locations.taxonomies
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Policy tag taxonomy for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:taxonomy

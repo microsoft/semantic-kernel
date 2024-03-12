@@ -1,0 +1,2157 @@
+# Copyright 2021 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# This file lists apis used by gcloud (CloudSDK).
+# It is configuration for regen_apis.py script, which needs to be rerun
+# everytime some input discovery doc is added/updated or apitools generation
+# code has been changed.
+
+# To add a new API, simply add an entry with its api name and version
+# pointing to its discovery doc file, which should be checked into root_dir.
+
+# api version can have the following fields:
+# api_name:
+#   api_version:
+#     discovery_doc: <relative path wrt root_dir>
+#     gcloud_gapic_library: name of the gcloud gapic client library to generate.
+#     unelidable_request_methods: <list of request method id>
+#     default: <true|false in case there more that one api version>
+#     resources:
+#       <resource_collection_name>:
+#         path: <parsing_template>
+#         gapic_compatible: <true|false> defaults to true
+#         apitools_compatible: <true|false> defaults to true
+#
+# Since gapic and apitools process resources slightly different, such as
+# different parameter naming, any custom resource defined may not be able to
+# be use in both client generation processes. With the "gapic_compatible"
+# and "apitools_compatible" fields, each custom resource definition can be controlled
+# w.r.t what resource module it gets included in.
+
+root_dir: googlecloudsdk/generated_clients/apis
+
+apis:
+  auditmanager:
+    v1alpha:
+      discovery_doc: auditmanager_v1alpha.json
+      default: true
+  beyondcorp:
+    v1:
+      discovery_doc: beyondcorp_v1.json
+      default: false
+    v1alpha:
+      discovery_doc: beyondcorp_v1alpha.json
+      default: true
+  accessapproval:
+    v1:
+      discovery_doc: accessapproval_v1.json
+      default: true
+  accesscontextmanager:
+    v1alpha:
+      discovery_doc: accesscontextmanager_v1alpha.json
+      default: false
+    v1:
+      discovery_doc: accesscontextmanager_v1.json
+      default: true
+  admin:
+    v1:
+      discovery_doc: admin_v1.json
+      default: true
+      mtls_endpoint_override: https://www.mtls.googleapis.com/admin/directory/v1/
+      resources:
+        customer:
+          path: customer/{customerId}
+  aiplatform:
+    v1beta1:
+      default: true
+      discovery_doc: aiplatform_v1beta1.json
+      resources:
+        projects.locations.models.operations:
+          path: projects/{projectsId}/locations/{locationsId}/models/{modelsId}/operations/{operationsId}
+        projects.locations.indexes.operations:
+          path: projects/{projectsId}/locations/{locationsId}/indexes/{indexesId}/operations/{operationsId}
+        projects.locations.endpoints.operations:
+          path: projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}/operations/{operationsId}
+        projects.locations.indexEndpoints.operations:
+          path: projects/{projectsId}/locations/{locationsId}/indexEndpoints/{indexEndpointsId}/operations/{operationsId}
+    v1:
+      discovery_doc: aiplatform_v1.json
+      resources:
+        projects.locations.models.operations:
+          path: projects/{projectsId}/locations/{locationsId}/models/{modelsId}/operations/{operationsId}
+        projects.locations.indexes.operations:
+          path: projects/{projectsId}/locations/{locationsId}/indexes/{indexesId}/operations/{operationsId}
+        projects.locations.endpoints.operations:
+          path: projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}/operations/{operationsId}
+        projects.locations.indexEndpoints.operations:
+          path: projects/{projectsId}/locations/{locationsId}/indexEndpoints/{indexEndpointsId}/operations/{operationsId}
+  alloydb:
+    v1alpha:
+      discovery_doc: alloydb_v1alpha.json
+    v1beta:
+      discovery_doc: alloydb_v1beta.json
+    v1:
+      discovery_doc: alloydb_v1.json
+      default: true
+  anthosevents:
+    v1:
+      discovery_doc: anthosevents_v1.json
+      default: true
+    v1alpha1:
+      discovery_doc: anthosevents_v1alpha1.json
+    v1beta1:
+      discovery_doc: anthosevents_v1beta1.json
+  anthospolicycontrollerstatus_pa:
+    v1alpha:
+      discovery_doc: anthospolicycontrollerstatus_pa_v1alpha.json
+      default: true
+  apikeys:
+    v2:
+      discovery_doc: apikeys_v2.json
+    v2alpha1:
+      discovery_doc: apikeys_v2alpha1.json
+      default: true
+  apigateway:
+    v1alpha1:
+      discovery_doc: apigateway_v1alpha1.json
+    v1beta:
+      discovery_doc: apigateway_v1beta.json
+    v1:
+      discovery_doc: apigateway_v1.json
+      default: true
+  apigee:
+    v1:
+      discovery_doc: apigee_v1.json
+  apigeeregistry:
+    v1:
+      discovery_doc: apigeeregistry_v1.json
+      default: true
+  appconfigmanager:
+    v1alpha:
+      discovery_doc: appconfigmanager_v1alpha.json
+      default: true
+  appengine:
+    v1alpha:
+      discovery_doc: appengine_v1alpha.json
+      default: false
+    v1beta:
+      discovery_doc: appengine_v1beta.json
+      default: false
+    v1:
+      discovery_doc: appengine_v1.json
+      default: true
+      resources:
+        projects:
+          path: projects/{projectId}
+  artifactregistry:
+    v1alpha1:
+      discovery_doc: artifactregistry_v1alpha1.json
+    v1beta1:
+      discovery_doc: artifactregistry_v1beta1.json
+    v1beta2:
+      discovery_doc: artifactregistry_v1beta2.json
+      default: true
+    v1:
+      discovery_doc: artifactregistry_v1.json
+  assuredworkloads:
+    v1beta1:
+      discovery_doc: assuredworkloads_v1beta1.json
+    v1:
+      discovery_doc: assuredworkloads_v1.json
+      default: true
+  authztoolkit:
+    v1alpha:
+      discovery_doc: authztoolkit_v1alpha.json
+      default: true
+  backupdr:
+    v1:
+      discovery_doc: backupdr_v1.json
+      default: true
+  batch:
+    v1alpha:
+      discovery_doc: batch_v1alpha.json
+    v1alpha1:
+      discovery_doc: batch_v1alpha1.json
+    v1:
+      discovery_doc: batch_v1.json
+      default: true
+  bigtableadmin:
+    v2:
+      discovery_doc: bigtableadmin_v2.json
+      resources:
+        projects:
+          path: projects/{projectId}
+        # Deprecated
+        # TODO(b/319097562): cleanup once the renaming is done.
+        projects.instances.tables.views:
+          path: projects/{projectsId}/instances/{instancesId}/tables/{tablesId}/views/{viewsId}
+        projects.instances.tables.authorizedViews:
+          path: projects/{projectsId}/instances/{instancesId}/tables/{tablesId}/authorizedViews/{authorizedViewsId}
+  binaryauthorization:
+    v1alpha2:
+      default: true
+      discovery_doc: binaryauthorization_v1alpha2.json
+      resources:
+        projects.policy:
+          path: projects/{projectsId}/policy
+        systempolicy:
+          path: locations/{locationsId}/policy
+        projects.continuousValidationConfig:
+          path: projects/{projectsId}/continuousValidationConfig
+    v1beta1:
+      default: false
+      discovery_doc: binaryauthorization_v1beta1.json
+      resources:
+        projects.policy:
+          path: projects/{projectsId}/policy
+        systempolicy:
+          path: locations/{locationsId}/policy
+    v1:
+      default: false
+      discovery_doc: binaryauthorization_v1.json
+      resources:
+        projects.policy:
+          path: projects/{projectsId}/policy
+        systempolicy:
+          path: locations/{locationsId}/policy
+        projects.platforms.policies:
+          path: projects/{projectsId}/platforms/{platformsId}/policies/{policyId}
+  billingbudgets:
+    v1beta1:
+      discovery_doc: billingbudgets_v1beta1.json
+    v1:
+      discovery_doc: billingbudgets_v1.json
+      default: true
+  blockchainnodeengine:
+    v1:
+      discovery_doc: blockchainnodeengine_v1.json
+      default: true
+  blockchainvalidatormanager:
+    v1alpha:
+      discovery_doc: blockchainvalidatormanager_v1alpha.json
+      default: true
+      resources:
+        projects.locations.blockchainNodes:
+          path: projects/{projectsId}/locations/{locationsId}/blockchainNodes/{blockchainNodeId}
+        projects.locations.secrets:
+          path: projects/{projectsId}/locations/{locationsId}/secrets/{secretsId}
+  config:
+    v1alpha2:
+      discovery_doc: config_v1alpha2.json
+      default: false
+    v1:
+      discovery_doc: config_v1.json
+      default: true
+  certificatemanager:
+    v1:
+      discovery_doc: certificatemanager_v1.json
+      default: true
+    v1alpha1:
+      discovery_doc: certificatemanager_v1alpha1.json
+    v1alpha2:
+      discovery_doc: certificatemanager_v1alpha2.json
+  cloudasset:
+    v1:
+      default: true
+      discovery_doc: cloudasset_v1.json
+    v1p1beta1:
+      discovery_doc: cloudasset_v1p1beta1.json
+      resources:
+        iamPolicies:
+          path: iamPolicies
+        resources:
+          path: resources
+    v1p2beta1:
+      discovery_doc: cloudasset_v1p2beta1.json
+      mtls_endpoint_override: https://cloudasset.mtls.googleapis.com/
+    v1p4alpha1:
+      discovery_doc: cloudasset_v1p4alpha1.json
+      mtls_endpoint_override: https://cloudasset.mtls.googleapis.com/
+    v1p5beta1:
+      discovery_doc: cloudasset_v1p5beta1.json
+    v1p7beta1:
+      discovery_doc: cloudasset_v1p7beta1.json
+  cloudbilling:
+    v1:
+      discovery_doc: cloudbilling_v1.json
+      unelidable_request_methods:
+      - cloudbilling.projects.updateBillingInfo
+      resources:
+        projects:
+          path: projects/{projectsId}
+  cloudbuild:
+    v1:
+      discovery_doc: cloudbuild_v1.json
+      default: true
+      resources:
+        projects:
+          path: projects/{projectId}
+      # The following stanza is a workaround for b/24867445. It prevents elision
+      # of a request containing (project_id + xyz) into just an Xyz object.
+      unelidable_request_methods:
+      - cloudbuild.projects.builds.create
+      - cloudbuild.projects.builds.cancel
+    v1alpha1:
+      discovery_doc: cloudbuild_v1alpha1.json
+      resources:
+        projects:
+          path: projects/{projectId}
+      # The following stanza is a workaround for b/24867445. It prevents elision
+      # of a request containing (project_id + xyz) into just an Xyz object.
+      unelidable_request_methods:
+      - cloudbuild.projects.builds.create
+      - cloudbuild.projects.workerPools.patch
+    v1alpha2:
+      discovery_doc: cloudbuild_v1alpha2.json
+      resources:
+        projects:
+          path: projects/{projectId}
+    v1beta1:
+      discovery_doc: cloudbuild_v1beta1.json
+      resources:
+        projects:
+          path: projects/{projectId}
+    v2:
+      discovery_doc: cloudbuild_v2.json
+  cloudcommerceconsumerprocurement:
+    v1alpha1:
+      discovery_doc: cloudcommerceconsumerprocurement_v1alpha1.json
+  clouddebugger:
+    v2:
+      discovery_doc: clouddebugger_v2.json
+  clouddeploy:
+    v1:
+      default: true
+      discovery_doc: clouddeploy_v1.json
+  clouderrorreporting:
+    v1beta1:
+      discovery_doc: clouderrorreporting_v1beta1.json
+      resources:
+        projects:
+          path: projects/{projectId}
+  cloudfunctions:
+    v1:
+      discovery_doc: cloudfunctions_v1.json
+      default: true
+      resources:
+        providers.event_types:
+          path: providers/{triggerProvider}/eventTypes/{triggerEvent}
+        projects.buckets:
+          path: projects/_/buckets/{bucketId}
+    v2alpha:
+      discovery_doc: cloudfunctions_v2alpha.json
+    v2beta:
+      discovery_doc: cloudfunctions_v2beta.json
+    v2:
+      discovery_doc: cloudfunctions_v2.json
+  cloudidentity:
+    v1alpha1:
+      discovery_doc: cloudidentity_v1alpha1.json
+    v1beta1:
+      discovery_doc: cloudidentity_v1beta1.json
+      resources:
+        groups:
+          path: groups/{groupId}
+        groups.memberships:
+          path: groups/{groupId}/memberships/{membershipId}
+    v1:
+      discovery_doc: cloudidentity_v1.json
+      default: true
+      resources:
+        groups:
+          path: groups/{groupId}
+        groups.memberships:
+          path: groups/{groupId}/memberships/{membershipId}
+  cloudiot:
+    v1:
+      discovery_doc: cloudiot_v1.json
+      default: true
+      resources:
+        projects.locations.registries.devices.states:
+          path: projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}/states/{statesId}
+        projects.locations.registries.devices.configVersions:
+          path: projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/devices/{devicesId}/configVersions/{configVersion}
+  cloudkms:
+    v1:
+      discovery_doc: cloudkms_v1.json
+      default: true
+    v1alpha1:
+      discovery_doc: cloudkms_v1alpha1.json
+  cloudnumberregistry:
+    v1alpha:
+      discovery_doc: cloudnumberregistry_v1alpha.json
+      default: true
+  cloudresourcemanager:
+    v1beta1:
+      discovery_doc: cloudresourcemanager_v1beta1.json
+    v1:
+      discovery_doc: cloudresourcemanager_v1.json
+      default: true
+      # Explicitly specifying the Liens service because it does not expose a
+      # Get method.
+      resources:
+        liens:
+          path: liens/{liensId}
+    v2alpha1:
+      discovery_doc: cloudresourcemanager_v2alpha1.json
+    v2beta1:
+      discovery_doc: cloudresourcemanager_v2beta1.json
+      mtls_endpoint_override: https://cloudresourcemanager.mtls.googleapis.com/
+    v2:
+      discovery_doc: cloudresourcemanager_v2.json
+      mtls_endpoint_override: https://cloudresourcemanager.mtls.googleapis.com/
+    v3:
+      discovery_doc: cloudresourcemanager_v3.json
+  cloudshell:
+    v1alpha1:
+      discovery_doc: cloudshell_v1alpha1.json
+      enable_mtls: false
+      default: true
+    v1:
+      discovery_doc: cloudshell_v1.json
+      enable_mtls: false
+  cloudtasks:
+    v2beta2:
+      discovery_doc: cloudtasks_v2beta2.json
+    v2beta3:
+      discovery_doc: cloudtasks_v2beta3.json
+    v2:
+      discovery_doc: cloudtasks_v2.json
+      default: true
+  cloudtrace:
+    v2beta1:
+      discovery_doc: cloudtrace_v2beta1.json
+  cloudscheduler:
+    v1alpha1:
+      discovery_doc: cloudscheduler_v1alpha1.json
+    v1beta1:
+      discovery_doc: cloudscheduler_v1beta1.json
+    v1:
+      discovery_doc: cloudscheduler_v1.json
+      mtls_endpoint_override: https://cloudscheduler.mtls.googleapis.com/
+      default: true
+  composer:
+    v1alpha2:
+      discovery_doc: composer_v1alpha2.json
+    v1beta1:
+      discovery_doc: composer_v1beta1.json
+    v1:
+      discovery_doc: composer_v1.json
+      default: true
+  composerflex:
+    v1alpha1:
+      discovery_doc: composerflex_v1alpha1.json
+  compute:
+    alpha:
+      discovery_doc: compute_alpha.json
+      resources:
+        regionAcceleratorTypes:
+          path: projects/{project}/regions/{region}/acceleratorTypes/{acceleratorType}
+        regionMachineTypes:
+          path: projects/{project}/regions/{region}/machineTypes/{machineType}
+        nextHopGateways:
+          path: projects/{project}/global/gateways/{nextHopGateway}
+        regionSecurityPolicyRules:
+          path: projects/{project}/regions/{region}/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+        securityPolicyRules:
+          path: projects/{project}/global/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+    beta:
+      discovery_doc: compute_beta.json
+      unelidable_request_methods:
+      - compute.disks.resize
+      resources:
+        regionAcceleratorTypes:
+          path: projects/{project}/regions/{region}/acceleratorTypes/{acceleratorType}
+        nextHopGateways:
+          path: projects/{project}/global/gateways/{nextHopGateway}
+        regionSecurityPolicyRules:
+          path: projects/{project}/regions/{region}/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+        securityPolicyRules:
+          path: projects/{project}/global/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+    v1:
+      discovery_doc: compute_v1.json
+      default: true
+      resources:
+        nextHopGateways:
+          path: projects/{project}/global/gateways/{nextHopGateway}
+        regionSecurityPolicyRules:
+          path: projects/{project}/regions/{region}/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+        securityPolicyRules:
+          path: projects/{project}/global/securityPolicies/{securityPolicy}/securityPolicyRules/{securityPolicyRule}
+  container:
+    v1:
+      discovery_doc: container_v1.json
+      default: true
+      resources:
+        projects.zones:
+          path: projects/{projectId}/zones/{zoneId}
+    v1beta1:
+      discovery_doc: container_v1beta1.json
+      resources:
+        projects.zones:
+          path: projects/{projectId}/zones/{zoneId}
+    v1alpha1:
+      discovery_doc: container_v1alpha1.json
+      resources:
+        projects.zones:
+          path: projects/{projectId}/zones/{zoneId}
+  containeranalysis:
+    v1alpha1:
+      discovery_doc: containeranalysis_v1alpha1.json
+      default: true
+      resources:
+        projects.resources:
+          path: projects/{projectsId}/resources/{resourcesId}
+    v1beta1:
+      discovery_doc: containeranalysis_v1beta1.json
+      resources:
+        projects.resources:
+          path: projects/{projectsId}/resources/{resourcesId}
+    v1:
+      discovery_doc: containeranalysis_v1.json
+      resources:
+        projects.resources:
+          path: projects/{projectsId}/resources/{resourcesId}
+  datacatalog:
+    v1alpha3:
+      discovery_doc: datacatalog_v1alpha3.json
+    v1beta1:
+      discovery_doc: datacatalog_v1beta1.json
+      default: true
+      resources:
+        catalog:
+          path: catalog
+        entries:
+          path: entries
+        projects.locations.tagTemplates.fields:
+          path: projects/{projectsId}/locations/{locationsId}/tagTemplates/{tagTemplatesId}/fields/{fieldsId}
+        projects.locations.tagTemplates.fields.enumValues:
+          path: projects/{projectsId}/locations/{locationsId}/tagTemplates/{tagTemplatesId}/fields/{fieldsId}/enumValues/{enumValuesId}
+        projects.locations.entryGroups.entries.tags:
+          path: projects/{projectsId}/locations/{locationsId}/entryGroups/{entryGroupsId}/entries/{entriesId}/tags/{tagsId}
+    v1:
+      discovery_doc: datacatalog_v1.json
+      resources:
+        catalog:
+          path: catalog
+        entries:
+          path: entries
+        projects.locations.tagTemplates.fields:
+          path: projects/{projectsId}/locations/{locationsId}/tagTemplates/{tagTemplatesId}/fields/{fieldsId}
+        projects.locations.tagTemplates.fields.enumValues:
+          path: projects/{projectsId}/locations/{locationsId}/tagTemplates/{tagTemplatesId}/fields/{fieldsId}/enumValues/{enumValuesId}
+        projects.locations.entryGroups.entries.tags:
+          path: projects/{projectsId}/locations/{locationsId}/entryGroups/{entryGroupsId}/entries/{entriesId}/tags/{tagsId}
+  dataflow:
+    v1b3:
+      discovery_doc: dataflow_v1b3.json
+      resources:
+        projects:
+          path: projects/{projectId}
+        projects.locations:
+          path: projects/{projectId}/locations/{location}
+  datafusion:
+    v1beta1:
+      discovery_doc: datafusion_v1beta1.json
+      enable_mtls: false
+      resources:
+        projects.locations.keyRings.cryptoKeys:
+          path: projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
+  datamigration:
+    v1alpha2:
+      discovery_doc: datamigration_v1alpha2.json
+      default: true
+    v1:
+      discovery_doc: datamigration_v1.json
+  datapipelines:
+    v1:
+      discovery_doc: datapipelines_v1.json
+      resources:
+        projects.locations.pipelines.jobs:
+          path: projects/{projectsId}/locations/{locationsId}/pipelines/{pipelinesId}/jobs/{jobsId}
+  dataplex:
+    v1:
+      discovery_doc: dataplex_v1.json
+      default: true
+      resources:
+        projects.locations.lakes.actions:
+          path: projects/{projectsId}/locations/{locationsId}/lakes/{lakesId}/actions/{actionsId}
+        projects.locations.lakes.zones.actions:
+          path: projects/{projectsId}/locations/{locationsId}/lakes/{lakesId}/zones/{zonesId}/actions/{actionsId}
+        projects.locations.lakes.zones.assets.actions:
+          path: projects/{projectsId}/locations/{locationsId}/lakes/{lakesId}/zones/{zonesId}/assets/{assetsId}/actions/{actionsId}
+        projects.locations.lakes.environments.sessions:
+          path: projects/{projectsId}/locations/{locationsId}/lakes/{lakesId}/environments/{environmentId}/sessions/{sessionId}
+  dataproc:
+    v1:
+      discovery_doc: dataproc_v1.json
+      resources:
+        projects.regions:
+          path: projects/{projectId}/regions/{regionId}
+        projects.regions.operations_list:
+          path: projects/{projectId}/regions/{regionId}/operations
+        projects.regions.clusters:
+          path: projects/{projectId}/regions/{region}/clusters/{clusterName}
+        projects.regions.clusters.gceNodePools:
+          path: projects/{projectId}/regions/{region}/clusters/{clusterName}/gceNodePools/{gceNodePoolsId}
+        projects.regions.clusters.nodeGroups:
+          path: projects/{projectId}/regions/{region}/clusters/{clusterName}/nodeGroups/{nodeGroupsId}
+      default: true
+  dataprocgdc:
+    v1alpha1:
+      discovery_doc: dataprocgdc_v1alpha1.json
+      default: true
+  datastore:
+    v1beta1:
+      discovery_doc: datastore_v1beta1.json
+    v1:
+      discovery_doc: datastore_v1.json
+      default: true
+      resources:
+        projects:
+          path: projects/{projectId}
+        projects.indexes:
+          path: projects/{projectId}/indexes/{indexId}
+  datastream:
+    v1alpha1:
+      discovery_doc: datastream_v1alpha1.json
+      default: true
+    v1:
+      discovery_doc: datastream_v1.json
+
+  deploymentmanager:
+    alpha:
+      discovery_doc: deploymentmanager_alpha.json
+      mtls_endpoint_override: https://www.mtls.googleapis.com/deploymentmanager/alpha/
+    v2:
+      discovery_doc: deploymentmanager_v2.json
+      mtls_endpoint_override: https://www.mtls.googleapis.com/deploymentmanager/v2/
+      default: true
+    v2beta:
+      discovery_doc: deploymentmanager_v2beta.json
+      mtls_endpoint_override: https://www.mtls.googleapis.com/deploymentmanager/v2beta/
+  dialogflow:
+    v2:
+      discovery_doc: dialogflow_v2.json
+      resources:
+        projects.agent:
+          path: projects/{projectsId}/agent
+  discovery:
+    v1:
+      discovery_doc: discovery_v1.json
+      mtls_endpoint_override: https://www.mtls.googleapis.com/discovery/v1/
+      resources:
+        apis.versions:
+          path: '{api}/{version}'
+  dns:
+    v1:
+      discovery_doc: dns_v1.json
+      mtls_endpoint_override: https://dns.mtls.googleapis.com/dns/v1/
+      default: true
+    v1beta2:
+      discovery_doc: dns_v1beta2.json
+      mtls_endpoint_override: https://dns.mtls.googleapis.com/dns/v1beta2/
+    v1alpha2:
+      discovery_doc: dns_v1alpha2.json
+    v2:
+      discovery_doc: dns_v2.json
+      mtls_endpoint_override: https://dns.mtls.googleapis.com/dns/v2/
+      resources:
+        projects:
+          path: projects/{project}
+  documentai:
+    v1:
+      discovery_doc: documentai_v1.json
+      default: true
+      resources:
+        projects.locations.processors.humanReviewConfig:
+          path: projects/{projectsId}/locations/{locationsId}/processors/{processorsId}/humanReviewConfig
+  domains:
+    v1:
+      discovery_doc: domains_v1.json
+      enable_mtls: false
+      default: true
+    v1beta1:
+      discovery_doc: domains_v1beta1.json
+      enable_mtls: false
+    v1alpha2:
+      discovery_doc: domains_v1alpha2.json
+      enable_mtls: false
+  edgecontainer:
+    v1:
+      discovery_doc: edgecontainer_v1.json
+      enable_mtls: false
+    v1beta:
+      discovery_doc: edgecontainer_v1beta.json
+      enable_mtls: false
+    v1alpha:
+      discovery_doc: edgecontainer_v1alpha.json
+      enable_mtls: false
+      default: true
+  edgenetwork:
+    v1:
+      discovery_doc: edgenetwork_v1.json
+      enable_mtls: false
+    v1alpha1:
+      discovery_doc: edgenetwork_v1alpha1.json
+      enable_mtls: false
+      default: true
+  essentialcontacts:
+    v1alpha1:
+      discovery_doc: essentialcontacts_v1alpha1.json
+    v1beta1:
+      discovery_doc: essentialcontacts_v1beta1.json
+    v1:
+      discovery_doc: essentialcontacts_v1.json
+      default: true
+  eventarc:
+    v1:
+      discovery_doc: eventarc_v1.json
+      default: true
+    v1beta1:
+      discovery_doc: eventarc_v1beta1.json
+  eventarcpublishing:
+    v1:
+      discovery_doc: eventarcpublishing_v1.json
+      default: true
+  eventflow:
+    v1beta2:
+      discovery_doc: eventflow_v1beta2.json
+  events:
+    v1beta1:
+      discovery_doc: events_v1beta1.json
+  file:
+    v1p1alpha1:
+      discovery_doc: file_v1p1alpha1.json
+      default: true
+    v1beta1:
+      discovery_doc: file_v1beta1.json
+    v1:
+      discovery_doc: file_v1.json
+  firestore:
+    v1beta2:
+      discovery_doc: firestore_v1beta2.json
+      resources:
+        projects.databases.operations:
+          path: projects/{projectsId}/databases/{databasesId}/operations/{operationsId}
+    v1beta1:
+      discovery_doc: firestore_v1beta1.json
+    v1:
+      discovery_doc: firestore_v1.json
+      default: true
+  genomics:
+    v1:
+      discovery_doc: genomics_v1.json
+      default: true
+    v1alpha2:
+      discovery_doc: genomics_v1alpha2.json
+    v2alpha1:
+      discovery_doc: genomics_v2alpha1.json
+  gkebackup:
+    v1:
+      discovery_doc: gkebackup_v1.json
+      default: true
+  gkehub:
+    v1alpha:
+      discovery_doc: gkehub_v1alpha.json
+    v1alpha1:
+      discovery_doc: gkehub_v1alpha1.json
+    v1alpha2:
+      discovery_doc: gkehub_v1alpha2.json
+      # Include projects.locations.global.memberships collection explicitly for initializeHub.
+      # This is not imported automatically since gcloud skips collections that do not have a GET method.
+      resources:
+        projects.locations.global.memberships:
+          path: projects/{projectsId}/locations/global/memberships
+    v1beta:
+      discovery_doc: gkehub_v1beta.json
+    v1beta1:
+      discovery_doc: gkehub_v1beta1.json
+    v1:
+      discovery_doc: gkehub_v1.json
+      default: true
+      resources:
+        projects.locations.memberships:
+          path: projects/{projectsId}/locations/{locationsId}/memberships/{membershipsId}
+  gkemulticloud:
+    v1:
+      discovery_doc: gkemulticloud_v1.json
+  gkeonprem:
+    v1:
+      discovery_doc: gkeonprem_v1.json
+  gsuiteaddons:
+    v1:
+      discovery_doc: gsuiteaddons_v1.json
+      default: true
+      unelidable_request_methods:
+      # This is required in order to properly generate a replaceDeployment message due to the
+      # signature issue as specified in b/174574785
+      - gsuiteaddons.projects.deployments.replaceDeployment
+  healthcare:
+    v1alpha2:
+      discovery_doc: healthcare_v1alpha2.json
+      # Include projects.locations.services.deidentify and projects.locations.services.nlp
+      # collection explicitly. This is not imported automatically since gcloud skips collections
+      # that do not have a GET method.
+      resources:
+        projects.locations.services.deidentify:
+          path: projects/{projectsId}/locations/{locationsId}/services/deidentify
+        projects.locations.services.nlp:
+          path: projects/{projectsId}/locations/{locationsId}/services/nlp
+    v1beta1:
+      discovery_doc: healthcare_v1beta1.json
+      resources:
+        projects.locations.services.nlp:
+          path: projects/{projectsId}/locations/{locationsId}/services/nlp
+    v1:
+      discovery_doc: healthcare_v1.json
+      default: true
+      resources:
+        projects.locations.services.nlp:
+          path: projects/{projectsId}/locations/{locationsId}/services/nlp
+  oslogin:
+    v1alpha:
+      discovery_doc: oslogin_v1alpha.json
+      resources:
+        users.projects:
+          path: users/{user}/projects/{project}
+    v1beta:
+      discovery_doc: oslogin_v1beta.json
+      resources:
+        users.projects:
+          path: users/{user}/projects/{project}
+    v1:
+      discovery_doc: oslogin_v1.json
+      default: true
+      resources:
+        users.projects:
+          path: users/{user}/projects/{project}
+  osconfig:
+    v1alpha:
+      discovery_doc: osconfig_v1alpha.json
+      resources:
+        projects.locations.instances:
+          path: projects/{projectsId}/locations/{locationsId}/instances/{instancesId}
+        projects.locations.instances.vulnerabilityReports:
+          path: projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/vulnerabilityReport
+        projects.locations.instances.inventories:
+          path: projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/inventory
+    v1beta:
+      discovery_doc: osconfig_v1beta.json
+    v1:
+      discovery_doc: osconfig_v1.json
+      default: true
+  iam:
+    v1beta:
+      discovery_doc: iam_v1beta.json
+    v1:
+      discovery_doc: iam_v1.json
+      default: true
+      resources:
+        iamPolicies:
+          path: iamPolicies
+    v2alpha:
+      discovery_doc: iam_v2alpha.json
+    v2beta:
+      discovery_doc: iam_v2beta.json
+    v2:
+      discovery_doc: iam_v2.json
+      resources:
+        iamPolicies:
+          path: iamPolicies
+    v3beta:
+      discovery_doc: iam_v3beta.json
+  iamcredentials:
+    v1:
+      discovery_doc: iamcredentials_v1.json
+      resources:
+        serviceAccounts:
+          path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
+  iap:
+    v1beta1:
+      discovery_doc: iap_v1beta1.json
+      resources:
+        projects:
+          path: projects/{project}/iap_web
+        projects.iap_web:
+          path: projects/{project}/iap_web/{iapWebId}
+        projects.iap_web.services:
+          path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}
+        projects.iap_web.services.versions:
+          path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
+    v1:
+      discovery_doc: iap_v1.json
+      default: true
+      resources:
+        projects.iap_web:
+          path: projects/{project}/iap_web/{iapWebId}
+        projects.iap_web.services:
+          path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}
+        projects.iap_web.services.versions:
+          path: projects/{project}/iap_web/{iapWebId}/services/{serviceId}/versions/{versionId}
+  ids:
+    v1:
+      discovery_doc: ids_v1.json
+      enable_mtls: false
+      resources:
+        projects:
+          path: projects/{projectId}
+        projects.locations:
+          path: projects/{projectId}/locations/{locationId}
+        projects.locations.endpoints:
+          path: projects/{projectId}/locations/{locationId}/endpoints/{endpointId}
+  kmsinventory:
+    v1:
+      discovery_doc: kmsinventory_v1.json
+      default: true
+  krmapihosting:
+    v1alpha1:
+      discovery_doc: krmapihosting_v1alpha1.json
+      default: false
+    v1:
+      discovery_doc: krmapihosting_v1.json
+      default: true
+  language:
+    v1beta2:
+      discovery_doc: language_v1beta2.json
+      mtls_endpoint_override: https://language.mtls.googleapis.com/
+      resources:
+        documents:
+          path: documents
+    v1:
+      discovery_doc: language_v1.json
+      default: true
+      resources:
+        documents:
+          path: documents
+  lifesciences:
+    v2beta:
+      discovery_doc: lifesciences_v2beta.json
+      default: true
+  managedidentities:
+    v1alpha1:
+      discovery_doc: managedidentities_v1alpha1.json
+    v1beta1:
+      discovery_doc: managedidentities_v1beta1.json
+    v1:
+      discovery_doc: managedidentities_v1.json
+      default: true
+  logging:
+    v2:
+      discovery_doc: logging_v2.json
+      gcloud_gapic_library: google/logging/v2:logging_v2_py
+      default: true
+  looker:
+    v1alpha1:
+      discovery_doc: looker_v1alpha1.json
+    v1:
+      discovery_doc: looker_v1.json
+      default: true
+  memcache:
+    v1beta2:
+      discovery_doc: memcache_v1beta2.json
+    v1:
+      discovery_doc: memcache_v1.json
+      default: true
+  metastore:
+    v1alpha:
+      discovery_doc: metastore_v1alpha.json
+      resources:
+        projects.locations.services.databases:
+          path: projects/{projectsId}/locations/{locationsId}/services/{servicesId}/databases/{databasesId}
+        projects.locations.services.databases.tables:
+          path: projects/{projectsId}/locations/{locationsId}/services/{servicesId}/databases/{databasesId}/tables/{tablesId}
+    v1beta:
+      discovery_doc: metastore_v1beta.json
+      resources:
+        projects.locations.services.databases:
+          path: projects/{projectsId}/locations/{locationsId}/services/{servicesId}/databases/{databasesId}
+        projects.locations.services.databases.tables:
+          path: projects/{projectsId}/locations/{locationsId}/services/{servicesId}/databases/{databasesId}/tables/{tablesId}
+    v1:
+      discovery_doc: metastore_v1.json
+      default: true
+  microservices:
+    v1alpha1:
+      discovery_doc: microservices_v1alpha1.json
+  ml:
+    v1:
+      discovery_doc: ml_v1.json
+  monitoring:
+    v3:
+      discovery_doc: monitoring_v3.json
+      default: true
+      mtls_endpoint_override: https://monitoring.mtls.googleapis.com/
+      resources:
+        projects.alertPolicies.conditions:
+          path: projects/{projectsId}/alertPolicies/{alertPoliciesId}/conditions/{conditionsId}
+        uptimeCheckIps:
+          path: uptimeCheckIps
+      unelidable_request_methods:
+      - monitoring.projects.alertPolicies.create
+      - monitoring.projects.notificationChannels.create
+    v1:
+      discovery_doc: monitoring_v1.json
+      default: false
+      unelidable_request_methods:
+      # This is required in order to properly generate a PatchRequest message. Without this, the
+      # generated client will simply use the Dashboard message as the request message for PATCH.
+      - monitoring.projects.dashboards.patch
+  netapp:
+    v1alpha1:
+      discovery_doc: netapp_v1alpha1.json
+      default: true
+    v1beta1:
+      discovery_doc: netapp_v1beta1.json
+      default: false
+    v1:
+      discovery_doc: netapp_v1.json
+      default: false
+  networkconnectivity:
+    v1alpha1:
+      discovery_doc: networkconnectivity_v1alpha1.json
+      default: true
+    v1beta:
+      discovery_doc: networkconnectivity_v1beta.json
+    v1:
+      discovery_doc: networkconnectivity_v1.json
+  networkmanagement:
+    v1:
+      discovery_doc: networkmanagement_v1.json
+      default: true
+    v1beta1:
+      discovery_doc: networkmanagement_v1beta1.json
+    v1alpha1:
+      discovery_doc: networkmanagement_v1alpha1.json
+  networkservices:
+    v1alpha1:
+      discovery_doc: networkservices_v1alpha1.json
+      enable_mtls: false
+    v1beta1:
+      discovery_doc: networkservices_v1beta1.json
+      enable_mtls: false
+    v1:
+      discovery_doc: networkservices_v1.json
+      enable_mtls: false
+      default: true
+  networksecurity:
+    v1:
+      discovery_doc: networksecurity_v1.json
+      enable_mtls: false
+      default: true
+    v1beta1:
+      discovery_doc: networksecurity_v1beta1.json
+      enable_mtls: false
+    v1alpha1:
+      discovery_doc: networksecurity_v1alpha1.json
+      enable_mtls: false
+  notebooks:
+    v1:
+      discovery_doc: notebooks_v1.json
+      default: true
+    v1beta1:
+      discovery_doc: notebooks_v1beta1.json
+    v2:
+      discovery_doc: notebooks_v2.json
+  orglifecycle:
+    v1:
+      discovery_doc: orglifecycle_v1.json
+      default: true
+  orgpolicy:
+    v2:
+      discovery_doc: orgpolicy_v2.json
+      default: true
+      unelidable_request_methods:
+      - orgpolicy.organizations.customConstraints.patch
+  parallelstore:
+    v1alpha:
+      discovery_doc: parallelstore_v1alpha.json
+      default: true
+      resources:
+        projects.networks:
+          path: projects/{projectsId}/global/networks/{networksId}
+        projects.regions.addresses:
+          path: projects/{projectsId}/regions/{regionsId}/addresses/{addressesId}
+    v1beta:
+      discovery_doc: parallelstore_v1beta.json
+      resources:
+        projects.networks:
+          path: projects/{projectsId}/global/networks/{networksId}
+        projects.regions.addresses:
+          path: projects/{projectsId}/regions/{regionsId}/addresses/{addressesId}
+  policytroubleshooter:
+    v1beta:
+      enable_mtls: false
+      resources:
+        iam:
+          path: iam
+      discovery_doc: policytroubleshooter_v1beta.json
+    v1:
+      default: true
+      enable_mtls: false
+      resources:
+        iam:
+          path: iam
+      discovery_doc: policytroubleshooter_v1.json
+    v2alpha1:
+      enable_mtls: false
+      resources:
+        iam:
+          path: iam
+      discovery_doc: policytroubleshooter_v2alpha1.json
+    v3alpha:
+      enable_mtls: false
+      resources:
+        iam:
+          path: iam
+      discovery_doc: policytroubleshooter_v3alpha.json
+    v3beta:
+      enable_mtls: false
+      resources:
+        iam:
+          path: iam
+      discovery_doc: policytroubleshooter_v3beta.json
+    v3:
+      enable_mtls: false
+      resources:
+        iam:
+          path: iam
+      discovery_doc: policytroubleshooter_v3.json
+  policyanalyzer:
+    v1:
+      discovery_doc: policyanalyzer_v1.json
+    v1beta1:
+      default: true
+      discovery_doc: policyanalyzer_v1beta1.json
+  policysimulator:
+    v1:
+      default: true
+      resources:
+        simulator:
+          path: simulator
+      discovery_doc: policysimulator_v1.json
+    v1alpha:
+      resources:
+        simulator:
+          path: simulator
+      discovery_doc: policysimulator_v1alpha.json
+    v1beta:
+      resources:
+        simulator:
+          path: simulator
+      discovery_doc: policysimulator_v1beta.json
+  privateca:
+    v1:
+      default: true
+      discovery_doc: privateca_v1.json
+  privilegedaccessmanager:
+    v1alpha:
+      discovery_doc: privilegedaccessmanager_v1alpha.json
+      default: true
+  publicca:
+    v1:
+      default: true
+      discovery_doc: publicca_v1.json
+      enable_mtls: false
+    v1beta1:
+      discovery_doc: publicca_v1beta1.json
+      enable_mtls: false
+    v1alpha1:
+      discovery_doc: publicca_v1alpha1.json
+      enable_mtls: false
+  pubsub:
+    v1:
+      discovery_doc: pubsub_v1.json
+      resources:
+        projects.snapshots:
+          path: projects/{projectsId}/snapshots/{snapshotsId}
+  pubsublite:
+    v1:
+      discovery_doc: pubsublite_v1.json
+      resources:
+        admin.projects.locations.operations:
+          path: projects/{projectsId}/locations/{locationsId}/operations/{operationsId}
+        admin.projects.locations.topics.subscriptions:
+          path: admin/projects/{projectsId}/locations/{locationsId}/topics/{topicsId}/subscriptions
+        admin.projects.locations.reservations.topics:
+          path: admin/projects/{projectsId}/locations/{locationsId}/reservations/{reservationsId}/topics
+        cursor.projects.locations.subscriptions:
+          path: cursor/projects/{projectsId}/locations/{locationsId}/subscriptions/{subscriptionsId}
+  recaptchaenterprise:
+    v1:
+      discovery_doc: recaptchaenterprise_v1.json
+      default: true
+  redis:
+    v1alpha1:
+      discovery_doc: redis_v1alpha1.json
+    v1beta1:
+      discovery_doc: redis_v1beta1.json
+    v1:
+      discovery_doc: redis_v1.json
+      default: true
+  resourcesettings:
+    v1alpha1:
+      discovery_doc: resourcesettings_v1alpha1.json
+      unelidable_request_methods:
+      - resourcesettings.folders.settings.value.create
+      - resourcesettings.folders.settings.updateValue
+      - resourcesettings.organizations.settings.value.create
+      - resourcesettings.organizations.settings.updateValue
+      - resourcesettings.projects.settings.value.create
+      - resourcesettings.projects.settings.updateValue
+    v1:
+      discovery_doc: resourcesettings_v1.json
+      unelidable_request_methods:
+      - resourcesettings.folders.settings.get
+      - resourcesettings.folders.settings.patch
+      - resourcesettings.organizations.settings.get
+      - resourcesettings.organizations.settings.patch
+      - resourcesettings.projects.settings.get
+      - resourcesettings.projects.settings.patch
+      default: true
+  run:
+    v1alpha1:
+      discovery_doc: run_v1alpha1.json
+    v1:
+      discovery_doc: run_v1.json
+      default: true
+      resources:
+        projects.locations.jobs:
+          path: projects/{projectsId}/locations/{locationsId}/jobs/{jobsId}
+    v2:
+      discovery_doc: run_v2.json
+  runapps:
+    v1alpha1:
+      discovery_doc: runapps_v1alpha1.json
+  runtimeconfig:
+    v1beta1:
+      discovery_doc: runtimeconfig_v1beta1.json
+  sasportal:
+    v1alpha1:
+      discovery_doc: sasportal_v1alpha1.json
+  seclm:
+    v1alpha:
+      discovery_doc: seclm_v1alpha.json
+      default: true
+  secretmanager:
+    v1:
+      discovery_doc: secretmanager_v1.json
+      default: true
+  securedlandingzone:
+    v1beta:
+      discovery_doc: securedlandingzone_v1beta.json
+      mtls_endpoint_override: https://securedlandingzone.mtls.googleapis.com/
+      default: true
+  securitycenter:
+    v1beta2:
+      discovery_doc: securitycenter_v1beta2.json
+    v1:
+      discovery_doc: securitycenter_v1.json
+      resources:
+        organizations.sources.findings:
+          path: organizations/{organizationsId}/sources/{sourcesId}/findings/{findingId}
+        organizations.assets:
+          path: organizations/{organizationsId}/assets/{assetsId}
+        organizations.bigQueryExports:
+          path: organizations/{organizationsId}/bigQueryExports/{bigQueryExportId}
+        organizations.notificationConfigs:
+          path: organizations/{organizationsId}/notificationConfigs/{notificationConfigsId}
+        # We have to explicitly add this resource collection for bulk mute API.
+        organizations.findings:
+          path: organizations/{organizationsId}/findings/{findingId}
+        organizations.securityHealthAnalyticsSettings.customModules:
+          path: organizations/{organizationsId}/securityHealthAnalyticsSettings/customModules/{customModulesId}
+      default: true
+    v2:
+      discovery_doc: securitycenter_v2.json
+      resources:
+        organizations.sources.locations.findings:
+          path: organizations/{organizationsId}/sources/{sourcesId}/locations/{locationId}/findings/{findingId}
+        organizations.locations.bigQueryExports:
+          path: organizations/{organizationsId}/locations/{locationId}/bigQueryExports/{bigQueryExportId}
+        organizations.locations.notificationConfigs:
+          path: organizations/{organizationsId}/locations/{locationId}/notificationConfigs/{notificationConfigsId}
+        organizations.sources.findings:
+          path: organizations/{organizationsId}/sources/{sourcesId}/findings/{findingId}
+        organizations.bigQueryExports:
+          path: organizations/{organizationsId}/bigQueryExports/{bigQueryExportId}
+        organizations.notificationConfigs:
+          path: organizations/{organizationsId}/notificationConfigs/{notificationConfigsId}
+        # We have to explicitly add this resource collection for bulk mute API.
+        organizations.locations.findings:
+          path: organizations/{organizationsId}/locations/{locationId}/findings/{findingId}
+        organizations.findings:
+          path: organizations/{organizationsId}/findings/{findingId}
+      default: false
+  securitycentermanagement:
+    v1:
+      discovery_doc: securitycentermanagement_v1.json
+      default: true
+  securityposture:
+    v1alpha:
+      discovery_doc: securityposture_v1alpha.json
+      default: false
+      resources:
+        organizations.locations.reports:
+          path: organizations/{organizationsId}/locations/{locationsId}/reports
+    v1:
+      discovery_doc: securityposture_v1.json
+      default: true
+  serviceconsumermanagement:
+    v1beta1:
+      discovery_doc: serviceconsumermanagement_v1beta1.json
+      default: true
+  servicedirectory:
+    v1:
+      discovery_doc: servicedirectory_v1.json
+      default: true
+    v1beta1:
+      discovery_doc: servicedirectory_v1beta1.json
+      default: false
+  servicemanagement:
+    v1:
+      discovery_doc: servicemanagement_v1.json
+  servicenetworking:
+    v1beta:
+      discovery_doc: servicenetworking_v1beta.json
+      mtls_endpoint_override: https://servicenetworking.mtls.googleapis.com/
+      default: false
+    v1:
+      discovery_doc: servicenetworking_v1.json
+      default: true
+  serviceusage:
+    v1alpha:
+      discovery_doc: serviceusage_v1alpha.json
+      mtls_endpoint_override: https://serviceusage.mtls.googleapis.com/
+    v1beta1:
+      discovery_doc: serviceusage_v1beta1.json
+    v1:
+      discovery_doc: serviceusage_v1.json
+      default: true
+    v2:
+      discovery_doc: serviceusage_v2.json
+    v2alpha:
+      discovery_doc: serviceusage_v2alpha.json
+  cloudquotas:
+    v1:
+      discovery_doc: cloudquotas_v1.json
+  source:
+    v1:
+      discovery_doc: source_v1.json
+      mtls_endpoint_override: https://source.mtls.googleapis.com/
+  sourcerepo:
+    v1:
+      discovery_doc: sourcerepo_v1.json
+  spanner:
+    v1:
+      discovery_doc: spanner_v1.json
+      gcloud_gapic_library: google/spanner/v1:spanner_v1_py
+      resources:
+        projects.instances.databases.roles:
+          path: projects/{projectsId}/instances/{instancesId}/databases/{databasesId}/databaseRoles/{rolesName}
+          gapic_compatible: false
+      default: true
+  speech:
+    v1:
+      discovery_doc: speech_v1.json
+      resources:
+        speech:
+          path: speech
+      default: true
+    v1p1beta1:
+      discovery_doc: speech_v1p1beta1.json
+      resources:
+        speech:
+          path: speech
+    v2:
+      discovery_doc: speech_v2.json
+  sqladmin:
+    v1beta4:
+      discovery_doc: sqladmin_v1beta4.json
+      unelidable_request_methods:
+      - sql.instances.insert
+  stream:
+    v1:
+      discovery_doc: stream_v1.json
+      default: false
+    v1alpha1:
+      discovery_doc: stream_v1alpha1.json
+      default: true
+  storage:
+    v1:
+      discovery_doc: storage_v1.json
+      default: true
+      resources:
+        projects:
+          path: projects/{project}
+    v2:
+      gcloud_gapic_library: google/storage/v2:storage_v2_py
+  storageinsights:
+    v1:
+      discovery_doc: storageinsights_v1.json
+  storagetransfer:
+    v1:
+      discovery_doc: storagetransfer_v1.json
+  connectors:
+    v1:
+      discovery_doc: connectors_v1.json
+  testing:
+    v1:
+      discovery_doc: testing_v1.json
+      # Methods in generated apis that should not have their requests elided.
+      # Currently if a request body has fields with the same names as all of the
+      # url parameters for a given method, then no request object is created for
+      # these methods. In some cases this is undesired because the value in the
+      # url and the value in the request body should be different and the
+      # request message is still needed.
+      unelidable_request_methods:
+      - testing.projects.testMatrices.create
+      resources:
+        projects:
+          path: projects/{projectsId}
+  toolresults:
+    v1beta3:
+      discovery_doc: toolresults_v1beta3.json
+  transcoder:
+    v1:
+      discovery_doc: transcoder_v1.json
+      default: true
+  transferappliance:
+    v1alpha1:
+      discovery_doc: transferappliance_v1alpha1.json
+  tpu:
+    v1alpha1:
+      discovery_doc: tpu_v1alpha1.json
+      default: true
+    v1:
+      discovery_doc: tpu_v1.json
+    v2alpha1:
+      discovery_doc: tpu_v2alpha1.json
+      resources:
+        projects.locations.reservations:
+          path: projects/{projectId}/locations/{locationId}/reservations/{reservationId}
+    v2:
+      discovery_doc: tpu_v2.json
+  videointelligence:
+    v1:
+      discovery_doc: videointelligence_v1.json
+      default: true
+      resources:
+        videos:
+          path: videos
+  vision:
+    v1:
+      discovery_doc: vision_v1.json
+      resources:
+        images:
+          path: images
+        projects.locations.productSets.products:
+          path: projects/{projectsId}/locations/{locationsId}/productSets/{productSetsId}/products
+        files:
+          path: files
+  dlp:
+    v2:
+      discovery_doc: dlp_v2.json
+      resources:
+        projects.content:
+          path: projects/{projectsId}
+          enable_uri_parsing: false
+        projects.image:
+          path: projects/{projectsId}
+          enable_uri_parsing: false
+        infoTypes:
+          path: infoTypes
+          enable_uri_parsing: false
+  vpcaccess:
+    v1alpha1:
+      discovery_doc: vpcaccess_v1alpha1.json
+    v1beta1:
+      discovery_doc: vpcaccess_v1beta1.json
+    v1:
+      discovery_doc: vpcaccess_v1.json
+      default: true
+  remotebuildexecution:
+    v1alpha:
+      discovery_doc: remotebuildexecution_v1alpha.json
+  bigquery:
+    v2:
+      discovery_doc: bigquery_v2.json
+      mtls_endpoint_override: https://bigquery.mtls.googleapis.com/bigquery/v2/
+      resources:
+        projects:
+          path: projects/{projectId}
+        datasets:
+          path: projects/{projectId}/datasets/{datasetId}
+        jobs:
+          path: projects/{projectId}/jobs/{jobId}
+        tables:
+          path: projects/{projectId}/datasets/{datasetId}/tables/{tableId}
+        tabledata:
+          path: projects/{projectId}/datasets/{datasetId}/tables/{tableId}
+          enable_uri_parsing: false
+  bigquerydatatransfer:
+    v1:
+      discovery_doc: bigquerydatatransfer_v1.json
+  websecurityscanner:
+    v1beta:
+      discovery_doc: websecurityscanner_v1beta.json
+      resources:
+        projects.scanConfigs.scanRuns.crawledUrls:
+          path: projects/{projectsId}/scanConfigs/{scanConfigsId}/scanRuns/{scanRunsId}
+          enable_uri_parsing: false
+  recommender:
+    v1alpha2:
+      discovery_doc: recommender_v1alpha2.json
+    v1beta1:
+      discovery_doc: recommender_v1beta1.json
+    v1:
+      discovery_doc: recommender_v1.json
+      default: true
+  translate:
+    v3beta1:
+      discovery_doc: translate_v3beta1.json
+      default: true
+    v3:
+      discovery_doc: translate_v3.json
+  workflowexecutions:
+    v1alpha1:
+      discovery_doc: workflowexecutions_v1alpha1.json
+    v1beta:
+      discovery_doc: workflowexecutions_v1beta.json
+    v1:
+      discovery_doc: workflowexecutions_v1.json
+      default: true
+  workflows:
+    v1alpha1:
+      discovery_doc: workflows_v1alpha1.json
+    v1beta:
+      discovery_doc: workflows_v1beta.json
+    v1:
+      discovery_doc: workflows_v1.json
+      default: true
+  sddc:
+    v1alpha1:
+      discovery_doc: sddc_v1alpha1.json
+  vmwareengine:
+    v1:
+      discovery_doc: vmwareengine_v1.json
+      default: true
+      resources:
+        projects.locations.privateClouds.dnsForwarding:
+          path: projects/{project}/locations/{location}/privateClouds/{private_cloud}/dnsForwarding
+  ondemandscanning:
+    v1beta1:
+      discovery_doc: ondemandscanning_v1beta1.json
+      default: true
+      resources:
+        projects.locations.scans:
+          path: projects/{projectsId}/locations/{locationsId}/scans/{scansId}
+        projects.locations.scans.vulnerabilities:
+          path: projects/{projectsId}/locations/{locationsId}/scans/{scansId}/vulnerabilities
+    v1:
+      discovery_doc: ondemandscanning_v1.json
+      resources:
+        projects.locations.scans:
+          path: projects/{projectsId}/locations/{locationsId}/scans/{scansId}
+        projects.locations.scans.vulnerabilities:
+          path: projects/{projectsId}/locations/{locationsId}/scans/{scansId}/vulnerabilities
+  mediaasset:
+    v1alpha:
+      discovery_doc: mediaasset_v1alpha.json
+      default: true
+  baremetalsolution:
+    v1:
+      discovery_doc: baremetalsolution_v1.json
+      enable_mtls: false
+    v2:
+      discovery_doc: baremetalsolution_v2.json
+      default: true
+      enable_mtls: false
+      resources:
+        projects.locations.sshKeys:
+          path: projects/{projectsId}/locations/{locationsId}/sshKeys/{sshKeysId}
+          enable_uri_parsing: true
+  marketplacesolutions:
+    v1alpha1:
+      discovery_doc: marketplacesolutions_v1alpha1.json
+      default: true
+  workstations:
+    v1beta:
+      discovery_doc: workstations_v1beta.json
+    v1:
+      discovery_doc: workstations_v1.json
+      default: true
+  securesourcemanager:
+    v1:
+      discovery_doc: securesourcemanager_v1.json
+      default: true
+  telcoautomation:
+    v1alpha1:
+      discovery_doc: telcoautomation_v1alpha1.json
+    v1:
+      discovery_doc: telcoautomation_v1.json
+      default: true
+  workloadcertificate:
+    v1alpha1:
+      discovery_doc: workloadcertificate_v1alpha1.json
+      default: true
+      # Include projects.locations.workloadCertificateFeature collection explicitly.
+      # This is not imported automatically since gcloud skips collections that do not have a GET
+      # method. Workload Certificate Feature only implemented GetWorkloadCertificateFeature.
+      resources:
+        projects.locations.workloadCertificateFeature:
+          path: projects/{projectsId}/locations/global/workloadCertificateFeature
+  messagestreams:
+    v1alpha:
+      discovery_doc: messagestreams_v1alpha.json
+      default: true
+      resources:
+        projects.serviceAccounts:
+          path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
+        projects.regions:
+          path: projects/{projectsId}/regions/{regionsId}
+        projects.regions.networkAttachments:
+          path: projects/{projectsId}/regions/{regionsId}/networkAttachments/{networkAttachmentsId}
+        projects.locations.services:
+          path: projects/{projectsId}/locations/{locationsId}/services/{servicesId}
+        projects.locations.functions:
+          path: projects/{projectsId}/locations/{locationsId}/functions/{functionsId}
+  apphub:
+    v1alpha:
+      discovery_doc: apphub_v1alpha.json
+    v1:
+      discovery_doc: apphub_v1.json
+      default: true
+  faultinjectiontesting:
+    v1alpha1:
+      discovery_doc: faultinjectiontesting_v1alpha1.json
+      default: true
+  vmmigration:
+    v1:
+      discovery_doc: vmmigration_v1.json
+      default: true
+    v1alpha1:
+      discovery_doc: vmmigration_v1alpha1.json
+canonical_surfaces:
+  accessapproval:
+    name: accessapproval
+    command: access-approval
+  accesscontextmanager:
+    name: accesscontextmanager
+    command: access-context-manager
+  ai:
+    name: ai
+    command: ai
+  aiplatform:
+    name: aiplatform
+    command: ai-platform
+  alloydb:
+    name: alloydb
+    command: alloydb
+  anthosevents:
+    name: anthosevents
+    command: anthos
+  anthospolicycontrollerstatus_pa:
+    name: anthospolicycontrollerstatus_pa
+    command: container fleet policycontroller
+  apigateway:
+    name: apigateway
+    command: api-gateway
+  appconfigmanager:
+    name: appconfigmanager
+    command: app-config-manager
+    hidden: true
+  apigee:
+    name: apigee
+    command: apigee
+  apigeeregistry:
+    name: apigeeregistry
+    command: apigee-registry
+    hidden: true
+  appengine:
+    name: appengine
+    command: app
+  apphub:
+    name: apphub
+    command: apphub
+  artifactregistry:
+    name: artifactregistry
+    command: artifacts
+  assuredworkloads:
+    name: assuredworkloads
+    command: assured
+  auditmanager:
+    name: auditmanager
+    command: audit-manager
+  authztoolkit:
+    name: authztoolkit
+    command: authz-toolkit
+    hidden: true
+  backupdr:
+    name: backupdr
+    command: backup-dr
+    hidden: true
+  baremetalsolution:
+    name: baremetalsolution
+    command: bms
+  batch:
+    name: batch
+    command: batch
+    hidden: true
+  beyondcorp:
+    name: beyondcorp
+    hidden: true
+  bigquery:
+    name: bigquery
+    hidden: true
+  bigtableadmin:
+    name: bigtableadmin
+    command: bigtable
+  binaryauthorization:
+    name: binaryauthorization
+    command: container binauthz
+  categorymanager:
+    name: categorymanager
+    hidden: true
+  certificatemanager:
+    name: certificatemanager
+    command: certificate-manager
+  cloudasset:
+    name: cloudasset
+    command: asset
+  cloudbilling:
+    name: cloudbilling
+    command: billing
+  cloudbuild:
+    name: cloudbuild
+    command: builds
+  cloudcommerceconsumerprocurement:
+    name: cloudcommerceconsumerprocurement
+    command: commerce-procurement
+  clouddebugger:
+    name: clouddebugger
+    command: debug
+  clouddeploy:
+    name: clouddeploy
+    command: deploy
+  clouderrorreporting:
+    name: clouderrorreporting
+    command: error-reporting
+  cloudfunctions:
+    name: cloudfunctions
+    command: functions
+  cloudidentity:
+    name: cloudidentity
+    command: identity
+  cloudiot:
+    name: cloudiot
+    command: iot
+  cloudkms:
+    name: cloudkms
+    command: kms
+  cloudnumberregistry:
+    name: cloudnumberregistry
+    hidden: true
+  cloudresourcemanager:
+    name: cloudresourcemanager
+    command: projects
+  cloudresourcesearch:
+    name: cloudresourcesearch
+    hidden: true
+  cloudscheduler:
+    name: cloudscheduler
+    command: scheduler
+  cloudtasks:
+    name: cloudtasks
+    command: tasks
+  cloudtrace:
+    name: cloudtrace
+    command: trace
+  composer:
+    name: composer
+    command: composer
+  compute:
+    name: compute
+    help_text: |-
+      'Overrides API endpoint for `gcloud compute` command group. '
+      'For Private Service Connect usage, see '
+      'https://cloud.google.com/vpc/docs/configure-private-service-connect-apis#using-endpoints'
+  inframanager:
+    name: config
+    command: infra-manager
+  container:
+    name: container
+    command: container
+  containeranalysis:
+    name: containeranalysis
+    hidden: true
+  datacatalog:
+    name: datacatalog
+    command: data-catalog
+  dataflow:
+    name: dataflow
+    command: dataflow
+  datafusion:
+    name: datafusion
+    command: data-fusion
+  datamigration:
+    name: datamigration
+    command: database-migration
+  datapol:
+    name: datapol
+    hidden: true
+  datapipelines:
+    name: datapipelines
+    command: datapipelines
+  dataplex:
+    name: dataplex
+    command: dataplex
+  dataproc:
+    name: dataproc
+    command: dataproc
+  dataprocgdc:
+    name: dataprocgdc
+    hidden: true
+  datastore:
+    name: datastore
+    command: datastore
+  datastream:
+    name: datastream
+    command: datastream
+  deploymentmanager:
+    name: deploymentmanager
+    command: deployment-manager
+  discovery:
+    name: discovery
+    hidden: true
+  dns:
+    name: dns
+    command: dns
+  domains:
+    name: domains
+    command: domains
+  edgecontainer:
+    name: edgecontainer
+    command: edge-container
+  edgenetwork:
+    name: edgenetwork
+    command: edge-cloud networking
+  eventarc:
+    name: eventarc
+    command: eventarc
+  eventarcpublishing:
+    name: eventarcpublishing
+    command:  eventarc publish
+  events:
+    name: events
+    command: events
+  faultinjectiontesting:
+    name: faultinjectiontesting
+    command: fault-injection
+  file:
+    name: file
+    command: filestore
+  firestore:
+    name: firestore
+    command: firestore
+  genomics:
+    name: genomics
+    command: genomics
+  gkebackup:
+    name: gkebackup
+    hidden: true
+  gkehub:
+    name: gkehub
+    hidden: true
+  gkemulticloud:
+    name: gkemulticloud
+    help_text: |-
+      'Overrides API endpoint for `gcloud container aws`, '
+      '`gcloud container azure` and `gcloud container attached` '
+      'command groups.'
+  gkeonprem:
+    name: gkeonprem
+    hidden: true
+  healthcare:
+    name: healthcare
+    command: healthcare
+  iam:
+    name: iam
+    command: iam
+  iamcredentials:
+    name: iamcredentials
+    command: iam
+  iap:
+    name: iap
+    command: iap
+  ids:
+    name: ids
+    command: ids
+  krmapihosting:
+    name: krmapihosting
+    command: anthos config controller
+  kubernetespolicy:
+    name: kubernetespolicy
+    hidden: true
+  language:
+    name: language
+    command: ml language
+  lifesciences:
+    name: lifesciences
+    command: lifesciences
+  logging:
+    name: logging
+    command: logging
+  looker:
+    name: looker
+    command: looker
+  managedidentities:
+    name: managedidentities
+    command: active-directory
+  manager:
+    name: manager
+    hidden: true
+  marketplacesolutions:
+    name: marketplacesolutions
+    command: mps
+  mediaasset:
+    name: mediaasset
+    command: media
+  memcache:
+    name: memcache
+    command: memcache
+  messagestreams:
+    name: messagestreams
+    command: messagestreams
+    hidden: true
+  metastore:
+    name: metastore
+    command: metastore
+  ml:
+    name: ml
+    hidden: true
+  monitoring:
+    name: monitoring
+    command: monitoring
+  netapp:
+    name: netapp
+    command: netapp
+  networkconnectivity:
+    name: networkconnectivity
+    command: network-connectivity
+  networkmanagement:
+    name: networkmanagement
+    command: network-management
+  networksecurity:
+    name: networksecurity
+    command: network-security
+  networkservices:
+    name: networkservices
+    command: network-services
+  notebooks:
+    name: notebooks
+    command: notebooks
+  ondemandscanning:
+    name: ondemandscanning
+    hidden: true
+  orglifecycle:
+    name: orglifecycle
+    command: orglifecycle
+    hidden: true
+  orgpolicy:
+    name: orgpolicy
+    command: org-policies
+  osconfig:
+    name: osconfig
+    hidden: true
+  oslogin:
+    name: oslogin
+    hidden: true
+  parallelstore:
+    name: parallelstore
+    hidden: true
+  policyanalyzer:
+    name: policyanalyzer
+    command: policy-intelligence
+  policysimulator:
+    name: policysimulator
+    hidden: true
+  policytroubleshooter:
+    name: policytroubleshooter
+    hidden: true
+  privateca:
+    name: privateca
+    command: privateca
+  privilegedaccessmanager:
+    name: privilegedaccessmanager
+    command: pam
+  connectors:
+    name: connectors
+    command: connectors
+  publicca:
+    name: publicca
+    command: publicca
+  pubsub:
+    name: pubsub
+    command: pubsub
+  pubsublite:
+    name: pubsublite
+    hidden: true
+  recaptcha:
+    name: recaptchaenterprise
+    command: recaptcha
+  recommender:
+    name: recommender
+    command: recommender
+  redis:
+    name: redis
+    command: redis
+  remotebuildexecution:
+    name: remotebuildexecution
+    hidden: true
+  replicapoolupdater:
+    name: replicapoolupdater
+    hidden: true
+  resourcesettings:
+    name: resourcesettings
+    command: resource-settings
+  run:
+    name: run
+    command: run
+  runapps:
+    name: runapps
+    hidden: true
+  runtimeconfig:
+    name: runtimeconfig
+    command: runtime-config
+  sasportal:
+    name: sasportal
+    hidden: true
+  scc:
+    name: securitycenter
+    command: scc
+  securitycentermanagement:
+    name: securitycentermanagement
+    command: scc manage
+    hidden: true
+  sddc:
+    name: sddc
+    command: vmware sddc
+  seclm:
+    name: seclm
+    command: seclm
+    hidden: true
+  secrets:
+    name: secretmanager
+    command: secrets
+  securedlandingzone:
+    name: securedlandingzone
+    command: scc slz-overwatch
+    hidden: true
+  securityposture:
+    name: securityposture
+    hidden: true
+  securesourcemanager:
+    name: securesourcemanager
+    hidden: true
+  servicedirectory:
+    name: servicedirectory
+    command: service-directory
+  servicemanagement:
+    name: servicemanagement
+    command: endpoints
+  serviceregistry:
+    name: serviceregistry
+    hidden: true
+  serviceusage:
+    name: serviceusage
+    hidden: true
+  cloudquotas:
+    name: cloudquotas
+    command: quotas
+    hidden: true
+  source:
+    name: source
+    hidden: true
+  sourcerepo:
+    name: sourcerepo
+    command: source
+  spanner:
+    name: spanner
+    help_text: |-
+      'Overrides API endpoint for `gcloud spanner` command group. '
+      'For spanner emulator usage, see '
+      'https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator'
+  speech:
+    name: speech
+    command: ml speech
+  sql:
+    name: sql
+    command: sql
+  storage:
+    name: storage
+    command: storage
+  storageinsights:
+    name: storageinsights
+    command: storage insights
+    hidden: true
+  stream:
+    name: stream
+    hidden: true
+  telcoautomation:
+    name: telcoautomation
+    hidden: true
+  telecomdatafabric:
+    name: telecomdatafabric
+    hidden: true
+  testing:
+    name: testing
+    command: firebase test
+  toolresults:
+    name: toolresults
+    hidden: true
+  tpu:
+    name: tpu
+    hidden: true
+  transfer:
+    name: transfer
+    command: transfer
+  transferappliance:
+    name: transferappliance
+    command: transfer appliances
+  vision:
+    name: vision
+    command: ml vision
+  vmmigration:
+    name: vmmigration
+    command: migration vms
+  vmwareengine:
+    name: vmwareengine
+    command: vmware
+  vpcaccess:
+    name: vpcaccess
+    hidden: true
+  workflowexecutions:
+    name: workflowexecutions
+    command: workflows executions
+  workflows:
+    name: workflows
+    command: workflows
+  workloadcertificate:
+    name: workloadcertificate
+    hidden: true
+  workstations:
+    name: workstations
+    hidden: true

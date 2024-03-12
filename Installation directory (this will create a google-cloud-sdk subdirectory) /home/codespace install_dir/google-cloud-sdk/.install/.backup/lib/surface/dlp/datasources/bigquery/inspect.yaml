@@ -1,0 +1,64 @@
+# Copyright 2018 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Schedules a job to inspect content in a BigQuery table.
+    description: |
+      Schedules a job to inspect content in a BigQuery table for sensitive data.
+
+       See [Inspecting Storage and Databases for Sensitive Data](https://cloud.google.com/dlp/docs/inspecting-storage)
+       for more details.
+    examples: |
+      The following command creates a job `my-bq-job` to scan records in
+      BigQuery table `myproject.myds.mytable`:
+
+        $ {command}  `myproject.myds.mytable` --job-id my-ds-job --min-time '2018-01-01T12:00:00Z' --max-time '2018-01-31T12:00:00Z' --output-topics my-topic --max-findings-per-item 3 --max-findings 1000 --info-types PHONE_NUMBER,EMAIL_ADDRESS --min-likelihood very-likely --include-quote --exclude-info-types
+
+  request:
+    collection: dlp.projects.dlpJobs
+    display_resource_type: job
+    method: create
+    api_version: v2
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.dlp.hooks:SetRequestParent
+    - googlecloudsdk.command_lib.dlp.hooks:UpdateIdentifyingFields
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.dlp.hooks:GetIdentifyingFieldsArg
+    params:
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:big_query_table
+      arg_name: input_table
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.bigQueryOptions
+      required: true
+      is_positional: true
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_item_findings
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_time
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_time
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:jobs_output_group
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.infoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.minLikelihood
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:include_quote
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.includeQuote
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_findings
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.limits.maxFindingsPerRequest
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:exclude_info_types
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.excludeInfoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:job_id
+    resource:
+      help_text: |
+        The Cloud DLP project to create Job In.
+      spec: !REF googlecloudsdk.command_lib.dlp.resources:project
+      is_parent_resource: true

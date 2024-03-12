@@ -1,0 +1,43 @@
+- release_tracks: [GA, BETA, ALPHA]
+  help_text:
+    brief: |
+      List VPC Access Service operations.
+    description: |
+      List all VPC Access Service operations under the specified project and
+      region.
+
+      You can specify the maximum number of operations to list using the
+      `--limit` flag.
+    examples: |
+      The following command lists a maximum of five operations in region
+      `us-central1`:
+
+          $ {command} --region=us-central1 --limit=5
+
+  request:
+    collection: vpcaccess.projects.locations.operations
+    api_version: v1
+    BETA:
+      api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The region of the operations to list.
+      spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:region
+
+  output:
+    format: |
+      table(
+         name.basename():label=OPERATION_ID,
+         name.segment(3):label=REGION,
+         metadata.target.basename(),
+         metadata.method:label=METHOD,
+         done,
+         metadata.firstof(createTime, insertTime).date():label=START_TIME:sort=1:reverse,
+         metadata.endTime.date().yesno(no="-")
+       )

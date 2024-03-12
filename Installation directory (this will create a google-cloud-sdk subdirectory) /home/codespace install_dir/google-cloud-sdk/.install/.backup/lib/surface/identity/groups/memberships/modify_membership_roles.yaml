@@ -1,0 +1,77 @@
+# Copyright 2019 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Add/remove/modify membership roles of a membership in a group.
+    description: Add/remove/modify membership roles OR update expiry details of membership in a group.
+    examples: |
+      To add a new membership role to an existing group-member pair.
+
+        $ {command} --group-email="eng-discuss@foo.com"  \
+            --member-email="user@foo.com"  \
+            --add-roles=OWNER
+
+  request:
+    collection: cloudidentity.groups.memberships
+    disable_resource_check: true
+    method: modifyMembershipRoles
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipResourceName
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:UpdateRoles
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetUpdateRolesParams
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+
+  arguments:
+    params:
+    - arg_name: group-email
+      type: str
+      required: true
+      help_text: |
+        The email address of the group that member-email belongs to.
+
+    - arg_name: member-email
+      type: str
+      required: true
+      help_text: |
+        The email address of the group or user that is being updated
+
+    - group:
+        mutex: true
+        params:
+        - arg_name: update-roles-params
+          type: str
+          help_text: |
+            Resource representing the parameters to update membership roles.
+            An example would be ``--update-roles-params MEMBER=expiry_details.expire_time''.
+        - group:
+            params:
+            - arg_name: add-roles
+              type: str
+              help_text: |
+                Membership roles to be added.
+                Currently supported MembershipRole: 'MEMBER', 'OWNER', 'MANAGER'.
+            - arg_name: remove-roles
+              api_field: modifyMembershipRolesRequest.removeRoles
+              type: arg_list
+              help_text: |
+                Membership role names to be removed.
+                Currently supported MembershipRole: 'OWNER', 'MANAGER'.
+                MEMBER-less owner is not supported so removing just MEMBER role won't be possible.

@@ -1,0 +1,47 @@
+- release_tracks: [ALPHA, GA]
+  command_type: GENERIC
+  help_text:
+    brief: Delete a Cloud Security Command Center (SCC) posture deployment.
+    description: |
+      Delete a Cloud Security Command Center (SCC) posture deployment.
+
+    examples: |
+      Delete the posture deployment named `organizations/123/locations/global/postureDeployments/posture-deployment-foo` (i.e. a posture deployment in organization `123`, location `global`, with id `posture-deployment-foo`):
+
+        $ {command} organizations/123/locations/global/postureDeployments/posture-deployment-foo
+
+      Delete the posture deployment named `organizations/123/locations/global/postureDeployments/posture-deployment-foo` (i.e. a posture deployment in organization `123`, location `global`, with id `posture-deployment-foo`)
+      for the ETAG ABcdO1Rf5clu7Yhlkwgelo7Vl4tiqd7Sy5iP5SdkSVU
+
+        $ {command} organizations/123/locations/global/postureDeployments/posture-deployment-foo --etag=ABcdO1Rf5clu7Yhlkwgelo7Vl4tiqd7Sy5iI5SdkSVU
+
+  request:
+    collection: securityposture.organizations.locations.postureDeployments
+    api_version: v1alpha
+    method: delete
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture_deployment
+      help_text: |
+          The posture deployment to delete. For example organizations/<organizationID>/locations/<location>/postureDeployments/<postureDeploymentID>.
+
+    params:
+    - arg_name: etag
+      api_field: etag
+      required: false
+      help_text: |
+          Etag is an optional flag. If the provided Etag doesn't match the server generated Etag, the delete operation won't proceed.
+
+  input:
+    confirmation_prompt: |
+      You are about to delete posture deployment [{__name__}]. All the deployed policies of this posture will get removed.
+
+  async:
+    collection: securityposture.organizations.locations.operations
+    extract_resource_result: false
+
+  output:
+    format: yaml

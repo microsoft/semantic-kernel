@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: List Anthos Config Controller operations
+    description: List Anthos Config Controller operations.
+    examples: |
+      To list all Anthos Config Controller operations in the region 'us-central1', run:
+
+        $ {command} --location=us-central1
+
+      To list all Anthos Config Controller operations in all regions, run:
+
+        $ {command}
+
+  request:
+    collection: krmapihosting.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: List of Anthos Config Controller operations.
+      spec: !REF googlecloudsdk.command_lib.anthos.config.controller.resources:operation-list
+
+  output:
+    format: |
+      table(
+      name.scope("operations").segment(0),
+      name.scope("locations").segment(0):label=LOCATION,
+      done,
+      metadata.createTime.date(unit=1000, tz_default=UTC),
+      metadata.endTime.date(unit=1000, tz_default=UTC)
+      )

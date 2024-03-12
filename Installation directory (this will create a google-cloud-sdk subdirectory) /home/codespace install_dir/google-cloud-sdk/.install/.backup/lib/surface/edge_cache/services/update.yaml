@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Update an EdgeCacheService resource.
+    description: |
+      Update an existing EdgeCacheService resource.
+    examples: |
+      To update an EdgeCacheService resource called 'my-service' run:
+
+        $ {command} my-service --description="new description"
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheServices
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    method: patch
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the EdgeCacheService resource to create.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheService
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:service.description
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:service.labels
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:service.edge_security_policy
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:service.edge_ssl_certificate
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:service.enable_logging
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:service.logging_sample_rate
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:service.require_tls

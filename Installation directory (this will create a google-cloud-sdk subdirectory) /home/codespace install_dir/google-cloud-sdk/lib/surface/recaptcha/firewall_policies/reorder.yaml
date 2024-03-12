@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Reorder all Firewall Policies.
+    description: Reorder all reCAPTCHA Firewall Policies.
+    examples: |
+        To reorder the list of reCAPTCHA firewall policies, run:
+
+          $ {command} --names=policy-name,policy-name,policy-name
+
+  request:
+    method: reorder
+    collection: recaptchaenterprise.projects.firewallpolicies
+
+  arguments:
+    resource:
+      help_text: The project name for which to reorder firewall policies.
+      spec: !REF googlecloudsdk.command_lib.recaptcha.resources:project
+      is_parent_resource: true
+    params:
+    - arg_name: names
+      api_field: googleCloudRecaptchaenterpriseV1ReorderFirewallPoliciesRequest.names
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+      required: true
+      help_text: |
+        Names of all firewall policies in desired order.
+  output:
+    format: none

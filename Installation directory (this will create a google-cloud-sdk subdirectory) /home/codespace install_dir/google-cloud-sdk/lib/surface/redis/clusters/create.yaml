@@ -1,0 +1,114 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: |
+      Create a new Memorystore for Redis Cluster instance.
+    description: |
+      Create a new Memorystore for Redis Cluster instance, and uses Private Service Connect service connectivity automation to automate connectivity for instances.
+
+      This command can fail for the following reasons:
+        * A cluster with the same name already exists.
+        * The active account does not have permission to create clusters.
+        * Some required APIs not enabled yet.
+        * No connection policy defined yet on the network and in the region a cluster will be created.
+        * Miss the steps for creating and configuring a service account (to grant permissions) in both host project and service project, if a shared VPC network is used.
+
+      Refer to https://cloud.google.com/memorystore/docs/cluster/networking#prerequisites_required_before_creating_a_cluster for prerequisites.
+    examples: |
+      To create a cluster with name `my-redis-cluster` in region `us-central1`
+      with 3 shards and with a discovery endpoint created on network "default", run:
+
+        $ {command} my-redis-cluster --region=us-central1 --shard-count=3 \
+            --network=projects/NETWORK_PROJECT_ID/global/networks/default
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:cluster
+      help_text: |
+        Arguments and flags that specify the cluster you want to create.
+        Your cluster ID must be 1 to 63 characters and use only lowercase letters, numbers, or
+        hyphens. It must start with a lowercase letter and end with a lowercase letter or number.
+    params:
+    - arg_name: node-type
+      release_tracks: [ALPHA, BETA]
+      hidden: true
+      api_field: cluster.nodeType
+      help_text: Node Type of the redis cluster Node.
+      choices:
+      - enum_value: REDIS_HIGHMEM_MEDIUM
+        arg_value: redis-highmem-medium
+      - enum_value: REDIS_HIGHMEM_XLARGE
+        arg_value: redis-highmem-xlarge
+      - enum_value: REDIS_STANDARD_SMALL
+        arg_value: redis-standard-small
+      - enum_value: REDIS_SHARED_CORE_NANO
+        arg_value: redis-shared-core-nano
+    - arg_name: network
+      required: true
+      api_field: cluster.pscConfigs.network
+      help_text: |
+         The network used to create your instance. It must use the format:
+         projects/NETWORK_PROJECT_ID/global/networks/NETWORK_ID.
+         The network ID used here must match the network ID used by the service connection policy.
+         Otherwise, the create operation fails
+    - arg_name: auth-mode
+      api_field: cluster.authorizationMode
+      help_text: |
+        Available authorization mode of a Redis cluster.
+      choices:
+      - enum_value: AUTH_MODE_DISABLED
+        arg_value: disabled
+        help_text: |
+            Authorization is disabled for the cluster.
+      - enum_value: AUTH_MODE_IAM_AUTH
+        arg_value: iam-auth
+        help_text: |
+            IAM basic authorization is enabled for the cluster.
+    - arg_name: replica-count
+      api_field: cluster.replicaCount
+      type: int
+      help_text: |
+        The replica count of each shard.
+    - arg_name: shard-count
+      required: true
+      api_field: cluster.shardCount
+      type: int
+      help_text: |
+        The shard count of the cluster.
+    - arg_name: transit-encryption-mode
+      api_field: cluster.transitEncryptionMode
+      help_text: |
+        Transit encryption mode used for the Redis cluster.
+        If not provided, encryption is disabled for the cluster.
+      choices:
+      - enum_value: TRANSIT_ENCRYPTION_MODE_DISABLED
+        arg_value: disabled
+        help_text: |
+          In-transit encryption is disabled for the cluster.
+      - enum_value: TRANSIT_ENCRYPTION_MODE_SERVER_AUTHENTICATION
+        arg_value: server-authentication
+        help_text: |
+          The cluster uses server managed encryption for in-transit encryption.
+    - arg_name: deletion-protection
+      api_field: cluster.deletionProtectionEnabled
+      type: bool
+      hidden: true
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        Enable Delete Protection on the Redis Cluster to prevent accidental deletions.
+        Use --deletion-protection to enabled and --no-deletion-protection to disable.
+
+  async:
+    collection: redis.projects.locations.operations
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    collection: redis.projects.locations.clusters
+
+  output:
+    format: yaml

@@ -1,0 +1,27 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Import http filter.
+  description: |
+    Import an http filter.
+
+request:
+  collection: networkservices.projects.locations.httpFilters
+  api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:httpFilter
+    help_text: |
+      Name of the http filter to import.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.httpFilters
+    api_version: v1alpha1
+    method: create

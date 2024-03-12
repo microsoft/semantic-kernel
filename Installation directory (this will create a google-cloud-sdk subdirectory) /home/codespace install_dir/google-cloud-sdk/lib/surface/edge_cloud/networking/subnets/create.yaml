@@ -1,0 +1,57 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Create a Distributed Cloud Edge Network subnet.
+    description: |
+      Create a new Distributed Cloud Edge Network subnet.
+    examples: |
+      To create a Distributed Cloud Edge Network subnet called 'my-subnet' with vlan id and owned ip ranges specified in the edge zone 'us-central1-edge-den1', run:
+
+        $ {command} my-subnet --network=my-network --location=us-central1 --zone=us-central1-edge-den1 --ipv4-range=192.168.1.1/24,172.10.10.1/24 --ipv6-range=2001:db8::1/64,4001:230::1/64 --vlan-id=100
+
+  request:
+    collection: edgenetwork.projects.locations.zones.subnets
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.networking.resources:SetResourcesPathForSubnet
+
+  arguments:
+    resource:
+      help_text: Distributed Cloud Edge Network subnet to create.
+      # The following should point to the resource argument definition under
+      # your surface's command_lib directory.:
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:subnet
+
+    params:
+    - arg_name: description
+      api_field: subnet.description
+      help_text: |
+        An optional, textual description for the subnet.
+    - arg_name: ipv4-range
+      api_field: subnet.ipv4Cidr
+      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      help_text: |
+        The ranges of ipv4 addresses that are owned by this subnetwork in CIDR format.
+    - arg_name: ipv6-range
+      api_field: subnet.ipv6Cidr
+      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      help_text: |
+        The ranges of ipv6 addresses that are owned by this subnetwork in CIDR format.
+    - arg_name: network
+      api_field: subnet.network
+      required: true
+      help_text: |
+        The network that this subnetwork belongs to.
+    - arg_name: vlan-id
+      api_field: subnet.vlanId
+      type: int
+      help_text: |
+        The ID of the vlan to tag the subnetwork. If not specified we assign one automatically.
+    labels:
+      api_field: subnet.labels
+
+  async:
+    collection: edgenetwork.projects.locations.operations

@@ -1,0 +1,63 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 HttpRouteHeaderMatch export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  exactMatch:
+    description: |-
+      The value of the header should match exactly the content of exact_match.
+    type: string
+  header:
+    description: The name of the HTTP header to match against.
+    type: string
+  invertMatch:
+    description: |-
+      If specified, the match result will be inverted before checking. Default
+      value is set to false.
+    type: boolean
+  prefixMatch:
+    description: |-
+      The value of the header must start with the contents of prefix_match.
+    type: string
+  presentMatch:
+    description: |-
+      A header with header_name must exist. The match takes place whether or not
+      the header has a value.
+    type: boolean
+  rangeMatch:
+    description: |-
+      If specified, the rule will match if the request header value is within
+      the range.
+    $ref: HttpRouteHeaderMatchIntegerRange.yaml
+  regexMatch:
+    description: |-
+      The value of the header must match the regular expression specified in
+      regex_match. For regular expression grammar, please see:
+      https://github.com/google/re2/wiki/Syntax
+    type: string
+  suffixMatch:
+    description: |-
+      The value of the header must end with the contents of suffix_match.
+    type: string

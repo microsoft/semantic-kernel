@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="iso-8859-5"?>
+<!--
+Source: http://debian.gabrovo.com/backend/debianbg-articles.rdf
+Expect: ISO-8859-5
+-->
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://my.netscape.com/publish/formats/rss-0.91.dtd">
+<rss version="0.91">
+
+<channel>
+<title>Debian България: Новини</title>
+<link>http://debian.gabrovo.com</link>
+<description>Новини за Deian на български</description>
+<language>bg</language>
+<copyright>Copyright 2001, Nikolay Hristov</copyright>
+
+<item>
+<title>Как да задаваме въпроси (howto от Eric Raymond)</title>
+<link>http://debian.gabrovo.com/show.php?id=9&amp;tablica=articles&amp;sub=Тема</link>
+</item>
+
+<item>
+<title>Подобряване на сигурността на Debian за unstable/testing</title>
+<link>http://debian.gabrovo.com/show.php?id=8&amp;tablica=articles&amp;sub=Тема</link>
+</item>
+
+<item>
+<title>Mplayer за Debian - къде и как?</title>
+<link>http://debian.gabrovo.com/show.php?id=6&amp;tablica=articles&amp;sub=Тема</link>
+</item>
+
+<item>
+<title>Как да направим debian пакет от unstable за potato?</title>
+<link>http://debian.gabrovo.com/show.php?id=5&amp;tablica=articles&amp;sub=Тема</link>
+</item>
+
+</channel>
+</rss>

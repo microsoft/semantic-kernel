@@ -1,0 +1,43 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: List backups.
+    description: |
+      List Backup for GKE backups.
+
+      ## EXAMPLES
+
+      To list all backups in project ``my-project'' in location ``us-central1'' under backup plan ``my-backup-plan'', run:
+
+        $ {command} --backup-plan=my-backup-plan --project=my-project --location=us-central1
+
+      To list all backups in project ``my-project'' across all locations under all backup plans, run:
+
+        $ {command} --project=my-project
+
+
+  request:
+    collection: gkebackup.projects.locations.backupPlans.backups
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the backup plan from which to list backups (provided via options or through
+        properties), e.g.
+        `--project=<project> --location=<location> --backup-plan=<backupPlan>`.
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_backup_plan
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        name.segment(3):label=LOCATION,
+        name.segment(5):label=BACKUP_PLAN,
+        createTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
+        completeTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
+        state
+      )

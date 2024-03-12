@@ -1,0 +1,55 @@
+location:
+  name: location
+  collection: workflows.projects.locations
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    property: workflows/location
+    help: |
+      The Cloud location for the {resource}. Alternatively, set the property [workflows/location].
+
+workflow:
+  name: workflow
+  collection: workflows.projects.locations.workflows
+  attributes:
+  - *location
+  - &workflow
+    parameter_name: workflowsId
+    attribute_name: workflow
+    help: |
+      The Cloud Workflow for the {resource}.
+
+workflow_for_executions:
+  name: workflow
+  # Uses workflowexecutions.googleapis.com API.
+  collection: workflowexecutions.projects.locations.workflows
+  attributes:
+  - *location
+  - &workflow_for_executions
+    parameter_name: workflowsId
+    attribute_name: workflow
+    help: |
+      The Cloud Workflow for the {resource}.
+
+execution:
+  name: execution
+  # Uses workflowexecutions.googleapis.com API.
+  collection: workflowexecutions.projects.locations.workflows.executions
+  attributes:
+  - *location
+  - *workflow_for_executions
+  - parameter_name: executionsId
+    attribute_name: execution
+    help: |
+      The id of a Workflow execution.
+
+operation:
+  name: operation
+  collection: workflows.projects.locations.operations
+  attributes:
+  - *location
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      The name of the Cloud Workflows operation.

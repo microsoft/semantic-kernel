@@ -1,0 +1,19 @@
+- release_tracks: [BETA, GA]
+  help_text:
+    brief: Delete a Datastream operation.
+    description: Delete a Datastream operation.
+    examples: |
+      To delete an operation.
+
+          $ {command} OPERATION --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.operations
+    method: delete
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: |
+        Operation resource - Datastream operation to delete.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:operation

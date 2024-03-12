@@ -1,0 +1,47 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute v1 BackendServiceIAP export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  enabled:
+    description: |-
+      Whether the serving infrastructure will authenticate and authorize all
+      incoming requests. If true, the oauth2ClientId and oauth2ClientSecret
+      fields must be non-empty.
+    type: boolean
+  oauth2ClientId:
+    description: OAuth2 client ID to use for the authentication flow.
+    type: string
+  oauth2ClientSecret:
+    description: |-
+      OAuth2 client secret to use for the authentication flow. For security
+      reasons, this value cannot be retrieved via the API. Instead, the SHA-256
+      hash of the value is returned in the oauth2ClientSecretSha256 field.
+      @InputOnly
+    type: string
+  oauth2ClientSecretSha256:
+    description: |-
+      [Output Only] SHA256 hash value for the field oauth2_client_secret above.
+    type: string

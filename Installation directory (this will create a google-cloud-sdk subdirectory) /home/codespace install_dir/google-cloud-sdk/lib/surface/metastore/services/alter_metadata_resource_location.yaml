@@ -1,0 +1,54 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Alter metadata resource location.
+    description: |
+      Alter metadata resource location from a Dataproc Metastore service's underlying metadata store.
+
+      If run asynchronously with `--async`, exits after printing
+      one operation name that can be used to poll the status of the
+      creation via:
+
+        {top_command} metastore operations describe
+    examples: |
+      To alter metadata resource location with the resource_name
+      `databases/{database_id}`
+      or
+      `databases/{database_id}/tables/{table_id}`
+      or
+      and location_uri in location `us-central`, run:
+
+          $ {command} my-metastore-service --location=us-central1 --resource_name=databases/my-db
+            --location_uri=gs://destination_bucket/destination_object
+  request:
+    method: alterLocation
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: metastore.projects.locations.services
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the resource and the location you want to alter.
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:service
+    params:
+    - arg_name: resource_name
+      api_field: alterMetadataResourceLocationRequest.resourceName
+      help_text: |
+        The relative metadata resource name in the following format.
+         `databases/{database_id}`
+         or
+         `databases/{database_id}/tables/{table_id}`
+         or
+         `databases/{database_id}/tables/{table_id}/partitions/{partition_id}`
+      required: true
+    - arg_name: location_uri
+      api_field: alterMetadataResourceLocationRequest.locationUri
+      help_text: |
+        The new location URI for the metadata resource.
+      required: true
+  async:
+    collection: metastore.projects.locations.operations

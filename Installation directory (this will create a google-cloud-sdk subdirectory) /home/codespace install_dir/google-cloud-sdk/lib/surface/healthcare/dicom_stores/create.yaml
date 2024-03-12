@@ -1,0 +1,59 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief:  Create a Cloud Healthcare API DICOM store.
+    description: |
+      Create a Cloud Healthcare API DICOM store.
+    examples: |
+      To create a dicom store called 'test-dicom-store', run:
+
+        $ {command} test-dicom-store --dataset=test-dataset
+
+      To create a dicom store with the Cloud Pub/Sub topic 'test-pubsub-topic', run:
+
+        $ {command} test-dicom-store --dataset=test-dataset --pubsub-topic=projects/my-project/topics/test-pubsub-topic
+
+  request:
+    collection: healthcare.projects.locations.datasets.dicomStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API DICOM store to create.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:dicom_store
+
+    params:
+    - api_field: dicomStore.notificationConfig.pubsubTopic
+      arg_name: pubsub-topic
+      help_text: |
+        Google Cloud Pub/Sub topic to send updates to.
+
+        Note: A topic must be created before publishing or subscribing to it. For instructions
+        on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic
+
+    - api_field: dicomStore.notificationConfig.sendForBulkImport
+      arg_name: send-for-bulk-import
+      type: bool
+      default: false
+      help_text: |
+        Indicates whether or not to send Cloud Pub/Sub notifications on bulk import.
+        Only supported for DICOM imports.
+
+    - api_field: dicomStore.streamConfigs
+      arg_name: stream-configs
+      repeated: false
+      ALPHA:
+        processor: googlecloudsdk.command_lib.healthcare.util:InsertDicomStreamConfig:api_version=v1alpha2
+      BETA:
+        processor: googlecloudsdk.command_lib.healthcare.util:InsertDicomStreamConfig:api_version=v1beta1
+      GA:
+        processor: googlecloudsdk.command_lib.healthcare.util:InsertDicomStreamConfig:api_version=v1
+      help_text:
+        Configuration that indicates the BigQuery destinations for streaming instances of a DICOM store.
+        To specify StreamConfigs, list all BigQuery destinations into one string separated by comma.
+        (e.g., --stream-configs bq://{bigqueryProjectId1}.{bigqueryDatasetId1}.{bigqueryTableId1},bq://{bigqueryProjectId2}.{bigqueryDatasetId2}.{bigqueryTableId2}).

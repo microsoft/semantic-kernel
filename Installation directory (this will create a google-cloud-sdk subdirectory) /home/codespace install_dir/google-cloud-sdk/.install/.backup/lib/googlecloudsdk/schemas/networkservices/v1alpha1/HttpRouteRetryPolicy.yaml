@@ -1,0 +1,51 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 HttpRouteRetryPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  numRetries:
+    description: |-
+      Specifies the allowed number of retries. This number must be > 0. If not
+      specified, default to 1.
+    type: integer
+  perTryTimeout:
+    description: Specifies a non-zero timeout per retry attempt.
+    type: string
+  retryConditions:
+    description: |-
+      Specifies one or more conditions when this retry policy applies. Valid
+      values are: 5xx: Proxy will attempt a retry if the destination service
+      responds with any 5xx response code, of if the destination service does
+      not respond at all, example: disconnect, reset, read timeout, connection
+      failure and refused streams. gateway-error: Similar to 5xx, but only
+      applies to response codes 502, 503, 504. reset: Proxy will attempt a retry
+      if the destination service does not respond at all (disconnect/reset/read
+      timeout) connect-failure: Proxy will retry on failures connecting to
+      destination for example due to connection timeouts. retriable-4xx: Proxy
+      will retry fro retriable 4xx response codes. Currently the only retriable
+      error supported is 409. refused-
+    type: array
+    items:
+      type: string

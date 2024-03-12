@@ -1,0 +1,922 @@
+# Copyright 2017 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+title: command
+description: The specification for a full calliope command
+
+definitions:
+  python_hook:
+    type: string
+    # A Python hook points to a module, class, an optionally a sub attribute
+    # or function. The thing it points to will be called by the framework
+    # and must have the function signature required by that particular hook.
+    # If arguments are given (:foo=bar,baz=stuff), The function will first be
+    # called with those arguments, and the return value will be used as the
+    # callable hook.
+    # Examples:
+    #   googlecloudsdk.module:classname
+    #   googlecloudsdk.module:class.attribute
+    #   googlecloudsdk.module:class.function:foo=bar,baz=stuff
+    pattern: "\\w+(\\.\\w+)+:\\w+(\\.\\w+)*(:\\w+=\\w+(,\\w+=\\w+)*)?"
+  yaml_reference:
+    type: string
+    # Examples:
+    #   googlecloudsdk.module:attribute
+    #   googlecloudsdk.module:attribute.attribute
+    pattern: "\\w+(\\.\\w+)+:\\w+(\\.\\w+)*"
+
+  attribute:
+    type: string
+    # Examples: a, a.b, a.c.b
+    pattern: "\\w+(\\.\\w+)*"
+
+  property:
+    type: string
+    # Examples: core/project, compute/zone
+    pattern: "\\w+/\\w+"
+
+  argparse_type:
+    # Something to be used as the type argument for an argparse argument.
+    oneOf:
+    # One of the builtin Python types.
+    - enum: [str, int, long, float, bool]
+    # The module path to a function used as the 'type' for the argument.
+    # The function takes a single parameter which is the parsed string value
+    # of the argument and returns the converted parsed value.
+    - $ref: "#/definitions/python_hook"
+    # Support for arg_parsers.arg_list
+    - enum: [arg_list, arg_object]
+
+  choices:
+    # A list of valid choices for an argument.
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required: [arg_value]
+      properties:
+        # The choice as it appears on the command line
+        # (should be lower-kebab-case).
+        arg_value: {type: [string, number, boolean]}
+        # The string representation of the API enum value that will be used
+        # when this choice is selected. Default is derived from arg_value by
+        # converting to upper case and replacing hyphens with underscores.
+        enum_value: {type: string}
+        # The help text to show next to the choice on the man page.
+        help_text: {type: string}
+
+  flag_spec:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required: [api_field]
+      properties:
+        api_field: {type: string}
+        arg_name: {type: string}
+        help_text: {type: string}
+        hidden: {type: boolean}
+        # TODO(b/291130667): enable mutex for arg_object
+        # one_of_index is to determine which items are in a mutex group.
+        # Not available for public use yet.
+        one_of_index: {type: number}
+        # TODO(b/304805943): enable resource pattern
+        # resource_pattern is a regex pattern used to verify resource strings.
+        # Not available for public use yet.
+        resource_pattern: {type: string}
+        spec: {$ref: "#/definitions/flag_spec"}
+
+  fallthrough:
+    required: [hook, hint]
+    additionalProperties: false
+    properties:
+      # A zero-argument Python function that can provide a fallback value for
+      # the attribute.
+      hook: {$ref: "#/definitions/python_hook"}
+      # Text to display to users if no fallthroughs are set (should be
+      # imperative, to follow "The attribute can be set in the following ways").
+      hint: {type: string}
+
+  value_fallthrough:
+    required: [value]
+    additionalProperties: false
+    properties:
+      # A fixed value to use for fallthrough.
+      value: {type: string}
+      # Text to display to users if no fallthroughs are set (should be
+      # imperative, to follow "The attribute can be set in the following ways").
+      hint: {type: string}
+
+  arg_fallthrough:
+    required: [arg_name]
+    additionalProperties: false
+    properties:
+      # Name of a flag or positional whose value can be used as a default.
+      arg_name: {type: string}
+      # Whether the other arg is positional. Defaults to False.
+      is_positional: {type: boolean}
+
+  resource_attribute:
+    # An individual resource arg attribute.
+    required: [parameter_name, attribute_name, help]
+    additionalProperties: false
+    properties:
+      # The API parameter name that this attribute maps to.
+      parameter_name: {type: string}
+      # The name as it should appear on the command line.
+      attribute_name: {type: string}
+      # The help text for this attribute.
+      help: {type: string}
+      # A property to act as the fallthrough for this attribute when it is not
+      # provided on the command line.
+      property: {$ref: "#definitions/property"}
+      # A list of Python hooks that will act as fallthroughs if the attribute is
+      # not provided on the command line.
+      fallthroughs:
+        type: array
+        items:
+          oneOf:
+          - $ref: "#/definitions/fallthrough"
+          - $ref: "#/definitions/value_fallthrough"
+      # The module path to a class that implements remote completion
+      # for this resource.
+      completer: {$ref: "#/definitions/python_hook"}
+      # The ID field of the return value in the response for completions.
+      completion_id_field: {type: string}
+      # Field names to use as static field values in any request to
+      # complete this resource.
+      completion_request_params:
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          properties:
+            fieldName: {type: string}
+            value: {type: string}
+
+  resource_spec:
+    type: object
+    additionalProperties: false
+    required: [name, collection, attributes]
+    properties:
+      # The name of the resource argument, used for messaging.
+      name: {type: string}
+      # The pluralized name if default rules won't work.
+      plural_name: {type: string}
+      # The full collection name of the resource argument.
+      collection: {type: string}
+      # The api version this spec refers to. If empty, it applies to any
+      # version.
+      api_version: {type: string}
+      # TODO(b/274890004): remove request_id_field from resource_spec
+      # The field in the create request that should hold the name of the
+      # resource being created (since create requests don't have the resource
+      # id as an API parameter.
+      request_id_field: {$ref: "#/definitions/attribute"}
+      # The set of attributes that map to the API parameters for this resource's
+      # collection.
+      attributes:
+        type: array
+        items: {$ref: "#/definitions/resource_attribute"}
+      # If False, allows the resource to create automatic completers for
+      # each argument. True by default.
+      disable_auto_completers: {type: boolean}
+
+  multitype_resource_spec:
+    type: object
+    additionalProperties: false
+    required: [name, resources]
+    properties:
+      # The name of the resource argument, used for messaging.
+      name: {type: string}
+      # The pluralized name if default rules won't work.
+      plural_name: {type: string}
+      # All resource specs contained in this one.
+      # The parsed result will have a "type_" attribute whose name is either the
+      # name of the resource spec (if all sub-resource specs are unique) or the
+      # collection name otherwise (such as 'projects.zones.instances'). Note:
+      # All resources used in this spec must have names.
+      resources:
+        type: array
+        items: {$ref: "#/definitions/resource_spec"}
+
+  argument:
+    oneOf:
+    - $ref: "#/definitions/arg"
+    - $ref: "#/definitions/resource_arg"
+    - $ref: "#/definitions/arg_group"
+
+  resource_arg:
+    description: Describes how to generate the resource arg and its flags
+    type: object
+    additionalProperties: false
+    required: [help_text, resource_spec]
+    properties:
+      # The help text for the overall resource arg group.
+      help_text: {type: string}
+      # Set to False to force the anchor resource argument to be a flag
+      # even though it would normally be a positional. This should normally
+      # not be required for well formed API methods.
+      is_positional: {type: boolean}
+      # Set to True if the resource spec is for the parent of the request
+      # collection instead of for the collection itself.  This allows for
+      # create commands that do not require a name for the new resource.
+      # Set the `resource_type` property on `request` to include the
+      # resource type in log messages.
+      is_parent_resource: {type: boolean}
+      # Set to True if this resource is the resource being operated on ie
+      # being described, created, updated, etc. This helps determine which
+      # resource arg should be validated against the method and included
+      # in the display name, among other things. Only one resource arg can
+      # set is_primary_resource to true. If command does not set any resource
+      # args' is_primary_resource to true, then gcloud will try to assume
+      # which resource is primary based off of request.method.collection
+      is_primary_resource: {type: boolean}
+      # The name to use for the resource arg. If set this is the name that
+      # will be used for the resource arg in the command. If not set,
+      # command will use the name from the spec.
+      arg_name: {type: string}
+      # List of resource arg attributes to not generate flags for. These
+      # attributes will need to have fallthroughs in the resource arg spec
+      # in order to be populated.
+      removed_flags:
+        type: array
+        items: {type: string}
+      # The field in the create request that should hold the name of the
+      # resource being created (since create requests don't have the resource
+      # id as an API parameter.
+      request_id_field: {$ref: "#/definitions/attribute"}
+      # a map of attribute names to a list of fallthroughs *specific to
+      # this command* that will be used if the attribute is not directly
+      # provided on the command line. Anything in this map takes precedence
+      # over what's specified in the resource spec by default.
+      command_level_fallthroughs:
+        type: object
+        patternProperties:
+          .*:
+            type: array
+            items: {$ref: "#/definitions/arg_fallthrough"}
+      # The resource arg specification itself. This corresponds to the
+      # ResourceSpec and ResourceParameterAttributeConfig objects and does
+      # not include anything that would go in a presentation spec. It is
+      # expected that this entire section be imported from a resources.yaml
+      # file in command_lib.
+      # (ex !REF googlecloudsdk.command_lib.pubsub.resources:topic)
+
+      resource_spec:
+        oneOf:
+        # A regular resource arg
+        - $ref: "#/definitions/resource_spec"
+        # A multitype resource arg
+        - $ref: "#/definitions/multitype_resource_spec"
+      # A mapping of method parameter to format string that can include resource reference params(s)
+      # (or '__relative_name__' to use the full resource name or '__resource_id__' for resource id)
+      # for references or APIs that use non-standard naming. For example, if a resource ref has a
+      # project, location, and instance attribute, but the request URI has the structure
+      # /projects/{project}/regions/{region}/instances/{instance}, you would use
+      # resource_method_params:
+      #   region: '{location}'
+      # To map the resource attribute to the correct method parameter.
+      resource_method_params:
+        type: object
+        patternProperties:
+          .*: {type: string}
+      # False if the resource reference should not be auto-parsed into the
+      # request message. NOTE: if you mark this False, you need to add a hook
+      # that handles the result of parsing the resource argument for the
+      # command. For example, if the resource is multi-type, you may want to
+      # define an modify_request_hook that modifies the request based on
+      # the parsed type of the resource.
+      parse_resource_into_request: {type: boolean}
+      # Use ref.RelativeName() if true, ref.Name() otherwise. Default True.
+      use_relative_name: {type: boolean}
+      # If true, will disable validating that the resource arg schema matches the
+      # request method schema. This is useful for API's that have multiple services
+      # (and multiple resource collections) that use the same actual resource objects.
+      override_resource_collection: {type: boolean}
+      # Whether the flag is required or not.
+      required: {type: boolean}
+      # Whether or not the resource arg is plural and should be generated as a list.
+      repeated: {type: boolean}
+      # Whether to add clearable update arguments
+      clearable: {type: boolean}
+
+  arg:
+    required: [help_text]
+    additionalProperties: false
+    properties:
+      # The name of the API field the value of this argument goes into.
+      # At least one of [api_field, arg_name] must be given.
+      api_field: {type: string}
+      # Disables yaml_command_test check for unused arguments. Some arguments get used
+      # in such a way that static analysis can't catch it.
+      disable_unused_arg_check: {type: boolean}
+      # The help text for this individual flag.
+      help_text: {type: string}
+      # The name of the argument as it should appear in the CLI. If
+      # not given it will match the API field name. This does not
+      # include '--' even if it will be a flag.
+      # At least one of [api_field, arg_name] must be given.
+      arg_name: {type: string}
+      # The module path to a class that implements remote completion
+      # for this argument.
+      completer: {$ref: "#/definitions/python_hook"}
+      # True if this should be forced to be a positional argument
+      # instead of a flag.
+      is_positional: {type: boolean}
+      # The argparse type to use for this argument. See inline options for
+      # this value.
+      type:
+        oneOf:
+        # A builtin type or hook to a type function.
+        - $ref: "#/definitions/argparse_type"
+        # First class support for making this an ArgDict.
+        - type: object
+          additionalProperties: false
+          properties:
+            arg_dict:
+              type: object
+              additionalProperties: false
+              required: [spec]
+              properties:
+                # Set to True to make the ArgDict correspond to a repeated
+                # key/value pair. For this to work, the spec must contain
+                # exactly two items. If False, the keys in the dict will be
+                # the arg names, and the values will be the values for those
+                # fields. The arg is repeated by specifying the flag multiple
+                # times.
+                flatten: {type: boolean}
+                spec:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [api_field]
+                    properties:
+                      api_field: {type: string}
+                      # Only applicable for non-flat dicts.
+                      arg_name: {type: string}
+                      type: {$ref: "#/definitions/argparse_type"}
+                      # Only applicable for non-flat dicts.
+                      required: {type: boolean}
+                      choices: {$ref: "#/definitions/choices"}
+
+      # custom spec for arg_object type
+      spec: {$ref: "#/definitions/flag_spec"}
+
+      # The argparse action to use for this argument. See inline options for
+      # this value.
+      action:
+        oneOf:
+        # One of the builtin argparse actions.
+        - enum: [store, store_true, append]
+        # The module path to a class that implements argparse's Action class.
+        - $ref: "#/definitions/python_hook"
+        # Mark this flag as being deprecated. All the sub elements here
+        # are passed as kwargs to the calliope.actions.DeprecationAction
+        # action.
+        - type: object
+          additionalProperties: false
+          properties:
+            deprecated:
+              type: object
+              additionalProperties: false
+              properties:
+                # If False, warning message will be printed, otherwise, error message will be
+                # printed.
+                removed: {type: boolean}
+                # Warning message. 'flag_name' template will be replaced with value of flag_name
+                # parameter.
+                warn: {type: string}
+                # Error message. 'flag_name' template will be replaced with value of flag_name
+                # parameter.
+                error: {type: string}
+      # Can be set to False if you want to accept a single value even though the
+      # API field is repeated. If the API field is not repeated, this attribute
+      # has no effect.
+      repeated: {type: boolean}
+      # The metavar for the generated argument. This will be generated
+      # automatically if not provided.
+      metavar: {type: string}
+      # Overrides the choices that are generated for the argument.
+      choices: {$ref: "#/definitions/choices"}
+      # TODO(b/80307139): Combine default and fallback.
+      # The default value of the argument when not specified. Mutually exclusive
+      # with fallback. If provided and None, the default of the argument is
+      # explicitly set to None. If not provided, no default is set on the
+      # argument.
+      default: {type: [string, number, boolean, array, 'null']}
+      # The module path to a function to call (with no arguments) if no value is
+      # provided; the result of this function will be used for this argument
+      # (like default, but with a computed value). Mutually exclusive with
+      # default.
+      fallback: {$ref: "#/definitions/python_hook"}
+      # The module path to a function to process the parsed value
+      # before inserting it into the request message. It takes a
+      # single value which is the parsed argument's value and returns
+      # the value that should be inserted into the request.
+      processor: {$ref: "#/definitions/python_hook"}
+      # Whether the flag is required or not.
+      required: {type: boolean}
+      # Whether the flag is hidden or not.
+      hidden: {type: boolean}
+      # TODO(b/280653078): Not ready for public use yet
+      # Whether to add update flags for update commands.
+      # Must be used with read_modify_update
+      clearable: {type: boolean}
+
+  arg_group:
+    type: object
+    additionalProperties: false
+    properties:
+      group:
+        required: [params]
+        type: object
+        additionalProperties: false
+        properties:
+          # The help text for the group.
+          help_text: {type: string}
+          # Whether the group is required or not.
+          required: {type: boolean}
+          # Whether the group is mutually exclusive or not.
+          mutex: {type: boolean}
+          # Whether the group is hidden or not.
+          hidden: {type: boolean}
+          # The group arguments.
+          params:
+            type: array
+            items: {$ref: "#/definitions/argument"}
+            minItems: 1
+
+type: object
+additionalProperties: false
+required: [help_text, arguments]
+properties:
+
+  # Determines whether the command is visible in help text or not.
+  hidden: {type: boolean}
+
+  # Determines whether the command is available in univserse or not.
+  universe_compatible: {type: boolean}
+
+  # Determines which release tracks this command implementation will apply to.
+  release_tracks:
+    type: array
+    items: {enum: [ALPHA, BETA, GA]}
+
+  # The type of command to generate. This is inferred based on the name
+  # of the command file (convert to uppercase and remove .yaml extension).
+  command_type:
+    enum:
+    - DESCRIBE
+    - LIST
+    - DELETE
+    - CREATE
+    - UPDATE
+    - WAIT
+    - CONFIG_EXPORT
+    - GET_IAM_POLICY
+    - SET_IAM_POLICY
+    - GENERIC
+
+  # Corresponds to the detailed_help attribute on command classes. Typically
+  # looks something like this (brief and description are required):
+  # help_text:
+  #   brief: Delete a Compute Engine virtual machine.
+  #   description: |
+  #     This command stops, and deletes the given virtual machine instance. Any
+  #     boot disks associated with this instance are also deleted.
+  #   examples: |
+  #     To delete an instance:
+  #
+  #       $ {command} INSTANCE_NAME --zone ZONE
+  help_text:
+    type: object
+    additionalProperties: false
+    required: [brief, description]
+    patternProperties:
+      brief: {type: string}
+      description: {type: string}
+      examples: {type: string}
+      .*: {type: string}
+
+  # Determines whether the command is deprecated.
+  # If is_removed is false, a warning will be logged when *command* is run,
+  # otherwise an *exception* will be thrown containing error message.
+  # Command help output will be modified to include warning/error message
+  # depending on value of is_removed.
+  # Command help text will automatically hidden from the reference
+  # documentation if is_removed is True.
+  deprecate:
+    type: object
+    additionalProperties: false
+    required: [is_removed]
+    properties:
+      is_removed: {type: boolean}
+      warning: {type: string}
+      error: {type: string}
+
+  # Attributes about the API request the command will make.
+  request: &request
+    description: Describes information about the API that this command calls
+    type: object
+    additionalProperties: false
+    required: [collection]
+    oneOf:
+    - required: [modify_request_hooks]
+    - required: [create_request_hook]
+    - required: [issue_request_hook]
+    - allOf:
+      - not: {required: [modify_request_hooks]}
+      - not: {required: [create_request_hook]}
+      - not: {required: [issue_request_hook]}
+    properties:
+      # The full collection name of the resource the command operates on.
+      # A list of collections is used whenever the request is a multitype ie
+      # a resource with different parent paths.
+      collection: {type: [string, array]}
+      # If true, will disable validating that a resource arg is specified if
+      # the collection requires a params from a resource.
+      disable_resource_check: {type: boolean}
+      # The type of the resource the command operates on to be used for logging.
+      display_resource_type: {type: string}
+      # The API version to use, defaults to API set as gcloud default.
+      api_version: {type: string}
+      # The name of the method to call to perform the operation. Optional if
+      # your command is one of the supported command types (not Generic).
+      method: {type: string}
+      # Used for methods that return paginated results. If set to True, makes a single api
+      # request rather than utilizing YieldFromList method. YieldFromList method makes
+      # continuous api request until the limit is reached or all results are returned.
+      # Defaults to False
+      disable_pagination: {type: boolean}
+      # The module path to a function to call to modify the API method
+      # to call to perform the operation. The provided or default `method`
+      # will be used to parse the arguments, then this function will be called
+      # with two arguments: a resource ref to the parsed resource and the parsed
+      # args namespace. The returned string will be the method used to create
+      # and issue the request.
+      modify_method_hook: {$ref: "#/definitions/python_hook"}
+      # TODO(b/272076207): Remove resource_method_params when surfaces are updated
+      # A mapping of method parameter to format string that can include resource reference params(s)
+      # (or '__relative_name__' to use the full resource name or '__resource_id__' for resource id)
+      # for references or APIs that use non-standard naming. For example, if a resource ref has a
+      # project, location, and instance attribute, but the request URI has the structure
+      # /projects/{project}/regions/{region}/instances/{instance}, you would use
+      # resource_method_params:
+      #   region: '{location}'
+      # To map the resource attribute to the correct method parameter.
+      resource_method_params:
+        type: object
+        patternProperties:
+          .*: {type: string}
+      # TODO(b/272076207): Remove parse_resource_into_request when surfaces are updated
+      # False if the resource reference should not be auto-parsed into the
+      # request message. NOTE: if you mark this False, you need to add a hook
+      # that handles the result of parsing the resource argument for the
+      # command. For example, if the resource is multi-type, you may want to
+      # define an modify_request_hook that modifies the request based on
+      # the parsed type of the resource.
+      parse_resource_into_request: {type: boolean}
+      # A mapping of request field names to static values to insert into the
+      # request. Specifying simple values here accomplishes the same as a
+      # a custom request generator, but is simpler. For example, if you had an
+      # an API that could work in several modes, but we only use one in the
+      # command, you could set:
+      # static_fields:
+      #   requests.features.type: TYPE1
+      # To always populate that field with the correct mode.
+      static_fields:
+        type: object
+        patternProperties:
+          .*: {}
+      # The module path to a function to call to modify the API request
+      # before it is invoked. All registered arguments will be processed
+      # into the request, before this is called. This is a function
+      # that takes 3 arguments: a resource ref to the parsed resource,
+      # the parsed args namespace, and the created request. It must return
+      # an apitools request message that will be passed to the API method
+      # defined in this section.
+      modify_request_hooks:
+        type: array
+        items: {$ref: "#/definitions/python_hook"}
+      # The module path to a function to call to create the API request
+      # rather than having it done automatically. This is a function
+      # that takes 2 arguments: a resource ref to the parsed resource, and
+      # the parsed args namespace. It must return an apitools request
+      # message that will be passed to the API method defined in this
+      # section.
+      create_request_hook: {$ref: "#/definitions/python_hook"}
+      # The module path to a function to call to issue an API request
+      # rather than having it done automatically. This is a function
+      # that takes 2 arguments: a resource ref to the parsed resource, and
+      # the parsed args namespace. It should create a request, make the
+      # API call, and return the response.
+      issue_request_hook: {$ref: "#/definitions/python_hook"}
+      # TODO(b/272076207): Remove use_relative_name when surfaces are updated
+      # Use ref.RelativeName() if true, ref.Name() otherwise. Default True.
+      use_relative_name: {type: boolean}
+
+  # Configuration for handling the API response.
+  response:
+    type: object
+    additionalProperties: false
+    properties:
+      # TODO(b/80311963): Support all resource paths here.
+      # The field in the response that is the id of the resource (just the
+      # name, not the relative name or URI). This is used to construct a
+      # URI for resources out of the result of a list command. If not
+      # provided, there won't be a --uri flag on the list command.
+      id_field: {type: string, pattern: "\\w+"}
+      # The attribute of the API response to return (instead of the entire
+      # response.
+      result_attribute: {$ref: "#/definitions/attribute"}
+      # If given, the response will be searched for error information and an
+      # exception raised if found. This is useful for batch request methods
+      # that return 200 even though something may have failed.
+      error:
+        type: object
+        additionalProperties: false
+        properties:
+          # The dotted path of the field whose presence indicates that an
+          # error has occured. This is 'error' by default if the error section
+          # is declared.
+          field: {$ref: "#/definitions/attribute"}
+          # If the error message is found, extract the error code from this
+          # field within that message.
+          code: {$ref: "#/definitions/attribute"}
+          # If the error message is found, extract the error message from this
+          # field within that message.
+          message: {$ref: "#/definitions/attribute"}
+      # The list of module paths to functions to call to modify the response
+      # returned by the API request. These functions take 2 arguments: the API
+      # response first and the parsed args namespace second. They must return a
+      # modified response. The functions are called in a chain, one after
+      # another, after result_attribute and error are processed, but before
+      # id_field.
+      modify_response_hooks:
+        type: array
+        items: {$ref: "#/definitions/python_hook"}
+
+  # If present, indicates that this API method uses operations and the --async
+  # flag will be set up.
+  async: &async
+    description: Describes how to poll and report the result of the operation
+    type: object
+    additionalProperties: false
+    required: [collection]
+    properties:
+      # The full collection name of the operation collection for this API.
+      # A list of collections is used whenever the request is a multitype ie
+      # a resource with different parent paths.
+      collection: {type: [string, array]}
+      # The API version to use, defaults to API version specified in the request
+      # section.
+      api_version: {type: string}
+      # The API method to call to get the operation ('get' by default).
+      method: {type: string}
+      # The message to print when the request is issued. The default depends on
+      # the command type.
+      request_issued_message: {type: string}
+      # The field in the operation message that corresponds to the operation's
+      # full name ('name' by default). Not used by Wait commands.
+      response_name_field: {type: string}
+      # Override whether the command should get the resulting resource after
+      # the operation is done, or just return the operation result. This is
+      # True by default (except for Delete and Wait commands).
+      extract_resource_result: {type: boolean}
+      # A mapping of method parameter to operation reference field for
+      # references or APIs that use non-standard naming.
+      operation_get_method_params:
+        type: object
+        patternProperties:
+          .*: {type: string}
+      # The attribute of the result to return from polling. If
+      # extract_resource_result is False, this is an attribute on the
+      # operation, if True it is on the resource itself.
+      result_attribute: {$ref: "#/definitions/attribute"}
+      # The module path to a function to call to modify the API request
+      # before it is invoked. All registered arguments will be processed
+      # into the request, before this is called. This is a function
+      # that takes 3 arguments: a resource ref to the parsed resource,
+      # the parsed args namespace, and the created request. It must return
+      # an apitools request message that will be passed to the API method
+      # defined in this section.
+      modify_request_hooks:
+        type: array
+        items: {$ref: "#/definitions/python_hook"}
+      state:
+        type: object
+        additionalProperties: false
+        required: [field, success_values]
+        properties:
+          # The field to check for status. Polling continues until it matches
+          # something in success_values or error_values. ('done' by default).
+          field: {type: string}
+          # Values that indicate that the operation is done and finished
+          # successfully. ('True' by default).
+          success_values: {type: array, items: {type: [boolean, string]}}
+          # Values that indicate that the operation is done but finished
+          # unsuccessfully. (Nothing by default).
+          error_values: {type: array, items: {type: [boolean, string]}}
+      error:
+        type: object
+        additionalProperties: false
+        required: [field]
+        properties:
+          # If this field is set when the operation completes, it will be
+          # used to generate an error message and polling stops. ('error' by
+          # default).
+          field: {type: string}
+
+  # Enumerates the API fields (other than those specifying the resource to act
+  # on) that arguments should be generated.
+  arguments:
+    type: object
+    additionalProperties: false
+    properties:
+      # The module path to a function to call to generate extra arguments
+      # that for whatever reason cannot be defined here. It is a function that
+      # takes no arguments and returns a list of calliope.base.Action
+      # objects that will be added to the parser. These arguments will not
+      # be processed automatically so you will need to implement
+      # request.modify_request_hooks to insert something into the request based
+      # on these arguments.
+      additional_arguments_hook: {$ref: "#/definitions/python_hook"}
+      # TODO(b/272076207): Remove resource when surfaces are updated
+      # This section declares how to generate the arguments and flags that
+      # correspond to the resource being operated on by this command.
+      resource:
+        description: Describes how to generate the resource arg and its flags
+        type: object
+        additionalProperties: false
+        required: [help_text, spec]
+        properties:
+          # The help text for the overall resource arg group.
+          help_text: {type: string}
+          # Set to False to force the anchor resource argument to be a flag
+          # even though it would normally be a positional. This should normally
+          # not be required for well formed API methods.
+          is_positional: {type: boolean}
+          # Set to True if the resource spec is for the parent of the request
+          # collection instead of for the collection itself.  This allows for
+          # create commands that do not require a name for the new resource.
+          # Set the `resource_type` property on `request` to include the
+          # resource type in log messages.
+          is_parent_resource: {type: boolean}
+          # The name to use for the resource arg. If set this is the name that
+          # will be used for the resource arg in the command. If not set,
+          # command will use the name from the spec.
+          arg_name: {type: string}
+          # List of resource arg attributes to not generate flags for. These
+          # attributes will need to have fallthroughs in the resource arg spec
+          # in order to be populated.
+          removed_flags:
+            type: array
+            items: {type: string}
+          # a map of attribute names to a list of fallthroughs *specific to
+          # this command* that will be used if the attribute is not directly
+          # provided on the command line. Anything in this map takes precedence
+          # over what's specified in the resource spec by default.
+          command_level_fallthroughs:
+            type: object
+            patternProperties:
+              .*:
+                type: array
+                items: {$ref: "#/definitions/arg_fallthrough"}
+          # The resource arg specification itself. This corresponds to the
+          # ResourceSpec and ResourceParameterAttributeConfig objects and does
+          # not include anything that would go in a presentation spec. It is
+          # expected that this entire section be imported from a resources.yaml
+          # file in command_lib.
+          # (ex !REF googlecloudsdk.command_lib.pubsub.resources:topic)
+          spec:
+            oneOf:
+            # A regular resource arg
+            - $ref: "#/definitions/resource_spec"
+            # A multitype resource arg
+            - $ref: "#/definitions/multitype_resource_spec"
+          # A hook to get the display name of the parsed resource. Used for
+          # logging. Takes two arguments: the resource ref and a parsed args
+          # namespace.
+          # Example:
+          # def DisplayNameHook(resource_ref, args):
+          #   if args.CONCEPTS.xyz.Parse().type_.name == 'parentType':
+          #     return 'name not specified'
+          #   return resource_ref.Name()
+          display_name_hook: {$ref: "#/definitions/python_hook"}
+          # If true, will disable validating that the resource arg schema matches the
+          # request method schema. This is useful for API's that have multiple services
+          # (and multiple resource collections) that use the same actual resource objects.
+          override_resource_collection: {type: boolean}
+      # Enumerates the API fields that need to be set and information
+      # about each argument to generate.
+      params:
+        type: array
+        items: {$ref: "#/definitions/argument"}
+      labels:
+        type: object
+        additionalProperties: false
+        description: Handles resource labels for resource create/update (go/api-label)
+        required: [api_field]
+        properties:
+          api_field: {type: string}
+      # Removes arguments from the parser
+      exclude:
+        type: array
+        items:
+          type: string
+
+  # Information about how to collect input from the user.
+  input:
+    type: object
+    additionalProperties: false
+    properties:
+      # An optional confirmation prompt to show before actually performing the
+      # operation. The string may have named format substitutions in it which
+      # will be replaced with attributes of the resource being operated on.
+      confirmation_prompt: {type: string}
+      default_continue: {type: boolean}
+
+  # Information about how to show output to the user.
+  output:
+    type: object
+    additionalProperties: false
+    properties:
+      # Corresponds to the default output format setting on the command.
+      format: {type: string}
+      # Corresponds to the default output flatten setting on the command.
+      flatten: {type: array}
+
+  # Additional information for handling the IAM Commands.
+  iam:
+    type: object
+    additionalProperties: false
+    properties:
+      # Path to the policy/updateMask fields in the SetIamRequest message for
+      # APIs that use non-standard naming.
+      # Example: 'setMyAPIIamPolicyRequest'
+      set_iam_policy_request_path: {type: string}
+      # A mapping of policy message type names to apitools message types for
+      # APIs that use non-standard naming.
+      # Example: policy: MyApiPolicy
+      message_type_overrides:
+        type: object
+        patternProperties:
+          .*: {type: string}
+      # The indicator for IAM condition. If True, the command can accept condition
+      # as part of a IAM policy binding. Default is False.
+      enable_condition: {type: boolean}
+      # Whether to hide special member types `allUsers` and `allAuthenticatedUsers` as potential
+      # values for the `member` flag. Default is False.
+      hide_special_member_types: {type: boolean}
+      # Override policy version. Default is None.
+      policy_version: {type: number}
+      # Path to the policy_version field for APIs that use non-standard mapping.
+      get_iam_policy_version_path: {type: string}
+
+  # Additional information for handling the update commands.
+  update:
+    type: object
+    additionalProperties: false
+    properties:
+      # True when the update command requires an extra get api call.
+      # False by default.
+      read_modify_update: {type: boolean}
+      # Disable the field mask auto generation in the update commands.
+      # False by default.
+      disable_auto_field_mask: {type: boolean}
+
+  # Additional information for handling the import commands.
+  import:
+    type: object
+    additionalProperties: false
+    properties:
+      # True when the import command should return early if it detects the imported resource
+      # has no changes from the resource on the service.
+      abort_if_equivalent: {type: boolean}
+      # True when the import command should create the resource if it does not already exist
+      # on the service.
+      create_if_not_exists: {type: boolean}
+      # Attributes about the create request the command will make if the resource does not already
+      # exist on the service. The create request will use all configuration from the parent
+      # request configuration unless explicitly specified here.
+      create_request: *request
+      # Attributes about the asynchronous behavior for the above create command. The create request
+      # will use all settings from the parent asynchronous configuration unless explicitly
+      # specified here.
+      create_async: *async
+      # If set, the create command will not use operations, and will not use the settings
+      # form the parent asynchronous configuration.
+      no_create_async: {type: boolean}

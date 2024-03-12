@@ -1,0 +1,37 @@
+name: style
+on:
+  push:
+  pull_request:
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    # https://github.community/t/duplicate-checks-on-push-and-pull-request-simultaneous-event/18012/5
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != 'httplib2/httplib2'
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('.github/workflows/style.yaml', 'pyproject.toml', 'requirements.txt', 'requirements-test.txt', 'setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - name: pip install
+        run: pip install black isort -r requirements-test.txt
+      - name: isort
+        run: isort --check python2/ python3/ tests/ || echo FIXME
+      - name: black
+        run: black --check --diff python2/ python3/ tests/ || echo FIXME
+      - name: flake8 python2/
+        run: flake8 python2/
+      - name: flake8 python3/ tests/
+        run: flake8 python3/ tests/

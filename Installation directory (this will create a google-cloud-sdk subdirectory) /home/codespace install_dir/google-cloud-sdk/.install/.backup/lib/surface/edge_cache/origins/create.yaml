@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Create an EdgeCacheOrigin resource.
+    description: |
+      Create a new EdgeCacheOrigin resource.
+    examples: |
+      To create a EdgeCacheOrigin resource called 'my-origin', run:
+
+        $ {command} my-origin --origin-address="origin.example.com"
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheOrigins
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_cache.util:SetFailoverOriginRelativeName
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the EdgeCacheOrigin resource to create.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.description
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.labels
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.failover_origin
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.max_attempts
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.origin_address
+      required: true
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.port
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.protocol
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.retry_conditions
+    # b/187717231
+    # - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.connect_timeout
+    # - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.max_attempts_timeout
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.response_timeout

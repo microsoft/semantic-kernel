@@ -1,0 +1,7 @@
+service:
+  name: service
+  collection: servicemanagement.services
+  attributes:
+  - parameter_name: serviceName
+    attribute_name: service
+    help: The name of the service.

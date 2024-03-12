@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="windows-1255"?>
+<!--
+Source: http://www.hagada.org.il/hagada/html/backend.php
+Expect: windows-1255
+-->
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN"
+ "http://my.netscape.com/publish/formats/rss-0.91.dtd">
+
+ <rss version="0.91">
+
+<channel>
+<title>הגדה השמאלית</title>
+<link>http://www.hagada.org.il</link>
+<description>הגדה השמאלית</description>
+<language>he</language>
+
+<item>
+<title>: 6/1 : הפגנות בבילעין ובעאבוד עם התגברות העניין התקשורתי</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4195</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>: 8/1 : מפגש על הבחירות בישראל ובפלסטין במרכז לאינפורמציה אלטרנטיבית בירושלים</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4194</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>הפילוג באיגודים המקצועיים האמריקאים</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4193</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>: 7/1 : סיור לבילעין</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4192</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>ניצחון לשובתי התחבורה הציבורית בניו-יורק</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4191</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>ואולי לא</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4190</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>על הכוונת: סוריה</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4189</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>בטרם פורענות</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4188</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>להוציא אל מחוץ לחוק את חברות הכוח-אדם</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4187</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>התרגיל המסריח של אריק שרון</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4186</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>בין מק''י ובין חד''ש</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4182</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>סמרטוט אדום - הגנרלית של מרצ</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4181</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>: 7/1 : שיקום כרמי זיתים בסאלם</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4180</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>:: 12/1 :: תקציב 2006 והמלחמה בעוני</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4179</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+<item>
+<title>חשיבותה של השותפות היהודית-ערבית</title>
+<link>http://www.hagada.org.il/hagada/html/modules.php?name=News&amp;file=article&amp;sid=4177</link>
+<description><span dir="rtl"></span></description>
+</item>
+
+</channel>
+</rss>

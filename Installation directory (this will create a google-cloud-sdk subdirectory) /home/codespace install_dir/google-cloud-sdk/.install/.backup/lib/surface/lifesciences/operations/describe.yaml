@@ -1,0 +1,16 @@
+- help_text:
+    brief:  Describe a Cloud Life Sciences operation.
+    description: Describe a Cloud Life Sciences operation.
+    examples: |
+      To describe an operation called `my-operation`, run:
+
+        $ {command} my-operation
+
+  request:
+    collection: lifesciences.projects.locations.operations
+    api_version: v2beta
+
+  arguments:
+    resource:
+      help_text: Cloud Life Sciences operation to describe.
+      spec: !REF googlecloudsdk.command_lib.lifesciences.resources:operation

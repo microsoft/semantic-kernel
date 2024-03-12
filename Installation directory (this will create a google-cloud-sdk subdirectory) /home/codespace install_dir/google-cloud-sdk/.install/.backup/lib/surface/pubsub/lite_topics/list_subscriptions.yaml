@@ -1,0 +1,31 @@
+release_tracks: [ALPHA, BETA, GA]
+command_type: LIST
+help_text:
+  brief: List Pub/Sub Lite subscriptions for a given Lite topic.
+  description: List Pub/Sub Lite subscriptions for a given Lite topic.
+  examples: |
+    To list Pub/Sub Lite subscriptions for a given Lite topic, run:
+
+        $ {command} mytopic \
+            --location=us-central1-a
+
+request:
+  collection: pubsublite.admin.projects.locations.topics.subscriptions
+  method: list
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+
+arguments:
+  resource:
+    help_text: Topic to list subscriptions for.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_topic
+    is_parent_resource: true
+    is_positional: true
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone
+
+response:
+  result_attribute: subscriptions

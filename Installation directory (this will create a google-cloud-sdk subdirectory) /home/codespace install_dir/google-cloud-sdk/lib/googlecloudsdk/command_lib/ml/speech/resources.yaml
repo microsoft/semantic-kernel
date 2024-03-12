@@ -1,0 +1,40 @@
+project:
+  name: project
+  collection: speech.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      Project of the {resource}.
+    property: core/project
+
+location:
+  name: location
+  collection: speech.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      Location of the {resource}.
+
+operation:
+  name: operation
+  collection: speech.operations
+  attributes:
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: The ID of the operation
+
+recognizer:
+  name: recognizer
+  collection: speech.projects.locations.recognizers
+  attributes:
+  - *project
+  - *location
+  - &recognizer
+    parameter_name: recognizersId
+    attribute_name: recognizer
+    help: Speech-to-text recognizer.

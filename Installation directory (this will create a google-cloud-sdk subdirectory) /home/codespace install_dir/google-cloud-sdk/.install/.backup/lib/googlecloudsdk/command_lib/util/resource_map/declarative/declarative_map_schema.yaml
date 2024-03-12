@@ -1,0 +1,82 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+definitions:
+  release_track:
+    type: object
+    properties:
+      supported_apis:
+        type: array
+        items:
+          type: string
+      support_single_export:
+        type: boolean
+      support_bulk_export:
+        type: boolean
+      support_iam:
+        type: boolean
+      home_directory:
+        type: string
+      resource_spec_path:
+        type: string
+      resource_attribute_renames:
+        type: object
+        additionalProperties: true
+      surface_spec_resource_name:
+        type: string
+      krm_kind:
+        type: string
+      krm_group:
+        type: string
+      asset_inventory_type:
+        type: string
+      enable_single_resource_autogen:
+        type: boolean
+      group_category:
+        type: string
+    additionalProperties: false
+
+  resource:
+    type: object
+    properties:
+      supported_apis:
+        type: array
+        items:
+          type: string
+      support_single_export:
+        type: boolean
+      support_bulk_export:
+        type: boolean
+      support_iam:
+        type: boolean
+      home_directory:
+        type: string
+      resource_spec_path:
+        type: string
+      resource_attribute_renames:
+        type: object
+        additionalProperties: true
+      surface_spec_resource_name:
+        type: string
+      krm_kind:
+        type: string
+      krm_group:
+        type: string
+      asset_inventory_type:
+        type: string
+      enable_single_resource_autogen:
+        type: boolean
+      group_category:
+        type: string
+      GA:
+        type: {$ref: "#/definitions/release_track"}
+      BETA:
+        type: {$ref: "#/definitions/release_track"}
+      ALPHA:
+        type: {$ref: "#/definitions/release_track"}
+    additionalProperties: false
+
+  api:
+    type: object
+    additionalProperties: {$ref: "#/definitions/resource"}
+
+type: object
+additionalProperties: {$ref: "#/definitions/api"}

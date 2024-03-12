@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: List Secure Source Manager instances
+    description: List all instances on your Secure Source Manager.
+    examples: |
+      To list all Secure Source Manager instances in location 'us-central1' under the current project, run:
+
+      $ {command} --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.instances
+
+  arguments:
+    resource:
+      help_text: The location you want to list the instances for.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:location
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=INSTANCE_ID:sort=2,
+        name.segment(3):label=LOCATION,
+        state,
+        createTime.date(),
+        updateTime.date(),
+        hostConfig.html:label=HTML_HOST
+      )

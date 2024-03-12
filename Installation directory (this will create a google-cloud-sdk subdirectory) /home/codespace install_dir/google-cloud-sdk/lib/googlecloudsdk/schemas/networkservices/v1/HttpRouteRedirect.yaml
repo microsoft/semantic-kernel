@@ -1,0 +1,72 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 HttpRouteRedirect export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  hostRedirect:
+    description: |-
+      The host that will be used in the redirect response instead of the one
+      that was supplied in the request.
+    type: string
+  httpsRedirect:
+    description: |-
+      If set to true, the URL scheme in the redirected request is set to https.
+      If set to false, the URL scheme of the redirected request will remain the
+      same as that of the request. The default is set to false.
+    type: boolean
+  pathRedirect:
+    description: |-
+      The path that will be used in the redirect response instead of the one
+      that was supplied in the request. path_redirect can not be supplied
+      together with prefix_redirect. Supply one alone or neither. If neither is
+      supplied, the path of the original request will be used for the redirect.
+    type: string
+  portRedirect:
+    description: |-
+      The port that will be used in the redirected request instead of the one
+      that was supplied in the request.
+    type: integer
+  prefixRewrite:
+    description: |-
+      Indicates that during redirection, the matched prefix (or path) should be
+      swapped with this value. This option allows URLs be dynamically created
+      based on the request.
+    type: string
+  responseCode:
+    description: The HTTP Status code to use for the redirect.
+    type: string
+    enum:
+    - FOUND
+    - MOVED_PERMANENTLY_DEFAULT
+    - PERMANENT_REDIRECT
+    - RESPONSE_CODE_UNSPECIFIED
+    - SEE_OTHER
+    - TEMPORARY_REDIRECT
+  stripQuery:
+    description: |-
+      if set to true, any accompanying query portion of the original URL is
+      removed prior to redirecting the request. If set to false, the query
+      portion of the original URL is retained. The default is set to false.
+    type: boolean

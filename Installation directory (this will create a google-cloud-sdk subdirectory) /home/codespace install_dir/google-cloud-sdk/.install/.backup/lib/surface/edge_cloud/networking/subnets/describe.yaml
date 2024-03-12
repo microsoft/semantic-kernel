@@ -1,0 +1,24 @@
+release_tracks: [ALPHA, GA]
+
+help_text:
+  brief: Show details about the Distributed Cloud Edge Network subnet.
+  description: |
+      Show details about the Distributed Cloud Edge Network subnet.
+  examples: |
+    To show details about a subnet named 'my-subnet' in the edge zone 'us-central1-edge-den1', run:
+
+      $ {command} my-subnet --location=us-central1 --zone=us-central1-edge-den1
+
+request:
+  collection: edgenetwork.projects.locations.zones.subnets
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    help_text: The subnet you want to describe.
+    # The following should point to the resource argument definition under your
+    # surface's command_lib directory.:
+    spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:subnet

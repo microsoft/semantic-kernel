@@ -1,0 +1,43 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: |
+    Import an `LbRouteExtension` resource.
+  description: |
+    Import an `LbRouteExtension` resource defined in a YAML file.
+  examples: |
+    To import an `LbRouteExtension` resource named
+    `my-route-extension` from a YAML file in `us-central1`, run:
+
+        $ {command} my-route-extension --source=my-route-extension.yaml --location=us-central1
+
+request:
+  collection: networkservices.projects.locations.lbRouteExtensions
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:lbRouteExtension
+    help_text: |
+      The ID of the new or updated `LbRouteExtension` resource.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.lbRouteExtensions
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    method: create

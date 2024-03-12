@@ -1,0 +1,4 @@
+# Check to see if the the version included in the base runtime satisfies
+# %(version_spec)s, if not then do an npm install of the latest available
+# version that satisfies it.
+RUN /usr/local/bin/install_node %(version_spec)s

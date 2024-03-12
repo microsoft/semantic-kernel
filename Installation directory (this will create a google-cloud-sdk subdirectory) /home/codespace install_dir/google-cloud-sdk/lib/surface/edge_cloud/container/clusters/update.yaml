@@ -1,0 +1,73 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Update an Edge Container cluster.
+    description: |
+      Update an Edge Container cluster.
+    examples: |
+      To update the maintenance window recurrence rule of a cluster called
+      'my-cluster' in region us-central1, run:
+
+        $ {command} my-cluster --location=us-central1 --maintenance-window-recurrence="FREQ=WEEKLY"
+
+  request:
+    collection: edgecontainer.projects.locations.clusters
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.container.maintenance_window:ClearMaintenanceWindow
+
+  arguments:
+    resource:
+      help_text: Edge Container cluster to update.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:cluster
+
+    params:
+    - group:
+        mutex: true
+        params:
+        - arg_name: clear-maintenance-window
+          action: store_true
+          help_text: |
+            If set, removes the maintenance window setting from the cluster.
+        - group:
+            help_text: Updates cluster maintenance window setting (more than one flags can be specified from this group)
+            mutex: false
+            params:
+            - arg_name: maintenance-window-start
+              api_field: cluster.maintenancePolicy.window.recurringWindow.window.startTime
+              repeated: false
+              help_text: |
+                Start time of the recurring cluster maintenance window in the [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
+                format. E.g. "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00"
+            - arg_name: maintenance-window-end
+              api_field: cluster.maintenancePolicy.window.recurringWindow.window.endTime
+              repeated: false
+              help_text: |
+                End time of the recurring cluster maintenance window in the [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
+                format. E.g. "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00"
+            - arg_name: maintenance-window-recurrence
+              api_field: cluster.maintenancePolicy.window.recurringWindow.recurrence
+              repeated: false
+              help_text: |
+                An [RFC 5545](https://tools.ietf.org/html/rfc5545#section-3.8.5.3)
+                recurrence rule for how the cluster maintenance window recurs. They go
+                on for the span of time between the start and the end time. E.g. FREQ=WEEKLY;BYDAY=SU.
+    - arg_name: release-channel
+      api_field: cluster.releaseChannel
+      repeated: false
+      help_text: |
+        Release channel a cluster is subscribed to. It supports two values, NONE and REGULAR. NONE
+        is used to opt out of any release channel. Clusters subscribed to the REGULAR channel will
+        be automatically upgraded to versions that are considered GA quality, and cannot be manually
+        upgraded.
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.container.print_warning:PrintWarning
+
+  async:
+    collection: edgecontainer.projects.locations.operations
+    extract_resource_result: false

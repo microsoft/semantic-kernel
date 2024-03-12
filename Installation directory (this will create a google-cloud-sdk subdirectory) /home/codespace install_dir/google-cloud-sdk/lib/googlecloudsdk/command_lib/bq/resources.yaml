@@ -1,0 +1,92 @@
+project:
+  name: project
+  collection: bigquery.projects
+  attributes:
+  - &project
+    parameter_name: projectId
+    attribute_name: project
+    help: The project ID.
+
+dataset:
+  name: dataset
+  collection: bigquery.datasets
+  attributes:
+  - *project
+  - &dataset
+    parameter_name: datasetId
+    attribute_name: dataset
+    help: The id of the BigQuery dataset.
+  disable_auto_completers: false
+
+table:
+  name: table
+  collection: bigquery.tables
+  attributes:
+  - *project
+  - *dataset
+  - &table
+    parameter_name: tableId
+    attribute_name: table
+    help: The id of the BigQuery table.
+  disable_auto_completers: false
+
+job:
+  name: job
+  collection: bigquery.jobs
+  attributes:
+  - *project
+  - &job
+    parameter_name: jobId
+    attribute_name: job
+    help: The id of the BigQuery job.
+  disable_auto_completers: false
+
+
+location:
+  name: location
+  collection: bigquerydatatransfer.projects.locations
+  disable_auto_completers: false
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The compute/zone of the Cloud TPU.
+
+      If not specified, will use `default` compute/zone.
+    property: compute/zone
+
+transfer:
+  name: transfer
+  collection: bigquerydatatransfer.projects.locations.transferConfigs
+  attributes:
+  - *location
+  - &transfer
+    parameter_name: transferConfigsId
+    attribute_name: transfer
+    help: The id of the BigQuery data transfer config.
+  disable_auto_completers: false
+
+transfer_run:
+  name: transfer_run
+  collection: bigquerydatatransfer.projects.locations.transferConfigs.runs
+  attributes:
+  - *location
+  - *transfer
+  - &transfer_run
+    parameter_name: jobId
+    attribute_name: job
+    help: The id of the BigQuery job.
+  disable_auto_completers: false
+
+
+transfer_datasdource:
+  name: datasource
+  collection: bigquerydatatransfer.projects.locations.dataSources
+  attributes:
+  - *location
+  - &datasource
+    parameter_name: dataSourcesId
+    attribute_name: datasource
+    help: The id of the BigQuery job.
+  disable_auto_completers: false

@@ -1,0 +1,165 @@
+project:
+  name: project
+  collection: networkconnectivity.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project ID.
+    property: core/project
+
+region:
+  name: region
+  collection: networkconnectivity.projects.locations
+  attributes:
+  - *project
+  - &region
+    parameter_name: locationsId
+    attribute_name: region
+    help: |
+      The location Id.
+
+regionDefaultGlobal:
+  name: region
+  collection: networkconnectivity.projects.locations
+  attributes:
+  - *project
+  - &regionDefaultGlobal
+    parameter_name: locationsId
+    attribute_name: region
+    help: |
+      The location ID.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.network_connectivity.util:SetGlobalLocation
+      hint: |
+        use default global location
+
+location:
+  name: location
+  collection: networkconnectivity.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The location Id.
+
+operation:
+  name: operation
+  collection: networkconnectivity.projects.locations.operations
+  attributes:
+  - *project
+  - *region
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      The operation ID.
+
+hub:
+  name: hub
+  collection: networkconnectivity.projects.locations.global.hubs
+  request_id_field: hubId
+  attributes:
+  - *project
+  - &hub
+    parameter_name: hubsId
+    attribute_name: hub
+    help: Id of the hub.
+
+internalRange:
+  name: internal range
+  collection: networkconnectivity.projects.locations.internalRanges
+  request_id_field: internalRangeId
+  attributes:
+  - *project
+  - *regionDefaultGlobal
+  - &internalRange
+    parameter_name: internalRangesId
+    attribute_name: internal_range
+    help: Id of the internal range.
+
+spoke:
+  name: spoke
+  collection: networkconnectivity.projects.locations.spokes
+  request_id_field: spokeId
+  attributes:
+  - *project
+  - *region
+  - &spoke
+    parameter_name: spokesId
+    attribute_name: spoke
+    help: Id of the spoke.
+
+policyBasedRoute:
+  name: policy based route
+  collection: networkconnectivity.projects.locations.global.policyBasedRoutes
+  request_id_field: policyBasedRouteId
+  attributes:
+  - *project
+  - &policyBasedRoute
+    parameter_name: policyBasedRoutesId
+    attribute_name: policy_based_route
+    help: Id of the policy based route.
+
+routeTable:
+  name: route table
+  collection: networkconnectivity.projects.locations.global.hubs.routeTables
+  request_id_field: routeTablesId
+  attributes:
+  - *project
+  - *hub
+  - &routeTable
+    parameter_name: routeTablesId
+    attribute_name: route_table
+    help: Id of the route table.
+
+route:
+  name: route
+  collection: networkconnectivity.projects.locations.global.hubs.routeTables.routes
+  request_id_field: routesId
+  attributes:
+  - *project
+  - *hub
+  - *routeTable
+  - &route
+    parameter_name: routesId
+    attribute_name: route
+    help: Id of the route.
+
+serviceConnectionPolicy:
+  name: service connection policy
+  collection: networkconnectivity.projects.locations.serviceConnectionPolicies
+  request_id_field: serviceConnectionPolicyId
+  attributes:
+  - *project
+  - *region
+  - &serviceConnectionPolicy
+    parameter_name: serviceConnectionPoliciesId
+    attribute_name: service_connection_policy
+    help: Id of the service connection policy.
+
+group:
+  name: group
+  collection: networkconnectivity.projects.locations.global.hubs.groups
+  request_id_field: groupsId
+  attributes:
+  - *project
+  - *hub
+  - &group
+    parameter_name: groupsId
+    attribute_name: group
+    help: Id of the group.
+
+regionalEndpoint:
+  name: regionalEndpoint
+  collection: networkconnectivity.projects.locations.regionalEndpoints
+  request_id_field: regionalEndpointId
+  attributes:
+  - *project
+  - *region
+  - &regionalEndpoint
+    parameter_name: regionalEndpointsId
+    attribute_name: regional_endpoint
+    help: Id of the regionalEndpoint.

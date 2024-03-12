@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Show details about a operation.
+    description: Show details about a operation.
+    examples: |
+      To show details about a operation, run:
+
+        $ {command} my-operation --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.operations
+    GA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha2
+
+  arguments:
+    resource:
+      help_text: The operation you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:operation

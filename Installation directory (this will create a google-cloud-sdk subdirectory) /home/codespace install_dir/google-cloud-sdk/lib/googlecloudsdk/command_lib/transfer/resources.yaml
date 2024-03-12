@@ -1,0 +1,8 @@
+transfer_job:
+  name: job
+  collection: storagetransfer.transferJobs
+  attributes:
+  - &job
+    parameter_name: transferJobsId
+    attribute_name: job
+    help: The name of the storage transfer job.

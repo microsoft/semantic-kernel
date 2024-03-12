@@ -1,0 +1,129 @@
+# Note: we have some duplicated resources here because of a limitation with declarative commands.
+#
+# In particular, some commands (e.g. composite create) need the collection group to be specified.
+# But other commands (e.g. composite list) need to function if the collection group is not specified
+# (a special value of '-' is used).
+#
+# Normally this would be configured with command level fallthroughs; however, the declarative schema
+# currently only allows command level fallthroughs to be arg_fallthroughs (as opposed to generic
+# python hook fallthroughs), which means we can't provide a default value in this manner.
+#
+# The workaround for now is just to have different commands use different resource args with
+# appropriate attribute fallthroughs (which can be generic python hooks) depending on what the
+# command needs.
+
+project:
+  name: project
+  collection: firestore.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      Project of the {resource}.
+    property: core/project
+
+database:
+  name: database
+  collection: firestore.projects.databases
+  attributes:
+  - *project
+  - &database
+    parameter_name: databasesId
+    attribute_name: database
+    help: |
+      Database of the {resource}.
+    fallthroughs:
+    - value: (default)
+      hint: |-
+        the default value of argument [--database] is `(default)`
+
+# This is for the '-' collection group which allows API calls to access index IDs without specifying
+# their collection group, e.g.:
+# projects/{projectsId}/databases/{databasesId}/collectionGroups/-/{indexesId}
+collection_group_with_default:
+  name: collection group
+  collection: firestore.projects.databases.collectionGroups
+  attributes:
+  - *project
+  - *database
+  - &collection_group_with_default
+    parameter_name: collectionGroupsId
+    attribute_name: collection-group
+    help: |
+      Collection group of the {resource}.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.firestore.util:GetCollectionGroupFallthrough
+      hint: |-
+        provide the argument [--collection-group] on the command line
+
+collection_group:
+  name: collection group
+  collection: firestore.projects.databases.collectionGroups
+  attributes:
+  - *project
+  - *database
+  - &collection_group
+    parameter_name: collectionGroupsId
+    attribute_name: collection-group
+    help: |
+      Collection group of the {resource}.
+
+# Composite index IDs are unique across all collection groups; we can use the special '-' collection
+# group in API calls so that the user doesn't need to enter the actual one on the command line.
+index:
+  name: composite index
+  collection: firestore.projects.databases.collectionGroups.indexes
+  attributes:
+  - *project
+  - *database
+  - *collection_group_with_default
+  - &index
+    parameter_name: indexesId
+    attribute_name: index
+    help: |
+      Index of the {resource}.
+
+# This resource lets us describe the special field that contains database-wide index settings. Note
+# that the collection group for this field is '__default__' not '-', so we can't reuse the
+# collection_group_with_default attribute.
+field_with_default:
+  name: field
+  collection: firestore.projects.databases.collectionGroups.fields
+  attributes:
+  - *project
+  - *database
+  - parameter_name: collectionGroupsId
+    attribute_name: collection-group
+    help: |
+      Collection group of the {resource}.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.firestore.util:GetDefaultFieldCollectionGroupFallthrough
+      hint: ' '
+  - &field_with_default
+    parameter_name: fieldsId
+    attribute_name: field
+    help: |
+      Field of the {resource}.
+
+      The field may be a simple field name (e.g. address) or a path to a field in a key-value map
+      (e.g. address.city.neighborhood).
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.firestore.util:GetDefaultFieldPathFallthrough
+      hint: ' '
+
+field:
+  name: field
+  collection: firestore.projects.databases.collectionGroups.fields
+  attributes:
+  - *project
+  - *database
+  - *collection_group
+  - &field
+    parameter_name: fieldsId
+    attribute_name: field
+    help: |
+      Field of the {resource}.
+
+      The field may be a simple field name (e.g. address) or a path to a field in a key-value map
+      (e.g. address.city.neighborhood).

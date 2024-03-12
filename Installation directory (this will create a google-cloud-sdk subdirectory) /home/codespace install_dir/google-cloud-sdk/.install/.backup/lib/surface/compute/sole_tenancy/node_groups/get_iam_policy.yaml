@@ -1,0 +1,33 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Get the IAM policy for a Compute Engine node group.
+  description: |
+    *{command}* displays the IAM policy associated with a
+    Compute Engine node group in a zone. If formatted as JSON,
+    the output can be edited and used as a policy file for
+    set-iam-policy. The output includes an "etag" field
+    identifying the version emitted and allowing detection of
+    concurrent policy updates; see
+    $ {parent} set-iam-policy for additional details.
+  examples: |
+    To print the IAM policy for a given node group, run:
+
+      $ {command} my-node-group --zone=ZONE
+
+request:
+  collection: compute.nodeGroups
+  api_version: v1
+  use_relative_name: false
+  BETA:
+    api_version: beta
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=optionsRequestedPolicyVersion
+  ALPHA:
+    api_version: alpha
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=optionsRequestedPolicyVersion
+
+arguments:
+  resource:
+    help_text: The node group for which to display the IAM policy.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:node_group

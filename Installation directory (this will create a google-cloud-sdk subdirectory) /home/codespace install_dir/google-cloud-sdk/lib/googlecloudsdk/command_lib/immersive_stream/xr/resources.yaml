@@ -1,0 +1,61 @@
+project:
+  name: project
+  collection: stream.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: Project name.
+    property: core/project
+
+location:
+  name: location
+  collection: stream.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: Global location name.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.immersive_stream.xr.util:DefaultToGlobal
+      hint: "global is the only supported location"
+  disable_auto_completers: false
+
+operation:
+  name: operation
+  collection: stream.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: Stream API long running operation.
+  disable_auto_completers: false
+
+
+content:
+  name: content
+  collection: stream.projects.locations.streamContents
+  request_id_field: streamContentId
+  attributes:
+  - *project
+  - *location
+  - &streamContents
+    parameter_name: streamContentsId
+    attribute_name: content
+    help: Name of the Stream Content.
+  disable_auto_completers: false
+
+instance:
+  name: instance
+  collection: stream.projects.locations.streamInstances
+  request_id_field: streamInstanceId
+  attributes:
+  - *project
+  - *location
+  - &streamInstances
+    parameter_name: streamInstancesId
+    attribute_name: instance
+    help: Name of the stream Instance.
+  disable_auto_completers: false

@@ -1,0 +1,86 @@
+# Copyright 2022 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+ingress_config:
+  arg_name: ingress-config
+  help_text: |-
+    The basic ingress config for client gateways.
+    Example - {"transportProtocol": "TCP","destinationRoutes":[{"address":"196.0.0.1", "netmask":"255.255.255.0"}]}.
+
+egress_peered_vpc:
+  arg_name: egress-peered-vpc
+  help_text: |-
+    The peered VPC owned by the consumer project.
+    Example - {"networkVpc": "projects/consumer-project-id/global/networks/my-vpc-network"}.
+
+config_from_file:
+  arg_name: config-from-file
+  help_text: |-
+    Path to json file containing client connector service configuration.
+    Example - "/file/path/configJson.txt" where configJson.txt contains -
+    ```
+    {
+      "ingress":{
+        "config":{
+          "transportProtocol":"TCP",
+          "destinationRoutes":[{
+            "address":"196.0.0.0",
+            "netmask":"255.255.255.0"
+          }]
+        }
+      },
+      "egress":{
+        "peeredVpc":{
+          "networkVpc":"projects/consumer-project-id/global/networks/my-vpc-network"
+        }
+      },
+      "displayName":"my-service-resource"
+    }
+    ```
+
+display_name:
+  api_field: clientConnectorService.displayName
+  arg_name: display-name
+  required: false
+  help_text: |-
+    An arbitrary user-provided name for the client connector service. The display name should follow format -
+        * Must be 6 to 30 characters in length.
+        * Can only contain lowercase letters, numbers and hyphens.
+        * Must start with a letter.
+
+ingress_config_update:
+  arg_name: ingress-config
+  help_text: |-
+    Ingress config for client gateways.
+    Example - {"destinationRoutes":[{"address":"196.0.0.0", "netmask":"255.255.255.0"},{"address":"197.0.0.0","netmask":"255.255.255.0"}]}.
+
+config_from_file_update:
+  arg_name: config-from-file
+  help_text: |-
+    Path to json file containing client connector service configuration.
+    Example - "/file/path/config.json" where config.json contains -
+    ```
+    {
+      "ingress":{
+        "config":{
+          "transportProtocol":"TCP",
+          "destinationRoutes":[{
+            "address":"196.0.0.0",
+            "netmask":"255.255.255.0"
+          }]
+        }
+      },
+      "displayName":"my-service-resource"
+    }
+    ```

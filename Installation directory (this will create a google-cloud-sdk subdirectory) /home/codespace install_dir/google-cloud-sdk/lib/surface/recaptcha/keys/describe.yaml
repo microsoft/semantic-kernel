@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    description: Get the details of a reCAPTCHA Key.
+    brief: Describe reCAPTCHA Key.
+    examples: |
+        To get details on a reCAPTCHA key, run:
+
+          $ {command} test-key
+
+  request:
+    collection: recaptchaenterprise.projects.keys
+
+  arguments:
+    resource:
+      help_text: The reCAPTCHA key to describe.
+      spec: !REF googlecloudsdk.command_lib.recaptcha.resources:keys

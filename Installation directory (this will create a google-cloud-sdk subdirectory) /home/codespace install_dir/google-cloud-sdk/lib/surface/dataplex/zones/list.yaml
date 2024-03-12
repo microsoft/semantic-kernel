@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      List Dataplex zone resources under a lake.
+    description: |
+      List Dataplex zone resource under a specific project. location, and lake.
+    examples: |
+      To list all Dataplex zone resources within lake `test-lake` in location `us-central`, run:
+
+          $ {command} --location=us-central1 --lake=test-lake
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.zones
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex zone you want to list.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        displayName:label=DISPLAY_NAME,
+        state:label=ZONE_STATUS,
+        type:label=ZONE_TYPE,
+        resourceSpec.locationType:label=RESOURCE_LOCATION_TYPE,
+        discoverySpec.enabled:label=DISCOVERY_ENABLED,
+        securityStatus.state:label=SECURITY_STATUS,
+        assetStatus.activeAssets:label=ACTIVE_ASSETS,
+        labels:label=LABELS
+      )

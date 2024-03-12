@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Compute Engine firewall.
+  description: |
+    *{command}* exports the configuration for a Compute Engine firewall.
+
+    Firewall configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    firewalls within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a firewall, run:
+
+      $ {command} my-firewall
+
+    To export the configuration for a firewall to a file, run:
+
+      $ {command} my-firewall --path=/path/to/dir/
+
+    To export the configuration for a firewall in Terraform
+    HCL format, run:
+
+      $ {command} my-firewall --resource-format=terraform
+
+    To export the configurations for all firewalls within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Firewall to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:firewall

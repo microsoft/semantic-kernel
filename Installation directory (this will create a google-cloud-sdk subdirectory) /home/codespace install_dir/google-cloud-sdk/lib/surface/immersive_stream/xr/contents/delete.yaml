@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Delete an Immersive Stream for XR content resource.
+    description: |
+      Delete an Immersive Stream for XR content resource.
+    examples: |
+      To delete a content called `my-content`, run:
+
+        $ {command} my-content
+
+  request:
+    collection: stream.projects.locations.streamContents
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Immersive Stream for XR content resource to delete.
+      spec: !REF googlecloudsdk.command_lib.immersive_stream.xr.resources:content
+
+  async:
+    collection: stream.projects.locations.operations

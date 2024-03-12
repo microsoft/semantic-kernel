@@ -1,0 +1,8 @@
+project:
+  name: project
+  collection: storage.projects
+  attributes:
+  - &project
+    parameter_name: project
+    attribute_name: project
+    help: The project name.

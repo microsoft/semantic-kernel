@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Cancel a Looker import or export operation.
+    description: |
+      Cancel a Looker import or export operation.
+
+    examples: |
+      To cancel an operation named `my-looker-operation` in the default region, run:
+
+        $ {command} my-looker-operation
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:operation
+      help_text: |
+        Arguments and flags that specify the Looker operation you
+        want to describe.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: looker.projects.locations.operations
+    method: cancel
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.looker.operations_util:LogCanceledOperation
+
+  input:
+    confirmation_prompt: |
+      You are about to cancel [{__name__}].
+
+  output:
+    format: none

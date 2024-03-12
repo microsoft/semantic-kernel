@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+<title>howto.diveintomark.org</title>
+<subtitle>1 out of 3 ain't bad</subtitle>
+<id>tag:howto.diveintomark.org,2005:0</id>
+<link rel="alternate" href="http://howto.diveintomark.org" />
+<link rel="self" type="application/atom+xml" href="http://howto.diveintomark.org/feed/atom/" />
+<updated>2005-11-05T05:02:33Z</updated>
+<rights>Copyright 2005, licensed under the Creative Commons Attribution-ShareAlike 2.5 license</rights>
+<author>
+<name>Mark Pilgrim</name>
+<email>mark@diveintomark.org</email>
+<uri>http://diveintomark.org/</uri>
+</author>
+<entry>
+        <title><![CDATA[HOWTO Use Your Mac From Anywhere]]></title>
+        <link rel="alternate" href="http://howto.diveintomark.org/remote-mac/" />
+	<id>tag:howto.diveintomark.org,2005:6</id>
+	<published>2005-11-03T21:28:59Z</published>
+	<updated>2005-11-03T21:28:59Z</updated>
+
+	<category term="howto" />
+	<category term="mac" />
+	<category term="video" />
+	<category term="putty" />
+	<category term="iterm" />
+	<category term="vnc" />
+	<category term="osxvnc" />
+	<category term="ultravnc" />
+	<category term="ssh" />
+	<category term="windows" /> 
+        <summary><![CDATA[Use SSH tunnels and open source VNC screen-sharing software to access your Mac over the Internet.]]></summary>
+        <link rel="enclosure" href="http://howto.diveintomark.org/download/HOWTO%20use%20your%20Mac%20from%20anywhere%20-%20iPod%20edition.mp4" length="14196788" type="video/mp4" />
+</entry>
+<entry>
+        <title><![CDATA[HOWTO Backup Your DVD Movies]]></title>
+        <link rel="alternate" href="http://howto.diveintomark.org/dvd-backup/" />
+	<id>tag:howto.diveintomark.org,2005:4</id>
+	<published>2005-10-25T13:41:50Z</published>
+	<updated>2005-10-25T13:41:50Z</updated>
+
+	<category term="howto" />
+	<category term="mac" />
+	<category term="dvd" />
+	<category term="video" />
+	<category term="mactheripper" />
+	<category term="dvd2onex" /> 
+        <summary><![CDATA[Protect your DVD investment by backing up your DVDs with MacTheRipper and DVD2OneX.]]></summary>
+        <link rel="enclosure" href="http://howto.diveintomark.org/download/HOWTO%20backup%20your%20DVD%20movies%20-%20iPod%20edition.mp4" length="5767732" type="video/mp4" />
+</entry>
+<entry>
+        <title><![CDATA[HOWTO Put Porn On Your iPod]]></title>
+        <link rel="alternate" href="http://howto.diveintomark.org/ipod-porn-conversion-guide/" />
+	<id>tag:howto.diveintomark.org,2005:3</id>
+	<published>2005-10-14T03:41:13Z</published>
+	<updated>2005-10-14T03:41:13Z</updated>
+
+	<category term="howto" />
+	<category term="mac" />
+	<category term="ipod" />
+	<category term="ffmpegx" /> 
+        <summary><![CDATA[Use ffmpegX to convert your existing video files to play on the video iPod.]]></summary>
+        </entry>
+<entry>
+        <title><![CDATA[HOWTO Rip DVD Movies To Your iPod Using Free Software]]></title>
+        <link rel="alternate" href="http://howto.diveintomark.org/ipod-dvd-ripping-guide/" />
+	<id>tag:howto.diveintomark.org,2005:1</id>
+	<published>2005-10-14T02:03:08Z</published>
+	<updated>2005-10-14T02:03:08Z</updated>
+
+	<category term="howto" />
+	<category term="mac" />
+	<category term="handbrake" />
+	<category term="ipod" />
+	<category term="dvd" /> 
+        <summary><![CDATA[Use Handbrake to convert your existing DVDs to play on the video iPod.]]></summary>
+        </entry>
+</feed>

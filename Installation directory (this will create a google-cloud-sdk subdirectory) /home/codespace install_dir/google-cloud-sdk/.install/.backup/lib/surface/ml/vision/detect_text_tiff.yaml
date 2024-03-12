@@ -1,0 +1,55 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Detect and transcribe text from TIFF files stored in Google Cloud Storage.
+    description: |
+      Detect and transcribe text from TIFF files stored in Google Cloud Storage.
+
+      The Vision API accepts TIFF files up to 2000 pages.
+      Larger files will return an error.
+    examples: |
+      To detect text for input TIFF file `gs://my_bucket/input_file` and store output in `gs://my_bucket/out_put_prefix`:
+
+        $ {command} gs://my_bucket/input_file
+        gs://my_bucket/out_put_prefix
+
+  request:
+    collection: vision.files
+    method: asyncBatchAnnotate
+    api_version: v1
+    static_fields:
+      requests.features.type: DOCUMENT_TEXT_DETECTION
+      requests.inputConfig.mimeType: 'image/tiff'
+
+  response:
+    error:
+      field: error
+      code: code
+      message: message
+
+  arguments:
+    params:
+    - api_field: requests.inputConfig.gcsSource
+      arg_name: input_file
+      is_positional: true
+      help_text: |
+        Google Cloud Storage location to read the input from. It must be in
+        Google Cloud Storage format (gs://bucket/object)
+      processor: googlecloudsdk.command_lib.ml.vision.util:GetGcsSourceFromPath
+    - api_field: requests.outputConfig.gcsDestination
+      arg_name: output_path
+      is_positional: true
+      help_text: |
+        Google Cloud Storage location to store the output file. It must be in
+        Google Cloud Storage format (gs://bucket/object)
+      processor: googlecloudsdk.command_lib.ml.vision.util:GetGcsDestinationFromPath
+    - api_field: requests.outputConfig.batchSize
+      arg_name: batch-size
+      help_text: |
+        Maximum number of response protos to put into each output JSON file on
+        Google Cloud Storage.
+        The valid range is [1, 100]. If not specified, the default value is 20.
+    - _COMMON_: args.model_field
+
+  output:
+    format: json

@@ -1,0 +1,37 @@
+release_tracks: [GA, ALPHA]
+help_text:
+  brief: |
+    Import tls route.
+  description: |
+    Import a tls route.
+  examples: |
+      To import a tls route named `my-tls-route` from a YAML file, run:
+
+        $ {command} my-tls-route --source=my-tls-route.yaml --location=global
+
+request:
+  collection: networkservices.projects.locations.tlsRoutes
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:tlsRoute
+    help_text: |
+      Name of the tls route to import.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.tlsRoutes
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    method: create

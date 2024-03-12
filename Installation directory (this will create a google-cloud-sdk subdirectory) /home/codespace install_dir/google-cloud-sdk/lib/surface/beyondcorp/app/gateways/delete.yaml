@@ -1,0 +1,22 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: Delete a single AppConnector Gateway
+    description: Delete a single AppConnector Gateway.
+    examples: |
+      To delete a gateway ``my-gateway'' run:
+
+      $ {command} my-gateway --project={project} --location={location}
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.appGateways
+    BETA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:appgateway
+      help_text: The Beyondcorp appconnector gateway you want to delete.

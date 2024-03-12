@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: datastream v1 StreamObject export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- displayName
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  backfillJob:
+    description: |-
+      The latest backfill job that was initiated for the stream object.
+    $ref: BackfillJob.yaml
+  displayName:
+    description: Display name.
+    type: string
+  sourceObject:
+    description: The object identifier in the data source.
+    $ref: SourceObjectIdentifier.yaml

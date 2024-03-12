@@ -1,0 +1,75 @@
+name: test
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "34 4 */7 * *" # every week, time chosen by RNG
+jobs:
+  test:
+    name: "test ${{ matrix.py }}"
+    continue-on-error: ${{ matrix.ignore-error }}
+    runs-on: ubuntu-latest
+    # https://github.community/t/duplicate-checks-on-push-and-pull-request-simultaneous-event/18012/5
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != 'httplib2/httplib2'
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { py: 2.7, ignore-error: false }
+          - { py: 3.5, ignore-error: false }
+          - { py: 3.6, ignore-error: false }
+          - { py: 3.7, ignore-error: false }
+          - { py: 3.8, ignore-error: false }
+          - { py: 3.9, ignore-error: false }
+          - { py: 3.x, ignore-error: true }
+          - { py: pypy2, ignore-error: false }
+          - { py: pypy3, ignore-error: false }
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.py }}-${{ hashFiles('.github/workflows/test.yaml', 'pyproject.toml', 'requirements.txt', 'requirements-test.txt', 'setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.py }}-
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: setup python ${{ matrix.py }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.py }}
+      - run: pip install tox-gh
+        if: startsWith(matrix.py, '3.') && matrix.py >= '3.6'
+      - run: pip install 'codecov>=2.0.15' -r requirements-test.txt
+      - run: script/test -sv
+      - run: codecov --flags=$(echo ${{ matrix.py }} |tr -d -- '-.')
+
+  test_py37_openssl11:
+    name: "TODO FIXME test py37-openssl11"
+    runs-on: ubuntu-latest
+    # https://github.community/t/duplicate-checks-on-push-and-pull-request-simultaneous-event/18012/5
+    # FIXME Permission denied /usr/local/lib/python3.8/dist-packages/
+    if: false && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name != 'httplib2/httplib2')
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-py37_openssl11-${{ hashFiles('.github/workflows/test.yaml', 'pyproject.toml', 'requirements.txt', 'requirements-test.txt', 'setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-py37_openssl11-
+            ${{ runner.os }}-
+
+      - name: build custom python
+        run: source script/compile-py3-openssl11.sh # source to alter PATH
+      - run: pip install 'codecov>=2.0.15' tox-gh -r requirements-test.txt
+      - run: script/test -sv
+      - run: codecov --flags=py37_openssl11

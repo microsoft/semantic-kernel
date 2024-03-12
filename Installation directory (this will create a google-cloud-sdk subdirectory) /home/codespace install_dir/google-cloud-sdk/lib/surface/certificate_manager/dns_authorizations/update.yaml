@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Update a DNS Authorization.
+    description: |
+      Update a DNS Authorization.
+    examples: |
+      To Update a DNS Authorization called `my-authorization`, run:
+
+        $ {command} my-authorization
+
+  request:
+    collection: certificatemanager.projects.locations.dnsAuthorizations
+    api_version: v1
+
+  async:
+    collection: certificatemanager.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the DNS Authorization to delete.
+      spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:dnsAuthorization
+
+    params:
+    - arg_name: description
+      api_field: dnsAuthorization.description
+      help_text: |
+        Human-readable description of the resource.
+
+    labels:
+      api_field: dnsAuthorization.labels
+
+  update:
+    read_modify_update: true

@@ -1,0 +1,30 @@
+- release_tracks: [GA, BETA, ALPHA]
+  help_text:
+    brief: |
+      List VPC Access Service regions
+    description: |
+      List all regions where VPC Access Service API is available.
+    examples: |
+      The following command lists all the regions where you can create VPC
+      Access connectors:
+
+          $ {command}
+
+  request:
+    collection: vpcaccess.projects.locations
+    api_version: v1
+    BETA:
+      api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The project of the locations to list.
+      spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:project
+
+  output:
+    format: table(name.scope("locations").segment(0):label=REGION:sort=1)

@@ -1,0 +1,72 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief:  |
+      Import metadata into a Dataproc Metastore service from Google Cloud Storage.
+    description: |
+      Import metadata into a Dataproc Metastore service from Google Cloud Storage.
+
+      If run asynchronously with `--async`, exits after printing
+      the operation name that can be used to poll the status of the
+      export via:
+
+        {top_command} metastore operations describe
+    examples: |
+      To import metadata with the name `my-import` and description `testing description`
+      into service `my-service` from a database dump with uri `gs://database-dump` and database
+      type `mysql`, run:
+
+          $ {command} my-service --import-id=my-import --description='testing description' \
+              --dump-type=mysql --database-dump=gs://database-dump
+
+  request:
+    method: create
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: metastore.projects.locations.services.metadataImports
+
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the Dataproc Metastore service
+        you want to import.
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:parent_service
+      is_parent_resource: true
+
+    params:
+    - arg_name: import-id
+      api_field: metadataImportId
+      help_text: |
+        The ID of this metadata import.
+      required: true
+    - arg_name: description
+      api_field: metadataImport.description
+      help_text: |
+        The description of this metadata import.
+    - arg_name: dump-type
+      api_field: metadataImport.databaseDump.type
+      help_text: |
+        The type of the database dump;. If unspecified, defaults to `mysql`.
+      choices:
+      - arg_value: mysql
+        enum_value: MYSQL
+        help_text: |
+          Database dump is a MYSQL dump file.
+      - arg_value: avro
+        enum_value: AVRO
+        help_text: |
+          Database dump contains AVRO files.
+      default: mysql
+    - arg_name: database-dump
+      api_field: metadataImport.databaseDump.gcsUri
+      required: true
+      processor: googlecloudsdk.command_lib.metastore.validators:ValidateGcsUri:arg_name=--database-dump
+      help_text: |
+        A Cloud Storage object URI that specifies a database dump from which to import metadata.
+        It must begin with `gs://`.
+
+  async:
+    collection: metastore.projects.locations.operations

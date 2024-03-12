@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Get server config.
+    description: |
+      *{command}* gets the server configuration for an Edge Container location. This configuration
+      includes the default cluster version, the supported cluster versions and version configuration
+      for each release channel.
+    examples: |
+      To get server config in region us-central1, run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: edgecontainer.projects.locations
+    method: getServerConfig
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The location of the server configuration.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:location
+      is_positional: false

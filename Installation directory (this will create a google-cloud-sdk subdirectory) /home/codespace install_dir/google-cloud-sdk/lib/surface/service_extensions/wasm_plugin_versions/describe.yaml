@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Show details about a `WasmPluginVersion` resource.
+    description: Show details about a `WasmPluginVersion` resource.
+    examples: |
+      To show details about a `WasmPluginVersion`, run:
+
+        $ {command} my-plugin-version
+
+  request:
+    collection: networkservices.projects.locations.wasmPlugins.versions
+    ALPHA:
+      api_version: v1alpha1
+
+  arguments:
+    resource:
+      help_text: The `WasmPluginVersion` resource that you want to describe.
+      spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmPluginVersion
+      is_positional: true
+
+  output:
+    format: |
+      default(
+        name,
+        imageUri,
+        imageDigest,
+        pluginConfigData.trailoff(80),
+        pluginConfigUri,
+        pluginConfigDigest,
+        updateTime
+      )

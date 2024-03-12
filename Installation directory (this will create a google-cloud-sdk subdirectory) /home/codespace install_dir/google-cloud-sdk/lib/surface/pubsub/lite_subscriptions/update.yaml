@@ -1,0 +1,35 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Update a Pub/Sub Lite subscription.
+  description: Update a Pub/Sub Lite subscription.
+  examples: |
+    To update a Pub/Sub Lite subscription, run:
+
+        $ {command} mysubscription \
+            --location=us-central1-a \
+            --delivery-requirement=DELIVER_IMMEDIATELY
+
+request:
+  collection: pubsublite.admin.projects.locations.subscriptions
+  method: patch
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+  - googlecloudsdk.command_lib.pubsub.lite_util:AddExportResources
+
+arguments:
+  resource:
+    help_text: Subscription to update.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_subscription
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone
+  - group:
+      required: true
+      params:
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:delivery-requirement
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-desired-state
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-pubsub-topic
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:export-dead-letter-topic

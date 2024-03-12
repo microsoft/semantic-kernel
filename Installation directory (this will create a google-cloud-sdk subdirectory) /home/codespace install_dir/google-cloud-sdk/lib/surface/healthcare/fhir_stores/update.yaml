@@ -1,0 +1,43 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief:  Update a Cloud Healthcare API FHIR store.
+    description: Update a Cloud Healthcare API FHIR store.
+    examples: |
+      To update the Cloud Pub/Sub topic on a FHIR store 'test-fhir-store', run:
+
+        $ {command} test-fhir-store --pubsub-topic=projects/my-project/topics/test-pubsub-topic
+
+  request:
+    collection: healthcare.projects.locations.datasets.fhirStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The Cloud Healthcare API FHIR store you want to update.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:fhir_store
+
+    params:
+    - arg_name: enable-update-create
+      api_field: fhirStore.enableUpdateCreate
+      action: store_true
+      default: false
+      help_text: |
+        Whether this FHIR store has the [updateCreate]
+        (https://www.hl7.org/fhir/capabilitystatement-definitions.html#CapabilityStatement.rest.resource.updateCreate)
+        capability. Determines if the client can use an Update operation to create
+        a new resource with a client-specified ID. If false, all IDs are
+        server-assigned through the Create operation and attempts to Update
+        a non-existent resource will return errors.
+    - arg_name: pubsub-topic
+      api_field: fhirStore.notificationConfig.pubsubTopic
+      help_text: |
+        Google Cloud Pub/Sub topic to send updates to.
+
+        Note, a topic needs to be created before publishing or subscribing to it. For instructions
+        on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic

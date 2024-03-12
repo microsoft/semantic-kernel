@@ -1,0 +1,61 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1 AuthorizationPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- action
+- name
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  action:
+    description: |-
+      The action to take when a rule match is found. Possible values are "ALLOW"
+      or "DENY".
+    type: string
+    enum:
+    - ACTION_UNSPECIFIED
+    - ALLOW
+    - DENY
+  description:
+    description: Free-text description of the resource.
+    type: string
+  labels:
+    description: |-
+      Set of label tags associated with the AuthorizationPolicy resource.
+    $ref: LabelsValue.yaml
+  name:
+    description: |-
+      Name of the AuthorizationPolicy resource. It matches pattern
+      `projects/{project}/locations/{location}/authorizationPolicies/`.
+    type: string
+  rules:
+    description: |-
+      List of rules to match. Note that at least one of the rules must match in
+      order for the action specified in the 'action' field to be taken. A rule
+      is a match if there is a matching source and destination. If left blank,
+      the action specified in the `action` field will be applied on every
+      request.
+    type: array
+    items:
+      $ref: Rule.yaml

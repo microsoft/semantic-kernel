@@ -1,0 +1,50 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief:  Import DICOM objects into a Cloud Healthcare API DICOM store.
+    description: Import DICOM objects into a Cloud Healthcare API DICOM store.
+    examples: |
+      To import the DICOM objects from the existing bucket 'testGcsBucket' in the folder 'someFolder' into the DICOM store 'test-dicom-store', run:
+
+        $ {command} test-dicom-store --gcs-uri="gs://testGcsBucket/someFolder/*" --dataset=test-dataset
+
+      Note that '*' matches any files within a folder, and '**' also recursively matches files within sub-folders.
+
+  request:
+    collection: healthcare.projects.locations.datasets.dicomStores
+    method: import
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API DICOM store into which the data is imported.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:dicom_store
+
+    params:
+    - arg_name: gcs-uri
+      api_field: importDicomDataRequest.gcsSource.uri
+      required: true
+      help_text: |
+        Google Cloud Storage URI containing DICOM object data. It must match
+        individual DICOM files or use wildcards to import multiple files
+        from one or more directories.
+        * Use * to match 0 or more non-separator characters. For example,
+          `gs://BUCKET/DIRECTORY/Example*.dcm` matches Example.dcm and
+          Example22.dcm in DIRECTORY.
+        * Use ** to match 0 or more characters (including separators). Must
+          be used at the end of a path and with no other wildcards in the path.
+          Can also be used with a filename extension (such as .dcm), which
+          imports all files with the filename extension in the specified
+          directory and its subdirectories. For example,
+          gs://BUCKET/DIRECTORY/**.dcm imports all files with the .dcm
+          filename extension in DIRECTORY and its subdirectories.
+        * Use ? to match 1 character. For example,
+          gs://BUCKET/DIRECTORY/Example?.dcm matches Example1.dcm but
+          does not match Example.dcm or Example01.dcm.
+  async:
+    collection: healthcare.projects.locations.datasets.operations

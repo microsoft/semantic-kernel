@@ -1,0 +1,140 @@
+- release_tracks: [GA, BETA, ALPHA]
+  help_text:
+    ALPHA:
+      brief: |
+        Restore a Filestore instance from a snapshot or backup.
+      description: |
+        Restore an existing Filestore instance from an existing snapshot
+        or backup.
+      examples: |
+        The following command restores an instance named 'my-instance' with a
+        fileshare named 'vol1' in the zone europe-west3-a from a backup named
+        'my-backup' in the region europe-west3.
+
+          $ {command} my-instance \
+            --zone=europe-west3-a \
+            --file-share=vol1 \
+            --source-backup=my-backup \
+            --source-backup-region=europe-west3
+    BETA:
+      brief: |
+        Restore a Filestore instance from a backup.
+      description: |
+        Restore an existing Filestore instance from an existing backup.
+      examples: |
+        The following command restores an instance named 'my-instance' with a
+        fileshare named 'vol1' in the zone europe-west3-a from a backup named
+        'my-backup' in the region europe-west3.
+
+          $ {command} my-instance \
+            --zone=europe-west3-a \
+            --file-share=vol1 \
+            --source-backup=my-backup \
+            --source-backup-region=europe-west3
+    GA:
+      brief: |
+        Restore a Filestore instance from a backup.
+      description: |
+        Restore an existing Filestore instance from an existing backup.
+      examples: |
+        The following command restores an instance named 'my-instance' with a
+        fileshare named 'vol1' in the zone europe-west3-a from a backup named
+        'my-backup' in the region europe-west3.
+
+          $ {command} my-instance \
+            --zone=europe-west3-a \
+            --file-share=vol1 \
+            --source-backup=my-backup \
+            --source-backup-region=europe-west3
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.filestore.resources:instance
+      help_text: |
+        Arguments and flags that specify the Filestore instance to restore.
+      command_level_fallthroughs:
+        zone:
+        - arg_name: location
+          release_tracks: [BETA]
+    params:
+    - arg_name: file-share
+      required: true
+      api_field: restoreInstanceRequest.fileShare
+      ALPHA:
+        help_text:
+          File share to restore from the snapshot or backup.
+      BETA:
+        help_text:
+          File share to restore from the backup.
+      GA:
+        help_text:
+          File share to restore from the backup.
+    - arg_name: source-backup
+      release_tracks: [GA, BETA]
+      required: true
+      help_text: |
+        Name of the Filestore backup to restore from.
+    - arg_name: source-backup-region
+      release_tracks: [GA, BETA]
+      required: true
+      help_text: |
+        Region of the Filestore backup to restore from.
+    - arg_name: location
+      release_tracks: [BETA]
+      help_text: |
+        Location of the Filestore instance to restore this backup to.
+    - group:
+        release_tracks: [ALPHA]
+        required: true
+        ALPHA:
+          mutex: true
+          params:
+          - group:
+              help_text: |
+                The name and region of the Filestore snapshot to restore from.
+              params:
+              - arg_name: source-snapshot
+                required: true
+                help_text: |
+                  Name of the Filestore snapshot to restore from.
+              - arg_name: source-snapshot-region
+                required: false
+                help_text: |
+                  Region of the Filestore snapshot to restore from. If unspecified, it
+                  is assumed that the Filestore snapshot is local.
+          - group:
+              help_text: |
+                The name and region of the Filestore backup to restore from.
+              params:
+              - arg_name: source-backup
+                required: true
+                help_text: |
+                  Name of the Filestore backup to restore from.
+              - arg_name: source-backup-region
+                required: true
+                help_text: |
+                  Region of the Filestore backup to restore from.
+
+  request:
+    ALPHA:
+      api_version: v1p1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
+      - googlecloudsdk.command_lib.filestore.snapshots.util:AddSnapshotNameToRequest
+    BETA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
+    collection: file.projects.locations.instances
+    method: restore
+
+  async:
+    collection: file.projects.locations.operations
+
+  input:
+    confirmation_prompt: |
+      You are about to override existing data in [{__name__}].

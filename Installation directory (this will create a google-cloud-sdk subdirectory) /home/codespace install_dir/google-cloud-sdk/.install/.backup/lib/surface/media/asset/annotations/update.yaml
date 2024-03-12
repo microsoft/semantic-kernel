@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Update a new Cloud Media Annotation.
+    description: Update a new Media Annotation.
+    examples: |
+      To Update a new annotation with id my-ann with in the default project and 'us-central1' location, under annotation set my-annSet run:
+        $ {command} my-ann --asset_type my-at --asset my-asset --annotation_set my-annSet --annotation-data-file annotation_data.json --labels a=x,b=y
+
+  request:
+    collection: mediaasset.projects.locations.assetTypes.assets.annotationSets.annotations
+    method: patch
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.media.asset.annotations.hooks:ParseAnnotationRequest
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset annotation to create.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:annotation
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.media.asset.flags:annotation-data-file
+    - arg_name: update-mask
+      api_field: updateMask
+      required: true
+      help_text: |
+        List of annotations's attributes to update.
+    labels:
+      api_field: annotation.labels

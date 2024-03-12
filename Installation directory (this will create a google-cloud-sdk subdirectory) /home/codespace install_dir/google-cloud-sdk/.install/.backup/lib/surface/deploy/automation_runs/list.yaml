@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: List the Automation Runs.
+    description: |
+      List the automation runs for a specified delivery pipeline.
+    examples: |
+      To list the automation runs for delivery pipeline 'test-pipeline' in region 'us-central1', run:
+
+        $ {command} --delivery-pipeline=test-pipeline --region=us-central1
+
+  request:
+    collection: clouddeploy.projects.locations.deliveryPipelines.automationRuns
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The delivery pipeline for which you want to list the automation runs.
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:delivery_pipeline
+      is_positional: false

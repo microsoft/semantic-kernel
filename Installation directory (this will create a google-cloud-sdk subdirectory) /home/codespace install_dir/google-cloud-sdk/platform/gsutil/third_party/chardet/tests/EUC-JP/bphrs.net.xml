@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="EUC-JP"?>
+<!--
+Source: http://www.bphrs.net/mesi/index.rdf
+Expect: EUC-JP
+-->
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+  xmlns:admin="http://webns.net/mvcb/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+
+  xmlns:cc="http://web.resource.org/cc/"
+  xmlns="http://purl.org/rss/1.0/">
+
+<channel rdf:about="http://www.bphrs.net/mesi/">
+<title>めし＠ろぐ</title>
+
+<link>http://www.bphrs.net/mesi/</link>
+<description><![CDATA[ある家庭の食卓事情<BR>
+since 2004.10]]></description>
+<dc:language>ja</dc:language>
+<dc:creator></dc:creator>
+
+<dc:date>2005-12-26T19:45:28+09:00</dc:date>
+<admin:generatorAgent rdf:resource="http://www.movabletype.org/?v=3.11-ja" />
+
+
+
+<items>
+<rdf:Seq><rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/12/post_123.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/11/post_122.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/11/post_121.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/08/post_120.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/08/post_119.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/08/post_118.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/08/post_117.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/07/post_116.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/07/post_115.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/05/post_114.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/04/post_113.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/04/post_112.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/04/post_111.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/04/post_110.html" />
+
+<rdf:li rdf:resource="http://www.bphrs.net/mesi/archives/2005/04/post_109.html" />
+
+</rdf:Seq>
+</items>
+
+</channel>
+
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/12/post_123.html">
+
+<title>スペシャル</title>
+<link>http://www.bphrs.net/mesi/archives/2005/12/post_123.html</link>
+<description> あんかけパスタ専門店 SAKURA ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-12-26T19:45:28+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/11/post_122.html">
+
+<title>ラーメン大盛</title>
+<link>http://www.bphrs.net/mesi/archives/2005/11/post_122.html</link>
+<description> 横綱 ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-11-30T15:36:25+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/11/post_121.html">
+
+<title>しゅうゆらーめん</title>
+<link>http://www.bphrs.net/mesi/archives/2005/11/post_121.html</link>
+<description> 熊五郎 TWIN21 ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-11-08T16:19:40+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/08/post_120.html">
+
+<title>ツナサラダうどん</title>
+<link>http://www.bphrs.net/mesi/archives/2005/08/post_120.html</link>
+<description> さがみ ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-08-15T20:04:49+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/08/post_119.html">
+
+<title>焼肉</title>
+<link>http://www.bphrs.net/mesi/archives/2005/08/post_119.html</link>
+<description> トミスミート ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-08-15T03:26:14+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/08/post_118.html">
+
+<title>パク森カレー</title>
+<link>http://www.bphrs.net/mesi/archives/2005/08/post_118.html</link>
+<description> パク森 ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-08-03T12:44:40+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/08/post_117.html">
+
+<title>小ラーメン</title>
+<link>http://www.bphrs.net/mesi/archives/2005/08/post_117.html</link>
+<description> ラーメン二郎 ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-08-02T23:07:14+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/07/post_116.html">
+
+<title>アジの開き定食</title>
+<link>http://www.bphrs.net/mesi/archives/2005/07/post_116.html</link>
+<description> 納豆のせ ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-07-29T12:16:40+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/07/post_115.html">
+
+<title>ナスミートスパゲッティー</title>
+<link>http://www.bphrs.net/mesi/archives/2005/07/post_115.html</link>
+<description> 久しぶり ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-07-15T21:00:36+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/05/post_114.html">
+
+<title>肉入りラーメン</title>
+<link>http://www.bphrs.net/mesi/archives/2005/05/post_114.html</link>
+<description> スガキヤ ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-05-06T17:56:06+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/04/post_113.html">
+
+<title>ラーメン大盛＋温泉たまご</title>
+<link>http://www.bphrs.net/mesi/archives/2005/04/post_113.html</link>
+<description> なんつっ亭 ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-04-23T18:48:13+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/04/post_112.html">
+
+<title>大盛ラーメン</title>
+<link>http://www.bphrs.net/mesi/archives/2005/04/post_112.html</link>
+<description> 東京ラーメン 屯ちん ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-04-22T23:02:51+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/04/post_111.html">
+
+<title>ラーメンとご飯</title>
+<link>http://www.bphrs.net/mesi/archives/2005/04/post_111.html</link>
+<description> 一番（びっくりラーメン） ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-04-19T21:07:15+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/04/post_110.html">
+
+<title>鯖の塩焼き定食</title>
+<link>http://www.bphrs.net/mesi/archives/2005/04/post_110.html</link>
+<description> みのり亭 ...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-04-19T08:30:28+09:00</dc:date>
+</item>
+<item rdf:about="http://www.bphrs.net/mesi/archives/2005/04/post_109.html">
+
+<title>魂のラーメン</title>
+<link>http://www.bphrs.net/mesi/archives/2005/04/post_109.html</link>
+<description> 尾道ラーメン麺一筋...</description>
+
+<content:encoded>
+</content:encoded>
+<dc:subject>外めし</dc:subject>
+<dc:creator>bphrs</dc:creator>
+
+<dc:date>2005-04-02T18:49:14+09:00</dc:date>
+</item>
+
+
+</rdf:RDF>

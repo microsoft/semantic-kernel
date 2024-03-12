@@ -1,0 +1,12 @@
+*~
+*.py[cod]
+.pytest_cache/
+
+.tox/
+.cache/
+
+build/
+dist/
+*.egg-info
+
+*.bak

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<!--
+Source: http://aug32.hole.ru/afisha/feed.php
+Expect: windows-1251
+-->
+<rss version="2.0">
+  <channel>
+    <title>Афиша ТА "32-е Августа"</title>
+      <link>http://aug32.hole.ru/</link>
+        <description>Афиша ТА "32-е Августа"</description>
+
+        <item>
+          <title>18.01.06</title>
+          <description>&lt;b&gt;ДЕФЕКТЫ РЕЧИ&lt;/b&gt;. Сольный концерт.&lt;BR&gt;&lt;I&gt;Санкт Петербург. Концертный зал книжного магазина "Буквоед". На пл. Восстания.&lt;/I&gt;</description>
+          <link>http://aug32.hole.ru/afisha.htm</link>
+        </item>
+    </channel>
+</rss>

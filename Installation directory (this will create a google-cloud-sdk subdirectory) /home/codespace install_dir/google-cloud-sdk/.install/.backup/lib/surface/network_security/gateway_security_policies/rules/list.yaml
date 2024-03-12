@@ -1,0 +1,36 @@
+release_tracks: [GA, BETA, ALPHA]
+
+help_text:
+  brief: |
+    List Gateway Security Policy Rules.
+  description: |
+    List all Gateway Security Policy Rules in the specified location of the current project.
+  examples: |
+      To list Gateway Security Policy Rules in the current project, run:
+
+        $ {command} --location={region} --gateway-security-policy={policy-name}
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networksecurity.projects.locations.gatewaySecurityPolicies.rules
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:gatewaySecurityPolicy
+    help_text: |
+      The project of the Gateway Security Policy Rules to display.
+    is_positional: false
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

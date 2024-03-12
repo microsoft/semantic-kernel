@@ -1,0 +1,52 @@
+- release_tracks: [GA, ALPHA, BETA]
+
+  help_text:
+    brief: |
+      Create a Managed Microsoft AD domain backup.
+    description: |
+      Create a new Managed Microsoft AD domain backup with the specified name using Google Cloud's
+      Managed Service for Microsoft Active Directory.
+
+      This command can fail for the following reasons:
+        * The specified domain doesn't exist.
+        * The specified domain is being created.
+        * A backup already exists with the same target domain name.
+        * The active account doesn't have permission to access the specified domain.
+        * The active account doesn't have permission to create AD domain backups.
+
+    examples: |
+      To create an AD domain backup named `my-backup` under domain
+      `my-domain.com`, run:
+
+        $ {command} my-backup --domain=my-domain.com --project=my-proj --async
+
+  async:
+    collection: managedidentities.projects.locations.global.operations
+
+  request: &request
+    collection: managedidentities.projects.locations.global.domains.backups
+    method: create
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:backup
+      help_text: |
+        Name of the Managed Microsoft AD domain backup you want to create.
+    params:
+    - arg_name: labels
+      api_field: backup.labels.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value

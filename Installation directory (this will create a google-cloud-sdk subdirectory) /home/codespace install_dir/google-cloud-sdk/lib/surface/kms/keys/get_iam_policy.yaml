@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get the IAM policy for a key.
+    description: |
+      *{command}* displays the IAM policy associated with a key.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates;
+      see $ {parent_command} set-iam-policy for additional details.
+    examples: |
+      To print the IAM policy for a given cluster, run:
+
+        $ {command} --keyring=my-key-ring --location=my-location my-key
+
+  request:
+    collection: cloudkms.projects.locations.keyRings.cryptoKeys
+
+  arguments:
+    resource:
+      help_text: The key for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.kms.resources:key
+
+  iam:
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

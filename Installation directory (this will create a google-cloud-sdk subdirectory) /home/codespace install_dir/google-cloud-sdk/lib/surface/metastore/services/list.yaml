@@ -1,0 +1,45 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      List Dataproc Metastore services.
+    description: |
+      Lists all Services under the specified project and location.
+    examples: |
+      To list all Dataproc Metastore services in location
+      `us-central1`, run:
+
+        $ {command} --location=us-central1
+
+      To list all Dataproc Metastore services in all locations,
+      run:
+
+        $ {command} --location=-
+
+  arguments:
+    resource:
+      help_text: The location of the services to list.
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:location
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: metastore.projects.locations.services
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        name.segment(3):label=LOCATION,
+        state:label=STATE,
+        tier:label=TIER,
+        network.basename():label=NETWORK,
+        endpointUri:label=URI,
+        hiveMetastoreConfig.version:label=METASTORE_VERSION
+      )

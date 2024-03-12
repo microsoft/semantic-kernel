@@ -1,0 +1,41 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Display metadata for a Memorystore Memcached instance.
+    description: |
+      Displays all metadata associated with a Memcached instance given a valid instance name.
+
+      This command can fail for the following reasons:
+        * The instance specified does not exist.
+        * The active account does not have permission to access the given instance.
+    examples: |
+      To display the metadata for an instance named `my-memcache-instance` in region `us-central1`,
+      run:
+
+        $ {command} my-memcache-instance --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.memcache.resources:instance
+      help_text: |
+        Arguments and flags that specify the Memcached instance to describe.
+
+  request:
+    ALPHA:
+      api_version: v1beta2
+    BETA:
+      api_version: v1beta2
+    GA:
+      api_version: v1
+    collection: memcache.projects.locations.instances
+
+  response:
+    ALPHA:
+      modify_response_hooks:
+      - googlecloudsdk.command_lib.memcache.instances_describe_util:FormatResponse
+    BETA:
+      modify_response_hooks:
+      - googlecloudsdk.command_lib.memcache.instances_describe_util:FormatResponse
+    GA:
+      modify_response_hooks:
+      - googlecloudsdk.command_lib.memcache.instances_describe_util:FormatResponse

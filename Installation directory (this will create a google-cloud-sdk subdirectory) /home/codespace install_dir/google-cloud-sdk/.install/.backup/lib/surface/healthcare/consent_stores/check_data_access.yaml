@@ -1,0 +1,39 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief:  Check the consent for a particular data ID.
+    description: Check if a particular data ID of a user data mapping in the given Cloud Healthcare API consent store is consented for a given use.
+    examples: |
+      To check if the data ID 'test-data-id' in the consent-store 'test-consent-store' can be used
+      given request attributes {"organization":"admins", "use_case":"research"}, run:
+
+        $ {command} test-consent-store --data-id=test-data-id --request-attributes=organization=admins,use_case=research --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.consentStores
+    method: checkDataAccess
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API consent store where the requested data-id is stored.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:consent_store
+
+    params:
+    - arg_name: data-id
+      api_field: checkDataAccessRequest.dataId
+      required: true
+      help_text: |
+        The unique identifier of the data to check access for.
+    - arg_name: request-attributes
+      metavar: KEY=VALUE
+      api_field: checkDataAccessRequest.requestAttributes
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'
+      help_text: |
+        Comma-separated list of request attributes associated with this access request. Each
+        attribute has the form "KEY=VALUE".

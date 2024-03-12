@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!--
+Source: http://ittrend.egloos.com/index.xml
+Expect: EUC-KR
+-->
+<rss version="2.0">
+<channel>
+	<title>All about IT Trends</title>
+	<link>http://ittrend.egloos.com</link>
+	<description>IT 트렌드 속에서 전략 끄집어내기...관심분야는 유비쿼터스, 멀티미디어, 스토리텔링, VoIP, 검색, 모바일, 커뮤니케이션</description>
+	<language>ko</language>
+	<pubDate>Mon, 19 Jul 2004 06:33:23 GMT</pubDate>
+	<image>
+		<title>All about IT Trends</title>
+		<url>http://pds1.egloos.com/logo/1/200510/26/01/b0013701.gif</url>
+		<link>http://ittrend.egloos.com</link>
+		<width>80</width>
+		<height>112</height>
+		<description>IT 트렌드 속에서 전략 끄집어내기...관심분야는 유비쿼터스, 멀티미디어, 스토리텔링, VoIP, 검색, 모바일, 커뮤니케이션</description>
+	</image>
+	<item>
+		<title><![CDATA[ 구글 스토리 그리고 Regulating Search ]]> </title>
+		<link>http://ittrend.egloos.com/2065977</link>
+		<description>
+			<![CDATA[ 
+필자도 <a title="" href="http://www.aladdin.co.kr/shop/wproduct.aspx?isbn=8959861685"target="_blank">구글 스토리</a>(The Search)책을 읽었던지라 Google SIG에 포스팅된 <a title="" href="http://nclab.kaist.ac.kr/blogs/blog/index.php?blog_code=google&article_id=113"target="_blank">검색경제</a>에 대해 동감하는 바가 크다. John Battelle가 쓴 구글 스토리에는 스탠포드 대학생 두 명의 파란만장한? 히스토리를 재밌게 엮어줬다는 것을 넘어 검색에 대한 좀 더 거시적인 관점에서 바라보는 자세를 요구한다. 그는 "Database of Intentions"라는 단어를 언급하면서 검색의 미래에 대한 전망을 밝은 부분과 어두운 부분을 함께 다루고 있다. 그리고 그는 구글이 뉴스 서비스를 하면서 이미 검색 오리지널 회사가 아닌 미디어 회사라는 점을 분명히 밝히고 있다.<BR>
+<BR>
+보통 국내 인터넷 업계에 있는 사람들은 포털 사이트를 검색 중심이냐 미디어 중심이냐로 구분한다. 당연 네이버를 검색 포털이라 하고, 다음은 미디어 포털이라 한다. (그럼 SK커뮤니케이션즈는 1인 미디어 포털이라고 하면 되나?) 아무튼 검색과 미디어로 구분하는 것은 마샬 맥루한이 얘기한 "미디어는 메세지이다."라는 그의 관점으로 접근한다면 검색과 미디어의 경계는 더욱 모호하다는 생각이 든다. 즉 검색은 오히려 미디어의 미디어로써 메타 미디어라 부를 수 있게 된다는 점이다. <BR>
+<BR>
+그렇다면 여기서 한가지 궁금증이 생긴다. 검색도 이메일이나 미디어와 같이 프라이버시나 미디어 관련 법제도를 받아들여야하나라는 것이다. 이에 대해 하버드 로스쿨 버크만 센터(Berkman Center for Internet & Society)에서는 최근 <a title="" href="http://cyber.law.harvard.edu/home/home?func=view&wid=10&pn=3"target="_blank">Regulating Search</a>에 대한 논의가 진행되고 있어 이 쪽 내용들을 들여다보면 복잡하지만 나름 신선한 시각들을 접할 수 있으리라 본다. 검색엔진이 정보의 접근과 결과를 컨트롤하고 심지어 메세지의 구성에 관여할 수 있다면, 또한 검색에 대한 독점에 대한 부분은 어떻게 바라봐야 하는가이다.<BR>
+<BR>
+요 바로 전 포스팅한 구글과 AOL의 제휴 건과 <a title="" href="http://ittrend.egloos.com/2029682"target="_blank">검색 대상의 확장</a>은 다음의 연상작용을 일으킨다. 구글이 TiVo나 케이블 TV의 EPG(Electronic Program Guide) 역할을 하게 된다면...<BR>
+<BR>
+<IMG CLASS=IMAGE_LEFT SRC="http://pds2.egloos.com/pds/1/200512/29/01/b0013701_13584379.jpg" BORDER=0 WIDTH=324 HEIGHT=164 ALIGN=LEFT>
+			 ]]> 
+		</description>
+		<category>멀티미디어</category>
+		<pubDate>Thu, 29 Dec 2005 04:55:18 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ AOL의 구글 선택 그 전략적 제휴의 배경 ]]> </title>
+		<link>http://ittrend.egloos.com/2058462</link>
+		<description>
+			<![CDATA[ 
+10월 경 부터인가 AOL 지분 인수에 대한 관심은 해외 IT 업계의 메인 토픽이었다. 그도 그럴 것이 구글 뿐만 아니라 MS, 야후, 컴캐스트 등 4개의 메이저가 달려 들었다. <BR>
+<BR>
+참고로 그 당시 AOL은 중대한 전환 시기를 맞이하고 있었다. 다이얼 업 가입자를 대상으로 인터넷 서비스를 인터넷 업체 답지 않게 제공하던 이 회사가 인터넷 비즈니스의 참 맛(특히 광고 비즈니스)을 알기 시작하면서 온라인 미디어 회사로의 본질을 찾아가던 참이었기 때문이다. 그런 와중에 웹로그도 인수하였고 미디어 회사로 굳히기를 시작하며 투자금이 필요하게 되었다.<BR>
+<BR>
+이에 AOL은 자신의 지분 공개매도 및 파트너쉽에 대한 의사를 표명했고, AOL이 가지고 있는 트래픽과 컨텐츠들이 탐나기 시작했던 MS는 특히 AOL의 검색엔진을 구글에서 자사의 엔진으로 바꾸기 위해 가장 적극적으로 인수 물밑작업에 들어갔다. 그러던 중 발표 전가지 MS는 AOL 파트너의 가장 강력한 후보라는 뉴스가 떠돌게 되었다. <a href="http://www.inews24.com/php/news_view.php?g_serial=181998&amp;g_menu=020600"target="_blank">[참조: MS-AOL, 온라인 광고 제휴 초읽기]</a><BR>
+<BR>
+그러고 며칠 후 AOL은 결국 전략적 제휴의 가장 단순하면서도 클리어한 동기인 시너지(Synergy)란 단어를 안다는 듯이 MS를 버리고 구글을 택했다. 그럼 무슨 시너지가 있을까는 다음 <a title="" href="http://catalogs.google.com/press/pressrel/twaol_expanded.html"target="_blank">[AOL and Google to Expand Strategic Alliance]</a>을 참고하면 좀 더 가시적으로 볼 수 있고 요약하면 아래와 같다.<blockquote>Benefits for AOL<BR>
+- Creating an AOL Marketplace through white labeling of Google's advertising technology. <BR>
+- Expanding display advertising throughout the Google network. <BR>
+- Providing AOL marketing credits for its Internet properties.<BR>
+<BR>
+Benefits for Google<BR>
+- Making AOL content more accessible to Google Web crawlers.<BR>
+- Collaborating in video search and showcasing AOL's premium video service within Google Video.<BR>
+- Enabling Google Talk and AIM instant messaging users to communicate with each other.<BR>
+</blockquote>물론 위의 시너지 효과는 말 그대로 목표로 하는 효과이지 그것이 실제적으로 운영되면서 빚게될 마찰과 시너지를 흐뜨러놓는 외부 변수들은 항상 존재하기 마련이다. 그래서 일부 전문가들은 시너지 효과가 그리 높지 않을지 모르고 이에 MS와 야후는 그리 타격을 받지 않을 것이라는 전망까지 내놓고 있다. <BR>
+<BR>
+그럼 다시 정리해 보면, AOL은 재무적 안정성을 확보했다면(10억달러나 받았고 구글의 광고 인벤토리를 활용할 수 있으니), 구글은 AOL의 컨텐츠 특히 비디오 컨텐츠를 크롤링할 수 있다는 이득 말고는 없을까? 그렇다면 구글이 컨텐츠 크롤링 하려고 AOL 메신저와 호환하려고 10억 달러나 썼을까? 구글은 이미 엔지니어 집단을 탈피한지 오래이며 철저히 비즈니스적이다. 물론 그들의 IPO 과정을 보면 더욱 그런 향이 풍기지만..<BR>
+<BR>
+쉽게 얘기하면 구글은 2008년까지 AOL을 키워서 자기들처럼 IPO 하게 한 다음 그 자본 이득을 목표로 하고 있는 것이다. <a title="" href="http://www.moneytoday.co.kr/view/mtview.php?no=2005122414154202537&type=1"target="_blank">[참조: 구글, AOL에 2008년 기업공개 착수 요구]</a> 즉 전략적 제휴는 시너지라는 동기도 있지만 결국 주주에게 이득이 되는 궁극적인 목적을 지니고 있다. 구글은 AOL의 잠재 가치를 인정한 셈이고 키워서 그 몇 배로 되돌려 받겠다는 야무진 계약을 체결한 것이다. Benefit for Both은 결국.. Financial Synergy, 즉 "Recapitalization"라 볼 수 있다.<BR>
+<BR>
+(참고로 AOL은 3년전 구글과의 검색 엔진 광고 계약시 비상장된 구글 주식으로 받았던 운좋은 수혜자이기도 하다. :-))<BR>
+<BR>
+포스팅후 추가정보<BR>
+<a title="" href="http://www.redherring.com/Article.aspx?a=15044&hed=Google+Can+Force+AOL+IPO"target="_blank">Google Can Force AOL IPO</a><BR>
+<a title="" href="http://publications.mediapost.com/index.cfm?fuseaction=Articles.san&s=37858&Nid=17428&p=304772"target="_blank">Time Warner Permits Google To Sell AOL Stake In 2008</a>
+			 ]]> 
+		</description>
+		<category>경영전략</category>
+		<pubDate>Mon, 26 Dec 2005 13:43:35 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 다음 터치 메신저 위젯 ]]> </title>
+		<link>http://ittrend.egloos.com/2046512</link>
+		<description>
+			<![CDATA[ 
+<p>12월 6일경인가 날짜는 명확하진 않지만 다음에서 메신저를 업그레이드하여 내놓았다. 아이뉴스에서는 '<a href="http://www.inews24.com/php/news_view.php?g_serial=182686&amp;g_menu=020100" target="_blank">멀티미디어 환경으로 전격 개편</a>'이라는 다소 생뚱 맞은 타이틀로 소개를 했는데 여하튼 메신저에 살짝쿵 관심을 얹어 두고 있는 필자에게는 반가운 업그레이드 소식이었다.</p><p>일단 이번 업그레이드는 메신저, 채팅, 파일공유라는 3가지 축으로 인터페이스를 전면 개편하였으며 플로팅(Floating) 방식을 사용하여 사용자들의 컨트롤 자유도를 높혔다는 점은 인상적이다. 그리고 무엇보다도 해외에서는 말 많던 하지만 국내에서는 움직임이 저조했던 위젯(Widget)을 메신저에 끼워 넣었다. 현재 달력, 시계, 타이머, 날씨, 영어사전, 계산기 등 통상 위젯을 쓰고 있는 유저들이라면 Picture Frame 말고는 대부분 애용하는 잡동사니들을 제공하고 있다.[참고: <a href="http://ittrend.egloos.com/1601778" target="_blank">야후 위젯</a>]</p><p>헌데 여기서 좀 더 얘기해 볼 꺼리가 있다. 네이버의 메인화면에 붙은 위젯과 구글 개인화 홈페이지에 붙은 모듈(<a href="http://www.googlemodules.com/" target="_blank">Google Modules</a>)과 다음 터치처럼 메신저에 붙은 위젯은 위젯 본연의 가치을 충족시켜 주고 있느냐이다. <u>개인의 참여를 유도하여 양질의 많은 위젯들을 무료로 제공하기 위해 오픈 구조를 가져가느냐 그렇게 함으로써 어플리케이션이 아니라 플랫폼의 형태를 띄고 있느냐에 대한 질문인 것이다.</u></p><p>여하튼 <u>다음 터치는 동접에 대한 압박 해결을 사용자들을 이벤트(마일리지로 경품 주기)로 끌어모으려고 했던 기존의 방식에서 벗어나 사용자들에게 유용한 유틸리티를 제공함으로써 해결해 볼려고 했던 건 아닐까?</u> 메신저의 Lock-in&nbsp;은 어떻게 풀어낼 수 있을까?</p><IMG CLASS=IMAGE_LEFT SRC="http://pds2.egloos.com/pds/1/200512/22/01/b0013701_1554159.jpg" BORDER=0 WIDTH=245 HEIGHT=207 ALIGN=LEFT><BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+업데이트 : 소식은 이미 들어서 알았지만, 네이버에서 결국 위젯을 오픈하는군요. <a title="" href="http://www.zdnet.co.kr/itbiz/press/digital/0,39034655,39142663,00.htm" target="_blank">네이버 데스크톱’베타테스터 모집</a> 
+			 ]]> 
+		</description>
+		<category>시장동향</category>
+		<pubDate>Thu, 22 Dec 2005 06:05:51 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 한메일과 미니홈피에 광고를 붙힌다면 ]]> </title>
+		<link>http://ittrend.egloos.com/2029682</link>
+		<description>
+			<![CDATA[ 
+2004년 4월, 구글이 1G의 메일용량을 제공하면서 런칭한 Gmail은 당시 인터넷 업계와 사용자들 사이에서 커다란 뉴스거리였다. 그도 그럴 것이 그동안 그껏 5M,10M에 만족?했던 사용자들에게 그것의 10배 이상 해당되는 메일용량을 아무 조건없이 무료로 준다니 화두가 되는 건 당연했다.<BR>
+<BR>
+하지만 그들은 이상하게도 Gmail 계정을 일종의 파도타기 형태로 뿌리기 시작했다. Gmail 마케터가 소셜 네트워크, 입소문 마케팅 기법을 잘 알고 활용한 건지는 모르겠으나 좀 더 이슈거리가 되도록 하고, 서비스에 대한 사용자 로열티를 심어주기 에는 적절했다는 평가였다.<BR>
+<BR>
+하지만.. 다시 본론으로 돌아가서 <u>왜 구글은 메일용량을 1G 씩이나 제공할 생각을 했을까?</u>라는 의문점을 가질 수 있다. 이에 대해 이미 대중화된 메일이라는 서비스를 구글이 아주 뒤늦게 제공한다고 해서 쉽게 사용자들이 넘어올리 없기 때문에 파격적인 서비스로 용량 확대를 택했다고 보면 될까? 많은 이들은 메일과 메신저 만큼 Lock-in(락인)효과가 강한 웹서비스는 없다고들 믿고 있지 않은가? 여하튼 1G 용량 제공을 일종의 프로모션으로 치부하기에는 다소 비논리적으로 생각된다. <BR>
+<BR>
+이에 대한 필자의 생각은 구글은 이메일을 사용자들의 정보 저장 창고로 바라보았기 때문에 용량 확대에 대한 발상이 나왔다고 보고 있다. 즉 이메일이 기존에 비동기적 커뮤니케이션 도구였으나 점차 커뮤니케이션을 넘어 컨텐츠(물론 커뮤니케이션 로그를 포함해서)를 아카이빙하고 관리하는 것으로 사용한다는 점에 그들은 주목한 것이다. 그렇게되면 자연히 검색과도 연결되는 플랫폼이 되는 것이고 검색은 또 다시 그들의 수익원인 광고로 이어지는 루트를 제공하기 때문이다.<BR>
+<BR>
+그렇다면 메일에 붙힌 검색 이야기를 해볼까? 왜 Gmail 사용자들은 구글이 자기 개인의 메일 내용을 쭈욱 읽어보고 이와 관련된 광고를 내보내는 감시자에게 비호감을 갖지 않는걸까? 오히려 호의적이라고 해야하나.. <u>"만약 국내에서 Daum 한메일이 이러한 서비스를 내놓았다면 사용자들의 반응은 어떠했을까?"</u> <BR>
+<BR>
+구글의 서비스를 이용할 때 과연 우리는 빌려쓴다는 잠재의식 속에 쓰고 있는 것일까? 소유주는 구글이고 나는 평생 빌려쓰는 사용자니 우리가 구글에 바랄 수 있는 것은 "더 많은 것들을 더 풍부하게 공짜로 쓰게 해주시고, 다만 제 메일, 블로그, 메신저, 그리고 제 PC에 있는 데이터들을 가지고 나쁜 짓?만은 하지 마세요." 라는 생각을 갖고 있는걸까? <BR>
+ <BR>
+내 PC에 있는 데이터(파일)와 메일, 메신저, 전화내용, 블로그, 미니홈피, 게시판에 올린 글 등.. 소유권에 대한 인식 수준은 분명 다를 것이다. 그런데 구글은 저 모든 것에 광고를 넣고 있는데..별다른 안티 반응은 보이지 않고 있다는 점이다. <BR>
+<BR>
+만약 싸이월드에서 사용자에게 다음과 같은 제안을 한다면 어떤 반응이 나올까? <u>"미니홈피 한 쪽 구석에 관련 광고를 싣게 해주면 매달 도토리 00개를 드립니다."</u> 도토리 수입보다 더 괜찮은 광고 수익이 나올까 아니면 역효과로 사용자들이 미니홈피를 버리게 될까?<BR>
+<BR>
+미니홈피에 있는 내용을 스캐닝해서 옆에 광고를 싣는 것과 블로그에 있는 내용을 스캐닝해서 광고를 싣는 것에는 어떤 차이가 있을까? 단순히 정보냐 라이프 로그냐의 수준은 아닐 것이다. 그 이유는 메일을 보면 아닐 것 같다. 그렇다면 서비스 자체의 Identity일까? 정말 사용자들은 ‘미니홈피는 자기꺼니깐 싸이월드 조차도 건들면 안되요’ 라는 생각을 가지고 있는걸까? <BR>
+<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds1.egloos.com/pds/1/200512/29/01/b0013701_14211540.jpg" BORDER=0 WIDTH=400 HEIGHT=310></CENTER>
+			 ]]> 
+		</description>
+		<category>서비스전략</category>
+		<pubDate>Fri, 16 Dec 2005 08:44:36 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ Yahoo! Del.icio.us 인수 그 다음은 ]]> </title>
+		<link>http://ittrend.egloos.com/2018393</link>
+		<description>
+			<![CDATA[ 
+야후가 소셜 포토 공유 서비스인 Flickr를 인수한데 이어 소셜 북마크 서비스인 Del.icio.us를 12월 9일자로 인수하였다. <BR>
+<BR>
+지난 5, 6월 Flickr와 My Web 2.0을 인수, 런칭 한 후 UCC Community와 UCC Search의 그간 실적은 상당히 달랐다. 야후의 Social Search Engine으로 삼고자 했던 My Web 2.0은 여전히 일반 야후 사용자들에겐 생소한 상품이었지만, Flickr는 9개월간 30억 달러의 매출을 기록하며 야후의 효자가 되었다.<BR>
+<BR>
+그래서 야후는 My Web 2.0에 포스를 불어넣어 줄 그 무언가를 찾아해맸고 그게 바로 Del.icio.us였던게다. 참고로 아래는 딜리셔스 블로그와 야후 검색 블로그의 이번 인수에 대한 소개글인데, 보면 인수 목적이 뚜렷하게 보인다.<blockquote><a title="" href="http://blog.del.icio.us/blog/2005/12/yahoo.html" target="_blank">Y.ah.oo!</a><BR>
+We're excited to be working with the Yahoo! Search team - they definitely get social systems and their potential to change the web. (We're also excited to be joining our fraternal twin Flickr!) <BR>
+<BR>
+<a title="" href="http://www.ysearchblog.com/archives/000223.html" target="_blank">Yahoo Search Blog</a><BR>
+don't be surprised if you see My Web and del.icio.us borrow a few ideas from each other in the future.<BR>
+</blockquote>그동안 사람들이 정보를 찾는데 엄청난 시간과 노력을 들이고, 그래도 정작 관련 있는 정보를 못찾는 것을 보고 구글 창업자 래리 페이지, 세르게이가 <u>One-Stop 검색 서비스(Finding Information)</u>를 선보였다면<BR>
+<BR>
+야후 CEO 테리 시멜과 검색 멤버들은 구글 검색결과에 약간 의문을 품고 사람들이 많이 건드린 정보를 사람들이 직접 추천하는 정보를 제공하는 색다른 <u>분류 검색 서비스(Browsing Information)</u>를 선보이려한다고 보면 될까?<BR>
+<BR>
+추신: 그 다음은.. 소셜 이벤트 공유 서비스인 업커밍을 어떻게 선보일지, 야후 위젯을 어떻게 가꿔서 내보낼지도 예상해봐야겠다.<BR>
+<BR>
+Check Point: 야후의 태그 활용은 일차적으로 당연히 검색에 활용될 것이고, <u>다음은 바로 이미지(with Flickr)와 이벤트(with Upcoming) 서비스에 접목시킬 것으로 보인다. 그 다음은 음악, 쇼핑, 비디오 등을 순서로 야후의 다양한 컨텐츠 서비스로 확장시켜 나갈 것으로 예상된다.</u> <BR>
+<BR>
+* Related reference : <a title="" href="http://ittrend.egloos.com/1952523" target="_blank">Yahoo History updated</a> 
+			 ]]> 
+		</description>
+		<category>나의스토리</category>
+		<pubDate>Mon, 12 Dec 2005 15:35:26 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 네이버 동영상검색 그리고 유통 ]]> </title>
+		<link>http://ittrend.egloos.com/2000695</link>
+		<description>
+			<![CDATA[ 
+네이버가 동영상 검색 서비스를 개시한다는 <a title="" href="http://www.inews24.com/php/news_view.php?g_serial=181284&g_menu=020100"target="_blank">소식</a>은 그다지 놀랍지 않다. <u>인터넷 포털을 유통업체에 굳이 비유하자면 상품구색을 갖추는 것인데 이는 매우 당연한 실행이다.</u>(전략도 아니다.) 물론 상품구색의 깊이와 너비를 타사 대비 차별화하여 경쟁우위를 갖추는 것은 다른 얘기지만 상품구색만을 보았을 때는 그렇다는 얘기다. <BR>
+<BR>
+(참고로 인터넷 포털을 유통업체에 비유하는 것은 무선과 같은 클로즈망에서는 SK텔레콤과 같은 네트워크 사업자가 유통업체에 비유될 수 있지만, 오픈망인 웹에서는 포털과 같은 플랫폼 사업자가 제공업체(CP)와 사용자 사이에서 컨텐츠와 커뮤니케이션 로그를 유통시키기 때문이다. 인터넷 포털을 유통업체로 볼 때 어떤 유사점과 어떤 메타포를 끌고 올 수 있고 어떤 진화가 예상되는지는 다음에 기회가 되면 설명해보기로 하겠다.)<BR>
+<BR>
+사실 주위에선 네이버가 동영상 검색에 진입했다는 것 보단 300-400명이 장면검색을 위해 동영상에 자막을 삽입하고 있다는 소식에 살짝 놀라는 눈치다. 이것도 본인에게 그다지 놀랍지 않다. 지식in의 탄생과 성장과정을 보면 네이버 방식을 이해할 만도 한데 놀라는 이유는 뭘까? (네이버는 책, 음악 검색 TV광고를 했던 경험을 살려 동영상 검색도 TV광고를 내보내지 않을까 예상된다. 그럼 또 사람들은 역시 네이버라고 고개를 끄덕이겠지. 네이버의 Trust는 Capability로 대변되는 양상이다.(그렇다면 다음은..싸이는..) 또 엉뚱한 얘기를 빌자면 기업은 자신이 벌어들인 돈의 절반을 마케팅 비용으로 쓰라는 얘기가 있다.) 아무튼 이러한 네이버의 편집 스킬은 그들만의 노하우라 볼 수도 있다. 1%의 퀄러티 높은 지식답변은 20%의 사용자의 참여를 유도하고 20%의 지식참여자 80%의 지식소비자를 유도하는 것이다. 80:20법칙은 티핑포인트는 지식검색 로그데이터를 분석해보면 해답을 찾을 수 있을 것이다. <BR>
+<BR>
+그럼 장면검색에 대해서 얘기해보자. 동영상 검색에 장면검색이 필요할까? 일반인들은 동영상 검색 자체도 그다지 경험해보지 못했으니 장면검색이 필요하리란 생각을 못할지도 모르겠다. 또한 동영상 자체가 검색과 어울리지 못하는 매체이니 그럴만도 하다. 하지만 썸네일이 스캔에 대응하고 캡션이 검색에 대응하는 구조라면 어떨까? 썸네일과 캡션은 새로 오픈한 매장의 구조라 본다면 남은 건 무엇인지 짐작이 간다. <u>유통업체는 사용자가 무엇을(어떤 정보를) 원하는지 파악하는 것을 넘어, 그것을 "어떻게" 찾고 소비하기를 원하는지까지 파악해야한다. 동영상에서 "어떻게"가 장면검색인지는 조만간 사용자들에의해 판가름 나겠지만 네이버는 일단 이쪽으로 큰 무게중심을 두었다고 보면 된다.</u> <BR>
+<BR>
+마지막으로 첨언하자면, 기업은 사용자에게 가치를 제공해주는 자사만의 핵심역량과 경쟁우위를 알아냈다면 그 가치를 최대한 집요하게 추출해내야한다. 구글 CEO가 그랬나? 자기들은 검색의 3 정도까지 밖에 못왔다고..그래서 아직 갈 길이 멀다고...
+			 ]]> 
+		</description>
+		<category>서비스전략</category>
+		<pubDate>Tue, 6 Dec 2005 16:33:26 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ MS Fremont vs Google Base ]]> </title>
+		<link>http://ittrend.egloos.com/1994197</link>
+		<description>
+			<![CDATA[ 
+Microsoft Corp. said it is readying an online marketplace, code-named Fremont, which is apparently in response to a similar feature that rival Google Inc. introduced a few weeks ago. Fremont is a free service in which people contribute listings, whether it's about a couch for sale or someone looking for a commuting partner. [<a title="" href="http://www.eweek.com/article2/0,1759,1894067,00.asp"target="_blank">Microsoft Testing Its Own Google Base</a>]<BR>
+<BR>
+MS가 구인구직, 부동산 그리고 맥클라인 유모차에서 벤츠 중고차까지 다양한 항목들이 거래될 수 있는 온라인 Classified 서비스를 개발 중에 있다. 코드명은 Fremont로 <a title="" href="http://fremont.live.com"target="_blank">fremont.live.com</a>에 클로즈 테스트를 진행 중에 있으며 이는 지난 11월 구글이 선보인 Google Base와 유사한 아니 대응 서비스로 볼 수 있다.<BR>
+<BR>
+하지만 MS는 구글 베이스와 차이점을 강조하고 있는데 그것은 자사의 강점(vs <a title="" href="http://base.google.com/"target="_blank">Google Base</a>, <a title="" href="http://www.craigslist.org/"target="_blank">Craigslist.org</a>)인 MSN 메신저와 핫메일, 아웃룩 등의 커뮤니케이션 채널을 활용한다는 점이다. 정확히 얘기하면 커뮤니케이션 채널 즉 버디리스트나 주소록 등의 소셜 네트워크(Social Network)를 이용한다는 것인데, 예를 들어 자전거를 구한다는 광고를 낼 때 자신의 지인 네트워크에게 범위를 한정할 수 있고, 지인들도 메신저나 메일 등으로 아이템 목록을 알림 방식으로 받아 볼 수 있게 된다는 것이다.<BR>
+<BR>
+이를 비즈니스 측면에서 보면 MS는 Fremont를 Live 사이트의 전략 서비스 중 하나로 이를 광고 수익구조도 확보하려고 할 것이다. 사용자가 Fremont 사이트에 유모차를 검색, 등록하게 될 때 우측에 MS의 AdCenter(vs Google AdWords)로 부터 날라온 멕클라인 광고를 보게 되는 것이다. <BR>
+<BR>
+여하튼 MS의 Classified 서비스, 비즈니스를 떠나... e-마켓플레이스 상에서의 변화의 포인트들을 잡아내고 이에 대한 To Be 그림들을 그려보는 것이 필요하지 않을까 한다.<BR>
+<BR>
+<li>[Related Posts]<BR>
+<a title="" href="http://ittrend.egloos.com/1939475"target="_blank">구글 베이스 런칭 그리고 간담회 불참</a><BR>
+<a title="" href="http://ittrend.egloos.com/1917942"target="_blank">구글 경제, Google Economy</a><BR>
+<a title="" href="http://ittrend.egloos.com/1872145"target="_blank">Google Base, 구글의 신병기</a> <BR>
+<a title="" href="http://ittrend.egloos.com/1907363"target="_blank">마이크로소프트, 윈도우 라이브의 전략적 배경</a>
+			 ]]> 
+		</description>
+		<category>시장동향</category>
+		<pubDate>Sun, 4 Dec 2005 16:26:16 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ The most amazing invention of 2005 ]]> </title>
+		<link>http://ittrend.egloos.com/1993358</link>
+		<description>
+			<![CDATA[ 
+TIME 잡지 11월 21일자  커버 스토리에는 2005년 혁신 제품들(The Most Amazing Inventions of 2005)이 소개되고 있는데 그 중 몇가지 재밌는 것들을 소개하고자 한다. (TIME이 여전히 온라인 조차 구독료를 내야 볼 수 있는 Old(?) 출판 비즈니스를 하고 있어 링크 걸 수 없는게 아쉽다.)<BR>
+<BR>
+생명과 안전이라는 키워드로 스너피 소개로 시작되는 아티클은...<BR>
+<li>3달러짜리 휴대용 정수 빨대인 LifeStraw, <BR>
+<li>공기없는 타이어로 펑크 걱정없는 미쉐린 타이어, <BR>
+<li>4달러짜리 수소 캔으로 100마일 이상 주행이 가능한 무공해 오토바이<BR>
+<li>스마트 제품으로는 휘어지는 촉각 센서<BR>
+<li>피로가 최소화된 시간대에 알람을 주는 숙면감지 손목시계, <BR>
+로 매력적인 제품들을 소개하고 있고,<BR>
+<BR>
+또한 로봇 감성을 일깨워주는 로봇과 스마트 제품으로<BR>
+<li>눈 마주침이 가능하고 주인을 알아보는 도시바의 ApriAlpha, <BR>
+<li>대화내용에 따라 다양하게 얼굴 표정을 짓는 Phillips의 iCat,<BR>
+<li>춤추고 말하는 ZMP 누보,<BR>
+<li>15가지 리듬형 기억으로 반응하는 다카라 거북이 장난감 로봇,<BR>
+<li>도요타의 4륜 개인용 이동 로봇,<BR>
+<li>3만원의 가격으로 20분 촬영(DVD로 저장)이 가능한 일회용 캠코더,<BR>
+<li>48초면 팽창하여 완성되는 텐트(예전 닥터슬럼프 만화에서 자주 등장^^)<BR>
+<li>TV 방송 신호를 인터넷으로 변환 전송하는 슬링미디어의 SlingBox<BR>
+소개하고 있다.<BR>
+<BR>
+참고로 마지막에 거론된 SlingBox는 <a title="" href="http://blog.chosun.com/blog.log.view.screen?blogId=16352&logId=708853#"target="_blank">이곳</a>에 자세히 소개되어 있는데, 얼마전 소개한 Q박스는 저작권 법제도의 테두리를 벗어났으나, SlingBox는 방송법의 테두리를 벗어나지(국내에서는)  못할 것 같다. 정해진 단말기(TV)에서만, 정해진 구역(거실)에서만 소비가 가능한 컨텐츠들을 풀어줘야 앞으로 타 매체들과의 경쟁에서 살아남을 수 있지 않을까? 보이지 않는 곳은 먼저 가는 자가 길을 만드는 법인데 가는 자의 발목까지 잡아서야... <BR>
+<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds1.egloos.com/pds/1/200512/04/01/b0013701_2234861.jpg" BORDER=0 WIDTH=374 HEIGHT=250></CENTER>
+			 ]]> 
+		</description>
+		<category>유비쿼터스</category>
+		<pubDate>Sun, 4 Dec 2005 12:58:50 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ [채용] 모십니다 ]]> </title>
+		<link>http://ittrend.egloos.com/1976328</link>
+		<description>
+			<![CDATA[ 
+아래와 같은 분을 적극 모십니다.<BR>
+관심 있으신 분은 주저하지 마시고 메일(gustn009@nate.com) 주세요.<BR>
+감사합니다. ^^. 아참 분야는 인터넷 포털입니다.<BR>
+<BR>
+1. 전사 서비스 포트폴리오 전략 수립 및 서비스 전략 분석 업무를 담당할 분을 모집합니다. <ul><li>사업전략 경험 3년 이상</li><BR>
+<li>서비스 기획 경험자 우대</li></ul><BR>
+2. 사업환경 변화 분석을 통해 사내 타 부문에 체계적인 리서치를 제공하는 업무를 담당하실 분을 모집합니다. <ul><li>새로운 기술 및 서비스 trend에 대한 관심과 이해가 높으신 분 </li><BR>
+<li>서비스 기획/ 기술 기획 업무 경험자 우대</li><BR>
+<li>국내외 경쟁사 서비스 분석, 네트워크 분석, 통계 분석 </li></ul>
+			 ]]> 
+		</description>
+		<category>나의스토리</category>
+		<pubDate>Tue, 29 Nov 2005 04:24:58 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ Q~큐우, Social Music Search ]]> </title>
+		<link>http://ittrend.egloos.com/1967561</link>
+		<description>
+			<![CDATA[ 
+얼마전 <a title="" href="http://www.techcrunch.com/"target="_blank">Techcrunch</a> 에 "<a title="" href="http://www.techcrunch.com/2005/11/21/companies-id-like-to-profile-but-dont-exist/"target="_blank">Companies I’d like to Profile (but don’t exist)</a>" 이란 제목의 글이 포스트되어 역대(~2005.11.26) 테크크런치 사상 최대의 덧글과 트랙백을 남기게 되었다. 그들이 공개한 "향후 해볼만한 웹 2.0 신규 서비스들"은 아래와 같다. <BR>
+<blockquote>1. Better and Cheaper Online File Storage<BR>
+2. Blog/website Email Lists<BR>
+3. Portable Reputations<BR>
+4. Tailored Local Offers (via RSS)<BR>
+5. Facebook, in other countries<BR>
+6. Free Music<BR>
+7. Open Source Yellow Pages<BR>
+8. Podcast Transcriptions<BR>
+9. Decentralized Review Aggregation<BR>
+10. Build Something Cool with SSE<BR>
+</blockquote><BR>
+시간내서 포스트를 쭈욱 읽어보면 재밌을 것이다. 본인도 위 아이디어들 중 몇가지 재밌는 또 다른 것들을 연장시킬 수 있어 나름대로 흐뭇했다. 물론 제시된 아이디어들 중 이미 진행되고 있는 것도 있으며 지금 막 개발에 들어간 프로젝트들도 있다고 본다.<BR>
+<BR>
+참고로 위 예시 중 "6번 Free Music"에 대해 이미 나온 사례를 들자면 "Q~큐우"라는 블로그, 미니홈피 배경음악을 쉽게 검색해서 무료로 들을 수 있는 서비스가 그 좋은 예라 할 수 있겠다. <a title="" href="http://qbox.com/"target="_blank">http://qbox.com</a>에 가서 툴바를 설치하면 끝. 이후 블로그, 미니홈피에 있는 배경음악들은 원할때면 언제든지 들을 수 있다.<BR>
+<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds1.egloos.com/pds/1/200511/28/01/b0013701_1273319.jpg" BORDER=0 WIDTH=400 HEIGHT=177></CENTER><BR>
+<BR>
+또한 <a title="" href="http://blog.naver.com/qboxcom"target="_blank">큐우 블로그</a>에 가면 그들이 이 서비스를 만든 동기와 여러가지 기능들이 소개되어있다. 그들의 서비스 모델을 가장 명확히 설명하고 있는 문장을 발췌해 보았다. "음악 스트리밍을 주로 서비스하는 업체들의 경우 약 5~8 동작을 해야 음악을 들을 수 있는데 이 서비스는 단 2 동작으로 원하는 음악을 들을 수 있다." 이와 같은 서비스 모델 뿐만 아니라 검색로봇을 쓰지 않은 이유와 합법성에 대한 소개내용을 보면 여러가지 많은 생각들을 하게 만든다.:-) <BR>
+<BR>
+네이버 지식검색(지식in)은 구글검색과 다르다. 구글은 검색로봇이 알고리즘(RageRank)적으로 Right Information을 찾아주는 것이고 지식in은 기술이 아니라 사람이 자신의 지식과 호의를 가지고 Right Information을 달아주는 것이다. 웹 2.0 키워드인 집단지성이란 블로그, 위키 뿐만 아니라 네이버 지식in에도 위와 같은 큐우 서비스도 같은 맥락에서 접근해 볼 수 있다. <BR>
+<BR>
+이에 큐우를 하나의 Social Music Search라고 말하고 싶다. 그럼 다음엔 어떤 재밌는 소셜 검색 서비스들이 등장하게 될지 기대된다. 
+			 ]]> 
+		</description>
+		<category>시장동향</category>
+		<pubDate>Sat, 26 Nov 2005 07:21:50 GMT</pubDate>
+	</item>
+	</channel>
+</rss>

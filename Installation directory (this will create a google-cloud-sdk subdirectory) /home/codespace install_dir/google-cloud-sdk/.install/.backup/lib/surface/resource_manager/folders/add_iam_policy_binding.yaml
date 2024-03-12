@@ -1,0 +1,33 @@
+release_tracks: [GA, BETA, ALPHA]
+help_text:
+  brief: Add IAM policy binding for a folder.
+  description: |
+    Adds a policy binding to the IAM policy of a folder, given a folder ID and the binding. One
+    binding consists of a member, a role, and an optional condition.
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    on the folder 'folder-id', run:
+
+      $ {command} folder-id --member='user:test-user@gmail.com' --role='roles/editor'
+
+    To add an IAM policy binding which expires at the end of the year 2018 for the role of
+    'roles/storage.objectAdmin' and the user 'test-user@gmail.com' on the folder 'folder-id', run:
+
+      $ {command} folder-id --member='user:test-user@gmail.com' --role='roles/storage.objectAdmin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: cloudresourcemanager.folders
+  api_version: v2
+
+arguments:
+  resource:
+    help_text: The ID of the folder to add the IAM binding.
+    spec: !REF googlecloudsdk.command_lib.resource_manager.resources:folder
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

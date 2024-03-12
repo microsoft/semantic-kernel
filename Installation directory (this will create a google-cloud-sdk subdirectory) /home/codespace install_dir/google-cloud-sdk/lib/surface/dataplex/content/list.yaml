@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      List Dataplex Content Resources.
+    description: |
+      List Dataplex Content resource based on project, location, and lake. Currently list does not support project/{project_id}/.../ notation.
+
+    examples: |
+      To list all Dataplex Content resource in lake `test-lake` under location `us-central1`  inside project `test-project`, run :
+
+       $ {command} --project=test-project --location=us-central1 --lake=test-lake
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.contentitems
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Content you want to list.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        path:label=PATH,
+        notebook.kernel_type:label=NOTEBOOK_KERNEL,
+        sql_script.engine:label=SQL_SCRIPT_ENGINE,
+        labels:label=LABELS
+      )

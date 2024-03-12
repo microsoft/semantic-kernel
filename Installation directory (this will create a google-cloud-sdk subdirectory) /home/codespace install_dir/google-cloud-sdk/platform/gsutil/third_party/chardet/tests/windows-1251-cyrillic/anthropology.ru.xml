@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="Windows-1251"?>
+<!--
+Source: http://anthropology.ru/ru/rss20.xml
+Expect: windows-1251
+-->
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:admin="http://webns.net/mvcb/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+	<channel>
+		<title>Антропология</title>
+		<link>http://anthropology.ru/ru/</link>
+		<description>Интернет-проект «Философская антропология»</description>
+		<dc:language>ru</dc:language>
+		<rating/>
+		<category domain="http://www.dmoz.org">World/Russian/Образование/Дисциплины/Философия/</category>
+		<managingEditor>info@anthropology.ru</managingEditor>
+		<webMaster>webmaster@anthropology.ru</webMaster>
+		<image>
+			<url>http://anthropology.ru/images/rssicon.gif</url>
+			<title>Интернет-проект «Философская антропология»</title>
+			<link>http://anthropology.ru/ru/</link>
+			<width>88</width>
+			<height>31</height>
+		</image>
+		<textInput>
+			<title>Поиск</title>
+			<link>http://anthropology.ru/cgi-bin/search/search.cgi</link>
+			<name>q</name>
+			<description>Полнотекстовый поиск по сайту  «Философская антропология»</description>
+		</textInput>
+		<ttl>1440</ttl>
+		<sy:updatePeriod>daily</sy:updatePeriod>
+		<sy:updateFrequency>1</sy:updateFrequency>
+		<sy:updateBase>2000-01-01T12:00+03:00</sy:updateBase>
+		<item>
+			<title>Шестая буддологическая конференция: тезисы</title>
+			<link>http://anthropology.ru/ru/texts/gathered/buddha06/index.html</link>
+			<dc:date>2004-12-13</dc:date>
+			<description><![CDATA[Размещен сборник тезисов &#171;<strong><a href="http://anthropology.ru/ru/texts/gathered/buddha06/index.html">Шестой буддологической конференции</a></strong>&#187;]]></description>
+		</item>
+		
+		<item>
+			<title>Философия образования</title>
+			<link>http://anthropology.ru/ru/texts/gathered/educphil/index.html</link>
+			<dc:date>2004-09-28</dc:date>
+			<description><![CDATA[Размещен сборник статей &#171;<strong><a href="http://anthropology.ru/ru/texts/gathered/educphil/index.html">Философия образования</a></strong>&#187;]]></description>
+		</item>
+
+
+		<item>
+			<title>Инновации и образование</title>
+			<link>http://anthropology.ru/ru/texts/gathered/educinnov/index.html</link>
+			<dc:date>2004-09-28</dc:date>
+			<description><![CDATA[Размещен сборник статей &#171;<strong><a href="http://anthropology.ru/ru/texts/gathered/educinnov/index.html">Инновации и образование</a></strong>&#187;]]></description>
+		</item>
+
+		<item>
+			<title>Диалог в образовании</title>
+			<link>http://anthropology.ru/ru/texts/gathered/educdial/index.html</link>
+			<dc:date>2004-09-28</dc:date>
+			<description><![CDATA[Размещен сборник статей &#171;<strong><a href="http://anthropology.ru/ru/texts/gathered/educdial/index.html">Диалог в образовании</a></strong>&#187;]]></description>
+		</item>
+		
+		<item>
+			<title>В диапазоне гуманитарного знания</title>
+			<link>http://anthropology.ru/ru/texts/gathered/kagan/index.html</link>
+			<dc:date>2004-09-28</dc:date>
+			<description><![CDATA[Размещен сборник статей &#171;<strong><a href="http://anthropology.ru/ru/texts/gathered/kagan/index.html">В диапазоне гуманитарного знания</a></strong>&#187;]]></description>
+		</item>
+
+
+		<item>
+			<title>Традиции и новации в современных философских дискурсах</title>
+			<link>http://anthropology.ru/ru/texts/gathered/tradnov/index.html</link>
+			<dc:date>2004-09-12</dc:date>
+			<description><![CDATA[Размещены материалы круглого стола &#171;<strong><a href="http://anthropology.ru/ru/texts/gathered/tradnov/index.html">Традиции и новации в современных философских дискурсах</a></strong>&#187;]]></description>
+		</item>
+	
+		<item>
+			<title>Формы субъективности в философской культуре XX века</title>
+			<link>http://anthropology.ru/ru/texts/gathered/subject/index.html</link>
+			<dc:date>2004-09-12</dc:date>
+			<description><![CDATA[Размещена монография <a href="http://anthropology.ru/ru/we/kolesnikov.html">А.С.&nbsp;Колесникова</a> и С.Н.&nbsp;Ставцева <strong><a href="http://anthropology.ru/ru/texts/gathered/subject/index.html" title="Содержание монографии &#171;Формы субъективности в философской культуре XX века&#187;">&#171;Формы субъективности в философской культуре XX века&#187;</a>]]></description>
+		</item>
+		
+		<item>
+			<title>Статьи М.М.Решетникова</title>
+			<link>http://anthropology.ru/ru/we/reshet.html</link>
+			<dc:date>2004-09-09</dc:date>
+			<description><![CDATA[На сайте размещены статьи профессора М.М.Решетникова <a href="http://anthropology.ru/ru/texts/reshet/behaviour.html" title="Текст статьи">Особенности состояния, поведения и деятельности людей в экстремальных ситуациях с витальной угрозой</a>, <a href="http://anthropology.ru/ru/texts/reshet/terrorist.html" title="Текст статьи">Наброски к психологическому портрету террориста</a> и <a href="http://anthropology.ru/ru/texts/reshet/paranoia.html" title="Текст статьи">Клинический метод в изучении и разрешении межнациональных конфликтов</a>]]></description>
+		</item>
+		
+		
+		<item>
+			<title>Статьи М.В.Николаевой</title>
+			<link>http://anthropology.ru/ru/we/nikolaeva_mv.html</link>
+			<dc:date>2004-09-07</dc:date>
+			<description><![CDATA[Помимо вошедших в сборники материалов конференций «<a href="http://anthropology.ru/ru/texts/gathered/east/index.html">Путь Востока</a>», на сайте размещено более двадцати статей нашего нового автора, <a href="http://anthropology.ru/ru/we/nikolaeva_mv.html">М.В.Николаевой</a>]]></description>
+		</item>
+		
+		<item>
+			<title>Статья «Труд и равноправие: образ работницы в советской прессе 1920-х годов»</title>
+			<link>http://anthropology.ru/ru/texts/osika/worker.html</link>
+			<dc:date>2004-09-07</dc:date>
+			<description><![CDATA[На сайте размещена статья <a href="http://anthropology.ru/ru/we/osika.html">Ю.Л.Осики</a> «<a href="http://anthropology.ru/ru/texts/texts/osika/worker.html">Труд и равноправие: образ работницы в советской прессе 1920-х годов</a>»]]></description>
+		</item>
+		
+		<item>
+			<title>Статья «Понятие воображения в феноменологии Гуссерля»</title>
+			<link>http://anthropology.ru/ru/texts/orlova/imaginatio.html</link>
+			<dc:date>2004-09-07</dc:date>
+			<description><![CDATA[На сайте размещена статья <a href="http://anthropology.ru/ru/we/orlova.html">Ю.О.Орловой</a> «<a href="http://anthropology.ru/ru/texts/orlova/imaginatio.html">Понятие воображения в феноменологии Гуссерля</a>»]]></description>
+		</item>
+	
+		<item>
+			<title>Статьи С.В.Пахомова</title>
+			<link>http://anthropology.ru/ru/we/pahomov.html</link>
+			<dc:date>2004-08-29</dc:date>
+			<description><![CDATA[Помимо вошедших в сборники материалов конференций «<a href="http://anthropology.ru/ru/texts/gathered/east/index.html">Путь Востока</a>», на сайте размещено девять статей нашего нового автора, <a href="http://anthropology.ru/ru/we/pahomov.html">С.В.Пахомова</a>]]></description>
+		</item>
+		
+		
+		<item>
+			<title>Путь Востока IV: проблема методов</title>
+			<link>http://anthropology.ru/ru/texts/gathered/east/04/index.html</link>
+			<dc:date>2004-08-29</dc:date>
+			<description><![CDATA[Опубликован сборник материалов третьей конференции <strong><a href="http://anthropology.ru/ru/texts/gathered/east/04/index.html">Путь Востока: проблема методов</a></strong>]]></description>
+		</item>
+		
+		<item>
+			<title>Путь Востока III: традиции освобождения</title>
+			<link>http://anthropology.ru/ru/texts/gathered/east/03/index.html</link>
+			<dc:date>2004-08-29</dc:date>
+			<description><![CDATA[Опубликован сборник материалов третьей конференции <strong><a href="http://anthropology.ru/ru/texts/gathered/east/03/index.html">Путь Востока: традиции освобождения</a></strong>]]></description>
+		</item>
+			
+		<item>
+			<title>Сборник статей «Homo philosophans»</title>
+			<link>http://anthropology.ru/ru/texts/gathered/sergeev/index.html</link>
+			<dc:date>2004-08-29</dc:date>
+			<description><![CDATA[Опубликован сборник статей <strong><a href="http://anthropology.ru/ru/texts/gathered/sergeev/index.html">«Homo philosophans»</a></strong>, посвящённый 60-летию проф. <a href="http://anthropology.ru/ru/we/sergeev.html">К.А.Сергеева</a>]]></description>
+		</item>
+		
+		
+		<item>
+			<title>Введение в буддологию: курс лекций (Торчинов Е.А.)</title>
+			<link>http://anthropology.ru/ru/texts/torchin/buddhism.html</link>
+			<dc:date>2004-08-09</dc:date>
+			<description><![CDATA[Опубликован курс лекций <a href="http://anthropology.ru/ru/we/torchin.html">Е.А.Торчинова</a> <strong><a href="http://anthropology.ru/ru/texts/torchin/buddhism.html">«Введение в буддологию»</a></strong>]]></description>
+		</item>
+		<item>
+			<title>Хайдеггер и восточная философия: поиски взаимодополнительности культур</title>
+			<link>http://anthropology.ru/ru/texts/gathered/heideast/index.html</link>
+			<dc:date>2004-08-09</dc:date>
+			<description><![CDATA[Опубликована коллективная монография <strong><a href="http://anthropology.ru/ru/texts/gathered/heideast/index.html">«Хайдеггер и восточная философия: поиски взаимодополнительности культур»</a></strong>]]></description>
+		</item>
+		<item>
+			<title>Сборник статей «Александр Сокуров на философском факультете»</title>
+			<link>http://anthropology.ru/ru/texts/gathered/sokurov/index.html</link>
+			<dc:date>2004-08-09</dc:date>
+			<description><![CDATA[Опубликован сборник статей <strong><a href="http://anthropology.ru/ru/texts/gathered/sokurov/index.html">«Александр Сокуров на философском факультете»</a></strong>]]></description>
+		</item>
+		<item>
+			<title>Сборник статей «Философия старости: геронтософия»</title>
+			<link>http://anthropology.ru/ru/texts/gathered/gerontos/index.html</link>
+			<dc:date>2004-08-09</dc:date>
+			<description><![CDATA[Опубликован сборник статей <strong><a href="http://anthropology.ru/ru/texts/gathered/gerontos/index.html">«Философия старости: геронтософия»</a></strong>]]></description>
+		</item>
+		<item>
+			<title>Парадигмы исторического мышления ХХ века: очерки по современной философии культуры</title>
+			<link>http://anthropology.ru/ru/texts/gathered/histpara/index.html</link>
+			<dc:date>2004-08-09</dc:date>
+			<description><![CDATA[Опубликована монография <a href="http://anthropology.ru/ru/we/solonin.html">Солонина Ю.Н.</a> и <a href="http://anthropology.ru/ru/we/dudnik.html">Дудника С.И.</a> <strong> <a href="http://anthropology.ru/ru/texts/gathered/histpara/index.html">«Парадигмы исторического мышления ХХ века: очерки по современной философии культуры»</a></strong>]]></description>
+		</item>
+
+
+	</channel>
+</rss>

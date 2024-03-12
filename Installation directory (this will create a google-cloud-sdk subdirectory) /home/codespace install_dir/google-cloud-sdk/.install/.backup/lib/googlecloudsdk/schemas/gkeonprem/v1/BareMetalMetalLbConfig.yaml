@@ -1,0 +1,43 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 BareMetalMetalLbConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- addressPools
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  addressPools:
+    description: |-
+      AddressPools is a list of non-overlapping IP pools used by load balancer
+      typed services. All addresses must be routable to load balancer nodes.
+      IngressVIP must be included in the pools.
+    type: array
+    items:
+      $ref: BareMetalLoadBalancerAddressPool.yaml
+  loadBalancerNodePoolConfig:
+    description: |-
+      Specifies the node pool running the load balancer. L2 connectivity is
+      required among nodes in this pool. If missing, the control plane node
+      pool is used as the load balancer pool.
+    $ref: BareMetalLoadBalancerNodePoolConfig.yaml

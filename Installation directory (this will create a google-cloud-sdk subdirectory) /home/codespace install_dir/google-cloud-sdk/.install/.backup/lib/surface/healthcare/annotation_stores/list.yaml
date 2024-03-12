@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: List Cloud Healthcare API annotation stores.
+    description: List Cloud Healthcare API annotation stores.
+    examples: |
+      To list the annotation stores in 'test-dataset', run:
+
+        $ {command} --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.annotationStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The dataset to list the annotation stores for.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:dataset
+
+  output:
+    format: |
+      table(
+          name.scope("annotationStores"):label=ID,
+          name.scope("locations").segment(0):label=LOCATION
+      )

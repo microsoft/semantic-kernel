@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="koi8-r" ?>
+<!--
+Source: http://forum.template-toolkit.ru/rss/forum_1.rss
+Expect: KOI8-R
+-->
+<rss version='2.0'>
+	<channel>
+		<title>Форумы Template Toolkit : Работа с Template Toolkit</title>
+		<link>http://forum.template-toolkit.ru/view_forum/forum_id-1.html?rss</link>
+		<description>Template Toolkit - быстрая, мощная и расширяемая система обработки шаблонов. На сайте работает форум, в котором обсуждаются вопросы использования библиотеки по работе с шаблонами. Знакомство с Template Toolkit. Возможности библиотеки, приемы использования. Проблемы и их решение.</description>
+		<language>ru</language>
+		<copyright>Lobanov Igor</copyright>
+		<webMaster>Lobanov Igor &lt;webmaster@template-toolkit.ru&gt;</webMaster>
+		<pubDate>Mon, 12 Dec 2005 10:09:35 GMT</pubDate>
+		<lastBuildDate>Wed,  4 Jan 2006 02:29:01 GMT</lastBuildDate>
+		<managingEditor>Perl script, Template Toolkit</managingEditor>
+		<image>
+			<url>http://forum.template-toolkit.ru/images/tt2powered.gif</url>
+			<title>Template Toolkit - шаблоны в perl</title>
+			<link>http://forum.template-toolkit.ru/</link>
+			<width>88</width>
+			<height>31</height>
+		</image>
+		<docs>http://blogs.law.harvard.edu/tech/rss</docs>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-120.html?rss</guid>
+			<pubDate>Wed,  7 Dec 2005 11:19:46 GMT</pubDate>
+			<title>Template::Plugin::XML::RSS</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-120.html?rss</link>
+			<description>при использовании Template::Plugin::XML::RSS весь вывод из движка Template сразу начинает делаться в UTF-8. абсолютно весь. Тут форум вроде как в RSS данные ранит и кодировка koi-8-r работает.&lt;br /&gt;
+при этом все попытки передать в констркутор XML::RSS-&amp;gt;new (encode =&amp;gt; 'моя_кодировка') ::RSS-&amp;gt;new ( output =&amp;gt; 'моя_кодировка') не прокатывает :-(&lt;br /&gt;
+изучение результата при DEBUG_ALL ни к чему не привели. в трассировке дебага все данные идут в нужной мне кодировке. .т.е. без перекодировании движком TT2&lt;br /&gt;
+&lt;br /&gt;
+может где-то этот плагин перекрывает TT2-шный $output ?&lt;br /&gt;
+&lt;br /&gt;
+вот такая конструкция:&lt;br /&gt;
+[% USE news = XML.RSS('forum_1.xml') %]&lt;br /&gt;
+[% FOREACH item = news.items %]&lt;br /&gt;
+&amp;lt;pre&amp;gt;&lt;br /&gt;
+  [% item.title %]&lt;br /&gt;
+&amp;lt;/pre&amp;gt;&lt;br /&gt;
+[% END %]
+			</description>
+			<author>ddv &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-120.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-120.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-118.html?rss</guid>
+			<pubDate>Thu,  1 Dec 2005 09:33:45 GMT</pubDate>
+			<title>Два include-каталога</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-118.html?rss</link>
+			<description>У меня такая ситуация. Группа сайтов (штук 10) имеют почти одинаковое оформление. Сайты сделаны на TT2. Сейчас у каждого сайта свой templates каталог.&lt;br /&gt;
+Но многие файлы одинаковы (не все).&lt;br /&gt;
+Это не очень удобно, обновлять в 10 местах.&lt;br /&gt;
+&lt;br /&gt;
+Как сделать два include каталога у TT чтобы он искал сначала в одном каталоге(например общем template), а если не нашел - в другом (для каждого еще и уникальный каталог template)?
+			</description>
+			<author>kozyabozya &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-118.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-118.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-117.html?rss</guid>
+			<pubDate>Thu, 17 Nov 2005 05:29:38 GMT</pubDate>
+			<title>template Factory</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-117.html?rss</link>
+			<description>Пытаюсь реализовать нечто аналогичное шаблону Factory (один главнй шаблон, и много шаблонов продуктов),&lt;br /&gt;
+Соответственно при написании шаблонов-продуктов фабрики хотелось бы отслеживать их спецификацию. как минимум наличие определенных блоков BLOCK...END и опеределенных переменных. &lt;br /&gt;
+Т.е. перед включением шаблона (INCLUDE) каким-то образом &amp;quot;прогонять его на соответсвие спецификации фабрики&amp;quot;&lt;br /&gt;
+Поковырялся в класс-модуле Template::Context нашел там переменную класса BLKSTACK, но ничего внятного из неё не могу вытащить, типа:&lt;br /&gt;
+foreach my $i ($template-&amp;gt;service-&amp;gt;context()-&amp;gt;BLKSTACK) {&lt;br /&gt;
+.....&lt;br /&gt;
+}
+			</description>
+			<author>ddv &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-117.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-117.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-116.html?rss</guid>
+			<pubDate>Sun,  6 Nov 2005 18:33:25 GMT</pubDate>
+			<title>Как подгрузить модуль автоматом.</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-116.html?rss</link>
+			<description>есть проблема в каждом темплейте создаю свой плагин. а хочется создать его при создании Template &lt;br /&gt;
+&lt;br /&gt;
+сейчас прописано&lt;br /&gt;
+	PLUGINS=&amp;gt;{&lt;br /&gt;
+	 'Atma'=&amp;gt;'Atma::TPlugin'&lt;br /&gt;
+	},&lt;br /&gt;
+и в каждом темплейте пишу &lt;br /&gt;
+[% USE Atma(c) %]&lt;br /&gt;
+[% Atma.myfunc(&amp;quot;lalala&amp;quot;)%]&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+узнал что можно его прикрутить с помощью &lt;br /&gt;
+и не писать USE Atma(c)&lt;br /&gt;
+#	LOAD_PLUGINS =&amp;gt; Atma::TPlugin-&amp;gt;new($self, $self),&lt;br /&gt;
+но непонятны его параметры и что-то ругалось что ненаходит функцию  fetch, поделитесь опытом как нужно это сделать ?
+			</description>
+			<author>Dmitry &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-116.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-116.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-114.html?rss</guid>
+			<pubDate>Tue,  1 Nov 2005 15:03:41 GMT</pubDate>
+			<title>И ещё какой движок форума используете??</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-114.html?rss</link>
+			<description>Сабж:)
+			</description>
+			<author>Следопыт &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-114.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-114.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-113.html?rss</guid>
+			<pubDate>Tue,  1 Nov 2005 15:02:06 GMT</pubDate>
+			<title>Локализация сайта с помощью TT</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-113.html?rss</link>
+			<description>Как сделать локализацию сайта с помощью TT??&lt;br /&gt;
+я вынес все текстовые строки из шаблонов в отдельные файлы типа&lt;br /&gt;
+messages.en&lt;br /&gt;
+[% mess1=&amp;quot;English1&amp;quot; %]&lt;br /&gt;
+[% mess2=&amp;quot;English2&amp;quot; %]&lt;br /&gt;
+&lt;br /&gt;
+messages.ru&lt;br /&gt;
+[% mess1=&amp;quot;Русский1&amp;quot; %]&lt;br /&gt;
+[% mess2=&amp;quot;Русский2&amp;quot; %]&lt;br /&gt;
+&lt;br /&gt;
+а в шалонах соответственно прописал&lt;br /&gt;
+[% IF lang == &amp;quot;en&amp;quot; ][% INCLUDE messages.en %][% END %]&lt;br /&gt;
+&amp;lt;html&amp;gt;&lt;br /&gt;
+[% mess1 %]&lt;br /&gt;
+&amp;lt;/html&amp;gt;&lt;br /&gt;
+думал подключать эти файлы в зависимости от языка но так не работает!! Может кто нибудь посоветует?&lt;br /&gt;
+спасибо
+			</description>
+			<author>Следопыт &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-113.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-113.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-112.html?rss</guid>
+			<pubDate>Thu, 27 Oct 2005 11:48:26 GMT</pubDate>
+			<title>Представления</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-112.html?rss</link>
+			<description>кто-нибудь пользует view? очень удобная штука, смущает только что она пока в &amp;quot;экспериментальном&amp;quot; виде. Или имеет смыл пользоваться?
+			</description>
+			<author>ddv &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-112.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-112.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-110.html?rss</guid>
+			<pubDate>Wed, 28 Sep 2005 15:05:48 GMT</pubDate>
+			<title>Template Toolkit  по winXP</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-110.html?rss</link>
+			<description>Добрый день.&lt;br /&gt;
+Подскажите пожалуйста &amp;#8211; как установить Template Toolkit  по winXP?&lt;br /&gt;
+Я использую ActivePerl 5.8.6. &lt;br /&gt;
+Включаю PPM. И наш диалог с PPM-ом выглядит так:&lt;br /&gt;
+Ppm-&amp;gt; install Template&lt;br /&gt;
+Ppm-(отвечает:) &amp;#8211; такого няма!!! &lt;br /&gt;
+Или&lt;br /&gt;
+Ppm-&amp;gt; install TemplateToolkit&lt;br /&gt;
+Ppm-(отвечает:) &amp;#8211; такого няма!!! &lt;br /&gt;
+Как мне установить Template Toolkit  под winXp.&lt;br /&gt;
+Алексей
+			</description>
+			<author>Washington &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-110.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-110.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-109.html?rss</guid>
+			<pubDate>Sun, 25 Sep 2005 11:50:06 GMT</pubDate>
+			<title>fork() в [% PERL %]</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-109.html?rss</link>
+			<description>Подскажите, пожалуста, как корректно выполнить fork() в блоке [% PERL %] TT?&lt;br /&gt;
+&lt;br /&gt;
+Просто вполняется ресурсоемкая операция, а первоначальные данные надо возвращать как можно быстрее.&lt;br /&gt;
+&lt;br /&gt;
+У меня в переменной в $stash содержиться указатель на коннект к БД и мне кажеться, что с ним fork не совсем корректно работает. Такое ощущение, что по завершении форка этот коннект закрывается.
+			</description>
+			<author>UncleAndy &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-109.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-109.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-108.html?rss</guid>
+			<pubDate>Wed, 21 Sep 2005 11:45:38 GMT</pubDate>
+			<title>TT удаляет нули.</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-108.html?rss</link>
+			<description>Очень странный глюк, уже долго бьюсь, решения не вижу.&lt;br /&gt;
+Передаю в шаблон: &lt;br /&gt;
+{params}-&amp;gt;{year}-&amp;gt;'2005';&lt;br /&gt;
+в шаблоне пишу&lt;br /&gt;
+[% params.year %]&lt;br /&gt;
+&lt;br /&gt;
+и вижу 25! если пишу 1998, вижу 1998, а если пишу 20010007, вижу 217!&lt;br /&gt;
+&lt;br /&gt;
+кто-нибудь сталкивался? как лечить?
+			</description>
+			<author>kozyabozya &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-108.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-108.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-107.html?rss</guid>
+			<pubDate>Thu, 15 Sep 2005 12:41:43 GMT</pubDate>
+			<title>eval() в TT2</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-107.html?rss</link>
+			<description>Существует ли в TT2 аналог eval() в Perl? Т. е. если я имею пременную в шаблоне, значение которой содержит директивы, то как вставить в шаблон значение этой переменной, чтобы директивы были выполнены, а не выводились как текст?
+			</description>
+			<author>Dionys &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-107.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-107.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-106.html?rss</guid>
+			<pubDate>Wed, 31 Aug 2005 11:47:31 GMT</pubDate>
+			<title>Параметры из шаблона в шаблон</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-106.html?rss</link>
+			<description>Привет всем&lt;br /&gt;
+Заранее благодарен за грамотный ответ&lt;br /&gt;
+Проблемка такая&lt;br /&gt;
+Как передать из шаблона параметры в шаблон&lt;br /&gt;
+Например&lt;br /&gt;
+[% INCLUDE tmpl(para1=&amp;gt;value,para2=&amp;gt;value2,...) %]
+			</description>
+			<author>plcgi &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-106.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-106.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-104.html?rss</guid>
+			<pubDate>Mon,  8 Aug 2005 04:57:04 GMT</pubDate>
+			<title>INCLUDE</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-104.html?rss</link>
+			<description>как пробросить переменную во WRAPPER через целый лес BLOCK...END влюченных через INCLUDE.&lt;br /&gt;
+пытался в бизнес-логике чделать setter-getter но не канает почемуто, хотя WRAPPER вроде обрабатывается после всех вложенных блоков...&lt;br /&gt;
+&lt;br /&gt;
+PS: PROCESS не предлагать.&lt;br /&gt;
+&lt;br /&gt;
+PPS: охота в главном враппере выводить системное сообщение, а уж его генерить во вложенных шаблонах.
+			</description>
+			<author>ddv &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-104.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-104.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-103.html?rss</guid>
+			<pubDate>Fri, 22 Jul 2005 12:42:52 GMT</pubDate>
+			<title>как сделать конкатенацию строк? и не работает i=i-1</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-103.html?rss</link>
+			<description>как сделать конкатанецию строк? (оператор точка в перл)&lt;br /&gt;скажем, так:&lt;br /&gt;&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;
+[%SET i=&amp;quot;aaa&amp;quot;.&amp;quot;bbb&amp;quot; %]
+
+получаем:
+unexpected token (.)
+&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;&lt;br /&gt;И еще. Не работает&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;
+[% i=i-1 %]:
+
+file error - parse error - articles/index.html line 32: unexpected token (-1)  [% i=i-1 %]
+&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;&lt;br /&gt;это фича такая?&lt;br /&gt;ведь [% i=i+1 %] работает!&lt;br /&gt;как я понял -- и ++ не существуют :(&lt;br /&gt;&lt;br /&gt;версия template toolkit 2.14
+			</description>
+			<author>kozyabozya &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-103.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-103.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-100.html?rss</guid>
+			<pubDate>Mon, 18 Jul 2005 06:24:54 GMT</pubDate>
+			<title>Bug или Feature ? Не работают $_, $! и т.п.</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-100.html?rss</link>
+			<description>Шаблон:&lt;br /&gt;
+[% PERL %]&lt;br /&gt;
+  $_ = 'test';&lt;br /&gt;
+  $stash-&amp;gt;set(msg =&amp;gt; $_);&lt;br /&gt;
+[% END %]&lt;br /&gt;
+&amp;lt;div&amp;gt;[% msg %]&amp;lt;/div&amp;gt;&lt;br /&gt;
+--------------------&lt;br /&gt;
+tpage --eval_perl&lt;br /&gt;
+Выдаёт &lt;br /&gt;
+Segmentation fault
+			</description>
+			<author>Николай Максимов &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-100.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-100.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-99.html?rss</guid>
+			<pubDate>Thu, 14 Jul 2005 07:48:40 GMT</pubDate>
+			<title>Операция деления (в шаблоне)</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-99.html?rss</link>
+			<description>Например&lt;br /&gt;
+[% a=10 %]&lt;br /&gt;
+[% b=5 %]&lt;br /&gt;
+&lt;br /&gt;
+[% c=a/b %]&lt;br /&gt;
+&lt;br /&gt;
+Выдает ошибку. Все другие операции нормально.&lt;br /&gt;
+В чем причина?
+			</description>
+			<author>Сергей &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-99.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-99.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-98.html?rss</guid>
+			<pubDate>Thu, 14 Jul 2005 03:03:52 GMT</pubDate>
+			<title>Unit Tests</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-98.html?rss</link>
+			<description>Кто и как пишет UnitTest-ы для своих шаблонов.&lt;br /&gt;
+У меня пока UnitTest-ами покрывается только бизнес логика (которая ВСЯ вынесена в *.pm)&lt;br /&gt;
+Ну как у вас насчет функциональных тестов, особенно WEB-интерфейса?
+			</description>
+			<author>ddv &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-98.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-98.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-97.html?rss</guid>
+			<pubDate>Mon, 11 Jul 2005 08:56:40 GMT</pubDate>
+			<title>mod_perl, освобождается ли память внутри шаблона TT2</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-97.html?rss</link>
+			<description>Есть handler на модперле &lt;br /&gt;
+в кратце.&lt;br /&gt;
+&lt;br /&gt;
+package My::controller;&lt;br /&gt;
+our $c;  # глобальная переменная, хэш в котором все что необходимо&lt;br /&gt;
+&lt;br /&gt;
+sub handler($$){&lt;br /&gt;
+ my $class = shift;&lt;br /&gt;
+ my $r = shift;&lt;br /&gt;
+&lt;br /&gt;
+ $c ||= $class-&amp;gt;new(); # если уже был создан процесс, то больше не нужно делать new.&lt;br /&gt;
+&lt;br /&gt;
+ $c-&amp;gt;{t}-&amp;gt;process(&amp;quot;template.tmpl&amp;quot;, $c); # процессим темплейт передавая этот же контроллер в качестве параметров.&lt;br /&gt;
+}&lt;br /&gt;
+&lt;br /&gt;
+##################&lt;br /&gt;
+# создаем объект в пямяти&lt;br /&gt;
+##################&lt;br /&gt;
+sub new{&lt;br /&gt;
+ bless $self, $class&lt;br /&gt;
+&lt;br /&gt;
+ $self-&amp;gt;{dbh} = DBI-&amp;gt;connect(.........); # делаем коннект&lt;br /&gt;
+ $self-&amp;gt;{t} = new Template(.........); # делаем темплейты &lt;br /&gt;
+ $self-&amp;gt;{cgi} = new CGI; &lt;br /&gt;
+&lt;br /&gt;
+ $self-&amp;gt;{site_path} =  &amp;quot;/la/bla/bla/la&amp;quot;;&lt;br /&gt;
+ $self-&amp;gt;{cgi_path} =&amp;quot;/d/sfd/fs/&amp;quot;;&lt;br /&gt;
+ return $self,&lt;br /&gt;
+}&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+в шаблоне template.tmpl&lt;br /&gt;
+создаются переменные [% my_var = &amp;quot;12345&amp;quot; %]&lt;br /&gt;
+&lt;br /&gt;
+очищается ли пямять когда отпроцессится шаблон?&lt;br /&gt;
+т.е. будет ли $c-&amp;gt;{my_var} пустым при следующем запросе?
+			</description>
+			<author>trdmitry &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-97.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-97.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-95.html?rss</guid>
+			<pubDate>Fri,  8 Jul 2005 10:07:01 GMT</pubDate>
+			<title>Не показываються правильно строки в UTF-8 выбраные из базы</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-95.html?rss</link>
+			<description>Выбираю данные из базы MySQL. Данные в UTF-8.&lt;br /&gt;Если сделать&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;
+print $string_from_database;
+&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;то UTF-8 символы выводятся правильно.&lt;br /&gt;А если через ТТ, то UTF-8 символы в абракадабре.&lt;br /&gt;И это у меня локально под Виндой,&lt;br /&gt;на сервере под Юникс все нормально.
+			</description>
+			<author>rchumak &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-95.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-95.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-93.html?rss</guid>
+			<pubDate>Wed, 29 Jun 2005 07:06:16 GMT</pubDate>
+			<title>Передача параметров из плагина</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-93.html?rss</link>
+			<description>Цикл&lt;br /&gt;
+@fld[$n] = ({&lt;br /&gt;
+id		=&amp;gt; $id,&lt;br /&gt;
+type		=&amp;gt; $type,&lt;br /&gt;
+pr		=&amp;gt; \@f,&lt;br /&gt;
+});&lt;br /&gt;
+&lt;br /&gt;
+n++&lt;br /&gt;
+КонецЦикла&lt;br /&gt;
+&lt;br /&gt;
+return @fld&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+Проблема в том, что массив @f, устанавливается один на все элементы @fld&lt;br /&gt;
+Как это можно обойти?
+			</description>
+			<author>Сергей &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-93.html</comments>
+			<category>Template Toolkit - библиотека для работы с шаблонами в Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-1.rss">http://forum.template-toolkit.ru/view_topic/topic_id-93.html?rss</source>
+		</item>
+	</channel>
+</rss>

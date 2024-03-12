@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 EndpointMatcherMetadataLabelMatcherMetadataLabels export
+  schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- labelName
+- labelValue
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  labelName:
+    description: Label name presented as key in xDS Node Metadata.
+    type: string
+  labelValue:
+    description: |-
+      Label value presented as value corresponding to the above key, in xDS Node
+      Metadata.
+    type: string

@@ -1,0 +1,30 @@
+# Code owners file.
+# This file controls who is tagged for review for any given pull request.
+#
+# For syntax help see:
+# https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners#codeowners-syntax
+
+# The @googleapis/googleapis-auth and @googleapis/yoshi-python is the default owner for changes in this repo
+*                                                           @googleapis/googleapis-auth @googleapis/yoshi-python
+google/auth/_default.py                                     @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/aws.py                                          @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/credentials.py                                  @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/downscoped.py                                   @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/external_account.py                             @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/external_account_authorized_user.py             @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/identity_pool.py                                @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/pluggable.py                                    @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/sts.py                                          @googleapis/googleapis-auth @googleapis/aion-sdk
+google/auth/impersonated_credentials.py                     @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test__default.py                                      @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_aws.py                                           @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_credentials.py                                   @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_downscoped.py                                    @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_external_account.py                              @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_external_account_authorized_user.py              @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_identity_pool.py                                 @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_pluggable.py                                     @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_sts.py                                           @googleapis/googleapis-auth @googleapis/aion-sdk
+tests/test_impersonated_credentials.py                      @googleapis/googleapis-auth @googleapis/aion-sdk
+/samples/                                                   @googleapis/python-samples-owners
+system_tests/secrets.tar.enc # Remove noise from test creds.

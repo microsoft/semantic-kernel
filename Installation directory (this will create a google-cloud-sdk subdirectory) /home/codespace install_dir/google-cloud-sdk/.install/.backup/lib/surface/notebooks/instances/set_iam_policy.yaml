@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Set the IAM policy for an Instance.
+
+    description: |
+      *{command}* sets the IAM policy for a Notebook instance given an
+      instance ID and a JSON or YAML file that describes the IAM policy.
+
+      Note: Setting the IAM policy for an Instance replaces existing IAM bindings for
+      that account.
+
+    examples: |
+      The following command reads an IAM policy defined in the JSON file
+      `policy.json` and sets it for Instance ID *my_instance* at the
+      specified locaiton:
+
+        $ {command} my_instance --location=us-central1-a policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for policy file
+      format and content details.
+
+  request:
+    collection: notebooks.projects.locations.instances
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The ID of the instance for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.notebooks.resources:instance

@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List AI Platform Locations.
+    description: List AI Platform Locations.
+
+  request:
+    collection: ml.projects.locations
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The parent project of the locations you want to list.
+      spec: !REF googlecloudsdk.command_lib.ml_engine.resources:project
+
+  output:
+    format: |
+      table(
+        name,
+        capabilities.type,
+        capabilities.availableAccelerators.list(separator=',')
+      )

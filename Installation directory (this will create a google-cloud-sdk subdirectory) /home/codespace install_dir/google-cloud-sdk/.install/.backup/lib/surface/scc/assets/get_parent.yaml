@@ -1,0 +1,56 @@
+- release_tracks: [ALPHA, BETA, GA]
+  deprecate:
+    is_removed: false
+    warning: |
+      Security Command Center Asset APIs are deprecated and will be removed on or after
+      June 26, 2024. Use Cloud Asset Inventory instead [(gcloud asset)](https://cloud.google.com/sdk/gcloud/reference/asset).
+      For more information, [see the deprecation notice at Assets Page](https://cloud.google.com/security-command-center/docs/how-to-use-security-command-center#assets_page).
+
+  # This command calls a list operation behind the scenes but we can't make command_type as list
+  # since it doesn't support any of the list-flags.
+  command_type: GENERIC
+
+  help_text:
+    brief: Get the Parent for an asset given its resource name or asset id.
+    description: Get the Parent for an asset given its resource name or asset id.
+    examples: |
+      Get parent's relative resource name given an asset's full resource name (https://cloud.google.com/apis/design/resource_names#full_resource_name) e.g. //storage.googleapis.com/my-bucket under organization 123456:
+
+        $ {command} 123456 --resource-name="//storage.googleapis.com/my-bucket"
+
+      Get parent's relative resource name given an asset's Cloud SCC id 5678 under organization 123456.
+
+        $ {command} 123456 --asset=5678
+
+  request:
+    collection: securitycenter.organizations.assets
+    api_version: v1
+    method: list
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.assets.request_hooks:GetParentAssetReqHook
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendOrgArg
+
+    params:
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: asset
+          help_text: |
+            Cloud SCC specific asset. It's derived from the the asset's relative resource name.
+            See: https://cloud.google.com/apis/design/resource_names#relative_resource_name.
+            For Example, for the given asset name: "organizations/123/assets/456", 456 represents
+            asset id.
+        - arg_name: resource-name
+          help_text: |
+            Asset's resource name. Full resource name of the Google Cloud Platform resource
+            this asset represents. This field is immutable after create time. See:
+            https://cloud.google.com/apis/design/resource_names#full_resource_name.
+            For Example: "//cloudresourcemanager.googleapis.com/projects/1234567890123" could be the
+            resource-name for a project.
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.scc.assets.response_hooks:ExtractMatchingAssetFromGetParentResponse

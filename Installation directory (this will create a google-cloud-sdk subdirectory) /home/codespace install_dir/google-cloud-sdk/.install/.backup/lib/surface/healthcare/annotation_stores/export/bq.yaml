@@ -1,0 +1,51 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief:  Export Cloud Healthcare API Annotation records to BigQuery.
+    description: Export Cloud Healthcare API Annotation records to BigQuery.
+    examples: |
+      To export the annotation-store 'test-annotation-store' to the BigQuery table 'bqtable' in the
+      BigQuery dataset `bqdataset`, run:
+
+        $ {command} test-annotation-store --bq-table=bq://my-project.bqdataset.bqtable --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.annotationStores
+    method: export
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API Annotation store to export annotations from.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:annotation_store
+
+
+    params:
+    - arg_name: bq-table
+      api_field: exportAnnotationsRequest.bigqueryDestination.tableUri
+      required: true
+      help_text: |
+        BigQuery table that annotation records will be exported to.
+    - arg_name: write-disposition
+      api_field: exportAnnotationsRequest.bigqueryDestination.writeDisposition
+      help_text: |
+        Determines whether existing table in the destination dataset are overwritten or appended to.
+      type: str
+      choices:
+      - arg_value: write-empty
+        enum_value: WRITE_EMPTY
+        help_text: |
+          Only export data if the destination table is empty.
+      - arg_value: write-truncate
+        enum_value: WRITE_TRUNCATE
+        help_text: |
+          Erase all existing data in a table before writing the instances.
+      - arg_value: write-append
+        enum_value: WRITE_APPEND
+        help_text: |
+          Append data to the existing table.
+  async:
+    collection: healthcare.projects.locations.datasets.operations

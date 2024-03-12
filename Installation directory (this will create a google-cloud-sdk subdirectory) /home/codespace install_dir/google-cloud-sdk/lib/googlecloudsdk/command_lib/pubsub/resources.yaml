@@ -1,0 +1,97 @@
+project:
+  name: project
+  collection: pubsub.projects
+  attributes:
+  - parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The project name.
+    property: core/project
+
+subscription:
+  name: subscription
+  collection: pubsub.projects.subscriptions
+  attributes:
+  - parameter_name: subscriptionsId
+    attribute_name: subscription
+    help: |
+      The subscription name.
+
+topic:
+  name: topic
+  collection: pubsub.projects.topics
+  attributes:
+  - parameter_name: topicsId
+    attribute_name: topic
+    help: |
+      The topic name.
+
+schema:
+  name: schema
+  collection: pubsub.projects.schemas
+  request_id_field: schemaId
+  attributes:
+  - parameter_name: schemasId
+    attribute_name: schema
+    help: |
+      The schema name.
+
+location:
+  name: location
+  collection: pubsublite.admin.projects.locations
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      ID of the location of the Pub/Sub Lite resource.
+
+lite_reservation:
+  name: reservation
+  collection: pubsublite.admin.projects.locations.reservations
+  attributes:
+  - *location
+  - parameter_name: reservationsId
+    attribute_name: reservation
+    help: |
+      The reservation name.
+
+lite_topic:
+  name: topic
+  collection: pubsublite.admin.projects.locations.topics
+  attributes:
+  - *location
+  - parameter_name: topicsId
+    attribute_name: topic
+    help: |
+      The topic name.
+
+lite_subscription:
+  name: subscription
+  collection: pubsublite.admin.projects.locations.subscriptions
+  attributes:
+  - *location
+  - parameter_name: subscriptionsId
+    attribute_name: subscription
+    help: |
+      The subscription name.
+
+lite_operation:
+  name: operation
+  collection: pubsublite.admin.projects.locations.operations
+  attributes:
+  - *location
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      The operation name.
+
+lite_cursor_subscription:
+  name: subscription
+  collection: pubsublite.cursor.projects.locations.subscriptions
+  attributes:
+  - *location
+  - parameter_name: subscriptionsId
+    attribute_name: subscription
+    help: |
+      The subscription name.

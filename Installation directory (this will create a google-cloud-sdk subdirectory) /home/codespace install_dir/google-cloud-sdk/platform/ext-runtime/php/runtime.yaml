@@ -1,0 +1,8 @@
+author: adamtanner@google.com
+name: php
+description: Official Google PHP runtime definition.
+api_version: 0.1
+detect:
+  python: bin/detect
+generate_configs:
+  python: bin/generate_configs

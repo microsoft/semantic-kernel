@@ -1,0 +1,47 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 BareMetalNetworkConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  advancedNetworking:
+    description: |-
+      Enables the use of advanced Anthos networking features, such as Bundled
+      Load Balancing with BGP or the egress NAT gateway. Setting configuration
+      for advanced networking features will automatically set this flag.
+    type: boolean
+  islandModeCidr:
+    description: |-
+      Configuration for island mode CIDR. In an island-mode network, nodes have
+      unique IP addresses, but pods don't have unique addresses across clusters.
+      This doesn't cause problems because pods in one cluster never directly
+      communicate with pods in another cluster. Instead, there are gateways that
+      mediate between a pod in one cluster and a pod in another cluster.
+    $ref: BareMetalIslandModeCidrConfig.yaml
+  multipleNetworkInterfacesConfig:
+    description: Configuration for multiple network interfaces.
+    $ref: BareMetalMultipleNetworkInterfacesConfig.yaml
+  srIovConfig:
+    description: Configuration for SR-IOV.
+    $ref: BareMetalSrIovConfig.yaml

@@ -1,0 +1,246 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Create a Key.
+    description: Create a reCAPTCHA Key.
+    examples: |
+      To create a new reCAPTCHA key for websites showing no CAPTCHA challenge, run:
+
+        $ {command} --display-name=test-key-name --web --allow-all-domains --integration-type=score
+
+  request:
+    collection: recaptchaenterprise.projects.keys
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.recaptcha.hooks:SanitizePlatformSettings
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.recaptcha.resources:project
+      is_parent_resource: true
+      help_text: |
+        The reCAPTCHA Key to create.
+
+    params:
+    - arg_name: display-name
+      required: true
+      api_field: googleCloudRecaptchaenterpriseV1Key.displayName
+      help_text: |
+        A human-readable name for the key. Typically a site or app name.
+    - arg_name: testing-score
+      api_field: googleCloudRecaptchaenterpriseV1Key.testingOptions.testingScore
+      help_text: |
+        If set, all assessments for this key will return this score. Must be between 0
+        (likely not legitimate) and 1 (likely legitimate) inclusive.
+    - group:
+        help_text: |
+          Options for the creation of a WAF-enabled key. For more information, please refer to
+          https://cloud.google.com/recaptcha-enterprise/docs/integration-overview.
+        params:
+        - arg_name: waf-service
+          api_field: googleCloudRecaptchaenterpriseV1Key.wafSettings.wafService
+          help_text: |
+            The WAF service provider to use.
+          choices:
+          - enum_value: WAF_SERVICE_UNSPECIFIED
+            arg_value: unspecified
+            help_text: |
+              No specified WAF service
+          - enum_value: CA
+            arg_value: ca
+            help_text: |
+              Cloud Armor
+          - enum_value: FASTLY
+            arg_value: fastly
+            help_text: |
+              Fastly
+          - enum_value: CLOUDFLARE
+            arg_value: cloudflare
+            help_text: |
+              Cloudflare
+        - arg_name: waf-feature
+          required: true
+          api_field: googleCloudRecaptchaenterpriseV1Key.wafSettings.wafFeature
+          help_text: |
+            The WAF feature to use. For more information, see
+            https://cloud.google.com/recaptcha-enterprise/docs/usecase#comparison_of_features.
+          choices:
+          - enum_value: CHALLENGE_PAGE
+            arg_value: challenge-page
+            help_text: |
+              Redirects suspicious traffic to reCAPTCHA challenge page.
+          - enum_value: ACTION_TOKEN
+            arg_value: action-token
+            help_text: |
+              Use reCAPTCHA action-tokens to protect user actions.
+          - enum_value: SESSION_TOKEN
+            arg_value: session-token
+            help_text: |
+              Use reCAPTCHA session-tokens to protect the whole user session on the
+              site's domain.
+          - enum_value: EXPRESS
+            arg_value: express
+            help_text: |
+              Assesses requests without tokens or frontend integration.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - group:
+            help_text: |
+              Options for the creation of a site key for web.
+            params:
+            - arg_name: web
+              required: true
+              type: bool
+              help_text: |
+                Creates a Key configured for websites.
+            - arg_name: allow-amp-traffic
+              api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAmpTraffic
+              help_text: |
+                Whether this key can be used on AMP (Accelerated Mobile Pages) websites.
+            - group:
+                mutex: true
+                required: true
+                params:
+                - arg_name: allow-all-domains
+                  api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAllDomains
+                  help_text: |
+                    If set, domain name enforcement will NOT be enabled on this key.
+                - arg_name: domains
+                  api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowedDomains
+                  help_text: |
+                    Domains or subdomains of websites allowed to use the key. All subdomains of an
+                    allowed domain are automatically allowed. A valid domain requires a host and must
+                    not include any path, port, query or fragment.
+
+                    Examples of valid domains:
+                         'example.com'
+                         'subdomain.example.com'
+            - arg_name: integration-type
+              api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.integrationType
+              help_text: |
+                Configures how reCAPTCHA will operate on your site. This only applies to 'web'
+                platform.
+              choices:
+              - enum_value: SCORE
+                arg_value: score
+                help_text: |
+                  Shows no CAPTCHA challenge on the page
+              - enum_value: CHECKBOX
+                arg_value: checkbox
+                help_text: |
+                  Renders the classic "I'm not a robot" checkbox, and a captcha challenge
+                  for low scoring events
+              - enum_value: INVISIBLE
+                arg_value: invisible
+                help_text: |
+                  Does not display the "I'm not a robot" checkbox, but may show CAPTCHA
+                  challenges after risk analysis
+            - arg_name: security-preference
+              api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.challengeSecurityPreference
+              help_text: |
+                Represents the possible challenge frequency and difficulty configurations for a web
+                key.
+                            usability: show fewer and easier challenges.
+                            balance: show balanced (in amount and difficulty) challenges.
+                            security: show more and harder challenges.
+            - arg_name: testing-challenge
+              api_field: googleCloudRecaptchaenterpriseV1Key.testingOptions.testingChallenge
+              help_text: |
+                For CHECKBOX and INVISIBLE Keys only, this option configures
+                whether challenges will be issued for execute requests.
+              choices:
+              - enum_value: NOCAPTCHA
+                arg_value: nocaptcha
+                help_text: |
+                  Execute requests for this key will always return nocaptcha.
+              - enum_value: UNSOLVABLE_CHALLENGE
+                arg_value: challenge
+                help_text: |
+                  Execute requests for this key will always return an unsolvable
+                  challenge consisting of a message about this testing key.
+
+        - group:
+            help_text: |
+              Options for the creation of a site key for iOS.
+            params:
+            - arg_name: ios
+              required: true
+              type: bool
+              help_text: |
+                Creates a Key configured for iOS devices.
+            - group:
+                mutex: true
+                required: true
+                params:
+                - arg_name: allow-all-bundle-ids
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.allowAllBundleIds
+                  help_text: |
+                    If set, bundle id enforcement will NOT be enabled on this key.
+                - arg_name: bundle-ids
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.allowedBundleIds
+                  help_text: |
+                    iOS bundle ids of apps allowed to use the key.
+
+                    Example of a valid bundle id:
+                       'com.companyname.productname.appname'
+            - group:
+                required: false
+                help_text: |
+                  Fields that are required to perform Apple-specific integrity checks (recommended
+                  for iOS keys).
+                params:
+                - arg_name: private-key-file
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.appleDeveloperId.privateKey
+                  required: true
+                  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+                  help_text: |
+                    File path to a private key (downloaded as a text file with a .p8 file extension)
+                    generated for your Apple Developer account. Ensure that DeviceCheck is
+                    enabled for the private key.
+                - arg_name: key-id
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.appleDeveloperId.keyId
+                  required: true
+                  help_text: The Apple developer key ID (10-character string).
+                - arg_name: team-id
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.appleDeveloperId.teamId
+                  required: true
+                  help_text: |
+                    The Apple team ID (10-character string) owning the provisioning profile
+                    used to build your application.
+
+        - group:
+            help_text: |
+              Options for the creation of a site key for Android.
+            params:
+            - arg_name: android
+              required: true
+              type: bool
+              help_text: |
+                Creates a Key configured for Android devices.
+            - arg_name: support-non-google-app-store-distribution
+              api_field:
+                googleCloudRecaptchaenterpriseV1Key.androidSettings.supportNonGoogleAppStoreDistribution
+              help_text: |
+                If set, this key can be used in an Android application that is
+                available for download in app stores other than the Google Play Store.
+
+                This setting allows your key to accept traffic from devices without Google
+                Mobile Services (GMS) installed.
+            - group:
+                mutex: true
+                required: true
+                params:
+                - arg_name: allow-all-package-names
+                  api_field: googleCloudRecaptchaenterpriseV1Key.androidSettings.allowAllPackageNames
+                  help_text: |
+                    If set, package name enforcement will NOT be enabled on this key.
+                - arg_name: package-names
+                  api_field: googleCloudRecaptchaenterpriseV1Key.androidSettings.allowedPackageNames
+                  help_text: |
+                    Android package names of apps allowed to use the key.
+
+                    Example of a valid package name:
+                       'com.companyname.appname'
+
+    labels:
+      api_field: googleCloudRecaptchaenterpriseV1Key.labels

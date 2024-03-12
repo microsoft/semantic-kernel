@@ -1,0 +1,19 @@
+- help_text:
+    brief: List available locations for Cloud TPUs.
+    description: List available locations for Cloud TPUs.
+    examples: |
+      The following command lists all of the zones where TPUs are available:
+
+        $ {command}
+
+  request:
+    collection: tpu.projects.locations
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The project you want to list locations for.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:project
+
+  output:
+    format: table(locationId:label=LOCATION:sort=1, name:label=LOCATION_NAME)

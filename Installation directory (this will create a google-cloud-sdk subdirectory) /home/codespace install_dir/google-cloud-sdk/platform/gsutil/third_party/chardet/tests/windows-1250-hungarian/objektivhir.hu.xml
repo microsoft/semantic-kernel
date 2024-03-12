@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<!--
+Source: http://objektivhir.hu/rss.xml
+Expect: windows-1250
+-->
+<!DOCTYPE rss PUBLIC 
+  "-//Netscape Communications//DTD RSS 0.91//EN" 
+  "http://my.netscape.com/publish/formats/rss-0.91.dtd"
+>
+
+<rss version="0.91">
+
+  <channel>
+    <title>Objektív Hírügynökség</title>
+    <description>Objektív Hírügynökség</description>
+    <language>hu</language>
+    <link>http://objektivhir.hu</link>
+    <copyright>A Web-oldalon található cikkek és fotók ingyenesen és szabadon felhasználhatók, de kizárólag az Objektív Hírügynökség, mint hírforrás feltüntetésével.</copyright>
+    <managingEditor>objektivhir@objektivhir.hu (Gyürky László)</managingEditor>
+    <webMaster>hiros@index.hu (Hírös.Index Kft)</webMaster>
+  	<image>
+      <link>http://objektivhir.hu</link>
+      <url>http://objektivhir.hu/images/logokicsi.jpg</url>
+      <title>Objektív Hírügynökség</title>
+    </image>
+
+
+    <item>
+      <title>Árhullám a Kapos folyón (fotókkal)</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23145</link>
+      <description>Egy hét alatt 30-35 mm csapadék hullott a Kapos folyó vízgyűjtő területén. Ez a felmelegedés hatására gyorsan elolvadt, amely a Kapos folyó és a befolyó patakokon árhullámot idézett elő and#8211; tudatta az OBJEKTÍV Hírügynökséggel az Országos Katasztrófavédelmi Főigazgatóság. 
+
+Ez az árhullám a Kapos medrét mintegy 50%-ig kitölti. Január 2-án és 3-án a katasztrófavédelem munkatársai a megye egész területén a legveszélyeztetettebb pontokon helyszíni ellenőrzést tartottak. Ezek során megállapították, hogy a kis vizek medrei néhány helyen telítődtek, illetve az alacsonyabban fekvő kertekben, réteken helyi belvíz alakult ki. Ez azonban még nem veszélyezteti a lakó-, illetve gazdasági épületeket. Ugyanakkor az ellenőrzés során több olyan hiányosságot állapítottak meg, amelyek akadályozzák a víz lefolyását (pl. hidak, átereszek eltömődése, árkokba törmelékhordás). Ezekre az akadályozó tényezőkre és a szükséges intézkedések megtételére az érintett polgármester urak figyelmét felhívták. A meteorológiai előrejelzés szerint a héten további 20-25 mm csapadék várható eső és hó formájában, ezért minden területen fokozottan figyelik a belvízveszélyes szakaszokat.
+
+A képek a Somogy Megyei Katasztrófavédelmi Igazgatóság felvételei.
+
+Hírforrás: OBJEKTÍV Hírügynökség, 2006. január 4.
+
+Gy. Mészáros Ágnes</description>
+      <pubDate>Wed, 04 Jan 2006 16:51:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Nyugatról újabb havazás várható</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23144</link>
+      <description>A Dunántúlon hidegfronti hatás érvényesül, míg a keleti területeken melegfronti hatásra kell számítani, de átmenetileg mindenütt gyengül a fronthatás. Így talán kevesebben panaszkodnak fejfájásra, fáradtságra, levertségre, vagy éppen nyugtalanságra. Rosszullét is inkább csak a szív- és érrendszeri problémákkal küszködőknél fordulhat elő. A nyirkos időben azonban továbbra is gyakoriak a reumatikus panaszok, a napsütés hiánya pedig erősítheti a depresszióra való hajlamot and#8211; értesült az OBJEKTÍV Hírügynökség a legfrissebb előrejelzés adatairól az ORFK Kommunikációs Igazgatóságától.</description>
+      <pubDate>Wed, 04 Jan 2006 16:18:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Új magyar külképviseletek nyíltak</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23143</link>
+      <description>Rövid időn belül három új, a magyar külpolitika stratégiai szempontjából is különösen fontos állomáshellyel gyarapodott a magyar külképviseleti hálózat a délkelet-európai térségben. Az újév első napján megkezdte működését Pristinában az ENSZ koszovói missziójához, (UNMIK) akkreditált Magyar Összekötő Iroda, január harmadikán megnyílt a csíkszeredai főkonzulátus, november óta pedig önálló képviselete van Magyarországnak Montenegróban and#8211; tudatta az OBJEKTÍV Hírügynökséggel Polgár Viktor külügyi szóvivő.</description>
+      <pubDate>Wed, 04 Jan 2006 14:43:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Osztrák határőrök dolgoznak a magyar-szerb határszakaszon</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23142</link>
+      <description>A varsói székhelyű Európai Határrendészeti Ügynökség (FRONTEX) felkérése alapján a Kiskunhalasi Határőr Igazgatóság munkatársai két osztrák határőrizeti szakemberrel együttműködve végzik a nem uniós állampolgárok határrendészeti ellenőrzését és határátléptetését január 3-a és 8-a között and#8211; értesült az OBJEKTÍV Hírügynökség Németh Zoltántól a Kiskunhalasi Határőr Igazgatóság sajtóreferensétől.</description>
+      <pubDate>Wed, 04 Jan 2006 14:36:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Feloldották a hólánc-kötelezettséget</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23141</link>
+      <description>Szerdán 14 órától ideiglenesen nem kötelező a hólánc megléte a hazánkba belépő autósoknak and#8211; tudatta az OBJEKTÍV Hírügynökséggel Kovács Iván  a Határőrség szóvivője.</description>
+      <pubDate>Wed, 04 Jan 2006 13:43:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Ukrán hajót tartóztattak fel Grúzia partjainál</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23140</link>
+      <description>A grúz Belügyminisztérium Határvédelmi Főhivatalának munkatársai feltartóztattak egy grúz zászló alatt futó ukrán hajót, and#8222;Razvedcsikand#8221; (Felderítő) névvel. A hajó tiltott területen tartózkodott and#8211; tudatta az OBJEKTÍV Hírügynökséggel a Kárpátinfo.</description>
+      <pubDate>Wed, 04 Jan 2006 11:44:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Ukrán turistát sodort el a lavina</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23139</link>
+      <description>A török kutató és mentőcsapatok megtalálták azt az Ukrán turistát, akit két nappal ezelőtt sodort el egy lavina and#8211; tudatta az OBJEKTÍV Hírügynökséggel az RSOE.</description>
+      <pubDate>Wed, 04 Jan 2006 10:47:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Kevesebb oltás, biztonságosabb vakcinák</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23138</link>
+      <description>Nagyjából feleannyi tűszúrással is elérhető mostantól, hogy a gyermekek megkapják a legfontosabb (kötelező) védőoltásokat. E mellett az eddiginél biztonságosabbak a vakcinák is, amelyek kevesebb mellékhatást okozhatnak. Akárcsak eddig, a kötelező védőoltások az új rendszerben is ingyenesek maradnak. A korábbi híresztelések miatt fontos hangsúlyozni, hogy a bevezetésre kerülő új oltóanyagok nem tartalmaznak semmilyen higanyvegyületet and#8211; tudatta az OBJEKTÍV Hírügynökséggel a Kormányszóvivői Iroda.</description>
+      <pubDate>Wed, 04 Jan 2006 10:45:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Soha nem látott ütemben fejlődik az úthálózat</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23137</link>
+      <description>Idén minden eddiginél több gyorsforgalmi út épül Magyarországon. A 2006-ra tervezett mintegy 260 kilométer, ami 11 új szakaszt jelent, többszöröse a tavaly átadott 95 kilométernyi gyorsforgalmi útnak, pedig már az is rekordnak számított and#8211; tudatta az OBJEKTÍV Hírügynökséggel a Kormányszóvivői Iroda.</description>
+      <pubDate>Wed, 04 Jan 2006 10:40:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Leszúrta a nevelőapját</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23136</link>
+      <description>Szúrt sérüléssel szállítottak kórházba egy 46 éves férfit január 3-án késődélután a nagyhalászi házából. A nyomozás jelenlegi adatai szerint a férfit 11 éves nevelt fia sebesítette meg egy késsel and#8211; értesült az OBJEKTÍV Hírügynökség a Szabolcs-Szatmár-Bereg Megyei RFK sajtószolgálatától.</description>
+      <pubDate>Wed, 04 Jan 2006 10:31:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Kirabolta a nevelőanyját</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23135</link>
+      <description>Elfogtak és őrizetbe vettek az Esztergomi Rendőrkapitányság rendőrei egy 34 éves esztergomi férfit kedden a késő esti órákban, aki a nevelőanyját erőszakkal - ütlegelve és rugdosva - arra kényszerítette, hogy 3.500,-Ft készpénzét átadja neki. A rabláskor a sértett védelmére kelt a másik nevelt fia, akit a gyanúsított szintén bántalmazott and#8211; értesült az OBJEKTÍV Hírügynökség a Komárom-Esztergom Megyei RFK sajtószolgálatától.</description>
+      <pubDate>Wed, 04 Jan 2006 10:30:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Oroszország Krím visszacsatolásával fenyeget</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23133</link>
+      <description>Szergej Ivanov orosz kormányfő-helyettes, védelmi miniszter bejelentette, hogy amennyiben Ukrajna magasabb bérleti díjat fog követelni az orosz Fekete-tengeri flotta által használt objektumokért, Moszkva áttekintheti a Krím-félsziget 1954-es Ukrajnához való csatolásáról szóló megállapodást and#8211; tudatta az OBJEKTÍV Hírügynökséggel a Kárpátinfo.</description>
+      <pubDate>Wed, 04 Jan 2006 10:13:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Megtalálták az orosz kisrepülő második pilótáját</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23134</link>
+      <description>Megtalálták annak a kisrepülőnek második pilótájának a holttestét, amelyik január másodikán zuhant le a harkivi reptér közelében. A tóban, ahova a gép esett, búvárok dolgoznak. Nincs kizárva, hogy hamarosan megtalálják a fekete dobozokat and#8211; tudatta az OBJEKTÍV Hírügynökséggel a Kárpátinfo.</description>
+      <pubDate>Wed, 04 Jan 2006 10:13:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Nagy erejű rengések Mexico partjainál (térképpel)</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23132</link>
+      <description>A USSG, az EMSC és Tsunami Warning Center tájékoztatása szerint nagy erejű, a Richter skála szerinti 6.7, majd egy 4.4-es rengést észleltek Mexikó partjainál and#8211; tudatta az OBJEKTÍV Hírügynökséggel az RSOE.
+
+A rengés epicentruma Santa Rosalía településtől 89 kilométerre, a tenger alatt 10 kilométeres mélységben volt. A Tsunami riasztó központok tájékoztatása szerint elképzelhető, hogy kis területen szökőár alakulhatott ki. A figyelőszolgálat 2 órás figyelőszolgálatot rendelt el.
+
+Hírforrás: OBJEKTÍV Hírügynökség, 2006. január 4.
+
+Gy. Mészáros Ágnes</description>
+      <pubDate>Wed, 04 Jan 2006 10:06:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Tartálykocsi és személyautó karambolja Üllésen</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23131</link>
+      <description>Tartálykocsival ütközött egy személyautó szerdán a reggeli órákban Üllés belterületén a - bordányi úton and#8211; értesült az OBJEKTÍV Hírügynökség a Csongrád Megyei RFK sajtószolgálatától.</description>
+      <pubDate>Wed, 04 Jan 2006 09:56:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Trükkös tolvaj az 53-as főúton</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23130</link>
+      <description>Egy idős embert fosztott ki trükkel egy ismeretlen autós kedden fényes nappal az 53-as főúton, a rendőrök egy piros színű német rendszámú Renault-t keresnek and#8211; értesült az OBJEKTÍV Hírügynökség a Bács-Kiskun Megyei RFK sajtószolgálatától.</description>
+      <pubDate>Wed, 04 Jan 2006 08:17:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Kilencezer villámcsapás, áramszünet Ausztráliában</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23129</link>
+      <description>Megközelítően 50 000 háztartás és üzlet marad áram nélkül, miután heves vihar tört Ausztrália Queensland tartományára szerdán and#8211; tudatta az OBJEKTÍV Hírügynökséggel az RSOE.</description>
+      <pubDate>Wed, 04 Jan 2006 08:15:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Újabb madárinfluenzás fertőzés bukkant fel Kínában</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23128</link>
+      <description>Kína hivatalosan is megerősítette, hogy újabb madárinfluenzás megbetegedéseket észleltek az ország déli részén fekvő Sichuan tartományban and#8211; tudatta az OBJEKTÍV Hírügynökséggel az RSOE.</description>
+      <pubDate>Wed, 04 Jan 2006 07:54:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Áradások Afganisztánban</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23127</link>
+      <description>Heves esőzések sújtják Afganisztán északi részén az elmúlt egy hétben, amely során eddig 130 épület semmisült meg. - jelentette be az ENSZ and#8211; tudatta az OBJEKTÍV Hírügynökséggel az RSOE.</description>
+      <pubDate>Wed, 04 Jan 2006 07:52:00 +0100</pubDate>
+    </item>
+
+    <item>
+      <title>Földcsuszamlás temetett maga alá egy falut</title>
+      <link>http://www.objektivhir.hu/display/hir.php?hirid=23126</link>
+      <description>A napok óta tartó heves esőzés Indonézia Jáva szigetén katasztrofális állapotot idézett elő. A sziget keleti részét nagy kiterjedésű árvíz borítja, a hegyvidéki területeken pedig földcsuszamlások pusztítanak. Szerda reggel egy falut temetett maga alá a lezúduló föld and#8211; tudatta az OBJEKTÍV Hírügynökséggel az RSOE.</description>
+      <pubDate>Wed, 04 Jan 2006 07:51:00 +0100</pubDate>
+    </item>
+
+  </channel>
+</rss>

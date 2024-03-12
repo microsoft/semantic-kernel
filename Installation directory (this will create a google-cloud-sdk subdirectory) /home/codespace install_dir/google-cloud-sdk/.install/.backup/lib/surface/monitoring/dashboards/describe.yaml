@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Describe a Cloud Monitoring dashboard.
+    description: Describe a Monitoring dashboard.
+    examples: |
+      To describe a dashboard, run:
+
+        $ {command} MY-DASHBOARD
+
+      To describe a dashboard in JSON, run:
+
+        $ {command} MY-DASHBOARD --format=json
+
+      To describe a dashboard contained within a specific project, run:
+
+        $ {command} MY-DASHBOARD --project=MY-PROJECT
+
+      To describe a dashboard with a fully qualified dashboard ID, run:
+
+        $ {command} projects/MY-PROJECT/dashboards/MY-DASHBOARD
+
+  arguments:
+    resource:
+      help_text: |
+        The dashboard to describe.
+      is_positional: true
+      spec: !REF googlecloudsdk.command_lib.monitoring.resources:dashboard
+
+  request:
+    collection: monitoring.projects.dashboards
+    api_version: v1

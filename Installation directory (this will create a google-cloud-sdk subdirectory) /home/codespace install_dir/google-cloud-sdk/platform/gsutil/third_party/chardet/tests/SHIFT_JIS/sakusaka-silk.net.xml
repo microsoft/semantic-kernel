@@ -1,0 +1,1111 @@
+<?xml version="1.0" encoding="shift_jis"?>
+<!--
+Source: http://www.sakusaku-silk.net/index.rdf
+Expect: SHIFT_JIS
+-->
+<rdf:RDF
+xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+xmlns:dc="http://purl.org/dc/elements/1.1/"
+xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+xmlns:admin="http://webns.net/mvcb/"
+xmlns:cc="http://web.resource.org/cc/"
+xmlns="http://purl.org/rss/1.0/">
+
+<channel rdf:about="http://www.sakusaku-silk.net/">
+<title>しるく.net sakusaku</title>
+<link>http://www.sakusaku-silk.net/</link>
+<description>sakusaku(サクサク)の非公式ファンサイト</description>
+<dc:language>ja</dc:language>
+<dc:creator></dc:creator>
+<dc:date>2005-12-18T15:58:42+09:00</dc:date>
+<admin:generatorAgent rdf:resource="http://www.movabletype.org/?v=3.2-ja" />
+
+
+<items>
+<rdf:Seq><rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0512/181558.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0512/171630.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0512/130110.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0512/112107.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0512/082339.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0512/030123.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0512/030042.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0512/021223.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0511/261727.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0511/241325.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0511/022229.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0511/011034.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0511/011009.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0510/242320.php" />
+<rdf:li rdf:resource="http://www.sakusaku-silk.net/archives/0510/200152.php" />
+</rdf:Seq>
+</items>
+
+</channel>
+
+<item rdf:about="http://www.sakusaku-silk.net/archives/0512/181558.php">
+<title>LAST SHOOTING(カーリー田中のうた)</title>
+<link>http://www.sakusaku-silk.net/archives/0512/181558.php</link>
+<description><![CDATA[<p>カーリー　五年間お疲れ様でしたっ！</p>
+
+<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">LAST SHOOTING(カーリー田中のうた)</p>
+
+<p>放送日：05/12/16<br />
+詞/曲：白井ヴィンセント<br />
+演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント </p>
+
+</div>
+<div class="songbody">
+
+<p>そういえば、あなたに会って もう... 5年...<br />
+そういえば、金に困って深夜に呼び出して もう... 3,4年...</p>
+
+<p>カーリー... 麻布の若旦那...<br />
+カーリー... Aurevoir（さようなら）...</p>
+
+<p>カーリー... 麻布の若旦那...<br />
+カーリー... Aurevoir（さようなら）...</p>
+
+<p>これからはタモリさんを大切にね...</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-12-18T15:58:42+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0512/171630.php">
+<title>太田(区)のうた</title>
+<link>http://www.sakusaku-silk.net/archives/0512/171630.php</link>
+<description><![CDATA[<p><img alt="oota.jpg" src="http://www.sakusaku-silk.net/archives/image/oota.jpg" width="180" height="135" align="left" /></p>
+
+<p>大田区の歌！大田区には東工大があります。<br />
+洗足池とかかなり近い！（行ったことないけど）<br />
+<br clear="all" /></p>
+
+<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">太田(区)のうた</p>
+
+<p>放送日：05/12/16<br />
+詞/曲：白井ヴィンセント<br />
+演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>六郷土手で...ポッテリ...<br />
+日だまりで...ポッテリ...<br />
+羽田の空...飛行機...<br />
+こんな日は...ポッテリ...</p>
+
+<p>大田区には昔、バイトでよく行った<br />
+窓ガラスをふきにバイトでよく行った<br />
+大田区には今じゃサクサカーが多く<br />
+いてくれるなんて...あぁ...</p>
+
+<p>俺が、みがいた...<br />
+窓ガラスはいまだピカピカで...<br />
+特にていねいに、やっときました<br />
+ブラシ×２回＋かっぱぎ２回</p>
+
+<p>※社長（そんなトコいいから、もう帰ろうよ...）</p>
+
+<p>「鳥久」の弁当...<br />
+昼休み...公園で...<br />
+洗足池で...ポッテリ...<br />
+鵜の木で...ポッテリ...</p>
+
+<p>※社長（もう何やってんだい、アンタたちっ！）</p>
+
+<p>大田区には昔、バイトでよく行った<br />
+窓ガラスをふきにバイトでよく行った<br />
+大田区には今じゃサクサカーが多く<br />
+いてくれるなんて...あぁ...</p>
+
+<p>俺が、みがいた...<br />
+窓ガラスはいまだピカピカで...<br />
+スクイージのゴム新品にしときました...<br />
+スジ１本たりとも残さぬように</p>
+
+<p>※社長（アンタ、本物だよ...）</p>
+
+<p>外の景色、よく見えますか？<br />
+好きな人の顔見えますか？</p>
+
+<p>※社長（ギンギンだよっ！）</p>
+
+<p>あのコの顔よく見えますか？<br />
+カエラの顔よく見えますか？</p>
+
+<p>※社長（ビンビンだよ、もうっ！）</p>
+
+<p>日だまり＆多摩川...<br />
+Sunshine&Water...<br />
+大森＆蒲田で...太田... イエース！</p>
+
+<p>※社長（今日、帰り何か食べてくかい...？）</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-12-17T16:30:21+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0512/130110.php">
+<title>みんなでうたおう一覧表日付順（仮）</title>
+<link>http://www.sakusaku-silk.net/archives/0512/130110.php</link>
+<description><![CDATA[そんなわけで、みんなでうたおうデータベース化してるんですが、<br />
+とりあえず全データ入力し終わった！　総数約190曲！<br />
+多すぎ！！<br />
+<br />
+ってことで、後は表示部分や検索部分とか作れば完成？<br />
+なんですが、たぶん時間かかるんで、とりあえず日付順に全歌一覧だけ先にUPしちゃいます～<br />
+<br />
+<table>
+<tr><td>(95)</td><td>------</td><td>都下のテーマ  </td></tr>
+<tr><td>(97)</td><td>------</td><td>ミノフルペパー  </td></tr>
+<tr><td>(96)</td><td>------</td><td>宇宙戦艦カエラ  </td></tr>
+<tr><td>(1)</td><td>03.12.03</td><td>偽ハマっこブルース  ver.1</td></tr>
+<tr><td>(5)</td><td>03.12.24</td><td><a href=http://www.sakusaku-silk.net/archives/0501/132046.php>川崎の女  ver.1</a></td></tr>
+<tr><td>(98)</td><td>03.12.24</td><td><a href=http://www.sakusaku-silk.net/archives/0501/132304.php>湘南のうた  </a></td></tr>
+<tr><td>(101)</td><td>04.01.01</td><td><a href=http://www.sakusaku-silk.net/archives/0503/081208.php>大きな古時計  </a></td></tr>
+<tr><td>(99)</td><td>04.01.01</td><td><a href=http://www.sakusaku-silk.net/archives/0503/081153.php>ザブン  </a></td></tr>
+<tr><td>(100)</td><td>04.01.01</td><td><a href=http://www.sakusaku-silk.net/archives/0503/081155.php>お楽しみ宇宙ボックスのうた  </a></td></tr>
+<tr><td>(102)</td><td>04.01.01</td><td><a href=http://www.sakusaku-silk.net/archives/0503/081215.php>サクサカーのうた  </a></td></tr>
+<tr><td>(103)</td><td>04.01.14</td><td>相鉄線のうた  ver.1</td></tr>
+<tr><td>(149)</td><td>04.01.19</td><td>米子の替え歌  </td></tr>
+<tr><td>(19)</td><td>04.01.21</td><td><a href=http://www.sakusaku-silk.net/archives/0411/200100.php>相模原のうた  </a></td></tr>
+<tr><td>(104)</td><td>04.01.27</td><td>相鉄線のうた  ver.2</td></tr>
+<tr><td>(105)</td><td>04.01.29</td><td>TSURARA  </td></tr>
+<tr><td>(6)</td><td>04.02.03</td><td><a href=http://www.sakusaku-silk.net/archives/0501/132046.php>川崎の女  ver1.5</a></td></tr>
+<tr><td>(2)</td><td>04.02.04</td><td>偽ハマっこブルース  ver.2</td></tr>
+<tr><td>(106)</td><td>04.02.09</td><td>サクサクはなぜ  </td></tr>
+<tr><td>(130)</td><td>04.02.10</td><td><a href=http://www.sakusaku-silk.net/archives/0501/310521.php>都下ちゃんはね  </a></td></tr>
+<tr><td>(107)</td><td>04.02.12</td><td><a href=http://www.sakusaku-silk.net/archives/0411/040219.php>クレーンゲームDEワーオ  </a></td></tr>
+<tr><td>(150)</td><td>04.02.13</td><td>世界でひとつだけのカエラ  </td></tr>
+<tr><td>(151)</td><td>04.02.13</td><td>LOVE SONG  </td></tr>
+<tr><td>(108)</td><td>04.02.20</td><td>グッバイマナベッチ  </td></tr>
+<tr><td>(152)</td><td>04.02.23</td><td>群馬県民のうた  </td></tr>
+<tr><td>(9)</td><td>04.02.27</td><td><a href=http://www.sakusaku-silk.net/archives/0502/111809.php>三浦のうた  ver.1</a></td></tr>
+<tr><td>(3)</td><td>04.03.04</td><td>偽ハマっこブルース  ver2.5</td></tr>
+<tr><td>(153)</td><td>04.03.05</td><td>ご意見番のうた  </td></tr>
+<tr><td>(109)</td><td>04.03.11</td><td><a href=http://www.sakusaku-silk.net/archives/0504/250028.php>俺パソのテーマ  </a></td></tr>
+<tr><td>(7)</td><td>04.03.12</td><td><a href=http://www.sakusaku-silk.net/archives/0501/132046.php>川崎の女  ver.2</a></td></tr>
+<tr><td>(63)</td><td>04.03.22</td><td>メルシー府中  ver.1</td></tr>
+<tr><td>(20)</td><td>04.03.23</td><td>相模原のうた  ver.1</td></tr>
+<tr><td>(11)</td><td>04.03.23</td><td>小田原のうた  ver.1</td></tr>
+<tr><td>(15)</td><td>04.03.24</td><td>厚木の女  ver.1</td></tr>
+<tr><td>(110)</td><td>04.04.02</td><td><a href=http://www.sakusaku-silk.net/archives/0505/072347.php>サクラ（独唱）  </a></td></tr>
+<tr><td>(154)</td><td>04.04.05</td><td>サクサカーのうた  合唱</td></tr>
+<tr><td>(155)</td><td>04.04.09</td><td>お楽しみ宇宙ボックスのうた  ロッキンブルースVer</td></tr>
+<tr><td>(17)</td><td>04.04.13</td><td><a href=http://www.sakusaku-silk.net/archives/0502/050330.php>綾瀬のうた  ver.1</a></td></tr>
+<tr><td>(12)</td><td>04.04.14</td><td><a href=http://www.sakusaku-silk.net/archives/0501/272211.php>小田原のうた  ver.2</a></td></tr>
+<tr><td>(111)</td><td>04.04.15</td><td><a href=http://www.sakusaku-silk.net/archives/0503/292258.php>本町バドミントン部応援歌  </a></td></tr>
+<tr><td>(21)</td><td>04.04.16</td><td>相模原のうた  ver.2</td></tr>
+<tr><td>(112)</td><td>04.04.20</td><td>横浜ベイスターズ応援歌  </td></tr>
+<tr><td>(65)</td><td>04.04.23</td><td><a href=http://www.sakusaku-silk.net/archives/0501/231832.php>町田のバラード  ver.1</a></td></tr>
+<tr><td>(23)</td><td>04.04.30</td><td><a href=http://www.sakusaku-silk.net/archives/0502/122333.php>海老名のうた  </a></td></tr>
+<tr><td>(25)</td><td>04.05.03</td><td>鎌倉のうた  </td></tr>
+<tr><td>(27)</td><td>04.05.04</td><td>津久井のうた～相模湖のうた  </td></tr>
+<tr><td>(29)</td><td>04.05.05</td><td><a href=http://www.sakusaku-silk.net/archives/0502/050144.php>藤野のうた  </a></td></tr>
+<tr><td>(78)</td><td>04.05.06</td><td>浦安のうた  ver.1</td></tr>
+<tr><td>(31)</td><td>04.05.07</td><td><a href=http://www.sakusaku-silk.net/archives/0501/261550.php>藤沢のうた  </a></td></tr>
+<tr><td>(18)</td><td>04.05.17</td><td><a href=http://www.sakusaku-silk.net/archives/0502/050330.php>綾瀬のうた  ver.2</a></td></tr>
+<tr><td>(33)</td><td>04.05.19</td><td><a href=http://www.sakusaku-silk.net/archives/0501/221659.php>3つの川のトリロジー  </a></td></tr>
+<tr><td>(35)</td><td>04.05.20</td><td><a href=http://www.sakusaku-silk.net/archives/0405/200002.php>秦野のうた  Field of ハダ</a></td></tr>
+<tr><td>(79)</td><td>04.05.31</td><td><a href=http://www.sakusaku-silk.net/archives/0502/131346.php>三島のうた  </a></td></tr>
+<tr><td>(10)</td><td>04.06.03</td><td><a href=http://www.sakusaku-silk.net/archives/0502/111809.php>三浦のうた  ver.2</a></td></tr>
+<tr><td>(113)</td><td>04.06.03</td><td>お兄ちゃんバスケのうた  </td></tr>
+<tr><td>(114)</td><td>04.06.07</td><td>トウダイ～1日の終わりのうた  </td></tr>
+<tr><td>(16)</td><td>04.06.10</td><td><a href=http://www.sakusaku-silk.net/mt/mt.cgi?__mode=view&amp;_type=entry&amp;id=1414&amp;blog_id=1>厚木の女  ver2</a></td></tr>
+<tr><td>(67)</td><td>04.06.11</td><td>立川のうた  </td></tr>
+<tr><td>(68)</td><td>04.06.14</td><td><a href=http://www.sakusaku-silk.net/archives/0502/201800.php>調布のうた  ver.1</a></td></tr>
+<tr><td>(37)</td><td>04.06.15</td><td>座間のうた  </td></tr>
+<tr><td>(13)</td><td>04.06.17</td><td><a href=http://www.sakusaku-silk.net/archives/0501/272211.php>県西レンジャーのうた(小田原・湯河原・足柄のうた)  </a></td></tr>
+<tr><td>(115)</td><td>04.06.28</td><td><a href=http://www.sakusaku-silk.net/archives/0411/182226.php>おたよりあて先のうた  </a></td></tr>
+<tr><td>(39)</td><td>04.07.13</td><td><a href=http://www.sakusaku-silk.net/archives/0502/081558.php>大井松田のうた  </a></td></tr>
+<tr><td>(70)</td><td>04.07.20</td><td>小金井のうた  ver.1</td></tr>
+<tr><td>(116)</td><td>04.07.23</td><td><a href=http://www.sakusaku-silk.net/archives/0407/251806.php>花花ランド  </a></td></tr>
+<tr><td>(40)</td><td>04.08.03</td><td><a href=http://www.sakusaku-silk.net/archives/0408/032319.php>平塚のうた  </a></td></tr>
+<tr><td>(8)</td><td>04.08.06</td><td><a href=http://www.sakusaku-silk.net/archives/0501/132046.php>川崎の女  ver.3（川崎大感謝祭バージョン）</a></td></tr>
+<tr><td>(117)</td><td>04.08.10</td><td>善行団地のうた  </td></tr>
+<tr><td>(71)</td><td>04.08.17</td><td>国立…ブロークンハート  ver.1</td></tr>
+<tr><td>(41)</td><td>04.08.23</td><td>海じゃない茅ヶ崎のうた  </td></tr>
+<tr><td>(118)</td><td>04.08.26</td><td>トウダイ～1日の終わりのうた  博多バージョン</td></tr>
+<tr><td>(82)</td><td>04.08.26</td><td><a href=http://www.sakusaku-silk.net/archives/0501/162123.php>博多の女（ひと）  </a></td></tr>
+<tr><td>(72)</td><td>04.09.06</td><td>昭島のうた  ver.1</td></tr>
+<tr><td>(43)</td><td>04.09.07</td><td><a href=http://www.sakusaku-silk.net/archives/0502/272039.php>大磯のうた  </a></td></tr>
+<tr><td>(119)</td><td>04.09.13</td><td>aikoしゃんに捧げるうた  </td></tr>
+<tr><td>(83)</td><td>04.09.14</td><td><a href=http://www.sakusaku-silk.net/archives/0409/151221.php>入間のうた  </a></td></tr>
+<tr><td>(120)</td><td>04.09.16</td><td>上山白組応援歌  </td></tr>
+<tr><td>(84)</td><td>04.09.20</td><td><a href=http://www.sakusaku-silk.net/archives/0503/060230.php>行田のうた  </a></td></tr>
+<tr><td>(121)</td><td>04.09.21</td><td>春名ちゃんに捧げる歌  </td></tr>
+<tr><td>(122)</td><td>04.09.22</td><td><a href=http://www.sakusaku-silk.net/archives/0501/162027.php>東急ハンズ横浜店のうた  </a></td></tr>
+<tr><td>(44)</td><td>04.09.24</td><td><a href=http://www.sakusaku-silk.net/archives/0502/111752.php>大和のうた  </a></td></tr>
+<tr><td>(64)</td><td>04.09.27</td><td>メルシー府中  ver.2</td></tr>
+<tr><td>(46)</td><td>04.09.30</td><td><a href=http://www.sakusaku-silk.net/archives/0410/032057.php>伊勢原のうた  </a></td></tr>
+<tr><td>(123)</td><td>04.10.04</td><td>行け、カエラっ！のうた  </td></tr>
+<tr><td>(124)</td><td>04.10.05</td><td><a href=http://www.sakusaku-silk.net/archives/0410/052331.php>ある若き女性サックス奏者のうた  </a></td></tr>
+<tr><td>(85)</td><td>04.10.07</td><td><a href=http://www.sakusaku-silk.net/archives/0410/071029.php>バーニンアップ、鳥取  ～鳥取は今、燃えている～</a></td></tr>
+<tr><td>(66)</td><td>04.10.08</td><td><a href=http://www.sakusaku-silk.net/archives/0501/231832.php>町田のバラード  ver.2</a></td></tr>
+<tr><td>(74)</td><td>04.10.12</td><td><a href=http://www.sakusaku-silk.net/archives/0504/200100.php>中野のうた  ver.1</a></td></tr>
+<tr><td>(125)</td><td>04.10.15</td><td>THE FINAL BATTLE  </td></tr>
+<tr><td>(61)</td><td>04.10.19</td><td>国分寺のうた  </td></tr>
+<tr><td>(126)</td><td>04.10.22</td><td>Happy Birthday  </td></tr>
+<tr><td>(127)</td><td>04.10.28</td><td><a href=http://www.sakusaku-silk.net/archives/0410/301415.php>カボチャーマンのうた  </a></td></tr>
+<tr><td>(24)</td><td>04.10.29</td><td><a href=http://www.sakusaku-silk.net/archives/0502/122333.php>海老名のうた  この前はごめんなさいver.</a></td></tr>
+<tr><td>(87)</td><td>04.11.02</td><td><a href=http://www.sakusaku-silk.net/archives/0411/030145.php>狭山のうた  </a></td></tr>
+<tr><td>(75)</td><td>04.11.16</td><td><a href=http://www.sakusaku-silk.net/archives/0503/312314.php>練馬のうた  ver.1</a></td></tr>
+<tr><td>(48)</td><td>04.11.22</td><td><a href=http://www.sakusaku-silk.net/archives/0411/230123.php>葉山のうた  </a></td></tr>
+<tr><td>(88)</td><td>04.11.25</td><td><a href=http://www.sakusaku-silk.net/archives/0411/251111.php>江別のうた  </a></td></tr>
+<tr><td>(129)</td><td>04.11.30</td><td><a href=http://www.sakusaku-silk.net/archives/0412/171859.php>それゆけプリンター  </a></td></tr>
+<tr><td>(49)</td><td>04.12.07</td><td><a href=http://www.sakusaku-silk.net/archives/0412/081357.php>中井のうた  </a></td></tr>
+<tr><td>(50)</td><td>04.12.07</td><td><a href=http://www.sakusaku-silk.net/archives/0412/081357.php>二宮のうた  </a></td></tr>
+<tr><td>(90)</td><td>04.12.09</td><td><a href=http://www.sakusaku-silk.net/archives/0412/100154.php>福岡に捧げるうた  </a></td></tr>
+<tr><td>(53)</td><td>04.12.20</td><td><a href=http://www.sakusaku-silk.net/archives/0412/202210.php>横須賀のうた  </a></td></tr>
+<tr><td>(52)</td><td>04.12.21</td><td><a href=http://www.sakusaku-silk.net/archives/0412/211954.php>逗子のうた  </a></td></tr>
+<tr><td>(62)</td><td>04.12.24</td><td>国分寺のうた  大賞受賞曲</td></tr>
+<tr><td>(128)</td><td>04.12.24</td><td><a href=http://www.sakusaku-silk.net/archives/0412/250429.php>ありがとう  </a></td></tr>
+<tr><td>(47)</td><td>05.01.11</td><td><a href=http://www.sakusaku-silk.net/archives/0501/120104.php>伊勢原のうた  ver.2</a></td></tr>
+<tr><td>(4)</td><td>05.01.13</td><td><a href=http://www.sakusaku-silk.net/archives/0501/140102.php>偽ハマっこブルース  featuring ゆず＆デュエットver.</a></td></tr>
+<tr><td>(54)</td><td>05.01.20</td><td><a href=http://www.sakusaku-silk.net/archives/0501/212021.php>横須賀のうた  ver.2</a></td></tr>
+<tr><td>(55)</td><td>05.01.25</td><td><a href=http://www.sakusaku-silk.net/archives/0501/252007.php>開成のうた  </a></td></tr>
+<tr><td>(34)</td><td>05.01.31</td><td><a href=http://www.sakusaku-silk.net/archives/0502/012132.php>3つの川のトリロジー  ver2.0</a></td></tr>
+<tr><td>(131)</td><td>05.02.14</td><td><a href=http://www.sakusaku-silk.net/archives/0502/150034.php>St.Valentine Day Is Not So Wonderful  バレンタインデイはそう素晴らしいものじゃない</a></td></tr>
+<tr><td>(132)</td><td>05.02.15</td><td><a href=http://www.sakusaku-silk.net/archives/0502/160225.php>St.Valentine Day Was Not So Wonderful  バレンテインデーはそれほど素晴らしくなかった</a></td></tr>
+<tr><td>(57)</td><td>05.02.15</td><td><a href=http://www.sakusaku-silk.net/archives/0502/170110.php>城山のうた  </a></td></tr>
+<tr><td>(58)</td><td>05.02.16</td><td><a href=http://www.sakusaku-silk.net/archives/0502/170930.php>真鶴のうた  </a></td></tr>
+<tr><td>(81)</td><td>05.02.17</td><td><a href=http://www.sakusaku-silk.net/archives/0502/171447.php>三島のうた  ver.2</a></td></tr>
+<tr><td>(80)</td><td>05.02.17</td><td><a href=http://www.sakusaku-silk.net/archives/0502/171447.php>三島のうた  ver.2 （続・三島のうた）</a></td></tr>
+<tr><td>(69)</td><td>05.02.22</td><td><a href=http://www.sakusaku-silk.net/archives/0502/230205.php>調布のうた  ver.2</a></td></tr>
+<tr><td>(51)</td><td>05.02.28</td><td><a href=http://www.sakusaku-silk.net/archives/0502/280950.php>二宮のうた  ver.2</a></td></tr>
+<tr><td>(59)</td><td>05.03.03</td><td><a href=http://www.sakusaku-silk.net/archives/0503/031044.php>箱根のうた  </a></td></tr>
+<tr><td>(91)</td><td>05.03.10</td><td><a href=http://www.sakusaku-silk.net/archives/0503/111824.php>御殿場のうた  </a></td></tr>
+<tr><td>(86)</td><td>05.03.11</td><td><a href=http://www.sakusaku-silk.net/archives/0503/111839.php>バーニンアップ、鳥取  さらにバーニンアップ鳥取</a></td></tr>
+<tr><td>(133)</td><td>05.03.14</td><td><a href=http://www.sakusaku-silk.net/archives/0503/180814.php>White day is not so wonderful  ホアイトデイはそんなに素晴らしいものじゃない</a></td></tr>
+<tr><td>(92)</td><td>05.03.17</td><td><a href=http://www.sakusaku-silk.net/archives/0503/180828.php>熱海のうた  </a></td></tr>
+<tr><td>(134)</td><td>05.03.18</td><td><a href=http://www.sakusaku-silk.net/archives/0501/051858.php>神奈川の歌(県内ぐるり一周記念ソング)  </a></td></tr>
+<tr><td>(60)</td><td>05.03.18</td><td><a href=http://www.sakusaku-silk.net/archives/0503/180834.php>山北のうた  </a></td></tr>
+<tr><td>(135)</td><td>05.03.21</td><td><a href=http://www.sakusaku-silk.net/archives/0503/271307.php>電気通信大学のうた  </a></td></tr>
+<tr><td>(148)</td><td>05.03.22</td><td>中野のうた  人か建物かもっとわかんなくなるVer.</td></tr>
+<tr><td>(136)</td><td>05.03.28</td><td><a href=http://www.sakusaku-silk.net/archives/0503/281411.php>お楽しみ宇宙袋のうた  </a></td></tr>
+<tr><td>(30)</td><td>05.03.28</td><td><a href=http://www.sakusaku-silk.net/archives/0503/281400.php>藤野のうた  ver2.0</a></td></tr>
+<tr><td>(28)</td><td>05.03.28</td><td><a href=http://www.sakusaku-silk.net/archives/0503/281342.php>津久井のうた～相模湖のうた  ver.2</a></td></tr>
+<tr><td>(76)</td><td>05.03.30</td><td><a href=http://www.sakusaku-silk.net/archives/0503/312321.php>練馬のうた  ver.2</a></td></tr>
+<tr><td>(77)</td><td>05.03.31</td><td><a href=http://www.sakusaku-silk.net/archives/0503/312338.php>足立のうた  </a></td></tr>
+<tr><td>(137)</td><td>05.04.01</td><td><a href=http://www.sakusaku-silk.net/archives/0504/021942.php>三鷹市立第二中学校校歌  </a></td></tr>
+<tr><td>(42)</td><td>05.04.04</td><td><a href=http://www.sakusaku-silk.net/archives/0504/050009.php>海じゃない茅ヶ崎のうた  ver.2</a></td></tr>
+<tr><td>(38)</td><td>05.04.05</td><td><a href=http://www.sakusaku-silk.net/archives/0505/240625.php>座間のうた  ver.2</a></td></tr>
+<tr><td>(26)</td><td>05.04.06</td><td><a href=http://www.sakusaku-silk.net/archives/0504/061806.php>鎌倉のうた  ver2</a></td></tr>
+<tr><td>(89)</td><td>05.04.07</td><td><a href=http://www.sakusaku-silk.net/archives/0504/091311.php>江別のうた  ver2.0</a></td></tr>
+<tr><td>(45)</td><td>05.04.08</td><td>大和のうた  ver.2</td></tr>
+<tr><td>(138)</td><td>05.04.25</td><td><a href=http://www.sakusaku-silk.net/archives/0505/082205.php>サクラ（独唱）  </a></td></tr>
+<tr><td>(139)</td><td>05.05.02</td><td><a href=http://www.sakusaku-silk.net/archives/0505/030857.php>お楽しみ宇宙BOX evolution 3 SOLAR SYSTEMのうた  </a></td></tr>
+<tr><td>(36)</td><td>05.05.03</td><td><a href=http://www.sakusaku-silk.net/archives/0505/030924.php>秦野のうた  ver.2</a></td></tr>
+<tr><td>(22)</td><td>05.05.04</td><td><a href=http://www.sakusaku-silk.net/archives/0505/041900.php>相模原のうた  ver.3</a></td></tr>
+<tr><td>(140)</td><td>05.05.05</td><td><a href=http://www.sakusaku-silk.net/archives/0505/071306.php>武田信玄公のうた  </a></td></tr>
+<tr><td>(141)</td><td>05.05.06</td><td><a href=http://www.sakusaku-silk.net/archives/0505/131630.php>東京農工大学のうた  </a></td></tr>
+<tr><td>(147)</td><td>05.05.09</td><td>神奈川大学のうた  </td></tr>
+<tr><td>(142)</td><td>05.05.27</td><td><a href=http://www.sakusaku-silk.net/archives/0505/290119.php>東京工業大学のうた  </a></td></tr>
+<tr><td>(93)</td><td>05.06.02</td><td><a href=http://www.sakusaku-silk.net/archives/0506/021906.php>札幌のうた  </a></td></tr>
+<tr><td>(94)</td><td>05.06.09</td><td><a href=http://www.sakusaku-silk.net/archives/0506/191606.php>旭川のうた  </a></td></tr>
+<tr><td>(56)</td><td>05.06.20</td><td><a href=http://www.sakusaku-silk.net/archives/0506/290047.php>開成のうた  人気投票第3位</a></td></tr>
+<tr><td>(146)</td><td>05.06.22</td><td>米子さんに捧げるうた  </td></tr>
+<tr><td>(73)</td><td>05.06.23</td><td><a href=http://www.sakusaku-silk.net/archives/0506/270418.php>八王子のうた  </a></td></tr>
+<tr><td>(145)</td><td>05.06.24</td><td>府中高校のうた  </td></tr>
+<tr><td>(32)</td><td>05.06.27</td><td>藤沢のうた  ver2.0</td></tr>
+<tr><td>(144)</td><td>05.06.27</td><td><a href=http://www.sakusaku-silk.net/archives/0507/011255.php>本当の黒幕のテーマ  </a></td></tr>
+<tr><td>(143)</td><td>05.06.27</td><td><a href=http://www.sakusaku-silk.net/archives/0506/302038.php>黒幕のテーマ  </a></td></tr>
+<tr><td>(14)</td><td>05.06.30</td><td><a href=http://www.sakusaku-silk.net/archives/0507/011602.php>県西レンジャーのうた(小田原・湯河原・足柄のうた)  ～お湯たっぷりver.～</a></td></tr>
+<tr><td>(156)</td><td>05.07.04</td><td><a href=http://www.sakusaku-silk.net/archives/0507/270348.php>ヴィンセントのテーマ  I</a></td></tr>
+<tr><td>(157)</td><td>05.07.25</td><td><a href=http://www.sakusaku-silk.net/archives/0507/270351.php>ヴィンセントのテーマ  II</a></td></tr>
+<tr><td>(159)</td><td>05.07.25</td><td><a href=http://www.sakusaku-silk.net/archives/0507/270413.php>木村カエラのテーマ  </a></td></tr>
+<tr><td>(161)</td><td>05.07.27</td><td><a href=http://www.sakusaku-silk.net/archives/0507/300240.php>米ブリシングのテーマ  </a></td></tr>
+<tr><td>(160)</td><td>05.07.27</td><td><a href=http://www.sakusaku-silk.net/archives/0507/300238.php>GOIGOIのテーマ  </a></td></tr>
+<tr><td>(158)</td><td>05.07.28</td><td><a href=http://www.sakusaku-silk.net/archives/0507/300242.php>ヴィンセントのテーマ  III</a></td></tr>
+<tr><td>(162)</td><td>05.08.05</td><td><a href=http://www.sakusaku-silk.net/archives/0508/230345.php>練馬のうた 第二章  </a></td></tr>
+<tr><td>(163)</td><td>05.08.15</td><td><a href=http://www.sakusaku-silk.net/archives/0509/161717.php>声変わりのうた  </a></td></tr>
+<tr><td>(169)</td><td>05.08.17</td><td>秦野のうた  </td></tr>
+<tr><td>(164)</td><td>05.08.18</td><td><a href=http://www.sakusaku-silk.net/archives/0509/161729.php>NEW YORKのうた  </a></td></tr>
+<tr><td>(165)</td><td>05.08.22</td><td><a href=http://www.sakusaku-silk.net/archives/0509/161759.php>海老名のうた  ～ゴイゴイに捧ぐ～</a></td></tr>
+<tr><td>(170)</td><td>05.08.24</td><td>ヴィンセントのテーマ  III （ディスコ Version）</td></tr>
+<tr><td>(171)</td><td>05.08.30</td><td>笛吹のうた  </td></tr>
+<tr><td>(166)</td><td>05.09.01</td><td><a href=http://www.sakusaku-silk.net/archives/0509/161844.php>多摩のうた  </a></td></tr>
+<tr><td>(167)</td><td>05.09.15</td><td><a href=http://www.sakusaku-silk.net/archives/0509/181708.php>吉祥寺のうた(ジョージ... ON MY MIND)  </a></td></tr>
+<tr><td>(168)</td><td>05.09.20</td><td><a href=http://www.sakusaku-silk.net/archives/0509/210146.php>青梅のうた  </a></td></tr>
+<tr><td>(172)</td><td>05.09.22</td><td><a href=http://www.sakusaku-silk.net/archives/0509/242113.php>日野のうた  </a></td></tr>
+<tr><td>(173)</td><td>05.09.30</td><td><a href=http://www.sakusaku-silk.net/archives/0510/010339.php>綾瀬のうた  バラード version</a></td></tr>
+<tr><td>(174)</td><td>05.10.03</td><td><a href=http://www.sakusaku-silk.net/archives/0510/161816.php>二俣川のうた  </a></td></tr>
+<tr><td>(175)</td><td>05.10.13</td><td><a href=http://www.sakusaku-silk.net/archives/0510/161827.php>大阪のうた  </a></td></tr>
+<tr><td>(176)</td><td>05.10.14</td><td><a href=http://www.sakusaku-silk.net/archives/0510/161830.php>二宮のうた  エレキ・ギター入り完全版</a></td></tr>
+<tr><td>(177)</td><td>05.10.19</td><td><a href=http://www.sakusaku-silk.net/archives/0510/200152.php>川崎の女  ヴァージョンアップver</a></td></tr>
+<tr><td>(178)</td><td>05.10.20</td><td><a href=http://www.sakusaku-silk.net/archives/0510/242320.php>西東京のうた  </a></td></tr>
+<tr><td>(179)</td><td>05.10.31</td><td><a href=http://www.sakusaku-silk.net/archives/0511/011009.php>海底のうた  </a></td></tr>
+<tr><td>(180)</td><td>05.11.01</td><td><a href=http://www.sakusaku-silk.net/archives/0511/011034.php>国立…ブロークンハート  ver.2</a></td></tr>
+<tr><td>(181)</td><td>05.11.02</td><td><a href=http://www.sakusaku-silk.net/archives/0511/022229.php>熊谷のうた  </a></td></tr>
+<tr><td>(183)</td><td>05.11.18</td><td><a href=http://www.sakusaku-silk.net/archives/0512/112107.php>小金井のうた  ver.2</a></td></tr>
+<tr><td>(182)</td><td>05.11.24</td><td><a href=http://www.sakusaku-silk.net/archives/0511/261727.php>宇都宮のうた  </a></td></tr>
+<tr><td>(184)</td><td>05.12.02</td><td><a href=http://www.sakusaku-silk.net/archives/0512/030123.php>三鷹駅  </a></td></tr>
+<tr><td>(185)</td><td>05.12.08</td><td><a href=http://www.sakusaku-silk.net/archives/0512/082339.php>神戸のうた  </a></td></tr>
+</table>]]></description>
+<dc:subject>sakusakuintro</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-12-13T01:10:53+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0512/112107.php">
+<title>小金井のうた</title>
+<link>http://www.sakusaku-silk.net/archives/0512/112107.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">小金井のうた</p>
+
+<p>放送日：05/11/18<br />
+詞/曲：白井ヴィンセント<br />
+演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>コガネーゼ　武蔵野マダム<br />
+コガネーゼ　オシャレなモナムール（恋人）<br />
+コガネーゼ　昼下がりあなたと<br />
+コガネーゼ　Je ne pourrai jamais vivre sans toi...<br />
+（あなたなしでは生きていけません）</p>
+
+<p>お買い物は、西友 or 長崎屋...？もしくは、いなげや...？<br />
+日傘さして、白いワンピース...<br />
+コガネーゼ　昼下がりあなたと...<br />
+コガネーゼ　Vous vous applez comment？<br />
+（お名前はなんですか？）</p>
+
+<p>踏切の向こうにあなた<br />
+たたずんでる 蜃気楼のように<br />
+コガネーゼ　声かけたいんです<br />
+でも、アカネーゼ...　踏み切り、アカネーゼ...</p>
+
+<p>コガネーゼ　武蔵野マダム<br />
+コガネーゼ　愛しいモナムール（恋人）<br />
+コガネーゼ　昼下がりあなたと<br />
+コガネーゼ　J'ai envie de vous connaitre mieux.<br />
+（あなたをもっと知りたいんです）</p>
+
+<p>コガネーゼ　武蔵野マダム<br />
+コガネーゼ　お洒落なモナムール（恋人）<br />
+コガネーゼ　昼下がりあなたと<br />
+コガネーゼ　C'est pas grave,mon amour.<br />
+（大丈夫、愛しい人よ）</p>
+
+<p>La'vie n'est pas la punition.（人生は罰ではない）<br />
+C'est un cadeau.（神様からの贈り物だ）</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-12-11T21:07:27+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0512/082339.php">
+<title>神戸のうた</title>
+<link>http://www.sakusaku-silk.net/archives/0512/082339.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">神戸のうた</p>
+
+<p>放送日：05/12/8<br />
+詞/曲：白井ヴィンセント<br />
+演奏：depapepe+木村カエラ+インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>似た者どうしだから<br />
+うまくいかないよ、なんて...<br />
+似た者どうしだから<br />
+惹かれ合うんです</p>
+
+<p><ruby><rb>あなた</rb><rp>(</rp><rt>神戸</rt><rp>)</rp></ruby>と<ruby><rb>わたし</rb><rp>(</rp><rt>横浜</rt><rp>)</rp></ruby> (Ah You & I)<br />
+ポートタワーとマリンタワー (モザイクとコスモワールド)<br />
+南京町と中華街(関帝廟と関帝廟)<br />
+元町と元町...</p>
+
+<p>灯台の光 汽笛の響き<br />
+今夜は2人 港で2人<br />
+みなとのみらいについて考えよう</p>
+
+<p>KOBE... <ruby><rb>I Miss You...</rb><rp>(</rp><rt>あなたがいないと寂しい...</rt><rp>)</rp></ruby><br />
+KOBE... いっしょに歌おう<br />
+KOBE... <ruby><rb>I Love You...</rb><rp>(</rp><rt>神戸が大好きです</rt><rp>)</rp></ruby><br />
+<ruby><rb>KO BE WITH YOU...</rb><rp>(</rp><rt>神戸...あなたといっしょに</rt><rp>)</rp></ruby> YOU... YOU...</p>
+
+<p><br />
+似た者どうしやから<br />
+うまくいかへん、なんて...<br />
+似た者どうしやから<br />
+惹かれ合うんですわ</p>
+
+<p>KOBE... <ruby><rb>I Miss You...</rb><rp>(</rp><rt>あなたがいないと寂しい...</rt><rp>)</rp></ruby><br />
+KOBE... いっしょに歌おう<br />
+KOBE... <ruby><rb>I Love You...</rb><rp>(</rp><rt>神戸が大好きです</rt><rp>)</rp></ruby><br />
+<ruby><rb>KO BE WITH YOU...</rb><rp>(</rp><rt>神戸...あなたといっしょに</rt><rp>)</rp></ruby> YOU... YOU...<br />
+YOU... YOU... YOU...</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-12-08T23:39:21+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0512/030123.php">
+<title>三鷹駅</title>
+<link>http://www.sakusaku-silk.net/archives/0512/030123.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">三鷹駅</p>
+
+<p>放送日：05/12/2<br />
+詞/曲：白井ヴィンセント<br />
+編曲演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>もしも、三鷹駅がなくなってしまったら...<br />
+三鷹市民は、どうなってしまうだろう？<br />
+持ち上がらないくらいに首をもたげて...<br />
+武蔵境や吉祥寺を利用するのかな？<br />
+楽器やレコード屋、焼肉屋...<br />
+立ち喰いそば屋　どこいったの？</p>
+
+<p>変わってしまった街並み<br />
+あそこのゲームセンター<br />
+インベーダーだけ別棟<br />
+50円積んでみたり　他校の生徒とモメたり<br />
+積み上げた50円玉　くずしたくない</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-12-03T01:23:03+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0512/030042.php">
+<title>ライブお疲れ様会</title>
+<link>http://www.sakusaku-silk.net/archives/0512/030042.php</link>
+<description><![CDATA[<p>先日。<a href="http://www.sakusaku-silk.net/archives/0510/161845.php">ｓａｋｕｓａｋｕのライブやるので来てね</a>！っていうエントリー書きましたが、<br />
+そのライブの模様がｓａｋｕｓａｋｕに流れちゃいました　笑</p>
+
+<p>mixiでは簡単に感想とか書いてたけど、こっちでは全くノータッチだったので、<br />
+少し書いておこう。</p>
+
+<p>まずこのZ56projectに参加したきっかけはこのサイトへの一通のメール。<br />
+「みんなでうたおうが大好きです。<br />
+　それでライブをやることになりました。<br />
+　でもボーカルいません。<br />
+　やってくれませんか？」<br />
+みたいな感じ。</p>
+
+<p>最初　えっ！？？　って思ったけど。とりあえず一度練習だけ見させてもらうことに。<br />
+とまぁそんなきっかけでボーカルやらせてもらうことになりました。<br />
+（ちなみに　管理人はこれまでライブ経験とかいっさいないただの素人　笑）</p>
+
+<p>よく聞いてみると　本番まで１ヶ月もない模様＾＾；<br />
+しかも残り練習回数が３回？　え？大丈夫？？？</p>
+
+<p>しかも男性ボーカル１人じゃ足りない。そうカエラパート！<br />
+ということで、カエラパートをｍｉｘｉ上で募集しました。<br />
+この時点で残り２週間。<br />
+１回目の練習には間に合わず　女性パートの方は多くても残り２回しか練習できない状況に。</p>
+
+<p>次の２回目の練習でやっとなんとか全員集まることが出来た　笑<br />
+そして、あるコトを試すことに。</p>
+
+<p>sakusakuの放送で気づいたかもしれないけど、<br />
+あれ実はホンモノの声じゃないんですよね。<br />
+そのあるコトとは</p>
+
+<p>「声をヴィン声(ジゴ声)にしてみよう！」</p>
+
+<p>そう。ボイスチェンジャー（？）で声のキーを上げて歌うことに。<br />
+これがかなり難しい・・・<br />
+自分の声だけキーが上がるから、そのままの音程で歌うとめっちゃ音がずれる！<br />
+しかも周りの音に合わせられない！<br />
+そう。歌ってる音程とスピーカーから出る音程がずれてるので、<br />
+周りの音程よりもキーを下げて歌わなきゃいけない。<br />
+ちなみに、キーは+3することにしたので、実際に歌う時には-3で歌うんです。</p>
+
+<p>まぁなんとかなるでしょ？ヽ( ´ー)ノ<br />
+ってことで使うことに。<br />
+もうね、チャレンジ精神ですよ。</p>
+
+<p><br />
+そして三回目の練習では女性ボーカルが欠席。<br />
+次本番だよｗ<br />
+さすがにまずいので、本番前にもう一度練習することに。</p>
+
+<p>そして本番の日。<br />
+全員メンバーが揃ったのがこれで２回目<br />
+２時間だけですが、最後の練習をしました。<br />
+ボイスチェンジャー使うじゃなかったかなぁ？とちょっと後悔。<br />
+っていうか音程わかんねーよ！！<br />
+もう無理矢理合わせるみたいな感じ。<br />
+よく本番であれだけ音程合わせられたなーって思った　笑<br />
+練習ではなんとかキーチェンジ後の声がスピーカーからなんとかきこえてたので、<br />
+それで合わせることができたんですが、<br />
+本番のライブ会場では　そのキーチェンジ後の声がほとんど聞こえず、<br />
+もうほぼ勘で歌ってました。<br />
+やっぱむずかしいね！　黒幕はどうやって歌ってるんだ？？？！</p>
+
+<p>・・・いやずれてたけどね？　しょうがなかったんだよ！(ノ_＜。)ビェェン</p>
+
+<p>本番ではかなりのサクサカーが来てくれて大感激！<br />
+チケットも無事ノルマクリアしました　笑<br />
+練習回数も少なく、完成度はそんなに高くなかったんですが、<br />
+来てくれた人感謝！</p>]]></description>
+<dc:subject>other</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-12-03T00:42:29+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0512/021223.php">
+<title>三重テレビでsakusaku放送だって！</title>
+<link>http://www.sakusaku-silk.net/archives/0512/021223.php</link>
+<description><![CDATA[<p><a href="http://oneofsakusaker.at.webry.info/200512/article_2.html">「sakusakuを見て、想うこと。」</a>さんでこんな情報が</p>
+
+<blockquote>
+三重テレビさんで、来年１月からsakusakuの放送が本決まりのようです！
+</blockquote>
+
+<p><br />
+放送開始日は１月１０日で、毎週火曜日の【24:30～25:00】で放送だそうです。<br />
+いままでメーテレさんではかなり深夜にやっていたので、この時間はうれしいですね！</p>
+
+<p>サクサカーが増えてくれるといいな</p>
+
+<p><a href="http://www.mietv.com/">三重テレビ公式サイト</a>（<a href="http://www.mietv.com/program/program.html">番組表</a>）<br />
+<a href="http://oneofsakusaker.at.webry.info/">「sakusakuを見て、想うこと。」</a></p>]]></description>
+<dc:subject>sakusaku</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-12-02T12:23:55+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0511/261727.php">
+<title>宇都宮のうた</title>
+<link>http://www.sakusaku-silk.net/archives/0511/261727.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">宇都宮のうた</p>
+
+<p>放送日：05/11/24<br />
+詞/曲：白井ヴィンセント<br />
+編曲演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>それは宇都宮から、さん然と輝いて<br />
+「アルバム」がやってくる<br />
+それは宇都宮から「専用茶封筒」で<br />
+「アルバム」がやってくる<br />
+スナックにONLY ONE<br />
+ついてたあのカード（出た！ ラッキーカード！）<br />
+送ると...アルバムがCome To Me<br />
+弟と聖よろこんで</p>
+
+<p>ライダージャンプ！（ジャンプ！）<br />
+うれしくてジャンプ！（ジャンプ！）<br />
+ライダーキック！（キック！）<br />
+弟にキック！<br />
+ライダージャンプ！（ジャンプ！）<br />
+うれしくてジャンプ！（ジャンプ！）<br />
+ライダーキック！（キック！）<br />
+弟にキック！</p>
+
+<p>甘じょっぱい！（ぱい！）<br />
+甘じょっぱい！（ぱい！）<br />
+スナックが甘じょっぱい！（ぱい！）<br />
+残すと親にしかられる<br />
+ましてや捨てたりすると...<br />
+（大問題だよっ！）<br />
+（大問題ですね...）<br />
+（大問題ですねっ！）</p>
+
+<p>つまり、宇都宮は俺にとってラッキータウン<br />
+「アルバム」あふれる街<br />
+カードだけ欲しくてもガマン 人としてガマン<br />
+俺、エライぞーっ！<br />
+ちっちゃかった俺たちは...<br />
+「<ruby><rb>宇都宮</rb><rp>(</rp><rt>この字</rt><rp>)</rp></ruby>」読めなかった...<br />
+ましてや書けもしなかった<br />
+ちなみに「<ruby><rb>栃木</rb><rp>(</rp><rt>これ</rt><rp>)</rp></ruby>」も読めなかった...<br />
+（あて名、母ちゃんに頼むしかねぇ！）</p>
+
+<p>甘じょっぱい！（ぱい！）<br />
+あぁ...甘じょっぱい！（ぱい！）<br />
+腹いっぱい！（ぱい！）<br />
+もう、腹いっぱい...（ぱい！）<br />
+甘じょっぱい！（ぱい！）<br />
+もう、腹いっぱい...（ぱい！）<br />
+せいいっぱい！（ぱい！）<br />
+いっぱい、いっぱい...（ぱい！）</p>
+
+<p>ライダーキック！（キック！）<br />
+とりあえずキック！（キック！）<br />
+ライダーキック！（キック！）<br />
+弟にキック！（キック！）<br />
+それでも集め続けてた...<br />
+あの頃のフラッシュバック・メモリー</p>
+
+<p>「今も<ruby><rb>宇都宮</rb><rp>(</rp><rt>この街</rt><rp>)</rp></ruby>はラッキータウン？」<br />
+「ギョウザの精」にちょっと聞いてみた...<br />
+彼女は空を見上げたまま...<br />
+何も答えてはくれなかった...<br />
+（ラッキー、ラッキータウン）宇都宮は...<br />
+（ラッキー、ラッキータウン）オリオン通り...<br />
+（ラッキー、ラッキータウン）つっ走れ！<br />
+（ラッキー、ラッキータウン）</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-11-26T17:27:07+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0511/241325.php">
+<title>sakusakuアパート住人紹介</title>
+<link>http://www.sakusaku-silk.net/archives/0511/241325.php</link>
+<description><![CDATA[<a href="http://www.sakusaku-silk.net/archives/0401/010102.php">以前のアパート住人はこちら</a>
+
+<dl class="character">
+<dt class="character">白井ヴィンセント</dt>
+<dd class="character">
+<p>sakusakuのMC。番組の舞台のアパートの管理人を務める。<br />
+2005年7月に前管理人の増田ジゴロウからバトンタッチ。<br />
+ヨーロッパはオランダとベルギーの国境あたりからやって来たらしい<br />
+ヴィンセントの「ヴィ」は下唇を軽く噛むとベター。
+</p>
+
+<dl class="profile_cha">
+<dt>出身地：</dt><dd>ベルギーとオランダの国境あたり</dd>
+<dt>年齢：</dt><dd>0歳</dd>
+<dt>必殺技：</dt><dd>ツバカッター&amp;夢想返し&amp;ほほえみ返し</dd>
+<dt>好きな物：</dt><dd>トーフ　納豆</dd>
+<dt>嫌いな物：</dt><dd>キュウリ</dd>
+</dl>
+
+<p><a href="http://www.sakusaku-silk.net/archives/0507/070137.php">詳しくはこちら</a></p>
+
+</dd>
+<dt class="character">木村カエラ</dt>
+<dd class="character">
+<p>sakusakuのMC。2003年4月から新しくアパートに入居。現在３年目？<br />
+近年CDデビューを果たしアーティスト活動をしつつ、ファッションモデルや<br />
+CMやいろんな活動をしながらこのアパートで暮らしている</p>
+
+<dl class="profile_cha">
+<dt>出身地：</dt><dd>東京都</dd>
+<dt>誕生日：</dt><dd>10月24日生まれ</dd>
+<dt>血液型：</dt><dd>A型</dd>
+<dt>必殺技：</dt><dd>ものまね</dd>
+<dt>好きな物：</dt><dd>梅干し</dd>
+<dt>嫌いな物：</dt><dd>キノコ</dd>
+</dl></dd>
+
+</dd>
+<dt class="character">DA・米（米子）</dt>
+<dd class="character">
+<p>元々は、木村カエラのスタイリストで浪人生の彼女という設定。<br />
+今ではただの鳥。鳥以下？<br />
+名前の由来は出身地：米子から「米子（よねこ）」になる。<br />
+ある事件により2004年4月から「米子・オブ・ジョイトイ」に改名。
+以後いろんな名前を経て、今のDA米に定着？</p>
+
+
+<dl class="profile_cha">
+<dt>出身地：</dt><dd>鳥取県米子市</dd>
+<dt>誕生日：</dt><dd>6月14日生まれ</dd>
+<dt>血液型：</dt><dd>B型</dd>
+<dt>必殺技：</dt><dd>大山！、砂丘アリ地獄！</dd>
+</dl>
+
+</dd>
+
+<dt class="character">浪人生</dt>
+<dd class="character">
+<p>アパートの住人。着ってメロメロコーナーの担当。<br />
+いつも模試ばかり受けて入試を受けていないので毎年浪人している。<br />
+受験しない理由は「入試受けなければ大学に落ちないから」<br />
+最近がんばって発言するようになってきた。いろんな名言が生まれる可能性あり？</p>
+
+<p>ちなみに浪人生という名前の由来は、ある日アーガイルのセーターを着ていて、<br />
+ジゴロウに「おまえは河合塾か！」と言われたことから。</p>
+
+<dl class="profile_cha">
+<dt>出身地：</dt><dd>長崎県</dd>
+<dt>誕生日：</dt><dd>3月10日生まれ</dd>
+<dt>血液型：</dt><dd>B型</dd>
+</dl>
+
+</dd>
+
+<dt class="character">イチノセさん</dt>
+<dd class="character">
+<p>あかぎあいちゃんとすれ違いでカエラちゃんが引っ越してくる以前にこのアパートに住んでいた。<br />
+音速の貴婦人と呼ばれ恐れられていた？<br />
+　最近息子のケンタロウと1号室に帰ってきたが、またどこかに旅にでた。
+</p>
+</dd>
+
+<dt class="character">ケンタロウ</dt>
+<dd class="character">
+<p>イチノセさんの子供。旅に出るまでは中学生だったのに、帰ってきたら小学生に戻っていた。<br />
+（たぶん中学生のケンタロウを無くしたんだろう　笑）
+</p>
+</dd>
+
+
+<dt class="character">カーリー田中</dt>
+<dd class="character">
+<p>アパートの住人。<br />
+日々屋根の上で繰り広げられているトークをカメラで記録している。<br />
+かりんとうが好きなことからカーリーと名付けられる。</p>
+
+<dl class="profile_cha">
+<dt>血液型：</dt><dd>A型</dd>
+<dt>好きな物：</dt><dd>かりんとう</dd>
+</dl>
+
+</dd>
+
+<dt class="character">インビジブル・ギター男</dt>
+<dd class="character">
+<p>アパートの住人。<br />
+ジゴロウのオリジナルソングの演奏や編曲を手がけるギターリスト。<br />
+見えない。</p>
+
+<p>あだ名は「インちゃん」。<br />
+インちゃんは３人兄弟で、兄貴に「ベース男」、妹に「クラリネット女」、いとこに「ピアノ男」がいる。<br clear="all" /></p>
+
+■インビジブル家・家系図<br />
+<img src="http://silk.s53.xrea.com/silkline/archives/image/invisible-thumb.gif" width="200" height="291" alt="インビジブル家" />
+</dd>
+
+<dt class="character">インビジブル・ベース男</dt>
+<dd class="character">
+<p>インちゃんの兄貴。<br />「開成のうた」から新たにみんなでうたおうのコーナーに登場。<br />
+あだ名は「ベーやん」
+</p>
+</dd>
+
+<dt class="character">インビジブル・ピアノ男</dt>
+<dd class="character">
+<p>インちゃんのいとこ。<br />「真鶴のうた」から新たにみんなでうたおうのコーナーに登場。<br />
+受験のためにアパートに来ているらしい。<br />
+あだ名は「ぴーちゃん」
+</p>
+</dd>
+
+</dl>]]></description>
+<dc:subject>sakusakuintro</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-11-24T13:25:23+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0511/022229.php">
+<title>熊谷のうた</title>
+<link>http://www.sakusaku-silk.net/archives/0511/022229.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">熊谷のうた</p>
+
+<p>放送日：05/11/2<br />
+詞/曲：白井ヴィンセント<br />
+編曲演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>荒川RIVER<br />
+荒ぶるRIVER<br />
+荒ぶれ俺！<br />
+荒ぶれ！</p>
+
+<p>ここは熊谷<br />
+熊VALLEY<br />
+「熊」対「俺」...永遠の戦い</p>
+
+<p>橋の下に熊 キタ━━━(ﾟ∀ﾟ)━━━!!!! (FIHGT!FIGHT!)<br />
+橋の上にも熊 キタ━━━(ﾟ∀ﾟ)━━━!!!! (FIHGT!FIGHT!)<br />
+駅前の複合施設<br />
+映画館やショッピングモールにも<br />
+熊... キタ━━━(ﾟ∀ﾟ)━━━!!!! </p>
+
+<p>I vs. 熊 It's Destiny...<br />
+I vs. 熊 It's Destiny...</p>
+
+<p><br />
+気温上昇..<br />
+サマータイム<br />
+熱くなれ、俺...<br />
+熱くなれっ！</p>
+
+<p>ここは熊谷<br />
+熊VALLEY<br />
+「熊」対「俺」...永遠の戦い</p>
+
+<p>うちわ祭りにも熊...キタ━━━(ﾟ∀ﾟ)━━━!!!!(FIHGT!FIGHT!)<br />
+ロッテリアにも熊...キタ━━━(ﾟ∀ﾟ)━━━!!!!(FIHGT!FIGHT!)<br />
+ロータリー...タクシー、タクシー！<br />
+直実公の頭の上にも、熊...キタ━━━(ﾟ∀ﾟ)━━━!!!!</p>
+
+<p>I vs. 熊 It's Destiny...<br />
+I vs. 熊 It's Destiny...</p>
+
+<p>I vs. 熊<br />
+I vs. 熊</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-11-02T22:29:07+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0511/011034.php">
+<title>国立...ブロークンハート</title>
+<link>http://www.sakusaku-silk.net/archives/0511/011034.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">国立...ブロークンハート</p>
+
+<p>放送日：05/11/1<br />
+詞/曲：白井ヴィンセント<br />
+編曲演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>あなたといると楽しいけれど<br />
+ただそれだけ...<br />
+あなたは、とても面白いけれど<br />
+ただそれだけ...</p>
+
+<p>楽しくて何がいけないんですか？<br />
+俺はやっぱ間違っていますか？<br />
+あなたが大好きだったから...<br />
+俺に出来る1番のコトを...<br />
+全身全霊をもってしただけなんだ<br />
+俺のアイデンティティ崩壊...<br />
+俺は恋の迷い犬...</p>
+
+<p>オォ... 俺... Don't Cry<br />
+前を向け 顔上げろ フォーエヴァー俺...<br />
+国立駅のとがった屋根が...<br />
+俺の胸に突き刺さる...<br />
+国立駅のとがった屋根が...<br />
+胸に深く突き刺さる...</p>
+
+<p><br />
+今日は楽しかった...って笑ってたのも<br />
+全部、夢...？　夢オチかよ？<br />
+たしかに、あなたと一緒にいても...<br />
+笑い最優先＆ネタ探し</p>
+
+<p>でも、あなたが大好きだったから...<br />
+変わろうとした、自分を否定してでも<br />
+変わろうとした... 間違ってますか？<br />
+変わってみて初めてわかった...<br />
+やっぱ俺はぜんぜん 間違ってねぇーっ！<br />
+気がついたよ 俺は俺なんだ...<br />
+俺でしかないんだ<br />
+神様が俺にくれた立ち位置なんだ<br />
+そう、生き様なんだ<br />
+俺のアイデンティティ、カムバック！<br />
+俺は羽化したオオムラサキ(特別天然記念物)</p>
+
+<p>オォ... 俺... Don't Cry<br />
+前を向け 顔上げろ フォーエヴァー俺...<br />
+ありがとう...あなた...<br />
+あの失恋のおかげで<br />
+俺は俺という人間がわかった<br />
+あの日、あの時...国立で<br />
+俺は自分を見つけたんだ...<br />
+国立駅のとがった屋根が...<br />
+国立駅のとがった屋根が...</p>
+
+<p>国立... ブロークンハート...ストーリー...</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-11-01T10:34:35+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0511/011009.php">
+<title>海底のうた</title>
+<link>http://www.sakusaku-silk.net/archives/0511/011009.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">海底のうた</p>
+
+<p>放送日：05/10/31<br />
+詞/曲：白井ヴィンセント<br />
+編曲演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント with　木村カエラ&DA米</p>
+
+</div>
+<div class="songbody">
+
+<p>落ちる予定だったのか？(DA・米)<br />
+最初から狙ってたの？作ったってコトは...(カエラ)<br />
+ちがうヨ...(ヴィンセント)</p>
+
+<p><br />
+「潜水艦は黄色にかぎる！」と ビートルズが言っていた...<br />
+「潜水艦は黄色にかぎる！」と 金沢明子も言っていた...<br />
+Come on!</p>
+
+<p>(黄色にかぎる！黄色にかぎる！)<br />
+わぁあーーーーー<br />
+(黄色にかぎる！黄色にかぎる！)<br />
+わぁああーー　いえーーーい</p>
+
+<p>海底へ行こう お宝は「そこ」にある...<br />
+海底へ行こう お宝は「底」にある...</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-11-01T10:09:49+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0510/242320.php">
+<title>西東京のうた</title>
+<link>http://www.sakusaku-silk.net/archives/0510/242320.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">西東京のうた</p>
+
+<p>放送日：05/10/20<br />
+詞/曲：白井ヴィンセント<br />
+編曲演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>田無タワーを目印に 通いなれた道を帰宅<br />
+僕のTiny Memory...<br />
+北原の信号曲がって...どこへ入ると踏切を...<br />
+通らずにすむか... わかり合えなかった<br />
+ねぇ...？ どれほどの時が流れただろう？<br />
+西武線の田無駅に1番近い場所で...<br />
+ここが高架か地下道になってくれたら<br />
+もう何も怖くない...<br />
+その愛があればいい...Woo...</p>
+
+<p>田無＆保谷...街のイノセンス（意味不明）<br />
+出会った日の空を 僕は忘れないでいる<br />
+西東京市...<br />
+新青梅街道... 武蔵境通り... 所沢街道...<br />
+それぞれの交差点</p>
+
+<p>バンドブームがやってきた<br />
+みんなギターやベースを持って...<br />
+僕のTiny Memory<br />
+ひばりが丘の歌があった<br />
+ジュンスカの♪レッツゴー! ヒバリヒルズ<br />
+ひばりが丘に行こうとしても...<br />
+ねぇ...？ どれほどの時が流れただろう？<br />
+また...田無駅に1番近い場所で...<br />
+慣れない街の届かぬ夢に<br />
+勇気をくれたのは<br />
+（武蔵境通りから）1本向こうの地下道でした</p>
+
+<p>田無＆保谷...街のイノセンス（意味不明）<br />
+出会った日の空を 僕は忘れないでいる<br />
+西東京市...<br />
+新青梅街道... 武蔵境通り... 所沢街道...<br />
+それぞれの交差点</p>
+
+<p>西東京市...<br />
+西東京市...<br />
+西東京市...<br />
+西東京市...</p>
+
+</div>
+</div>
+
+<p>ＧＬＡＹ風！</p>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-10-24T23:20:42+09:00</dc:date>
+</item>
+<item rdf:about="http://www.sakusaku-silk.net/archives/0510/200152.php">
+<title>川崎の女 ヴァージョンアップver</title>
+<link>http://www.sakusaku-silk.net/archives/0510/200152.php</link>
+<description><![CDATA[<div class="sakusong">
+<div class="songhead">
+<p class="songtitle">川崎の女 ヴァージョンアップver</p>
+
+<p>放送日：05/10/19<br />
+詞/曲：白井ヴィンセント<br />
+編曲演奏：インビジブル・ファミリー<br />
+歌：白井ヴィンセント</p>
+
+</div>
+<div class="songbody">
+
+<p>あたし...川崎で生まれ育ったの...<br />
+あたし...川崎を離れられないの...<br />
+都民じゃない...ハマっ子でもない...<br />
+あたし...あたしは川崎の女</p>
+
+<p>今度来てね...あの川超えて...<br />
+多摩川越えて、会いに来てね...<br />
+わたし、ちょっぴりキレイになったかも？<br />
+あなたのためにキレイになったかも？<br />
+川崎か、あなたか？どっちが好き？なんて...<br />
+決められない、いやだわ...<br />
+意地悪ね...そんなコト聞くなんて...<br />
+もちろん、あなた...あなた...あなたも大好き...</p>
+
+<p>あぁ...川崎　044<br />
+Ciao! 川崎　044<br />
+川の先っちょ川崎は...<br />
+先端 最先端 神奈川の最前線</p>
+
+<p>川崎駅前も...チッタも...商店街も...<br />
+川崎球場 大洋の思い出も...<br />
+等々力競技場もフロンターレも...<br />
+川崎競馬の名牝「ロジータ」...<br />
+「ゴム通り」に通じる道も...鶴見線も...<br />
+絶対読めない「八丁畷」...<br />
+今はもう思い出...向ヶ丘遊園...<br />
+ぜんぶ、まとめて...　We are KAWASAKI!<br />
+みんな みんな みんな 大好き...</p>
+
+<p>あぁ...川崎　044<br />
+Ciao!　川崎　044<br />
+川の先っちょ川崎は...<br />
+先端 最先端 神奈川の最前線</p>
+
+<p>あぁ...川崎　044<br />
+Ciao!　川崎　044<br />
+都民じゃない...ハマっ子でもない...<br />
+あたし...あたしは川崎の女</p>
+
+</div>
+</div>]]></description>
+<dc:subject>letssing</dc:subject>
+<dc:creator>silknet</dc:creator>
+<dc:date>2005-10-20T01:52:25+09:00</dc:date>
+</item>
+
+
+</rdf:RDF>

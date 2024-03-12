@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2023 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  hidden: true
+
+  help_text:
+    brief: Create an OAuth client.
+    description: |
+      Create a new OAuth client.
+    examples: |
+      The following command creates a disabled OAuth client with ID ``my-oauth-client''
+      in the default project:
+
+        $ {command} my-oauth-client \
+            --location="global" \
+            --client-type="confidential-client" \
+            --display-name="My oauth client" \
+            --description="My oauth client description" \
+            --disabled \
+            --allowed-grant-types="authorization-code-grant,refresh-token-grant" \
+            --allowed-scopes="https://www.googleapis.com/auth/cloud-platform,openid" \
+            --allowed-redirect-uris="https://example.com"
+
+  request:
+    collection: iam.projects.locations.oauthClients
+
+  arguments:
+    resource:
+      help_text: The OAuth client to create.
+      spec: !REF googlecloudsdk.command_lib.iam.resources:oauth_client
+      is_positional: true
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.client_type
+      required: true
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.description
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.display_name
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.disabled
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_grant_types
+      required: true
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_scopes
+      required: true
+    - _REF_: googlecloudsdk.command_lib.iam.flags:oauth_client.allowed_redirect_uris
+      required: true

@@ -1,0 +1,48 @@
+project:
+  name: project
+  collection: tpu.projects
+  attributes:
+  - parameter_name: projectsId
+    attribute_name: project
+    help: The project ID.
+
+location:
+  name: location
+  collection: tpu.projects.locations
+  disable_auto_completers: false
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: zone
+    help: |
+      The compute/zone of the Cloud TPU.
+
+      If not specified, will use `default` compute/zone.
+    property: compute/zone
+
+tpu:
+  name: tpu
+  collection: tpu.projects.locations.nodes
+  attributes:
+  - *location
+  - parameter_name: nodesId
+    attribute_name: tpu
+    help: The identifier of the Cloud TPU
+
+tensorflowversion:
+  name: tensorflow_version
+  collection: tpu.projects.locations.tensorflowVersions
+  attributes:
+  - *location
+  - parameter_name: tensorflowVersionsId
+    attribute_name: version
+    help: The id of the Tensorflow version.
+
+acceleratortype:
+  name: accelerator_type
+  collection: tpu.projects.locations.acceleratorTypes
+  attributes:
+  - *location
+  - parameter_name: acceleratorTypesId
+    attribute_name: accelerator_type
+    help: The id of the accelerator type.

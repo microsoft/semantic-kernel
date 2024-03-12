@@ -1,0 +1,23 @@
+help_text:
+  brief: Get an IAM policy on a Cloud Bigtable Backup.
+  description: |
+    Get an IAM policy on a Cloud Bigtable Backup.
+
+  examples: |
+    To get the IAM policy on the backup 'my-backup' in instance 'my-instance' and cluster 'my-cluster', run:
+
+      $ {command} my-backup --instance='my-instance' --cluster='my-cluster'
+
+    See https://cloud.google.com/iam/docs/managing-policies for more information.
+
+request:
+  collection: bigtableadmin.projects.instances.clusters.backups
+
+arguments:
+  resource:
+    help_text: Cloud Bigtable Backup to get the IAM policy for.
+    spec: !REF googlecloudsdk.command_lib.bigtable.resources:backup
+
+iam:
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

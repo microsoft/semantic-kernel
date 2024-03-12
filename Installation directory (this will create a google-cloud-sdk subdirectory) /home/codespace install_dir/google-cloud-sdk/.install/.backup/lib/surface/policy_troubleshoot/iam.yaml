@@ -1,0 +1,114 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Troubleshoot the IAM Policy.
+  description: |
+   Performs a check on whether a principal is granted a
+   permission on a resource and how that access is determined according to
+   the resource's effective IAM policy interpretation.
+
+  ALPHA:
+    examples: |
+      To troubleshoot a permission of a principal on a resource, run:
+
+        $ {command} //cloudresourcemanager.googleapis.com/projects/project-id
+        --principal-email=my-iam-account@somedomain.com
+        --permission=resourcemanager.projects.get
+
+      See https://cloud.google.com/iam/help/allow-policies/overview for more information about
+      IAM policies.
+
+      To troubleshoot a permission of a principal on a resource with conditional binding, run:
+
+        $ {command} //cloudresourcemanager.googleapis.com/projects/project-id \
+        --principal-email=my-iam-account@somedomain.com \
+        --permission=resourcemanager.projects.get \
+        --resource-name=//compute.googleapis.com/projects/{project-id}/global/images/{image-id}'\
+        --resource-service='compute.googleapis.com' \
+        --resource-type='compute.googleapis.com/Image' \
+        --destination-ip='192.2.2.2'--destination-port=8080 --request-time='2021-01-01T00:00:00Z'
+
+      See https://cloud.google.com/iam/help/allow-policies/overview for more information about
+      IAM policies.
+
+  examples: |
+    To troubleshoot a permission of a principal on a resource, run:
+
+      $ {command} //cloudresourcemanager.googleapis.com/projects/project-id \
+      --principal-email=my-iam-account@somedomain.com \
+      --permission=resourcemanager.projects.get
+
+    See https://cloud.google.com/iam/help/allow-policies/overview for more information about
+    IAM policies.
+
+request:
+  collection: policytroubleshooter.iam
+  ALPHA:
+    api_version: v2alpha1
+  BETA:
+    api_version: v2alpha1
+  GA:
+    api_version: v2alpha1
+  method: troubleshoot
+
+arguments:
+  params:
+  - arg_name: resource
+    api_field: accessTuple.fullResourceName
+    required: true
+    is_positional: true
+    help_text: |
+      Full resource name that access is checked against.
+      See: https://cloud.google.com/iam/docs/resource-names.
+  - arg_name: principal-email
+    api_field: accessTuple.principal
+    required: true
+    help_text: |
+      Email address that identifies the principal to check. Only Google Accounts and
+      service accounts are supported.
+  - arg_name: permission
+    api_field: accessTuple.permission
+    required: true
+    help_text:  |
+      Cloud IAM permission to check, e.g. "resourcemanager.projects.get".
+
+  - arg_name: resource-service
+    api_field: accessTuple.conditionContext.resource.service
+    release_tracks: [ALPHA, BETA, GA]
+    required: false
+    help_text:  |
+      The resource service value to use when checking conditional bindings.
+      See: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-service
+  - arg_name: resource-type
+    api_field: accessTuple.conditionContext.resource.type
+    release_tracks: [ALPHA, BETA, GA]
+    required: false
+    help_text:  |
+      The resource type value to use when checking conditional bindings.
+      See: https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-type
+  - arg_name: resource-name
+    api_field: accessTuple.conditionContext.resource.name
+    release_tracks: [ALPHA, BETA, GA]
+    required: false
+    help_text:  |
+      The resource name value to use when checking conditional bindings.
+      See:  https://cloud.google.com/iam/docs/conditions-resource-attributes#resource-name.
+  - arg_name: request-time
+    api_field: accessTuple.conditionContext.request.receiveTime
+    release_tracks: [ALPHA, BETA, GA]
+    required: false
+    help_text:  |
+      The request timestamp to use when checking conditional bindings. This string must adhere to UTC format
+      (RFC 3339). For example,2021-01-01T00:00:00Z. See:
+      https://tools.ietf.org/html/rfc3339
+  - arg_name: destination-ip
+    api_field: accessTuple.conditionContext.destination.ip
+    release_tracks: [ALPHA, BETA, GA]
+    required: false
+    help_text:  |
+      The request destination IP address to use when checking conditional bindings. For example, `198.1.1.1`.
+  - arg_name: destination-port
+    api_field: accessTuple.conditionContext.destination.port
+    release_tracks: [ALPHA, BETA, GA]
+    required: false
+    help_text:  |
+      The request destination port to use when checking conditional bindings. For example, 8080.

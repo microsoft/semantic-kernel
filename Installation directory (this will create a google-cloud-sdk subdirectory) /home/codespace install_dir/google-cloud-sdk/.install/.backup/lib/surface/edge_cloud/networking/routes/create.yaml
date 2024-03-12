@@ -1,0 +1,55 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a Distributed Cloud Edge Network route.
+    description: |
+      Create a new Distributed Cloud Edge Network route.
+    examples: |
+      To create a route called `AMF_OAM_VRF_1_macVlan` in zone `us-east1-den3`,
+      with destination range `10.145.201.1/32`, and next hop of `10.140.65.2`,
+      use the command
+
+        $ {command} AMF_OAM_VRF_1_macVlan \
+            --network=AMF_OAM \
+            --destination-range=10.145.201.1/32 \
+            --zone=us-east1-den3 \
+            --next-hop-address=10.140.64.2
+
+  request:
+    collection: edgenetwork.projects.locations.zones.routes
+    api_version: v1alpha1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.networking.resources:SetResourcesPathForRoute
+
+  arguments:
+    resource:
+      help_text: Distributed Cloud Edge Network route to create.
+      # The following should point to the resource argument definition under
+      # your surface's command_lib directory.:
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:route
+
+    params:
+    - arg_name: network
+      api_field: route.network
+      required: true
+      help_text: |
+        Network that this route belongs to.
+    - arg_name: destination-range
+      api_field: route.destinationCidr
+      required: true
+      help_text: |
+        Destination subnet of this route (in CIDR format).
+    - arg_name: next-hop-address
+      api_field: route.nextHopAddress
+      required: true
+      help_text: |
+        IP address of the next hop along this route.
+    - arg_name: description
+      api_field: route.description
+      help_text: |
+        An optional, textual description for the route.
+    labels:
+      api_field: route.labels
+
+  async:
+    collection: edgenetwork.projects.locations.operations

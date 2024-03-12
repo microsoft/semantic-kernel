@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Describe a single Connection
+    description: Describe a single Connection.
+    examples: |
+      To describe a connection ``my-connection'' run:
+
+      $ {command} my-connection --project={project} --location=us-central1
+
+      To describe a connection ``my-connection'' in a project for location us-central1 in table form, run:
+
+        $ {command} my-connection --project={project} \
+            --location=us-central1 \
+            --format=table(displayName, name.basename(), state, applicationEndpoint.host, applicationEndpoint.port, updateTime, labels)
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.appConnections
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:PrintMessageInResponse
+
+  arguments:
+    resource:
+      arg_name: connection
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:appconnection
+      help_text: The Beyondcorp connector you want to get details about.
+
+  output:
+    format: json

@@ -1,0 +1,20 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: |
+    Export TrustConfig.
+  description: |
+    Export a TrustConfig.
+  examples: |
+      To export a TrustConfig, run:
+
+        $ {command} my-trust-config --destination=my-trust-config.yaml --location=global
+
+request:
+  collection: certificatemanager.projects.locations.trustConfigs
+  api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:trustConfig
+    help_text: |
+      Name of the TrustConfig to export.

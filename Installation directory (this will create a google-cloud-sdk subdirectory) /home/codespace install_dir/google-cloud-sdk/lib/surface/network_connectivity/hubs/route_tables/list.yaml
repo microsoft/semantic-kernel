@@ -1,0 +1,27 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: List route tables.
+    description: Retrieve and display a list of all route tables in the specified hub.
+
+    examples: |
+      To list all route tables across all hubs, run:
+
+        $ {command} --hub=-
+
+      To list all route tables in hub `my-hub`, run:
+
+        ${command} --hub=my-hub
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hub
+      help_text: Parent hub of the route tables to display.
+
+  request: &request
+    api_version: v1
+    collection: networkconnectivity.projects.locations.global.hubs.routeTables
+
+  output:
+    # Columns: NAME, HUB, DESCRIPTION
+    format: table(name.basename(), name.segment(5):label=HUB, description)

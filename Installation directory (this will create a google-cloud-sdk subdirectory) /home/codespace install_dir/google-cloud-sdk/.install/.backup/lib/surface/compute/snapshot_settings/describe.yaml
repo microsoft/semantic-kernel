@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: "Describe snapshot settings."
+    description: "Describe the snapshot settings of a project."
+    examples: |
+        To display the snapshot settings of a project called `my-project`, run:
+
+        $ {command} --project=my-project
+
+  request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+
+    collection: compute.snapshotSettings
+    method: get
+
+  arguments:
+    resource:
+      help_text: |
+        The project of the snapshot settings to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:compute_project
+      override_resource_collection: true
+
+  output:
+    format: yaml(storageLocation.policy, storageLocation.locations.list(show="keys"))

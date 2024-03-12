@@ -1,0 +1,30 @@
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: Set the IAM policy for a queue.
+  description: |
+    This command replaces the existing IAM policy for a queue, given a queue
+    and a file encoded in JSON or YAML that contains the IAM policy. If the
+    given policy file specifies an "etag" value, then the replacement will
+    succeed only if the policy already in place matches that etag. (An etag
+    obtained via `get-iam-policy` will prevent the replacement if the policy
+    for the queue has been subsequently updated.) A policy file that does not
+    contain an etag value will replace any existing policy for the queue.
+
+  examples: |
+    To set the IAM policy for a queue:
+
+      $ {command} my-queue policy-file.json
+
+request:
+  collection: cloudtasks.projects.locations.queues
+  api_version: v2
+  BETA:
+    api_version: v2beta3
+  ALPHA:
+    api_version: v2beta2
+
+arguments:
+  resource:
+    help_text: The queue for which to set the IAM policy.
+    spec: !REF googlecloudsdk.command_lib.tasks.resources:queue

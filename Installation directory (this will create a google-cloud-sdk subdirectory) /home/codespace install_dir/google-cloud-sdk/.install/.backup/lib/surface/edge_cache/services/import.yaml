@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Import an EdgeCacheService resource.
+    description: |
+      Import an EdgeCacheService resource. If the named
+      EdgeCacheService resource already exists, the resource will be
+      updated to match the imported resource configuration.
+
+      If the named EdgeCacheService resource does not already exist, a
+      new EdgeCacheService resource will be created with that name.
+
+    examples: |
+      To import an EdgeCacheService resource named 'my-service' from a
+      YAML file, run:
+
+        $ {command} my-service --source=my-service.yaml
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheServices
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The EdgeCacheService resource you want to import.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheService
+
+  import:
+    abort_if_equivalent: true
+    create_if_not_exists: true
+    create_request:
+      collection: networkservices.projects.locations.edgeCacheServices
+      ALPHA:
+        api_version: v1alpha1
+      GA:
+        api_version: v1
+      method: create

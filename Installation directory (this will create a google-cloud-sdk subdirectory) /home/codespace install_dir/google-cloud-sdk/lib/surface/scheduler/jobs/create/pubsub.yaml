@@ -1,0 +1,54 @@
+- help_text:
+    brief: Create a Cloud Scheduler job with a Pub/Sub target.
+    description: Create a Cloud Scheduler job with a Pub/Sub target.
+    examples: |
+      The following command creates a job that publishes a message with the body
+      'Hello' to the Pub/Sub topic 'cron-topic' every 3 hours:
+
+        $ {command} my-job --schedule="0 */3 * * *"
+          --topic=cron-topic --message-body="Hello"
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+    method: create
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scheduler.util:ModifyCreatePubsubJobRequest
+
+  arguments:
+    resource:
+      help_text: Job to create.
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
+    params:
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:schedule
+      required: true
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:timezone
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:description
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_attempts
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_duration
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:min_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_doublings
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:pubsub_topic
+      required: true
+    - group:
+        mutex: false
+        required: true
+        help_text: |
+          Body of the message to publish to the given topic name. Information on
+          message formatting and size limits can be found at:
+          https://cloud.google.com/pubsub/docs/publisher#publish
+        params:
+        - arg_name: attributes
+          api_field: job.pubsubTarget.attributes
+          type: googlecloudsdk.command_lib.scheduler.util:ParseAttributes
+          help_text: |
+            Comma-separated list of attributes. Each attribute has the form
+            "NAME=VALUE". You can specify up to 100 attributes.
+        - group:
+            mutex: true
+            params:
+            - arg_name: message-body
+              help_text: Body of the message.
+            - arg_name: message-body-from-file
+              type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+              help_text: Path to a file containing the body of the message.

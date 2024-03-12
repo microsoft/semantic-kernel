@@ -1,0 +1,30 @@
+- release_tracks: [BETA, GA]
+  help_text:
+    brief: List operations.
+    description: List operations.
+    examples: |
+      To list all operations in a project and region 'us-central1', run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.operations
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location you want to list the operations for.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:location
+
+  output:
+    format: |
+      table(
+          name.scope("operations"):label=ID,
+          metadata.target.scope("locations"):label=TARGET,
+          metadata.verb:label=ACTION,
+          done:label=DONE,
+          error.code:label=ERROR_CODE
+      )

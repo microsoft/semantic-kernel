@@ -1,0 +1,91 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute v1 Scheduling export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  automaticRestart:
+    description: |-
+      Specifies whether the instance should be automatically restarted if it is
+      terminated by Compute Engine (not terminated by a user). You can only set
+      the automatic restart option for standard instances. Preemptible instances
+      cannot be automatically restarted. By default, this is set to true so an
+      instance is automatically restarted if it is terminated by Compute Engine.
+    type: boolean
+  instanceTerminationAction:
+    description: Specifies the termination action for the instance.
+    type: string
+    enum:
+    - DELETE
+    - INSTANCE_TERMINATION_ACTION_UNSPECIFIED
+    - STOP
+  localSsdRecoveryTimeout:
+    description: |-
+      Specifies the maximum amount of time a Local Ssd Vm should wait while
+      recovery of the Local Ssd state is attempted. Its value should be in
+      between 0 and 168 hours with hour granularity and the default value being 1
+      hour.
+    $ref: Duration.yaml
+  locationHint:
+    description: |-
+      An opaque location hint used to place the instance close to other
+      resources. This field is for use by internal tools that use the public
+      API.
+    type: string
+  minNodeCpus:
+    description: |-
+      The minimum number of virtual CPUs this instance will consume when running
+      on a sole-tenant node.
+    type: integer
+  nodeAffinities:
+    description: |-
+      A set of node affinity and anti-affinity configurations. Refer to
+      Configuring node affinity for more information. Overrides
+      reservationAffinity.
+    type: array
+    items:
+      $ref: SchedulingNodeAffinity.yaml
+  onHostMaintenance:
+    description: |-
+      Defines the maintenance behavior for this instance. For standard
+      instances, the default behavior is MIGRATE. For preemptible instances,
+      the default and only possible behavior is TERMINATE. For more
+      information, see Setting Instance Scheduling Options.
+    type: string
+    enum:
+    - MIGRATE
+    - TERMINATE
+  preemptible:
+    description: |-
+      Defines whether the instance is preemptible. This can only be set
+      during instance creation or while the instance is stopped and
+      therefore, in a `TERMINATED` state. See Instance Life Cycle for more
+      information on the possible instance states.
+    type: boolean
+  provisioningModel:
+    description: Specifies the provisioning model of the instance.
+    type: string
+    enum:
+    - SPOT
+    - STANDARD

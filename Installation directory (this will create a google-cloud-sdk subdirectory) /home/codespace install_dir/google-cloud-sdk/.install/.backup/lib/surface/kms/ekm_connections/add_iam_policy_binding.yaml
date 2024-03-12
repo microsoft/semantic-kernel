@@ -1,0 +1,34 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Add IAM policy binding for a kms ekm connection.
+  description: |
+    Adds a policy binding to the IAM policy of a kms ekm connection. A binding consists of at least
+    one member, a role, and an optional condition.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    on the ekm connection laplace with location global, run:
+
+      $ {command} laplace --location='global' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    To add an IAM policy binding which expires at the end of the year 2022 for the role of
+    'roles/editor' and the user 'test-user@gmail.com' on the laplace fellowship and
+    location global, run:
+
+      $ {command} laplace --location='global' --member='user:test-user@gmail.com' --role='roles/editor' --condition='expression=request.time < timestamp("2023-01-01T00:00:00Z"),title=expires_end_of_2022,description=Expires at midnight on 2022-12-31'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: cloudkms.projects.locations.ekmConnections
+
+arguments:
+  resource:
+    help_text: The ekm connection to add the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.kms.resources:ekm_connection
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: options_requestedPolicyVersion

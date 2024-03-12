@@ -1,0 +1,33 @@
+project:
+  name: project
+  collection: lifesciences.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: Cloud Project name.
+    property: core/project
+
+location:
+  name: location
+  collection: lifesciences.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: Google Cloud location.
+    property: lifesciences/location
+  disable_auto_completers: false
+
+operation:
+  name: operation
+  collection: lifesciences.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: Cloud Life Sciences Operation
+  disable_auto_completers: false

@@ -1,0 +1,68 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Detect and extract text within an image.
+    description: |
+      Detect and extract text within an image.
+
+      Google Cloud Vision uses OCR (Optical Character Recognition) to detect
+      text within an image, with support for a broad array of languages and
+      automatic label detection.
+
+      {language_hints}
+    language_hints: !COMMON help_text.language_hints
+    examples: |
+      To detect and extract text within an image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: TEXT_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.language_hints_field
+
+  output:
+    format: json
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Detect and extract text within an image.
+    description: |
+      Detect and extract text within an image.
+
+      Google Cloud Vision uses OCR (Optical Character Recognition) to detect
+      text within an image, with support for a broad array of languages and
+      automatic label detection.
+
+      {language_hints}
+    language_hints: !COMMON help_text.language_hints
+    examples: |
+      To detect and extract text within an image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: TEXT_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.language_hints_field
+    - _COMMON_: args.model_field
+
+  output:
+    format: json

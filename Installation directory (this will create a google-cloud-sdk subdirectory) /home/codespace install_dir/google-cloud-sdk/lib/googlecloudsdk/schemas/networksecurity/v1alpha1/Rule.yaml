@@ -1,0 +1,43 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 Rule export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  destinations:
+    description: |-
+      List of attributes for the traffic destination. If not set, the action
+      specified in the 'action' field will be applied without any rule checks
+      for the destination.
+    type: array
+    items:
+      $ref: Destination.yaml
+  sources:
+    description: |-
+      List of attributes for the traffic source. If not set, the action
+      specified in the 'action' field will be applied without any rule
+      checks for the source.
+    type: array
+    items:
+      $ref: Source.yaml

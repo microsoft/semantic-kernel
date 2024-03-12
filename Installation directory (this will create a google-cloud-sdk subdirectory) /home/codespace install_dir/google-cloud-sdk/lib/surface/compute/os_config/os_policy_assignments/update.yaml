@@ -1,0 +1,35 @@
+- release_tracks: [GA, ALPHA]
+
+  help_text:
+    brief: Update an OS policy assignment.
+    description: |
+      Update an OS policy assignment
+
+      ## EXAMPLES
+
+      To update an OS policy assignment `my-assignment` in location `us-central1-a` with config file `/path/to/file/config.yaml`, run:
+
+        $ {command} my-assignment --location=us-central1-a --file=/path/to/file/config.yaml
+
+  request:
+    collection: osconfig.projects.locations.osPolicyAssignments
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.os_config.utils:ParseOSConfigAssignmentFile
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  async:
+    collection: osconfig.projects.locations.osPolicyAssignments.operations
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: OS policy assignment to update.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:os_policy_assignment
+    params:
+    - _REF_: googlecloudsdk.command_lib.compute.os_config.flags:file

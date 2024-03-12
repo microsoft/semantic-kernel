@@ -1,0 +1,48 @@
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Add IAM policy binding to a device registry.
+  description: |
+    Add an IAM policy binding to a device registry.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with registry 'my-registry' and region 'us-central1', run:
+
+      $ {command} my-registry --region='us-central1' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: cloudiot.projects.locations.registries
+
+arguments:
+  resource:
+    help_text: The device registry for which to add IAM policy binding to.
+    spec: !REF googlecloudsdk.command_lib.iot.resources:registry
+
+ALPHA:
+  release_tracks: [ALPHA]
+
+  help_text:
+    brief: Add IAM policy binding to a device registry.
+    description: |
+      Add an IAM policy binding to the IAM policy of a device registry. One binding consists of a member,
+      a role, and an optional condition.
+
+    examples: |
+      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+      with registry 'my-registry' and region 'us-central1', run:
+
+        $ {command} my-registry --region='us-central1' --member='user:test-user@gmail.com' --role='roles/editor'
+
+      To add an IAM policy binding which expires at the end of the year 2018 for the role of
+      'roles/cloudiot.provisioner' and the user 'test-user@gmail.com' with registry 'my-registry' and region 'us-central1', run:
+
+        $ {command} my-registry --region='us-central1' --member='user:test-user@gmail.com' --role='roles/cloudiot.provisioner' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  iam:
+    enable_condition: true

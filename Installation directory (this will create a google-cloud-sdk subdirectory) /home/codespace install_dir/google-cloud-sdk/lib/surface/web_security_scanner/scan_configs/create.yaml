@@ -1,0 +1,48 @@
+# Copyright 2019 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a Web Security Scanner ScanConfig.
+    description: |
+      Creates a Web Security Scanner ScanConfig.
+    examples: |
+      The following command creates a scan config named "my-scan-config":
+
+        $ {command} --display-name=my-scan-config
+
+  request:
+    collection: websecurityscanner.projects.scanConfigs
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.web_security_scanner.auth:SetScanConfigAuth
+  arguments:
+    resource:
+      help_text: Something about a project
+      spec: !REF googlecloudsdk.command_lib.web_security_scanner.resources:project
+      is_parent_resource: true
+    params:
+    - _REF_: googlecloudsdk.command_lib.web_security_scanner.flags:display_name
+      required: true
+    - _REF_: googlecloudsdk.command_lib.web_security_scanner.flags:starting_urls
+      required: true
+    - !REF googlecloudsdk.command_lib.web_security_scanner.flags:max_qps
+    - group:
+        params:
+        - !REF googlecloudsdk.command_lib.web_security_scanner.flags:schedule_interval_days
+        - !REF googlecloudsdk.command_lib.web_security_scanner.flags:schedule_next_start
+    - !REF googlecloudsdk.command_lib.web_security_scanner.flags:target_platforms
+    - !REF googlecloudsdk.command_lib.web_security_scanner.flags:user_agent
+    - !REF googlecloudsdk.command_lib.web_security_scanner.flags:blacklist_patterns
+    - !REF googlecloudsdk.command_lib.web_security_scanner.flags:export_to_security_center
+    - !REF googlecloudsdk.command_lib.web_security_scanner.flags:risk_level
+    additional_arguments_hook: googlecloudsdk.command_lib.web_security_scanner.auth:AuthFlags

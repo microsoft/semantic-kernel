@@ -1,0 +1,41 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 GatewaySecureWebGatewayConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  certificateUrls:
+    description: |-
+      A fully-qualified Certificates URL reference. The proxy presents a
+      Certificate (selected based on SNI) when establishing a TLS connection.
+      This feature only applies to gateways of type 'SECURE_WEB_GATEWAY'.
+    type: array
+    items:
+      type: string
+  securityPolicy:
+    description: |-
+      A fully-qualified SecurityPolicy URL reference. Defines how a server
+      should apply security policy to inbound (VM to Proxy) initiated
+      connections.
+    type: string

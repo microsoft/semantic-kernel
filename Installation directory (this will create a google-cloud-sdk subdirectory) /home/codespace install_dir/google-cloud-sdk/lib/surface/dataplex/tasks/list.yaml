@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      List Dataplex task resources under a lake.
+    description: |
+      List Dataplex Task resources under a specific project, location, and lake.
+
+    examples: |
+      To list all Dataplex Task resources under the lake `test-lake` within project `test-project`
+      in location `us-central1`, run:
+
+          $ {command} --project=test-project --location=us-central1 --lake=test-lake
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.tasks
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Lake to list Tasks under it.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        displayName:label=DISPLAY_NAME,
+        createTime:label=CREATE_TIME,
+        triggerSpec.type:label=TRIGGER_TYPE,
+        triggerSpec.schedule:label=TRIGGER_SCHEDULE,
+        labels:label=LABELS
+      )

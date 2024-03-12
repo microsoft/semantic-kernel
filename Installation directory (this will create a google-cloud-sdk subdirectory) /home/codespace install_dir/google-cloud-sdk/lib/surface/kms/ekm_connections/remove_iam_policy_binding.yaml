@@ -1,0 +1,41 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Remove IAM policy binding for a kms ekm connection.
+  description: |
+    Removes a policy binding from the IAM policy of a kms ekm connection. A binding consists of at
+    least one member, a role, and an optional condition.
+
+  examples: |
+    To remove an IAM policy binding for the role of 'roles/editor' for the user
+    'test-user@gmail.com' on the ekm connection laplace with location global, run:
+
+      $ {command} laplace --location='global' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    To remove an IAM policy binding with a condition of
+    expression='request.time < timestamp("2023-01-01T00:00:00Z")', title='expires_end_of_2022',
+    and description='Expires at midnight on 2022-12-31' for the role of 'roles/editor'
+    for the user 'test-user@gmail.com' on the ekm connection laplace with location global, run:
+
+      $ {command} laplace --location='global' --member='user:test-user@gmail.com' --role='roles/editor' --condition='expression=request.time < timestamp("2023-01-01T00:00:00Z"),title=expires_end_of_2022,description=Expires at midnight on 2022-12-31'
+
+    To remove all IAM policy bindings regardless of the condition for the role of
+    'roles/editor' and for the user 'test-user@gmail.com' on the ekm connection laplace with
+    location global, run:
+
+      $ {command} laplace --location='global' --member='user:test-user@gmail.com' --role='roles/editor' --all
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: cloudkms.projects.locations.ekmConnections
+
+arguments:
+  resource:
+    help_text: The ekm connection to remove the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.kms.resources:ekm_connection
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: options_requestedPolicyVersion

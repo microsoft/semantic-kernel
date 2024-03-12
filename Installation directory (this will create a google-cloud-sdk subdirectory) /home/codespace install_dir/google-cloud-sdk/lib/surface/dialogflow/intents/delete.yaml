@@ -1,0 +1,17 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: Delete a Dialogflow intent.
+  description: Delete a Dialogflow intent.
+  examples: |
+    To delete an intent:
+
+      $ {command} 12345678-1234-1234-1234-1234567890ab
+
+arguments:
+  resource:
+    help_text: Intent to delete.
+    spec: !REF googlecloudsdk.command_lib.dialogflow.resources:intent
+
+request:
+  collection: dialogflow.projects.agent.intents

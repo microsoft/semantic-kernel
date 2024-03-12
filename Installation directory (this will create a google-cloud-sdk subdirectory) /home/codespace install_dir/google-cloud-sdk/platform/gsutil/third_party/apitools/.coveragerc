@@ -1,0 +1,8 @@
+[report]
+omit =
+    */demo/*
+exclude_lines =
+    # Re-enable the standard pragma
+    pragma: NO COVER
+    # Ignore debug-only repr
+    def __repr__

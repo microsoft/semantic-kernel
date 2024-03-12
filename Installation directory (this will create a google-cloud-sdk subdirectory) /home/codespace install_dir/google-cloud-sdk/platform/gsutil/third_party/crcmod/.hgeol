@@ -1,0 +1,14 @@
+[patterns]
+MANIFEST.in = native
+README = native
+LICENSE = native
+changelog = native
+**.c = native
+**.h = native
+**.py = native
+**.txt = native
+**.rst = native
+
+**.bat = CRLF
+
+Makefile = LF

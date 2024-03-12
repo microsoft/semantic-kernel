@@ -1,0 +1,40 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 HttpRouteHttpDirectResponse export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- status
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  bytesBody:
+    description: Response body as bytes. Maximum body size is 4096B.
+    type: string
+  status:
+    description: |-
+      Status to return as part of HTTP Response. Must be a positive integer.
+    type: integer
+  stringBody:
+    description: |-
+      Response body as a string. Maximum body length is 1024 characters.
+    type: string

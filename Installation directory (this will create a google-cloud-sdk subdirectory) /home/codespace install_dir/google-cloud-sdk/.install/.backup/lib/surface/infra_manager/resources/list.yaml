@@ -1,0 +1,22 @@
+- release_tracks: [GA]
+  help_text:
+    brief: List resources
+    description: List resources for a deployment revision
+    examples: |-
+      To list all resources for a deployment revision, projects/p1/locations/l1/deployments/d1/revisions/r-0, run:
+
+      $ {command} --revision=projects/p1/locations/l1/deployments/d1/revisions/r-0
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:revision
+      help_text: The deployment revision for which we want to list all resources.
+  request:
+    collection: config.projects.locations.deployments.revisions.resources
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+      name.basename(),
+      state
+      )

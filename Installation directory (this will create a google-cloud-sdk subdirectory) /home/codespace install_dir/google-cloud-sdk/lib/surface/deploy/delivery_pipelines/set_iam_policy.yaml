@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: |
+      Set the IAM policy for a Cloud Deploy delivery pipeline.
+    description: |
+      Set the IAM policy associated with a Cloud Deploy delivery pipeline.
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      the policy file format and contents.
+
+    examples: |
+      The following command will read an IAM policy defined in a JSON file
+      ``policy.json'' and set it for a delivery pipeline with identifier
+      ``my-pipeline''
+
+      $ {command} my-pipeline policy.json --region=us-central1
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+
+  request:
+    api_version: v1
+    collection: clouddeploy.projects.locations.deliveryPipelines
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:delivery_pipeline
+      is_positional: true
+      help_text: |
+        The delivery pipeline for which to set the IAM policy..
+
+  iam:
+    enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

@@ -1,0 +1,42 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Create a Pub/Sub Lite topic.
+  description: Create a Pub/Sub Lite topic.
+  examples: |
+    To create a Pub/Sub lite-topic, run:
+
+        $ {command} mytopic \
+            --location=us-central1-a \
+            --partitions=1 \
+            --per-partition-bytes=30GiB \
+            --message-retention-period=2w
+
+request:
+  collection: pubsublite.admin.projects.locations.topics
+  method: create
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+  - googlecloudsdk.command_lib.pubsub.lite_util:AddTopicReservationResource
+  - googlecloudsdk.command_lib.pubsub.lite_util:AddTopicDefaultsWithoutReservation
+
+arguments:
+  resource:
+    help_text: Identifies the Cloud zone this command will be executed on.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:location
+    is_parent_resource: true
+    is_positional: false
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:topic-name
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:partitions
+    required: true
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-publish-mib
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-subscribe-mib
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-bytes
+    required: true
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:message-retention-period
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:topic-throughput-reservation-name
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone

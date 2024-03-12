@@ -1,0 +1,43 @@
+- release_tracks: []
+
+  help_text:
+    brief: Detect general labels for videos.
+    description: |
+      Detect general categories in videos, such as modes of transportation or
+      animals. Use the --detection-mode flag to control whether labels are
+      detected for shots, frames, or both.
+    examples: |
+      To detect labels in video file 'gs://my_bucket/input_file.mp4':
+
+        $ {command} gs://my_bucket/input_file.mp4
+
+  request:
+    _COMMON_: request
+    static_fields:
+      features: [LABEL_DETECTION]
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.ml.video.util:UpdateRequestWithInput
+
+  async:
+    _COMMON_: async
+
+  arguments:
+    params:
+    - _COMMON_args
+    - api_field: videoContext.labelDetectionConfig.labelDetectionMode
+      arg_name: detection-mode
+      help_text: The mode of label detection requested.
+      choices:
+      - arg_value: shot
+        enum_value: SHOT_MODE
+        help_text: Detect labels at the per-shot level.
+      - arg_value: frame
+        enum_value: FRAME_MODE
+        help_text: Detect labels at the per-frame level.
+      - arg_value: shot-and-frame
+        enum_value: SHOT_AND_FRAME_MODE
+        help_text: Detect labels at both the per-shot and per-frame level.
+      default: shot
+
+  output:
+    format: json

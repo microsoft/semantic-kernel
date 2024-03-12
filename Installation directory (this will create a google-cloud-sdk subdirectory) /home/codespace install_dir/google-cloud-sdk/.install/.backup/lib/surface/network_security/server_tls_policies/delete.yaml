@@ -1,0 +1,29 @@
+release_tracks: [GA, BETA, ALPHA]
+
+help_text:
+  brief: |
+    Delete ServerTlsPolicy.
+  description: |
+    Delete the specified ServerTlsPolicy.
+  examples: |
+      To delete a ServerTlsPolicy called 'my-server-tls-policy', run:
+
+        $ {command} my-server-tls-policy --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:serverTlsPolicy
+    help_text: |
+      Name of the ServerTlsPolicy you want to delete.
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networksecurity.projects.locations.serverTlsPolicies

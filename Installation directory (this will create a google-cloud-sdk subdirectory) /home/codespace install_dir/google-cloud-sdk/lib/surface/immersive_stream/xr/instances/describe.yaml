@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Describe a specific Immersive Stream for XR service instance.
+    description: |
+      Describe a specific Immersive Stream for XR service instance.
+    examples: |
+      To describe the service instance, run:
+
+        $ {command} my-instance
+
+  request:
+    collection: stream.projects.locations.streamInstances
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The name of the service instance you want to describe.
+      spec: !REF googlecloudsdk.command_lib.immersive_stream.xr.resources:instance

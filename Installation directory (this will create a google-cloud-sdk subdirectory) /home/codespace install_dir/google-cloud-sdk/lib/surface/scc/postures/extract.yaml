@@ -1,0 +1,41 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Extract a Cloud Security Command Center (SCC) posture from a workload.
+    description: |
+      Extract a Cloud Security Command Center (SCC) posture from a workload. First argument is the
+      parent and name of the posture to be created. The workload from where the organization
+      policies need to be extracted is provided via '--workload' flag.
+
+      Extracted posture is returned as the response of the command. LRO operation ID is printed as the
+      standard output.
+    examples: |
+     Extract a posture named `posture-foo-1` within parent `organizations/123/locations/global`(i.e. a posture in organization `123`, location `global`, with id `posture-foo-1`) from workload `projects/456`:
+
+        $ {command} organizations/123/locations/global/postures/posture-foo-1 --workload=projects/456
+
+  request:
+    collection: securityposture.organizations.locations.postures
+    api_version: v1alpha
+    method: extract
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture_for_extract
+      help_text: |
+          The name of the posture to be created. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.
+
+    params:
+    - arg_name: workload
+      api_field: extractPostureRequest.workload
+      required: true
+      help_text: |
+        Workload from where policies has to be extracted into a posture. It can be in one
+        of the following formats: `projects/projectNumber`, `folders/folderNumber`, `organizations/organizationNumber`.
+
+  async:
+    collection: securityposture.organizations.locations.operations
+
+  output:
+    format: yaml

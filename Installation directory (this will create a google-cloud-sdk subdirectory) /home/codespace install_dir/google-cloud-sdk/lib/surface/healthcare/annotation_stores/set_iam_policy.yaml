@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Set the IAM policy for a Cloud Healthcare API annotation store.
+    description: Set the IAM policy for a Cloud Healthcare API annotation store.
+    examples: |
+      The following command will read am IAM policy defined in a JSON file
+      'policy.json' and set it for the annotation store 'test-annotation-store':
+
+        $ {command} test-annotation-store policy.json --dataset=test-dataset
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+
+  request:
+    collection: healthcare.projects.locations.datasets.annotationStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API annotation store whose IAM policy to set.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:annotation_store

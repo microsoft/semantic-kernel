@@ -1,0 +1,22 @@
+project:
+  name: project
+  collection: gsuiteaddons.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The cloud project name
+    property: core/project
+  disable_auto_completers: false
+
+deployment:
+  name: deployment
+  collection: gsuiteaddons.projects.deployments
+  request_id_field: deploymentId
+  attributes:
+  - *project
+  - &deployment
+    parameter_name: deploymentsId
+    attribute_name: deployment
+    help: GSAO deployment name
+  disable_auto_completers: false

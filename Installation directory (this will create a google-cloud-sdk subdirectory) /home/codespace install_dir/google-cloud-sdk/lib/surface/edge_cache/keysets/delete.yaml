@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Delete an EdgeCacheKeyset resource.
+    description: |
+      Delete an EdgeCacheKeyset resource.
+    examples: |
+      To delete an EdgeCacheKeyset resource called 'my-keyset', run:
+
+        $ {command} my-keyset
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheKeysets
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the EdgeCacheKeyset resource to delete.
+      # The following should point to the resource argument definition under your
+      # surface's command_lib directory.:
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheKeyset

@@ -1,0 +1,26 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete a partner SSE gateway.
+  description: |
+    Delete the specified partner SSE gateway.
+  examples: |
+    To delete a partner gateway named `my-gateway` in the location `us-central1`, run:
+
+      $ {command} my-gateway --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:partnerSSEGateway
+    help_text: |
+      The partner gateway to be deleted.
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.partnerSSEGateways
+  method: delete

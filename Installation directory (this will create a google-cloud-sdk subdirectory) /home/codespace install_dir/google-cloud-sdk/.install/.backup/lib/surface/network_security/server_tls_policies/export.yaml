@@ -1,0 +1,25 @@
+release_tracks: [GA, BETA, ALPHA]
+help_text:
+  brief: |
+    Export ServerTlsPolicy.
+  description: |
+    Export a ServerTlsPolicy.
+  examples: |
+      To export a ServerTlsPolicy, run:
+
+        $ {command} my-server-tls-policy --destination=my-server-tls-policy.yaml --location=global
+
+request:
+  collection: networksecurity.projects.locations.serverTlsPolicies
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:serverTlsPolicy
+    help_text: |
+      Name of the ServerTlsPolicy to export.

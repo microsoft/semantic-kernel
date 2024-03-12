@@ -1,0 +1,29 @@
+project:
+  name: project
+  collection: cloudtasks.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project name.
+
+location:
+  name: location
+  collection: cloudtasks.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location name.
+
+queue:
+  name: queue
+  collection: cloudtasks.projects.locations.queues
+  attributes:
+  - *project
+  - *location
+  - parameter_name: queuesId
+    attribute_name: queue
+    help: |
+      The name of the queue.

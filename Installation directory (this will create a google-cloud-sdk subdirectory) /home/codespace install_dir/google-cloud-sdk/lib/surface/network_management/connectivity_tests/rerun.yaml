@@ -1,0 +1,29 @@
+- release_tracks: [GA, BETA]
+
+  help_text:
+    brief: |
+      Rerun a connectivity test.
+    description: |
+      Rerun the specified connectivity test.
+
+    examples: |
+      The following command reruns a connectivity test with the name `my-test`.
+
+        $ {command} my-test
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_management.resources:connectivityTest
+      help_text: |
+        Name of the connectivity test you want to rerun.
+
+  async:
+    collection: networkmanagement.projects.locations.global.operations
+
+  request: &request
+    method: rerun
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    collection: networkmanagement.projects.locations.global.connectivityTests

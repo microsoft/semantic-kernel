@@ -1,0 +1,37 @@
+release_tracks: [GA, ALPHA]
+help_text:
+  brief: |
+    Import the configuration for a gateway.
+  description: |
+    Import the configuration for a Network Services gateway.
+  examples: |
+      To import a gateway named 'my-gateway' from a YAML file, run:
+
+        $ {command} my-gateway --source=my-gateway.yaml --location=global
+
+request:
+  collection: networkservices.projects.locations.gateways
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:gateway
+    help_text: |
+      Name of the gateway to import.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.gateways
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    method: create

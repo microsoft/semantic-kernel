@@ -1,0 +1,76 @@
+project:
+  name: project
+  collection: backupdr.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The project name.
+    property: core/project
+
+location:
+  name: location
+  collection: backupdr.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      Location ID of the resource.
+  disable_auto_completers: false
+
+locationDefaultGlobal:
+  name: location
+  collection: backupdr.projects.locations
+  attributes:
+  - *project
+  - &locationDefaultGlobal
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      Location ID of the resource.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.backupdr.util:SetGlobalLocation
+      hint: |
+        use default global location
+
+operation:
+  name: operation
+  collection: backupdr.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      ID of the operation.
+  disable_auto_completers: false
+
+managementServer:
+  name: managementServer
+  collection: backupdr.projects.locations.managementServers
+  request_id_field: managementServerId
+  attributes:
+  - *project
+  - *location
+  - &managementServerId
+    parameter_name: managementServersId
+    attribute_name: management_server
+    help: The ID of the Managment Server.
+  disable_auto_completers: false
+
+backupVault:
+  name: backupVault
+  collection: backupdr.projects.locations.backupVaults
+  request_id_field: backupVaultId
+  attributes:
+  - *project
+  - *location
+  - &backupVaultId
+    parameter_name: backupVaultsId
+    attribute_name: backup_vault
+    help: The ID of the Backup Vault.
+  disable_auto_completers: false

@@ -1,0 +1,113 @@
+project:
+  name: project
+  collection: edgecontainer.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project name.
+    property: core/project
+
+location:
+  name: location
+  collection: edgecontainer.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The global location name.
+    property: edge_container/location
+  disable_auto_completers: false
+
+zone:
+  name: zone
+  collection: edgecontainer.projects.locations
+  attributes:
+  - *project
+  - &zone
+    parameter_name: locationsId
+    attribute_name: zone
+    help: The name of the Edge Container zone.
+  disable_auto_completers: false
+
+cluster:
+  name: cluster
+  collection: edgecontainer.projects.locations.clusters
+  attributes:
+  - *project
+  - *location
+  - &cluster
+    parameter_name: clustersId
+    attribute_name: cluster
+    help: Kubernetes cluster.
+  disable_auto_completers: false
+
+cluster_with_default:
+  name: cluster
+  collection: edgecontainer.projects.locations.clusters
+  request_id_field: clusterId
+  attributes:
+  - *project
+  - *location
+  - &cluster_with_default
+    parameter_name: clustersId
+    attribute_name: cluster
+    help: Kubernetes cluster.
+    fallthroughs:
+    # TODO(b/231638586): figure out a solution to prevent duplicate help text.
+    - hook: googlecloudsdk.command_lib.edge_cloud.container.fallthrough:GetClusterFallthrough
+      hint: |-
+        provide the argument --cluster on the command line
+  disable_auto_completers: false
+
+nodePool:
+  name: node pool
+  collection: edgecontainer.projects.locations.clusters.nodePools
+  request_id_field: nodePoolId
+  attributes:
+  - *project
+  - *location
+  - *cluster
+  - &nodePool
+    parameter_name: nodePoolsId
+    attribute_name: node_pool
+    help: Pool of Kubernetes nodes with similar properties.
+  disable_auto_completers: false
+
+machine:
+  name: machine
+  collection: edgecontainer.projects.locations.machines
+  request_id_field: machineId
+  attributes:
+  - *project
+  - *location
+  - &machine
+    parameter_name: machinesId
+    attribute_name: machine
+    help: Machines represent compute entities which can assume the role of a node in a cluster.
+  disable_auto_completers: false
+
+vpnConnection:
+  name: vpn connection
+  collection: edgecontainer.projects.locations.vpnConnections
+  request_id_field: vpnConnectionId
+  attributes:
+  - *project
+  - *location
+  - &vpnConnection
+    parameter_name: vpnConnectionsId
+    attribute_name: vpn_connection
+    help: VPN connection between cluster and GCP VPC.
+  disable_auto_completers: false
+
+operation:
+  name: operation
+  collection: edgecontainer.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: Edge-container long running operation.
+  disable_auto_completers: false

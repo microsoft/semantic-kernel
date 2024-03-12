@@ -1,0 +1,24 @@
+- release_tracks: [BETA, GA]
+
+  help_text:
+    brief: List Datastream static ips per location.
+    description: |
+      List Datastream static IPs.
+    examples: |
+      To list the static IPs, run:
+
+        $ {command} my-location
+
+  request:
+    collection: datastream.projects.locations
+    method: fetchStaticIps
+    api_version: v1
+
+  response:
+    id_field: staticIps
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:location
+      help_text: |
+        The location you want to list static ips of.

@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Describe a notification channel.
+    description: |
+      Describe a notification channel.
+
+      This retrieves the details about a channel by its programmatic name.
+
+      ## EXAMPLES
+      The following command prints out the JSON format of the configuration for the
+      `NotificationChannel` with the name `projects/12345/notificationChannels/67890`:
+
+        $ {command} "projects/12345/notificationChannels/67890" --format=json
+
+  request:
+    collection: monitoring.projects.notificationChannels
+
+  arguments:
+    resource:
+      help_text: The notification channel to describe.
+      spec: !REF googlecloudsdk.command_lib.monitoring.resources:notification_channel

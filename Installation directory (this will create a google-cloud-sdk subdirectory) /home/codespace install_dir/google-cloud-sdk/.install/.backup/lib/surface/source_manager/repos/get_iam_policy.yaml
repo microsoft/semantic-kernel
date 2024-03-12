@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get the IAM policy for a Secure Source Manager repository.
+    description: Get the IAM policy for a Secure Source Manager repository.
+    examples: |
+      To get the IAM policy for an repository named `my-repo` in location `us-central1`, run:
+
+        $ {command} my-repo --region=us-central1
+
+  request:
+    collection: securesourcemanager.projects.locations.repositories
+
+  arguments:
+    resource:
+      help_text: Secure Source Manager repository for which to get the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:repository

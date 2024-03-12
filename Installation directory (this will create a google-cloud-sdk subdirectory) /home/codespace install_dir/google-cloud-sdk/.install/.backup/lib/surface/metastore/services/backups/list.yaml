@@ -1,0 +1,41 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      List backups under a Dataproc Metastore service.
+    description: |
+      Lists all backups under the specified Dataproc Metastore service.
+    examples: |
+      To list all backups under service
+      `my-service`, run:
+
+        $ {command} --service=my-service
+
+      To list all backups under all services and
+      all locations, run:
+
+        $ {command} --service=- --location=-
+
+  arguments:
+    resource:
+      help_text: The service to list the backups for.
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:service
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: metastore.projects.locations.services.backups
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        state:label=STATE,
+        createTime.date()
+      )

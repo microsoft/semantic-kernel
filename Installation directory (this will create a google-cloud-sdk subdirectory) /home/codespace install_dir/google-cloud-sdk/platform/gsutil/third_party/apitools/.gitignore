@@ -1,0 +1,18 @@
+*~
+*.py[cod]
+*.egg-info/
+build/
+dist/
+distribute-*
+
+# Test files
+.tox/
+nosetests.xml
+
+# Coverage related
+.coverage
+coverage.xml
+htmlcov/
+
+# Make sure a generated file isn't accidentally committed.
+reduced.pylintrc

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<!--
+Source: http://doncho.net/blog/wp-rss2.php
+Expect: windows-1251
+-->
+<!-- generator="wordpress/1.5.2" -->
+<rss version="2.0" 
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+>
+
+<channel>
+	<title>blog.doncho.net</title>
+	<link>http://blog.doncho.net</link>
+	<description>Късчета живот</description>
+	<pubDate>Wed, 04 Jan 2006 10:35:26 +0000</pubDate>
+	<generator>http://wordpress.org/?v=1.5.2</generator>
+	<language>bg</language>
+
+		<item>
+		<title>Да лоукостираме или да не лоукостираме?</title>
+		<link>http://blog.doncho.net/?p=396</link>
+		<comments>http://blog.doncho.net/?p=396#comments</comments>
+		<pubDate>Tue, 03 Jan 2006 10:33:14 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Daily</category>
+	<category>Български</category>
+	<category>Дания</category>
+		<guid>http://blog.doncho.net/?p=396</guid>
+		<description><![CDATA[<p>Кратък разчет по военному за лоу-костиране Пловдив-Шарлотенлунд
+  WizzAir, Малмьо-Будапеща</p>
+
+<p>Ставане, обличане, сутрешен тоалет: 02:00
+  Тръгване за София: 02:30
+  Пристигане в София: 04:30
+  Чекиране полетът за Будапеща: 04:45
+  Излитане за Будапеща: 06:00
+  Пристигане в Будапеща: 06:15 (часовата разлика играе тук, иначе полетът си [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=396</wfw:commentRSS>
+	</item>
+		<item>
+		<title>Купон &#8220;МЕРЦЕДЕС&#8221;</title>
+		<link>http://blog.doncho.net/?p=395</link>
+		<comments>http://blog.doncho.net/?p=395#comments</comments>
+		<pubDate>Tue, 13 Dec 2005 16:27:06 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Daily</category>
+	<category>Български</category>
+		<guid>http://blog.doncho.net/?p=395</guid>
+		<description><![CDATA[<p>Преди време писах за депутатски и президентски мерцедеси. И за това как тези пари можеше да нахранят/спасят хора.</p>
+
+<p>Излиза, че не само на мен ми е направила впечатление тази поредна държавна свинщина. И за да не се повтаря това, умни и отворени хора са решили да организират и популяризират КУПОН. Купон в чест на нашите депутати, [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=395</wfw:commentRSS>
+	</item>
+		<item>
+		<title>Visual&#8217;s 2005 безплатно</title>
+		<link>http://blog.doncho.net/?p=394</link>
+		<comments>http://blog.doncho.net/?p=394#comments</comments>
+		<pubDate>Sat, 10 Dec 2005 20:44:50 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Hacking</category>
+	<category>Daily</category>
+	<category>Български</category>
+		<guid>http://blog.doncho.net/?p=394</guid>
+		<description><![CDATA[<p>Вчера Афанасчо ме сръга да съм видел, че Майкрософт са пуснали безплатен даунлоад и регистрация на най-новите версии на следните продукти за разработка:</p>
+
+<p>Visual Basic 2005 Express Edition [адрес на ISO-то за сваляне]
+Visual C# 2005 Express Edition [адрес на ISO-то за сваляне]
+Visual C++ 2005 Express Edition [адрес на ISO-то за сваляне]
+Visual J# 2005 Express Edition [адрес [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=394</wfw:commentRSS>
+	</item>
+		<item>
+		<title>Честит Рожден Ден</title>
+		<link>http://blog.doncho.net/?p=393</link>
+		<comments>http://blog.doncho.net/?p=393#comments</comments>
+		<pubDate>Fri, 09 Dec 2005 13:07:31 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Daily</category>
+	<category>Български</category>
+		<guid>http://blog.doncho.net/?p=393</guid>
+		<description><![CDATA[<p>Днес татко има рожден ден. Става по-мъдър с още една година. </p>
+
+<p>Успях да го чуя по телефона, но не за дълго. Защото знам, че се притеснява, когато се обаждам аз. </p>
+
+<p>Затова и тук искам да му пожелая още веднъж да е жив и здрав още много години. Да намира сили да прощава глупостите, които правя [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=393</wfw:commentRSS>
+	</item>
+		<item>
+		<title>Датско свидетелство за правоуправление</title>
+		<link>http://blog.doncho.net/?p=392</link>
+		<comments>http://blog.doncho.net/?p=392#comments</comments>
+		<pubDate>Wed, 07 Dec 2005 18:52:03 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Hacking</category>
+	<category>Daily</category>
+	<category>Дания</category>
+		<guid>http://blog.doncho.net/?p=392</guid>
+		<description><![CDATA[<p>Както вече писах, купихме си кола в Дания. Сега беше ред на свидетелството за правоуправление, a.k.a. &#8220;книжка&#8221;.</p>
+
+<p>Лошата новина в случая е, че българската книжка не важи за постоянно живеещите в Дания българи. Ако човек има постоянен адрес в Дания, то той е длъжен да си смени книжката в двуседмичен срок от пристигането си в Дания [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=392</wfw:commentRSS>
+	</item>
+		<item>
+		<title>Половинките в България</title>
+		<link>http://blog.doncho.net/?p=391</link>
+		<comments>http://blog.doncho.net/?p=391#comments</comments>
+		<pubDate>Sun, 04 Dec 2005 04:36:15 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Daily</category>
+		<guid>http://blog.doncho.net/?p=391</guid>
+		<description><![CDATA[<p>Пет и половина е. В неделя. Ще се зачудите - този пък не пише със седмици - точно в неделя в пет и половина ли се сети? </p>
+
+<p>Причината е прозаична - Веси и Ангел днес заминават за България. С low-cost полет от летище Стуруп - Малмьо. Което е на 50 минути път с кола от [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=391</wfw:commentRSS>
+	</item>
+		<item>
+		<title>Можеше</title>
+		<link>http://blog.doncho.net/?p=390</link>
+		<comments>http://blog.doncho.net/?p=390#comments</comments>
+		<pubDate>Mon, 28 Nov 2005 11:33:32 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Daily</category>
+	<category>Български</category>
+	<category>Грозни</category>
+		<guid>http://blog.doncho.net/?p=390</guid>
+		<description><![CDATA[<p>Днес чух по ДАРИК [mp3] как нашите превелики и богоизбрани политици си купили 15 нови, луксозни и бронирани возила. президентът (малката буква е умишлена) щял да се вози в кола за €150,000. </p>
+
+<p>По радиото направиха кратка справка какво може да се купи вместо тези 15 коли, колко дограма за училищата или колко трансплантации за болните [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=390</wfw:commentRSS>
+<enclosure url='http://darik.net/sound_news/33090@27_Maria_Stefanova.mp3' length='3613675' type='audio/mpeg'/>
+	</item>
+		<item>
+		<title>Геймър</title>
+		<link>http://blog.doncho.net/?p=389</link>
+		<comments>http://blog.doncho.net/?p=389#comments</comments>
+		<pubDate>Wed, 16 Nov 2005 19:54:50 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Daily</category>
+	<category>Български</category>
+		<guid>http://blog.doncho.net/?p=389</guid>
+		<description><![CDATA[<p>Никога не съм се вмествал в този профил компютърен потребител. Ама никога. Е, и аз като всички простосмъртни съм играл по 16 часа без прекъсване Цивилизация (Едно) през далечната 1992-а (май беше). Но от тогава всичките ми гейм-зарибявки бяха краткотрайна любов. Допреди две седмици.</p>
+
+<p>Но както се казва: &#8220;Никога не казвай &#8216;никога&#8217;&#8221;  . Сигурно повечето [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=389</wfw:commentRSS>
+	</item>
+		<item>
+		<title>Great Company, E-Boghandel [2]</title>
+		<link>http://blog.doncho.net/?p=388</link>
+		<comments>http://blog.doncho.net/?p=388#comments</comments>
+		<pubDate>Wed, 02 Nov 2005 09:51:18 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Daily</category>
+	<category>English</category>
+	<category>Дания</category>
+		<guid>http://blog.doncho.net/?p=388</guid>
+		<description><![CDATA[<p>Few weeks ago I shared here some problems with one book delivery. Just few days later I shared my extreme satisfaction after the resolution of the case.</p>
+
+<p>Today I understood that I was not mistaken in my evaluation about the services, which SAXO &#38; E-Boghandel provide. </p>
+
+<p>You may ask why? The story is quite short: The [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=388</wfw:commentRSS>
+	</item>
+		<item>
+		<title>Right click slow responce resolved?</title>
+		<link>http://blog.doncho.net/?p=384</link>
+		<comments>http://blog.doncho.net/?p=384#comments</comments>
+		<pubDate>Mon, 31 Oct 2005 08:07:09 +0000</pubDate>
+		<dc:creator>donangel</dc:creator>
+		
+	<category>Hacking</category>
+	<category>Daily</category>
+	<category>English</category>
+		<guid>http://blog.doncho.net/?p=384</guid>
+		<description><![CDATA[<p>I was experiencing very nasty problem for the past months: when I right click a file on the notebook, it took hell lot of a time to display the context menu. Sometimes it took even more than 30 seconds or so. The most nasty thing (apart from this problem) was the fact that I can&#8217;t [...]</p>
+]]></description>
+		<wfw:commentRSS>http://blog.doncho.net/?feed=rss2&amp;p=384</wfw:commentRSS>
+	</item>
+	</channel>
+</rss>

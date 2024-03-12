@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      List backups of a Looker instance.
+    description: |
+      List all backups of a Looker instance under the specified project and region.
+
+      To specify the maximum number of backups to list, use the --limit flag.
+    examples: |
+      To list up to five backups, of a Looker instance named `my-looker-instance` run:
+
+      $ {command} --instance='my-looker-instance' --limit=5
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:instance
+      help_text: |
+        The instance of the backups to display.
+
+  request:
+    api_version: v1alpha1
+    collection: looker.projects.locations.instances.backups
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME:sort=2,
+        state:label=STATUS,
+        createTime.date(),
+        expireTime.date()
+      )

@@ -1,0 +1,20 @@
+argparse is (c) 2006-2009 Steven J. Bethard <steven.bethard@gmail.com>.
+
+The argparse module was contributed to Python as of Python 2.7 and thus
+was licensed under the Python license. Same license applies to all files in
+the argparse package project.
+
+For details about the Python License, please see doc/Python-License.txt.
+
+History
+-------
+
+Before (and including) argparse 1.1, the argparse package was licensed under
+Apache License v2.0.
+
+After argparse 1.1, all project files from the argparse project were deleted
+due to license compatibility issues between Apache License 2.0 and GNU GPL v2.
+
+The project repository then had a clean start with some files taken from
+Python 2.7.1, so definitely all files are under Python License now.
+

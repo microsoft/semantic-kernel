@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Delete a given instance and all contained worker pools.
+    description: |
+      Deletes the instance, as well as all worker pools, cached build inputs and cached build
+      artifacts contained within that instance.
+    examples: |
+      The following will delete the instance named 'instance_to_delete':
+
+        $ {command} instance_to_delete
+
+      You can also provide the fully qualified resource name for the instance like so:
+
+        $ {command} projects/my_project/instances/instance_to_delete
+
+  request:
+    collection: remotebuildexecution.projects.instances
+
+  async:
+    collection: remotebuildexecution.projects.operations
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.remote_build_execution.resources:instance
+      help_text: |
+        Arguments and flags specifying the instance you want to delete.

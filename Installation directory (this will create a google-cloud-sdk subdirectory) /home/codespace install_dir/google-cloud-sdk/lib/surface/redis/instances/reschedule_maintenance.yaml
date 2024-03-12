@@ -1,0 +1,59 @@
+release_tracks: [BETA, ALPHA, GA]
+
+help_text:
+  brief: |
+    Reschedule maintenance window for a Redis instance.
+  description: |
+    Reschedule maintenance window for a Redis instance.
+  examples: |
+    To reschedule maintenance window for an instance with the name 'my-redis-instance' in region
+    'us-central-1' with next available window, run:
+
+      $ {command} my-redis-instance --region=us-central1 --reschedule-type=next-available-window
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.redis.resources:instance
+    help_text: |
+      Arguments and flags that specify the Cloud Memorystore for Redis instance you
+      want to reschedule maintenance window.
+  params:
+  - arg_name: reschedule-type
+    api_field: rescheduleMaintenanceRequest.rescheduleType
+    required: true
+    choices:
+    - arg_value: IMMEDIATE
+      enum_value: IMMEDIATE
+      help_text: Reschedule the maintenance window to perform now.
+    - arg_value: NEXT-AVAILABLE-WINDOW
+      enum_value: NEXT_AVAILABLE_WINDOW
+      help_text: Reschedule the maintenance window to the next available window.
+    - arg_value: SPECIFIC-TIME
+      enum_value: SPECIFIC_TIME
+      help_text: Reschedule the maintenance window to a specific time.
+    help_text: |
+      Reschedule type to use for the reschedule maintenance window.
+      Reschedule Type must be one of:IMMEDIATE, NEXT-AVAILABLE-WINDOW, or SPECIFIC-TIME.
+  - arg_name: schedule-time
+    api_field: rescheduleMaintenanceRequest.scheduleTime
+    help_text: |
+      Time in RFC3339 format, for example: 2012-11-15T16:19:00.094Z
+
+async:
+  collection: redis.projects.locations.operations
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.redis.instances_reschedule_util:CheckSpecificTimeField
+  BETA:
+    api_version: v1beta1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.redis.instances_reschedule_util:CheckSpecificTimeField
+  GA:
+    api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.redis.instances_reschedule_util:CheckSpecificTimeField
+  collection: redis.projects.locations.instances
+  method: rescheduleMaintenance

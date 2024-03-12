@@ -1,0 +1,96 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 LbObservabilityExtension export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- forwardingRules
+- loadBalancingScheme
+- name
+- service
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  authority:
+    description: |-
+      The :authority header in the gRPC request sent from Envoy to the
+      extension service.
+    type: string
+  description:
+    description: A human-readable description of the resource.
+    type: string
+  forwardingRules:
+    description: |-
+      A list of references to the forwarding rules to which this service
+      extension is attached to. At least one forwarding rule is required.
+    type: array
+    items:
+      type: string
+  labels:
+    description: |-
+      Set of labels associated with the LbObservabilityExtension resource.
+      The format must comply with [the following
+      requirements](/compute/docs/labeling-resources#requirements).
+    $ref: LabelsValue.yaml
+  loadBalancingScheme:
+    description: |-
+      All backend services and forwarding rules referenced by this extension
+      must share the same load balancing scheme. Supported values:
+      INTERNAL_MANAGED, EXTERNAL_MANAGED. For more information, refer to
+      [Choosing a load balancer](https://cloud.google.com/load-
+      balancing/docs/backend-service).
+    type: string
+    enum:
+    - EXTERNAL_MANAGED
+    - INTERNAL_MANAGED
+    - LOAD_BALANCING_SCHEME_UNSPECIFIED
+  name:
+    description: |-
+      Identifier. Name of the LbObservabilityExtension resource in the
+      following format: projects/{project}/locations/{locatio
+      n}/lbObservabilityExtensions/{lb_observability_extension}.
+    type: string
+  service:
+    description: |-
+      The reference to the service that runs the extension. Must be a
+      reference to a backend service. To configure a Callout extension,
+      service must be a fully-qualified reference to a [backend s ervice](
+      https://cloud.google.com/compute/docs/reference/rest/v1/backendS
+      ervices) in the format:
+      https://www.googleapis.com/compute/v1/projects/
+      {project}/regions/{region}/backendServices/{backendService} or
+      https://www.googleapis.com/compute/v1/projects/{project}/global/back
+      endServices/{backendService}.
+    type: string
+  supportedEvents:
+    description: |-
+      A set of events during request or response processing for which this
+      extension is called.
+    type: array
+    items:
+      type: string
+      enum:
+      - EVENT_TYPE_UNSPECIFIED
+      - REQUEST_BODY
+      - REQUEST_HEADERS
+      - RESPONSE_BODY
+      - RESPONSE_HEADERS

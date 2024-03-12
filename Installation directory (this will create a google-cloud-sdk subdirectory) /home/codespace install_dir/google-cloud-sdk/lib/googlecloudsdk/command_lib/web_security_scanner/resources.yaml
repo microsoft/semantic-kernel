@@ -1,0 +1,31 @@
+project:
+  name: project
+  collection: websecurityscanner.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The Google Cloud Platform project ID.
+    property: core/project
+
+scan_config:
+  name: scan config
+  collection: websecurityscanner.projects.scanConfigs
+  attributes:
+  - *project
+  - &scan_config
+    parameter_name: scanConfigsId
+    attribute_name: scan_config
+    help: The ID of a Scan Config.
+
+
+scan_run:
+  name: scan run
+  collection: websecurityscanner.projects.scanConfigs.scanRuns
+  attributes:
+  - *project
+  - *scan_config
+  - &scan_run
+    parameter_name: scanRunsId
+    attribute_name: scan_run
+    help: The ID of a Scan Run.

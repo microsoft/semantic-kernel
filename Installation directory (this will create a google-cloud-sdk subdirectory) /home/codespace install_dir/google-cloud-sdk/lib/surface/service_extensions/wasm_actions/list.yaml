@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List all `WasmAction` resources.
+    description: |
+      List `WasmAction` resources.
+    examples: |
+      To list existing `WasmAction` resources, run:
+
+        $ {command}
+
+  request:
+    collection: networkservices.projects.locations.wasmActions
+    ALPHA:
+      api_version: v1alpha1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The parent location.
+      spec: !REF googlecloudsdk.command_lib.service_extensions.resources:optionalLocation
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        wasm_plugin:label=WASMPLUGIN
+      )

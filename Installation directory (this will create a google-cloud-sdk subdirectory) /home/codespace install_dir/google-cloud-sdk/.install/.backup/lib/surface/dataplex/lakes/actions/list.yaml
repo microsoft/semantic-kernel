@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      List Dataplex lake actions.
+    description: |
+      List all Dataplex Actions under a specific lake.
+    examples: |
+      To list all actions of a Dataplex Lake `test-lake` defined in location `us-central1` run:
+
+        $ {command} --location=us-central1 --lake=test-lake
+
+  command_type: LIST
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.actions
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Lake actions you want to list.
+      override_resource_collection: true
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        data_locations:label=DATA_LOCATION,
+        category: label=CATEGORY,
+        issue:label=ISSUE
+      )

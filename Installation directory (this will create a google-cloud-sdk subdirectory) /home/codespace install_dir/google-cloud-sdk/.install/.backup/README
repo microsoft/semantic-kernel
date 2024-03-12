@@ -1,0 +1,16 @@
+Google Cloud SDK
+Copyright 2013 Google Inc. All Rights Reserved.
+
+The Google Cloud SDK contains tools and libraries that allow you to create and
+manage resources on Google's Cloud Platform, including App Engine, Compute
+Engine, Cloud Storage, Cloud SQL, and BigQuery.
+
+For more information on how to set up and use the Cloud SDK, please see:
+  https://cloud.google.com/sdk
+
+
+System Requirements:
+  - The Cloud SDK for Python and for Go requires Python 2.7.x.
+  - The Cloud SDK for Java requires Java 1.7+ and Python 2.7.x.
+  - The SDK runs on Windows, Mac OS X, and Linux. Some of the individual tools
+    bundled with the Cloud SDK might have more stringent requirements.

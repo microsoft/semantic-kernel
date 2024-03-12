@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Delete a storage pool."
+    description: "Deleta a storage pool."
+    examples: |
+      To delete a single storage pool named `my-storage-pool`, run the following command:
+
+        $ {command} my-storage-pool
+
+  request:
+    collection: compute.storagePools
+    api_version: alpha
+
+  async:
+    collection: compute.zoneOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+
+  arguments:
+    resource:
+      help_text: Name of the storage pool you want to delete.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool

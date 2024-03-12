@@ -1,0 +1,73 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List devices.
+    description: List devices.
+    examples: |
+      To list all devices in the device registry 'my-registry' and region 'us-central1', run:
+
+        $ {command} --region=us-central1 --registry=my-registry
+
+  request:
+    collection: cloudiot.projects.locations.registries.devices
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iot.util:RegistriesDevicesListRequestHook
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The registry you want to list the devices for.
+      spec: !REF googlecloudsdk.command_lib.iot.resources:registry
+
+    params:
+    - api_field: deviceIds
+      arg_name: device-ids
+      help_text: If given, show only devices with one of the provided IDs.
+    - api_field: deviceNumIds
+      arg_name: device-num-ids
+      help_text: |
+        If given, show only devices with one of the provided numerical IDs.
+    - api_field: fieldMask
+      arg_name: device-field-mask
+      default: blocked,gatewayConfig  # default set for backward-compatibility
+      help_text: |
+        If given, returns all specified device fields instead of the default set. The value is a
+        comma-separated list of field names. Example: "lastErrorStatus,config,metadata".
+        See full list of device fields at:
+        https://cloud.google.com/iot/docs/reference/cloudiot/rest/v1/projects.locations.registries.devices
+    - api_field: gatewayListOptions_gatewayType
+      arg_name: device-type
+      required: false
+      choices:
+      - arg_value: gateway
+        enum_value: GATEWAY
+      - arg_value: non-gateway
+        enum_value: NON_GATEWAY
+      help_text: |
+        If specified, show only devices of that type. If left unspecified, show devices of any type.
+
+
+  output:
+    format: |
+      table(
+        id,
+        numId,
+        blocked:optional,
+        name:optional,
+        credentials:optional,
+        lastHeartbeatTime:optional,
+        lastEventTime:optional,
+        lastStateTime:optional,
+        lastConfigAckTime:optional,
+        lastConfigSendTime:optional,
+        lastErrorTime:optional,
+        lastErrorStatus:optional,
+        config:optional,
+        state:optional,
+        logLevel:optional,
+        metadata:optional,
+        gatewayConfig.gatewayType:optional,
+        gatewayConfig.gatewayAuthMethod:optional
+      )

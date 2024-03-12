@@ -1,0 +1,22 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Describe the Dialogflow agent of the current project.
+  description: |
+    Describe the Dialogflow agent of the current project.
+  examples: |
+    To describe the agent for the current project:
+
+      $ {command}
+
+    To describe the agent for a given project:
+
+      $ {command} --project="my-project"
+
+arguments:
+  resource:
+    help_text: Project to use.
+    spec: !REF googlecloudsdk.command_lib.dialogflow.resources:project
+
+request:
+  collection: dialogflow.projects
+  method: getAgent

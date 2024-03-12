@@ -1,0 +1,32 @@
+- help_text:
+    brief: |
+      List Filestore zones
+    description: |
+      List all zones where Filestore API is available.
+      The listed zones only apply for Basic instances.
+      High Scale is only available in a more restricted set of zones.
+      For details, please see https://cloud.google.com/filestore/docs/regions.
+    examples: |
+      To list all the zones where Filestore instances can be created, run:
+
+          $ {command}
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.filestore.resources:project
+      help_text: |
+        The project name.
+
+  request:
+    api_version: v1
+    collection: file.projects.locations
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.filestore.locations_util:ExtractZonesFromLocationsListResponse
+
+  output:
+    format: |
+      table(
+        locationId:label=NAME:sort=1
+      )

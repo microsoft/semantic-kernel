@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Source: http://pihgy.hu/node/feed
+Expect: UTF-8
+-->
+<!DOCTYPE rss [<!ENTITY % HTMLlat1 PUBLIC "-//W3C//ENTITIES Latin 1 for XHTML//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">]>
+<rss version="2.0" xml:base="http://pihgy.hu">
+<channel>
+ <title>PIHGY - Pedagógiai Intézet és Helytörténeti Gyűjtemény</title>
+ <link>http://pihgy.hu</link>
+ <description>Budapest XVIII. kerületi, nevelés-oktatási, művelődési és sport témájú webhely • &lt;a href=tajekoztato_a_webhelyrol&gt;Tájékoztató a webhelyről&lt;/a&gt;</description>
+ <language>hu</language>
+<item>
+ <title>Interjú Magyar Bálint oktatási miniszterrel</title>
+ <link>http://pihgy.hu/interju_magyar_balint_oktatasi_miniszterrel</link>
+ <description>&lt;p&gt;Kedves Kollégák!&lt;/p&gt;
+&lt;p&gt;  	Felhívjuk szíves figyelmeteket, hogy a Mozgó Világ c. folyóirat 2005/decemberi számában olvashatjátok&lt;/p&gt;
+&lt;p&gt;                                  „A világ bemagolhatatlan, viszont megérthető”&lt;br /&gt;
+				                 címmel&lt;/p&gt;
+&lt;p&gt;                  Rádai Eszter - Magyar Bálint oktatási miniszterrel készült - interjúját.&lt;/p&gt;
+</description>
+ <pubDate>Tue, 03 Jan 2006 21:36:21 +0100</pubDate>
+</item>
+<item>
+ <title>Hó, hó, hó...</title>
+ <link>http://pihgy.hu/ho_ho_ho</link>
+ <description>&lt;p&gt;Boldog, békés új esztendőt kívánunk minden pedagógia és helytörténet iránt érdeklődő kedves látogatónak ezekkel a 18. kerületben készült képekkel!&lt;/p&gt;
+</description>
+ <enclosure url="http://pihgy.hu/files/tél2.jpg" length="42685" type="image/pjpeg" />
+ <pubDate>Mon, 02 Jan 2006 17:31:17 +0100</pubDate>
+</item>
+<item>
+ <title>A Pedagógiai és Helytörténeti Gyűjtemény alapításának évfordulója</title>
+ <link>http://pihgy.hu/cimoldali/hir/a_pedagogiai_es_helytorteneti_gyujtemeny_alapitasanak_evforduloja</link>
+ <description>&lt;p contenteditable=&quot;inherit&quot;&gt;Tisztelt Érdeklődő! &lt;/p&gt;&lt;p contenteditable=&quot;inherit&quot; align=&quot;justify&quot;&gt;50 éve, 1956-ban kezdődött el a településünk múltjára vonatkozó emlékek összegyűjtése. Néhai Tomory Lajos iskolaigazgató felhívására sokan felfigyeltek, és örömmel adták át addig féltve őrzött tárgyaikat, irataikat, fényképeiket. A gyűjtemény folyamatos gazdagodása ma is elsősorban a civil lakosság jóvoltából történik. Nem múlik el hónap, hogy valaki fel ne ajánlana valami helyi vonatkozású emléket. Az évforduló alkalmából ezentúl honlapunk hasábjain is szeretnénk - név szerint - köszönetet mondani nagylelkű adományozóinknak. Most, az óév végén, az új rovat beindítása előtt azoknak a nevét tesszük közzé, akik eddig is sokat tettek ilyen vonatkozásban a XVIII. kerületi Pedagógiai és Helytörténeti Gyűjteményért. &lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/hir">Hírek</category>
+ <pubDate>Fri, 30 Dec 2005 23:16:09 +0100</pubDate>
+</item>
+<item>
+ <title>Soundbeam bemutató</title>
+ <link>http://pihgy.hu/cimoldali/kepzes/anketok/soundbeam_bemutato</link>
+ <description>&lt;p&gt;&lt;b&gt;Kedves Fejlesztőpedagógus kollegák!&lt;/b&gt;  &lt;/p&gt;&lt;p&gt;Szakmai ankétot tervezünk 2006. február hónapra, melyen a &lt;b&gt;SOUNDBEAM zeneterápiás eszközt&lt;/b&gt; tekinthetitek meg. Bővebb információt a csatolásban olvashattok. Szeretettel várunk minden kedves érdeklődőt a szakmai ankéton, melynek időpontjáról személyesen is kaptok meghívót Dobó Mártitól. &lt;/p&gt;&lt;p&gt;Üdvözlettel: Donáthné Forgács Boglárka tanfolyamfelelős &lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/kepzes/anketok">Szakmai ankétok</category>
+ <enclosure url="http://pihgy.hu/files/SOUNDBEAM termekleiras.pdf" length="613283" type="application/pdf" />
+ <pubDate>Sat, 17 Dec 2005 10:17:42 +0100</pubDate>
+</item>
+<item>
+ <title>A 2005-ös DIFER eredményei</title>
+ <link>http://pihgy.hu/cimoldali/cikk/a_2005_os_difer_eredmenyei</link>
+ <description>&lt;p&gt;A 2005-ös DIFER-mérés  elemzése&lt;/p&gt;
+&lt;p&gt;2005. év szeptember és október havában került sor az elsősök bemenetmérésére. A mérés a tavalyihoz hasonlóan történt, 20 kerületi iskolában, 43 osztályban, összesen 963 tanuló (ebből 505 fiú, 448 lány) került vizsgálatra. Az iskola saját pedagógusai – akárcsak tavaly - ún. „rövidített” DIFER - változatot (írásmozgás - koordináció, beszédhang-hallás, számolási készség) mértek.&lt;br /&gt;
+Minden iskolai osztály mérési eredményeit, az iskolai átlagokat, a kerületi átlageredményeket megadtuk táblázatos formában, és mellékeltük a különböző összehasonlítások eredményeképpen született diagramokat is.&lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/cikk">Cikkek</category>
+ <pubDate>Thu, 15 Dec 2005 09:38:28 +0100</pubDate>
+</item>
+<item>
+ <title>álláshirdetés</title>
+ <link>http://pihgy.hu/allashirdetes</link>
+ <description>&lt;p contenteditable=&quot;inherit&quot;&gt;&lt;strong contenteditable=&quot;inherit&quot; /&gt;&lt;/p&gt;&lt;p contenteditable=&quot;inherit&quot;&gt;&lt;strong contenteditable=&quot;inherit&quot;&gt;Informatikus munkatársat keresünk a Pestszentimrei Közösségi Házba. &lt;/strong&gt;&lt;/p&gt;&lt;p contenteditable=&quot;inherit&quot;&gt;Az ideális jelölt: &lt;/p&gt;
+&lt;ul contenteditable=&quot;inherit&quot;&gt;
+&lt;li contenteditable=&quot;inherit&quot;&gt;szeret csapatban dolgozni  &lt;/li&gt;
+&lt;li contenteditable=&quot;inherit&quot;&gt;könnyen beilleszkedik a csapatba &lt;/li&gt;
+&lt;li contenteditable=&quot;inherit&quot;&gt;jól kommunikál az ügyfelekkel és a kollégáival egyaránt &lt;/li&gt;
+&lt;li contenteditable=&quot;inherit&quot;&gt;jó monotónia tűréssel rendelkezik &lt;/li&gt;
+&lt;li contenteditable=&quot;inherit&quot;&gt;pontos, precíz és folyamatosan fejleszti tudását &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p contenteditable=&quot;inherit&quot;&gt; Elvárások: &lt;/p&gt;
+</description>
+ <pubDate>Mon, 12 Dec 2005 18:57:38 +0100</pubDate>
+</item>
+<item>
+ <title>Az integrációs konferencia előadásainak anyagai</title>
+ <link>http://pihgy.hu/cimoldali/kepzes/anketok/az_integracios_konferencia_eloadasainak_anyagai</link>
+ <description>&lt;p&gt;Időpont: 2005. november 10. 11 óra&lt;br /&gt;
+Helyszín: Kondor Béla Közösségi Ház&lt;/p&gt;
+&lt;p&gt;1. Kandó Téri Általános Iskola (Dobó Kálmánné) műsora&lt;br /&gt;
+2. Dr. Ürmös Andor Egészségügyi Minisztérium romaügyi osztályvezető&lt;/p&gt;
+&lt;p&gt;Fogalmi zavarok – integráció kohézió&lt;br /&gt;
+Felzárkóztató oktatás helyett integrált oktatás (szegregálás)&lt;br /&gt;
+A sérült gyerekeket jobb integráltan oktatni, később jóval kevésbé szakadnának el a munkaerőpiacon.&lt;br /&gt;
+A szegregációnak már van pontos fogalma, az integrációnak igazán nincs.&lt;br /&gt;
+A szegregáció ott kisebb, ahol  társadalmi különbségek kisebbek. (USA-Norvégia)&lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/kepzes/anketok">Szakmai ankétok</category>
+ <pubDate>Mon, 12 Dec 2005 14:03:52 +0100</pubDate>
+</item>
+<item>
+ <title>Nyelvi ankét</title>
+ <link>http://pihgy.hu/cimoldali/kepzes/anketok/nyelvi_anket</link>
+ <description>&lt;p&gt;&lt;b&gt;Tisztelt nyelszakos Kollegák!&lt;/b&gt; &lt;/p&gt;&lt;p&gt;  A XVI. kerület nyelvi munkaközössége 2005. december 15.-én 15.00-16.00-ig a XVIII. kerület Pedagógiai Intézetben (1181 Budapest, Kondor Béla sétány 10.) a &lt;b&gt;Szómánia szó, kiejtés, helyesírás szoftver bemutatóját&lt;/b&gt; rendezi meg. A program 2005 szeptemberében először az IATEFL országos nyelvtanár konferencián került bemutatásra, ahol nagy sikert aratott, azóta megyei és kerületi bemutatókra került sor. A program angol verziója mellett 2006 első negyedévében a német verzió is megjelenésre kerül, ezért az előadásra az angol és német szakos kollégákat is szeretettel várjuk. &lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/kepzes/anketok">Szakmai ankétok</category>
+ <pubDate>Sun, 04 Dec 2005 07:48:28 +0100</pubDate>
+</item>
+<item>
+ <title>&quot;Mozdulj, ügyesedj!&quot; Akkreditált pedagógus képzés</title>
+ <link>http://pihgy.hu/cimoldali/kepzes/akkreditalt/mozdulj_ugyesedj_akkreditalt_pedagogus_kepzes</link>
+ <description>&lt;p&gt;&lt;b&gt;&quot;Mozdulj, ügyesedj!&quot; (60 órás akkreditált tanfolyam)  &lt;/b&gt;&lt;/p&gt;&lt;p&gt;&lt;b&gt;Speciális prevenciós és korrekciós torna az óvodások és kisiskolások testnevelésében  &lt;/b&gt;&lt;/p&gt;&lt;p&gt;&lt;b /&gt;Alapítási és indítási engedély száma: 175 / 25 / 2005  &lt;/p&gt;&lt;p&gt;A továbbképzés célcsoportja: óvodapedagógusok, tanítók, testnevelő tanárok, gyógytestnevelők és gyógypedagógusok  &lt;/p&gt;&lt;p&gt;A továbbképzés célja: A továbbképzés elméleti és gyakorlati segítséget kíván nyújtani azoknak a pedagógusoknak, akik a 3-10 éves korosztály testnevelésével foglalkoznak. &lt;/p&gt;&lt;p&gt;Bemutatja, hogy miként lehet a gyógytestnevelés mozgásanyagát adaptálni az óvodások és a kisiskolások testnevelésében. Megismerteti a helyes testtartás kialakításához, valamint a helytelen testtartások megelőzéséhez és korrekciójához szükséges alapvető anatómiai ismereteket. Betekintést nyújt a kezdődő mozgásszervi elváltozásokat megelőző és korrigáló speciális gyakorlatanyag használatának elméleti alapjaiba, valamint a mozgásterápia gyakorlatába. &lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/kepzes/akkreditalt">Akkreditált képzések</category>
+ <pubDate>Sun, 04 Dec 2005 07:31:47 +0100</pubDate>
+</item>
+<item>
+ <title>A reál munkaközösségek tanulmányi kirándulása</title>
+ <link>http://pihgy.hu/cimoldali/cikk/a_real_munkakozossegek_tanulmanyi_kirandulasa</link>
+ <description>&lt;p&gt;A kerületi továbbképzési napon 4 munkaközösség, a földrajz, biológia, kémia és fizika tagjai tanulmányi kiránduláson vettek részt, az esztergomi Magyar Környezetvédelmi és Vízügyi Múzeumot látogatták meg. Több mint negyven kollégával ragyogó késő őszi napsütésben indultunk útnak. A múzeum - amely a vízügyi emlékhelyek hálózatának központja - Esztergom egyik legszebb barokk épületében  (1730-as évek) kapott helyet.&lt;br /&gt;
+A küllemében és a működés körülményeiben néhány éve megújult Duna Múzeum 2001. október 9.-étől várja ismét látogatóit. Ez év októberében „Családbarát Múzeum”- díjat kaptak.&lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/cikk">Cikkek</category>
+ <pubDate>Wed, 23 Nov 2005 15:01:06 +0100</pubDate>
+</item>
+<item>
+ <title>Szakmai nap 2005. november 9</title>
+ <link>http://pihgy.hu/cimoldali/hir/szakmai_nap_2005_november_9</link>
+ <description>&lt;p contenteditable=&quot;inherit&quot;&gt;A kerületi technika munkaközösség 2005. november 9-én a Központi Műhelyben tartotta meg a pedagógiai hét szakmai foglalkozását. 14 nevelő vett részt a továbbképzésen,  melyen a felső tagozatos technika  tantárgyhoz egy új munkadarabot terveztünk és készítettünk el. Műszaki rajz alapján egy mobiltelefon tartót alkotott mindenki. A továbbképzést a jelen lévők nagyon hasznosnak,  példásan szervezettnek és magas színvonalúnak ítélték meg. Az elégedettséget mérő kérdőívek összesítésénél az alábbi visszajelzések érkeztek: &lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/hir">Hírek</category>
+ <enclosure url="http://pihgy.hu/files/technika tanárok.doc" length="1315840" type="application/msword" />
+ <pubDate>Wed, 09 Nov 2005 15:05:02 +0100</pubDate>
+</item>
+<item>
+ <title>A Pedagógiai Hét 2005. november 7-11.</title>
+ <link>http://pihgy.hu/cimoldali/hir/a_pedagogiai_het_2005_november_7_11</link>
+ <description>&lt;p contenteditable=&quot;inherit&quot;&gt;A Pedagógiai Intézet és Helytörténeti Gyűjtemény által szervezett őszi PEDAGÓGIAI HÉT programjairól tájékoztató. &lt;/p&gt;&lt;p contenteditable=&quot;inherit&quot;&gt;2005. november 7-én a Kondor Béla Közösségi Házban került sor a nyitó programra. 65 fő vett részt a rendezvényen, amelyen a &quot;Hatékony tanulási módszerek&quot; címmel Petkes Csaba az Apáczai Kiadó referense tartott színvonalas előadást. A rendezvény résztvevőinek elégedettségét mérő kérdőívek összesítése alapján, az alábbi véleményeket adták le a jelenlevő pedagógusok.&lt;/p&gt;&lt;p contenteditable=&quot;inherit&quot;&gt;A programokon részt vevő nevelők - a kiadott elégedettségi kérdőíven - 1-től 4 pontig adhatták le véleményüket a látottakról, hallottakról.&lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/hir">Hírek</category>
+ <pubDate>Tue, 08 Nov 2005 14:25:21 +0100</pubDate>
+</item>
+<item>
+ <title>Összegzés</title>
+ <link>http://pihgy.hu/cimoldali/cikk/internet/osszegzes</link>
+ <description>&lt;p&gt;A Pedagógiai Intézet és Helytörténeti Gyűjtemény által gondozott webhely, a &lt;strong&gt;http://pihgy.hu&lt;/strong&gt; címen, 2002. szeptember 24-én meg a működését. Az eltelt időszak indokolttá teszi, hogy az összegyűlt tapasztalatokat áttekintsem. &lt;/p&gt;
+&lt;p&gt;Az első két évben az ún. &lt;a href=&quot;http://postnuke.com/&quot; target=&quot;_blank&quot;&gt;PostNuke&lt;/a&gt; rendszer adta a technikai alapját a tartalomközlésnek, amely lecserélésre került 2004. október 23-án, a &lt;a href=&quot;http://drupal.org/&quot; target=&quot;_blank&quot;&gt;Drupal&lt;/a&gt; alkalmazására. Ez jelentős technikai módosítás volt, amellyel a lehetőségek alaposan megváltoztak.&lt;/p&gt;</description>
+ <category domain="http://pihgy.hu/cimoldali/cikk/internet">Internet</category>
+ <pubDate>Mon, 31 Oct 2005 14:05:21 +0100</pubDate>
+</item>
+<item>
+ <title>Szüreti mulatság az Ady Iskolában</title>
+ <link>http://pihgy.hu/cimoldali/hir/szureti_mulatsag_az_ady_iskolaban</link>
+ <description>&lt;p&gt;Szeptember 30-án ismét megrendeztük az Ady Endre Utcai Általános Iskolában a már hagyománnyá vált Szüreti mulatságunkat. Kicsik és nagyok örömmel vettek részt a vidám délutánon. A kisebbek nagy lendülettel és szorgalommal álltak neki a szőlő szemezésének, és bár néha több került a pocakjukba mint a tálba, mégis az együtt töltött idő, a vidám beszélgetés pótolta a hiányzó szőlőszemeket. A darálásról és préselésről a nagyobb fiúk és lányok gondoskodtak, eközben a kisebbek egy szüreti vetélkedőn vehettek részt. A gyerekek vegyes csapatokban mérhették össze erejüket, így a különböző osztályok tanulói is jobban megismerhették egymást. A vetélkedő végeztével jókedvűen álltunk sorba a jól megérdemelt zsíros kenyérért és az idén különlegesen finomra sikerült mézédes mustért.&lt;/p&gt;
+</description>
+ <category domain="http://pihgy.hu/cimoldali/hir">Hírek</category>
+ <pubDate>Fri, 28 Oct 2005 11:39:51 +0200</pubDate>
+</item>
+<item>
+ <title>Idegen nyelvi képzések a Karinthy Frigyes Gimnáziumban</title>
+ <link>http://pihgy.hu/cimoldali/kepzes/nyelvi/idegen_nyelvi_kepzesek_a_karinthy_frigyes_gimnaziumban_0</link>
+ <description>&lt;b contenteditable=&quot;inherit&quot;&gt;Tisztelt Pedagógus Kollegák!&lt;/b&gt;&lt;p contenteditable=&quot;inherit&quot;&gt; &lt;/p&gt;&lt;p contenteditable=&quot;inherit&quot;&gt;Kedvezményes nyelvi képzések indultak 2005. október hónaptól a Karinthy Frigyes Gimnáziumban a kerületben dolgozó pedagógusok számára. Folyamatosan lehet még jelentkezni az angol és német kezdő, haladó, vagy szintentartó képzéseinkre. A képzések délelőtti és délutáni időpontokban is lehetőséget adnak a nyelvtanulásra. Az időpontok a csoportok igényei szerint még változhatnak, végleges időpont október végére fog kialakulni. Jelentkezéseiteket a tanfolyam@pihgy.hu E-mail címre minél hamarabb küldjétek el, hogy segítsek a kapcsolattartásban. &lt;/p&gt;</description>
+ <category domain="http://pihgy.hu/cimoldali/kepzes/nyelvi">Idegen nyelvi képzések pedagógusoknak</category>
+ <pubDate>Thu, 27 Oct 2005 17:30:09 +0200</pubDate>
+</item>
+</channel>
+</rss>

@@ -1,0 +1,50 @@
+# Copyright 2019 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Check a potential member for transitive membership in a group.
+    description: Check a potential member for transitive membership in a group.
+    examples: |
+      To check if a potential member has a transitive membership in a group.
+
+        $ {command} --group-email=eng@foo.com --member-email=eng-discuss@foo.com
+
+  request:
+    collection: cloudidentity.groups.memberships
+    disable_resource_check: true
+    method: checkTransitiveMembership
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetTransitiveMembershipParent
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetTransitiveQuery
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    params:
+    - arg_name: member-email
+      type: str
+      required: true
+      help_text: |
+        The email address of the member to check transitive membership for.
+
+    - arg_name: group-email
+      type: str
+      required: true
+      help_text: |
+        The email address of the group to check transitive membership for.

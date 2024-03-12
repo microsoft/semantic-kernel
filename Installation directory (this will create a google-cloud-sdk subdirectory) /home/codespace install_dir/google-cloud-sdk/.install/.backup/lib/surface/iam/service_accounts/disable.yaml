@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Disable an IAM service account.
+    description: |
+      Disable an IAM service account. After the service account is disabled, credential generation
+      and API requests using this service account will fail. Using `gcloud iam service-accounts
+      enable` to re-enable it.
+
+      If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
+    examples: |
+      To disable a service account from your project, run:
+
+        $ {command} my-iam-account@my-project.iam.gserviceaccount.com
+
+  request:
+    collection: iam.projects.serviceAccounts
+    method: disable
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:DisableIamAccountConfirmation
+
+  output:
+    format: none
+
+  arguments:
+    resource:
+      help_text: The IAM service account to disable.
+      spec: !REF googlecloudsdk.command_lib.iam.resources:service_account

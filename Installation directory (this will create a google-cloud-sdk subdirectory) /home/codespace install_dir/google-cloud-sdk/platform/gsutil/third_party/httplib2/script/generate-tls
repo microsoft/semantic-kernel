@@ -1,0 +1,61 @@
+#!/bin/bash
+set -eu
+
+target_dir="${1:-.}"
+days=7300
+rsa_bits=2048
+org="httplib2-test"
+server_cn="localhost"
+subj_prefix="/C=ZZ/ST=./L=./O=$org/OU=."
+
+main() {
+	cd "$target_dir"
+	gen
+	check
+}
+
+check() {
+	echo "- check keys" >&2
+	openssl rsa -in ca.key -check -noout
+	openssl rsa -in client.key -check -noout
+	openssl rsa -in client_encrypted.key -check -noout -passin pass:12345
+	openssl rsa -in server.key -check -noout
+
+	echo "- check certs" >&2
+	for f in *.pem ; do
+		openssl x509 -in "$f" -checkend 3600 -noout
+	done
+}
+
+gen() {
+	echo "- generate keys, if absent" >&2
+	[[ -f ca.key ]] || openssl genrsa -out ca.key $rsa_bits
+	[[ -f client.key ]] || openssl genrsa -out client.key $rsa_bits
+	[[ -f client_encrypted.key ]] || openssl rsa -in client.key -out client_encrypted.key -aes128 -passout pass:12345
+	[[ -f server.key ]] || openssl genrsa -out server.key $rsa_bits
+
+	echo "- generate CA" >&2
+	openssl req -batch -new -nodes -x509 -days $days -subj "$subj_prefix/CN=$org-CA" -key ca.key -out ca.pem
+	openssl req -batch -new -nodes -x509 -days $days -subj "$subj_prefix/CN=$org-CA-unused" -key ca.key -out ca_unused.pem
+
+	echo "- generate client cert" >&2
+	openssl req -batch -new -nodes -out tmp.csr -key client.key -subj "$subj_prefix/CN=$org-client"
+	openssl x509 -req -in tmp.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out client.crt -days $days -serial -fingerprint
+	cat client.crt client.key >client.pem
+	cat client.crt ca.pem client.key >client_chain.pem
+
+	echo "- generate encrypted client cert" >&2
+	openssl req -batch -new -nodes -out tmp.csr -key client_encrypted.key -passin pass:12345 -subj "$subj_prefix/CN=$org-client-enc"
+	openssl x509 -req -in tmp.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out client_encrypted.crt -days $days -serial -fingerprint
+	cat client_encrypted.crt client_encrypted.key >client_encrypted.pem
+
+	echo "- generate server cert" >&2
+	openssl req -batch -new -nodes -out tmp.csr -key server.key -subj "$subj_prefix/CN=$server_cn"
+	openssl x509 -req -in tmp.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days $days -serial -fingerprint
+	cat server.crt server.key >server.pem
+	cat server.crt ca.pem server.key >server_chain.pem
+
+	rm tmp.csr
+}
+
+main

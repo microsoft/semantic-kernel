@@ -1,0 +1,88 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Create a storage pool."
+    description: "Create a storage pool."
+    examples: |
+      To create a new storage pool named `my-storage-pool`, run the following command:
+
+        $ {command} my-storage-pool --storage-pool-type=hyperdisk-throughput --provisioned-capacity=10TB --provisioned-throughput=200
+
+  request:
+    collection: compute.storagePools
+    api_version: alpha
+    method: insert
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.compute.storage_pools.modify_request_hooks:add_name_to_payload
+
+  async:
+    collection: compute.zoneOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+
+  arguments:
+    resource:
+      help_text: The name of the storage pool you want to create.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool
+
+    params:
+
+    - arg_name: provisioned-capacity
+      api_field: storagePool.poolProvisionedCapacityGb
+      required: true
+      help_text: |
+        Provisioned capacity of the storage pool.
+      type: 'googlecloudsdk.calliope.arg_parsers:BinarySize:'
+      # TODO(b/283676448), this processor can be effectively eliminated.
+      processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
+
+    - arg_name: description
+      api_field: storagePool.description
+      help_text: |
+        Description of the storage pool.
+      type: str
+
+    - arg_name: provisioned-iops
+      api_field: storagePool.poolProvisionedIops
+      help_text: |
+        IOPS with which to provision the pool.
+      type: int
+
+    - arg_name: provisioned-throughput
+      api_field: storagePool.poolProvisionedThroughput
+      help_text: |
+        Throughput in MB/s with which to provision the pool.
+      type: int
+
+    - arg_name: storage-pool-type
+      api_field: storagePool.storagePoolType
+      required: true
+      help_text: |
+        Type of the storage pool.
+      choices:
+      - arg_value: hyperdisk-throughput
+        enum_value: hyperdisk-throughput
+      - arg_value: hyperdisk-balanced
+        enum_value: hyperdisk-balanced
+      processor: googlecloudsdk.api_lib.compute.storage_pools.processors:format_pool_type
+
+    - arg_name: capacity-provisioning-type
+      api_field: storagePool.capacityProvisioningType
+      help_text: |
+        Capacity provisioning type.
+      choices:
+      - arg_value: standard
+        enum_value: standard
+      - arg_value: advanced
+        enum_value: advanced
+
+    - arg_name: performance-provisioning-type
+      api_field: storagePool.performanceProvisioningType
+      help_text: |
+        Performance provisioning type.
+      choices:
+      - arg_value: standard
+        enum_value: standard
+      - arg_value: advanced
+        enum_value: advanced

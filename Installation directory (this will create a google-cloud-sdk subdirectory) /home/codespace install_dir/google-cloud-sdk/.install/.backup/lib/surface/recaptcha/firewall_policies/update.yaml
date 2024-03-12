@@ -1,0 +1,55 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Update a Firewall Policy.
+    description: Update a reCAPTCHA Firewall Policy.
+    examples: |
+        To update the information of a reCAPTCHA firewall policy, run:
+
+          $ {command} policy-id --description='updated description' --actions=block
+
+  request:
+    collection: recaptchaenterprise.projects.firewallpolicies
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.recaptcha.resources:firewall_policies
+      help_text: |
+        The reCAPTCHA firewall policy to update.
+    params:
+    - arg_name: description
+      api_field: googleCloudRecaptchaenterpriseV1FirewallPolicy.description
+      help_text: |
+        A description of what this policy aims to achieve, for convenience purposes. The description
+        can at most include 256 UTF-8 characters.
+    - arg_name: path
+      api_field: googleCloudRecaptchaenterpriseV1FirewallPolicy.path
+      help_text: |
+        The path for which this policy applies, specified as a glob pattern. For more information on
+        glob, see the manual page: https://man7.org/linux/man-pages/man7/glob.7.html.
+    - arg_name: condition
+      api_field: googleCloudRecaptchaenterpriseV1FirewallPolicy.condition
+      help_text: |
+        A CEL (Common Expression Language) conditional expression that specifies if this policy
+        applies to an incoming user request. If this condition evaluates to true and the requested
+        path matched the path pattern, the associated actions should be executed by the caller. The
+        condition string is checked for CEL syntax correctness on creation. For more information,
+        see the CEL spec: https://github.com/google/cel-spec and its language definition:
+        https://github.com/google/cel-spec/blob/master/doc/langdef.md
+    - arg_name: actions
+      api_field: googleCloudRecaptchaenterpriseV1FirewallPolicy.actions
+      processor: googlecloudsdk.command_lib.recaptcha.firewall_policies_util:ParseFirewallActions
+      help_text: |
+        The actions that the caller should take regarding the user. There should be at most 1
+        terminal action. A terminal action is any action that forces a response, such as Allow,
+        Block or Substitute. If it makes sense for it to happen multple times, such as SetHeader,
+        the action is non-terminal.
+
+        Examples:
+        * Block and set the header with key foo to value bar
+          ** --actions=block,set_header=foo=bar
+        * Substitute with path google.com and set two headers, one with key key1 to value value1 and
+        one with key key2 to value value2
+          ** --actions=substitute=google.com,set_header=key1=value1,set_header=key2=value2
+
+  output:
+    format: none

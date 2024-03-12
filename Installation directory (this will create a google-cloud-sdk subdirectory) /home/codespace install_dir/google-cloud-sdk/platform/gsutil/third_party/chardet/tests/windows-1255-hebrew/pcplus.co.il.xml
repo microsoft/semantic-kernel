@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="windows-1255"?>
+<!--
+Source: http://www.pcplus.co.il/rss.php
+Expect: windows-1255
+-->
+
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN"
+
+"http://my.netscape.com/publish/formats/rss-0.91.dtd">
+
+
+<rss version="0.91">
+
+
+<channel>
+
+<title>PCPLUS</title>
+
+<link>http://www.pcplus.co.il</link>
+
+<description>המגזין למחשבים ואינטרנט</description>
+
+<language>he</language>
+
+
+<item>
+
+<title>רפאל פוגל: מי שמשתמש רק בלינוקס שירים את היד</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=148</link>
+
+</item>
+
+
+<item>
+
+<title>רפאל פוגל: סיכום מערכת</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=147</link>
+
+</item>
+
+
+<item>
+
+<title>אבי בליזובסקי: כאן זה לא סיציליה</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=146</link>
+
+</item>
+
+
+<item>
+
+<title>רפאל פוגל: גוגל, זה טוב ליהודים?</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=145</link>
+
+</item>
+
+
+<item>
+
+<title>דן ברומר: GAME OVER</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=144</link>
+
+</item>
+
+
+<item>
+
+<title>רפאל פוגל: המטרה: איסמעליה</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=143</link>
+
+</item>
+
+
+<item>
+
+<title>אבי בליזובסקי: את הקדמה אי אפשר לעצור</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=142</link>
+
+</item>
+
+
+<item>
+
+<title>לובו: ניצחון הטלוויזיה</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=141</link>
+
+</item>
+
+
+<item>
+
+<title>יהודה קונפורטס: די לזבל</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=140</link>
+
+</item>
+
+
+<item>
+
+<title>רפאל פוגל: מחפשים את מיקרוסופט</title>
+
+<link>http://www.pcplus.co.il/opinions.php?id=139</link>
+
+</item>
+
+
+</channel>
+
+</rss>

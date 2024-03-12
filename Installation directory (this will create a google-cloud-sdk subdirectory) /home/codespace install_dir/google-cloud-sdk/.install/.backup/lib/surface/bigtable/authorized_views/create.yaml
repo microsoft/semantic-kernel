@@ -1,0 +1,52 @@
+- release_tracks: [GA, BETA, ALPHA]
+  hidden: true  # TODO(b/277573292): unhide the CLI for GA.
+
+  help_text:
+    brief: Create a new Cloud Bigtable authorized view.
+    description: Create a new Cloud Bigtable authorized view.
+
+  request:
+    collection: bigtableadmin.projects.instances.tables.authorizedViews
+    method: create
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.bigtable.authorized_views:ModifyCreateAuthorizedViewRequest
+
+  arguments:
+    resource:
+      help_text: Cloud Bigtable authorized view to create.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:authorized_view
+    params:
+    - arg_name: definition-file
+      help_text: |
+        Path to a JSON or YAML file containing a valid authorized view protobuf.
+
+        The 'name' field is ignored. The name is deduced from the other command line arguments.
+
+        Example:
+        {
+          "subsetView":
+          {
+            "rowPrefixes": ["store1#"],
+            "familySubsets":
+            {
+              "column_family_name":
+              {
+                "qualifiers":["address"],
+                "qualifierPrefixes":["tel"]
+              }
+            }
+          },
+          "deletionProtection": true
+        }
+    - arg_name: pre-encoded
+      type: bool
+      default: false
+      help_text: |
+        By default, Base64 encoding is applied to all binary fields ("rowPrefixes", "qualifiers" and
+        "qualifierPrefixes") in the JSON or YAML definition file.
+
+        Use this to indicate that all binary fields are already Base64-encoded and should be used
+        directly.
+
+  async:
+    collection: bigtableadmin.operations

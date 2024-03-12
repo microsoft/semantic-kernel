@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="MacCyrillic"?>
+<!--
+Source: http://koi.kinder.ru/rss/kinder_news_koi8.xml
+Expect: MacCyrillic
+-->
+<rss version="2.0">
+<channel>
+<title>Kinder.ru - Детские новости</title>
+<link>http://kinder.ru/</link>
+<description>Kinder.ru - Детские новости</description>
+<language>ru</language>
+<managingEditor>otter@kinder.ru</managingEditor>
+<generator>kinder</generator>
+<ttl>10</ttl>
+<image>
+<url>http://www.kinder.ru/banners/just-button3.gif</url>
+<title>Новости Kinder.ru</title>
+<link>http://kinder.ru/</link>
+<width>88</width>
+<height>31</height>
+<description>kinder.ru</description>
+</image>
+
+
+<item>
+<title>Детский журнал "Клёпа"</title>
+<description><![CDATA[<img src="http://kinder.ru/imag_konf/klepa_2_05.jpg" align="left" width="100" height="150">Вышел февральский номер "Клёпы".<br>
+ Юные читатели задают много вопросов.<br>
+ "Когда начали играть в хоккей? Как появился шоколад? Почему бьют баклуши?
+ Что за камень - изумруд? Почему люди коллекционируют открытки?"<br>
+ Клёпа, Филиппыч и Капи-Капи провели расследование и с удовольствием
+ открывают  для любознательных КЛЁПАманов ответы на эти вопросы, а
+ также много другой интересной и познавательной информации.<br> <a href="http://www.kinder.ru/redir.asp?id=845">[Подробнее...]</a>]]></description>
+<link>http://www.kinder.ru/redir.asp?id=845</link>
+<pubDate>Fri, 04 Mar 2005 15:21:02 +0300</pubDate>
+<author>otter@kinder.ru</author>
+</item>
+
+<item>
+<title>Детский дом 18 г.Москвы</title>
+<description><![CDATA[<img src="http://kinder.ru/imag_konf/dd18_logo2.jpg" align="left" width="60" height="64">Суперальбом "Это Их Детство" пополнился ещё одним долгожданным небольшим фотоальбомом "Малыши в бассейне". Детский дом благодарит всех тех людей, которые смогли подарить малышам необходимые для них процедуры. Здоровье и улыбки наших детей ≈ залог вашей безграничной щедрости!<br> <a href="http://www.kinder.ru/redir.asp?id=2736">[Подробнее...]</a>]]></description>
+<link>http://www.kinder.ru/redir.asp?id=2736</link>
+<pubDate>Fri, 04 Mar 2005 15:19:51 +0300</pubDate>
+<author>otter@kinder.ru</author>
+</item>
+
+<item>
+<title>Весенние каникулы в лагере "Планета мечты. Весна."</title>
+<description><![CDATA[<img src="http://kinder.ru/imag_konf/stb1.jpg" align="left" width="100" height="75">Весна. Предчувствие обновления и чего-то нового и свежего в нашей жизни. Самое время поговорить и поразмышлять о любви и дружбе. А с кем это можно обсудить? С родителями? С друзьями? Хорошо бы, но не всегда получается. А если с профессионалом? С психологом? По-моему, блестящая идея. Согласны? Тогда присоединяйтесь!!!<br>
+СТБтурс предлагает Вам программу детского отдыха в детском оздоровительном комплексе "Литвиново".<br> <a href="http://www.kinder.ru/obzor/spb_tur_1.htm">[Подробнее...]</a>]]></description>
+<link>http://www.kinder.ru/obzor/spb_tur_1.htm</link>
+<pubDate>Fri, 04 Mar 2005 15:17:24 +0300</pubDate>
+<author>otter@kinder.ru</author>
+</item>
+
+<item>
+<title>Московский детский театр теней</title>
+<description><![CDATA[<img src="http://kinder.ru/imag_konf/teni.gif" align="left" width="56" height="100">К 200-летнему юбилею Г.Х.Андерсена в театре премьера - спектакль "Дюймовочка".<br>
+Познакомьтесь с репертуаром театра на март и анотациями к спектаклям.<br>
+Перед каждым спектаклем в фойе театра проводятся консультации по методике творческого развития детей в семье.
+<br> <a href="http://www.kinder.ru/teatr_tenei/obzor_dtt_1.htm">[Подробнее...]</a>]]></description>
+<link>http://www.kinder.ru/teatr_tenei/obzor_dtt_1.htm</link>
+<pubDate>Wed, 02 Mar 2005 17:14:18 +0300</pubDate>
+<author>otter@kinder.ru</author>
+</item>
+
+<item>
+<title>Газета-альманах (сайт школы 

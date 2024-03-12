@@ -1,0 +1,38 @@
+- release_tracks: [GA, BETA, ALPHA]
+  help_text:
+    brief: |
+      Delete a VPC Access connector.
+    description: |
+      Delete a new VPC Access connector with the given name.
+
+      This command can fail for the following reasons:
+        * An instance with the same name already exists.
+        * The active account does not have permission to delete instances.
+    examples: |
+      The following command deletes a VPC Access connector with name
+      `my-vpc-connector` in region `us-central1`:
+
+        $ {command} my-vpc-connector --region=us-central1
+
+  async:
+    collection: vpcaccess.projects.locations.operations
+
+  request:
+    collection: vpcaccess.projects.locations.connectors
+    api_version: v1
+    BETA:
+      api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
+
+  input:
+    confirmation_prompt: |
+      You are about to delete connector [{__name__}] in [{locationsId}].
+      Any associated data will be lost.
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:connector
+      help_text: |
+        Arguments and flags that specify the VPC Access connector you want
+        to delete.

@@ -1,0 +1,107 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2023 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+project:
+  name: project
+  plural_name: projects
+  collection: config.projects
+  request_id_field: projectId
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: projects TBD
+    property: core/project
+  disable_auto_completers: false
+location:
+  name: location
+  plural_name: locations
+  collection: config.projects.locations
+  request_id_field: locationId
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: locations TBD
+    property: infra-manager/location
+  disable_auto_completers: false
+deployment:
+  name: deployment
+  plural_name: deployments
+  collection: config.projects.locations.deployments
+  request_id_field: deploymentId
+  attributes:
+  - *project
+  - *location
+  - &deployment
+    parameter_name: deploymentsId
+    attribute_name: deployment
+    help: deployments TBD
+  disable_auto_completers: false
+revision:
+  name: revision
+  plural_name: revisions
+  collection: config.projects.locations.deployments.revisions
+  request_id_field: revisionId
+  attributes:
+  - *project
+  - *location
+  - *deployment
+  - &revision
+    parameter_name: revisionsId
+    attribute_name: revision
+    help: revisions TBD
+  disable_auto_completers: false
+resource:
+  name: resource
+  plural_name: resources
+  collection: config.projects.locations.deployments.revisions.resources
+  request_id_field: resourceId
+  attributes:
+  - *project
+  - *location
+  - *deployment
+  - *revision
+  - &resource
+    parameter_name: resourcesId
+    attribute_name: resource
+    help: resources TBD
+  disable_auto_completers: false
+preview:
+  name: preview
+  plural_name: previews
+  collection: config.projects.locations.previews
+  request_id_field: previewId
+  attributes:
+  - *project
+  - *location
+  - &preview
+    parameter_name: previewsId
+    attribute_name: preview
+    help: preview TBD
+  disable_auto_completers: false
+terraform_version:
+  name: terraformVersion
+  plural_name: terraformVersions
+  collection: config.projects.locations.terraformVersions
+  request_id_field: terraformVersionsId
+  attributes:
+  - *project
+  - *location
+  - &terraform_version
+    parameter_name: terraformVersionsId
+    attribute_name: terraform_version
+    help: terraform version TBD
+  disable_auto_completers: false

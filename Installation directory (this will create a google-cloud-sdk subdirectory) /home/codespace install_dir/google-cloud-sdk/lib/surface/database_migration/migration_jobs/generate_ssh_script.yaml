@@ -1,0 +1,93 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Generate a SSH script for a Database Migration Service migration job.
+    description: |
+      Generate a script for a Database Migration Service migration job, to configure Reverse SSH
+      tunnel connectivity with a bastion host on a Compute Engine VM instance.
+      You can use an existing VM instance or create a new VM for this purpose.
+
+      Copy the generated script and run it in bash from a machine that has:
+      - The gcloud command-line tool installed.
+      - Access to your source database.
+      - Access to the existing bastion VM, or permissions and access to the Cloud Compute API if creating a new bastion VM.
+      Make sure this machine is available during the entire migration.
+
+      Running the script will set up the SSH tunnel on the VM you selected and will establish
+      connectivity between the source database and the Cloud SQL instance.
+      Find additional information [here](https://cloud.google.com/database-migration/docs/mysql/configure-connectivity-reverse-ssh-tunnel).
+    ALPHA:
+      examples: |
+        To generate an SSH script with bastion VM instance creation:
+
+          $ {command} my-migration-job --vm=vm1 --vm-port=1111 --vm-machine-type=n1-standard-1
+          --vm-zone-create=us-central1-a --vpc=projects/my-project/global/networks/my-network
+          --region=us-central1
+
+        To generate an SSH script with an existing bastion VM instance:
+
+          $ {command} my-migration-job --vm=vm1 --vm-port=1111 --vm-zone=us-central1-a --region=us-central1
+    GA:
+      examples: |
+        To generate an SSH script with bastion VM instance creation:
+
+          $ {command} my-migration-job --vm=vm1 --vm-port=1111 --vm-machine-type=n1-standard-1
+          --vm-zone-create=us-central1-a --subnet=sample-subnet --region=us-central1
+
+        To generate an SSH script with an existing bastion VM instance:
+
+          $ {command} my-migration-job --vm=vm1 --vm-port=1111 --vm-zone=us-central1-a
+          --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.migrationJobs
+    GA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha2
+    method: generateSshScript
+
+  arguments:
+    resource:
+      help_text: The migration job to generate the SSH script for.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:migration_job
+
+    params:
+      - api_field: generateSshScriptRequest.vm
+        arg_name: vm
+        required: true
+        help_text: |
+          Bastion Compute Engine VM instance name to use or to create.
+      - api_field: generateSshScriptRequest.vmPort
+        arg_name: vm-port
+        help_text: |
+          Port that will be open on the bastion host.
+      - group:
+          required: true
+          mutex: true
+          params:
+            - group:
+                params:
+                  - api_field: generateSshScriptRequest.vmCreationConfig.vmMachineType
+                    arg_name: vm-machine-type
+                    required: true
+                    help_text: |
+                      Machine type for a new VM instance.
+                      To get a list of available machine types, run 'gcloud compute machine-types list'.
+                  - api_field: generateSshScriptRequest.vmCreationConfig.vmZone
+                    arg_name: vm-zone-create
+                    help_text: |
+                      Zone to create the VM instance in.
+                  - api_field: generateSshScriptRequest.vmCreationConfig.subnet
+                    required: true
+                    ALPHA:
+                      arg_name: vpc
+                      help_text: |
+                        VPC to create the VM instance in.
+                    GA:
+                      arg_name: subnet
+                      help_text: |
+                        Subnet to create the VM instance in.
+            - api_field: generateSshScriptRequest.vmSelectionConfig.vmZone
+              arg_name: vm-zone
+              help_text: |
+                Zone the existing bastion VM instance is located in.

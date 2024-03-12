@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List Cloud Healthcare API datasets.
+    description: List Cloud Healthcare API datasets.
+    examples: |
+      To list the datasets in us-central1, run:
+
+        $ {command}
+
+      To list the datasets in europe-west2, run:
+
+        $ {command} --location=europe-west2
+
+  request:
+    collection: healthcare.projects.locations.datasets
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Cloud Healthcare API location to list all contained Cloud Healthcare API datasets.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:location
+  output:
+    format: |
+      table(
+          name.scope("datasets"):label=ID,
+          name.scope("locations").segment(0):label=LOCATION,
+          timeZone:label=TIMEZONE,
+          encryptionSpec.kmsKeyName.yesno(yes='Customer-managed key', no='Google-managed key'):label=ENCRYPTION
+      )

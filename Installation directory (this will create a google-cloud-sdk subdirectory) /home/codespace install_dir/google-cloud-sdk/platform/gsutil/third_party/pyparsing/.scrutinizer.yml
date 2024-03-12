@@ -1,0 +1,39 @@
+# This file contains the configuration for Scrutinizer-CI, a tool we use for software quality purposes.
+build:
+  environment:
+    python: 3.6.3
+
+    variables:
+      PYTHON_VERSIONS: 'jython-2.7.1 pypy2.7-5.10.0 pypy3.5-5.10.1 2.7.15 3.3.6 3.4.5 3.5.6'
+
+  dependencies:
+    override:
+      - 'SCRIPT_PATH=$PWD/scrutinizer-pyenv.sh'
+
+      - 'pushd . '
+      - 'cd $HOME'
+
+      - command: '$SCRIPT_PATH'
+        not_if: 'exists-in-cache repository "$PYTHON_VERSIONS"'
+        idle_timeout: 3000
+      - command: 'store-in-cache repository "$PYTHON_VERSIONS" .pyenv'
+        not_if: 'exists-in-cache repository "$PYTHON_VERSIONS"'
+
+      - command: 'restore-from-cache repository "$PYTHON_VERSIONS"'
+        only_if: 'exists-in-cache repository "$PYTHON_VERSIONS"'
+
+      - 'popd'
+
+      - 'pip install -r requirements-dev.txt'
+
+  tests:
+    override:
+      - 'pyenv local $PYTHON_VERSIONS'
+      # Following command generates .coverage file, the output of the "coverage" tool.
+      - command: 'tox && coverage combine'
+        coverage:  # This section instructs Scrutinizer-CI this command produces test coverage output.
+          file: '.coverage'
+          format: 'py-cc'
+      - 'py-scrutinizer-run'
+
+      - true # to have scrutinizer-ci not infer any commands.

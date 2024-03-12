@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List Cloud Healthcare API DICOM stores.
+    description: List Cloud Healthcare API DICOM stores.
+    examples: |
+      To list the dicom stores in 'test-dataset', run:
+
+        $ {command} --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.dicomStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        Parent Cloud Healthcare API dataset to list all contained Cloud Healthcare API DICOM stores.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:dataset
+
+  output:
+    format: |
+      table(
+          name.scope("dicomStores"):label=ID,
+          name.scope("locations").segment(0):label=LOCATION,
+          notificationConfig.pubsubTopic:label=TOPIC,
+          notificationConfig.sendForBulkImport:label=BULKIMPORT,
+          streamConfigs.bigqueryDestination.tableUri:label=BQDESTINATION
+      )

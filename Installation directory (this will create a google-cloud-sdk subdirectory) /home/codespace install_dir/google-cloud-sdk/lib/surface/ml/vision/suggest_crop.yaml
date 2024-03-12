@@ -1,0 +1,68 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Suggest a bounding box in an image.
+    description: |
+      Returns the coordinates of a bounding box that surrounds the dominant
+      object or face in an image.
+    examples: |
+      To get the coordinates of a bounding box that surrounds the dominant
+      object or face in an image `gs://my_bucket/input_file`:
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: CROP_HINTS
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - api_field: requests.imageContext.cropHintsParams.aspectRatios
+      arg_name: aspect-ratios
+      type: googlecloudsdk.command_lib.ml.vision.flags:AspectRatioType
+      help_text: A list of aspect ratio hints for the suggested bounding box. Aspect
+        ratios may be specified either as a decimal number (ex. 1.333) or as a ratio
+        of width to height (ex 4:3).
+
+  output:
+    format: json
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Suggest a bounding box in an image.
+    description: |
+      Returns the coordinates of a bounding box that surrounds the dominant
+      object or face in an image.
+    examples: |
+      To get the coordinates of a bounding box that surrounds the dominant
+      object or face in an image `gs://my_bucket/input_file`:
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: CROP_HINTS
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.model_field
+    - api_field: requests.imageContext.cropHintsParams.aspectRatios
+      arg_name: aspect-ratios
+      type: googlecloudsdk.command_lib.ml.vision.flags:AspectRatioType
+      help_text: A list of aspect ratio hints for the suggested bounding box. Aspect
+        ratios may be specified either as a decimal number (ex. 1.333) or as a ratio
+        of width to height (ex 4:3).
+
+  output:
+    format: json

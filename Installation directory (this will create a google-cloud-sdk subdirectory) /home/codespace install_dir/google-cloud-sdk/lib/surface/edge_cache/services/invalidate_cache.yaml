@@ -1,0 +1,44 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Invalidate the cache for an EdgeCacheService resource.
+    description: |
+      Invalidate the cache entries associated with an EdgeCacheService
+      resource.
+    examples: |
+      To invalidate content via a tag, or tags for a given host for
+      an EdgeCacheService named 'my-service':
+
+        $ {command} my-service --tags="status=404" --host="media.example.com"
+
+      To invalidate all content under a specific path, specify an
+      exact path, or a prefix. Prefixes are denoted with a trailing
+      `*` character.
+
+        $ {command} my-service --path="/static/*"
+
+      You can optionally combine this with a status code. For example,
+      to invalidate all cached HTTP 404s:
+
+        $ {command} my-service --tags="status=404" --path="/static/*"
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheServices
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    method: invalidateCache
+
+  arguments:
+    resource:
+      help_text: The EdgeCacheService resource you want to invalidate
+        the cache for.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheService
+
+    params:
+    - group:
+        required: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.edge_cache.flags:invalidateCacheRequest.host
+        - _REF_: googlecloudsdk.command_lib.edge_cache.flags:invalidateCacheRequest.path
+        - _REF_: googlecloudsdk.command_lib.edge_cache.flags:invalidateCacheRequest.tags

@@ -1,0 +1,26 @@
+release_tracks: [ALPHA, BETA]
+
+help_text:
+  brief: |
+    Describe a Security Profile Group.
+  description: Show details of a Security Profile Group.
+
+  examples: |
+    To show details of a Security Profile Group named `my-security-profile-group` run:
+
+      $ {command} my-security-profile-group --organization=1234 --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:securityProfileGroup
+    help_text: Name of the Security Profile Group to be described.
+
+output:
+  format: json
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networksecurity.organizations.locations.securityProfileGroups

@@ -1,0 +1,40 @@
+language: python
+python:
+  - 2.7
+  - 3.3
+  - 3.4
+  - 3.5
+  - 3.6
+  - pypy
+  - pypy3
+
+matrix:
+  include:
+    - language: generic
+      python: 2.7
+      os: osx
+      osx_image: xcode7.3
+
+before_install:
+  - pip install --quiet --upgrade pip codecov
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install bash; fi
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then python setup.py bdist_rpm; fi
+  - make install
+
+script:
+  - make lint
+  - make test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - rpm
+      - tcsh

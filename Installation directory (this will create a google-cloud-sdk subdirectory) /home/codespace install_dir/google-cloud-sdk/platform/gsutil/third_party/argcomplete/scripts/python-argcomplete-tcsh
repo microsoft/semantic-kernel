@@ -1,0 +1,23 @@
+#!/bin/sh
+IFS=
+export IFS
+
+COMP_WORDBREAKS=
+export COMP_WORDBREAKS
+
+COMP_TYPE=
+export COMP_TYPE
+
+COMP_LINE=${COMMAND_LINE}
+export COMP_LINE
+
+COMP_POINT=${#COMMAND_LINE}
+export COMP_POINT
+
+_ARGCOMPLETE=1
+export _ARGCOMPLETE
+
+_ARGCOMPLETE_SHELL=tcsh
+export _ARGCOMPLETE_SHELL
+
+"$1" 8>&1 9>&2 1>/dev/null 2>/dev/null

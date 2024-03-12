@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Cancel a Memorystore Redis import or export operation.
+    description: |
+      Cancel a Memorystore Redis import or export operation.
+
+      An export operation can be canceled at any time. This does not impact the data or availability
+      of an instance.
+
+      An import operation can also be canceled. Note that the cancellation will result in the
+      instance recovering with a fully flushed cache.
+    examples: |
+      To cancel an operation named `my-redis-operation` in the default region, run:
+
+        $ {command} my-redis-operation
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:operation
+      help_text: |
+        Arguments and flags that specify the Memorystore Redis operation you want to cancel.
+
+  request:
+    api_version: v1
+    collection: redis.projects.locations.operations
+    method: cancel
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.redis.operations_util:LogCanceledOperation
+
+  input:
+    confirmation_prompt: |
+      You are about to cancel [{__name__}].
+
+  output:
+    format: none

@@ -1,0 +1,131 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Create a Queued Resource.
+    description: Create a new Queued Resource with the specified attributes.
+    examples: |
+        To create a Queued Resource with ID `my-queued-resource` in zone `us-central2-b`
+        and project `my-project`, run:
+
+        $ {command} my-queued-resource --accelerator-type=v4-8 --runtime-version=v2-alpha-tpuv4 --node-id=my-node-001 --zone=us-central2-b --project=my-project
+
+        To create a Queued Resource with multiple nodes, run:
+
+        $ {command} my-queued-resource --accelerator-type=v4-8 --runtime-version=v2-alpha-tpuv4 --node-count=2 --zone=us-central2-b --project=my-project
+
+  request:
+    collection: tpu.projects.locations.queuedResources
+    resource_method_params:
+      queuedResourceId: '{queuedResourcesId}'
+    use_relative_name: false
+    ALPHA:
+      api_version: v2alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateNodeSpec:api_version=v2alpha1
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetBestEffort
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetSpot:api_version=v2alpha1
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed:api_version=v2alpha1
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval:api_version=v2alpha1
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName:api_version=v2alpha1
+    GA:
+      api_version: v2
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateNodeSpec:api_version=v2
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetSpot:api_version=v2
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed:api_version=v2
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetValidInterval:api_version=v2
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:VerifyNodeCount
+      - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateReservationName:api_version=v2
+
+  async:
+    collection: tpu.projects.locations.operations
+    extract_resource_result: true
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
+
+  arguments:
+    resource:
+      help_text: The Queued Resource you want to create.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.queued_resources.resources:queuedresource
+
+    params:
+    - group:
+        help_text: Specify TPU node(s) with either a single node id or a node count and an optional node prefix
+        mutex: true
+        required: true
+        params:
+        - group:
+            help_text: Single node creation
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_id
+              required: true
+        - group:
+            help_text: Multinode creation
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_count
+              required: true
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_prefix
+    - group:
+        help_text: Specify a chip-based or core-based TPU node.
+        required: true
+        mutex: true
+        params:
+        - group:
+            help_text: Core-based TPU configuration
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:accelerator_type
+              required: true
+        - group:
+            help_text: Chip-based TPU configuration
+            mutex: false
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:type
+              api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.type
+              required: true
+              release_tracks: [ALPHA]
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:ga-type
+              api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.type
+              required: true
+              release_tracks: [GA]
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:topology
+              api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.topology
+              required: true
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
+
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:best_effort
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:spot
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:guaranteed
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:min_duration
+      hidden: true
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reserved
+      ALPHA:
+        api_field: queuedResource.guaranteed.reserved
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_after_duration
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_after_time
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_duration
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_time
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:internal_ips
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_project
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_folder
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_organization
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:network
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:subnetwork
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:service_account
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:service_account_scopes
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata_from_file
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:tags
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:data_disks
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:description
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:labels
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:enable_secure_boot
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:range
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:autocheckpoint_enabled
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:boot_disk
+      release_tracks: [ALPHA]

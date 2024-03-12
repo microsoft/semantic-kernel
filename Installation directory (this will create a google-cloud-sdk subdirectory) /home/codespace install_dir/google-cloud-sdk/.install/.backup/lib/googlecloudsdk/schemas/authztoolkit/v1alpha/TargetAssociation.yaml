@@ -1,0 +1,65 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: authztoolkit v1alpha TargetAssociation export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  asmWorkload:
+    description: |-
+      Immutable. AnthosServiceMesh based workload. Authorization Toolkit does
+      not auto configure the authorization settings on the workload.
+    $ref: AnthosServiceMesh.yaml
+  displayName:
+    description: |-
+      An arbitrary user-provided name for TargetAssociation. The display name
+      should adhere to the following format. * Must be 6 to 63 characters in
+      length. * Can only contain lowercase letters, numbers, and hyphens. * Must
+      start with a letter.
+    type: string
+  enableAuthorizationAuditLog:
+    description: |-
+      Enable the generation of authorization audit logs for the target.
+    type: boolean
+  enableAuthorizationDebugLog:
+    description: |-
+      Enable the generation of authorization debug logs for the target.
+    type: string
+    enum:
+    - LOG_ALL
+    - LOG_DENY_AND_ERROR
+    - LOG_ERROR
+    - LOG_NONE
+  name:
+    description: Identifier. name of resource
+    type: string
+  policies:
+    description: List of policies with full policy name and its configuration
+    type: array
+    items:
+      $ref: PolicyConfig.yaml
+  tdWorkload:
+    description: |-
+      Immutable. Traffic Director based workloads. Authorization Toolkit
+      auto configures the authorization settings on the workload.
+    $ref: TrafficDirector.yaml

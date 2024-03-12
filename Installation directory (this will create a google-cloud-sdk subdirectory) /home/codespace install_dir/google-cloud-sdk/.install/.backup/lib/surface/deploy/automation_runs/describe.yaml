@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Show details for an Automation Run.
+    description: Show details for a specified automation run.
+    examples: |
+      To show details about a automation run 'test-automationrun', for delivery pipeline 'test-pipeline', in region 'us-central1', run:
+
+        $ {command} test-automationrun --delivery-pipeline=test-pipeline --region=us-central1
+
+  request:
+    collection: clouddeploy.projects.locations.deliveryPipelines.automationRuns
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The name of the automation run you want to describe.
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:automation_run
+      is_positional: true

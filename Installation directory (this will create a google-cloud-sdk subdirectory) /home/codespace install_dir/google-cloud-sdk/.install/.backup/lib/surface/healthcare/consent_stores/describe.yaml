@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief:  Describe a Cloud Healthcare API consent store.
+    description: Describe a Cloud Healthcare API consent store.
+    examples: |
+      To describe the consent-store 'test-consent-store', run:
+
+        $ {command} test-consent-store --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.consentStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API consent store to describe.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:consent_store

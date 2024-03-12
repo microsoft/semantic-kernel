@@ -1,0 +1,36 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+definitions:
+  release_track:
+    type: object
+    properties:
+      home_directory:
+        type: string
+      supported_apis:
+        type: array
+        items:
+          type: string
+    additionalProperties: false
+
+  resource:
+    type: object
+    properties:
+      home_directory:
+        type: string
+      supported_apis:
+        type: array
+        items:
+          type: string
+      GA:
+        type: {$ref: "#/definitions/release_track"}
+      BETA:
+        type: {$ref: "#/definitions/release_track"}
+      ALPHA:
+        type: {$ref: "#/definitions/release_track"}
+    additionalProperties: false
+
+  api:
+    type: object
+    additionalProperties: {$ref: "#/definitions/resource"}
+
+type: object
+additionalProperties: {$ref: "#/definitions/api"}

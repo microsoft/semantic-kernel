@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Disable interactive serial console for a Bare Metal Solution instance.
+    description: |
+      Disables interactive serial console for a Bare Metal Solution instance.
+    examples: |
+      To disable interactive serial console for an instance named ``test-instance'', run:
+
+        $ {command} test-instance
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.bms.resources:instance
+      help_text: |
+        Arguments and flags that specify the Bare Metal Solution instance you
+        want to disable interactive serial console for.
+
+  request:
+    method: disableInteractiveSerialConsole
+    collection: baremetalsolution.projects.locations.instances
+
+  output:
+    format: none
+
+  async:
+    api_version: v2
+    collection: baremetalsolution.projects.locations.operations
+    request_issued_message: |
+      Disable interactive serial console request issued for: [{__name__}]
+    extract_resource_result: false

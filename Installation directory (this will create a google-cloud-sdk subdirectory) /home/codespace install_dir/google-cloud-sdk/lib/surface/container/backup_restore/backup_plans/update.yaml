@@ -1,0 +1,66 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Update a backup plan.
+    description: |
+      Update a Backup for GKE backup plan.
+
+      ## EXAMPLES
+
+      To update a backup plan ``my-backup-plan'' in project ``my-project'' in location ``us-central1'' to add new description, run:
+
+        $ {command} my-backup-plan --project=my-project --location=us-central1 --description="New description"
+
+  request:
+    collection: gkebackup.projects.locations.backupPlans
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.container.backup_restore.hooks:PreprocessUpdateBackupPlan
+    api_version: v1
+
+  async:
+    collection: gkebackup.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the backup plan to update. The name may be provided either as a relative name, e.g.
+        `projects/<project>/locations/<location>/backupPlans/<backupPlan>`
+        or as a single ID name (with the parent resources provided via options or through
+        properties), e.g. `BACKUP_PLAN --project=<project> --location=<location>`.
+
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:positional_backup_plan
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_plan_etag
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_plan_description
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:deactivated
+    # Retention policy
+    - group:
+        required: false
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_delete_lock_days
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_retain_days
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:locked
+    # Backup schedule
+    - group:
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:update_cron_schedule
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:paused
+    # Backup scope
+    - group:
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:all_namespaces
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:selected_namespaces
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:selected_applications
+    - group:
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:include_volume_data
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:include_secrets
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:encryption_key
+
+    labels:
+      api_field: backupPlan.labels
+
+  update:
+    read_modify_update: true

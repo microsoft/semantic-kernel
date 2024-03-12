@@ -1,0 +1,117 @@
+project:
+  name: project
+  collection: gkehub.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project name.
+    property: core/project
+
+location:
+  name: location
+  collection: gkehub.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location name.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.container.fleet.util:DefaultToGlobal
+      hint: "global is the only supported location"
+
+membership:
+  name: membership
+  collection: gkehub.projects.locations.memberships
+  attributes:
+  - *project
+  - *location
+  - &membership
+    parameter_name: membershipsId
+    attribute_name: membership
+    help: The membership ID.
+  request_id_field: membershipId
+
+feature:
+  name: feature
+  collection: gkehub.projects.locations.features
+  attributes:
+  - *project
+  - *location
+  - &feature
+    parameter_name: featuresId
+    attribute_name: feature
+    help: The feature ID.
+  request_id_field: featureId
+
+operation:
+  name: operation
+  collection: gkehub.projects.locations.operations
+  attributes:
+  - *project
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: the ID of the Hub membership operation
+
+fleet:
+  name: fleet
+  collection: gkehub.projects.locations.fleets
+  attributes:
+  - *project
+  - *location
+  - &fleet
+    parameter_name: fleetsId
+    attribute_name: fleet
+    help: The fleet ID.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.container.fleet.util:DefaultFleetID
+      hint: "default is the only supported fleet ID"
+
+namespace:
+  name: namespace
+  collection: gkehub.projects.locations.namespaces
+  attributes:
+  - *project
+  - *location
+  - &namespace
+    parameter_name: namespacesId
+    attribute_name: namespace
+    help: The namespace name.
+
+rbacrolebinding:
+  name: rbacrolebinding
+  collection: gkehub.projects.locations.namespaces.rbacrolebindings
+  attributes:
+  - *project
+  - *location
+  - *namespace
+  - &rbacrolebinding
+    parameter_name: rbacrolebindingsId
+    attribute_name: rbacrolebinding
+    help: The rbacrolebinding name.
+
+binding:
+  name: binding
+  collection: gkehub.projects.locations.memberships.bindings
+  attributes:
+  - *project
+  - *location
+  - *membership
+  - &binding
+    parameter_name: bindingsId
+    attribute_name: binding
+    help: The binding name.
+
+scope:
+  name: scope
+  collection: gkehub.projects.locations.scopes
+  attributes:
+  - *project
+  - *location
+  - &scope
+    parameter_name: scopesId
+    attribute_name: scope
+    help: The scope name.
+  request_id_field: scopeId

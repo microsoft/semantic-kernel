@@ -1,0 +1,21 @@
+- help_text:
+    brief: Trigger an on-demand execution of a job.
+    description: Trigger an on-demand execution of a job.
+    examples: |
+      The following command runs a jobs:
+
+        $ {command} my-job
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+    method: run
+    static_fields:
+      runJobRequest: {}
+
+  arguments:
+    resource:
+      help_text: The job you want to run.
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
+
+  output:
+    format: none

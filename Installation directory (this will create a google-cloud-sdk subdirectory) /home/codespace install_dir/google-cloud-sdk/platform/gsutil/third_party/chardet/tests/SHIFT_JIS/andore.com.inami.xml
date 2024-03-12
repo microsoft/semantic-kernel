@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="Shift_JIS"?>
+<!--
+Source: http://andore.com/inami/index.rdf
+Expect: SHIFT_JIS
+-->
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+  xmlns:admin="http://webns.net/mvcb/"
+  xmlns:cc="http://web.resource.org/cc/"
+  xmlns="http://purl.org/rss/1.0/">
+
+<channel rdf:about="http://andore.com/inami/">
+<title>アメリカでがんばりましょう</title>
+<link>http://andore.com/inami/</link>
+<description></description>
+<dc:language>ja</dc:language>
+<dc:creator></dc:creator>
+<dc:date>2006-01-02T19:30:00-08:00</dc:date>
+<admin:generatorAgent rdf:resource="http://www.movabletype.org/?v=2.661" />
+
+
+<items>
+<rdf:Seq><rdf:li rdf:resource="http://andore.com/inami/mtarchives/003416.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003415.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003411.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003407.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003405.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003401.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003392.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003389.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003388.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003384.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003381.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003379.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003376.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003369.html" />
+<rdf:li rdf:resource="http://andore.com/inami/mtarchives/003367.html" />
+</rdf:Seq>
+</items>
+
+</channel>
+
+<item rdf:about="http://andore.com/inami/mtarchives/003416.html">
+<title>Google PC が発売される?</title>
+<link>http://andore.com/inami/mtarchives/003416.html</link>
+<description>digg.com 経由。
+オレもイマイチ信じられないが、Google が近日中に 200-300ドル(2万2000円 - 3万5000円)程度の PC を発売するのではないかという噂が流れた。 </description>
+<dc:subject>03 コンピュータ</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2006-01-02T19:30:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003415.html">
+<title>2006年もがんばりましょう</title>
+<link>http://andore.com/inami/mtarchives/003415.html</link>
+<description>あー、もう今年もあと少し。
+というのに、サンフランシスコ ベイエリア(北カリフォルニア)は嵐に見舞われてすごいことに。 ワインで有名な Napa では大雨で洪水が発生し、ウチの住んでいるところではお昼ごろからさっきまでケーブルテレビのラインに障害が発生し、テレビもインターネットも不通に。 車で近所を走ったときに警察が道路が封鎖して、なにか作業をしていたのがわかったので強風で木でも倒れたようなようだ。 </description>
+<dc:subject>01 自己紹介・サイト紹介</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-31T23:55:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003411.html">
+<title>いい DVD+-R メディアはどれ?</title>
+<link>http://andore.com/inami/mtarchives/003411.html</link>
+<description>DVDレコーダーを使ってみると気付くのが、使うメディアによる焼け具合。 有名ブランドのメディアは問題なく焼けるが、いわゆるノーブランドと言われるメディアだと失敗することも多い。 CD-R のときも同じようなことが言われたが、DVD-Rの場合はそれ以上に、ブランドによる差が激しいような気がする。 けど、できるだけ安くしたいという気持ちもあったりして悩ましいところだ。 </description>
+<dc:subject>03 コンピュータ</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-27T08:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003407.html">
+<title>Lightning Pool (ビリヤードゲーム) にハマる</title>
+<link>http://andore.com/inami/mtarchives/003407.html</link>
+<description>数日前に、上のエントリを Digg で発見。
+Pool Game というのはビリヤードのこと。 (Pool Bar の Pool)。 で試しにやってみたら、ハマるハマる。</description>
+<dc:subject>02 アメリカ生活</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-23T08:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003405.html">
+<title>VistaXP が公開中止に</title>
+<link>http://andore.com/inami/mtarchives/003405.html</link>
+<description>5ヶ月ほど前に公開して、このサイトでも紹介した VistaXP というテーマファイル。  マイクロソフトの次期OS である Windows Vista と似たような見た目を XP でも再現するというこのテーマファイルだったのだが、Microsoft から削除要請があったため、公開・配布中止となってしまった。</description>
+<dc:subject>03 コンピュータ</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-22T08:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003401.html">
+<title>サッカー日本代表戦のチケットは20日(火)発売</title>
+<link>http://andore.com/inami/mtarchives/003401.html</link>
+<description>来年の2月10日、サンフランシスコでサッカー日本代表がアメリカ代表と試合をするという珍しいイベントが行われる。 そのチケットの販売がサンフランシスコの時間帯 (PST) で 12/20(火) 10:00am に開始される。</description>
+<dc:subject>02 アメリカ生活</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-18T13:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003392.html">
+<title>アメリカ版 VICS?</title>
+<link>http://andore.com/inami/mtarchives/003392.html</link>
+<description>日本ではカーナビの機能として一般的になったVICS (道路交通情報システム、いわゆる渋滞情報)。
+アメリカではまだカーナビが少しづつ普及してきているような状態なので、まだそういったシステムはない。 代わりに、専用端末に渋滞情報を配信するこんなサービスがロスやシアトルで展開されていて、最近サンフランシスコエリアでも始まった。</description>
+<dc:subject></dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-13T09:10:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003389.html">
+<title>アメリカ人と寿司</title>
+<link>http://andore.com/inami/mtarchives/003389.html</link>
+<description><![CDATA[<p>最近、オレの回りで流行ってるこのビデオ。 まだ見てない人はまず見てから続きを読んで欲しい。</p>
+
+<p>
+<a target="_blank" href="http://video.google.com/videoplay?docid=6905089586228877019&q=sushi">Documentary On Japanese Sushi - Google Video</a><br/>
+(要 Flash、リンクをクリックするとすぐ音付きで再生されるので注意)
+</p>
+
+<p>寿司がアメリカに入ってきて随分たち、特にアジア人も多いサンフランシスコ周辺では寿司は結構一般的で、店のよしわるしは別にしてダウンタウンには1つぐらい寿司レストランがあるほど浸透してきた。 でも、寿司のことをよくわかってるかと言うとまだまだ「???」かもしれない。</p>]]></description>
+<dc:subject>02 アメリカ生活</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-11T11:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003388.html">
+<title>Warriors vs Detroit Pistons</title>
+<link>http://andore.com/inami/mtarchives/003388.html</link>
+<description>前回プレシーズンマッチを観に行ってイマイチだったこともあり、同じメンバーでシーズン中の試合を観に行くことに。 対戦相手は先方のリクエストもあって Detroit Pistons。 Pistons は一昨年の NBA チャンピオン、昨年も NBA ファイナルで San Antonio Spurs に負けたので 凖NBA チャンピオンという強豪チーム。 今シーズンもこの試合の前までで 13勝 2敗 というものすごいチーム。</description>
+<dc:subject>04 NBA Basketball</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-10T14:30:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003384.html">
+<title>手術しないで!</title>
+<link>http://andore.com/inami/mtarchives/003384.html</link>
+<description>夕刊フジに面白い興味深い記事が。
+急性虫垂炎(いわゆる盲腸)の手術をするためにかかるお金を各都市ごとに比較して、日本の急性虫垂炎の手術入院費がとても低く医者も儲からないからやりたがらないという話なのだが、日本の手術入院費 38万円以上にアメリカの手術入院費が異常だ。</description>
+<dc:subject>02 アメリカ生活</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-06T09:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003381.html">
+<title>クリスマスプレゼントにアーケードゲームはいかが?</title>
+<link>http://andore.com/inami/mtarchives/003381.html</link>
+<description>今日の新聞広告で見つけた面白いモノ。 Target という日本で言うホームセンターのようなお店の広告なんだけど、クリスマス時期限定でアーケードゲームの筐体を売っている。 この筐体でいくつかのゲームが遊べるのだが、ゲームのラインナップは、 「Joust、 Defender I and II、 Robotron、 Rampage など」... とあるように全然馴染みのないものばかり...。 絵を見てもファミコン程度のものなので結構古いゲームの復刻版という感じだ。</description>
+<dc:subject>02 アメリカ生活</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-04T12:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003379.html">
+<title>サッカー日本代表がサンフランシスコで試合</title>
+<link>http://andore.com/inami/mtarchives/003379.html</link>
+<description><![CDATA[日本代表<s>キター</s>クルー。
+2年ほど前にも、親善試合ということでアメリカ代表とサンホゼで試合するというのがあったが、ブッシュがイラクと戦争を始めたため、日本代表がアメリカに来るのを<a href="http://www.jfa.or.jp/CGI/top/top.cgi?key=backup&0=1560&1=back200303&backyear=2003&lf=&yymm=">中止した</a>という経緯があった。 しかし、今度はきっと大丈夫だろう。絶対行くぞー。]]></description>
+<dc:subject>02 アメリカ生活</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-02T08:45:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003376.html">
+<title>Warriors, 11月はチーム記録タイの11勝!</title>
+<link>http://andore.com/inami/mtarchives/003376.html</link>
+<description>11月の始めにスタートしたNBA、最初の月が終わって振り返ってみると Warriors は何と 11勝6敗と大きく勝ち越し。 Pacific Division の順位も 2位 (しかも、1位の Clippers は 10勝5敗 でゲーム差は 0) という好成績となった。 試合日程の関係で今シーズンは試合数が多かったというのもあるが、11月に11勝したのは実に31年ぶりだそうだ。 </description>
+<dc:subject>04 NBA Basketball</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-12-01T13:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003369.html">
+<title>アフターサンクスギビングセールの人混みに驚く</title>
+<link>http://andore.com/inami/mtarchives/003369.html</link>
+<description>並んでみた。
+といっても朝5時オープンの Best Buy という家電量販店に 4時50分ごろに着けばいいかなというお気楽なモノだったんだけど、自分の甘さを認識。 たまに雨も降る悪天候の中、オープン前にはすでに1000人ぐらいいるんじゃないかというぐらい人が集まっていた。</description>
+<dc:subject>02 アメリカ生活</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-11-25T08:00:00-08:00</dc:date>
+</item>
+<item rdf:about="http://andore.com/inami/mtarchives/003367.html">
+<title>アフターサンクスギビングセールでPCの値段がさらに下落</title>
+<link>http://andore.com/inami/mtarchives/003367.html</link>
+<description><![CDATA[しばらく前に、<a href="http://japan.cnet.com/news/ent/story/0,2000047623,20090009,00.htm">CNet の記事</a>で Walmart (ウォルマート) が $398 なノートやデスクトップPCを発売か? というのがあったが、実際はもっとすごかった。]]></description>
+<dc:subject>02 アメリカ生活</dc:subject>
+<dc:creator>Hiro</dc:creator>
+<dc:date>2005-11-24T11:00:00-08:00</dc:date>
+</item>
+
+
+</rdf:RDF>

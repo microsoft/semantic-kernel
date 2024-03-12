@@ -1,0 +1,40 @@
+name: Integration
+
+on: [push, pull_request]
+
+jobs:
+  downstream:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -U pip setuptools
+        pip install -r dev-requirements.txt
+    - name: Remove Chardet & Charset-Normalizer
+      run: |
+        pip uninstall -y chardet
+        pip uninstall -y charset-normalizer
+    - name: Install the package
+      run: |
+        python setup.py install
+    - name: Clone the complete dataset
+      run: |
+        git clone https://github.com/Ousret/char-dataset.git
+    - name: Start the Flask server
+      run: |
+        python ./bin/serve.py &
+    - name: Integration Tests with Requests
+      run: |
+        python ./bin/integration.py

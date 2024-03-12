@@ -1,0 +1,33 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: |
+      Add IAM policy binding for a certificate template.
+    description: |
+      Adds a policy binding to the IAM policy of a certificate template. One binding
+      consists of a member and a role.
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      the policy file format and contents.
+    examples: |
+      To add an IAM policy binding for the role of 'roles/privateca.templateUser' for the user
+      'test-user@gmail.com' on the certificate template 'mtls-template' with the location 'us-west1', run:
+
+        $ {command} mtls-template \
+          --location='us-west1' \
+          --member='user:test-user@gmail.com' \
+          --role='roles/privateca.templateUser'
+
+  request:
+    collection: privateca.projects.locations.certificateTemplates
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The certificate template for which to add the IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.privateca.resources:certificate_template
+
+  iam:
+    enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

@@ -1,0 +1,9 @@
+include README
+include LICENSE
+include MANIFEST.in
+include changelog
+include setup.py
+recursive-include python2 *
+recursive-include python3 *
+recursive-include test *
+recursive-include docs *

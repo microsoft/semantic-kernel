@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Describe a budget.
+    description: Describe a budget.
+    examples: |
+      To describe the budget 'abc' in account '123', run:
+
+        $ {command} "billingAccounts/123/budgets/abc"
+
+      Alternatively, you can run:
+
+        $ {command} abc --billing-account=123
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.billingbudgets.resources:budget
+      help_text: |
+        Billing budget to describe.
+
+  request:
+    collection: billingbudgets.billingAccounts.budgets
+    ALPHA:
+      api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1

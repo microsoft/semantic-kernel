@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Remove an IAM policy binding for a Cloud Deploy Custom Target Type.
+    description: |
+      Removes a policy binding to the IAM policy of a Cloud Deploy Custom Target Type.
+      One binding consists of a member and a role.
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      the policy file format and contents.
+    examples: |
+      To remove an IAM policy binding for the role of `roles/clouddeploy.customTargetTypeAdmin`
+      for the user `test-user@gmail.com` on `my-custom-target-type` with the region `us-central1`, run:
+
+        $ {command} my-custom-target-type \
+          --region='us-central1' \
+          --member='user:test-user@gmail.com' \
+          --role='roles/clouddeploy.customTargetTypeAdmin'
+  request:
+    api_version: v1
+    collection: clouddeploy.projects.locations.customTargetTypes
+  arguments:
+    resource:
+      help_text: The custom target type for which to remove the IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:custom_target_type
+  iam:
+    enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

@@ -1,0 +1,40 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: List Queued Resources.
+    description: List all Queued Resources associated with a project and location.
+    examples: |
+      To list all Queued Resources available in zone `us-central1-b` for project `my-project`, run:
+
+        $ {command} --zone=us-central1-b --project=my-project
+
+  request:
+    collection: tpu.projects.locations.queuedResources
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        The compute/zone of the Queued Resource.
+
+        If not specified, will use the value of the [compute/zone] property in the current
+        gcloud configuration. To find a list of compute zones available for Cloud TPUs in your
+        project, run `{parent_command} locations list`.
+
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:location
+
+  output:
+    format: table(
+           name.basename():label=NAME,
+           name.segment(-3):label=ZONE,
+           tpu.nodeSpec.len():label=NODE_COUNT,
+           tpu.nodeSpec[0].node.acceleratorType.basename():label=ACCELERATOR_TYPE,
+           tpu.nodeSpec[0].node.acceleratorConfig.type.basename():label=TYPE,
+           tpu.nodeSpec[0].node.acceleratorConfig.topology.basename():label=TOPOLOGY,
+           state.state:label=STATE
+           )

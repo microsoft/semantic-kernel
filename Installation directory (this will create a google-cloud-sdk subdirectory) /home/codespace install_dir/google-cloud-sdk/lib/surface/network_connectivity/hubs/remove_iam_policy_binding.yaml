@@ -1,0 +1,20 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Remove an IAM policy binding from the IAM policy of a hub resource.
+    description: |
+      Remove an IAM policy binding from the IAM policy of a hub resource.
+    examples: |
+      To remove the ``roles/networkconnectivity.groupUser'' role from a user of the hub ``my-hub'',
+      run:
+
+      $ {command} my-hub --member="user:username@gmail.com" --role="roles/networkconnectivity.groupUser"
+
+  request: &request
+    collection: networkconnectivity.projects.locations.global.hubs
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The hub that you want to update.
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hub

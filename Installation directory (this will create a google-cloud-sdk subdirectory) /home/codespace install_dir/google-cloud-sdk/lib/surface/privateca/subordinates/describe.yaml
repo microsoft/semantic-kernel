@@ -1,0 +1,35 @@
+- release_tracks: [GA]
+  help_text:
+    brief: |
+      Get metadata for a subordinate certificate authority.
+    description: |
+      Returns metadata for the given certificate authority.
+    examples: |
+      To get metadata for the subordinate CA 'server-tls-1' in CA Pool 'my-pool' and location
+      'us-west1':
+
+        $ {command} server-tls-1 \
+            --location=us-west1 \
+            --pool=my-pool
+
+      To download the PEM-encoded CA certificate chain for the 'server-tls-1'
+      CA in location 'us-west1' to a file
+      called 'server-tls-1.crt':
+
+        $ {command} server-tls-1 \
+            --location=us-west1 \
+            --pool=my-pool \
+            --format="value(pemCaCertificates)" > ./server-tls-1.crt
+
+  request:
+    collection: privateca.projects.locations.caPools.certificateAuthorities
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The certificate authority for which to obtain metadata.
+      spec: !REF googlecloudsdk.command_lib.privateca.resources:cert_authority
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.privateca.hooks:CheckResponseSubordinateTypeHook:version=v1

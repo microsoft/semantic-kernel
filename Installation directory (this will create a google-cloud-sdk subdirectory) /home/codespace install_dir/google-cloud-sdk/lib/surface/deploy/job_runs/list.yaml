@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: List the job runs.
+    description: |
+      List the job runs for a specified delivery pipeline.
+    examples: |
+      To list the job runs for delivery pipeline 'test-pipeline', release 'test-release', and rollout 'test-rollout' in region 'us-central1', run:
+
+        $ {command} --delivery-pipeline=test-pipeline --release=test-release --rollout=test-rollout --region=us-central1
+
+  request:
+    collection: clouddeploy.projects.locations.deliveryPipelines.releases.rollouts.jobRuns
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The rollouts for which you want to list the job runs.
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:rollout
+      is_positional: false

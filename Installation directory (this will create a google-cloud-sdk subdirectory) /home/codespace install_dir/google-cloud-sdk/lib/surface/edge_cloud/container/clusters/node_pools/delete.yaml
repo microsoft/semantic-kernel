@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Delete an Edge Container nodePool.
+    description: |
+      Delete an Edge Container nodePool.
+    examples: |
+      To delete a nodePool called 'my-nodePool' in region us-central1, run:
+
+        $ {command} my-nodePool --cluster=<my-cluster> --location=us-central1
+
+  request:
+    collection: edgecontainer.projects.locations.clusters.nodePools
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Edge Container nodePool to delete.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:nodePool
+
+  async:
+    collection: edgecontainer.projects.locations.operations

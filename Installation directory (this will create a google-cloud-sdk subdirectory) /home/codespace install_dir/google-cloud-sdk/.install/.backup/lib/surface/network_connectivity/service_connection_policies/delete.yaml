@@ -1,0 +1,23 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Delete a service connection policy.
+    description: Delete the specified service connection policy.
+    examples: |
+      To delete a service connection policy with name ``pol1'' in region ``us-central1'', run:
+
+        $ {command} pol1 --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:serviceConnectionPolicy
+      help_text: Name of the Service Connection Policy to be deleted.
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request: &request
+    GA:
+      api_version: v1
+    method: delete
+    collection: networkconnectivity.projects.locations.serviceConnectionPolicies

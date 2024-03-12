@@ -1,0 +1,33 @@
+release_tracks: [GA, BETA, ALPHA]
+help_text:
+  brief: Add an IAM policy binding to a Cloud Bigtable table.
+  description: |
+    Add an IAM policy binding to a Cloud Bigtable table. One binding consists of a member,
+    a role, and an optional condition.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with table 'my-table' in instance 'my-instance', run:
+
+      $ {command} my-table --instance='my-instance' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    To add an IAM policy binding which expires at the end of the year 2019 for the role of
+    'roles/bigtable.admin' and the user 'test-user@gmail.com' with table 'my-table' in instance 'my-instance', run:
+
+      $ {command} my-table --instance='my-instance' --member='user:test-user@gmail.com' --role='roles/bigtable.admin' --condition='expression=request.time < timestamp("2020-01-01T00:00:00Z"),title=expires_end_of_2019,description=Expires at midnight on 2019-12-31'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
+
+request:
+  collection: bigtableadmin.projects.instances.tables
+
+arguments:
+  resource:
+    help_text: Cloud Bigtable table to add the IAM policy binding to.
+    spec: !REF googlecloudsdk.command_lib.bigtable.resources:table

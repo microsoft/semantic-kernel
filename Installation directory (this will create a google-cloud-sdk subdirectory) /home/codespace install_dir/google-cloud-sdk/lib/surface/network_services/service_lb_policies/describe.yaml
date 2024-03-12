@@ -1,0 +1,23 @@
+release_tracks: [ALPHA, BETA]
+
+help_text:
+  brief: |
+    Describe a service LB policy.
+  description: Show details of a service LB policy.
+
+  examples: |
+    Show details about a service LB policy named 'my-service-lb-policy'.
+
+      $ {command} my-service-lb-policy --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:serviceLbPolicy
+    help_text: Name of the service LB policy to be described.
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networkservices.projects.locations.serviceLbPolicies

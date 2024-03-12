@@ -1,0 +1,87 @@
+project:
+  name: project
+  collection: file.projects
+  attributes:
+  - parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The project name.
+    property: core/project
+
+zone:
+  name: zone
+  collection: file.projects.locations
+  attributes:
+  - &zone
+    parameter_name: locationsId
+    attribute_name: zone
+    help: |
+      The zone of the Filestore {resource}.
+    property: filestore/zone
+  disable_auto_completers: false
+
+region:
+  name: region
+  collection: file.projects.locations
+  attributes:
+  - &region
+    parameter_name: locationsId
+    attribute_name: region
+    help: |
+      The region of the Filestore {resource}.
+    property: filestore/region
+  disable_auto_completers: false
+
+location:
+  name: location
+  collection: file.projects.locations
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The location of the Filestore {resource}.
+    property: filestore/location
+  disable_auto_completers: false
+
+instance:
+  name: instance
+  collection: file.projects.locations.instances
+  request_id_field: instanceId
+  attributes:
+  - *zone
+  - parameter_name: instancesId
+    attribute_name: instance
+    help: The name of the Filestore instance.
+  disable_auto_completers: false
+
+instance_with_generic_location:
+  name: instance
+  collection: file.projects.locations.instances
+  request_id_field: instanceId
+  attributes:
+  - *location
+  - parameter_name: instancesId
+    attribute_name: instance
+    help: The name of the Filestore instance.
+  disable_auto_completers: false
+
+snapshot:
+  name: snapshot
+  collection: file.projects.locations.snapshots
+  request_id_field: snapshotId
+  attributes:
+  - parameter_name: snapshotsId
+    attribute_name: snapshot
+    help: The name of the Filestore snapshot.
+  disable_auto_completers: false
+
+backup:
+  name: backup
+  collection: file.projects.locations.backups
+  request_id_field: backupId
+  attributes:
+  - parameter_name: backupId
+    attribute_name: backup
+    help: The name of the Filestore backup.
+  disable_auto_completers: false

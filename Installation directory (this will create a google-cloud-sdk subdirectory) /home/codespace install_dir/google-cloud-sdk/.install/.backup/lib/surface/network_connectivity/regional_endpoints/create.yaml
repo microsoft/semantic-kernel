@@ -1,0 +1,58 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: Create a new regional endpoint.
+    description: Create a new regional endpoint with the given name.
+    examples: |
+      To create a regional endpoint with the name 'my-regional-endpoint' in us-central1
+      targeting my-target-endpoint, run:
+
+        $ {command} my-regional-endpoint
+          --region=us-centeral1
+          [--network=my-network]
+          [--subnetwork=my-subnet]
+          --target-google-api=my-target-endpoint
+          [--enable-global-access]
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:regionalEndpoint
+      help_text: Name of the regional endpoint to be created.
+    params:
+    - arg_name: enable-global-access
+      action: store_true
+      default: false
+      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.accessType
+      help_text: |
+        Whether the REGIONAL or GLOBAL access is enabled.
+      choices:
+      - arg_value: false
+        enum_value: REGIONAL
+        help_text: REGIONAL access is enabled for the regional endpoint.
+      - arg_value: true
+        enum_value: GLOBAL
+        help_text: GLOBAL access is enabled for the regional.
+    - arg_name: description
+      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.description
+      help_text: Description of the regional endpoint.
+    - arg_name: network
+      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.network
+      help_text: Consumer's VPC network that this regional endpoint belongs to.
+    - arg_name: subnetwork
+      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.subnetwork
+      help_text: The name of the subnetwork from which the IP address will be allocated.
+    - arg_name: target-google-api
+      required: true
+      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.targetGoogleApi
+      help_text: The service endpoint the regional endpoint will connect to.
+    labels:
+      api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.labels
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request: &request
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.regionalEndpoints
+    method: create

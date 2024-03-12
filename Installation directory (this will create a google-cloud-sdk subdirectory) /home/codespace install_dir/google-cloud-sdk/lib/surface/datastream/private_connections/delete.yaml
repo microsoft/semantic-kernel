@@ -1,0 +1,35 @@
+- release_tracks: [BETA, GA]
+  BETA:
+    deprecate:
+      is_removed: false
+      warning: |
+        This command has been deprecated.
+        Use `gcloud datastream private_connections delete` instead.
+  help_text:
+    brief: |
+      Delete a Datastream private connection.
+    description: |
+      Deletes a private connection. You must set the --force
+      parameter to ensure that the private connectivity configuration is deleted properly.
+    examples: |
+      To delete a private connection:
+
+          $ {command} PRIVATE_CONNECTION --location=us-central1 --force
+
+  request:
+    collection: datastream.projects.locations.privateConnections
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: |
+        Private connection resource - Private connection to delete.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:positional_private_connection
+
+    params:
+    - api_field: force
+      arg_name: force
+      required: false
+      help_text: |
+        You must set the force to ensure that the private
+        connectivity configuration is deleted properly.

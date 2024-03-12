@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Delete a backup of a Looker instance.
+    description: |
+      Delete a backup of a Looker instance.
+
+      This command can fail for the following reasons:
+        * The instance specified does not exist.
+        * The backup does not exist.
+        * The active account does not have permission to access the given
+          instance.
+    examples: |
+      To delete a backup with ID `c24ad631-ad83-42f0-9f98-41e2b493263e` on instance with name `my-looker-instance`, run:
+
+        $ {command} c24ad631-ad83-42f0-9f98-41e2b493263e --instance='my-looker-instance'
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:backup
+      help_text: |
+        The instance of the backup to delete.
+
+  input:
+    confirmation_prompt: |
+      You are about to delete backup [{__name__}] in [{locationsId}].
+      Any associated data will be lost.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    collection: looker.projects.locations.instances.backups
+
+  async:
+    collection: looker.projects.locations.operations

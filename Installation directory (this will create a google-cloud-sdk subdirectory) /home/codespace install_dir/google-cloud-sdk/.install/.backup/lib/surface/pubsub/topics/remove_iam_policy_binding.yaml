@@ -1,0 +1,58 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Remove IAM policy binding of a topic
+  description: |
+    Remove an IAM policy binding of a Cloud Pub/Sub Topic.
+
+  examples: |
+    To Remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with topic 'my-topic', run:
+
+      $ {command} my-topic --member='user:test-user@gmail.com' --role='roles/editor'
+
+    The following command will remove an IAM policy binding for the role of
+    'roles/editor' from all authenticated users on topic
+    'my-topic':
+
+      $ {command} my-topic --member='allAuthenticatedUsers' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: pubsub.projects.topics
+
+arguments:
+  resource:
+    help_text: The topic to remove the IAM policy binding from.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:topic
+
+ALPHA:
+  help_text:
+    brief: Remove IAM policy binding of a topic.
+    description: |
+      Remove an IAM policy binding from the IAM policy of a Cloud Pub/Sub Topic. One binding consists of a member,
+      a role, and an optional condition.
+
+    examples: |
+      To remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+      with topic 'my-topic', run:
+
+        $ {command} my-topic --member='user:test-user@gmail.com' --role='roles/editor'
+
+      The following command will remove an IAM policy binding for the role of
+      'roles/editor' from all authenticated users on topic
+      'my-topic':
+
+        $ {command} my-topic --member='allAuthenticatedUsers' --role='roles/editor'
+
+      To remove an IAM policy binding which expires at the end of the year 2018 for the role of
+      'roles/pubsub.publisher' and the user 'test-user@gmail.com' with topic 'my-topic', run:
+
+        $ {command} my-topic --member='user:test-user@gmail.com' --role='roles/pubsub.publisher' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  iam:
+    enable_condition: true

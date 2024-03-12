@@ -1,0 +1,56 @@
+flags:
+  priority:
+    arg_name: priority
+    api_field: googleCloudDialogflowV2Intent.priority
+    help_text: |
+      Priority of the intent.
+
+      Higher numbers represent higher priorities. Zero or negative numbers mean that the intent is
+      disabled. Default priority is 500000.
+
+  is_fallback:
+    arg_name: is-fallback
+    help_text: If true, set this intent as a fallback intent.
+    api_field: googleCloudDialogflowV2Intent.isFallback
+    type: bool
+    action: store_true
+  training_phrases:
+    arg_name: training-phrases
+    api_field: googleCloudDialogflowV2Intent.trainingPhrases
+    type: googlecloudsdk.command_lib.dialogflow.intents.hooks:TrainingPhrasesType
+    help_text: |
+      List of examples or templates.
+
+      Can be provided as comma separated unannotated examples or as a list training phrase objects.
+      To provide training phrase objects, specify the flag with `--flags-file`.
+
+      For example, use `--flags-file=flags.yaml`, where `flags.yaml` contains:
+
+      ```
+      --training-phrases:
+        - type: TEMPLATE
+          parts:
+          - text: I love the color
+          - text: red
+            entityType: <entity_type_id>
+            alias: color
+      ```
+
+      For more information on training phrases, see:
+      https://cloud.google.com/dialogflow-enterprise/docs/reference/rest/Shared.Types/Intent#TrainingPhrase
+
+      For more information on `--flags-file`, see `gcloud topics flags-file`.
+  responses:
+    arg_name: responses
+    api_field: googleCloudDialogflowV2Intent.messages
+    type: googlecloudsdk.command_lib.dialogflow.intents.hooks:ResponseToMessage
+    help_text: |
+      Comma separated list of simple text responses to send to the user.
+  ml_enabled:
+    arg_name: ml-enabled
+    api_field: googleCloudDialogflowV2Intent.mlDisabled
+    type: bool
+    default: true
+    action: store_true
+    help_text: |
+      If true, enable machine learning for the intent.

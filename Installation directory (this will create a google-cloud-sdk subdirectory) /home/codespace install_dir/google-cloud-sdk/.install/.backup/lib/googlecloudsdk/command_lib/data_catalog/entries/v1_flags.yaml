@@ -1,0 +1,167 @@
+schema:
+  arg_name: schema
+  api_field: googleCloudDatacatalogV1Entry.schema.columns
+  metavar: COLUMN_NAME=COLUMN_TYPE
+  type:
+    arg_dict:
+      flatten: true
+      spec:
+      - api_field: column
+      - api_field: type
+  help_text: |-
+    Inline schema for the entry. When specifying a schema via this argument, only column names
+    and types should be provided. Column modes will default to NULLABLE, and column descriptions
+    and nested subcolumns are not supported.
+schema_from_file:
+  arg_name: schema-from-file
+  api_field: googleCloudDatacatalogV1Entry.schema
+  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+  processor: googlecloudsdk.command_lib.data_catalog.entries.v1_util:ProcessSchemaFromFile
+  help_text: |-
+    Path to a JSON or YAML file containing the schema for the entry. This can be used to specify
+    schemas with column descriptions, column modes other than NULLABLE, and nested subcolumns.
+gcs_file_patterns:
+  arg_name: gcs-file-patterns
+  api_field: googleCloudDatacatalogV1Entry.gcsFilesetSpec.filePatterns
+  help_text: |-
+    Patterns to identify a set of files in Google Cloud Storage. A star (```*```) may be used at
+    the end of a pattern to match arbitrary files beginning with that pattern.
+
+    Examples of valid file patterns:
+    - gs://bucket_name/```*``` - Matches all files in 'bucket_name'.
+    - gs://bucket_name/file```*``` - Matches files prefixed by 'file' in 'bucket_name'.
+    - gs://another_bucket/a.txt - Matches 'gs://another_bucket/a.txt'.
+description:
+  arg_name: description
+  api_field: googleCloudDatacatalogV1Entry.description
+  help_text: |-
+    Textual description of the entry.
+display_name:
+  arg_name: display-name
+  api_field: googleCloudDatacatalogV1Entry.displayName
+  help_text: |-
+    Human-readable name for the entry.
+fully_qualified_name:
+  arg_name: fully-qualified-name
+  api_field: googleCloudDatacatalogV1Entry.fullyQualifiedName
+  help_text: |-
+    Fully qualified name of the resource.
+add_file_patterns:
+  arg_name: add-file-patterns
+  type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+  metavar: PATTERN
+  help_text: |-
+    A list of file patterns to add to the current list.
+remove_file_patterns:
+  arg_name: remove-file-patterns
+  type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+  metavar: PATTERN
+  help_text: |-
+    A list of file patterns to remove from the current list.
+clear_file_patterns:
+  arg_name: clear-file-patterns
+  action: store_true
+  help_text: |-
+    If specified, clear the current list of file patterns.
+type:
+  arg_name: type
+  required: true
+  api_field: googleCloudDatacatalogV1Entry.type
+  help_text: |-
+    Type of the entry.
+required_user_specified_type:
+  arg_name: user-specified-type
+  api_field: googleCloudDatacatalogV1Entry.userSpecifiedType
+  required: true
+  help_text: |-
+    Type of the entry coming from external system. If `--type` is not used,
+    then `--user-specified-type` must be provided.
+required_user_specified_system:
+  arg_name: user-specified-system
+  api_field: googleCloudDatacatalogV1Entry.userSpecifiedSystem
+  required: true
+  help_text: |-
+    External system from which the entry is fed. If `--type` is not used,
+    then `--user-specified-system` must be provided.
+linked_resource:
+  arg_name: linked-resource
+  api_field: googleCloudDatacatalogV1Entry.linkedResource
+  help_text: |-
+    Link to the resource in external system. If `--type` is not used,
+    then `--linked-resource` may be provided.
+source_system_create_time:
+  arg_name: source-system-create-time
+  api_field: googleCloudDatacatalogV1Entry.sourceSystemTimestamps.createTime
+  type: googlecloudsdk.command_lib.data_catalog.entries.v1_util:GetJsonTimeString
+  help_text: |-
+    Creation timestamp of the resource in the external system. If `--type` is not used,
+    then `--source-system-create-time` may be provided.
+source_system_update_time:
+  arg_name: source-system-update-time
+  api_field: googleCloudDatacatalogV1Entry.sourceSystemTimestamps.updateTime
+  type: googlecloudsdk.command_lib.data_catalog.entries.v1_util:GetJsonTimeString
+  help_text: |-
+    Update timestamp of the resource in the external system. If `--type` is not used,
+    then `--source-system-update-time` may be provided.
+user_specified_type:
+  arg_name: user-specified-type
+  api_field: googleCloudDatacatalogV1Entry.userSpecifiedType
+  help_text: |-
+    Type of the entry coming from external system. This can be updated for on prem entries.
+user_specified_system:
+  arg_name: user-specified-system
+  api_field: googleCloudDatacatalogV1Entry.userSpecifiedSystem
+  help_text: |-
+    External system from which the entry is fed. This can be updated for on prem entries.
+kafka_cluster_bootstrap_servers:
+  arg_name: kafka-cluster-bootstrap-servers
+  api_field: googleCloudDatacatalogV1Entry.clusterSpec.kafkaCluster.bootstrapServers
+  hidden: true
+  help_text: |-
+    A comma-separated list of host and port pairs that are the addresses of
+    the Kafka brokers.
+kafka_cluster_bootstrap_servers_required:
+  arg_name: kafka-cluster-bootstrap-servers
+  api_field: googleCloudDatacatalogV1Entry.clusterSpec.kafkaCluster.bootstrapServers
+  hidden: true
+  required: true
+  help_text: |-
+    A comma-separated list of host and port pairs that are the addresses of
+    the Kafka brokers.
+kafka_cluster:
+  arg_name: kafka-cluster
+  api_field: googleCloudDatacatalogV1Entry.dataStreamSpec.kafkaTopic.clusterEntry
+  hidden: true
+  help_text: |-
+    Name of the entry representing Kafka cluster this topic is a part of.
+kafka_cluster_required:
+  arg_name: kafka-cluster
+  api_field: googleCloudDatacatalogV1Entry.dataStreamSpec.kafkaTopic.clusterEntry
+  required: true
+  hidden: true
+  help_text: |-
+    Name of the entry representing Kafka cluster this topic is a part of.
+kafka_topic:
+  arg_name: kafka-topic
+  api_field: googleCloudDatacatalogV1Entry.dataStreamSpec.kafkaTopic.topic
+  hidden: true
+  help_text: |-
+    Name of the Kafka topic this Entry represents.
+kafka_topic_required:
+  arg_name: kafka-topic
+  api_field: googleCloudDatacatalogV1Entry.dataStreamSpec.kafkaTopic.topic
+  required: true
+  hidden: true
+  help_text: |-
+    Name of the Kafka topic this Entry represents.
+physical_schema_type:
+  arg_name: physical-schema-type
+  required: true
+  hidden: true
+  help_text: |-
+    Type of physical schema. Accepted values are avro, thrift, protobuf, parquet, orc
+physical_schema_file:
+  arg_name: physical-schema-file
+  hidden: true
+  help_text: |-
+    File contents with physical schema.

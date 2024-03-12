@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: List Edge Container zones.
+    description: |
+      List all zones where Edge Container node pools can be created.
+    examples: |
+      To list all the zones where Edge Container node pools can be created, run:
+
+        $ {command}
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:project
+      help_text: |
+        The project name.
+
+  request:
+    collection: edgecontainer.projects.locations
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.container.locations:ExtractZonesFromLocations
+
+  output:
+    format: |
+      table(
+        name:label=ZONE:sort=1,
+        region
+      )

@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Get description of a long-running edge container operation.
+    description: |
+      Get information about a long-running edge container operation.
+    examples: |-
+      To get information about a long-running operation with name 'projects/my-project/locations/us-east1/operations/123', run the following command:
+
+        $ {command} projects/my-project/locations/us-east1/operations/123
+
+  request:
+    collection: edgecontainer.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The ID of the operation to describe.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:operation
+
+  output:
+    format: json

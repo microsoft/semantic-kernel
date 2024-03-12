@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Deletes the feature policy for an instance.
+    description: |
+      Deletes the feature policy for a Remote Build Execution instance, which will remove any
+      existing limitations on what features can be used during execution.
+    examples: |
+      The following deletes the feature policy for an instance named 'default_instance':
+
+        $ {command} default_instance
+
+  request:
+    collection: remotebuildexecution.projects.instances
+    method: patch
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.remote_build_execution.instance_update_util:RemoveFeaturePolicy
+
+  async:
+    collection: remotebuildexecution.projects.operations
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.remote_build_execution.resources:instance
+      help_text: |
+        Arguments describing the feature policy to delete.

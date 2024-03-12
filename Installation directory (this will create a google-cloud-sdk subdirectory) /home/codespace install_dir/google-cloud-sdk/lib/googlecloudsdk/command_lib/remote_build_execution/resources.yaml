@@ -1,0 +1,32 @@
+project:
+  name: project
+  collection: remotebuildexecution.projects
+  attributes:
+  - parameter_name: projectsId
+    attribute_name: project
+    help: |
+      Project name.
+    property: core/project
+
+instance:
+  name: instance
+  collection: remotebuildexecution.projects.instances
+  request_id_field: instanceId
+  attributes:
+  - &instance
+    parameter_name: instancesId
+    attribute_name: instance
+    help: |
+      Instance name.
+
+workerpool:
+  name: workerpool
+  collection: remotebuildexecution.projects.instances.workerpools
+  request_id_field: poolId
+  attributes:
+  - *instance
+  - &workerpool
+    parameter_name: workerpoolsId
+    attribute_name: workerpool
+    help: |
+      Worker pool name.

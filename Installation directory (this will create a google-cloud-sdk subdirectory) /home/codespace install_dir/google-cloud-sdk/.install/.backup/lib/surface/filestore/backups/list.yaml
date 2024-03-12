@@ -1,0 +1,47 @@
+- release_tracks: [GA, BETA, ALPHA]
+  help_text:
+    brief: |
+      List Filestore backups.
+    description: |
+      List all Filestore backups in a project for either a specified region or for all region.
+
+      To specify the maximum number of backups to list, use the --limit flag.
+    examples: |
+      To list up to five backups, run:
+
+          $ {command} --limit=5
+
+  arguments:
+    params:
+    - arg_name: region
+      help_text: |
+        The region of the Backups to display. If unspecified, all backups will be listed.
+    resource:
+      help_text: |
+        Project name.
+      spec: !REF googlecloudsdk.command_lib.filestore.resources:project
+      override_resource_collection: true
+
+  request:
+    ALPHA:
+      api_version: v1p1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    collection: file.projects.locations.backups
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.util:AddDefaultLocationToListRequest
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME:sort=1,
+        name.segment(3):label=LOCATION,
+        sourceInstance.split('/').slice(3:).join('/'):label=SRC_INSTANCE,
+        sourceFileShare:label=SRC_FILE_SHARE,
+        state
+      )

@@ -1,0 +1,41 @@
+create-asset-type-config-file:
+  arg_name: create-asset-type-config-file
+  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+  help_text: |-
+    File path to a config file in JSON format.
+
+update-asset-type-config-file:
+  arg_name: update-asset-type-config-file
+  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+  required: true
+  help_text: |-
+    File path to a config file in JSON format. It must containe the asset type updated fields and update_mask
+
+complex-type-config-file:
+  arg_name: complex-type-config-file
+  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+  required: false
+  help_text: |-
+    File path to a config file in JSON format. It must containe the asset type updated fields and update_mask
+
+create-transformer-configs-file:
+  arg_name: create-transformer-configs-file
+  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+  required: false
+  help_text: |-
+    File path to a config file in JSON format.
+
+
+annotation-data-file:
+  arg_name: annotation-data-file
+  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+  required: true
+  help_text: |-
+    File path to a file contains annotation data in JSON format.
+
+asset-config-file:
+  arg_name: asset-config-file
+  required: false
+  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+  help_text: |-
+    File path to an asset content file in JSON format.

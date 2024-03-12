@@ -1,0 +1,59 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Update Cloud Security Command Center asset's security marks.
+    description: Update Cloud Security Command Center asset's security marks.
+    examples: |
+      Selectively update value of security mark (key1) with 'val1.1' on asset 5678 under organization 123456. Note that other security marks on the same asset will not change.
+
+        $ {command} 5678 --organization=123456 --security-marks="key1=val1.1" --update-mask="marks.key1"
+
+      Update value of security mark (key1) and delete other marks on asset 5678 under organization 123456:
+
+        $ {command} 5678 --organization=123456 --security-marks="key1=updatedVal"
+
+      Update value of security mark (key1) and delete other marks on asset 5678 under project example-project:
+
+        $ {command} projects/example-project/assets/5678 --security-marks="key1=updatedVal"
+
+      Update value of security mark (key1) and delete other marks on asset 5678 under folder 456:
+
+        $ {command} folders/456/assets/5678 --security-marks="key1=updatedVal"
+
+      Delete all security marks on asset 5678 under organization 123456:
+
+        $ {command} 5678 --organization=123456 --security-marks=""
+
+  request:
+    collection: securitycenter.organizations.assets
+    api_version: v1
+    method: updateSecurityMarks
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.assets.request_hooks:UpdateAssetSecurityMarksReqHook
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.scc.assets.resource_hooks:AppendAssetArg
+
+    params:
+    - arg_name: start-time
+      type: googlecloudsdk.core.util.times:ParseDateTime
+      processor: googlecloudsdk.core.util.times:FormatDateTime
+      api_field: startTime
+      help_text: |
+        Time at which the updated SecurityMarks take effect. See `$ gcloud topic datetimes` for
+        information on supported time formats.
+    - arg_name: security-marks
+      metavar: KEY=VALUE
+      api_field: securityMarks
+      help_text: |
+        SecurityMarks resource to be passed as the request body. It's a key=value pair separated
+        by comma (,). For example: --security-marks="key1=val1,key2=val2".
+      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+      processor: googlecloudsdk.command_lib.scc.hooks:SecurityMarksHook
+    - arg_name: update-mask
+      api_field: updateMask
+      help_text: |
+        Use update-mask if you want to selectively update marks represented by --security-marks
+        flag. For example: --update-mask="marks.key1,marks.key2". If you want to override all the
+        marks for the given asset either skip the update-mask flag or provide an empty value
+        (--update-mask '') for it.

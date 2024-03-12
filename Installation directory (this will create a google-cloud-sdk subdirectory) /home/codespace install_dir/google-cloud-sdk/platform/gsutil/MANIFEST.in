@@ -1,0 +1,19 @@
+include CHANGES.md
+include CHECKSUM
+include CONTRIBUTING.md
+include LICENSE
+include README.md
+include VERSION
+include gsutil
+include gsutil.py
+include setup.py
+recursive-include gslib *
+recursive-include test *
+global-exclude .git*
+global-exclude *.py[co]
+global-exclude __pycache__
+prune test
+prune gslib/vendored/boto/bin
+prune gslib/vendored/boto/docs
+prune gslib/vendored/boto/scripts
+exclude gslib/commands/update.py

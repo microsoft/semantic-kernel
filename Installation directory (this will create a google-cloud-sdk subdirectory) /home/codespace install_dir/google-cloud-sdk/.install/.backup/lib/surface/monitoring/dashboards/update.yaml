@@ -1,0 +1,95 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: |
+      Update a Cloud Monitoring dashboard.
+    description: |
+      Update a Monitoring dashboard. The updated dashboard can be specified as a
+      JSON/YAML value passed in as a string through the `--config` flag or
+      as a file through the `--config-from-file` flag.
+
+      Note: Etags are used to prevent concurrent updates to the same dashboard. The latest etag can
+      be found in a `describe` or `list` response.
+
+      For information about the format of a dashboard:
+      https://cloud.google.com/monitoring/api/ref_v3/rest/v1/projects.dashboards
+    examples: |
+      To update a dashboard with a YAML config, run:
+
+        $ {command} MY-DASHBOARD --config='''
+          displayName: New Dashboard with New Display Name
+          etag: 40d1040034db4e5a9dee931ec1b12c0d
+          gridLayout:
+            widgets:
+            - text:
+                content: Hello World
+          '''
+
+      To update a dashboard with a JSON config, run:
+
+         $ {command} MY-DASHBOARD --config='''
+           {
+             "displayName": "New Dashboard with New Display Name",
+             "etag": "40d1040034db4e5a9dee931ec1b12c0d",
+             "gridLayout": {
+               "widgets": [
+                 {
+                   "text": {
+                     "content": "Hello World",
+                   }
+                 }
+               ]
+             },
+           }
+           '''
+
+      To update a dashboard within a specific project, run:
+
+        $ {command} MY-DASHBOARD --project=MY-PROJECT --config='''
+          displayName: New Dashboard with New Display Name
+          etag: 40d1040034db4e5a9dee931ec1b12c0d
+          gridLayout:
+            widgets:
+            - text:
+                content: Hello World
+          '''
+
+      To update a dashboard with a file, run:
+
+        $ {command} MY-DASHBOARD --config-from-file=MY-FILE
+
+      Sample contents of MY-FILE:
+
+        displayName: New Dashboard with new Display Name
+        etag: 40d1040034db4e5a9dee931ec1b12c0d
+        gridLayout:
+          widgets:
+          - text:
+              content: Hello World
+
+  arguments:
+    resource:
+      help_text: |
+        The dashboard to update.
+      spec: !REF googlecloudsdk.command_lib.monitoring.resources:dashboard
+    params:
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: config
+          api_field: dashboard
+          processor: googlecloudsdk.core.yaml:load
+          help_text: |
+            Dashboard configuration, in either JSON or YAML format, as a string.
+        - arg_name: config-from-file
+          api_field: dashboard
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+          processor: googlecloudsdk.core.yaml:load
+          help_text: |
+            Path to a JSON or YAML file containing the dashboard configuration.
+
+  request:
+    collection: monitoring.projects.dashboards
+    method: patch
+    api_version: v1

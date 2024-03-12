@@ -1,0 +1,134 @@
+project:
+  name: project
+  collection: osconfig.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    property: core/project
+    help: |
+      Project of the {resource}.
+
+location:
+  name: location
+  collection: osconfig.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    property: compute/zone
+    help: |
+      Location of the {resource}.
+
+instance:
+  name: instance
+  collection: osconfig.projects.locations.instances
+  attributes:
+  - *project
+  - *location
+  - &instance
+    parameter_name: instancesId
+    attribute_name: instance
+    help: |
+      Compute Engine VM instance.
+
+vulnerability_report:
+  name: vulnerability_report
+  collection: osconfig.projects.locations.instances.vulnerabilityReports
+  attributes:
+  - *project
+  - *location
+  - *instance
+  help: |
+    Vulnerability report for the {resource}.
+
+inventory:
+  name: inventory
+  collection: osconfig.projects.locations.instances.inventories
+  attributes:
+  - *project
+  - *location
+  - *instance
+  help: |
+    Inventory of the {resource}.
+
+# Create OS policy assignment is a separate resource due to
+#   the requirement of the request_id_field in the create method.
+create_os_policy_assignment:
+  name: OS policy assignment
+  collection: osconfig.projects.locations.osPolicyAssignments
+  request_id_field: osPolicyAssignmentId
+  attributes:
+  - *project
+  - *location
+  - &create_os_policy_assignment
+    parameter_name: osPolicyAssignmentsId
+    attribute_name: os_policy_assignment
+    help: |
+      OS policy assignment.
+
+os_policy_assignment:
+  name: OS policy assignment
+  collection: osconfig.projects.locations.osPolicyAssignments
+  attributes:
+  - *project
+  - *location
+  - &os_policy_assignment
+    parameter_name: osPolicyAssignmentsId
+    attribute_name: os_policy_assignment
+    help: |
+      OS policy assignment.
+
+# An additional OS policy assignment resource is needed since Gcloud
+#   disallows positional arguments with dashes. The only difference is
+#   in attribute_name.
+os_policy_assignment_operation_attribute:
+  name: OS policy assignment
+  collection: osconfig.projects.locations.osPolicyAssignments
+  attributes:
+  - *project
+  - *location
+  - &os_policy_assignment_operation_attribute
+    parameter_name: osPolicyAssignmentsId
+    attribute_name: os-policy-assignment
+    help: |
+      OS policy assignment.
+
+os_policy_assignment_operation:
+  name: OS policy assignment operation
+  collection: osconfig.projects.locations.osPolicyAssignments.operations
+  attributes:
+  - *project
+  - *location
+  - *os_policy_assignment_operation_attribute
+  - &os_policy_assignment_operations
+    parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      OS policy assignment operation.
+
+instance_os_policy_assignment:
+  name: Instance OS policy assignment
+  collection: osconfig.projects.locations.instances.osPolicyAssignments
+  attributes:
+  - *project
+  - *location
+  - *instance
+  - &instance_os_policy_assignment
+    parameter_name: osPolicyAssignmentsId
+    attribute_name: instance_os_policy_assignment
+    help: |
+      Instance OS policy assignment.
+
+# Name of the `os_policy_assignment_report` has to be `OS policy assignment` so the help
+# help text generated can be accurate in the id it requests.
+# Reference: yaqs/1680031777009172480
+os_policy_assignment_report:
+  name: OS policy assignment
+  collection: osconfig.projects.locations.instances.osPolicyAssignments.reports
+  attributes:
+  - *project
+  - *location
+  - *instance
+  - *instance_os_policy_assignment

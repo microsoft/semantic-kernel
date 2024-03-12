@@ -1,0 +1,35 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 TrafficPortSelector export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  ports:
+    description: |-
+      A list of ports. Can be port numbers or port range (example, [80-90]
+      specifies all ports from 80 to 90, including 80 and 90) or named ports or
+      * to specify all ports. If the list is empty, all ports are selected.
+    type: array
+    items:
+      type: string

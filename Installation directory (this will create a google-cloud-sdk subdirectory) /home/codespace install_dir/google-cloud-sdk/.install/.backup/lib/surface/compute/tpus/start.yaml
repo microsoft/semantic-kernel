@@ -1,0 +1,25 @@
+- help_text:
+    brief: Start a Cloud TPU.
+    description: |
+      Start a Cloud TPU.
+    examples: |
+      The following command starts a TPU with ID `my-tpu` in zone `us-central1-b`:
+
+        $ {command} my-tpu --zone=us-central1-b
+
+  request:
+    collection: tpu.projects.locations.nodes
+    api_version: v1
+    method: start
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.tpus.util:StartRequestHook
+
+  async:
+    collection: tpu.projects.locations.operations
+    api_version: v1
+    extract_resource_result: false
+
+  arguments:
+    resource:
+      help_text: The Cloud TPU to start.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:tpu

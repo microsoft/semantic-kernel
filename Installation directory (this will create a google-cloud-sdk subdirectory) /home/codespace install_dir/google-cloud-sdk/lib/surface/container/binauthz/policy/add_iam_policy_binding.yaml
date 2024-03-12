@@ -1,0 +1,34 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Add IAM policy binding to a Binary Authorization policy.
+  description: |
+    Add an IAM policy binding to the IAM policy of a Binary Authorization policy. One binding consists of a member,
+    a role, and an optional condition.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/binaryauthorization.attestationAuthoritiesEditor' for the user 'test-user@gmail.com'
+    on the current project's Binary Authorization policy, run:
+
+      $ {command} --member='user:test-user@gmail.com' --role='roles/binaryauthorization.attestationAuthoritiesEditor'
+
+    To add an IAM policy binding which expires at the end of the year 2018 for the role of
+    'roles/binaryauthorization.attestationAuthoritiesEditor' and the user 'test-user@gmail.com'
+    on the current project's Binary Authorization policy, run:
+
+      $ {command} --member='user:test-user@gmail.com' --role='roles/binaryauthorization.attestationAuthoritiesEditor' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: options_requestedPolicyVersion
+
+request:
+  collection: binaryauthorization.projects.policy
+
+arguments:
+  resource:
+    help_text: The Binary Authorization policy whose IAM policy to add an IAM policy binding to.
+    spec: !REF googlecloudsdk.command_lib.container.resources:policy

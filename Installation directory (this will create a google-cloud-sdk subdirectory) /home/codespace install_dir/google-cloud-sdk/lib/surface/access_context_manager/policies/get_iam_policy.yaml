@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Get the IAM policy for an access policy.
+    description: |
+      *{command}* Displays the IAM policy associated with an access policy.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates; see
+      $ {parent} set-iam-policy for additional details.
+    examples: |
+      To print the IAM policy for a given access policy, run:
+
+        $ {command} accessPolicies/1234
+
+  request:
+    collection: accesscontextmanager.accessPolicies
+    use_relative_name: true
+    ALPHA:
+      api_version: v1alpha
+      method: getIamPolicy
+    BETA:
+      api_version: v1
+      method: getIamPolicy
+    GA:
+      api_version: v1
+      method: getIamPolicy
+
+  arguments:
+    resource:
+      help_text: The access policy for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy

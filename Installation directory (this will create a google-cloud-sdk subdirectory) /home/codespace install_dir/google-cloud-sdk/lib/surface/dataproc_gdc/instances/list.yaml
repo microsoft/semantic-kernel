@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List Dataproc GDC service instances.
+    description: |
+      List all Dataproc GDC service instances in a location
+    examples: |
+      To list Dataproc GDC service instances in project `test-project` in `us-central1`, run:
+
+        $ {command} --project=test-project --location=us-central1
+  request:
+    collection: dataprocgdc.projects.locations.serviceInstances
+    ALPHA:
+      api_version: v1alpha1
+  response:
+    id_field: name
+  arguments:
+    resource:
+      help_text: The location of the instances.
+      spec: !REF googlecloudsdk.command_lib.dataproc_gdc.resources:location
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        gdceCluster.gdceCluster.basename():label=CLUSTER,
+        displayName:label=DISPLAY_NAME,
+        createTime:label=CREATE_TIME,
+        state:label=STATE
+      )

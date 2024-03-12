@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Storage bucket.
+  description: |
+    *{command}* exports the configuration for a Storage bucket.
+
+    Bucket configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    buckets within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a bucket, run:
+
+      $ {command} my-bucket
+
+    To export the configuration for a bucket to a file, run:
+
+      $ {command} my-bucket --path=/path/to/dir/
+
+    To export the configuration for a bucket in Terraform
+    HCL format, run:
+
+      $ {command} my-bucket --resource-format=terraform
+
+    To export the configurations for all buckets within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Bucket to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.storage.resources.resources:bucket

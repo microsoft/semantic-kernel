@@ -1,0 +1,24 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: |
+      Describe a BeyondCorp client connector operation (Deprecated).
+    description: |
+      Describe a BeyondCorp client connector operation given a valid operation name.
+    examples: |
+      The following command describes an operation called
+      `operation-1484002552235-425b144f8c3f8-81aa4b49-0830d1e9`:
+
+        $ {command} operation-1484002552235-425b144f8c3f8-81aa4b49-0830d1e9 \
+        --project=consumer-project-id --location=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:operation
+      help_text: |
+        Name of the client connector operation you want to describe.
+
+  request:
+    collection: beyondcorp.projects.locations.operations
+    BETA:
+      api_version: v1

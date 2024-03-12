@@ -1,0 +1,43 @@
+- release_tracks: [GA, BETA, ALPHA]
+
+  help_text:
+    brief: |
+      Validate the state of a Managed Microsoft AD trust.
+    description: |
+      Validate the state of a Managed Microsoft AD trust.
+
+      Verify that the trust has been properly created and that the domains/forests can
+      communicate with each other.
+
+      This command can fail for the following reasons:
+        * The AD domain specified does not exist.
+        * The active account does not have permission to access the given
+          AD domain.
+        * The AD trust specified does not exist.
+        * The active account does not have permission to access the given
+          AD trust.
+    examples: |
+      The following command validates state for an AD trust with the given target
+      domain name ` my-target-domain.com`.
+
+        $ {command} my-domain.com --target-domain-name=my-target-domain.com
+
+  async:
+    collection: managedidentities.projects.locations.global.operations
+
+  request:
+    api_version: v1
+    collection: managedidentities.projects.locations.global.domains
+    method: validateTrust
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:domain
+      help_text: |
+        Name of the the Managed Microsoft AD trust for which you want to validate state.
+    params:
+    - arg_name: target-domain-name
+      api_field: validateTrustRequest.trust.targetDomainName
+      required: true
+      help_text: |
+        Target domain name of the Managed Microsoft AD Active Directory trust you want to validate.

@@ -1,0 +1,28 @@
+- release_tracks: [GA, ALPHA]
+  help_text:
+    brief: Delete a Cloud TPU VM node.
+    description: Delete a Cloud TPU VM node.
+    examples: |
+      To delete a TPU VM with ID `my-tpu` in zone `us-central1-b`, run:
+
+        $ {command} my-tpu --zone=us-central1-b
+
+  request:
+    collection: tpu.projects.locations.nodes
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
+
+  async:
+    collection: tpu.projects.locations.operations
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
+    extract_resource_result: false
+
+  arguments:
+    resource:
+      help_text: Name of the Cloud TPU VM node to delete.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.tpu_vm.resources:tpu

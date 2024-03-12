@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="iso-8859-5"?>
+<!--
+Source: http://bpm.cult.bg/services/rss/ezine.php
+Expect: ISO-8859-5
+-->
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:admin="http://webns.net/mvcb/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:cc="http://web.resource.org/cc/" xmlns="http://purl.org/rss/1.0/">
+
+<channel rdf:about="http://bpm.cult.bg/ezine/">
+<title>*bpm. ezine</title>
+<link>http://bpm.cult.bg/ezine/</link>
+<description>*bpm . ezine</description>
+<dc:language>bg-bg</dc:language>
+<dc:creator>*bpm</dc:creator>
+<dc:date>1970-01-01T02:01:00+02:00</dc:date>
+
+<items>
+<rdf:Seq>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/cinema/?id=712"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/etc/?id=711"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/etc/?id=710"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/cinema/?id=709"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/etc/?id=708"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/social/?id=707"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/etc/?id=706"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/social/?id=705"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/etc/?id=704"/>
+<rdf:li rdf:resource="http://bpm.cult.bg/ezine/social/?id=703"/>
+</rdf:Seq>
+</items>
+</channel>
+<item rdf:about="http://bpm.cult.bg/ezine/cinema/?id=712">
+<title>Баладата за Джак и Роуз</title>
+<link>http://bpm.cult.bg/ezine/cinema/?id=712</link>
+<description><![CDATA["Баладата за Джак и Роуз" е ретро, колкото хипи вариант на "I will put a spell on you", и контрастен и чист, като кърваво петно на бял чаршаф...]]></description>
+<content:encoded><![CDATA["Баладата за Джак и Роуз" е ретро, колкото хипи вариант на "I will put a spell on you", и контрастен и чист, като кърваво петно на бял чаршаф...]]></content:encoded>
+<dc:subject>*bpm . ezine / cinema</dc:subject>
+<dc:creator>Lucash</dc:creator>
+<dc:date/>
+</item>
+<item rdf:about="http://bpm.cult.bg/ezine/etc/?id=711">
+<title>Коледа по холивудски</title>
+<link>http://bpm.cult.bg/ezine/etc/?id=711</link>
+<description><![CDATA[Сирените засвирват, зенитките започват да стрелят и небето пламва, а колкото и да се дере Дядо Коледа, че има дипломатически паспорт, никой не го чува...]]></description>
+<content:encoded><![CDATA[Сирените засвирват, зенитките започват да стрелят и небето пламва, а колкото и да се дере Дядо Коледа, че има дипломатически паспорт, никой не го чува...]]></content:encoded>
+<dc:subject>*bpm . ezine / etc</dc:subject>
+<dc:creator>Zimed</dc:creator>
+<dc:date/>
+</item>
+<item rdf:about="http://bpm.cult.bg/ezine/etc/?id=710">
+<title>Здравей отново, или къде беше, търсих те!</title>
+<link>http://bpm.cult.bg/ezine/etc/?id=710</link>
+<description><![CDATA[Искаше да крещи, но ето, че се натъкна на поредното откритие, истински сюрприз - не можеше

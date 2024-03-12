@@ -1,0 +1,269 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: |
+      Create a Memorystore Redis instance.
+    description: |
+      Create a new Redis instance.
+
+      This command can fail for the following reasons:
+        * An instance with the same name already exists.
+        * The active account does not have permission to create instances.
+    examples: |
+      To create a basic tier instance with the name `my-redis-instance` in region `us-central-1`
+      with memory size of 5 GiB, run:
+
+        $ {command} my-redis-instance --region=us-central1 --size=5
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:instance
+      help_text: |
+        Arguments and flags that specify the Memorystore Redis instance you want
+        to create.
+    params:
+    - arg_name: zone
+      api_field: instance.locationId
+      help_text: |
+        The zone of the Redis instance. If not provided the service
+        will pick a random zone in the region. For the standard tier, instances
+        will be created across two zones for protection against zonal
+        failures. So if --alternative-zone is also provided, it must be
+        different from --zone.
+    - arg_name: alternative-zone
+      api_field: instance.alternativeLocationId
+      help_text: |
+        A secondary zone for the Redis instance. Only applicable to
+        the standard tier. This protects the instance against zonal failures
+        by provisioning it across two zones. If provided, alternative zone
+        must be a different zone from the one provided through `--zone`.
+    - arg_name: network
+      api_field: instance.authorizedNetwork
+      help_text: |
+        The name of the Google Compute Engine network to which the instance
+        will be connected. If left unspecified, the default network will be
+        used.
+      default: default
+      processor: googlecloudsdk.command_lib.redis.instances_create_util:ParseInstanceNetworkArg
+    - arg_name: tier
+      api_field: instance.tier
+      help_text: |
+        The service tier of the instance.
+      choices:
+      - enum_value: BASIC
+        arg_value: basic
+        help_text: Basic Redis instance with no replication
+      - enum_value: STANDARD_HA
+        arg_value: standard
+        help_text: Standard high-availability Redis instance with replication
+      default: basic
+    - arg_name: connect-mode
+      api_field: instance.connectMode
+      help_text: |
+        Network connection mode used by instances.
+    - arg_name: transit-encryption-mode
+      api_field: instance.transitEncryptionMode
+      help_text: |
+        Transit encryption mode used by the instance.
+      choices:  # Enum is mapped to keep TRANSIT-ENCRYPTION-MODE-UNSPECIFIED invisible from users.
+      - arg_value: DISABLED
+        enum_value: DISABLED
+        help_text: Transit encryption is disabled for the instance.
+      - arg_value: SERVER-AUTHENTICATION
+        enum_value: SERVER-AUTHENTICATION
+        help_text: Client to Server traffic encryption enabled with server authentication.
+    - arg_name: display-name
+      api_field: instance.displayName
+      help_text: |
+        A human-readable name for the instance.
+    - api_field: instance.redisConfigs.additionalProperties
+      metavar: KEY=VALUE
+      arg_name: redis-config
+      help_text: |
+        A list of Redis config KEY=VALUE pairs to set on the instance
+        according to http://redis.io/topics/config. Currently, the only
+        supported parameters are:
+
+        Redis version 3.2 and newer: maxmemory-policy, notify-keyspace-events, timeout.
+
+        Redis version 4.0 and newer: activedefrag, lfu-decay-time, lfu-log-factor, maxmemory-gb.
+
+        Redis version 5.0 and newer: stream-node-max-bytes, stream-node-max-entries.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+    - arg_name: maintenance-window-day
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
+      help_text: |
+        Day of week for maintenance window, in UTC time zone.
+        MAINTENANCE_WINDOW_DAY must be one of: SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY.
+    - arg_name: maintenance-window-hour
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
+      help_text: |
+        Hour of day (0 to 23) for maintenance window, in UTC time zone.
+    - arg_name: persistence-mode
+      api_field: instance.persistenceConfig.persistenceMode
+      help_text: |
+        Operation mode for automated persistence.
+      choices:
+      - enum_value: DISABLED
+        arg_value: disabled
+        help_text: RDB mode is disabled
+      - enum_value: RDB
+        arg_value: RDB
+        help_text: Automatic RDB persistence
+    - arg_name: rdb-snapshot-period
+      api_field: instance.persistenceConfig.rdbSnapshotPeriod
+      help_text: |
+        Attempted period between RDB snapshots.
+      choices:
+      - enum_value: ONE_HOUR
+        arg_value: 1h
+        help_text: 1 hour
+      - enum_value: SIX_HOURS
+        arg_value: 6h
+        help_text: 6 hours
+      - enum_value: TWELVE_HOURS
+        arg_value: 12h
+        help_text: 12 hours
+      - enum_value: TWENTY_FOUR_HOURS
+        arg_value: 24h
+        help_text: 24 hours
+    - arg_name: rdb-snapshot-start-time
+      api_field: instance.persistenceConfig.rdbSnapshotStartTime
+      help_text: |
+        Date and time of the first snapshot in the ISO 1801 format, and alignment time for future snapshots. For example, 2022-11-02T03:00:00Z.
+    - arg_name: read-replicas-mode
+      api_field: instance.readReplicasMode
+      help_text: |
+        Read replicas mode used by the instance. Only works against standard tier instances with 5GB
+        and above provisioned capacity.
+      choices:  # Enum is mapped to keep READ-REPLICAS-MODE-UNSPECIFIED invisible from users.
+      - enum_value: READ-REPLICAS-DISABLED
+        arg_value: READ-REPLICAS-DISABLED
+        help_text: |
+            Read replica is disabled for the instance. Read endpoint will not
+            be provided and the instance cannot scale up or down the number of
+            replicas.
+      - enum_value: READ-REPLICAS-ENABLED
+        arg_value: READ-REPLICAS-ENABLED
+        help_text: |
+            Read replica is enabled for the instance. Read endpoint will be
+            provided and the instance can scale up and down the number of
+            replicas.
+    - arg_name: replica-count
+      api_field: instance.replicaCount
+      type: long
+      help_text: |
+        The replica count of the instance.
+    - arg_name: redis-version
+      api_field: instance.redisVersion
+      metavar: VERSION
+      help_text: The version of Redis software.
+      choices:
+      - enum_value: REDIS_3_2
+        arg_value: redis_3_2
+        help_text: Redis 3.2 compatibility
+      - enum_value: REDIS_4_0
+        arg_value: redis_4_0
+        help_text: Redis 4.0 compatibility
+      - enum_value: REDIS_5_0
+        arg_value: redis_5_0
+        help_text: Redis 5.0 compatibility
+      - enum_value: REDIS_6_X
+        arg_value: redis_6_x
+        help_text: Redis 6.x compatibility
+      - enum_value: REDIS_7_0
+        arg_value: redis_7_0
+        help_text: Redis 7.0 compatibility
+      ALPHA:
+        choices:
+        - enum_value: REDIS_3_2
+          arg_value: redis_3_2
+          help_text: Redis 3.2 compatibility
+        - enum_value: REDIS_4_0
+          arg_value: redis_4_0
+          help_text: Redis 4.0 compatibility
+        - enum_value: REDIS_5_0
+          arg_value: redis_5_0
+          help_text: Redis 5.0 compatibility
+        - enum_value: REDIS_6_X
+          arg_value: redis_6_x
+          help_text: Redis 6.x compatibility
+        - enum_value: REDIS_7_0
+          arg_value: redis_7_0
+          help_text: Redis 7.0 compatibility
+        - enum_value: REDIS_7_2
+          arg_value: redis_7_2
+          help_text: Redis 7.2 compatibility
+      BETA:
+        choices:
+        - enum_value: REDIS_3_2
+          arg_value: redis_3_2
+          help_text: Redis 3.2 compatibility
+        - enum_value: REDIS_4_0
+          arg_value: redis_4_0
+          help_text: Redis 4.0 compatibility
+        - enum_value: REDIS_5_0
+          arg_value: redis_5_0
+          help_text: Redis 5.0 compatibility
+        - enum_value: REDIS_6_X
+          arg_value: redis_6_x
+          help_text: Redis 6.x compatibility
+        - enum_value: REDIS_7_0
+          arg_value: redis_7_0
+          help_text: Redis 7.0 compatibility
+        - enum_value: REDIS_7_2
+          arg_value: redis_7_2
+          help_text: Redis 7.2 compatibility
+    - arg_name: reserved-ip-range
+      api_field: instance.reservedIpRange
+      help_text: |
+        For DIRECT_PEERING mode, the CIDR range of internal addresses that are reserved for this
+        instance. Range must be unique and non-overlapping with existing subnets in an authorized
+        network. For PRIVATE_SERVICE_ACCESS mode, the name of an IP address range allocated for the
+        private service access connection. If not provided, the service will choose an unused /29
+        block, for example, 10.0.0.0/29 or 192.168.0.0/29. If READ_REPLICAS_ENABLED is used for the
+        --read-replicas-mode flag, then the block size required for this flag is /28.
+    - arg_name: customer-managed-key
+      api_field: instance.customerManagedKey
+      help_text: |
+        The KMS key reference that you want to use to encrypt the data at rest for this Redis
+        instance. If this is provided, CMEK is enabled.
+    - arg_name: size
+      api_field: instance.memorySizeGb
+      help_text: |
+        The memory size of the instance in GiB. If not provided, size of 1 GiB
+        will be used.
+      type: long
+      default: 1
+    - arg_name: enable-auth
+      api_field: instance.authEnabled
+      type: bool
+      action: store_true
+      processor: googlecloudsdk.command_lib.redis.util:WarnOnAuthEnabled
+      help_text: |
+        Enables Redis AUTH for the instance. If omitted AUTH is disabled.
+    labels:
+      api_field: instance.labels
+
+  async:
+    collection: redis.projects.locations.operations
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.instances_create_util:AddDefaultReplicaCount
+    BETA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.instances_create_util:AddDefaultReplicaCount
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.instances_create_util:AddDefaultReplicaCount
+    collection: redis.projects.locations.instances

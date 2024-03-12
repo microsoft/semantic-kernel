@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="EUC-KR" ?>
+<!--
+Source: http://blog.rss.naver.com/alphathinker.xml
+Expect: EUC-KR
+-->
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<channel>
+	
+		<!--// ID가 존재할 경우. -->
+			<title><![CDATA[alphathinker님의 블로그]]></title>
+			<link>http://blog.naver.com/alphathinker</link>
+			<description><![CDATA[alphathinker님의 블로그입니다.]]></description>
+			<language>ko</language>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[실바 메서드]]></category>
+				<title><![CDATA[2003년 업 그레이드된 기본강의시리즈 수강 안내]]></title>
+				<link>http://blog.naver.com/alphathinker/40002716789</link>
+				<description><![CDATA[실바 메서드 코리아(Silva Method Korea)에서는
+2003년 업 그레이드된 BLS(기본강의시리즈) 를
+2004년 5월 신규 수강자 부터 적용 진행하고 있습니다.
+금번 업..]]></description>
+				<pubDate>Sun, 23 May 2004 19:57:35 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[긍정적인생각]]></category>
+				<title><![CDATA[지혜롭게 화내는 12가지 방법?]]></title>
+				<link>http://blog.naver.com/alphathinker/40002563135</link>
+				<description><![CDATA[1. 다른 사람의 기분에 좌우되지 마라 .
+침착함을 잃지 않을 때에야 비로소 이성적으로 생각할 수 있고
+다른 사람의 공격에 대해서도 효과적으로 자신을 방어..]]></description>
+				<pubDate>Mon, 17 May 2004 22:38:51 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[기본강의시리즈]]></category>
+				<title><![CDATA[MC101(조절된 이완)]]></title>
+				<link>http://blog.naver.com/alphathinker/40002506909</link>
+				<description><![CDATA[]]></description>
+				<pubDate>Sat, 15 May 2004 16:49:04 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[기본강의시리즈]]></category>
+				<title><![CDATA[MC202GSI(일반적 자기개선)]]></title>
+				<link>http://blog.naver.com/alphathinker/40002506905</link>
+				<description><![CDATA[]]></description>
+				<pubDate>Sat, 15 May 2004 16:48:54 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[기본강의시리즈]]></category>
+				<title><![CDATA[MC303ESP,MC404AESP(효과적 감각투사와 그 적용)]]></title>
+				<link>http://blog.naver.com/alphathinker/40002506898</link>
+				<description><![CDATA[]]></description>
+				<pubDate>Sat, 15 May 2004 16:48:38 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[실바 메서드]]></category>
+				<title><![CDATA[실바 메서드(The Silva Method) 역사]]></title>
+				<link>http://blog.naver.com/alphathinker/40002506338</link>
+				<description><![CDATA[]]></description>
+				<pubDate>Sat, 15 May 2004 16:19:22 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[실바 메서드]]></category>
+				<title><![CDATA[실바 메서드(The Silva Method) 원리]]></title>
+				<link>http://blog.naver.com/alphathinker/40002506325</link>
+				<description><![CDATA[]]></description>
+				<pubDate>Sat, 15 May 2004 16:19:09 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[실바 메서드]]></category>
+				<title><![CDATA[실바 메서드(The Silva Method) 효과]]></title>
+				<link>http://blog.naver.com/alphathinker/40002506321</link>
+				<description><![CDATA[]]></description>
+				<pubDate>Sat, 15 May 2004 16:18:49 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[기본강의시리즈]]></category>
+				<title><![CDATA[실바 메서드(The Silva Method)]]></title>
+				<link>http://blog.naver.com/alphathinker/40001634263</link>
+				<description><![CDATA[실바 메서드(The Silva Method) 기본강의시리즈(BLS)일정
+- 클릭 하세요 -
+]]></description>
+				<pubDate>Mon, 05 Apr 2004 16:07:02 +0900</pubDate>
+				</item>
+
+			
+				
+				
+				
+				<item>
+				<category><![CDATA[긍정적인 생각]]></category>
+				<title><![CDATA[[펌] 주저앉고 싶을 때가 있습니다.]]></title>
+				<link>http://blog.naver.com/alphathinker/40001634246</link>
+				<description><![CDATA[주저앉고 싶을 때가 있습니다.
+어느 담벼락 한 귀퉁이에 털썩 주저앉아 아무 생각 없이 지나가는 사람들을 바라보고 싶을 때가 있습니다.
+아니, 그냥 얼굴을 ..]]></description>
+				<pubDate>Mon, 05 Apr 2004 16:05:52 +0900</pubDate>
+				</item>
+
+				
+		
+		
+	
+</channel>
+</rss>

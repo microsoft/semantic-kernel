@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Describe Anthos Config Controller instances.
+    description: Describe an Anthos Config Controller instance.
+    examples: |
+      To describe an Anthos Config Controller instance named default in the location ``us-central1'', run:
+
+      $ {command} default --location=us-central1
+
+  request:
+    collection: krmapihosting.projects.locations.krmApiHosts
+
+  arguments:
+    resource:
+      help_text: The identifier for an Anthos Config Controller instance.
+      spec: !REF googlecloudsdk.command_lib.anthos.config.controller.resources:instance

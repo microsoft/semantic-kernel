@@ -1,0 +1,30 @@
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Add an IAM policy binding to a database.
+  description: |
+    Add an IAM policy binding to a database.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/metastore.metadataOwner' for the user
+    'test-user@gmail.com', run:
+
+      $ {command} my-database --member='user:test-user@gmail.com' --role='roles/metastore.metadataOwner'
+
+    See https://cloud.google.com/dataproc-metastore/docs/iam-and-access-control for details of
+    policy role and member types.
+
+request:
+  collection: metastore.projects.locations.services.databases
+  ALPHA:
+    api_version: v1alpha
+  BETA:
+    api_version: v1beta
+
+iam:
+  enable_condition: false
+  policy_version: 0
+
+arguments:
+  resource:
+    help_text: Database for which to add the IAM policy to.
+    spec: !REF googlecloudsdk.command_lib.metastore.resources:database

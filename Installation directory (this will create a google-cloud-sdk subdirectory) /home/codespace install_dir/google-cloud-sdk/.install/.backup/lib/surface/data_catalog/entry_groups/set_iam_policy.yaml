@@ -1,0 +1,54 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Set the IAM policy for a Data Catalog entry group.
+    description: |
+      Set the IAM policy for the given Data Catalog entry group as
+      defined in a JSON or YAML file.
+
+    examples: |
+      The following command will read am IAM policy defined in a JSON file
+      'policy.json' and set it for the entry group 'group1' with
+      location 'us-central1':
+
+        $ {command} group1 --location=us-central1 policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+
+  request:
+    api_version: v1
+    collection: datacatalog.projects.locations.entryGroups
+
+  arguments:
+    resource:
+      help_text: Entry group for which to set the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry_group
+      is_positional: true
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Set the IAM policy for a Data Catalog entry group.
+    description: |
+      Set the IAM policy for the given Data Catalog entry group as
+      defined in a JSON or YAML file.
+
+    examples: |
+      The following command will read am IAM policy defined in a JSON file
+      'policy.json' and set it for the entry group 'group1' with
+      location 'us-central1':
+
+        $ {command} group1 --location=us-central1 policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+
+  request:
+    collection: datacatalog.projects.locations.entryGroups
+
+  arguments:
+    resource:
+      help_text: Entry group for which to set the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry_group
+      is_positional: true

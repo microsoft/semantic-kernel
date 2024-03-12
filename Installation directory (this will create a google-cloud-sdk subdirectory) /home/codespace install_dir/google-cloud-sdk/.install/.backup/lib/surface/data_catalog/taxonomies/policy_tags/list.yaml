@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: List Cloud Policy Tag Manager policy tags.
+    description: List Cloud Policy Tag Manager policy tags.
+
+    examples: |
+      List the policy tags for a Cloud Policy Tag Manager taxonomy 'TAXONOMY':
+
+        $ {command} --taxonomy='TAXONOMY' --location='LOCATION'
+
+  request:
+    collection: datacatalog.projects.locations.taxonomies.policyTags
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Policy Tag Manager Taxonomy in which to list policy tags. The arguments in this group can be used to specify the attributes of this resource.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:taxonomy

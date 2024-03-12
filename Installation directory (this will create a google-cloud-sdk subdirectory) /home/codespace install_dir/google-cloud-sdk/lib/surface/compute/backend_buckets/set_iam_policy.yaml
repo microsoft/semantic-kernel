@@ -1,0 +1,37 @@
+release_tracks: [ALPHA, BETA]
+
+help_text:
+  brief: Set the IAM policy binding for a Compute Engine backend bucket.
+  description: |
+    Sets the IAM policy for the given backend bucket as defined in a JSON or YAML file.
+
+  examples: |
+    The following command reads an IAM policy defined in a JSON file called 'policy.json' and sets it for the backend bucket called 'my-backend-bucket':
+
+      $ {command} my-backend-bucket policy.json
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of the
+    policy file format and contents.
+
+request:
+  collection: compute.backendBuckets
+  use_relative_name: false
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=globalSetPolicyRequest.policy.version
+  api_version: v1
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+iam:
+  set_iam_policy_request_path: globalSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeBackendBucketsSetIamPolicyRequest
+
+arguments:
+  resource:
+    help_text: The backend bucket to set the IAM policy for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:backend_bucket
+    override_resource_collection: true

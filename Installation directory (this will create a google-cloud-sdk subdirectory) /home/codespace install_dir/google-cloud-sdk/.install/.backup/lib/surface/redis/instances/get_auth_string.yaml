@@ -1,0 +1,37 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: |
+    Show AUTH string for a Memorystore Redis instance.
+  description: |
+    Show AUTH string for a Memorystore Redis instance.
+
+    Result is empty if AUTH is disabled for the instance.
+
+    This command can fail for the following reasons:
+      * The instance specified does not exist.
+      * The active account does not have permission to view the AUTH string
+  examples: |
+    To display the AUTH string for an instance with the name `my-redis-instance` in the default
+    region, run:
+
+      $ {command} my-redis-instance
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.redis.resources:instance
+    help_text: |
+      Arguments and flags that specify the Memorystore Redis instance you want
+      to view the AUTH string for.
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: redis.projects.locations.instances
+  method: getAuthString
+
+output:
+  format: "yaml[private]"

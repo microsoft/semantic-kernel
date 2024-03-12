@@ -1,0 +1,37 @@
+- release_tracks: [BETA, GA]
+  BETA:
+    deprecate:
+      is_removed: false
+      warning: |
+        This command has been deprecated.
+        Use `gcloud datastream streams list` instead.
+  help_text:
+    brief: List Datastream stream resources.
+    description: List Datastream stream resources.
+    examples: |
+      To list all streams in a project and location 'us-central1', run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.streams
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location you want to list the streams for.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:location
+
+  output:
+    format: |
+      table(
+        displayName:label=NAME,
+        state:label=STATE,
+        sourceConfig.sourceConnectionProfile:label=SOURCE,
+        destinationConfig.destinationConnectionProfile:label=DESTINATION,
+        createTime,
+        updateTime
+      )

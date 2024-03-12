@@ -1,0 +1,23 @@
+- help_text:
+    brief: Describe a Cloud TPU Location.
+    description: |
+      Describe a Cloud TPU Location.
+
+
+      To get a list of available locations for your project run:
+
+        $ {parent_command} list
+
+    examples: |
+      The following command describes the TPUs running in zone `us-central1-b`:
+
+        $ {command} us-central1-b
+
+  request:
+    collection: tpu.projects.locations
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The Cloud TPU Location you want to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:location

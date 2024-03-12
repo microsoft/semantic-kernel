@@ -1,0 +1,20 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Add an IAM policy binding to the IAM policy of a hub resource.
+    description: |
+      Add an IAM policy binding to the IAM policy of a hub resource. One binding consists of
+      a member, a role, and an optional condition.
+    examples: |
+      To grant a user the ``roles/networkconnectivity.groupUser'' role on the hub called ``my-hub'', run the following command:
+
+      $ {command} my-hub --member="user:username@gmail.com" --role="roles/networkconnectivity.groupUser"
+
+  request: &request
+    collection: networkconnectivity.projects.locations.global.hubs
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The hub that you want to update.
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hub

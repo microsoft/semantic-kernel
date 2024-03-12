@@ -1,0 +1,81 @@
+project:
+  name: project
+  collection: marketplacesolutions.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: Project ID.
+    property: core/project
+  disable_auto_completers: false
+
+region:
+  name: region
+  collection: marketplacesolutions.projects.locations
+  attributes:
+  - *project
+  - &region
+    parameter_name: locationsId
+    attribute_name: region
+    help: Region of the resource.
+  disable_auto_completers: false
+
+power_instance:
+  name: power_instance
+  collection: marketplacesolutions.projects.locations.powerInstances
+  attributes:
+  - *project
+  - *region
+  - &power_instance
+    parameter_name: powerInstancesId
+    attribute_name: power_instance
+    help: Marketplace Solutions Power instance.
+  disable_auto_completers: false
+
+power_image:
+  name: power_image
+  collection: marketplacesolutions.projects.locations.powerImages
+  attributes:
+  - *project
+  - *region
+  - &power_image
+    parameter_name: powerImagesId
+    attribute_name: power_image
+    help: Marketplace Solutions Power image.
+  disable_auto_completers: false
+
+power_network:
+  name: power_network
+  collection: marketplacesolutions.projects.locations.powerNetworks
+  attributes:
+  - *project
+  - *region
+  - &power_network
+    parameter_name: powerNetworksId
+    attribute_name: power_network
+    help: Marketplace Solutions Power network.
+  disable_auto_completers: false
+
+power_volume:
+  name: power_volume
+  collection: marketplacesolutions.projects.locations.powerVolumes
+  attributes:
+  - *project
+  - *region
+  - &power_volume
+    parameter_name: powerVolumesId
+    attribute_name: power_volume
+    help: Marketplace Solutions Power volume.
+  disable_auto_completers: false
+
+power_ssh_key:
+  name: power_ssh_key
+  collection: marketplacesolutions.projects.locations.powerSshKeys
+  attributes:
+  - *project
+  - *region
+  - &power_ssh_key
+    parameter_name: powerSshKeysId
+    attribute_name: power_ssh_key
+    help: Marketplace Solutions Power ssh key.
+  disable_auto_completers: false

@@ -1,0 +1,3 @@
+recursive-include google/cloud/ml/samples *
+include LICENSE
+include MANIFEST.in

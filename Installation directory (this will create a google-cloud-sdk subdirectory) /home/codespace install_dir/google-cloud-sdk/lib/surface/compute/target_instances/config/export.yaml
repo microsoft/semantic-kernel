@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Compute Engine target instance.
+  description: |
+    *{command}* exports the configuration for a Compute Engine target instance.
+
+    Target instance configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    target instances within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a target instance, run:
+
+      $ {command} my-target-instance
+
+    To export the configuration for a target instance to a file, run:
+
+      $ {command} my-target-instance --path=/path/to/dir/
+
+    To export the configuration for a target instance in Terraform
+    HCL format, run:
+
+      $ {command} my-target-instance --resource-format=terraform
+
+    To export the configurations for all target instances within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Target instance to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:target_instance

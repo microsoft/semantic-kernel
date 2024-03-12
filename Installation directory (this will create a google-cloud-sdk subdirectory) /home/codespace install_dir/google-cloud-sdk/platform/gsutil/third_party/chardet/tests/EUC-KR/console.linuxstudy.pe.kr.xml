@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!--
+Source: http://console.linuxstudy.pe.kr/blog/index.xml
+Expect: EUC-KR
+-->
+<!-- generator="pMachine/2.3" -->
+<rss version="0.91">
+<channel>
+<title>ㅇ ㅏ ㅁ ㅏ 도 그 건 ㄴ ㅓ 였 을 걸</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php</link>
+<description></description>
+<language>euc-kr</language>
+<image>
+<title>ㅇ ㅏ ㅁ ㅏ 도 그 건 ㄴ ㅓ 였 을 걸</title>
+<url></url>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php</link>
+<description></description>
+</image>
+<item>
+<title>이사했습니다.</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P251</link>
+<description>&lt;br /&gt;
+&lt;a href=&quot;http://console.linuxstudy.pe.kr/wordpress/&quot; &gt;http://console.linuxstudy.pe.kr/wordpress/&lt;/a&gt;&lt;br /&gt;
+&lt;br /&gt;
+이 블로그로의 링크는 조만간 사라질 예정입니다.</description>
+</item>
+<item>
+<title>이인? 이인? 이인?</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P250</link>
+<description>도전 1000곡이라는 생소한 프로그램에 우연히 눈이 머물렀다.&lt;br /&gt;
+&lt;br /&gt;
+이인?&lt;br /&gt;
+&lt;br /&gt;
+어떤 사람인지 몰라도 정말 매력적인 목소리이다. 검색엔진에는 등록되어 있지 않음....&lt;br /&gt;
+&lt;br /&gt;
+나이 많은 듯한 아줌마? 아가씨? &lt;br /&gt;
+&lt;br /&gt;
+중요한건 정말 매력적인 목소리...</description>
+</item>
+<item>
+<title>zboard patch!!!</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P249</link>
+<description>KLDP에서 며칠 전에 보긴 했는데 xpdf 에서 한글 화일이 열리지 않는다는 이유로 방치되다가, 오늘에야 좀 끄적거릴 마음이 생겨 패치했다. 그러고 보니 패치해야 할 곳이 한 두곳이 아니군... ;;;&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+Vulnerability 1: As of zboard 4.1pl4&lt;br /&gt;
+- - ----------------------------&lt;br /&gt;
+Insert the following code at 59th line of outlogin.php,&lt;br /&gt;
+&lt;br /&gt;
+if(eregi(&quot;:\/\/&quot;,$_zb_path)) $_zb_path=&quot;&quot;;&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+Vulnerability 2: As of zboard 4.1pl4&lt;br /&gt;
+- - ----------------------------&lt;br /&gt;
+Insert the following code at 15th line of include/write.php,&lt;br /&gt;
+&lt;br /&gt;
+if(eregi(&quot;:\/\/&quot;,$dir)) $dir=&quot;&quot;;&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+Vulnerability 3: As of zboard 4.1pl4&lt;br /&gt;
+- - ----------------------------&lt;br /&gt;
+Insert the following code at 3rd line of check_user_id.php,&lt;br /&gt;
+&lt;br /&gt;
+$user_id = htmlspecialchars(trim($user_id));&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+관련 URL :&lt;br /&gt;
+&lt;br /&gt;
+&lt;a href=&quot;http://lists.netsys.com/pipermail/full-disclosure/2004-December/030224.html&quot; &gt;http://lists.netsys.com/pipermail/full-disclosure/2004-December/030224.html&lt;/a&gt;&lt;br /&gt;
+</description>
+</item>
+<item>
+<title>삽질의 기록</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P248</link>
+<description>make world 후에는 꼭 한두가지 문제점이 발생하는데 이번엔 named 였다. 안그래도 sendmail+bind 에서 qmail+djbdns로 전환하려는 계획을 가지고 있었기에 이번 기회에 djbdns를 설치하기로 작정, 짧게나마 삽질의 흔적을 남겨둔다.&lt;br /&gt;
+&lt;br /&gt;
+# cd /usr/ports/dns/djbdns &amp;&amp; make install clean&lt;br /&gt;
+&lt;br /&gt;
+의존성때문에 daemontools, ucspi-tcp 이 같이 설치된다.&lt;br /&gt;
+&lt;br /&gt;
+# pw groupadd -n djbdns&lt;br /&gt;
+# pw useradd -n dnslog -g djbdns -d /noexistent -s /sbin/nologin -c &quot;dnslog&quot; -w random&lt;br /&gt;
+# pw useradd -n dns -g djbdns -d /noexistent -s /sbin/nologin -c &quot;dns&quot; -w random&lt;br /&gt;
+# mkdir /var/service&lt;br /&gt;
+# tinydns-conf dns dnslog /var/service/dns 0.0.0.0&lt;br /&gt;
+# cd /var/service/dns/root&lt;br /&gt;
+# ./add-ns aaa.com 0.0.0.0&lt;br /&gt;
+# ./add-ns 0.0.0.in-addr.arpa 0.0.0.0&lt;br /&gt;
+# ./add-host &lt;a href=&quot;http://www.aaa.com&quot; &gt;www.aaa.com&lt;/a&gt; 0.0.0.0&lt;br /&gt;
+# ./add-alias ftp.aaa.com 0.0.0.0&lt;br /&gt;
+# ./add-mx aaa.com 0.0.0.0&lt;br /&gt;
+# make&lt;br /&gt;
+# sync &lt;br /&gt;
+# sync&lt;br /&gt;
+# sync&lt;br /&gt;
+# reboot&lt;br /&gt;
+&lt;br /&gt;
+/etc/rc.conf 에서 named_enable=&quot;NO&quot; &lt;br /&gt;
+&lt;br /&gt;
+삽질의 시작은 /usr/local/etc/rc.d 에 svcscan.sh 가 있음에도 프로세스가 올라오지 않는다는 사실에서부터였다... OTL &lt;br /&gt;
+이리저리 머리 굴리며 svscan.sh start 해줘도 반응이 없길래...&lt;br /&gt;
+&lt;br /&gt;
+# supervise /var/service/dns/&lt;br /&gt;
+&lt;br /&gt;
+수동으로 실행시켜주고 종료.. -ㅅ-;; daemontools 에 대한 약간의 조사가 더 필요할 듯. 이 상태로 qmail까지 건들기에는 무리가 있다. &lt;br /&gt;
+현재로서는 빠른 반응에 만족하고 있는 중이다.</description>
+</item>
+<item>
+<title>uptime</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P247</link>
+<description>bsd# uptime              &lt;br /&gt;
+ 4:32PM  up 71 days, 13:31, 1 user, load averages: 0.00, 0.00, 0.00&lt;br /&gt;
+bsd# uname -a&lt;br /&gt;
+FreeBSD bsd 6.0-CURRENT FreeBSD 6.0-CURRENT #12: Mon Aug 23 04:26:35 KST 2004     pravda@bsd:/usr/obj/usr/src/sys/ORACLE  i386&lt;br /&gt;
+&lt;br /&gt;
+심심하면 소스 받고 buildworld만 하다가 오늘 큰 맘 먹고 installworld 하려고 하는데...&lt;br /&gt;
+&lt;br /&gt;
+왜 자꾸 uptime에 눈이 가는건지...&lt;br /&gt;
+&lt;br /&gt;
+아무런 의미없는 숫자에 불과하다는 사실. 머리로는 수긍이 가는데, 마음은 아닌가보다.&lt;br /&gt;
+&lt;br /&gt;
+Solaris 머신 보드 망가지기 전 기록했던 260여일의 uptime 이 자꾸만 떠오른다.&lt;br /&gt;
+&lt;br /&gt;
+아무런 도움도 되지 않는 이놈의 망상.&lt;br /&gt;
+&lt;br /&gt;
+왜, 도대체 왜 uptime 따위에 집착하는 것인가?</description>
+</item>
+<item>
+<title>하울의 움직이는 성</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P246</link>
+<description>&lt;img src=&quot;http://console.linuxstudy.pe.kr/blog/images/uploads/howl.jpg&quot; border=&quot;0&quot; alt=&quot;하울 포스터&quot; name=&quot;image&quot; width=&quot;400&quot; height=&quot;574&quot; /&gt; &lt;br /&gt;
+&lt;br /&gt;
+............&lt;br /&gt;
+&lt;br /&gt;
+하하.&lt;br /&gt;
+&lt;br /&gt;
+장문의 글을 써놓고 다시 읽어보니 너무 우습다.&lt;br /&gt;
+&lt;br /&gt;
+무슨말이 더 필요할까.&lt;br /&gt;
+&lt;br /&gt;
+최고다.&lt;br /&gt;
+&lt;br /&gt;
+영화가 시작하는 순간 벌써 엔딩을 두려워했다.</description>
+</item>
+<item>
+<title>iriver boy</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P244</link>
+<description>&lt;b&gt;난 아무잘못없습니다&lt;/b&gt;&lt;br /&gt;
+&lt;br /&gt;
+어처구니 없는 사건의 종결은 결국 아이리버측의 보상으로 마무리 되는 분위기다. 사건의 경과와 결과를 놓고 이러쿵 저러쿵 말도 많지만, 이 소년의 모습이 그리 낯설게 느껴지지 않는건 아마 나도 나이가 먹어서일까? 정도의 차이가 있다 뿐이지, 저런 무개념의 모습은 군대 말년에서부터 지금까지 심심찮게 만나곤 했었다. 남과 어울리지 않는 모습, 남을 배려하지 않는 모습, 자신의 잘못은 인정하지 못하는 모습, 도무지 이해할 수 없는 투정, 얌체같은 책임전가등등. 사실 둘러보면 저런 경우 그리 어렵지 않게 볼 수 있을 것이다. 단 이 경우처럼 극단적으로 치우친 것을 보는 것은 좀체로 쉽지 않겠지...&lt;br /&gt;
+&lt;br /&gt;
+다른 그 어떤것보다도, 저 어린 학생의 부모가 불쌍하다.</description>
+</item>
+<item>
+<title>생뚱맞은 작업</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P243</link>
+<description>내 블로그 돌보기도 게을리 하면서 누가 시키지도 않은 작업을 마쳤다. 무언가 몰두 할 수 있는 일이 있다는건 참 행복한 일임에 분명하다. 게다가 내가 즐거워서 하는 일이니 더욱 그러할 테지.&lt;br /&gt;
+&lt;br /&gt;
+이것저것 리뉴얼을 위한 준비는 하고 있는데, 워낙 건드려야 할 부분이 많아서 엄두가 나지 않는다. 힘내야지.</description>
+</item>
+<item>
+<title>어렴풋하게...</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P242</link>
+<description>&lt;img src=&quot;http://console.linuxstudy.pe.kr/blog/images/uploads/bell.JPG&quot; border=&quot;0&quot; alt=&quot;image&quot; name=&quot;image&quot; width=&quot;400&quot; height=&quot;525&quot; /&gt; &lt;br /&gt;
+&lt;br /&gt;
+참, 그렇게 새로운건가? 욕만 무지 먹었는데...&lt;br /&gt;
+&lt;br /&gt;
+동네에 꼬마들이라고는 우리들 뿐이었고, 초인종이 달려있는 집은 어느 노부부의 집 딱 한곳...&lt;br /&gt;
+&lt;br /&gt;
+상상이 가지?</description>
+</item>
+<item>
+<title>Brazil A.K.A 여인의 음모</title>
+<link>http://console.linuxstudy.pe.kr/blog/weblog.php?id=P241</link>
+<description>&lt;img src=&quot;http://console.linuxstudy.pe.kr/blog/images/uploads/brazil_p.jpg&quot; border=&quot;0&quot; alt=&quot;image&quot; name=&quot;image&quot; width=&quot;337&quot; height=&quot;475&quot; /&gt; &lt;br /&gt;
+&lt;br /&gt;
+&lt;b&gt;브라질&lt;br /&gt;
+6월에 마음의 즐거움을 주는 곳&lt;br /&gt;
+우리는 저 호박색 달빛 아래 서 있었지&lt;br /&gt;
+언젠가 다가올 날들을 속삭이며&lt;br /&gt;
+키스를 나누고 꼭 껴안았지&lt;br /&gt;
+그때부터&lt;br /&gt;
+내일은 또 다른 하루였고&lt;br /&gt;
+아침은 저 멀리서 나를 찾았네&lt;br /&gt;
+한 가지 분명하게 확신할 수 있는 것은&lt;br /&gt;
+내가 돌아갈 곳은&lt;br /&gt;
+과거의 브라질이라오 &lt;/b&gt;&lt;br /&gt;
+&lt;br /&gt;
+꽤 오래전, 그러니까 중학생 무렵이었을 때 TV에서 이 영화를 봤었다. 아마 주말 낮에 해주는 무슨 특선 시리즈였는데 앞부분은 훌쩍 건너띠고 봐서 제목을 알 수는 없었고, 다만 참 독특한 영화라는 생각만 했었다. 아직까지 기억이 나는 걸 보면 꽤나 마음에 들었던 것 같기도 하다. 시간이 흘러 대학교 1학년때쯤이던가, 영화마을이라는 독특한 비디오샵을 필두로 비주류영화들에 대한 사람들의 관심(아니면 나만의 관심일수도...)이 폭증했을때 이 영화의 제목을 알 수 있었다. '여인의 음모'라는 야시꾸리한 제목, 게다가 영문 제목은 더 요상한 '브라질'. 그리고 영화에 대한 각종 찬사와 호평이 어우러진 비평들도 함께... 그 찬사들 때문에 부담스러웠는지 당시 다시 이 영화를 보지는 않았다. &lt;br /&gt;
+&lt;br /&gt;
+최근 한 클럽에서 이 영화를 발견했을때, 웬지 봐야겠구나 하는 어떤 숙명같은 것이 느껴졌다. 참 요상스럽기도 하지... 예전에 빌린 돈을 이제서야 주인을 찾아 돌려주는 느낌이랄까. 아주 상쾌하면서도 뿌듯한 기분이다. 그리고 그 이상한 사람이 로버트 드 니로였다는 새로운 발견도 즐겁기만 하다. 영화에 대한 평이야 인터넷 여기저기만 둘러봐도 주옥같은 글들이 널려 있으니 나까지 일조할 필요는 없겠지. &lt;br /&gt;
+&lt;br /&gt;
+암튼, 진지하게 일독을 권하고 싶은 영화. 쾅. 쾅. 쾅.</description>
+</item>
+</channel>
+</rss>

@@ -1,0 +1,72 @@
+project:
+  name: project
+  collection: networkservices.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The project Id.
+    property: core/project
+
+location:
+  name: location
+  collection: networkservices.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The location Id.
+    fallthroughs:
+    # If the location is not specified, assume 'global' by default.
+    - hook: googlecloudsdk.command_lib.edge_cache.util:SetLocationAsGlobal
+      hint: use global location
+
+operation:
+  name: operation
+  collection: networkservices.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: The id of the Edge Cache operation
+
+edgeCacheOrigin:
+  name: origin
+  collection: networkservices.projects.locations.edgeCacheOrigins
+  request_id_field: edgeCacheOriginId
+  attributes:
+  - *project
+  - *location
+  - &edgeCacheOrigin
+    parameter_name: edgeCacheOriginsId
+    attribute_name: origin
+    help: The id of the Edge Cache Origin
+
+edgeCacheService:
+  name: service
+  collection: networkservices.projects.locations.edgeCacheServices
+  request_id_field: edgeCacheServiceId
+  attributes:
+  - *project
+  - *location
+  - &edgeCacheService
+    parameter_name: edgeCacheServicesId
+    attribute_name: service
+    help: The id of the Edge Cache Service
+
+edgeCacheKeyset:
+  name: keyset
+  collection: networkservices.projects.locations.edgeCacheKeysets
+  request_id_field: edgeCacheKeysetId
+  attributes:
+  - *project
+  - *location
+  - &edgeCacheKeyset
+    parameter_name: edgeCacheKeysetsId
+    attribute_name: keyset
+    help: The id of the Edge Cache Keyset

@@ -1,0 +1,276 @@
+project:
+  name: project
+  collection: networksecurity.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The project Id.
+    property: core/project
+
+location:
+  name: location
+  collection: networksecurity.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The location Id.
+
+globalDefaultLocation:
+  name: location
+  collection: networksecurity.projects.locations
+  attributes:
+  - *project
+  - &globalDefaultLocation
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The location Id.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.network_security.util:SetGlobalLocation
+      hint: location is global by default
+
+serverTlsPolicy:
+  name: server TLS policy
+  collection: networksecurity.projects.locations.serverTlsPolicies
+  request_id_field: serverTlsPolicyId
+  attributes:
+  - *project
+  - *location
+  - &serverTlsPolicy
+    parameter_name: serverTlsPoliciesId
+    attribute_name: server_tls_policy
+    help: Id of the server TLS policy.
+
+urlList:
+  name: url list
+  collection: networksecurity.projects.locations.urlLists
+  request_id_field: urlListId
+  attributes:
+  - *project
+  - *location
+  - &urlList
+    parameter_name: urlListsId
+    attribute_name: url_list
+    help: Id of the url list.
+
+tlsInspectionPolicy:
+  name: tls inspection policy
+  collection: networksecurity.projects.locations.tlsInspectionPolicies
+  request_id_field: tlsInspectionPolicyId
+  attributes:
+  - *project
+  - *location
+  - &tlsInspectionPolicy
+    parameter_name: tlsInspectionPoliciesId
+    attribute_name: tls_inspection_policy
+    help: Id of the tls inspection policy.
+
+gatewaySecurityPolicy:
+  name: gateway security policy
+  collection: networksecurity.projects.locations.gatewaySecurityPolicies
+  request_id_field: gatewaySecurityPolicyId
+  attributes:
+  - *project
+  - *location
+  - &gatewaySecurityPolicy
+    parameter_name: gatewaySecurityPoliciesId
+    attribute_name: gateway_security_policy
+    help: Id of the gateway security policy.
+
+gatewaySecurityPolicyRule:
+  name: gateway security policy rule
+  collection: networksecurity.projects.locations.gatewaySecurityPolicies.rules
+  request_id_field: gatewaySecurityPolicyRuleId
+  attributes:
+  - *project
+  - *location
+  - *gatewaySecurityPolicy
+  - &gatewaySecurityPolicyRule
+    parameter_name: rulesId
+    attribute_name: gateway_security_policy_rule
+    help: Id of the gateway security policy rule.
+
+clientTlsPolicy:
+  name: client TLS policy
+  collection: networksecurity.projects.locations.clientTlsPolicies
+  request_id_field: clientTlsPolicyId
+  attributes:
+  - *project
+  - *location
+  - &clientTlsPolicy
+    parameter_name: clientTlsPoliciesId
+    attribute_name: client_tls_policy
+    help: Id of the client TLS policy.
+
+authorizationPolicy:
+  name: authorization policy
+  collection: networksecurity.projects.locations.authorizationPolicies
+  request_id_field: authorizationPolicyId
+  attributes:
+  - *project
+  - *location
+  - &authorizationPolicy
+    parameter_name: authorizationPoliciesId
+    attribute_name: authorization_policy
+    help: Id of the authorization policy.
+
+addressGroup:
+  name: address group
+  collection: networksecurity.projects.locations.addressGroups
+  request_id_field: addressGroupId
+  attributes:
+  - *project
+  - *location
+  - &addressGroup
+    parameter_name: addressGroupsId
+    attribute_name: address_group
+    help: Id of the address group.
+
+organization:
+  name: organization
+  collection: networksecurity.organizations
+  attributes:
+  - &organization
+    parameter_name: organizationsId
+    attribute_name: organization
+    help: |
+      Organization number.
+
+orgLocation:
+  name: location
+  collection: networksecurity.organizations.locations
+  attributes:
+  - *organization
+  - &orgLocation
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      Location Id.
+
+locationDefaultGlobal:
+  name: location
+  collection: networksecurity.organizations.locations
+  attributes:
+  - *organization
+  - &locationDefaultGlobal
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      Location ID of the resource.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.network_security.util:SetGlobalLocation
+      hint: |
+        use default global location
+
+orgAddressGroup:
+  name: address group
+  collection: networksecurity.organizations.locations.addressGroups
+  request_id_field: addressGroupId
+  attributes:
+  - *organization
+  - *location
+  - &orgAddressGroup
+    parameter_name: addressGroupsId
+    attribute_name: address_group
+    help: Id of the address group.
+
+securityProfile:
+  name: security_profile
+  collection: networksecurity.organizations.locations.securityProfiles
+  request_id_field: securityProfileId
+  attributes:
+  - *organization
+  - *locationDefaultGlobal
+  - &securityProfile
+    parameter_name: securityProfilesId
+    attribute_name: security_profile
+    help: ID of the security profile.
+
+securityProfileGroup:
+  name: security_profile_group
+  collection: networksecurity.organizations.locations.securityProfileGroups
+  request_id_field: securityProfileGroupId
+  attributes:
+  - *organization
+  - *locationDefaultGlobal
+  - &securityProfileGroup
+    parameter_name: securityProfileGroupsId
+    attribute_name: security_profile_group
+    help: ID of the security profile group.
+
+sseRealm:
+  name: SSE realm
+  collection: networksecurity.projects.locations.sseRealms
+  request_id_field: sseRealmId
+  attributes:
+  - *project
+  - *globalDefaultLocation
+  - &sseRealm
+    parameter_name: sseRealmsId
+    attribute_name: sse_realm
+    help: Id of the SSE realm.
+
+partnerSSERealm:
+  name: partner SSE realm
+  collection: networksecurity.projects.locations.partnerSSERealms
+  request_id_field: partnerSseRealmId
+  attributes:
+  - *project
+  - *globalDefaultLocation
+  - &partnerSSERealm
+    parameter_name: partnerSSERealmsId
+    attribute_name: partner_sse_realm
+    help: Id of the partner SSE realm.
+
+sseGateway:
+  name: SSE gateway
+  collection: networksecurity.projects.locations.sseGateways
+  request_id_field: sseGatewayId
+  attributes:
+  - *project
+  - *location
+  - &sseGateway
+    parameter_name: sseGatewaysId
+    attribute_name: sse_gateway
+    help: Id of the SSE gateway.
+
+sseGatewayReference:
+  name: SSE gateway reference
+  collection: networksecurity.projects.locations.sseGatewayReferences
+  request_id_field: sseGatewayReferenceId
+  attributes:
+  - *project
+  - *location
+  - &sseGatewayReference
+    parameter_name: sseGatewayReferencesId
+    attribute_name: sse_gateway_reference
+    help: Id of the SSE gateway reference.
+
+partnerSSEGateway:
+  name: partner SSE gateway
+  collection: networksecurity.projects.locations.partnerSSEGateways
+  request_id_field: partnerSseGatewayId
+  attributes:
+  - *project
+  - *location
+  - &partnerSSEGateway
+    parameter_name: partnerSSEGatewaysId
+    attribute_name: partner_sse_gateway
+    help: Id of the partner SSE gateway.
+
+firewallAttachment:
+  name: firewall attachment
+  collection: networksecurity.projects.locations.firewallAttachments
+  request_id_field: firewallAttachmentId
+  attributes:
+  - *project
+  - *location
+  - &firewallAttachment
+    parameter_name: firewallAttachmentId
+    attribute_name: firewall_attachment
+    help: Id of the firewall attachment

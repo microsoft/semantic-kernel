@@ -1,0 +1,55 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 BareMetalNodePoolConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- nodeConfigs
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  kubeletConfig:
+    description: |-
+      The modifiable kubelet configurations for the baremetal machines.
+    $ref: BareMetalKubeletConfig.yaml
+  labels:
+    description: |-
+      The labels assigned to nodes of this node pool. An object containing a
+      list of key/value pairs. Example: { "name": "wrench", "mass": "1.3kg",
+      "count": "3" }.
+    $ref: LabelsValue.yaml
+  nodeConfigs:
+    description: The list of machine addresses in the bare metal Node Pool.
+    type: array
+    items:
+      $ref: BareMetalNodeConfig.yaml
+  operatingSystem:
+    description: 'Specifies the nodes operating system (default: LINUX).'
+    type: string
+    enum:
+    - LINUX
+    - OPERATING_SYSTEM_UNSPECIFIED
+  taints:
+    description: The initial taints assigned to nodes of this node pool.
+    type: array
+    items:
+      $ref: NodeTaint.yaml

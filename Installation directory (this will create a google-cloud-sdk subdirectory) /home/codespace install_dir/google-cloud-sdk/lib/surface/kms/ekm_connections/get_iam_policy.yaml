@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Get the IAM policy for an ekm connection.
+    description: |
+      Displays the IAM policy associated with an ekm connection.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates;
+      see $ {parent_command} set-iam-policy for additional details.
+    examples: |
+      To print the IAM policy for a given ekm connection, run:
+
+        $ {command} --location=my-location my-ekmconnection
+
+  request:
+    collection: cloudkms.projects.locations.ekmConnections
+
+  arguments:
+    resource:
+      help_text: The ekm connection for which to get the IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.kms.resources:ekm_connection
+
+  iam:
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

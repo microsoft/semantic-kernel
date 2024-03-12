@@ -1,0 +1,49 @@
+Handling of file:// URIs:
+
+This directory contains code to map basic boto connection, bucket, and key
+operations onto files in the local filesystem, in support of file://
+URI operations.
+
+Bucket storage operations cannot be mapped completely onto a file system
+because of the different naming semantics in these types of systems: the
+former have a flat name space of objects within each named bucket; the
+latter have a hierarchical name space of files, and nothing corresponding to
+the notion of a bucket. The mapping we selected was guided by the desire
+to achieve meaningful semantics for a useful subset of operations that can
+be implemented polymorphically across both types of systems. We considered
+several possibilities for mapping path names to bucket + object name:
+
+1) bucket = the file system root or local directory (for absolute vs
+relative file:// URIs, respectively) and object = remainder of path.
+We discarded this choice because the get_all_keys() method doesn't make
+sense under this approach: Enumerating all files under the root or current
+directory could include more than the caller intended. For example,
+StorageUri("file:///usr/bin/X11/vim").get_all_keys() would enumerate all
+files in the file system.
+
+2) bucket is treated mostly as an anonymous placeholder, with the object
+name holding the URI path (minus the "file://" part). Two sub-options,
+for object enumeration (the get_all_keys() call):
+  a) disallow get_all_keys(). This isn't great, as then the caller must
+     know the URI type before deciding whether to make this call.
+  b) return the single key for which this "bucket" was defined.
+     Note that this option means the app cannot use this API for listing
+     contents of the file system. While that makes the API less generally
+     useful, it avoids the potentially dangerous/unintended consequences
+     noted in option (1) above.
+
+We selected 2b, resulting in a class hierarchy where StorageUri is an abstract
+class, with FileStorageUri and BucketStorageUri subclasses.
+
+Some additional notes:
+
+BucketStorageUri and FileStorageUri each implement these methods:
+  - clone_replace_name() creates a same-type URI with a
+    different object name - which is useful for various enumeration cases
+    (e.g., implementing wildcarding in a command line utility).
+  - names_container() determines if the given URI names a container for
+    multiple objects/files - i.e., a bucket or directory.
+  - names_singleton() determines if the given URI names an individual object
+    or file.
+  - is_file_uri() and is_cloud_uri() determine if the given URI is a
+    FileStorageUri or BucketStorageUri, respectively

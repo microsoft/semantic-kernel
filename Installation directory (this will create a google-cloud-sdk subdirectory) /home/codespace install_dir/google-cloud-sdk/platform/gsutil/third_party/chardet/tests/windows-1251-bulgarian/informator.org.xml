@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<!--
+Source: http://www.informator.org/html/backend.php
+Expect: windows-1251
+-->
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN"
+ "http://my.netscape.com/publish/formats/rss-0.91.dtd">
+
+<rss version="0.91">
+
+<channel>
+<title>ИНФОРМАТОР</title>
+<link>http://www.informator.org/html</link>
+<description>ИНФОРМАТОР</description>
+<language>bg</language>
+
+<item>
+<title>КРАТКА БИБЛИЯ НА ПРОГРАМИСТА</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=184</link>
+</item>
+
+<item>
+<title>Въпрос на проста логика</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=183</link>
+</item>
+
+<item>
+<title>Даниел Дефо</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=182</link>
+</item>
+
+<item>
+<title>Нашето право на любов</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=181</link>
+</item>
+
+<item>
+<title>За какво живея?</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=180</link>
+</item>
+
+<item>
+<title>Из “Пътуване към себе си” Бл. Димитрова</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=177</link>
+</item>
+
+<item>
+<title>Да започнеш собствен бизнес - опознай себе си и правилата му</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=176</link>
+</item>
+
+<item>
+<title>Стратегия на фирмата- знаем ли какво искаме, къде отиваме и как го постигаме?</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=175</link>
+</item>
+
+<item>
+<title>Информацията - по същество</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=174</link>
+</item>
+
+<item>
+<title>Ползвайте плажно масло</title>
+<link>http://www.informator.org/html/modules.php?name=News&amp;file=article&amp;sid=173</link>
+</item>
+
+</channel>
+</rss>

@@ -1,0 +1,41 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 HttpRouteRouteRule export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  action:
+    description: The detailed rule defining how to route matched traffic.
+    $ref: HttpRouteRouteAction.yaml
+  matches:
+    description: |-
+      A list of matches define conditions used for matching the rule against
+      incoming HTTP requests. Each match is independent, i.e. this rule will be
+      matched if ANY one of the matches is satisfied. If no matches field is
+      specified, this rule will unconditionally match traffic. If a default rule
+      is desired to be configured, add a rule with no matches specified to the
+      end of the rules list.
+    type: array
+    items:
+      $ref: HttpRouteRouteMatch.yaml

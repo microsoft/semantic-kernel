@@ -1,0 +1,28 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: |
+    Delete a Cloud IAP OAuth client.
+  description: |
+    *{command}* is used to delete a Cloud IAP OAuth client.  Note this command cannot be used to
+    delete any other type of OAuth client in your project.
+  examples: |
+    To delete a Cloud IAP OAuth client named CLIENT for the current project and brand BRAND, run:
+
+        $ {command} CLIENT --brand=BRAND
+
+    To delete a Cloud IAP OAuth client named CLIENT for a specific project PROJECT_ID and brand
+    BRAND, run:
+
+        $ {command} CLIENT --brand=BRAND --project=PROJECT_ID
+
+request:
+  collection: iap.projects.brands.identityAwareProxyClients
+  api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.iap.resources:client
+    arg_name: name
+    is_positional: true
+    help_text: |
+      Name of the Cloud IAP OAuth client to delete.

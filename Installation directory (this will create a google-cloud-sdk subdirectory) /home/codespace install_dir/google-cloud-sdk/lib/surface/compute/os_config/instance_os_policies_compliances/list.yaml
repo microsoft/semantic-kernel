@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List compliance states for OS policies that are applied to VMs.
+    description: |
+      List compliance states for OS policies that are applied to VMs.
+    examples: |
+      To list compliance states for OS policies that are applied to VMs in `my-project`
+      and location `us-central1-a`, run:
+
+        $ {command} --project=my-project --location=us-central1-a
+
+  request:
+    collection: osconfig.projects.locations.instanceOSPoliciesCompliances
+    ALPHA:
+      api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Location of the VMs.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:location
+
+  output:
+    format: |
+      table(
+         name.basename():label=INSTANCE_ID,
+         instance:label=INSTANCE_NAME,
+         state,
+         detailed_state,
+         last_compliance_check_time.date("%Y-%m-%dT%H:%M:%SZ"),
+         last_compliance_run_id
+       )

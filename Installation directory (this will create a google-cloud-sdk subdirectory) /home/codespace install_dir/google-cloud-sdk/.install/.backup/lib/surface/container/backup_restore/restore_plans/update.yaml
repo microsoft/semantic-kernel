@@ -1,0 +1,75 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Update a restore plan.
+    description: |
+      Update a Backup for GKE restore plan.
+
+      ## EXAMPLES
+
+      To update a restore plan ``my-restore-plan'' in project ``my-project'' in location ``us-central1'' to add new description, run:
+
+        $ {command} my-restore-plan --project=my-project --location=us-central1 --description="New description"
+
+  request:
+    collection: gkebackup.projects.locations.restorePlans
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.container.backup_restore.hooks:PreprocessUpdateRestorePlan
+    api_version: v1
+
+  async:
+    collection: gkebackup.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the restore plan to update. The name may be provided either as a relative name, e.g.
+        `projects/<project>/locations/<location>/restorePlans/<restorePlan>`
+        or as a single ID name (with the parent resources provided via options or through
+        properties), e.g.
+        `RESTORE_PLAN --project=<project> --location=<location>`.
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:positional_restore_plan
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_etag
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_description
+
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:volume_data_restore_policy
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:namespaced_resource_restore_mode_update
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_conflict_policy
+
+    # Restore scope
+
+    - group:
+        # Update restore plan does not require these args.
+        help_text: |
+          The scope of namespaced resources to restore.
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_all_namespaces
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_no_namespaces
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_selected_namespaces
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_excluded_namespaces
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_selected_applications
+
+    - group:
+        help_text: |
+          The scope of cluster-scoped resources to restore.
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_restore_scope
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_selected_group_kinds
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_excluded_group_kinds
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_all_group_kinds
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_no_group_kinds
+
+    - group:
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_substitution_rules_file
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_transformation_rules_file
+
+    labels:
+      api_field: restorePlan.labels
+
+  update:
+    read_modify_update: true

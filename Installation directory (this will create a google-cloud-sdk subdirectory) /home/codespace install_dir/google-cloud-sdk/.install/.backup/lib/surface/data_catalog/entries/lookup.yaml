@@ -1,0 +1,64 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Lookup a Data Catalog entry by its target name.
+    description: Lookup a Data Catalog entry by its target name.
+    examples: |-
+      To lookup the entry for a Cloud Pub/Sub topic by its Google Cloud Platform resource name, run:
+
+        $ {command} //pubsub.googleapis.com/projects/project1/topics/topic1
+
+      To lookup the entry for a Cloud Pub/Sub topic by its SQL name, run:
+
+        $ {command} 'pubsub.topic.`my-project1`.topic1'
+
+      To lookup the entry for a BigQuery table by its SQL name, run:
+
+        $ {command} 'bigquery.table.`my-project1`.my_dataset.my_table'
+
+  request:
+    api_version: v1
+    collection: datacatalog.entries
+    method: lookup
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:ParseResourceIntoLookupRequest
+
+  arguments:
+    params:
+    - arg_name: resource
+      is_positional: true
+      help_text: |-
+        The name of the target resource to lookup. This can be either the Google Cloud Platform
+        resource name or the SQL name of a Google Cloud Platform resource. SQL names follow Standard
+        SQL lexical structure: https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical
+
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Lookup a Data Catalog entry by its target name.
+    description: Lookup a Data Catalog entry by its target name.
+    examples: |-
+      To lookup the entry for a Cloud Pub/Sub topic by its Google Cloud Platform resource name, run:
+
+        $ {command} //pubsub.googleapis.com/projects/project1/topics/topic1
+
+      To lookup the entry for a Cloud Pub/Sub topic by its SQL name, run:
+
+        $ {command} 'pubsub.topic.`my-project1`.topic1'
+
+      To lookup the entry for a BigQuery table by its SQL name, run:
+
+        $ {command} 'bigquery.table.`my-project1`.my_dataset.my_table'
+
+  request:
+    collection: datacatalog.entries
+    method: lookup
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.entries.util:ParseResourceIntoLookupRequest
+
+  arguments:
+    params:
+    - arg_name: resource
+      is_positional: true
+      help_text: |-
+        The name of the target resource to lookup. This can be either the Google Cloud Platform
+        resource name or the SQL name of a Google Cloud Platform resource. SQL names follow Standard
+        SQL lexical structure: https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical

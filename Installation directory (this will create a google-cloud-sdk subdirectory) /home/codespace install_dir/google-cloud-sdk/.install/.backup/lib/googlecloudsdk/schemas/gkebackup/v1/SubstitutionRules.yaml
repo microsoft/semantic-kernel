@@ -1,0 +1,33 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: backup for gke v1 substitution rule schema
+description: backup for gke substitution rule file YAML validation schema
+type: object
+additionalProperties: false
+properties:
+  substitutionRules:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        targetNamespaces:
+          type: array
+          items:
+            type: string
+        targetGroupKinds:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              resourceGroup:
+                type: string
+              resourceKind:
+                type: string
+        targetJsonPath:
+          type: string
+        originalValuePattern:
+          type: string
+        newValue:
+          type: string

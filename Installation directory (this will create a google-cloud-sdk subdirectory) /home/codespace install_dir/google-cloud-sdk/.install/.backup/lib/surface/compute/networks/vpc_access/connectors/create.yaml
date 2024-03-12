@@ -1,0 +1,142 @@
+- release_tracks: [GA, BETA, ALPHA]
+  help_text:
+    brief: |
+      Create a VPC Access connector.
+    description: |
+      Create a new VPC Access connector with the given name.
+
+      This command can fail for the following reasons:
+        * An instance with the same name already exists.
+        * The active account does not have permission to create instances.
+    examples: |
+      The following command creates a VPC Access connector with name 'my-vpc-connector'
+      in region 'us-central1' in network 'my-network' with IP CIDR range of '10.132.0.0/28'.
+
+        $ {command} my-vpc-connector --region=us-central1 --network=my-network
+          --range=10.132.0.0/28
+
+  async:
+    collection: vpcaccess.projects.locations.operations
+
+  request:
+    collection: vpcaccess.projects.locations.connectors
+    api_version: v1
+    BETA:
+      api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:connector_v1
+      ALPHA:
+        spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:connector
+      help_text: |
+        Arguments and flags that specify the VPC Access connector you want to create.
+    params:
+    - group:
+        mutex: true
+        params:
+        - group:
+            help_text: |
+              The Serverless VPC Access API can internally manage the creation
+              of a subnet to house the VPC connector.  To create this
+              subnet, the network ID (--network) and an IP CIDR range (--range)
+              for the subnet must be provided.
+            params:
+            - arg_name: network
+              api_field: connector.network
+              required: false
+              help_text: |
+                Name of the Compute Engine network to which the connector
+                will be connected. If left unspecified, the default network will be
+                used.
+              default: default
+            - arg_name: range
+              api_field: connector.ipCidrRange
+              required: false
+              help_text: |
+                CIDR range of internal addresses that are reserved for this
+                connector. For example, 10.132.0.0/28. Range must be unique and
+                non-overlapping with existing ranges in the network.
+        - group:
+            help_text: |
+              You can specify a subnet in which to place the connector rather than
+              using an internally managed subnet.  If you wish to use this
+              connector to attach your Serverless application to a Shared VPC,
+              first share a subnet to the project to which you are deploying your connector.
+              Then, supply the name of the subnet (--subnet) and the
+              project ID (--subnet-project) from which the subnet is hosted to
+              connect to this VPC.
+            params:
+            - arg_name: subnet
+              api_field: connector.subnet.name
+              required: false
+              help_text: |
+                User-provided subnet to house the connector. This field can be used in
+                favor of specifying the `network` and `range` fields.
+                e.g. "my-subnet"
+            - arg_name: subnet-project
+              api_field: connector.subnet.projectId
+              required: false
+              help_text: |
+                Project ID of the provided subnet. The default is the project of the connector.
+    - group:
+        release_tracks: [ALPHA, BETA, GA]
+        mutex: true
+        params:
+        - group:
+            help_text: |
+              Scaling settings of a VPC Access Connector can be specified in terms of
+              throughput.
+            params:
+            - arg_name: min-throughput
+              api_field: connector.minThroughput
+              required: false
+              help_text: |
+                 Minimum throughput of the connector in Mbps. Refers to the expected throughput when
+                 using an `e2-micro` machine type. Value must be a multiple of 100 from 200 through
+                 900. Must be lower than the value specified by `--max-throughput`. If both
+                 min-throughput and min-instances are provided, min-instances takes precedence over
+                 min-throughput. The use of `min-throughput` is discouraged in favor of
+                 `min-instances`.
+            - arg_name: max-throughput
+              api_field: connector.maxThroughput
+              required: false
+              help_text: |
+                Maximum throughput of the connector in Mbps. Refers to the expected throughput when
+                using an `e2-micro` machine type. Value must be a multiple of 100 from 300 through
+                1000. Must be higher than the value specified by `--min-throughput`. If both
+                max-throughput and max-instances are provided, max-instances takes precedence over
+                max-throughput. The use of `max-throughput` is discouraged in favor of
+                `max-instances`.
+
+        - group:
+            help_text: |
+              Scaling settings of a VPC Access Connector can be specified in terms of number
+              of Google Compute Engine VM instances underlying the connector autoscaling group.
+            params:
+            - arg_name: min-instances
+              api_field: connector.minInstances
+              default: 2
+              required: false
+              help_text: |
+                Minimum number of instances within an autoscaling group underlying the connector.
+                Value must be between 2 and 9, inclusive. Must be lower than the value specified by
+                `--max-instances`.
+            - arg_name: max-instances
+              api_field: connector.maxInstances
+              default: 10
+              required: false
+              help_text: |
+                Maximum number of instances within an autoscaling group underlying the connector.
+                Value must be between 3 and 10, inclusive. Must be higher than the value specified by
+                `--min-instances`.
+    - arg_name: machine-type
+      api_field: connector.machineType
+      release_tracks: [ALPHA, BETA, GA]
+      required: false
+      help_text: |
+        Machine type of VMs underlying the VPC Access connector. Accepted values are ``e2-micro'',
+        ``f1-micro'', and ``e2-standard-4''.  If left unspecified, the ``e2-micro'' machine type is
+        used.

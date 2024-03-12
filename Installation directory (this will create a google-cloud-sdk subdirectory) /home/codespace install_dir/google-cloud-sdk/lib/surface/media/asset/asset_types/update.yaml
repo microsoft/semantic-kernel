@@ -1,0 +1,45 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Update a Cloud Media Asset asset type.
+    description: Update a Media Asset asset type.
+    examples: |
+      To update an asset type with id my-at, run:
+
+        $ {command} my-at --update-asset-type-configs-file update_config.json
+
+      , where update_config.json includes the update mask and the asset type's changed fields, e.g:
+      {
+        "assetType": {
+          "metadataConfigs": {
+            "file": {
+              "complexType": "system:gcs-file",
+              "required": true
+            }
+          },
+          "sortOrder": {"field":"createTime"}
+        },
+        "updateMask": ["metadataConfigs","sortOrder"]
+      }
+
+  request:
+    collection: mediaasset.projects.locations.assetTypes
+    method: patch
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.media.asset.asset_types.hooks:ParseUpdateConfigFile
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset asset type to create.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:asset_type
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.media.asset.flags:update-asset-type-config-file
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.media.asset.asset_types.hooks:ProcessOutput
+
+  update:
+    read_modify_update: true

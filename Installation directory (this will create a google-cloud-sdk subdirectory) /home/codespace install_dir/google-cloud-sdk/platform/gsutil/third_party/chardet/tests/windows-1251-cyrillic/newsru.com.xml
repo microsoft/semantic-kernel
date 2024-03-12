@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<!--
+Source: http://www.newsru.com/plain/rss/all.xml
+Expect: windows-1251
+-->
+<rss version="2.0">
+<channel>
+<title>NEWSru.com</title>
+<link>http://www.newsru.com</link>
+<description>Новости</description>
+<language>ru</language>
+<copyright>NEWSru.com, all rights reserved</copyright>
+<managingEditor>info@newsru.com</managingEditor>
+<lastBuildDate>Wed, 4 Jan 2006 05:45:00 +0300</lastBuildDate>
+<image>
+ <url>http://newsru.com/img/ntv.gif</url>
+ <title>NEWSru.com</title>
+ <link>http://www.newsru.com</link>
+ <width>115</width>
+ <height>28</height>
+</image>
+
+<item>
+ <title>В Турции психически нездоровый мужчина взорвал хлопушку в здании Минюста</title>
+ <link>http://www.newsru.com/world/03jan2006/ankara.html</link>
+ <description>Инцидент произошел на одном из этажей здания Минюста в Анкаре, где расположено управление исполнения наказаний. В полиции уверяют, что происшедшее не является терактом. Виновник происшествия задержан.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 19:57:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819682_20060103204701.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В ГИБДД обещают не штрафовать в январе водителей за нарушения новых правил дорожного движения</title>
+ <link>http://www.newsru.com/russia/03jan2006/gibddnow.html</link>
+ <description>В первые недели нового года сотрудники ГИБДД будут лояльно относиться к водителям, не успевшим выучить новые правила дорожного движения, вступившие в силу с 1 января 2006 года. Инспекторам ГИБДД предписано объяснить водителю суть нарушения и сделать ему предупреждение.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 19:22:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819680_20060103192531.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В Ираке разбился американский военный вертолет: двое погибших</title>
+ <link>http://www.newsru.com/world/03jan2006/heli.html</link>
+ <description>По данным иракской полиции, вертолет упал или был сбит во вторник примерно в 60 километрах северо-восточнее Багдада. В результате инцидента погибли двое военнослужащих армии США.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 18:58:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819678_20060103190722.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Российские теннисисты неудачно стартовали на Кубке Хопмана</title>
+ <link>http://www.newsru.com/sport/03jan2006/hopman.html</link>
+ <description>Сборная России по теннису проиграла свой стартовый матч на традиционном новогоднем турнире Кубок Хопмана с призовым фондом миллион долларов США, который проходит в австралийском городе Перт.</description>
+ <category>Спорт</category>
+ <pubDate>Tue, 3 Jan 2006 18:32:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819674_20060103184354.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819675_20060103184354.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819676_20060103184355.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Богатые россиянки делают оборот и определяют стиль европейских домов моды</title>
+ <link>http://www.newsru.com/russia/03jan2006/women.html</link>
+ <description>Крестьянские блузы, много мехов и броские украшения - в нынешнем сезоне богатые россиянки делают оборот и определяют стиль западных домов моды. Русские с удовольствием выставляют свое богатство напоказ, пишет S&amp;#252;ddeutsche Zeitung.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 17:53:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819668_20060103175935.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Во Франции с 4 января отменяется чрезвычайное положение, введенное в связи с массовыми беспорядками</title>
+ <link>http://www.newsru.com/world/03jan2006/nochs.html</link>
+ <description>Чрезвычайное положение было введено во Франции 8 ноября 2005 года указом президента страны в связи с массовыми беспорядками в пригородах Парижа, а 21 ноября парламент продлил его действие на три месяца.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 17:09:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819661_20060103172417.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В Ираке ВВС США обстреляли жилой дом: погибла семья из 14 человек</title>
+ <link>http://www.newsru.com/world/03jan2006/iraq.html</link>
+ <description>По словам представителя иракских правоохранительных органов, обстрелу с воздуха подвергся жилой дом в городе Байджи на севере Ирака. Семья из 14 человек, находившаяся в доме, погибла. В результате обстрела еще три человека пострадали, нескольким домам нанесен ущерб.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 16:38:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819659_20060103165946.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В Минске по подозрению в фальшивомонетничестве задержан сын убитой журналистки Черкасовой</title>
+ <link>http://www.newsru.com/crime/03jan2006/minsk.html</link>
+ <description>В отношении сына убитой в конце 2004 года журналистки Вероники  Черкасовой  Антона  Филимонова и еще нескольких его знакомых возбуждено уголовное дело по ст. 221 "Изготовление, хранение либо сбыт фальшивых денег или ценных бумаг".</description>
+ <category>Криминал</category>
+ <pubDate>Tue, 3 Jan 2006 15:39:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819657_20060103154735.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Нефтяные цены выросли из-за газового конфликта</title>
+ <link>http://www.newsru.com/finance/03jan2006/oil.html</link>
+ <description>Цены на нефть на основных мировых биржах выросли из-за озабоченности трейдеров российско-украинским газовым конфликтом. На Нью-Йоркской NYMEX баррель подорожал на 2,16 доллара - до 63,2 доллара за баррель.</description>
+ <category>Экономика</category>
+ <pubDate>Tue, 3 Jan 2006 15:28:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819653_20060103153449.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819654_20060103153449.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819655_20060103153449.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В Челябинске местный житель требует от суда разобраться, от кого он произошел: от Адамы и Евы или от обезьяны</title>
+ <link>http://www.newsru.com/russia/03jan2006/sered.html</link>
+ <description>Житель Челябинска Василий Середонин, выступающий ответчиком в одном из судебных процессов, ходатайствовал об отводе судьи, мотивируя это тем, что оба они произошли от Адама и Евы, то есть являются родственниками. Он считает, что суд должен прояснить этот вопрос.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 15:15:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819651_20060103152103.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Грузин с ножом атаковал 20-метровую надувную собаку на главной площади Зугдиди (ФОТО)</title>
+ <link>http://www.newsru.com/world/03jan2006/knifer.html</link>
+ <description>Темур Кобалия несколько раз проткнул собаку ножом, после чего был задержан полицией. Он не смог дать внятного объяснения своему поступку. Ему грозит три года тюрьмы.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 14:52:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819649_20060103181141.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819669_20060103181141.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819670_20060103181142.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819671_20060103181142.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819672_20060103181142.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В Каире обрушились несколько жилых домов: погибли 3 человека, 4 получили ранения</title>
+ <link>http://www.newsru.com/world/03jan2006/cairo.html</link>
+ <description>Из-за обрушения шести- и трехэтажного жилых домов в столице Египта завалами оказался перекрыт подъезд для техники. Причиной обрушения домов стало то, что местные жители строят их из самодельного кирпича, изготовленного из прессованного мусора.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 14:37:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819647_20060103144438.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Россияне назвали самые интересные фильмы, книги, журналы и телепередачи в 2005 году</title>
+ <link>http://www.newsru.com/cinema/03jan2006/best.html</link>
+ <description>Участники опроса, проведенного Аналитическим центром Юрия Левады, попытались назвать самый интересный фильм, книгу, телепрограмму и журнал. Примечательно, что основной ответ на все 4 вопроса - "затрудняюсь ответить".</description>
+ <category>Культура</category>
+ <pubDate>Tue, 3 Jan 2006 14:22:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819643_20060103142817.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819644_20060103143557.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819645_20060103143557.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В новом  году  на  МКС могут отменить "сухой закон"</title>
+ <link>http://www.newsru.com/russia/03jan2006/mks.html</link>
+ <description>
+Уже  пять  лет  с  момента, когда МКС стала обитаемой, на ней действует жесточайший запрет на алкоголь. По слухам, первым послаблением стала доставка на борт шоколадных конфет с ликером. Но даже это официально подтвердить невозможно, ведь нарушителям грозит немедленное увольнение.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 13:48:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819639_20060103135910.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819640_20060103135910.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819641_20060103135910.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Maariv: Усама бен Ладен уже 3 года живет в Израиле</title>
+ <link>http://www.newsru.com/world/03jan2006/laden.html</link>
+ <description>
+Гражданин Афганистана Усама бен Ладен въехал в Израиль по туристической визе через год и три дня после терактов 11 сентября 2001 года в США, перед американским вторжением в Ирак. Его выезд из Израиля не был зафиксирован.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 13:32:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819637_20060103133959.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Россияне назвали самых умных, смелых и сексуальных политиков страны</title>
+ <link>http://www.newsru.com/russia/03jan2006/politics.html</link>
+ <description>Аналитический центр Юрия Левады провел опрос среди россиян в конце 2005 года. Респонденты ответили на вопросы о самых честных, смелых, умных и сексуальных политиках. Ими стали Путин и Жириновский. Кроме того, россияне назвали Романа Абрамовича самым богатым человеком страны.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 13:05:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819629_20060103131951.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819630_20060103131951.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819631_20060103131951.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819632_20060103131952.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В Windows найдена опасная уязвимость, угрожающая почти всем компьютерам на планете</title>
+ <link>http://www.newsru.com/world/03jan2006/windows.html</link>
+ <description>Любой из миллионов компьютеров под управлением ОС Windows может быть атакован прямо сейчас, пишет газета Financial Times. Атака происходит путем внесения вредоносного кода в обычную картинку. Это многократно увеличивает опасность заражения. Кроме того, Microsoft пока не выпустила исправление, закрывающее "дыру".</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 12:25:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819625_20060103123404.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819626_20060103123404.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819627_20060103123404.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Die Presse: Путин - властелин голубого огня</title>
+ <link>http://www.newsru.com/russia/03jan2006/putingas.html</link>
+ <description>"Газпром" &amp;#8211; это главное оружие Путина в борьбе за влияние и власть. С тех пор как "Газпром" приостановил снабжение Украины природным газом, жизнь в центральной диспетчерской монополии, несмотря на новогодние праздники, бьет ключом.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 12:13:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819621_20060103122008.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819622_20060103122008.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819623_20060103122008.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Из пункта обмена валюты в Москве похищено 35 тысяч долларов</title>
+ <link>http://www.newsru.com/crime/03jan2006/grab.html</link>
+ <description>Двое  неизвестных  вечером  в понедельник  совершили  разбойное  нападение  на  пункт обмена валюты на Боровском    шоссе. Кассира ударили по голове и связали.</description>
+ <category>Криминал</category>
+ <pubDate>Tue, 3 Jan 2006 12:03:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819619_20060103120711.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>В США кот спас жизнь хозяину, позвонив по телефону в службу 911</title>
+ <link>http://www.newsru.com/world/03jan2006/cat.html</link>
+ <description>50 летний Гарри Рошейзон упал с инвалидного кресла и не мог подняться из-за случившегося микроинсульта. Хозяин животного признался, что специально пытался обучить кота нажимать на телефоне кнопку прямого звонка в службу 911, но никак не рассчитывал, что кот действительно сможет это сделать.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 11:42:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819613_20060103120303.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819614_20060103120303.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819615_20060103120304.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819616_20060103120304.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819617_20060103120304.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Немецкая пара замуровала в бетон двух детей</title>
+ <link>http://www.newsru.com/crime/03jan2006/germanz.html</link>
+ <description>С признанием в правоохранительные органы явился мужчина. Он сообщил, что в середине 1990-х годов он захоронил двух детей в подвале дома. Тела детей были спрятаны в мусорный пакет и замурованы.</description>
+ <category>Криминал</category>
+ <pubDate>Tue, 3 Jan 2006 11:24:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819611_20060103113230.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>МИД обвиняет Тбилиси в раскручивании антироссийской кампании</title>
+ <link>http://www.newsru.com/russia/03jan2006/gruz.html</link>
+ <description>Тбилиси раскручивает антироссийскую кампанию. Говорить о сроках подписания российско-грузинского Договора о дружбе можно только после нормализации атмосферы в двусторонних отношениях, настаивает МИД.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 11:04:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819607_20060103111743.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819608_20060103111743.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819609_20060103111744.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Растет число погибших в результате обвала крыши катка в Баварии</title>
+ <link>http://www.newsru.com/world/03jan2006/de.html</link>
+ <description>По мере продолжения спасательных работ на месте обрушения крыши спорткомплекса в местечке Бад Райхенхаль спасатели извлекают из-под завалов все новые тела. По последним данным, число погибших достигло 15 человек. Более 30 человек получили ранения. Четверо считаются пропавшими без вести.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 10:52:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819600_20060103113502.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819601_20060103110833.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819602_20060103110833.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819603_20060103110833.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819604_20060103110834.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819605_20060103110834.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819662_20060103175017.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819663_20060103175017.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819664_20060103175017.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819665_20060103175017.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819666_20060103175017.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819683_20060103225303.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819684_20060103225303.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819685_20060103225304.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819686_20060103225304.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/video/hi/03Jan2006/world/de.asf" type="application/vnd.ms-asf"/>
+</item>
+
+<item>
+ <title>Двое военнослужащих погибли на КПП в Чечне</title>
+ <link>http://www.newsru.com/russia/03jan2006/chechen.html</link>
+ <description>Подвергся обстрелу КПП на окраине райцентра Курчалой. Неизвестные лица из автоматического оружия обстреляли наряд военнослужащих Внутренних войск, осуществлявший досмотр автотранспорта.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 10:34:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819598_20060103103957.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Взрыв на шахте в США: 13 горняков пропали без вести</title>
+ <link>http://www.newsru.com/world/03jan2006/mine.html</link>
+ <description>Взрыв произошел на угольной шахте в Западной Вирджинии. Спасателям пока не удается установить контакт с горняками, которые предположительно блокированы на глубине в 80 метров.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 10:21:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819594_20060103103318.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819595_20060103103318.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819596_20060103103318.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/video/hi/03Jan2006/world/mine.asf" type="application/vnd.ms-asf"/>
+</item>
+
+<item>
+ <title>"Газпром": Украина продолжает воровать, но поставкам это не помешает</title>
+ <link>http://www.newsru.com/finance/03jan2006/gas.html</link>
+ <description>Президент Украины Ющенко утверждает, что газотранспортная система страны обеспечивает транзит. "Газпром" обещает европейским потребителям компенсации, утверждая, что Украина продолжает несанкционированно отбирать российский газ.</description>
+ <category>Экономика</category>
+ <pubDate>Tue, 3 Jan 2006 10:11:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819589_20060103102025.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819590_20060103105401.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819591_20060103102026.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819592_20060103102026.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/video/hi/03Jan2006/finance/gas.asf" type="application/vnd.ms-asf"/>
+</item>
+
+<item>
+ <title>Спецоперация в Дагестане: убиты 5 боевиков и 2 милиционера</title>
+ <link>http://www.newsru.com/russia/03jan2006/oper.html</link>
+ <description>В ходе масштабной спецоперации по блокированию группы боевиков в Унцукульском районе Дагестана ранения получили 7 сотрудников правоохранительных органов, двое из них скончались. Потери боевиков оцениваются в пять убитых. Активная фаза спецоперации с наступлением темноты приостановлена.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 09:48:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819583_20060103132347.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819633_20060103132347.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819634_20060103132348.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819635_20060103132348.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>К 2050 году в мире появятся новые сверхдержавы. Россия продолжит постепенно вымирать</title>
+ <link>http://www.newsru.com/world/03jan2006/future.html</link>
+ <description>Китай к 2050 году станет самой мощной экономической державой планеты, Индия - мировым лидером по численности населения, тогда как Россия с уменьшившимся населением войдет в десятку по мощи экономики.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 09:42:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819585_20060103100903.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819586_20060103100903.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819587_20060103100904.gif" type="image/jpeg"/>
+</item>
+
+<item>
+ <title>Наводнение в Индонезии: число погибших превысило 50 человек</title>
+ <link>http://www.newsru.com/world/03jan2006/flood.html</link>
+ <description>Из-за продолжавшихся два дня подряд дождей в районе Панти произошел гигантский оползень и вышла из берегов река, в результате чего мощные потоки воды и грязи обрушились на несколько близлежащих деревень.</description>
+ <category>В мире</category>
+ <pubDate>Tue, 3 Jan 2006 09:26:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819579_20060103093726.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819580_20060103093726.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/pict/id/large/819581_20060103093726.gif" type="image/jpeg"/>
+ <enclosure url="http://www.newsru.com/video/hi/03Jan2006/world/flood.asf" type="application/vnd.ms-asf"/>
+</item>
+
+<item>
+ <title>В Москве во вторник будет морозно</title>
+ <link>http://www.newsru.com/russia/03jan2006/pogoda.html</link>
+ <description>В столице столбик термометра не опустится ниже отметки 1-3 градуса мороза, а по области - 1-6 градусов. Ветер будет юго-восточным, умеренным и не превысит 3-8 метров в секунду.</description>
+ <category>В России</category>
+ <pubDate>Tue, 3 Jan 2006 09:15:00 +0300</pubDate>
+ <enclosure url="http://www.newsru.com/pict/id/large/819577_20060103092327.gif" type="image/jpeg"/>
+</item>
+
+</channel>
+</rss>

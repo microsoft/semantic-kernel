@@ -1,0 +1,54 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 GrpcRouteMethodMatch export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- grpcMethod
+- grpcService
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  caseSensitive:
+    description: |-
+      Specifies that matches are case sensitive. The default value is true.
+      case_sensitive must not be used with a type of REGULAR_EXPRESSION.
+    type: boolean
+  grpcMethod:
+    description: |-
+      Name of the method to match against. If unspecified, will match all
+      methods.
+    type: string
+  grpcService:
+    description: |-
+      Name of the service to match against. If unspecified, will match all
+      services.
+    type: string
+  type:
+    description: |-
+      Specifies how to match against the name. If not specified, a default value
+      of "EXACT" is used.
+    type: string
+    enum:
+    - EXACT
+    - REGULAR_EXPRESSION
+    - TYPE_UNSPECIFIED

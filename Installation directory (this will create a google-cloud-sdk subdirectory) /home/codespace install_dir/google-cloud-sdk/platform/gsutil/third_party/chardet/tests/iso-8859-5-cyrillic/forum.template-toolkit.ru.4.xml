@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="ISO-8859-5"?>
+<!--
+Source: http://forum.template-toolkit.ru/rss/forum_4.rss
+Expect: ISO-8859-5
+-->
+<rss version="2.0">
+	<channel>
+		<title>Форумы Template Toolkit : Обсуждение форума</title>
+		<link>http://forum.template-toolkit.ru/view_forum/forum_id-4.html?rss</link>
+		<description>Template Toolkit - быстрая, мощная и расширяемая система обработки шаблонов. На сайте работает форум, в котором обсуждаются вопросы использования библиотеки по работе с шаблонами. Предложения по работе форума. Организация новых категорий и форумов.</description>
+		<language>ru</language>
+		<copyright>Lobanov Igor</copyright>
+		<webMaster>Lobanov Igor &lt;webmaster@template-toolkit.ru&gt;</webMaster>
+		<pubDate>Tue,  3 Jan 2006 08:27:57 GMT</pubDate>
+		<lastBuildDate>Wed,  4 Jan 2006 02:29:01 GMT</lastBuildDate>
+		<managingEditor>Perl script, Template Toolkit</managingEditor>
+		<image>
+			<url>http://forum.template-toolkit.ru/images/tt2powered.gif</url>
+			<title>Template Toolkit - шаблоны в perl</title>
+			<link>http://forum.template-toolkit.ru/</link>
+			<width>88</width>
+			<height>31</height>
+		</image>
+		<docs>http://blogs.law.harvard.edu/tech/rss</docs>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-123.html?rss</guid>
+			<pubDate>Tue,  3 Jan 2006 08:27:57 GMT</pubDate>
+			<title>С Новым Годом</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-123.html?rss</link>
+			<description>Поздравляю всех посетителей этого небольшого, но надеюсь полезного, сайта с наступившим 2006 годом! Желаю новых творческих удач и находок.
+			</description>
+			<author>Лобанов Игорь &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-123.html</comments>
+			<category>Обсуждение форума</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-4.rss">http://forum.template-toolkit.ru/view_topic/topic_id-123.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-57.html?rss</guid>
+			<pubDate>Thu, 20 Jan 2005 12:10:22 GMT</pubDate>
+			<title>XUL обложка</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-57.html?rss</link>
+			<description>Для пользователей броузеров Mozilla сделал &lt;a target="_blank" href="http://template-toolkit.ru/xul/index.xul"&gt;XUL обложку&lt;/a&gt;.
+			</description>
+			<author>Лобанов Игорь &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-57.html</comments>
+			<category>Обсуждение форума</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-4.rss">http://forum.template-toolkit.ru/view_topic/topic_id-57.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-44.html?rss</guid>
+			<pubDate>Wed, 15 Dec 2004 08:44:32 GMT</pubDate>
+			<title>Не приходит код для завершения регистрации</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-44.html?rss</link>
+			<description>Здравствуйте!&lt;br /&gt;
+&lt;br /&gt;
+Мне не приходит код для завершения регистрации :(. Регистрировался 2 раза с разными почт. адресами, но эффект нулевой :(.
+			</description>
+			<author>Николай В. &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-44.html</comments>
+			<category>Обсуждение форума</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-4.rss">http://forum.template-toolkit.ru/view_topic/topic_id-44.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-40.html?rss</guid>
+			<pubDate>Sat,  4 Dec 2004 22:08:26 GMT</pubDate>
+			<title>RDF служба заголовков</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-40.html?rss</link>
+			<description>На форуме добавлена &lt;span style="font-weight:bold"&gt;RDF служба заголовков&lt;/span&gt;. Эта служба готовит файлы с заголовками новых тем, открытых в форумах, в формате XML/RDF. С помощью RDF службы можно организовать подписку на новые темы, открытые в форумах.&lt;br /&gt;&lt;br /&gt;В настоящий момент доступны следующие подписки &lt;a target="_blank" href="http://forum.template-toolkit.ru/rss/forum_1.rdf"&gt;Знакомство с Template Toolkit&lt;/a&gt;, &lt;a target="_blank" href="http://forum.template-toolkit.ru/rss/forum_6.rdf"&gt;Новости Template Toolkit&lt;/a&gt;, &lt;a target="_blank" href="http://forum.template-toolkit.ru/rss/forum_4.rdf"&gt;Обсуждение форума&lt;/a&gt;.&lt;br /&gt;&lt;br /&gt;Для отслеживания новых тем и чтения заголовков можно использовать специальные программы и службы, например: &lt;a target="_blank" href="http://www.activerefresh.com/"&gt;Abilon&lt;/a&gt;, &lt;a target="_blank" href="http://www.feedreader.com/"&gt;FeedReader&lt;/a&gt;, &lt;a target="_blank" href="http://www.yole.ru/projects/syndirella/"&gt;Syndirella&lt;/a&gt;, &lt;a target="_blank" href="http://blogspace.com/rss/readers"&gt;RSS Readers&lt;/a&gt;, &lt;a target="_blank" href="http://www.watznew.com/"&gt;WatzNew&lt;/a&gt;.&lt;br /&gt;&lt;br /&gt;Пользователи броузера &lt;span style="font-weight:bold"&gt;&lt;span style="color: orange"&gt;Firefox&lt;/span&gt;&lt;/span&gt; (версии 0.8 и старше) также могут настроить подписку через &lt;span style="font-weight:bold"&gt;Live Bookmark&lt;/span&gt;. Для этого нужно зайти в выбранный форум (например, &lt;a target="_blank" href="http://forum.template-toolkit.ru/view_forum/forum_id-6.html"&gt;Новости Template Toolkit&lt;/a&gt;). В нижнем правом углу броузера появится значок &lt;img src="http://forum.template-toolkit.ru/attachments/000/138/138/rdf.gif" alt="RDF" /&gt;. Достаточно щелкнуть по значку и добавить подписку в закладки. После этого в закладках появится папка &amp;quot;Новости Template Toolkit&amp;quot;, в которой периодически будут обновляться заголовки новых тем в форуме &amp;quot;Новости Template Toolkit&amp;quot;.
+			</description>
+			<author>Лобанов Игорь &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-40.html</comments>
+			<category>Обсуждение форума</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-4.rss">http://forum.template-toolkit.ru/view_topic/topic_id-40.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-8.html?rss</guid>
+			<pubDate>Wed, 21 Jul 2004 14:52:30 GMT</pubDate>
+			<title>подпись [Гость]</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-8.html?rss</link>
+			<description>Что-то не совсем понятное творится.&lt;br /&gt;
+Меня распознает система как Light Elf, но мои сообщения помечаются надписью [Гость].&lt;br /&gt;
+&lt;br /&gt;
+Это так надо?
+			</description>
+			<author>Light Elf &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-8.html</comments>
+			<category>Обсуждение форума</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-4.rss">http://forum.template-toolkit.ru/view_topic/topic_id-8.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-7.html?rss</guid>
+			<pubDate>Tue, 20 Jul 2004 15:02:45 GMT</pubDate>
+			<title>Пробелы в сообщениях</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-7.html?rss</link>
+			<description>Есть предложение не удалять пробелы.&lt;br /&gt;
+с их помощью удобно форматировать текст.&lt;br /&gt;
+Особенно код.
+			</description>
+			<author>Light Elf &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-7.html</comments>
+			<category>Обсуждение форума</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-4.rss">http://forum.template-toolkit.ru/view_topic/topic_id-7.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-4.html?rss</guid>
+			<pubDate>Wed, 14 Jul 2004 06:13:38 GMT</pubDate>
+			<title>Движок форума</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-4.html?rss</link>
+			<description>Я не совсем понял. &lt;br /&gt;
+Эмблемка сверху &amp;quot;powered by [%TT2%]&amp;quot; означает что этот форум сделан на TT2?
+			</description>
+			<author>UncleAndy &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-4.html</comments>
+			<category>Обсуждение форума</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-4.rss">http://forum.template-toolkit.ru/view_topic/topic_id-4.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-1.html?rss</guid>
+			<pubDate>Mon, 12 Jul 2004 04:25:44 GMT</pubDate>
+			<title>Форумы открыты</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-1.html?rss</link>
+			<description>12 июля 2004 года открылись &lt;span style="font-weight:bold"&gt;форумы Template Toolkit&lt;/span&gt;. Приглашаю всех интересующихся и использующих в работе библиотеку Template Toolkit к участию.&lt;br /&gt;&lt;br /&gt;Мои благодарности:&lt;br /&gt;&lt;br /&gt;Дмитрию Николаеву за поддержку, рассылку через подписку Subscribe.Ru статьи о Template Toolkit, предоставление форума &lt;a target="_blank" href="http://perl.dp.ua/cgi-bin/forum.pl?do=show&amp;tema=1&amp;page=1"&gt;Perl - Заходи и учись&lt;/a&gt; в качестве форума поддержки сайта &lt;a target="_blank" href="http://www.template-toolkit.ru/"&gt;Template Toolkit (русская редакция)&lt;/a&gt;.&lt;br /&gt;&lt;br /&gt;Вадиму Суханову за поддержку и идею создания этих форумов.&lt;br /&gt;&lt;br /&gt;Надеюсь, что форумы станут полезными для тех, кто использует или собирается использовать в своих разработках библиотеку по работе с шаблонами Template Toolkit. Спрашивайте, делитесь, обсуждайте.&lt;br /&gt;&lt;br /&gt;&lt;span style="font-weight:bold"&gt;Структура форума предварительная&lt;/span&gt;. Я готов выслушать и учесть все предложения по созданию новых веток в рамках форумов Template Toolkit.&lt;br /&gt;&lt;br /&gt;Сам форум написан с использованием Template Toolkit и будет дорабатываться. Все замечания и предложения приветствуются.
+			</description>
+			<author>Лобанов Игорь &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-1.html</comments>
+			<category>Обсуждение форума</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-4.rss">http://forum.template-toolkit.ru/view_topic/topic_id-1.html?rss</source>
+		</item>
+	</channel>
+</rss>

@@ -1,0 +1,28 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Create a Pub/Sub Lite reservation.
+  description: Create a Pub/Sub Lite reservation.
+  examples: |
+    To create a Pub/Sub lite-reservation, run:
+
+        $ {command} myreservation \
+            --location=us-central1 \
+            --throughput-capacity=2
+
+request:
+  collection: pubsublite.admin.projects.locations.reservations
+  method: create
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+
+arguments:
+  resource:
+    help_text: Identifies the Cloud location this command will be executed on.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:location
+    is_parent_resource: true
+    is_positional: false
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:reservation-name
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:throughput-capacity
+    required: true

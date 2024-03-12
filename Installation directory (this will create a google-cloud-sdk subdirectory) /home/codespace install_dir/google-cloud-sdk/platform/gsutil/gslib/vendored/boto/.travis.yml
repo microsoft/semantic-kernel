@@ -1,0 +1,57 @@
+language: python
+
+# Some versions of python only work on certain platforms. Specifying the distribution
+# to ensure the version of python will run without issue.
+matrix:
+  include:
+    # Trusty Tests
+    - os: linux
+      dist: trusty
+      python: "pypy"
+    - os: linux
+      dist: trusty
+      python: "2.6"
+    - os: linux
+      dist: trusty
+      python: "3.3"
+    - os: linux
+      dist: trusty
+      python: "3.4"
+    # Xenial Tests
+    - os: linux
+      dist: xenial
+      python: "2.7"
+    - os: linux
+      dist: xenial
+      python: "3.5"
+    - os: linux
+      dist: xenial
+      python: "3.6"
+    - os: linux
+      dist: xenial
+      python: "3.7"
+    - os: linux
+      dist: xenial
+      python: "pypy3.5"
+  allow_failures:
+    - python: "3.7"
+
+env:
+  - BOTO_CONFIG=/tmp/nowhere
+
+before_install:
+  - if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
+      echo "No pull requests can be sent to the master branch" 1>&2;
+      exit 1;
+    fi
+  - sudo apt-get update
+  - sudo apt-get --reinstall install -qq language-pack-en language-pack-de
+  - sudo apt-get install swig
+
+install:
+  - pip install -U 'setuptools<40'
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then travis_retry pip install -r requirements-py26.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then travis_retry pip install -r requirements-py33.txt; fi
+  - travis_retry pip install -r requirements.txt
+
+script: python tests/test.py default

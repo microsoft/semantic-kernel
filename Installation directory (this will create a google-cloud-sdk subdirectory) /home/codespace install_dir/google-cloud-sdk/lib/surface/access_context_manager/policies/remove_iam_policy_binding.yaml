@@ -1,0 +1,35 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Remove IAM policy binding for an access policy.
+  description: |
+    Removes a policy binding to the IAM policy of an access policy, given an access policy ID and the binding.
+  examples: |
+    To remove an IAM policy binding for the role of ``roles/editor'' for the user 'test-user@gmail.com'
+    on the access policy 'accessPolicies/123', run:
+
+      $ {command} accessPolicies/123 --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+request:
+  collection: accesscontextmanager.accessPolicies
+  use_relative_name: true
+  ALPHA:
+    api_version: v1alpha
+    method: setIamPolicy
+  BETA:
+    api_version: v1
+    method: setIamPolicy
+  GA:
+    api_version: v1
+    method: setIamPolicy
+
+arguments:
+  resource:
+    help_text: The access policy to remove the IAM binding.
+    spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

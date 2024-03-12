@@ -1,0 +1,21 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Set the IAM policy of a hub resource.
+    description: |
+      Replace the existing IAM policy of a hub resource with a policy
+      encoded in a JSON or YAML file.
+    examples: |
+      To replace the IAM policy of a hub resource with the policy defined in a
+      file called ``policy.json'', run:
+
+      $ {command} my-hub policy.json
+
+  request: &request
+    collection: networkconnectivity.projects.locations.global.hubs
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The hub for which to set the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hub

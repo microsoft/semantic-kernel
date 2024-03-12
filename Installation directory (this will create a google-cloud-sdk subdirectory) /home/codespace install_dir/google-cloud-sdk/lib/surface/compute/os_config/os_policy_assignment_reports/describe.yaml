@@ -1,0 +1,28 @@
+- release_tracks: [GA, ALPHA]
+
+  help_text:
+    brief: Describe an OS policy assignment report
+    description: |
+      Describe an OS policy assignment report
+      ## EXAMPLES
+
+      To describe the report of an OS policy assignment `my-assignment` for an instance `my-instance` in location `us-central1-a`:
+
+        $ {command} my-assignment --instance=my-instance --location=us-central1-a
+
+      Or use the relative names or URI of the resource, assuming the project ID is `my-project`:
+
+        $ {command} projects/my-project/locations/us-central1-a/instances/my-instance/osPolicyAssignments/my-assignment/report
+
+        $ {command}  https://osconfig.googleapis.com/v1alpha/projects/my-project/locations/us-central1-a/instances/instance-name/osPolicyAssignments/assignment-id/report
+
+
+  request:
+    collection: osconfig.projects.locations.instances.osPolicyAssignments.reports
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: OS policy assignment report.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:os_policy_assignment_report

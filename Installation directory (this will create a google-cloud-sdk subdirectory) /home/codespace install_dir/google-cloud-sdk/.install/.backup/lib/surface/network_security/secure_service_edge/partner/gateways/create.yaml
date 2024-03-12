@@ -1,0 +1,39 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Create a partner SSE gateway.
+  description: |
+    Create a new partner gateway which supports the specified customer gateway.
+  examples: |
+    The following command creates a new partner gateway named `my-gateway` in the location `us-central1`.
+
+      $ {command} my-gateway --location=us-central1 --gateway-reference=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX --partner-subnet-range=100.64.4.0/24
+
+    The customer gateway whose reference ID is `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX` will be supported by the partner-owned subnet with CIDR range `100.64.4.0/24`.
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:partnerSSEGateway
+    help_text: |
+      The partner gateway to be created.
+  params:
+  - arg_name: gateway-reference
+    required: true
+    api_field: partnerSSEGateway.sseGatewayReferenceId
+    help_text: |
+      Reference ID of the customer gateway to be paired with this partner gateway.
+  - arg_name: partner-subnet-range
+    required: true
+    api_field: partnerSSEGateway.partnerSubnetRange
+    help_text: |
+      Address range (in CIDR format) for the partner-owned subnet which will support this gateway.
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.partnerSSEGateways
+  method: create

@@ -1,0 +1,90 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Test a Security Health Analytics custom module.
+    description: Test a Security Health Analytics custom module.
+    examples: |
+      To test a Security Health Analytics custom module with ID `123456` for organization `123`, run:
+
+        $ {command} 123456 \
+            --organization=organizations/123 \
+            --display-name="test_display_name" \
+            --custom-config-from-file=/tmp/custom_config.yaml \
+            --test-data-from-file=/tmp/test_data.yaml
+
+      To test a Security Health Analytics custom module with ID `123456` for folder `456`, run:
+
+        $ {command} 123456 \
+            --folder=folders/456 \
+            --display-name="test_display_name" \
+            --custom-config-from-file=/tmp/custom_config.yaml \
+            --test-data-from-file=/tmp/test_data.yaml
+
+      To test a Security Health Analytics custom module with ID `123456` for project `789`, run:
+
+        $ {command} 123456 \
+            --project=projects/789 \
+            --display-name="test_display_name" \
+            --custom-config-from-file=/tmp/custom_config.yaml \
+            --test-data-from-file=/tmp/test_data.yaml
+
+  request:
+    collection: securitycenter.organizations.securityHealthAnalyticsSettings.customModules
+    disable_resource_check: true
+    api_version: v1
+    method: test
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.sha.request_hooks:TestSecurityHealthAnalyticsCustomModulesReqHook
+
+  arguments:
+    params:
+    - arg_name: custom_module
+      api_field: name
+      is_positional: true
+      required: false
+      help_text: |
+        ID or the full resource name of the Security Health Analytics custom module. If you specify the full resource name, you do not need to specify the --organization, --folder, or --project flags.
+
+    - group:
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: name
+          help_text: |
+            Organization where the Security Health Analytics custom module resides. Formatted as `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: name
+          help_text: |
+            Folder where the Security Health Analytics custom module resides. Formatted as `folders/456` or just `456`.
+
+        - arg_name: project
+          api_field: name
+          help_text: |
+            ID or number of the project where the Security Health Analytics custom module resides. Formatted as `projects/789` or just `789`.
+
+    - arg_name: display-name
+      api_field: testSecurityHealthAnalyticsCustomModuleRequest.securityHealthAnalyticsCustomModule.displayName
+      is_positional: false
+      required: false
+      help_text: |
+        Sets the display name of the Security Health Analytics custom module. This display name becomes the finding category for all findings that are returned by this the custom module. The display name must be between 1 and 128 characters, start with a lowercase letter, and contain alphanumeric characters or underscores only. Only relevant when `--custom-config-from-file` is also specified.
+
+    - arg_name: custom-config-from-file
+      api_field: testSecurityHealthAnalyticsCustomModuleRequest.securityHealthAnalyticsCustomModule.customConfig
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+      processor: googlecloudsdk.command_lib.scc.hooks:ProcessCustomConfigFile
+      is_positional: false
+      required: false
+      help_text: |
+        Path to a YAML file that contains the configuration for the Security Health Analytics custom module. If not specified, the existing module with the given ID or resource name is used.
+
+    - arg_name: test-data-from-file
+      api_field: testSecurityHealthAnalyticsCustomModuleRequest.testData
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+      processor: googlecloudsdk.command_lib.scc.hooks:ProcessTestResourceDataFile
+      is_positional: false
+      required: true
+      repeated: false
+      help_text: |
+        Path to a YAML file that contains the resource data to test the Security Health Analytics custom module against.

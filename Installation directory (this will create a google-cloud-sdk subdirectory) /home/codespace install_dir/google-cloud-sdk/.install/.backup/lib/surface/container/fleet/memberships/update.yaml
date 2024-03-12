@@ -1,0 +1,62 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Update a membership.
+    description: Update an existing membership in a fleet.
+    examples: |
+      First retrieve the ID of the membership using the command below. The output of this command
+      lists all the fleet's members, with their unique IDs in the NAME column:
+
+        $ {parent_command} list
+
+      Update a membership for a cluster:
+
+        $ {command} MEMBERSHIP_ID
+
+  request:
+    collection: gkehub.projects.locations.memberships
+    issue_request_hook: googlecloudsdk.command_lib.container.fleet.memberships.util:ExecuteUpdateMembershipRequest
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:membership
+      help_text: membership resource representing a cluster in Fleet.
+    params:
+    - arg_name: async
+      type: bool
+      help_text: Return immediately, without waiting for the operation in progress to complete.
+    - api_field: membership.description
+      release_tracks: [BETA]
+      hidden: true
+      arg_name: description
+      help_text: Update description of the membership resource.
+    - api_field: membership.externalId
+      hidden: true
+      arg_name: external-id
+      help_text:  Update external-id of the membership resource.
+    - api_field: membership.infrastructureType
+      release_tracks: [ALPHA, BETA]
+      hidden: true
+      arg_name: infra-type
+      choices:
+      - arg_value: on-prem
+        enum_value: ON_PREM
+        help_text: |
+          Specifies a cluster is running on an on-prem environment.
+      - arg_value: multi-cloud
+        enum_value: MULTI_CLOUD
+        help_text: |
+          Specified a cluster is running on public cloud infrastructure.
+      help_text: |
+        Specifies the infrastructure type that the cluster is running on.
+    labels:
+      api_field: membership.labels
+
+  update:
+    read_modify_update: false

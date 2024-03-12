@@ -1,0 +1,35 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: certificatemanager v1 CertificateAuthorityServiceConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- caPool
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  caPool:
+    description: |-
+      A CA pool resource used to issue a certificate. The CA pool string has a
+      relative resource path following the form
+      "projects/{project}/locations/{location}/caPools/{ca_pool}".
+    type: string

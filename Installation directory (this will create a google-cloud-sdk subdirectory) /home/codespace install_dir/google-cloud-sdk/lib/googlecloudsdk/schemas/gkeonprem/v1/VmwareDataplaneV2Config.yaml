@@ -1,0 +1,38 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 VmwareDataplaneV2Config export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  advancedNetworking:
+    description: |-
+      Enable advanced networking which requires dataplane_v2_enabled to be set
+      true.
+    type: boolean
+  dataplaneV2Enabled:
+    description: Enables Dataplane V2.
+    type: boolean
+  windowsDataplaneV2Enabled:
+    description: Enable Dataplane V2 for clusters with Windows nodes.
+    type: boolean

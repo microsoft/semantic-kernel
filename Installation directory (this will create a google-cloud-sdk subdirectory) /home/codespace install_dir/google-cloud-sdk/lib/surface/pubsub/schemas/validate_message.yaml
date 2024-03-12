@@ -1,0 +1,83 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Validate a message against a Pub/Sub schema.
+    description: |
+      Validate a message against a Pub/Sub schema.
+    examples: |
+      To validate message against provided PROTOCOL_BUFFER schema, run:
+
+        $ {command} --message="{\"key\": \"my-key\"}" --message-encoding=JSON --definition="syntax = 'proto3'; message Message { optional string key = 1; }" --type=PROTOCOL_BUFFER
+
+      To validate an equivalent AVRO schema, run:
+
+        $ {command} --definition='{ "type": "record", "namespace": "my.ns", "name": "KeyMsg", "fields": [ { "name": "key", "type": "string" } ] }' --type=AVRO
+
+  request:
+    collection: pubsub.projects.schemas
+    api_version: v1
+    method: validateMessage
+
+  arguments:
+    resource:
+      help_text: Parent Pub/Sub project in which to validate the message.
+      spec: !REF googlecloudsdk.command_lib.pubsub.resources:project
+      is_parent_resource: true
+    params:
+    - arg_name: message
+      api_field: validateMessageRequest.message
+      required: true
+      help_text: |
+        The message to validate against the schema.
+    - arg_name: message-encoding
+      api_field: validateMessageRequest.encoding
+      required: true
+      help_text: |
+        The encoding of the message.
+      choices:
+      - arg_value: json
+        enum_value: JSON
+      - arg_value: binary
+        enum_value: BINARY
+    - group:
+        help_text: |
+          Schema definition.
+        mutex: true
+        required: true
+        params:
+        - arg_name: schema-name
+          api_field: validateMessageRequest.name
+          processor: googlecloudsdk.command_lib.pubsub.util:ParseSchemaName
+          help_text: |
+            Name or full path of an existing schema.
+        - group:
+            params:
+            - group:
+                help_text: |
+                  Schema specification.
+                mutex: true
+                required: true
+                params:
+                - arg_name: definition
+                  api_field: validateMessageRequest.schema.definition
+                  help_text: |
+                    Inline schema definition.
+                - arg_name: definition-file
+                  api_field: validateMessageRequest.schema.definition
+                  type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+                  help_text: |
+                    File containing schema definition.
+            - arg_name: type
+              api_field: validateMessageRequest.schema.type
+              help_text: |
+                Type of inline schema.
+              required: true
+              choices:
+              - arg_value: avro
+                enum_value: AVRO
+              - arg_value: protocol-buffer
+                enum_value: PROTOCOL_BUFFER
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.pubsub.util:OutputMessageValidated

@@ -1,0 +1,4519 @@
+accessapproval:
+  folders:
+    supported_apis:
+    - v1
+  folders.approvalRequests:
+    supported_apis:
+    - v1
+  organizations:
+    supported_apis:
+    - v1
+  organizations.approvalRequests:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+  projects.approvalRequests:
+    supported_apis:
+    - v1
+accesscontextmanager:
+  accessPolicies:
+    home_directory: access_context_manager.policies
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  accessPolicies.accessLevels:
+    home_directory: access_context_manager.levels
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  accessPolicies.servicePerimeters:
+    home_directory: access_context_manager.perimeters
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  operations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  organizations:
+    supported_apis:
+    - v1
+    - v1alpha
+  organizations.gcpUserAccessBindings:
+    supported_apis:
+    - v1
+    - v1alpha
+admin:
+  asps:
+    supported_apis:
+    - v1
+  chromeosdevices:
+    supported_apis:
+    - v1
+  customer:
+    supported_apis:
+    - v1
+  customers:
+    supported_apis:
+    - v1
+  domainAliases:
+    supported_apis:
+    - v1
+  domains:
+    supported_apis:
+    - v1
+  groups:
+    supported_apis:
+    - v1
+  members:
+    supported_apis:
+    - v1
+  mobiledevices:
+    supported_apis:
+    - v1
+  notifications:
+    supported_apis:
+    - v1
+  orgunits:
+    supported_apis:
+    - v1
+  resources:
+    supported_apis:
+    - v1
+  resources.buildings:
+    supported_apis:
+    - v1
+  resources.calendars:
+    supported_apis:
+    - v1
+  resources.features:
+    supported_apis:
+    - v1
+  roleAssignments:
+    supported_apis:
+    - v1
+  roles:
+    supported_apis:
+    - v1
+  schemas:
+    supported_apis:
+    - v1
+  tokens:
+    supported_apis:
+    - v1
+  users:
+    supported_apis:
+    - v1
+  users.photos:
+    supported_apis:
+    - v1
+aiplatform:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.batchPredictionJobs:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.customJobs:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.customJobs.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.dataLabelingJobs:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.dataLabelingJobs.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.annotationSpecs:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.annotationSpecs.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.dataItems:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.dataItems.annotations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.dataItems.annotations.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.dataItems.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.savedQueries:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.datasets.savedQueries.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.edgeDevices:
+    supported_apis:
+    - v1beta1
+  projects.locations.edgeDevices.operations:
+    supported_apis:
+    - v1beta1
+  projects.locations.endpoints:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.endpoints.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.featurestores:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.featurestores.entityTypes:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.featurestores.entityTypes.features:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.featurestores.entityTypes.features.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.featurestores.entityTypes.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.featurestores.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.hyperparameterTuningJobs:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.hyperparameterTuningJobs.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.indexEndpoints:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.indexEndpoints.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.indexes:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.indexes.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.metadataStores:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.metadataStores.artifacts:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.metadataStores.contexts:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.metadataStores.executions:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.metadataStores.metadataSchemas:
+    supported_apis:
+    - v1beta1
+  projects.locations.migratableResources:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.migratableResources.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.modelDeploymentMonitoringJobs:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.modelDeploymentMonitoringJobs.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.models:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.models.evaluations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.models.evaluations.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.models.evaluations.slices:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.models.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.pipelineJobs:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.pipelineJobs.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.specialistPools:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.specialistPools.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.studies:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.studies.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.studies.trials:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.studies.trials.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.tensorboards:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.tensorboards.experiments:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.tensorboards.experiments.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.tensorboards.experiments.runs:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.tensorboards.experiments.runs.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.tensorboards.experiments.runs.timeSeries:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.tensorboards.experiments.runs.timeSeries.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.tensorboards.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.trainingPipelines:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.trainingPipelines.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+alloydb:
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusters:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusters.backups:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusters.instances:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusters.users:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+anthosevents:
+  api.v1.namespaces:
+    supported_apis:
+    - v1
+  api.v1.namespaces.configmaps:
+    supported_apis:
+    - v1
+  api.v1.namespaces.secrets:
+    supported_apis:
+    - v1
+  api.v1.namespaces.serviceaccounts:
+    supported_apis:
+    - v1
+  customresourcedefinitions:
+    supported_apis:
+    - v1
+  kuberuns:
+    supported_apis:
+    - v1alpha1
+  namespaces:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  namespaces.apiserversources:
+    supported_apis:
+    - v1beta1
+  namespaces.brokers:
+    supported_apis:
+    - v1
+    - v1beta1
+  namespaces.cloudauditlogssources:
+    supported_apis:
+    - v1
+    - v1beta1
+  namespaces.cloudpubsubsources:
+    supported_apis:
+    - v1
+    - v1beta1
+  namespaces.cloudruns:
+    supported_apis:
+    - v1alpha1
+  namespaces.cloudschedulersources:
+    supported_apis:
+    - v1
+    - v1beta1
+  namespaces.cloudstoragesources:
+    supported_apis:
+    - v1
+    - v1beta1
+  namespaces.customresourcedefinitions:
+    supported_apis:
+    - v1beta1
+  namespaces.pingsources:
+    supported_apis:
+    - v1beta1
+  namespaces.triggers:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.configmaps:
+    supported_apis:
+    - v1
+  projects.locations.namespaces:
+    supported_apis:
+    - v1
+  projects.locations.secrets:
+    supported_apis:
+    - v1
+  projects.locations.serviceaccounts:
+    supported_apis:
+    - v1
+apigateway:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations.apis:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations.apis.configs:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations.gateways:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+apigee:
+  organizations:
+    supported_apis:
+    - v1
+  organizations.analytics.datastores:
+    supported_apis:
+    - v1
+  organizations.apiproducts:
+    supported_apis:
+    - v1
+  organizations.apiproducts.attributes:
+    supported_apis:
+    - v1
+  organizations.apiproducts.rateplans:
+    supported_apis:
+    - v1
+  organizations.apis:
+    supported_apis:
+    - v1
+  organizations.apis.revisions:
+    supported_apis:
+    - v1
+  organizations.apps:
+    supported_apis:
+    - v1
+  organizations.datacollectors:
+    supported_apis:
+    - v1
+  organizations.developers:
+    supported_apis:
+    - v1
+  organizations.developers.apps:
+    supported_apis:
+    - v1
+  organizations.developers.apps.attributes:
+    supported_apis:
+    - v1
+  organizations.developers.apps.keys:
+    supported_apis:
+    - v1
+  organizations.developers.attributes:
+    supported_apis:
+    - v1
+  organizations.developers.subscriptions:
+    supported_apis:
+    - v1
+  organizations.envgroups:
+    supported_apis:
+    - v1
+  organizations.envgroups.attachments:
+    supported_apis:
+    - v1
+  organizations.environments:
+    supported_apis:
+    - v1
+  organizations.environments.analytics.exports:
+    supported_apis:
+    - v1
+  organizations.environments.apis:
+    supported_apis:
+    - v1
+  organizations.environments.apis.revisions:
+    supported_apis:
+    - v1
+  organizations.environments.apis.revisions.debugsessions:
+    supported_apis:
+    - v1
+  organizations.environments.apis.revisions.debugsessions.data:
+    supported_apis:
+    - v1
+  organizations.environments.archiveDeployments:
+    supported_apis:
+    - v1
+  organizations.environments.flowhooks:
+    supported_apis:
+    - v1
+  organizations.environments.keystores:
+    supported_apis:
+    - v1
+  organizations.environments.keystores.aliases:
+    supported_apis:
+    - v1
+  organizations.environments.optimizedStats:
+    supported_apis:
+    - v1
+  organizations.environments.queries:
+    supported_apis:
+    - v1
+  organizations.environments.references:
+    supported_apis:
+    - v1
+  organizations.environments.resourcefiles:
+    supported_apis:
+    - v1
+  organizations.environments.securityReports:
+    supported_apis:
+    - v1
+  organizations.environments.stats:
+    supported_apis:
+    - v1
+  organizations.environments.targetservers:
+    supported_apis:
+    - v1
+  organizations.environments.traceConfig.overrides:
+    supported_apis:
+    - v1
+  organizations.hostQueries:
+    supported_apis:
+    - v1
+  organizations.hostSecurityReports:
+    supported_apis:
+    - v1
+  organizations.hostStats:
+    supported_apis:
+    - v1
+  organizations.instances:
+    supported_apis:
+    - v1
+  organizations.instances.attachments:
+    supported_apis:
+    - v1
+  organizations.instances.canaryevaluations:
+    supported_apis:
+    - v1
+  organizations.instances.natAddresses:
+    supported_apis:
+    - v1
+  organizations.operations:
+    supported_apis:
+    - v1
+  organizations.optimizedHostStats:
+    supported_apis:
+    - v1
+  organizations.reports:
+    supported_apis:
+    - v1
+  organizations.sharedflows:
+    supported_apis:
+    - v1
+  organizations.sharedflows.revisions:
+    supported_apis:
+    - v1
+  organizations.sites:
+    supported_apis:
+    - v1
+  organizations.sites.apicategories:
+    supported_apis:
+    - v1
+apikeys:
+  operations:
+    supported_apis:
+    - v2
+    - v2alpha1
+  projects:
+    supported_apis:
+    - v2
+    - v2alpha1
+  projects.keys:
+    supported_apis:
+    - v2alpha1
+  projects.locations:
+    supported_apis:
+    - v2
+  projects.locations.keys:
+    supported_apis:
+    - v2
+appengine:
+  apps:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  apps.authorizedCertificates:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  apps.domainMappings:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  apps.firewall.ingressRules:
+    supported_apis:
+    - v1
+    - v1beta
+  apps.locations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  apps.operations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  apps.services:
+    supported_apis:
+    - v1
+    - v1beta
+  apps.services.versions:
+    supported_apis:
+    - v1
+    - v1beta
+  apps.services.versions.instances:
+    supported_apis:
+    - v1
+    - v1beta
+  projects:
+    supported_apis:
+    - v1
+artifactregistry:
+  projects:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+    - v1beta2
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+    - v1beta2
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+    - v1beta2
+  projects.locations.repositories:
+    home_directory: artifacts.repositories
+    supported_apis:
+    - v1beta1
+    - v1beta2
+  projects.locations.repositories.files:
+    supported_apis:
+    - v1beta1
+    - v1beta2
+  projects.locations.repositories.packages:
+    supported_apis:
+    - v1beta1
+    - v1beta2
+  projects.locations.repositories.packages.tags:
+    supported_apis:
+    - v1beta1
+    - v1beta2
+  projects.locations.repositories.packages.versions:
+    supported_apis:
+    - v1beta1
+    - v1beta2
+assuredworkloads:
+  organizations:
+    supported_apis:
+    - v1
+    - v1beta1
+  organizations.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  organizations.locations.operations:
+    supported_apis:
+    - v1
+    - v1beta1
+  organizations.locations.workloads:
+    supported_apis:
+    - v1
+    - v1beta1
+baremetalsolution:
+  projects:
+    supported_apis:
+    - v2
+  projects.locations:
+    supported_apis:
+    - v2
+  projects.locations.instances:
+    supported_apis:
+    - v2
+  projects.locations.operations:
+    supported_apis:
+    - v2
+bigquery:
+  datasets:
+    home_directory: bq.datasets
+    supported_apis:
+    - v2
+  jobs:
+    home_directory: bq.jobs
+    supported_apis:
+    - v2
+  projects:
+    supported_apis:
+    - v2
+  tabledata:
+    supported_apis:
+    - v2
+  tables:
+    home_directory: bq.tables
+    supported_apis:
+    - v2
+bigquerydatatransfer:
+  projects:
+    supported_apis:
+    - v1
+  projects.dataSources:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.dataSources:
+    supported_apis:
+    - v1
+  projects.locations.transferConfigs:
+    supported_apis:
+    - v1
+  projects.locations.transferConfigs.runs:
+    supported_apis:
+    - v1
+  projects.transferConfigs:
+    supported_apis:
+    - v1
+  projects.transferConfigs.runs:
+    supported_apis:
+    - v1
+bigtableadmin:
+  operations:
+    supported_apis:
+    - v2
+  projects:
+    supported_apis:
+    - v2
+  projects.instances:
+    home_directory: bigtable.instances
+    supported_apis:
+    - v2
+  projects.instances.appProfiles:
+    home_directory: bigtable.app_profiles
+    supported_apis:
+    - v2
+  projects.instances.clusters:
+    supported_apis:
+    - v2
+  projects.instances.clusters.backups:
+    supported_apis:
+    - v2
+  projects.instances.tables:
+    home_directory: bigtable.instances.tables
+    supported_apis:
+    - v2
+  projects.locations:
+    supported_apis:
+    - v2
+billingbudgets:
+  billingAccounts:
+    supported_apis:
+    - v1
+    - v1beta1
+  billingAccounts.budgets:
+    supported_apis:
+    - v1
+    - v1beta1
+binaryauthorization:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.attestors:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.continuousValidationConfig:
+    supported_apis:
+    - v1alpha2
+  projects.policy:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  systempolicy:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+certificatemanager:
+  projects:
+    supported_apis:
+    - v1alpha1
+    - v1alpha2
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+    - v1alpha2
+  projects.locations.certificateMaps:
+    supported_apis:
+    - v1alpha1
+    - v1alpha2
+  projects.locations.certificateMaps.certificateMapEntries:
+    supported_apis:
+    - v1alpha1
+    - v1alpha2
+  projects.locations.certificates:
+    supported_apis:
+    - v1alpha1
+    - v1alpha2
+  projects.locations.dnsAuthorizations:
+    supported_apis:
+    - v1alpha2
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+    - v1alpha2
+cloudasset:
+  feeds:
+    supported_apis:
+    - v1
+    - v1p2beta1
+  iamPolicies:
+    supported_apis:
+    - v1p1beta1
+  operations:
+    supported_apis:
+    - v1
+  resources:
+    supported_apis:
+    - v1p1beta1
+cloudbilling:
+  billingAccounts:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+cloudbuild:
+  operations:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1alpha2
+    - v1beta1
+  projects.builds:
+    supported_apis:
+    - v1
+  projects.githubEnterpriseConfigs:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1alpha2
+    - v1beta1
+  projects.locations.bitbucketServerConfigs:
+    supported_apis:
+    - v1
+  projects.locations.builds:
+    supported_apis:
+    - v1
+  projects.locations.githubEnterpriseConfigs:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1alpha2
+    - v1beta1
+  projects.locations.triggers:
+    supported_apis:
+    - v1
+  projects.locations.workerPools:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.triggers:
+    home_directory: builds.triggers
+    supported_apis:
+    - v1
+  projects.workerPools:
+    supported_apis:
+    - v1alpha1
+    - v1alpha2
+cloudcommerceconsumerprocurement:
+  billingAccounts:
+    supported_apis:
+    - v1alpha1
+  billingAccounts.accounts:
+    supported_apis:
+    - v1alpha1
+  billingAccounts.accounts.operations:
+    supported_apis:
+    - v1alpha1
+  billingAccounts.orders:
+    supported_apis:
+    - v1alpha1
+  billingAccounts.orders.operations:
+    supported_apis:
+    - v1alpha1
+  billingAccounts.orders.orderAllocations:
+    supported_apis:
+    - v1alpha1
+  billingAccounts.orders.orderAllocations.operations:
+    supported_apis:
+    - v1alpha1
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.entitlements:
+    supported_apis:
+    - v1alpha1
+  projects.freeTrials:
+    supported_apis:
+    - v1alpha1
+  projects.freeTrials.operations:
+    supported_apis:
+    - v1alpha1
+clouddebugger:
+  debugger.debuggees:
+    supported_apis:
+    - v2
+  debugger.debuggees.breakpoints:
+    supported_apis:
+    - v2
+clouddeploy:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.deliveryPipelines:
+    supported_apis:
+    - v1
+  projects.locations.deliveryPipelines.releases:
+    supported_apis:
+    - v1
+  projects.locations.deliveryPipelines.releases.rollouts:
+    supported_apis:
+    - v1
+  projects.locations.deliveryPipelines.targets:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+  projects.locations.targets:
+    supported_apis:
+    - v1
+clouderrorreporting:
+  projects:
+    supported_apis:
+    - v1beta1
+  projects.groups:
+    supported_apis:
+    - v1beta1
+cloudfunctions:
+  operations:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+    - v2alpha
+  projects.buckets:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v2alpha
+  projects.locations.functions:
+    supported_apis:
+    - v1
+    - v2alpha
+  projects.locations.operations:
+    supported_apis:
+    - v2alpha
+  providers.event_types:
+    supported_apis:
+    - v1
+cloudidentity:
+  customers:
+    supported_apis:
+    - v1beta1
+  customers.userinvitations:
+    supported_apis:
+    - v1beta1
+  devices:
+    supported_apis:
+    - v1
+    - v1beta1
+  devices.deviceUsers:
+    supported_apis:
+    - v1
+    - v1beta1
+  devices.deviceUsers.clientStates:
+    supported_apis:
+    - v1
+    - v1beta1
+  groups:
+    home_directory: identity.groups
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  groups.memberships:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+cloudiot:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.registries:
+    supported_apis:
+    - v1
+  projects.locations.registries.devices:
+    supported_apis:
+    - v1
+  projects.locations.registries.devices.configVersions:
+    supported_apis:
+    - v1
+  projects.locations.registries.devices.states:
+    supported_apis:
+    - v1
+cloudkms:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.keyRings:
+    home_directory: kms.keyrings
+    supported_apis:
+    - v1
+  projects.locations.keyRings.cryptoKeys:
+    home_directory: kms.keys
+    supported_apis:
+    - v1
+  projects.locations.keyRings.cryptoKeys.cryptoKeyVersions:
+    supported_apis:
+    - v1
+  projects.locations.keyRings.importJobs:
+    supported_apis:
+    - v1
+cloudresourcemanager:
+  folders:
+    home_directory: resource_manager.folder
+    supported_apis:
+    - v2
+    - v2alpha1
+    - v2beta1
+    - v3
+  liens:
+    home_directory: resource_manager.liens
+    supported_apis:
+    - v1
+    - v3
+  operations:
+    supported_apis:
+    - v1
+    - v3
+  organizations:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v3
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v3
+  tagKeys:
+    supported_apis:
+    - v3
+  tagValues:
+    supported_apis:
+    - v3
+cloudscheduler:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.jobs:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+cloudshell:
+  operations:
+    supported_apis:
+    - v1
+  users:
+    supported_apis:
+    - v1
+    - v1alpha1
+  users.environments:
+    supported_apis:
+    - v1
+    - v1alpha1
+cloudtasks:
+  projects:
+    supported_apis:
+    - v2
+    - v2beta2
+    - v2beta3
+  projects.locations:
+    supported_apis:
+    - v2
+    - v2beta2
+    - v2beta3
+  projects.locations.queues:
+    supported_apis:
+    - v2
+    - v2beta2
+    - v2beta3
+  projects.locations.queues.tasks:
+    supported_apis:
+    - v2
+    - v2beta2
+    - v2beta3
+cloudtrace:
+  projects:
+    supported_apis:
+    - v2beta1
+  projects.traceSinks:
+    supported_apis:
+    - v2beta1
+composer:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.environments:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+composerflex:
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.contexts:
+    supported_apis:
+    - v1alpha1
+  projects.locations.workflows:
+    supported_apis:
+    - v1alpha1
+  projects.locations.workflows.runs:
+    supported_apis:
+    - v1alpha1
+compute:
+  acceleratorTypes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  addresses:
+    home_directory: compute.addresses
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  autoscalers:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  backendBuckets:
+    home_directory: compute.backend_buckets
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  backendServices:
+    home_directory: compute.backend_services
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  diskTypes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  disks:
+    home_directory: compute.disks
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  externalVpnGateways:
+    home_directory: compute.external_vpn_gateways
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  firewallPolicies:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  firewalls:
+    home_directory: compute.firewall_rules
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  forwardingRules:
+    home_directory: compute.forwarding_rules
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  futureReservations:
+    supported_apis:
+    - alpha
+  globalAddresses:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  globalForwardingRules:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  globalNetworkEndpointGroups:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  globalOperations:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  globalOrganizationOperations:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  globalPublicDelegatedPrefixes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  healthChecks:
+    home_directory: compute.health_checks
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  httpHealthChecks:
+    home_directory: compute.http_health_checks
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  httpsHealthChecks:
+    home_directory: compute.https_health_checks
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  imageFamilyViews:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  images:
+    home_directory: compute.images
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  instanceGroupManagers:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  instanceGroups:
+    home_directory: compute.instance_groups
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  instanceTemplates:
+    home_directory: compute.instance_templates
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  instances:
+    home_directory: compute.instances
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  interconnectAttachments:
+    home_directory: compute.interconnects.attachments
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  interconnectLocations:
+    home_directory: compute.interconnects.locations
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  interconnects:
+    home_directory: compute.interconnects
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  licenseCodes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  licenses:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  machineImages:
+    supported_apis:
+    - alpha
+    - beta
+  machineTypes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  networkEdgeSecurityServices:
+    supported_apis:
+    - alpha
+  networkEndpointGroups:
+    home_directory: compute.network_endpoint_groups
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  networkFirewallPolicies:
+    supported_apis:
+    - alpha
+  networks:
+    home_directory: compute.networks
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  nextHopGateways:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  nodeGroups:
+    home_directory: compute.sole_tenancy.node_groups
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  nodeTemplates:
+    home_directory: compute.sole_tenancy.node_templates
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  nodeTypes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  organizationSecurityPolicies:
+    supported_apis:
+    - alpha
+    - beta
+  packetMirrorings:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  projects:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  publicAdvertisedPrefixes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  publicDelegatedPrefixes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionAcceleratorTypes:
+    supported_apis:
+    - alpha
+    - beta
+  regionAutoscalers:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionBackendServices:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionCommitments:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionDiskTypes:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionDisks:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionHealthCheckServices:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionHealthChecks:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionInPlaceSnapshots:
+    supported_apis:
+    - alpha
+  regionInstanceGroupManagers:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionInstanceGroups:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionInstantSnapshots:
+    supported_apis:
+    - alpha
+  regionMachineTypes:
+    supported_apis:
+    - alpha
+  regionNetworkEndpointGroups:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionNetworkFirewallPolicies:
+    supported_apis:
+    - alpha
+  regionNotificationEndpoints:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionOperations:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionSecurityPolicies:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionSecurityPolicyRules:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionSslCertificates:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionTargetHttpProxies:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionTargetHttpsProxies:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regionUrlMaps:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  regions:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  reservations:
+    home_directory: compute.reservations
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  resourcePolicies:
+    home_directory: compute.resource_policies
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  routers:
+    home_directory: compute.routers
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  routes:
+    home_directory: compute.routes
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  securityPolicies:
+    home_directory: compute.security_policies
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  securityPolicyRules:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  serviceAttachments:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  snapshots:
+    home_directory: compute.snapshots
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  sslCertificates:
+    home_directory: compute.ssl_certificates
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  sslPolicies:
+    home_directory: compute.ssl_policies
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  subnetworks:
+    home_directory: compute.networks.subnets
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  targetGrpcProxies:
+    home_directory: compute.target_grpc_proxies
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  targetHttpProxies:
+    home_directory: compute.target_http_proxies
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  targetHttpsProxies:
+    home_directory: compute.target_https_proxies
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  targetInstances:
+    home_directory: compute.target_instances
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  targetPools:
+    home_directory: compute.target_pools
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  targetSslProxies:
+    home_directory: compute.target_ssl_proxies
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  targetTcpProxies:
+    home_directory: compute.target_tcp_proxies
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  targetVpnGateways:
+    home_directory: compute.target_vpn_gateways
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  urlMaps:
+    home_directory: compute.url_maps
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  vpnGateways:
+    home_directory: compute.vpn_gateways
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  vpnTunnels:
+    home_directory: compute.vpn_tunnels
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  zoneInPlaceSnapshots:
+    supported_apis:
+    - alpha
+  zoneInstantSnapshots:
+    supported_apis:
+    - alpha
+  zoneOperations:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+  zones:
+    supported_apis:
+    - alpha
+    - beta
+    - v1
+config:
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.deployments:
+    supported_apis:
+    - v1alpha1
+  projects.locations.deployments.revisions:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+container:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.clusters:
+    home_directory: container.clusters
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.clusters.nodePools:
+    home_directory: container.node_pools
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.zones:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.zones.clusters:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.zones.clusters.nodePools:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.zones.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+containeranalysis:
+  operations:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.notes:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.occurrences:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.scanConfigs:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  providers:
+    supported_apis:
+    - v1alpha1
+  providers.notes:
+    supported_apis:
+    - v1alpha1
+datacatalog:
+  catalog:
+    supported_apis:
+    - v1
+    - v1beta1
+  entries:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha3
+    - v1beta1
+  projects.crawlers:
+    supported_apis:
+    - v1alpha3
+  projects.crawlers.crawlerRuns:
+    supported_apis:
+    - v1alpha3
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.entryGroups:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.entryGroups.entries:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.entryGroups.entries.tags:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.tagTemplates:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.tagTemplates.fields:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.tagTemplates.fields.enumValues:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.taxonomies:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.taxonomies.policyTags:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.taxonomies:
+    supported_apis:
+    - v1alpha3
+  projects.taxonomies.categories:
+    supported_apis:
+    - v1alpha3
+dataflow:
+  projects:
+    supported_apis:
+    - v1b3
+  projects.catalogTemplates:
+    supported_apis:
+    - v1b3
+  projects.jobs:
+    home_directory: dataflow.jobs
+    supported_apis:
+    - v1b3
+  projects.locations:
+    supported_apis:
+    - v1b3
+  projects.locations.jobs:
+    supported_apis:
+    - v1b3
+  projects.locations.snapshots:
+    supported_apis:
+    - v1b3
+  projects.locations.templates:
+    supported_apis:
+    - v1b3
+  projects.snapshots:
+    supported_apis:
+    - v1b3
+  projects.templates:
+    supported_apis:
+    - v1b3
+datafusion:
+  projects:
+    supported_apis:
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1beta1
+  projects.locations.instances:
+    supported_apis:
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1beta1
+datamigration:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha2
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha2
+  projects.locations.connectionProfiles:
+    supported_apis:
+    - v1
+    - v1alpha2
+  projects.locations.migrationJobs:
+    supported_apis:
+    - v1
+    - v1alpha2
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha2
+dataplex:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.lakes:
+    supported_apis:
+    - v1
+  projects.locations.lakes.zones:
+    supported_apis:
+    - v1
+  projects.locations.lakes.zones.assets:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+dataproc:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.autoscalingPolicies:
+    supported_apis:
+    - v1
+  projects.locations.batches:
+    supported_apis:
+    - v1
+  projects.locations.workflowTemplates:
+    supported_apis:
+    - v1
+  projects.regions:
+    supported_apis:
+    - v1
+  projects.regions.autoscalingPolicies:
+    supported_apis:
+    - v1
+  projects.regions.clusters:
+    supported_apis:
+    - v1
+  projects.regions.jobs:
+    supported_apis:
+    - v1
+  projects.regions.operations:
+    supported_apis:
+    - v1
+  projects.regions.operations_list:
+    supported_apis:
+    - v1
+  projects.regions.workflowTemplates:
+    supported_apis:
+    - v1
+datastore:
+  projects:
+    supported_apis:
+    - v1
+  projects.indexes:
+    supported_apis:
+    - v1
+  projects.operations:
+    supported_apis:
+    - v1
+datastream:
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.connectionProfiles:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.privateConnections:
+    supported_apis:
+    - v1alpha1
+  projects.locations.privateConnections.routes:
+    supported_apis:
+    - v1alpha1
+  projects.locations.streams:
+    supported_apis:
+    - v1alpha1
+deploymentmanager:
+  compositeTypes:
+    supported_apis:
+    - alpha
+    - v2beta
+  deployments:
+    supported_apis:
+    - alpha
+    - v2
+    - v2beta
+  manifests:
+    supported_apis:
+    - alpha
+    - v2
+    - v2beta
+  operations:
+    supported_apis:
+    - alpha
+    - v2
+    - v2beta
+  projects:
+    supported_apis:
+    - alpha
+    - v2
+    - v2beta
+  resources:
+    supported_apis:
+    - alpha
+    - v2
+    - v2beta
+  typeProviders:
+    supported_apis:
+    - alpha
+    - v2beta
+  types:
+    supported_apis:
+    - alpha
+dialogflow:
+  projects:
+    supported_apis:
+    - v2
+  projects.agent:
+    supported_apis:
+    - v2
+  projects.agent.entityTypes:
+    supported_apis:
+    - v2
+  projects.agent.environments:
+    supported_apis:
+    - v2
+  projects.agent.environments.users:
+    supported_apis:
+    - v2
+  projects.agent.environments.users.sessions:
+    supported_apis:
+    - v2
+  projects.agent.environments.users.sessions.contexts:
+    supported_apis:
+    - v2
+  projects.agent.environments.users.sessions.entityTypes:
+    supported_apis:
+    - v2
+  projects.agent.intents:
+    supported_apis:
+    - v2
+  projects.agent.knowledgeBases:
+    supported_apis:
+    - v2
+  projects.agent.knowledgeBases.documents:
+    supported_apis:
+    - v2
+  projects.agent.sessions:
+    supported_apis:
+    - v2
+  projects.agent.sessions.contexts:
+    supported_apis:
+    - v2
+  projects.agent.sessions.entityTypes:
+    supported_apis:
+    - v2
+  projects.agent.versions:
+    supported_apis:
+    - v2
+  projects.conversationProfiles:
+    supported_apis:
+    - v2
+  projects.conversations:
+    supported_apis:
+    - v2
+  projects.conversations.participants:
+    supported_apis:
+    - v2
+  projects.knowledgeBases:
+    supported_apis:
+    - v2
+  projects.knowledgeBases.documents:
+    supported_apis:
+    - v2
+  projects.locations:
+    supported_apis:
+    - v2
+  projects.locations.agent.entityTypes:
+    supported_apis:
+    - v2
+  projects.locations.agent.environments:
+    supported_apis:
+    - v2
+  projects.locations.agent.environments.users:
+    supported_apis:
+    - v2
+  projects.locations.agent.environments.users.sessions:
+    supported_apis:
+    - v2
+  projects.locations.agent.environments.users.sessions.contexts:
+    supported_apis:
+    - v2
+  projects.locations.agent.environments.users.sessions.entityTypes:
+    supported_apis:
+    - v2
+  projects.locations.agent.intents:
+    supported_apis:
+    - v2
+  projects.locations.agent.sessions:
+    supported_apis:
+    - v2
+  projects.locations.agent.sessions.contexts:
+    supported_apis:
+    - v2
+  projects.locations.agent.sessions.entityTypes:
+    supported_apis:
+    - v2
+  projects.locations.agent.versions:
+    supported_apis:
+    - v2
+  projects.locations.conversationProfiles:
+    supported_apis:
+    - v2
+  projects.locations.conversations:
+    supported_apis:
+    - v2
+  projects.locations.conversations.participants:
+    supported_apis:
+    - v2
+  projects.locations.knowledgeBases:
+    supported_apis:
+    - v2
+  projects.locations.knowledgeBases.documents:
+    supported_apis:
+    - v2
+  projects.locations.operations:
+    supported_apis:
+    - v2
+  projects.operations:
+    supported_apis:
+    - v2
+discovery:
+  apis.versions:
+    supported_apis:
+    - v1
+dlp:
+  infoTypes:
+    supported_apis:
+    - v2
+  organizations:
+    supported_apis:
+    - v2
+  organizations.deidentifyTemplates:
+    supported_apis:
+    - v2
+  organizations.inspectTemplates:
+    supported_apis:
+    - v2
+  organizations.locations:
+    supported_apis:
+    - v2
+  organizations.locations.deidentifyTemplates:
+    supported_apis:
+    - v2
+  organizations.locations.inspectTemplates:
+    supported_apis:
+    - v2
+  organizations.locations.jobTriggers:
+    supported_apis:
+    - v2
+  organizations.locations.storedInfoTypes:
+    supported_apis:
+    - v2
+  organizations.storedInfoTypes:
+    supported_apis:
+    - v2
+  projects:
+    supported_apis:
+    - v2
+  projects.content:
+    supported_apis:
+    - v2
+  projects.deidentifyTemplates:
+    supported_apis:
+    - v2
+  projects.dlpJobs:
+    supported_apis:
+    - v2
+  projects.image:
+    supported_apis:
+    - v2
+  projects.inspectTemplates:
+    supported_apis:
+    - v2
+  projects.jobTriggers:
+    supported_apis:
+    - v2
+  projects.locations:
+    supported_apis:
+    - v2
+  projects.locations.deidentifyTemplates:
+    supported_apis:
+    - v2
+  projects.locations.dlpJobs:
+    supported_apis:
+    - v2
+  projects.locations.inspectTemplates:
+    supported_apis:
+    - v2
+  projects.locations.jobTriggers:
+    supported_apis:
+    - v2
+  projects.locations.storedInfoTypes:
+    supported_apis:
+    - v2
+  projects.storedInfoTypes:
+    supported_apis:
+    - v2
+dns:
+  changes:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta2
+  dnsKeys:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta2
+  managedZoneOperations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta2
+  managedZones:
+    home_directory: dns.managed_zones
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta2
+  policies:
+    home_directory: dns.policies
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta2
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta2
+  resourceRecordSets:
+    home_directory: dns.record_sets
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta2
+  responsePolicies:
+    supported_apis:
+    - v1alpha2
+    - v1beta2
+  responsePolicyRules:
+    supported_apis:
+    - v1alpha2
+    - v1beta2
+domains:
+  projects:
+    supported_apis:
+    - v1alpha2
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1alpha2
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha2
+    - v1beta1
+  projects.locations.registrations:
+    supported_apis:
+    - v1alpha2
+    - v1beta1
+edgecontainer:
+  projects:
+    supported_apis:
+    - v1alpha
+    - v1beta
+  projects.locations:
+    supported_apis:
+    - v1alpha
+    - v1beta
+  projects.locations.clusters:
+    supported_apis:
+    - v1alpha
+    - v1beta
+  projects.locations.clusters.nodePools:
+    supported_apis:
+    - v1alpha
+    - v1beta
+  projects.locations.machines:
+    supported_apis:
+    - v1alpha
+    - v1beta
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha
+    - v1beta
+  projects.locations.vpnConnections:
+    supported_apis:
+    - v1alpha
+    - v1beta
+essentialcontacts:
+  folders:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  folders.contacts:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  organizations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  organizations.contacts:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.contacts:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+eventarc:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.channels:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.triggers:
+    supported_apis:
+    - v1
+    - v1beta1
+eventflow:
+  projects:
+    supported_apis:
+    - v1beta2
+  projects.flows:
+    supported_apis:
+    - v1beta2
+events:
+  namespaces:
+    supported_apis:
+    - v1beta1
+  namespaces.customresourcedefinitions:
+    supported_apis:
+    - v1beta1
+  namespaces.triggers:
+    supported_apis:
+    - v1beta1
+  projects:
+    supported_apis:
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1beta1
+  projects.locations.customresourcedefinitions:
+    supported_apis:
+    - v1beta1
+  projects.locations.triggers:
+    supported_apis:
+    - v1beta1
+file:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v1p1alpha1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v1p1alpha1
+  projects.locations.backups:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v1p1alpha1
+  projects.locations.instances:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v1p1alpha1
+  projects.locations.instances.snapshots:
+    supported_apis:
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v1p1alpha1
+  projects.locations.snapshots:
+    supported_apis:
+    - v1p1alpha1
+firestore:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v1beta2
+  projects.databases:
+    supported_apis:
+    - v1
+    - v1beta1
+    - v1beta2
+  projects.databases.collectionGroups:
+    supported_apis:
+    - v1
+    - v1beta2
+  projects.databases.collectionGroups.fields:
+    supported_apis:
+    - v1
+    - v1beta2
+  projects.databases.collectionGroups.indexes:
+    supported_apis:
+    - v1
+    - v1beta2
+  projects.databases.documents:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.databases.indexes:
+    home_directory: firestore.indexes
+    supported_apis:
+    - v1beta1
+  projects.databases.operations:
+    supported_apis:
+    - v1
+    - v1beta2
+  projects.locations:
+    supported_apis:
+    - v1
+gameservices:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.gameServerDeployments:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.gameServerDeployments.configs:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.realms:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.realms.gameServerClusters:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+genomics:
+  projects:
+    supported_apis:
+    - v2alpha1
+  projects.operations:
+    supported_apis:
+    - v2alpha1
+gkebackup:
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.backupPlans:
+    supported_apis:
+    - v1alpha1
+  projects.locations.backupPlans.backups:
+    supported_apis:
+    - v1alpha1
+  projects.locations.backupPlans.backups.volumeBackups:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.restores:
+    supported_apis:
+    - v1alpha1
+  projects.locations.restores.volumeRestores:
+    supported_apis:
+    - v1alpha1
+gkehub:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1alpha1
+    - v1alpha2
+    - v1beta
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1alpha1
+    - v1alpha2
+    - v1beta
+    - v1beta1
+  projects.locations.features:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.global.features:
+    supported_apis:
+    - v1alpha1
+  projects.locations.global.memberships:
+    supported_apis:
+    - v1alpha2
+  projects.locations.memberships:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1alpha1
+    - v1alpha2
+    - v1beta
+    - v1beta1
+gkemulticloud:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.awsClusters:
+    supported_apis:
+    - v1
+  projects.locations.awsClusters.awsNodePools:
+    supported_apis:
+    - v1
+  projects.locations.azureClients:
+    supported_apis:
+    - v1
+  projects.locations.azureClusters:
+    supported_apis:
+    - v1
+  projects.locations.azureClusters.azureNodePools:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+gsuiteaddons:
+  projects:
+    supported_apis:
+    - v1
+  projects.deployments:
+    supported_apis:
+    - v1
+healthcare:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.annotationStores:
+    supported_apis:
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.annotationStores.annotations:
+    supported_apis:
+    - v1beta1
+  projects.locations.datasets.consentStores:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.consentStores.attributeDefinitions:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.consentStores.consentArtifacts:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.consentStores.consents:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.consentStores.userDataMappings:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.dicomStores:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.fhirStores:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.hl7V2Stores:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.datasets.hl7V2Stores.messages:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.datasets.operations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.services.deidentify:
+    supported_apis:
+    - v1alpha2
+  projects.locations.services.nlp:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+iam:
+  iamPolicies:
+    supported_apis:
+    - v1
+  locations:
+    supported_apis:
+    - v1
+  locations.workforcePools:
+    supported_apis:
+    - v1
+  locations.workforcePools.providers:
+    supported_apis:
+    - v1
+  organizations:
+    supported_apis:
+    - v1
+  organizations.roles:
+    supported_apis:
+    - v1
+  policies:
+    supported_apis:
+    - v2alpha1
+  projects:
+    supported_apis:
+    - v1
+    - v1beta
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta
+  projects.locations.workloadIdentityPools:
+    supported_apis:
+    - v1
+    - v1beta
+  projects.locations.workloadIdentityPools.operations:
+    supported_apis:
+    - v1
+    - v1beta
+  projects.locations.workloadIdentityPools.providers:
+    supported_apis:
+    - v1
+    - v1beta
+  projects.locations.workloadIdentityPools.providers.operations:
+    supported_apis:
+    - v1
+    - v1beta
+  projects.roles:
+    supported_apis:
+    - v1
+  projects.serviceAccounts:
+    home_directory: iam.service_accounts
+    supported_apis:
+    - v1
+  projects.serviceAccounts.identityBindings:
+    supported_apis:
+    - v1
+  projects.serviceAccounts.keys:
+    home_directory: iam.service_accounts.keys
+    supported_apis:
+    - v1
+  roles:
+    home_directory: iam.roles
+    supported_apis:
+    - v1
+iamcredentials:
+  serviceAccounts:
+    supported_apis:
+    - v1
+iap:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.brands:
+    supported_apis:
+    - v1
+  projects.brands.identityAwareProxyClients:
+    supported_apis:
+    - v1
+  projects.iap_web:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.iap_web.services:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.iap_web.services.versions:
+    supported_apis:
+    - v1
+    - v1beta1
+ids:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.endpoints:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+krmapihosting:
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.krmApiHosts:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+kubernetesedge:
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusters:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusters.nodePools:
+    supported_apis:
+    - v1alpha1
+  projects.locations.machines:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.sites:
+    supported_apis:
+    - v1alpha1
+  projects.locations.sites.machines:
+    supported_apis:
+    - v1alpha1
+  projects.locations.vpnConnections:
+    supported_apis:
+    - v1alpha1
+language:
+  documents:
+    supported_apis:
+    - v1
+    - v1beta2
+lifesciences:
+  projects:
+    supported_apis:
+    - v2beta
+  projects.locations:
+    supported_apis:
+    - v2beta
+  projects.locations.operations:
+    supported_apis:
+    - v2beta
+logging:
+  billingAccounts:
+    supported_apis:
+    - v2
+  billingAccounts.buckets:
+    supported_apis:
+    - v2
+  billingAccounts.buckets.views:
+    supported_apis:
+    - v2
+  billingAccounts.exclusions:
+    supported_apis:
+    - v2
+  billingAccounts.locations:
+    supported_apis:
+    - v2
+  billingAccounts.operations:
+    supported_apis:
+    - v2
+  billingAccounts.sinks:
+    supported_apis:
+    - v2
+  exclusions:
+    supported_apis:
+    - v2
+  folders:
+    supported_apis:
+    - v2
+  folders.exclusions:
+    supported_apis:
+    - v2
+  folders.locations:
+    supported_apis:
+    - v2
+  folders.locations.buckets:
+    supported_apis:
+    - v2
+  folders.locations.buckets.views:
+    supported_apis:
+    - v2
+  folders.locations.operations:
+    supported_apis:
+    - v2
+  folders.sinks:
+    supported_apis:
+    - v2
+  locations:
+    supported_apis:
+    - v2
+  locations.buckets:
+    supported_apis:
+    - v2
+  locations.buckets.tables:
+    supported_apis:
+    - v2
+  locations.buckets.views:
+    supported_apis:
+    - v2
+  locations.operations:
+    supported_apis:
+    - v2
+  organizations:
+    supported_apis:
+    - v2
+  organizations.exclusions:
+    supported_apis:
+    - v2
+  organizations.locations:
+    supported_apis:
+    - v2
+  organizations.locations.buckets:
+    supported_apis:
+    - v2
+  organizations.locations.buckets.views:
+    supported_apis:
+    - v2
+  organizations.locations.operations:
+    supported_apis:
+    - v2
+  organizations.sinks:
+    supported_apis:
+    - v2
+  projects:
+    supported_apis:
+    - v2
+  projects.exclusions:
+    supported_apis:
+    - v2
+  projects.locations:
+    supported_apis:
+    - v2
+  projects.locations.buckets:
+    supported_apis:
+    - v2
+  projects.locations.buckets.views:
+    supported_apis:
+    - v2
+  projects.locations.operations:
+    supported_apis:
+    - v2
+  projects.metrics:
+    supported_apis:
+    - v2
+  projects.sinks:
+    supported_apis:
+    - v2
+  sinks:
+    home_directory: logging.sinks
+    supported_apis:
+    - v2
+managedidentities:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.global.domains:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.global.domains.backups:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.global.domains.sqlIntegrations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.global.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.global.peerings:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+mediaasset:
+  projects:
+    supported_apis:
+    - v1alpha
+  projects.locations:
+    supported_apis:
+    - v1alpha
+  projects.locations.assetTypes:
+    supported_apis:
+    - v1alpha
+  projects.locations.assetTypes.assets:
+    supported_apis:
+    - v1alpha
+  projects.locations.assetTypes.assets.actions:
+    supported_apis:
+    - v1alpha
+  projects.locations.assetTypes.assets.annotationSets:
+    supported_apis:
+    - v1alpha
+  projects.locations.assetTypes.assets.annotationSets.annotations:
+    supported_apis:
+    - v1alpha
+  projects.locations.assetTypes.rules:
+    supported_apis:
+    - v1alpha
+  projects.locations.complexTypes:
+    supported_apis:
+    - v1alpha
+  projects.locations.modules:
+    supported_apis:
+    - v1alpha
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha
+  projects.locations.transformers:
+    supported_apis:
+    - v1alpha
+memcache:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta2
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta2
+  projects.locations.instances:
+    home_directory: memcache.instances
+    supported_apis:
+    - v1
+    - v1beta2
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1beta2
+metastore:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.services:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.services.backups:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  projects.locations.services.metadataImports:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+ml:
+  projects:
+    supported_apis:
+    - v1
+  projects.jobs:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+  projects.locations.studies:
+    supported_apis:
+    - v1
+  projects.locations.studies.trials:
+    supported_apis:
+    - v1
+  projects.models:
+    supported_apis:
+    - v1
+  projects.models.versions:
+    supported_apis:
+    - v1
+  projects.operations:
+    supported_apis:
+    - v1
+monitoring:
+  locations.global.metricsScopes:
+    supported_apis:
+    - v1
+  operations:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+    - v3
+  projects.alertPolicies:
+    home_directory: monitoring.policies
+    supported_apis:
+    - v3
+  projects.alertPolicies.conditions:
+    supported_apis:
+    - v3
+  projects.dashboards:
+    supported_apis:
+    - v1
+  projects.groups:
+    supported_apis:
+    - v3
+  projects.metricDescriptors:
+    supported_apis:
+    - v3
+  projects.monitoredResourceDescriptors:
+    supported_apis:
+    - v3
+  projects.notificationChannelDescriptors:
+    supported_apis:
+    - v3
+  projects.notificationChannels:
+    home_directory: monitoring.channels
+    supported_apis:
+    - v3
+  projects.uptimeCheckConfigs:
+    supported_apis:
+    - v3
+networkconnectivity:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations.global.hubs:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations.internalRanges:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations.spokes:
+    supported_apis:
+    - v1
+    - v1alpha1
+networkmanagement:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.global.connectivityTests:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.global.operations:
+    supported_apis:
+    - v1
+    - v1beta1
+networksecurity:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.addressGroups:
+    supported_apis:
+    - v1alpha1
+  projects.locations.authorizationPolicies:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.clientTlsPolicies:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.serverTlsPolicies:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+networkservices:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.edgeCacheKeysets:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations.edgeCacheOrigins:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations.edgeCacheServices:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations.endpointConfigSelectors:
+    supported_apis:
+    - v1alpha1
+  projects.locations.endpointPolicies:
+    supported_apis:
+    - v1alpha1
+    - v1beta1
+  projects.locations.grpcRoutes:
+    supported_apis:
+    - v1alpha1
+  projects.locations.httpFilters:
+    supported_apis:
+    - v1alpha1
+  projects.locations.httpRoutes:
+    supported_apis:
+    - v1alpha1
+  projects.locations.observabilityPolicies:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.routers:
+    supported_apis:
+    - v1alpha1
+  projects.locations.serviceBindings:
+    supported_apis:
+    - v1alpha1
+  projects.locations.tcpRoutes:
+    supported_apis:
+    - v1alpha1
+notebooks:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.environments:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.executions:
+    supported_apis:
+    - v1
+  projects.locations.instances:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.runtimes:
+    supported_apis:
+    - v1
+  projects.locations.schedules:
+    supported_apis:
+    - v1
+ondemandscanning:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.scans:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.scans.vulnerabilities:
+    supported_apis:
+    - v1
+    - v1beta1
+orgpolicy:
+  folders:
+    supported_apis:
+    - v2
+  folders.policies:
+    supported_apis:
+    - v2
+  organizations:
+    supported_apis:
+    - v2
+  organizations.policies:
+    supported_apis:
+    - v2
+  policies:
+    supported_apis:
+    - v2alpha1
+  projects:
+    supported_apis:
+    - v2
+  projects.policies:
+    supported_apis:
+    - v2
+osconfig:
+  folders:
+    supported_apis:
+    - v1alpha2
+  folders.guestPolicies:
+    supported_apis:
+    - v1alpha2
+  organizations:
+    supported_apis:
+    - v1alpha2
+  organizations.guestPolicies:
+    supported_apis:
+    - v1alpha2
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1alpha2
+    - v1beta
+  projects.guestPolicies:
+    supported_apis:
+    - v1alpha2
+    - v1beta
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha
+  projects.locations.instanceOSPoliciesCompliances:
+    supported_apis:
+    - v1alpha
+  projects.locations.instances:
+    supported_apis:
+    - v1
+    - v1alpha
+  projects.locations.instances.inventories:
+    supported_apis:
+    - v1
+    - v1alpha
+  projects.locations.instances.vulnerabilityReports:
+    supported_apis:
+    - v1
+    - v1alpha
+  projects.locations.osPolicyAssignments:
+    supported_apis:
+    - v1alpha
+  projects.locations.osPolicyAssignments.operations:
+    supported_apis:
+    - v1alpha
+  projects.patchDeployments:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta
+  projects.patchJobs:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta
+oslogin:
+  users:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  users.projects:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+  users.sshPublicKeys:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta
+policyanalyzer: {}
+policysimulator:
+  folders:
+    supported_apis:
+    - v1
+    - v1beta1
+  folders.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  folders.locations.replays:
+    supported_apis:
+    - v1
+    - v1beta1
+  operations:
+    supported_apis:
+    - v1
+    - v1beta1
+  organizations:
+    supported_apis:
+    - v1
+    - v1beta1
+  organizations.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  organizations.locations.replays:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.replays:
+    supported_apis:
+    - v1
+    - v1beta1
+  simulator:
+    supported_apis:
+    - v1
+    - v1beta1
+policytroubleshooter:
+  iam:
+    supported_apis:
+    - v1
+    - v1beta
+    - v2alpha1
+privateca:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.caPools:
+    supported_apis:
+    - v1
+  projects.locations.caPools.certificateAuthorities:
+    supported_apis:
+    - v1
+  projects.locations.caPools.certificateAuthorities.certificateRevocationLists:
+    supported_apis:
+    - v1
+  projects.locations.caPools.certificates:
+    supported_apis:
+    - v1
+  projects.locations.certificateAuthorities:
+    supported_apis:
+    - v1beta1
+  projects.locations.certificateAuthorities.certificateRevocationLists:
+    supported_apis:
+    - v1beta1
+  projects.locations.certificateAuthorities.certificates:
+    supported_apis:
+    - v1beta1
+  projects.locations.certificateTemplates:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.reusableConfigs:
+    supported_apis:
+    - v1beta1
+publicca: {}
+pubsub:
+  projects:
+    supported_apis:
+    - v1
+  projects.schemas:
+    supported_apis:
+    - v1
+  projects.snapshots:
+    supported_apis:
+    - v1
+  projects.subscriptions:
+    home_directory: pubsub.subscriptions
+    supported_apis:
+    - v1
+  projects.topics:
+    home_directory: pubsub.topics
+    supported_apis:
+    - v1
+pubsublite:
+  admin.projects:
+    supported_apis:
+    - v1
+  admin.projects.locations:
+    supported_apis:
+    - v1
+  admin.projects.locations.operations:
+    supported_apis:
+    - v1
+  admin.projects.locations.reservations:
+    supported_apis:
+    - v1
+  admin.projects.locations.reservations.topics:
+    supported_apis:
+    - v1
+  admin.projects.locations.subscriptions:
+    supported_apis:
+    - v1
+  admin.projects.locations.topics:
+    supported_apis:
+    - v1
+  admin.projects.locations.topics.subscriptions:
+    supported_apis:
+    - v1
+  cursor.projects.locations.subscriptions:
+    supported_apis:
+    - v1
+recaptchaenterprise:
+  projects:
+    supported_apis:
+    - v1
+  projects.keys:
+    supported_apis:
+    - v1
+recommender:
+  billingAccounts:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  billingAccounts.locations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  billingAccounts.locations.insightTypes:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  billingAccounts.locations.insightTypes.insights:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  billingAccounts.locations.recommenders:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  billingAccounts.locations.recommenders.recommendations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  folders:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  folders.locations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  folders.locations.insightTypes:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  folders.locations.insightTypes.insights:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  folders.locations.recommenders:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  folders.locations.recommenders.recommendations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  operations:
+    supported_apis:
+    - v1alpha1
+  organizations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  organizations.locations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  organizations.locations.insightTypes:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  organizations.locations.insightTypes.insights:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  organizations.locations.recommenders:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  organizations.locations.recommenders.recommendations:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1alpha2
+    - v1beta1
+  projects.locations.insightTypes:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.insightTypes.insights:
+    supported_apis:
+    - v1
+    - v1alpha2
+    - v1beta1
+  projects.locations.recommenders:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1alpha2
+    - v1beta1
+  projects.locations.recommenders.recommendations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1alpha2
+    - v1beta1
+redis:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.instances:
+    home_directory: redis.instances
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+remotebuildexecution:
+  projects:
+    supported_apis:
+    - v1alpha
+  projects.instances:
+    supported_apis:
+    - v1alpha
+  projects.instances.workerpools:
+    supported_apis:
+    - v1alpha
+  projects.operations:
+    supported_apis:
+    - v1alpha
+resourcesettings:
+  folders:
+    supported_apis:
+    - v1
+  folders.settings:
+    supported_apis:
+    - v1
+  organizations:
+    supported_apis:
+    - v1
+  organizations.settings:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+  projects.settings:
+    supported_apis:
+    - v1
+run:
+  api.v1.namespaces:
+    supported_apis:
+    - v1
+  api.v1.namespaces.secrets:
+    supported_apis:
+    - v1
+  namespaces:
+    supported_apis:
+    - v1alpha1
+  namespaces.configurations:
+    supported_apis:
+    - v1
+  namespaces.domainmappings:
+    supported_apis:
+    - v1
+    - v1alpha1
+  namespaces.jobs:
+    supported_apis:
+    - v1alpha1
+  namespaces.revisions:
+    supported_apis:
+    - v1
+  namespaces.routes:
+    supported_apis:
+    - v1
+  namespaces.services:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations.configurations:
+    supported_apis:
+    - v1
+  projects.locations.domainmappings:
+    supported_apis:
+    - v1
+    - v1alpha1
+  projects.locations.namespaces:
+    supported_apis:
+    - v1
+  projects.locations.revisions:
+    supported_apis:
+    - v1
+  projects.locations.routes:
+    supported_apis:
+    - v1
+  projects.locations.secrets:
+    supported_apis:
+    - v1
+  projects.locations.services:
+    supported_apis:
+    - v1
+runtimeconfig:
+  projects:
+    supported_apis:
+    - v1beta1
+  projects.configs:
+    supported_apis:
+    - v1beta1
+  projects.configs.operations:
+    supported_apis:
+    - v1beta1
+  projects.configs.variables:
+    supported_apis:
+    - v1beta1
+  projects.configs.waiters:
+    supported_apis:
+    - v1beta1
+sddc:
+  projects:
+    supported_apis:
+    - v1alpha1
+  projects.locations:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusterGroupBackups:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusterGroups:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusterGroups.clusters:
+    supported_apis:
+    - v1alpha1
+  projects.locations.clusterGroups.ipAddresses:
+    supported_apis:
+    - v1alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1alpha1
+secretmanager:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.secrets:
+    home_directory: secrets
+    supported_apis:
+    - v1
+  projects.secrets.versions:
+    home_directory: secrets.versions
+    supported_apis:
+    - v1
+securitycenter:
+  folders:
+    supported_apis:
+    - v1
+  folders.muteConfigs:
+    supported_apis:
+    - v1
+  organizations:
+    supported_apis:
+    - v1
+  organizations.assets:
+    supported_apis:
+    - v1
+  organizations.muteConfigs:
+    supported_apis:
+    - v1
+  organizations.notificationConfigs:
+    supported_apis:
+    - v1
+  organizations.operations:
+    supported_apis:
+    - v1
+  organizations.sources:
+    supported_apis:
+    - v1
+  organizations.sources.findings:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+  projects.muteConfigs:
+    supported_apis:
+    - v1
+serviceconsumermanagement:
+  operations:
+    supported_apis:
+    - v1beta1
+  services:
+    supported_apis:
+    - v1beta1
+  services.consumerQuotaMetrics:
+    supported_apis:
+    - v1beta1
+  services.consumerQuotaMetrics.limits:
+    supported_apis:
+    - v1beta1
+servicedirectory:
+  projects:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.namespaces:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.namespaces.services:
+    supported_apis:
+    - v1
+    - v1beta1
+  projects.locations.namespaces.services.endpoints:
+    supported_apis:
+    - v1
+    - v1beta1
+servicemanagement:
+  operations:
+    supported_apis:
+    - v1
+  services:
+    supported_apis:
+    - v1
+  services.configs:
+    supported_apis:
+    - v1
+  services.customerSettings:
+    supported_apis:
+    - v1
+  services.projectSettings:
+    supported_apis:
+    - v1
+  services.rollouts:
+    supported_apis:
+    - v1
+servicenetworking:
+  operations:
+    supported_apis:
+    - v1
+    - v1beta
+  services.projects:
+    supported_apis:
+    - v1
+  services.projects.global:
+    supported_apis:
+    - v1
+  services.projects.global.networks:
+    supported_apis:
+    - v1
+serviceusage:
+  operations:
+    supported_apis:
+    - v1
+    - v1alpha
+    - v1beta1
+  services:
+    home_directory: services
+    supported_apis:
+    - v1
+    - v1beta1
+  services.consumerQuotaMetrics:
+    supported_apis:
+    - v1beta1
+  services.consumerQuotaMetrics.limits:
+    supported_apis:
+    - v1beta1
+source:
+  projects:
+    supported_apis:
+    - v1
+  projects.repos:
+    supported_apis:
+    - v1
+  projects.repos.aliases:
+    supported_apis:
+    - v1
+  projects.repos.aliases.files:
+    supported_apis:
+    - v1
+  projects.repos.revisions:
+    supported_apis:
+    - v1
+  projects.repos.revisions.files:
+    supported_apis:
+    - v1
+  projects.repos.workspaces:
+    supported_apis:
+    - v1
+  projects.repos.workspaces.files:
+    supported_apis:
+    - v1
+  projects.repos.workspaces.snapshots:
+    supported_apis:
+    - v1
+  projects.repos.workspaces.snapshots.files:
+    supported_apis:
+    - v1
+sourcerepo:
+  projects:
+    supported_apis:
+    - v1
+  projects.repos:
+    home_directory: source.repos
+    supported_apis:
+    - v1
+spanner:
+  projects:
+    supported_apis:
+    - v1
+  projects.instanceConfigs:
+    supported_apis:
+    - v1
+  projects.instances:
+    home_directory: spanner.instances
+    supported_apis:
+    - v1
+  projects.instances.backups:
+    supported_apis:
+    - v1
+  projects.instances.backups.operations:
+    supported_apis:
+    - v1
+  projects.instances.databases:
+    home_directory: spanner.databases
+    supported_apis:
+    - v1
+  projects.instances.databases.operations:
+    supported_apis:
+    - v1
+  projects.instances.databases.sessions:
+    supported_apis:
+    - v1
+  projects.instances.operations:
+    supported_apis:
+    - v1
+speech:
+  operations:
+    supported_apis:
+    - v1
+    - v1p1beta1
+  projects:
+    supported_apis:
+    - v1p1beta1
+  projects.locations:
+    supported_apis:
+    - v1p1beta1
+  projects.locations.customClasses:
+    supported_apis:
+    - v1p1beta1
+  projects.locations.phraseSets:
+    supported_apis:
+    - v1p1beta1
+  speech:
+    supported_apis:
+    - v1
+    - v1p1beta1
+sqladmin:
+  backupRuns:
+    supported_apis:
+    - v1beta4
+  connect:
+    supported_apis:
+    - v1beta4
+  databases:
+    home_directory: sql.databases
+    supported_apis:
+    - v1beta4
+  instances:
+    home_directory: sql.instances
+    supported_apis:
+    - v1beta4
+  operations:
+    supported_apis:
+    - v1beta4
+  projects:
+    supported_apis:
+    - v1beta4
+  sslCerts:
+    home_directory: sql.ssl_certs
+    supported_apis:
+    - v1beta4
+storage:
+  bucketAccessControls:
+    supported_apis:
+    - v1
+  buckets:
+    home_directory: storage.buckets
+    supported_apis:
+    - v1
+  defaultObjectAccessControls:
+    supported_apis:
+    - v1
+  notifications:
+    home_directory: storage.buckets.notificates
+    supported_apis:
+    - v1
+  objectAccessControls:
+    supported_apis:
+    - v1
+  objects:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+  projects.hmacKeys:
+    supported_apis:
+    - v1
+  projects.serviceAccount:
+    supported_apis:
+    - v1
+storagetransfer:
+  googleServiceAccounts:
+    supported_apis:
+    - v1
+  transferJobs:
+    home_directory: transfer.jobs
+    supported_apis:
+    - v1
+  transferOperations:
+    supported_apis:
+    - v1
+testing:
+  projects:
+    supported_apis:
+    - v1
+  projects.testMatrices:
+    supported_apis:
+    - v1
+  testEnvironmentCatalog:
+    supported_apis:
+    - v1
+toolresults:
+  projects:
+    supported_apis:
+    - v1beta3
+  projects.histories:
+    supported_apis:
+    - v1beta3
+  projects.histories.executions:
+    supported_apis:
+    - v1beta3
+  projects.histories.executions.clusters:
+    supported_apis:
+    - v1beta3
+  projects.histories.executions.environments:
+    supported_apis:
+    - v1beta3
+  projects.histories.executions.steps:
+    supported_apis:
+    - v1beta3
+  projects.histories.executions.steps.perfSampleSeries:
+    supported_apis:
+    - v1beta3
+  projects.histories.executions.steps.testCases:
+    supported_apis:
+    - v1beta3
+tpu:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v2alpha1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v2alpha1
+  projects.locations.acceleratorTypes:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v2alpha1
+  projects.locations.nodes:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v2alpha1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v2alpha1
+  projects.locations.runtimeVersions:
+    supported_apis:
+    - v2alpha1
+  projects.locations.tensorflowVersions:
+    supported_apis:
+    - v1
+    - v1alpha1
+transcoder:
+  projects:
+    supported_apis:
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1beta1
+  projects.locations.jobTemplates:
+    supported_apis:
+    - v1beta1
+  projects.locations.jobs:
+    supported_apis:
+    - v1beta1
+translate:
+  projects:
+    supported_apis:
+    - v3
+    - v3beta1
+  projects.locations:
+    supported_apis:
+    - v3
+    - v3beta1
+  projects.locations.glossaries:
+    supported_apis:
+    - v3
+    - v3beta1
+  projects.locations.operations:
+    supported_apis:
+    - v3
+    - v3beta1
+videointelligence:
+  operations.projects:
+    supported_apis:
+    - v1
+  operations.projects.locations:
+    supported_apis:
+    - v1
+  operations.projects.locations.operations:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+  videos:
+    supported_apis:
+    - v1
+vision:
+  files:
+    supported_apis:
+    - v1
+  images:
+    supported_apis:
+    - v1
+  locations:
+    supported_apis:
+    - v1
+  locations.operations:
+    supported_apis:
+    - v1
+  operations:
+    supported_apis:
+    - v1
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+  projects.locations.productSets:
+    supported_apis:
+    - v1
+  projects.locations.productSets.products:
+    supported_apis:
+    - v1
+  projects.locations.products:
+    supported_apis:
+    - v1
+  projects.locations.products.referenceImages:
+    supported_apis:
+    - v1
+  projects.operations:
+    supported_apis:
+    - v1
+vmwareengine:
+  projects:
+    supported_apis:
+    - v1
+  projects.locations:
+    supported_apis:
+    - v1
+  projects.locations.nodeTypes:
+    supported_apis:
+    - v1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+  projects.locations.privateClouds:
+    supported_apis:
+    - v1
+  projects.locations.privateClouds.clusters:
+    supported_apis:
+    - v1
+vpcaccess:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.connectors:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta1
+websecurityscanner:
+  projects:
+    supported_apis:
+    - v1beta
+  projects.scanConfigs:
+    supported_apis:
+    - v1beta
+  projects.scanConfigs.scanRuns:
+    supported_apis:
+    - v1beta
+  projects.scanConfigs.scanRuns.crawledUrls:
+    supported_apis:
+    - v1beta
+  projects.scanConfigs.scanRuns.findings:
+    supported_apis:
+    - v1beta
+workflowexecutions:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations.workflows:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations.workflows.executions:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+workflows:
+  projects:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations.operations:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta
+  projects.locations.workflows:
+    supported_apis:
+    - v1
+    - v1alpha1
+    - v1beta

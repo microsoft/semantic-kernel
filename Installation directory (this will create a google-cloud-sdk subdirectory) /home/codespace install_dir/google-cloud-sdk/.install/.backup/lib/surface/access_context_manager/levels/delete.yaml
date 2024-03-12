@@ -1,0 +1,23 @@
+- release_tracks: [GA, BETA, ALPHA]
+
+  help_text:
+    brief: Delete an access level.
+    description: Delete an access level in a given access policy.
+
+  request:
+    collection: accesscontextmanager.accessPolicies.accessLevels
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
+    api_version: v1
+    BETA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha
+
+  async:
+    collection: accesscontextmanager.operations
+
+  arguments:
+    resource:
+      help_text: The access level you want to delete.
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:level

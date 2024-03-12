@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List Cloud Media Asset complex types.
+    description: List Media Asset complex types.
+    examples: |
+      To list all asset types in the default 'us-central1' location, run:
+
+        $ {command}
+
+      To list all asset types in 'us-west1' location, run:
+
+        $ {command} --location us-west1
+
+  request:
+    collection: mediaasset.projects.locations.complexTypes
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.media.asset.hooks:AddDefaultParentInfoToAssetTypeRequests
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset Location to list.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:location
+
+    params:
+    - arg_name: page-token
+      api_field: pageToken
+      help_text: |
+        The next page token value returned from a previous List request, if any.

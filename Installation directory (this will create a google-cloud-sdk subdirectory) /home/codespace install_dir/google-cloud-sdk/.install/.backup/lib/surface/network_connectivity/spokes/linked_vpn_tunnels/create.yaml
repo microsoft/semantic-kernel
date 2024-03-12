@@ -1,0 +1,43 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Create a new VPN spoke.
+    description: Create a new [VPN spoke](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/how-to/working-with-hubs-spokes#create-vpn-spoke).
+    examples: |
+      To create a VPN spoke in region ``us-central1'' that uses data transfer and has
+      two tunnels, run:
+
+        $ {command} my-spoke --hub="https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub" --region=us-central1 --vpn-tunnels=https://www.googleapis.com/compute/v1/projects/my-project/regions/us-central1/vpnTunnels/vpn-tunnel1,https://www.googleapis.com/compute/v1/projects/my-project/regions/us-central1/vpnTunnels/vpn-tunnel2 --site-to-site-data-transfer
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:spoke
+      help_text: Name of the spoke to be created.
+    params:
+    - arg_name: hub
+      required: true
+      api_field: spoke.hub
+      help_text: Hub that the spoke will attach to. The hub must already exist.
+    - arg_name: description
+      api_field: spoke.description
+      help_text: Description of the spoke to create.
+    - arg_name: vpn-tunnels
+      required: true
+      api_field: spoke.linkedVpnTunnels.uris
+      type: arg_list
+      help_text: HA VPN tunnels that the spoke provides connectivity to. The resources must already exist.
+    - arg_name: site-to-site-data-transfer
+      api_field: spoke.linkedVpnTunnels.siteToSiteDataTransfer
+      help_text: |
+        Whether to enable site-to-site data transfer for this spoke. Data transfer is available only
+        in [supported locations](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/concepts/locations).
+    labels:
+      api_field: spoke.labels
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request: &request
+    api_version: v1
+    method: create
+    collection: networkconnectivity.projects.locations.spokes

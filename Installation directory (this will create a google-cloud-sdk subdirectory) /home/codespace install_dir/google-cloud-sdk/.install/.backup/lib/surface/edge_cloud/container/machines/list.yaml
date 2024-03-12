@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: List Edge Container machines.
+    description: |
+      List Edge Container machines.
+    examples: |
+      To list the machines in region us-central1, run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: edgecontainer.projects.locations.machines
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Edge Container location to list all contained Edge Container machines.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:location
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        zone:label=ZONE,
+        labels['/cpu']:label=CPU,
+        labels['/ram_mb']:label=RAM_MB,
+        version:label=VERSION,
+        hostedNode.split('/').join('/').sub('controlPlaneNodes','controlPlane/nodes').split('/').slice(:-2).join('/'):label=HOSTED_NODE_POOL
+      )

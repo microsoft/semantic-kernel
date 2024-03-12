@@ -1,0 +1,21 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Describe a Network Connectivity Center operation.
+    description: |
+      Retrieve details about an operation; this command is useful if you want to check on
+      a long-running operation.
+    examples: |
+      To describe operation `operation-12345` in `us-central1`, run:
+
+        $ {command} operation-12345 --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:operation
+      help_text: |
+        Name of the operation to describe.
+
+  request: &request
+    api_version: v1
+    collection: networkconnectivity.projects.locations.operations

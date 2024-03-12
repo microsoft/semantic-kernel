@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Compute Engine vpn tunnel.
+  description: |
+    *{command}* exports the configuration for a Compute Engine vpn tunnel.
+
+    Vpn tunnel configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    vpn tunnels within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a vpn tunnel, run:
+
+      $ {command} my-vpn-tunnel
+
+    To export the configuration for a vpn tunnel to a file, run:
+
+      $ {command} my-vpn-tunnel --path=/path/to/dir/
+
+    To export the configuration for a vpn tunnel in Terraform
+    HCL format, run:
+
+      $ {command} my-vpn-tunnel --resource-format=terraform
+
+    To export the configurations for all vpn tunnels within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Vpn tunnel to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:vpn_tunnel

@@ -206,5 +206,8 @@
     "yml",
     "COBOL",
     "ACUCOBOL"
+  ],
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/java-build.yml"
   ]
 }

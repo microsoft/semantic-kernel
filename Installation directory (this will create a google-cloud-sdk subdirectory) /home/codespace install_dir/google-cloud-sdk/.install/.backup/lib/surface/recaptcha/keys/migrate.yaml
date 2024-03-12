@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Migrate a key to reCAPTCHA Enterprise.
+    description: Migrate a key from reCAPTCHA to reCAPTCHA Enterprise.
+    examples: |
+        To migrate a key from reCAPTCHA to reCAPTCHA Enterprise, run:
+
+          $ {command} test-key
+
+  request:
+    collection: recaptchaenterprise.projects.keys
+    method: migrate
+
+  arguments:
+    resource:
+      help_text: The reCAPTCHA key to migrate.
+      spec: !REF googlecloudsdk.command_lib.recaptcha.resources:keys
+
+    params:
+    - arg_name: skip-billing-check
+      api_field: googleCloudRecaptchaenterpriseV1MigrateKeyRequest.skipBillingCheck
+      help_text: |
+        If true, skips the billing check. If your usage of reCAPTCHA is under
+        the free quota, you can safely skip the billing check.
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.recaptcha.migrate_util:LogMigrateSuccess
+
+  output:
+    format: none

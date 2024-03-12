@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Create a new product set.
+    description: Create a product set.
+    examples: |-
+      To create a product set 'my-product-set' in location 'us-east1' with a display name
+      'my favorite', run:
+
+        $ {command} my-product-set --location=us-east1 --display-name='my favorite'
+
+  request:
+    collection: vision.projects.locations.productSets
+
+  arguments:
+    resource:
+      help_text: Product set to create.
+      spec: !REF googlecloudsdk.command_lib.ml.vision.resources:product_set
+
+    params:
+    - api_field: productSet.displayName
+      arg_name: display-name
+      required: true
+      help_text: |-
+        The user provided name for this product set. It must not be empty and can be up to 4096
+        characters long.

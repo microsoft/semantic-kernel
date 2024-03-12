@@ -1,0 +1,66 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 HttpRouteRouteMatch export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  fullPathMatch:
+    description: |-
+      The HTTP request path value should exactly match this value. Only one of
+      full_path_match, prefix_match, or regex_match should be used.
+    type: string
+  headers:
+    description: |-
+      Specifies a list of HTTP request headers to match against. ALL of the
+      supplied headers must be matched.
+    type: array
+    items:
+      $ref: HttpRouteHeaderMatch.yaml
+  ignoreCase:
+    description: |-
+      Specifies if prefix_match and full_path_match matches are case
+      sensitive. The default value is false.
+    type: boolean
+  prefixMatch:
+    description: |-
+      The HTTP request path value must begin with specified prefix_match.
+      prefix_match must begin with a /. Only one of full_path_match,
+      prefix_match, or regex_match should be used.
+    type: string
+  queryParameters:
+    description: |-
+      Specifies a list of query parameters to match against. ALL of the
+      query parameters must be matched.
+    type: array
+    items:
+      $ref: HttpRouteQueryParameterMatch.yaml
+  regexMatch:
+    description: |-
+      The HTTP request path value must satisfy the regular expression
+      specified by regex_match after removing any query parameters and
+      anchor supplied with the original URL. For regular expression
+      grammar, please see https://github.com/google/re2/wiki/Syntax Only
+      one of full_path_match, prefix_match, or regex_match should be
+      used.
+    type: string

@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Show details of a grant.
+    description: Show details of a grant with a given name.
+    examples: |
+      The following command displays the details of a grant with the name grant-name:
+
+      ${command} grant-name
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection:
+    - privilegedaccessmanager.projects.locations.entitlements.grants
+    - privilegedaccessmanager.folders.locations.entitlements.grants
+    - privilegedaccessmanager.organizations.locations.entitlements.grants
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:grant
+      help_text: |
+        The name of the grant to describe.

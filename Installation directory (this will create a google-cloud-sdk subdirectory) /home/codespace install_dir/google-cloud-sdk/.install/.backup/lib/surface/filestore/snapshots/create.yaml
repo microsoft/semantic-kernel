@@ -1,0 +1,74 @@
+- help_text:
+    brief: |
+      Create a Filestore snapshot.
+    description: |
+      Take a Filestore snapshot of an instance file share.
+
+      This command can fail for the following reasons:
+        * An instance with the same name already exists.
+        * The active account does not have permission to create snapshots.
+    examples: |
+      To create a snapshot with the name 'my-snapshot' from an instance called 'my-instance' in
+      'us-central1-c' and the source file share called 'my-fs', run:
+
+        $ {command} my-snapshot --instance=my-instance --file-share=my-fs
+            --instance-zone=us-central1-c
+
+      To create a snapshot with the name 'my-snapshot' in a particular region like 'us-central1'
+      from an instance called 'my-instance' in 'us-central1-c' and the source file share called
+      'my-fs', run:
+
+        $ {command} my-snapshot --instance=my-instance --file-share=my-fs
+            --instance-zone=us-central1-c --region=us-central1
+
+
+  arguments:
+    params:
+    - arg_name: snapshot
+      is_positional: true
+      required: true
+      help_text: |
+        Arguments and flags that specify the Filestore snapshot you want to
+        create.
+    - arg_name: instance
+      required: true
+      help_text: |
+        Share name of the Filestore instance you want to snapshot.
+    - arg_name: instance-zone
+      required: true
+      help_text: |
+        Zone of the Filestore instance.
+    - arg_name: region
+      help_text: |
+        Region (e.g. us-central1) for the regional snapshot.
+    - api_field: snapshot.sourceFileShare
+      arg_name: file-share
+      required: true
+      help_text: |
+        File share name on the Filestore instance to snapshot.
+    - api_field: snapshot.labels.additionalProperties
+      arg_name: labels
+      metavar: KEY=VALUE
+      required: false
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+
+  async:
+    collection: file.projects.locations.operations
+
+  request:
+    api_version: v1p1alpha1
+    display_resource_type: snapshot
+    collection: file.projects.locations.snapshots
+    # Disable validating that a snapshots resource arg is specified (as we are using the
+    # file.projects.locations.snapshots collection). This collection is populated manually.
+    disable_resource_check: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.snapshots.util:FormatSnapshotCreateRequest
+    - googlecloudsdk.command_lib.filestore.snapshots.util:AddInstanceNameToRequest

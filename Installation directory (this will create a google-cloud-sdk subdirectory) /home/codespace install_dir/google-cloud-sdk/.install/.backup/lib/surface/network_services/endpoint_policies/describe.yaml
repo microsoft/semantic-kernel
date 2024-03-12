@@ -1,0 +1,25 @@
+release_tracks: [GA, BETA, ALPHA]
+
+help_text:
+  brief: |
+    Describe an endpoint policy.
+  description: Show details of an endpoint policy.
+
+  examples: |
+    Show details about an endpointPolicy named 'my-endpoint-policy'.
+
+      $ {command} my-endpoint-policy --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:endpointPolicy
+    help_text: Name of the endpoint policy to be described.
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networkservices.projects.locations.endpointPolicies

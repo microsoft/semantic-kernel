@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List Cloud Monitoring dashboards.
+    description: List Monitoring dashboards.
+    examples: |
+      To list dashboards, run:
+
+        $ {command}
+
+      To list dashboards for a specific project, run:
+
+        $ {command} --project=MY-PROJECT
+
+  arguments:
+    resource:
+      help_text: The project to list dashboards from.
+      spec: !REF googlecloudsdk.command_lib.monitoring.resources:project
+
+  request:
+    collection: monitoring.projects.dashboards
+    api_version: v1
+
+  response:
+    id_field: name

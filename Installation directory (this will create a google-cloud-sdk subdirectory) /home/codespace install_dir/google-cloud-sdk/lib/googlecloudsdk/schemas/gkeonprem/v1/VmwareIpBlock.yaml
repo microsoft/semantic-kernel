@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 VmwareIpBlock export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  gateway:
+    description: The network gateway used by the VMware user cluster.
+    type: string
+  ips:
+    description: |-
+      The node's network configurations used by the VMware user cluster.
+    type: array
+    items:
+      $ref: VmwareHostIp.yaml
+  netmask:
+    description: The netmask used by the VMware user cluster.
+    type: string

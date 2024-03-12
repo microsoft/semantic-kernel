@@ -1,0 +1,12 @@
+comment:
+  layout: "files"
+  require_changes: yes
+
+coverage:
+  precision: 0
+  round: down
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%

@@ -1,0 +1,82 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute v1 CorsPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  allowCredentials:
+    description: |-
+      In response to a preflight request, setting this to true indicates that
+      the actual request can include user credentials. This field translates to
+      the Access-Control-Allow-Credentials header. Default is false.
+    type: boolean
+  allowHeaders:
+    description: |-
+      Specifies the content for the Access-Control-Allow-Headers header.
+    type: array
+    items:
+      type: string
+  allowMethods:
+    description: |-
+      Specifies the content for the Access-Control-Allow-Methods header.
+    type: array
+    items:
+      type: string
+  allowOriginRegexes:
+    description: |-
+      Specifies a regular expression that matches allowed origins. For
+      more information about the regular expression syntax, see Syntax.
+      An origin is allowed if it matches either an item in allowOrigins
+      or an item in allowOriginRegexes. Regular expressions can only be
+      used when the loadBalancingScheme is set to INTERNAL_SELF_MANAGED.
+    type: array
+    items:
+      type: string
+  allowOrigins:
+    description: |-
+      Specifies the list of origins that is allowed to do CORS
+      requests. An origin is allowed if it matches either an item in
+      allowOrigins or an item in allowOriginRegexes.
+    type: array
+    items:
+      type: string
+  disabled:
+    description: |-
+      If true, the setting specifies the CORS policy is
+      disabled. The default value of false, which indicates that
+      the CORS policy is in effect.
+    type: boolean
+  exposeHeaders:
+    description: |-
+      Specifies the content for the Access-Control-Expose-
+      Headers header.
+    type: array
+    items:
+      type: string
+  maxAge:
+    description: |-
+      Specifies how long results of a preflight request can
+      be cached in seconds. This field translates to the
+      Access-Control-Max-Age header.
+    type: integer

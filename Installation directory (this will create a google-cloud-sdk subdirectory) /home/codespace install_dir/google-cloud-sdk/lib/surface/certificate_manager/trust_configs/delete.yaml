@@ -1,0 +1,30 @@
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: |
+    Delete TrustConfig.
+  description: |
+    Delete the specified TrustConfig.
+  examples: |
+      To delete a TrustConfig called 'my-trust-config', run:
+
+        $ {command} my-trust-config --location=global
+
+request: &request
+  api_version: v1
+  collection: certificatemanager.projects.locations.trustConfigs
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:trustConfig
+    help_text: |
+      Name of the TrustConfig you want to delete.
+  params:
+  - arg_name: etag
+    api_field: etag
+    required: false
+    help_text: |
+      The current etag of the asset. If an etag is provided and does not match the current etag of the asset, the deletion will be blocked.
+
+async:
+  collection: certificatemanager.projects.locations.operations

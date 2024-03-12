@@ -1,0 +1,66 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Create a new fleet scope.
+    description: |
+      Create a Fleet Scope resource.
+    examples: |
+      Create a new scope `SCOPE_NAME` in the active project's fleet:
+
+        $ {command} SCOPE_NAME
+
+  request:
+    collection: gkehub.projects.locations.scopes
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:ValidateAsync
+    - googlecloudsdk.command_lib.container.fleet.scopes.util:HandleNamespaceLabelsCreateRequest
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:UpdateClusterUpgrade
+
+  async:
+    collection: gkehub.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The fleet scope resourse to be created.
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
+      arg_name: scope
+      removed_flags: ['location']
+
+    params:
+    - group:
+        release_tracks: [ALPHA]
+        help_text: |
+          Rollout Sequencing
+
+          These flags are not compatible with the `--async` flag.
+        params:
+        - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:default_upgrade_soaking
+        - group:
+            help_text: |
+              Upgrade soaking override.
+
+              Defines a specific soaking time override for a particular upgrade propagating through
+              the current scope that supercedes the default soaking duration configured by
+              `--default-upgrade-soaking`.
+
+              To set an upgrade soaking override of 12 hours for the upgrade with name,
+              `k8s_control_plane`, and version, `1.23.1-gke.1000`, run:
+
+                $ {command} SCOPE_NAME \
+                  --add-upgrade-soaking-override=12h \
+                  --upgrade-selector=name="k8s_control_plane",version="1.23.1-gke.1000"
+            params:
+            - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:add_upgrade_soaking_override
+            - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upgrade_selector
+        - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upstream_scope
+    additional_arguments_hook: googlecloudsdk.command_lib.container.fleet.resources:CreateScopeLabelsFlags
+    labels:
+      api_field: scope.labels

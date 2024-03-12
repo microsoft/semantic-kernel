@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!--
+Source: http://yunho.egloos.com/index.xml
+Expect: EUC-KR
+-->
+<rss version="2.0">
+<channel>
+	<title>Alphageek</title>
+	<link>http://yunho.egloos.com</link>
+	<description>Real Engineers know that Halloween is really the same as Christmas, because OCT 31 = DEC 25.</description>
+	<language>ko</language>
+	<pubDate>Sat, 10 Apr 2004 08:34:54 GMT</pubDate>
+	<image>
+		<title>Alphageek</title>
+		<url>http://pds.egloos.com/logo/1/200404/10/04/b0000704.jpg</url>
+		<link>http://yunho.egloos.com</link>
+		<width>80</width>
+		<height>94</height>
+		<description>Real Engineers know that Halloween is really the same as Christmas, because OCT 31 = DEC 25.</description>
+	</image>
+	<item>
+		<title><![CDATA[ 웹의 이중성 ]]> </title>
+		<link>http://yunho.egloos.com/2070645</link>
+		<description>
+			<![CDATA[ 
+웹의 이중성을 이렇게 명확하게 설명해 놓은 것을 이제야 봤다니.<BR>
+<a href="http://www.jjg.net/elements/pdf/elements.pdf"><CENTER><IMG CLASS=IMAGE_MID SRC="http://pds1.egloos.com/pds/1/200512/30/04/b0000704_21585463.png" BORDER=0 WIDTH=500 HEIGHT=376></CENTER></a>웹은 분명 "Web as hypertext system"으로 시작되었지만, 너무나도 성공적이었고 다른 적절한 대안이 없었기에 처음부터 "Web as [remote] software interface"로도 사용되게 되었다.&nbsp; AJAX 같은 기술이 각광을 받으면서도 동시에 논란의 대상이 되는 것은 이러한 software interface로서의 역할과 hypertext system으로서의 요구사항이 항상 일치하지만은 않기 때문이다.&nbsp; 사실 software interface로서의 웹은 결코 효율적이라던가 적절한 아키텍쳐라고 얘기하기 어렵다.&nbsp; 하지만 모든 것이 인터넷과 연결되어야 했던 그 시점에 과연 대안이 있었던가.&nbsp; 이를 JavaScript로, Java Applet으로, Flash로, ActiveX로 보완해보려 했으나 만족스럽지 않았고 지금은 AJAX가 대안처럼 보이지만 내가 보기엔 software interface로서의 웹의 수명을 약간 연장시킨 것일 뿐이다.&nbsp; <BR>
+<BR>
+그렇다면 앞으로 information-oriented, web as hypertext system을 위해선 계속 HTML이 사용되고 task-oriented, web as software interface는 점차 XAML과 같은 기술로 대치되어 갈 것인가?&nbsp; Software interface를 위한 표준화되면서 동시에 효율적인 플랫폼이라는 것이 애초에 가능한 것인가? X-Windows도, Citrix Metaframe도, Network Computer도,&nbsp; Sun Ray도, VNC나 Java Webstart도 한정적으로 쓰이고 있을 뿐인데 과연 world-wide 규모의 remote software interface를 위해 앞으로 어떤 기술이 이용될 것인지 궁금하다.
+			 ]]> 
+		</description>
+		<category>IT</category>
+		<pubDate>Fri, 30 Dec 2005 13:25:40 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ iTunes에서 Podcast CD-ROM 굽기 ]]> </title>
+		<link>http://yunho.egloos.com/2054395</link>
+		<description>
+			<![CDATA[ 
+Podcast 클라이언트로 이것 저것 써보다가 지금은 그냥 iTunes를 쓰고 있다.&nbsp; iTunes의 경우 설정을 세세하게 할 수는 없지만 아무래도 쓰기 편하고 podcast directory도 잘 되어 있으며, 기능이 간단하다고는 하지만 꼭 필요한 기능은 대충 있기에 이걸 쓰고 있다.&nbsp; 내가 사용하는 거원 U2로 이걸 들으려면 그냥 podcast 폴더를 MP3 드라이브에 복사만 하면 되기 때문에 iPod에 비해 그다지 불편할 것은 없지만, 언젠가부터 차의 오디오에서 듣기 위해 그냥 일주일에 한번 정도 MP3 CD-ROM을 굽게 되었다.<BR>
+<BR>
+처음에는 podcast 디렉토리를 CD-ROM으로 그대로 구웠다.&nbsp; 다해서 700MB가 안되기도 했지만, podcast 소스별로 별도 디렉토리로 구우면 나중에 찾아듣기 쉬을 것이라고 생각했기 때문이다.&nbsp; 그런데 한동안 이런 방식으로 구워서 이용하다보니, 이미 들은 podcast와 아직 듣지 않은 것을 분간해서 찾아 듣는 것이 귀찮았다. 그냥 하나의 디렉토리에 podcast 소스 구분하지 않고 시간순으로 쭉 나열되는 것이 더 나을 것 같았다.&nbsp; 조금 들어보다가 재미없으면 그냥 skip하면 되고, 지난 주에 구은 CD-ROM의 내용이 이번 주에 구은 것과 일부 중복되더라도 처음 몇 podcast를 skip하면 되니까. <BR>
+<BR>
+<IMG CLASS=IMAGE_LEFT SRC="http://pds2.egloos.com/pds/1/200512/25/04/b0000704_1533969.jpg" BORDER=0 WIDTH=128 HEIGHT=128 ALIGN=LEFT>이렇게 MP3 CD-ROM을 굽기 위해 처음에는 맥의 <a href="http://www.apple.com/macosx/features/automator/">automator</a>로 시도를 했으나 잘 되지 않았다. 역시 visual programming은 일단 시작하기는 쉽지만 세세한 제어를 하기엔 더 어렵다.&nbsp; 좀 하다가 대충 포기하고 Python 스크립트로 만들었다. 700MB 한도 내에서 가장 최근에 다운로드된 podcast를 찾아 시간순으로 소팅한 후 파일 이름 앞에 00, 01, 02 등과 같이 숫자를 붙이는 것은 쉬웠는데, MP3 파일을 복사/rename하지 않고 symbolic link를 만들었더니 이걸 쫓아가서 CD-ROM에 굽기는 하는데 구워진 파일 이름도 symbolic link의 이름이 아니라 원래 파일 이름으로 구워져버렸다.&nbsp; 결국 link를 만드는 대신 copy하도록 해서 성공은 했지만, 700MB 정도를 쓸데없이 복사하는 것 같아서 찜찜했다.&nbsp; "진짜 엔지니어"는 <a href="http://www.aladdin.co.kr/shop/wproduct.aspx?isbn=8991268072">실용주의적</a>이지 않다^^. 아무리 실용적으로 잘 동작하더라도 비효율적인 것 같으면 참지를 못한다.<BR>
+<BR>
+그러다가 iTunes의 스마트 플레이 리스트의 "최근 추가된 항목"을 보면서, 그냥 이걸 쓰면 되는 것 아닌가 하는 생각이 들었다.&nbsp; 역시&nbsp; 700MB 한도의 최근 podcast를 보여주는 리스트는 아래와 같이 쉽게 만들었졌고<BR>
+<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds2.egloos.com/pds/1/200512/25/04/b0000704_14265079.png" BORDER=0 WIDTH=500 HEIGHT=203></CENTER>이 리스트의 화면에 보여지는 순서를 다운로드받은 시간 순으로 하는 것도 쉬웠는데, 과연 CD-ROM으로 구워질 때 이 순서가 유지되는 것일까?&nbsp;&nbsp; 웹을 검색해보니 될 것 같아서 몇백원 날리는 셈치고 CD 한장을 구워봤더니 과연!<BR>
+<BR>
+<CENTER><IMG CLASS=IMAGE_MID SRC="http://pds1.egloos.com/pds/1/200512/25/04/b0000704_1431226.png" BORDER=0 WIDTH=500 HEIGHT=176></CENTER>위와 같이 파일 이름 앞에 제대로 숫자를 붙여주는 것이었다.&nbsp; 역시... 사람들이 iTunes를 괜히 많이 쓰는 것이 아니었고 Apple이 이유없이 회생한 것이 아니었다. <BR>
+<BR>
+오늘의 교훈: Do not reinvent the iWheel!<BR>
+
+			 ]]> 
+		</description>
+		<category>맥</category>
+		<pubDate>Sun, 25 Dec 2005 05:36:07 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 워드다이얼 서비스 ]]> </title>
+		<link>http://yunho.egloos.com/2026076</link>
+		<description>
+			<![CDATA[ 
+(Disclaimer: 워드다이얼 서비스는 제가 다니는 회사와 관련되어 있는 서비스입니다. 개인적 의견을 쓴 글이지만, 객관적이지 않을 수 있음을 밝힙니다.)<BR>
+<BR>
+<a href="http://www.worddial.co.kr/">워드 다이얼 서비스</a>가 드디어 오픈되었다.&nbsp; 미국 등지의 광고를 보면, 전화번호를 문자로 표현하는 경우를 흔히 볼 수 있다.&nbsp; 예를 들면, 전화 및 인터넷으로 PC를 판매하는 Dell사의 대표번호는 <span style="">1-800-WWW-DELL 이다.&nbsp; 물론 자판의 해당 문자가 표시되어있는 번호를 누르는 것이므로 실제 숫자로 된 번호는 1-800-999-3355 이지만,&nbsp; "WWW-DELL"이 "999-3355"보다 훨씬 기억하기 쉽다.&nbsp; 문제는 이렇게 적당한 단어로 나타내어질 수 있는 번호를 확보하기가 어렵고 특히 우리나라의 경우 한글 이름은 길이가 길고 제조사에 따라 자판의 자모 할당이 달라서 동일한 방법으로 숫자 번호를 표현할 수 없다는 점.<BR>
+<BR>
+워드다이얼은 휴대폰에 문자를 입력하면 문자열을 해싱(hashing)한 후 일정한 자릿수의 10진수로 변환하고 특정 prefix에 이 값을 붙여 만들어진 번호로 전화를 걸고, 교환기에서 이 번호를 등록된 실제 번호로 돌려주는 방식이다 (실제로는 조금 더 복잡함).&nbsp; 충분히 긴 번호를 사용하기 때문에 hashing collision이 일어날 가능성은 거의 없고, 수백만개의 상호나 이름을 얼마든지 수용할 수 있으며 데이터 네트웍 접속과정 없이 바로 음성 통화가 이루어진다는 점이 유사한 다른 서비스 대비 장점이다.&nbsp; 물론 이를 위한 프로그램이 휴대폰에 설치되어야 하지만 앞으로 신규폰의 경우 메뉴에 기본 내장될 계획. <BR>
+<BR>
+사실 100MHz가 넘어가는 32 bit CPU에 수십MB의 메모리를 가진 휴대폰에서 디지털 네트웍을 통해 전화를 하는데도 전화걸 대상을 숫자로만 명시할 수 있다는 것은 모든 웹 사이트 주소를 IP 주소로 직접 입력해야 하는 것만큼이나 비합리적임에도 불구하고, 수십년전 유선 애널로그 전화의 체계를 그대로 디지털 휴대폰에 가져온 때문이다. <BR>
+<BR>
+SKT 휴대폰만 사용 가능한 점, 휴대폰 대기화면에서 바로 숫자 대신 입력이 안되는 점 등의 걸림돌이 있어 얼마나 성공적일지는 앞으로 두고 봐야겠지만, 사용자들에게 아무런 부담없이 편의를 제공하면서 아이디어와 기술로써 새로운 BM을 만들어 내었다는 점에서 매우 바람직하고 기대가 되는 서비스이다.<BR>
+</span>
+			 ]]> 
+		</description>
+		<category>IT</category>
+		<pubDate>Thu, 15 Dec 2005 06:40:02 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ Podcast도 검색이 된다 ]]> </title>
+		<link>http://yunho.egloos.com/1981573</link>
+		<description>
+			<![CDATA[ 
+"<a href="http://www.wired.com/news/technology/0,1282,69664,00.html">Podcast Chaos Be Gone</a>"이라는 와이어드의 기사를 보면, Podcast의 내용을 미리 음성 인식으로 텍스트로 바꿔 인덱스해두었다가 검색할 수 있도록 해주는 서비스가 등장했다.&nbsp; 기사에 언급된 사이트 중 <a href="http://www.podzinger.com/">Podzinger</a>는 기사 때문에 트래픽이 몰려서인지 지금 접속되지 않았지만, <a href="http://www.blinkx.com/overview.php">blinkx</a>는 몇몇 단어로 검색해보니 과연 이 단어를 언급하는 podcast를 찾을 수 있었다.<BR>
+<BR>
+Podcast를 검색할 수 있게 되었다는 것은 매우 중요한 것으로서, podcast의 유용성을 향상시켜 더 많은 podcast가 생산되고 또 검색되어 이용되도록 하는 positive feedback 효과를 가져올 뿐만 아니라, 같은 기술이 podcast 외에도 TV나 라디오 프로그램 등 모든 음성 검색에 응용될 수 있기 때문이다.&nbsp; 물론 이게 가능해진 것은 그동안 발전한 음성인식 기술 덕분으로서 현재 우리나라&nbsp; 음성인식 기술 업계의 상황을 보면 이와 같은 기술이 우리말에 대해선&nbsp; 한동안 가능하지 않을 것 같다. 하긴 기사 내용을 보면&nbsp; Podzinger에서 사용하는 기술은 원래 미국 정보기관이&nbsp; 아랍에서 감시용으로 사용하기 위해 개발된 것이라고 하니, 같은 목적으로 미국이 북한 때문에 우리말에 대한 인식 기술을 개발할 지도 모르는 일이다.&nbsp; 그렇게 개발된 음성인식 엔진은 북한 사투리를 더 잘 인식하겠지만. <BR>
+<BR>
+미국 영화를 보면 주인공들이 녹음기에 음성 메모를 하는 것을 자주 볼 수 있다. 물론 이건 주인공의 생각을 관객에게 전달하기 위해서이고 실제로는 그렇게 흔한 일은 아니라고 하지만, 아뭏튼 그런 용도의 녹음기가 꽤 팔리고 있고, 우리나라에선 거의 이용되지 않는 자동 응답기나 음성 사서함이 널리 이용되는 것을 보면, 미국 사람들은 녹음기에다 음성을 남기는 것에 익숙한 것 같다. 그렇다면 남들에게 들려주기 위한 podcast 뿐만 아니라 그냥 자신의 메모 용도로 녹음을 남기고, 나중에 이를 텍스트로 (혹은 음성으로) 검색할 수도 있지 않을까?&nbsp; 더 나아가서, 마이크로소프트가 <a href="http://research.microsoft.com/barc/mediapresence/MyLifeBits.aspx">MyLifeBits </a>프로젝트에서 시도하는 것처럼 항상 휴대하고 다니는 포터블 장치가 나 뿐만 아니라 나와 얘기하는 상대방의 말까지 - 또는 전화 대화까지 - 모두 녹음하고 이를 텍스트로 변환하고 인덱싱하여 검색할 수 있다면 수첩이나 메모장이 필요없어질 것이다.&nbsp;&nbsp; 물론&nbsp; 이런 일이 실현되면 <a href="http://yunho.egloos.com/359400">이 때문에 기억력이 나빠진다고 투덜대는 사람들도 있겠지만</a>.  <BR>
+<span style="font-weight: bold;"></span>
+			 ]]> 
+		</description>
+		<category>IT</category>
+		<pubDate>Wed, 30 Nov 2005 15:12:12 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 소니의 루트킷 ]]> </title>
+		<link>http://yunho.egloos.com/1970143</link>
+		<description>
+			<![CDATA[ 
+아마도 우리나라는 영향권 밖이라서 별로 관심이 없겠지만, 소니의 <a href="http://www.zdnet.co.kr/news/network/security/0,39031117,39141332,00.htm">루트킷 사건</a>의 여파가 외국에선 걷잡을 수 없이 커지고 있다.&nbsp; 루트킷(root kit)이란 OS에 설치되어 root 권한을 갖고 자신의 존재까지 감춰버리는 악성코드를 말하는데, 소니가 자사의 음악 CD에 불법 복제를 막기위한 루트킷을 심어두었던 것이다.&nbsp; 사용자에게 명확히 드러나지 않는 형태의 루트킷을 사용자 PC에 설치하는 것만으로도 합법적이라곤 하지만 그건 DMCA와 같은 무리한 법률을 만드는 사람들 관점에서나 그렇고 사용자 입장에선 무척 기분 나쁜 일인데, 이번 소니의 루트킷은 파일 이름에 $SYS$ 라는 문자열이 들어가는 모든 파일을 숨겨버림으로써 다른 악성코드에게까지 새로운 보안 결함을 제공하는 셈이 되어, 이에 따르는 잠재적 피해를 보상받기 위한 <a href="http://news.google.co.kr/news?hl=en&amp;ned=us&amp;ie=UTF-8&amp;q=sony+rootkit+lawsuit&amp;btnG=Search+News">소송도 잇따르고 있다</a>고 한다. 소니로서는 물론 <a href="http://cp.sonybmg.com/xcp/english/titles.html">이 루트킷이 포함된 모든 CD</a>에 대한 환불과 교환을 실시하고 있지만, 소니의 피해는 리콜과 소송 뿐만 아니라 기업 이미지 측면에서도 막대할 것으로 생각된다.<BR>
+<BR>
+그런데 이번 사태로 말미암아 피해를 보는 것은 일부 사용자와 소니 뿐만이 아니다.&nbsp; 이미 <a href="http://yro.slashdot.org/article.pl?sid=05/11/20/084233">토론 사이트</a>에는 "더 이상 정품 CD는 위험해서 못사겠다.&nbsp; 이제 P2P 사이트에서 안전한 MP3 파일만 다운로드받아 듣겠다"는 의견이 올라올 정도인데 단순한 농담이라거나 돈 안내기 위한 구실이라고 하기엔, 기술적으로 100% 옳은 얘기라서 뭐라 반론을 펴기가 어렵다.&nbsp; 결국 음악업계 전체가 피해를 보게된 이번 일을 계기로 컨텐트 권리자들도 자신들의 권리를 보호하기 위해 자신들의 고객을 적으로 만드는 극단적인 방법을 사용하지 말고 좀 더 창의적이고 적극적인 대안을 내놓았으면 한다. <BR>
+<BR>
+한편 이번 소니 CD에 포함된 루트킷은 소니에서 직접 제작한 것은 아니고 영국의 한 소프트웨어 회사에서 만든 것으로 알려졌는데, 물론 그 소프트웨어의 기술적 특징과 잠재적 위험성을 자세히 알았더라면 소니의 경영진이 이를 자사 CD에 그대로 탑재하진 않았을 것이다.&nbsp; 하지만 숫자만 알고 자기네 상품을 제대로 이해하려하지 않는 다른 많은 경영진과 마찬가지로 소니의 경영진도 그냥 "불법 복제를 막는 효과가 좋고", "자체 개발비보다 비용이 적게 든다"는 것만으로 채택을 결정했을 것이고, 이에 대한 댓가를 톡톡히 치르게 되었는데 앞으로 경영자들이 기업 윤리와 자사 제품의 내용에 대해 좀 더 관심을 갖게 되는 계기가 되길 기대한다.
+			 ]]> 
+		</description>
+		<category>IT</category>
+		<pubDate>Sun, 27 Nov 2005 06:31:22 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 구글 == Skynet? ]]> </title>
+		<link>http://yunho.egloos.com/1951222</link>
+		<description>
+			<![CDATA[ 
+<a href="http://www.pbs.org/cringely/pulpit/pulpit20051117.html">운송용 컨테이너에다 수천대의 서버를 비밀리에 패킹해넣고, 그동안 헐값에 조용히 사모은 백본망에다 컨테이너를 연결하여 사실상 하룻밤새에 인터넷을 장악한다</a>?&nbsp; 사실일지는 두고봐야 하겠지만, 구글이라면 충분히 할법한, 구글만이 할 수 있는 시나리오가 아닐 수 없다.&nbsp; 사실 비디오 서비스이건 온라인 오피스이건 이런 인프라를 갖추지 않으면 문제가 많을 것이고 위의 글에서 얘기한 방법이 가장 경제적으로 구글의 사업을 강화할 수 있는 방법이기도 하다.&nbsp; 이제야 <a href="http://www.live.com">구글을 어설프게 흉내내기 시작한</a> MS가 과연 성공적으로 대항할 수 있을까?&nbsp; 다들 Web 2.0이니 Software as a Service니 말들은 많았지만세계적 규모로 스케일러블한 서비스를 경쟁력있게 제공하는데 있어 구글을 당해낼 회사가 없을 것 같다.<BR>
+
+			 ]]> 
+		</description>
+		<category>IT</category>
+		<pubDate>Mon, 21 Nov 2005 03:59:25 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 새 PC를 구입하다.  ]]> </title>
+		<link>http://yunho.egloos.com/1949431</link>
+		<description>
+			<![CDATA[ 
+한동안 노트북과 Mac Mini만 쓰다보니 아무래도 빠른 시스템이 그리워져서 꽤 좋은 스펙으로 데스크탑 PC를 한대 구입했다. 주요 스펙은 Athlon X2 3800, 1GB RAM, SATA 250G HDD, G-Force 6600 256MB.&nbsp; 게임은 안하지만 그래픽 카드는 내년 말 Vista를 염두에 둔 것. <BR>
+<BR>
+아직 세팅이 다 끝나진 않았지만, 역시 듀얼 코어라서 비디오 인코딩을 백그라운드로 돌려놓고 쾌적하게 다른 일을 할 수 있었다.&nbsp; <a href="http://www.autogk.net/">AutoGK</a>로&nbsp; <a href="http://www.amazon.com/gp/product/B000AJJNFE/102-7634892-4137720?v=glance&amp;n=130&amp;s=dvd&amp;v=glance">Battlestar Galactica Season 1</a>을 <a href="http://mp3.iaudio.com/product/product_A2_feature.php">A2</a> 최적 포맷으로 인코딩했다. 가로 400 픽셀, XviD 1 pass 90% quality, MP3 128K VBR에 자막 포함해서 인코딩하는데 소요되는 시간은 에피소드당 약 30분.&nbsp; XviD encoder가 멀티쓰레드가 아닌 것으로 알고 있으나 그래도 두 코어를 그런대로 활용하는 듯 했다.&nbsp; 한가지 문제는 <a href="http://www.abko.co.kr/index.php?w=product/list&amp;ct=006&amp;pn=17159">파워서플라이</a>가 너무 소음이 크다는 점.&nbsp; 판매처의 제품 설명만 보고 구입했는데, 뒤늦게 사용자 리뷰 등을 읽어보니 다들 소음이 큰 문제를 지적하고 있다.&nbsp; 역시 좀 더 마우스품을 팔고 구입했어야 했는데... 유통사와 판매처에 대책을 문의해놓았다. <BR>
+<BR>
+이 정도 시스템이면 Eclipse를 vi처럼 쓸 수 있기를 바랬지만 뜨는 시간은 그래도 꽤 걸린다 (처음 띄울 때 12초, 죽이고 바로 다시 띄우면 7초 정도).&nbsp; 그래도 일단 뜨고 나면 나머지 동작은 전혀 버벅임이 없으니 예전 시스템과 확실한 차이는 난다.&nbsp; Mac Mini도 RAM이 1G라서&nbsp;그런대로 쓸만 했지만,&nbsp;미니의 비디오가 느려서인지,&nbsp;OS X의 Quartz 때문인지 아니면 SWT의 OS X 포팅 때문인지는 몰라도 GUI의 응답속도는 좀 답답했었다.<BR>
+<BR>
+프로그래밍을 8 bit CPU에서부터 시작했고 임베디드 시스템 개발도 꽤 했었기 때문에 한동안은 한 바이트, 한 사이클이라도 줄이는 것이 습관이 되어 요즘의 bloatware를 참을 수 없었지만, 보다 큰 관점에서 보면 결국 경제 논리에 따라 compromize할 수 밖에 없는 것.&nbsp; 점점 복잡해져가는 요구사항을 만족하기 위해선 효율이 좀 떨어지더라도 더 추상화된 레벨로 개발할 수 밖에 없고 사용자들도 가끔씩은 최신 사양의 하드웨어로 쫓아갈 수 밖에 없을 것 같다.
+			 ]]> 
+		</description>
+		<category>미분류</category>
+		<pubDate>Sun, 20 Nov 2005 13:03:14 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 힘들었던 한 주... ]]> </title>
+		<link>http://yunho.egloos.com/1903837</link>
+		<description>
+			<![CDATA[ 
+이번 주에 일어난 일들...<BR>
+<BR>
+- 월요일: 이가 좀 시려 치과에 갔다가 사랑니 뽑고 또 다른 이도 치료. 의사가 "입안이 금괘네요."라고 했다. <BR>
+- 화요일: 지갑을 집에 두고 출근... 이런 실수는 몇 년에 한번도 잘 안하는데<BR>
+- 수요일: 감기 몸살이 왔다.  덕분에 얼마 전 시작한 골프 레슨을 못갔다.<BR>
+- 목요일: 저녁 때 차 문을 닫다가 새끼 손가락을 심하게 찧었다.  손톱이 빠질 것 같기도 하고... <BR>
+- 금요일: 다친 손가락 때문에 출근길에 병원에 가려 하니 또 지갑을 두고 온 것을 발견. 결국 동료에게 돈 빌려서 가긴 했지만. 손가락 때문에 골프 레슨 또 빼먹고.<BR>
+- 토요일: 이번 주는 아무래도 안풀리니 집에서 푹 쉬기나 해야겠다고 생각했다가 이마트에 들러 스타워즈 에피소드 3 DVD를 샀는데... 집에 와서 보니 봉투에 없다.  이마트로 전화해봐도 오리무중... <BR>
+<BR>
+액땜한 것이라고 생각하곤 있지만 이번 주로 끝나려나?  <BR>
+<BR>
+물론 이번 주에 나쁜 일이 일어난 것과 다음 주에 나쁜 일이 또 일어나는 것은 확률적으로 독립적이긴 하지만... 다음 주에 회사에서 중요한 일들이 많은데 이번 주 액땜한 덕분에 다음 주는 잘 풀리지 않을까 은근히 기대해본다.
+			 ]]> 
+		</description>
+		<category>기타</category>
+		<pubDate>Sat, 5 Nov 2005 11:03:44 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ 웹이 다른 식으로 만들어졌다면? ]]> </title>
+		<link>http://yunho.egloos.com/1903556</link>
+		<description>
+			<![CDATA[ 
+<a href="http://news.ft.com/cms/s/f3fe9c4a-4bd1-11da-997b-0000779e2340.html">만약 웹이 15년전 Tim Berners-Lee에 의해 만들어지지 않고 세계지적재산권기구(WIPO)나 디즈니에 의해 만들어졌다면 지금의 웹과 어떻게 달랐을까?</a> <BR>
+<BR>
+모르긴해도 지금의 웹만틈 성공적이지도, 그 구조가 간단하지도, 정보가 풍부하지도 않았을 것이다.  아마 예전의 PC 통신이나 지금의 무선 인터넷을 좀 더 닮지 않았을까?  구글도, Wikipedia도, 블로그도 없었을 것이다.<BR>
+<BR>
+학교와 정부출연연구소에 오래 있다가 회사로 옮기면서 물론 여러가지가 달라질 것이라고 생각하고 있었지만, 가장 중요한 차이는 우리회사에 투자한 외국의 한 venture capitalist로 부터 들은, 기술이 상업적으로 성공하기 위한 다음의 세가지 조건으로 요약된다:<BR>
+<BR>
+  1. 기술이 구현 가능할 것 <BR>
+  2. 그 기술을 원하는 사용자가 있을 것<BR>
+  3. BM(Business Model)이 있을 것<BR>
+<BR>
+1, 2번에 대해서는 누구나 당연하다고 생각하겠지만 (학교나 연구소에선 1번만으로도 어떤 기술을 개발해보는 경우도 있지만) 3번 조건은 회사에서 사업계획에 직접 관여해보지 않은 엔지니어라면 "그거야 뭐 대충 어떻게 되겠지"하는 영역에 속한다.  하지만 많은 기술이 commodity화되고 경제의 세계화가 진행되면서 실질적으론 3번이 가장  충족시키기 어려운 경우가 많은 것 같다.  한 프로젝트의 프로그래머의 수가 많을 수록 인당 생산성이 떨어진다는 것은 잘 알려진 얘기지만 회사이건 정부이건 단체이건 여러 주체가 관여하는 모든 일 - 하나의 프로젝트이건 연동 규격이나 기술 표준이건 간에  - 은 서로 입장이 다른 주체의 수에 따라 기하 급수적으로 결과물이 복잡해지고, 진행 속도가 더뎌지고 항상 그렇지는 않지만 품질 또한 떨어지는 경우가 많은 것 같다.<BR>
+<BR>
+만약 웹이 비상업적인 연구소에서 발명되고 비상업적으로 먼저 퍼져나가지 않았다면 필연적으로 여러 회사와 정부기관 등이 그 표준화에 관여하게 되었을 것이고 아마도 DRM과 저작권, 소액 결제, 프라이버시, 성인 컨텐트에 대한 규제와 같은 많은 이슈 뿐만 아니라 각 OS 업체, 셋탑 박스나 이동통신 업계에서도 자신의 이해관계에 따라 요구사항을 반영하려 하면서 시간이 걸리는 동안 웬만한 대학 관련 학과의 연구실마다 HTTP보다 훨씬 더 정교하고 효율적인 하지만 더 복잡한 여러 프로토콜과 ActiveX, Java Applet, AJAX나 XAML 못지 않은 executable content에 대한 제안이 계속 나와서 아마 아직도 세계적인 통일안에 합의하지 못하고 있지 않았을까?  현재의 무선 인터넷이나 홈 오토메이션과 같은 분야를 보면 너무 일찍부터 상업성, 특히 서로 다른 주체간의 BM 문제가 걸림돌이 되어 더 큰 파이가 형성되는 것이 저해되고 있는 것을 볼 수 있다.  대기업 중심의 경제 성장이 정부에 더 익숙하고 예측 가능하기에 이러한 분야의 정부 정책도 대기업 위주로 이루어지는 것을 볼 수 있지만 진정으로 웹과 같이 <a href="http://en.wikipedia.org/wiki/Disruptive_technology">disruptive한 기술</a>이 나오는 것을 보려면 인터넷과 웹이 그랬듯이 비상업적인 개인이나 아주 작은 회사들이 대기업이나 기득권을 가진 주체와의 길고 긴 협상 없이 아이디어와 기술만으로 새로운 것을 내놓을 수 있는 환경이 조성되어야 할 것이다.
+			 ]]> 
+		</description>
+		<category>IT</category>
+		<pubDate>Sat, 5 Nov 2005 08:20:01 GMT</pubDate>
+	</item>
+	<item>
+		<title><![CDATA[ C#에 대한 Hejlsberg의 인터뷰 ]]> </title>
+		<link>http://yunho.egloos.com/1863888</link>
+		<description>
+			<![CDATA[ 
+<a href="http://www.ondotnet.com/pub/a/dotnet/2005/10/17/interview-with-anders-hejlsberg.html">O'Reilly 사이트에 올라온 C#에 대한 Hejlsberg와의 인터뷰</a>.  Hejlsberg(어떻게 읽는거지?)는 물론 C#의 chief architect이고 그 유명한 터보 파스칼과 델파이을 개발했으며 .NET에서도 중추적인 역할을 한 인물.  <a href="http://channel9.msdn.com/Showpost.aspx?postid=114680">Channel 9에 올라온 LINQ에 대한 최근 인터뷰 비디오</a>를 보면 선입견을 갖고 있어서인지는 몰라도 인상에서부터 천재성이 배어나오는 듯 하다.<BR>
+<BR>
+C#에 대한 인터뷰를 보면 프로그래밍 언어에 대한 그의 철학을 대충 볼 수 있는데, 나는 아직 C#으로 본격적인 프로그래밍을 해본 적은 없지만 Java를 써본 경험에서 알고 있는 문제점들을 C#에서 해결하는 것을 보면, 또 C# 2.0에서 도입된 강력한 기능들이 <a href="http://msdn.microsoft.com/netframework/future/linq/">LINQ</a>에서 어떻게 활용되는지를 보면 역시 그의 철학에 고개가 끄덕여지지 않을 수 없다.<BR>
+<BR>
+Java가 그동안 라이브러리를 많이 확장하면서도 VM이나 바이트코드 레벨의 호환성을 놀라울 정도로 안정적으로 유지해온 것이 Java의 가장 큰 장점 중 하나이긴 하지만, <a href="http://java.sun.com/docs/white/delegates.html">delegation에 대한 Sun의 주장</a>을 읽다보면 C#/.NET이 아니었다면 지금쯤 Java도 delegation이 도입되었을 것을 근거가 약한 논리로 고집부리고 있는 것 아닌가 하는 생각이 든다.   <BR>
+<BR>
+C#과 .NET은 Hejlsberg가 MS JVM과 WFC를 개발한 경험을 바탕으로 했기에 Java의 단점과 한계를 너무나도 잘 알고 이를 모두 매우 clever한 방법으로 보완하고 있는 것으로 보인다.  물론 후발주자가 이런 면에서 유리할 수 밖에 없지만 MS의 숙명적 한계인 업계의 반감과 불신, 그리고 아직 충분히 숙성되지 않은 VM의 완성도를 보면 C#/.NET이 지금 시점에서 꼭 유리한 것만은 아닌 듯하다.  그렇기는 해도 10년 전 MS가 낡아빠진 Win32와 x86 호환성에 묶여 있을 때 Sun에서 Java로 치고 나온 것처럼, Sun이 Java의 호환성과 WORA (Write Once, Run Anywhere)에 묶여 있을 때 MS에서 .NET, Avalon등의 강력한 기술을 포함하는 WinFX을 내놓는 것을 보면 입장만 서로 바뀐 역사의 반복이 아닐 수 없다.<BR>
+
+			 ]]> 
+		</description>
+		<category>프로그래밍</category>
+		<pubDate>Sun, 23 Oct 2005 13:20:39 GMT</pubDate>
+	</item>
+	</channel>
+</rss>

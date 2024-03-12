@@ -1,0 +1,37 @@
+- help_text:
+    brief: List jobs.
+    description: List jobs.
+    examples: |
+      The following command lists all jobs in a project:
+
+        $ {command}
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location where you want to list the jobs.
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:location
+
+  output:
+    format: |
+      table(
+          name.basename():label=ID,
+          name.segment(-3):label=LOCATION,
+          format(
+              "{0} ({1})",
+              schedule,
+              timeZone
+          ):label="SCHEDULE (TZ)",
+          format(
+              "{0}{1}{2}",
+              pubsubTarget.yesno(yes="Pub/Sub", no=""),
+              appEngineHttpTarget.yesno(yes="App Engine", no=""),
+              httpTarget.yesno(yes="HTTP", no="")
+          ):label=TARGET_TYPE,
+          state:label=STATE
+      )

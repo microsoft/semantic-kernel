@@ -1,0 +1,53 @@
+# Copyright 2018 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List all BigQuery jobs in a project.
+    description:  List all BigQuery jobs in a project.
+    examples: |
+      The following command list all jobs in current project (for all users)
+
+        $ {command}  --show-all-users
+
+  request:
+    collection: bigquery.jobs
+
+  arguments:
+    resource:
+      help_text: The BigQuery project you want to list jobs for.
+      spec: !REF googlecloudsdk.command_lib.bq.resources:project
+
+    params:
+    - api_field: allUsers
+      arg_name: show-all-users
+      required: false
+      help_text: List jobs from all users.
+    - api_field: projection
+      arg_name: show-config
+      action: store_true
+      processor: googlecloudsdk.command_lib.bq.hooks:JobListProjectionProcessor
+      required: false
+      default: false
+      help_text: Include job configuration in listing. Default is False.
+
+  output:
+    format: |
+      table(
+      jobReference.jobId,
+      jobReference.projectId,
+      statistics.creationTime.date(unit=1000, tz_default=UTC),
+      statistics.endTime.date(unit=1000, tz_default=UTC),
+      jobReference.location,
+      configuration.jobType:optional:label=JOB_TYPE
+      )

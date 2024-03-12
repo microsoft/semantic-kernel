@@ -1,0 +1,43 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  command_type: DESCRIBE
+  help_text:
+    brief: List conditions for an access level.
+    description: List conditions for a basic access level.
+
+  request:
+    collection: accesscontextmanager.accessPolicies.accessLevels
+    api_version: v1
+    BETA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha
+    static_fields:
+      accessLevelFormat: AS_DEFINED
+
+  arguments:
+    resource:
+      help_text: The access level you want to list the conditions for.
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:level
+      is_positional: false
+
+  output:
+    format: |
+      table(
+         basic:format="
+           table(format('Conditions are joined with {} operator.
+
+      ', combiningFunction):label='')",
+         basic.conditions:format="
+           table[all-box,title='ACCESS LEVEL CONDITIONS'](
+               negate:label=NEGATED,
+               devicePolicy.list(),
+               ipSubnetworks.list(separator='
+      '),
+               members.list(separator='
+      '),
+               requiredAccessLevels.map().basename().list(separator='
+      ')
+           )
+           "
+      )

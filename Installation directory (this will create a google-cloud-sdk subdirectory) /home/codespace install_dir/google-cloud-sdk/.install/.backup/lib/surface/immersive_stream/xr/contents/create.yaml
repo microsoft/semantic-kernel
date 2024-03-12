@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Create an Immersive Stream for XR content resource.
+    description: Create an Immersive Stream for XR content resource.
+    examples: |
+      To create a content resource called `my-content` using Cloud Storage bucket `my-bucket`, run:
+
+        $ {command} my-content --bucket=my-bucket
+
+  request:
+    collection: stream.projects.locations.streamContents
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Immersive Stream for XR content resource to be created.
+      spec: !REF googlecloudsdk.command_lib.immersive_stream.xr.resources:content
+
+    params:
+    - arg_name: bucket
+      api_field: streamContent.bucketName
+      required: true
+      help_text: |
+        The name of the Cloud Storage bucket in the consumer project that stores the content source.
+
+  async:
+    collection: stream.projects.locations.operations

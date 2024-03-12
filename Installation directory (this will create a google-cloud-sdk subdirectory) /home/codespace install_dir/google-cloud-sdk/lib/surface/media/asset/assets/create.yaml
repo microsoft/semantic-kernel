@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a new Cloud Media Asset asset.
+    description: Create a new Media Asset asset.
+    examples: |
+      To create a new asset with id  my-asset with in the default project and 'us-central1' location, run:
+
+        $ {command} my-asset --asset_type my-at --create-asset-config-file asset.json
+
+      , where assetType.json can be:
+      {
+        "metadata": {
+          "file": {"url": "gs://some-url"}
+        },
+      }
+
+  request:
+    collection: mediaasset.projects.locations.assetTypes.assets
+    method: create
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.media.asset.assets.hooks:AddParentInfoToAssetRequests
+    - googlecloudsdk.command_lib.media.asset.assets.hooks:ParseAssetConfigFile
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset asset to create.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:asset
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.media.asset.flags:asset-config-file
+    labels:
+      api_field: asset.labels
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.media.asset.assets.hooks:ProcessOutput

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="EUC-JP"?>
+<!--
+Source: http://nanana.moo.jp/index.rdf
+Expect: EUC-JP
+-->
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+  xmlns:admin="http://webns.net/mvcb/"
+  xmlns:cc="http://web.resource.org/cc/"
+  xmlns="http://purl.org/rss/1.0/">
+
+<channel rdf:about="http://nanana.moo.jp/">
+<title>らぐななな</title>
+<link>http://nanana.moo.jp/</link>
+<description></description>
+<dc:language>ja</dc:language>
+<dc:creator></dc:creator>
+<dc:date>2005-09-21T21:38:56+09:00</dc:date>
+<admin:generatorAgent rdf:resource="http://www.movabletype.org/?v=3.2-ja" />
+
+
+<items>
+<rdf:Seq><rdf:li rdf:resource="http://nanana.moo.jp/archives/000928.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000927.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000925.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000924.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000923.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000922.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000920.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000918.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000916.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000915.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000913.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000912.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000911.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000909.html" />
+<rdf:li rdf:resource="http://nanana.moo.jp/archives/000908.html" />
+</rdf:Seq>
+</items>
+
+</channel>
+
+<item rdf:about="http://nanana.moo.jp/archives/000928.html">
+<title>バトン、BAR残留決定</title>
+<link>http://nanana.moo.jp/archives/000928.html</link>
+<description>バトンがBARに残留することが決定しました。これによって佐藤琢磨は来年のシートを喪失ということに。良い結果を残して来れなかっただけに、移籍も難しそうですね。</description>
+<dc:subject>F1</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-09-21T21:38:56+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000927.html">
+<title>L887買いました</title>
+<link>http://nanana.moo.jp/archives/000927.html</link>
+<description>ナナオのFlexScan L887を購入。CRT→液晶の買い換え。その顛末に関する雑記。</description>
+<dc:subject></dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-08-21T19:11:20+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000925.html">
+<title>鳥人間コンテスト観戦記</title>
+<link>http://nanana.moo.jp/archives/000925.html</link>
+<description>鳥人間コンテストを見に行ってきました。</description>
+<dc:subject>Misc</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-07-18T22:39:17+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000924.html">
+<title>W31T買いました</title>
+<link>http://nanana.moo.jp/archives/000924.html</link>
+<description>W31Tを購入したのでインプレ。</description>
+<dc:subject>Mobile</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-07-01T21:29:05+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000923.html">
+<title>第9戦 アメリカGP</title>
+<link>http://nanana.moo.jp/archives/000923.html</link>
+<description>F1第9戦アメリカGP。ミシュラン勢全員リタイア。盛り上がりに欠ける中でのミハエル優勝、フェラーリ1-2。タイヤ交換禁止ルールはやっぱり失敗ですね。一人シャンパンファイトのモンテイロが悲しい…。</description>
+<dc:subject>F1</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-06-20T22:30:58+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000922.html">
+<title>日本マクドナルド社長、改名？</title>
+<link>http://nanana.moo.jp/archives/000922.html</link>
+<description>マクドナルド減益の記事。社長の名前が変わった？</description>
+<dc:subject>Misc</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-06-18T01:14:44+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000920.html">
+<title>自転車買いました</title>
+<link>http://nanana.moo.jp/archives/000920.html</link>
+<description> LOUIS GARNEAU LGS-TR5(PLATINUM)を購入。...</description>
+<dc:subject>Misc</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-04-29T13:36:14+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000918.html">
+<title>ワイプアウト ピュア ( PSP )</title>
+<link>http://nanana.moo.jp/archives/000918.html</link>
+<description>ワイプアウト ピュアを購入。ブラウザの動作は確認。ちょっと使いにくいですね。</description>
+<dc:subject>Game</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-04-09T22:02:33+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000916.html">
+<title>就職、そして引っ越し</title>
+<link>http://nanana.moo.jp/archives/000916.html</link>
+<description>大学を卒業して、やっとこ就職しました。ここに至るには紆余曲折あったんですけど。 ...</description>
+<dc:subject>Diary</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-04-08T21:53:08+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000915.html">
+<title>PSPシステムソフトウェア1.50 リリース</title>
+<link>http://nanana.moo.jp/archives/000915.html</link>
+<description>PSPのシステムソフトウェアの新バージョン1.50がリリースされました。 PSP...</description>
+<dc:subject>Game</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-03-25T02:51:33+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000913.html">
+<title>第2戦 マレーシアGP</title>
+<link>http://nanana.moo.jp/archives/000913.html</link>
+<description>F1第2戦、マレーシアGP。見逃しました…。タイヤの差が出た感じでしょうか。</description>
+<dc:subject>F1</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-03-22T07:16:47+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000912.html">
+<title>HDD Health</title>
+<link>http://nanana.moo.jp/archives/000912.html</link>
+<description>HDD HealthのPrecisionが90%を越えたのでお勧めしてみたり。</description>
+<dc:subject>Software</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-03-18T08:32:37+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000911.html">
+<title>NANACA†CRASH!!のはなし</title>
+<link>http://nanana.moo.jp/archives/000911.html</link>
+<description>NANACA†CRASH!! 今頃かい…的な。 CROSS†CHANNELを題材...</description>
+<dc:subject>Misc</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-03-16T00:31:59+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000909.html">
+<title>第1戦 オーストラリアGP</title>
+<link>http://nanana.moo.jp/archives/000909.html</link>
+<description>2005年F1開幕戦オーストラリアGP。ルノーのフィジケラが見事なポールトゥウィンを飾りました。ルノーはアロンソが3位で1-3フィニッシュ。昨年度マシンでも戦闘力の高さを見せたフェラーリ。予想外の力を見せたレッドブルのクルサード。今年は面白くなりそうです。</description>
+<dc:subject>F1</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-03-06T16:11:47+09:00</dc:date>
+</item>
+<item rdf:about="http://nanana.moo.jp/archives/000908.html">
+<title>F1開幕</title>
+<link>http://nanana.moo.jp/archives/000908.html</link>
+<description>2005年のF1が開幕。今年はどんな感じになるんでしょうか。</description>
+<dc:subject>F1</dc:subject>
+<dc:creator>nanana</dc:creator>
+<dc:date>2005-03-06T11:43:59+09:00</dc:date>
+</item>
+
+
+</rdf:RDF>

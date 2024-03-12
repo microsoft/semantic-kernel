@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="Shift_JIS"?>
+<!--
+Source: http://www.milliontimes.jp/column/atom.xml
+Expect: SHIFT_JIS
+-->
+<feed version="0.3" xmlns="http://purl.org/atom/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="ja">
+<title>コラム</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/" />
+<modified>2005-04-29T02:31:27Z</modified>
+<tagline></tagline>
+<id>tag:www.milliontimes.jp,2005:/column//2</id>
+<generator url="http://www.movabletype.org/" version="3.151-ja">Movable Type</generator>
+<copyright>Copyright (c) 2005, takato</copyright>
+<entry>
+<title>ビルドとステアの違い</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000160.php" />
+<modified>2005-04-29T02:31:27Z</modified>
+<issued>2005-04-24T08:27:52Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.160</id>
+<created>2005-04-24T08:27:52Z</created>
+<summary type="text/plain">　意外な落とし穴。この違いを明確にいえる人って実は少ないのではないでしょうか。両方とも、バースプーンで氷をぐるぐる回すことには変わりないのですが、主な目的が違います。 ステア・・・氷を使ってお酒を冷やす。お酒かき混ぜる。 ビルド・・・お酒を...</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>220make</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>　意外な落とし穴。この違いを明確にいえる人って実は少ないのではないでしょうか。両方とも、バースプーンで氷をぐるぐる回すことには変わりないのですが、主な目的が違います。<br />
+<div class="kome">ステア・・・氷を使ってお酒を冷やす。お酒かき混ぜる。<br />
+ビルド・・・お酒をかき混ぜる。</div><br />
+　そうなんです。ステアにはお酒を冷やすという大きな目的があります。どちらかというとシェイクに近い技法なんですね。そして、そのためにミキシンググラスという容器を使います。そして、ショートグラスで飲むカクテルのことが多いです。マティーニは普通この作り方で作ります。</p>
+
+<p>　逆にビルドは飲むグラスの中に材料と氷を入れ、その中でお酒を混ぜ合わせます。ジントニック、モスコミュールなど多くのカクテルがこの作り方です。</p>
+
+<p>　カクテルの作り方には、このビルド、ステアの他にシェイク、ブレンド（ブレンダーを使って混ぜる）の４つがあります。一部ワインやシャンパンを使ったもの、温かいカクテルなどは氷を入れずにビルドします。</p>
+
+<p>【関連】<br />
+<a href="./000008.php">シェイカーを振る理由</a></p>]]>
+
+</content>
+</entry>
+<entry>
+<title>第３のビール</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000058.php" />
+<modified>2005-04-30T10:12:59Z</modified>
+<issued>2005-04-06T03:19:19Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.58</id>
+<created>2005-04-06T03:19:19Z</created>
+<summary type="text/plain">　以前、ビールと発泡酒についてについては触れましたが、最近第３のビールと言う言葉をよく聞くようになりましたが一体どんなものなんでしょう。 　別名は「ビール風アルコール飲料」と呼ばれビールの味はしているけれども、原料がビールや発泡酒と違うビー...</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>060beer</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>　以前、<a href="./000029.php">ビールと発泡酒</a>についてについては触れましたが、最近<strong>第３のビール</strong>と言う言葉をよく聞くようになりましたが一体どんなものなんでしょう。</p>
+
+<p>　別名は「ビール風アルコール飲料」と呼ばれビールの味はしているけれども、原料がビールや発泡酒と違うビールみたいな飲み物ということです。特徴は二つあります。一つは税金が安いということ。ビールの約1／3、発泡酒の約1／2です。350ml缶で約25円です。もうひとつは、ビールと違い色々な味があるということです。ビールの場合、銘柄は違っても似たような味になりがちですが、第３のビールは原料や製法の違いや技術革新によって、銘柄が違うと味の違いも大きくなります。一般的には苦味を抑えたすっきり味の商品が多いです。</p>
+
+<p>　今年の夏はいろいろな種類の「第３のビール」が出るみたいですから、自分にあったものを探してみてはいかがでしょうか。</p>
+
+<p>※ちなみにビール風味飲料（＝ノンアルコールビール）とは違います。お間違いなきよう。</p>
+
+<p>最後に、それぞれの分類を（2005.4.6朝日新聞朝刊より）<table class="hyou"><tr class="hyou"><td class="hyou cen">ビール</td><td class="hyou lef">　水をのぞく麦芽比率が原材料の67％以上。350ml缶の税額は、77.70円。「スーパードライ」（アサヒ）が市場の半分弱をしめる。</td></tr><tr><td class="hyou cen">発泡酒</td><td class="hyou lef">　大手メーカーが発売しているものは水を除く麦芽比率が25%未満。350ml缶の税額は約47円。主な銘柄は「端麗」（キリン）など。</td></tr><tr class="hyou"><td class="hyou cen">第３のビール</td><td class="hyou lef">　麦芽の代わりに大豆などを使う『のどごし(生)』(キリン)、『新生』（アサヒ）、『ドラフトワン』（サッポロ）は「その他雑酒」として分類され、発表酒に小麦抽出液を混ぜた『スーパーブルー』（サントリー）は「リキュール類」に分類される。総称として「第３のビール」と呼ばれる。350ml缶の税額は25円程度。</td></tr></table><br />
+<table><tr><td><img name ="kirin" src="./images/nodogoshinama.jpg" alt="のどごし（生）"  vspace="5" hspace="5" /></td><td><strong>のどごし（生）</strong>（<a href="http://www.kirin.co.jp/" target="_blank">キリンビール</a>）</td></tr><tr><td><img name ="asahi" src="./images/shinnama.jpg" alt="新生"  vspace="5" hspace="5" /></td><td><strong>新生</strong>（<a href="http://www.asahibeer.co.jp/" target="_blank">アサヒビール</a>）</td></tr><tr><td><img name ="sapporo" src="./images/draftone.jpg" alt="ドラフトワン"  vspace="5" hspace="5" /></td><td><strong>ドラフトワン</strong>（<a href="http://www.sapporobeer.jp/" target="_blank">サッポロビール</a>）</td></tr><tr><td><img name ="suntory" src="./images/superblue.jpg" alt="スーパーブルー"  vspace="5" hspace="5" /></td><td><strong>スーパーブルー</strong>（<a href="http://www.suntory.co.jp/" target="_blank">サントリー</a>）</td></tr></table></p>]]>
+
+</content>
+</entry>
+<entry>
+<title>映画cocktailのカクテル（番外編）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000057.php" />
+<modified>2005-04-17T20:48:47Z</modified>
+<issued>2005-03-28T12:41:26Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.57</id>
+<created>2005-03-28T12:41:26Z</created>
+<summary type="text/plain">トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。 　 番外編では、コグラ...</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>510moviecocktail</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。<br />
+　<br />
+番外編では、<storong>コグランの法則</storong>を紹介します。</p>
+
+<p><storong>コグランの法則-Coughlin's Law</storong></p>
+
+<p>仕事を探しているフラナガンに対して(9'25)<br />
+「仕事は挑戦なり」<br />
+Anything else is always something better</p>
+
+<p>一人の子にぞっこんになりそうになっているフラナガンに対して(37'46)<br />
+「おいしい女にご注意」<br />
+Never tell tales about a waoman.She'll hear you no matter how far away she is</p>
+
+<p>フラナガンが再会したコグランに対して(43'15)<br />
+「たとえ驚いてもクールに」<br />
+Never show surprise.Never lose your cool.</p>
+
+<p>コグランのフラナガンに対する遺書で(1:33'05)<br />
+「死人はにおう前に埋めろ」<br />
+Bury the dead. They stink up the joint.</p>
+
+<p>※全て訳はDVDのものを参考にしました。</p>]]>
+<![CDATA[<p><?php require ("./moviecocktail.php"); ?></p>]]>
+</content>
+</entry>
+<entry>
+<title>映画cocktailのカクテル（７）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000056.php" />
+<modified>2005-04-17T20:48:29Z</modified>
+<issued>2005-03-28T12:25:12Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.56</id>
+<created>2005-03-28T12:25:12Z</created>
+<summary type="text/plain">トムクルーズ主演の映画「カクテル」にでてくるカクテルを紹介。ジュ・ダムール編</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>510moviecocktail</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。<br />
+【37'09ごろ】<br />
+<img src="./images/cocktail8.jpg"><br />
+コグランとの賭けでフラナガンはお金持ちの女性を口説きにかかります。<br />
+「ライムを搾ったウオッカをロックで頂戴」<br />
+「ここは南の島ですよ。ジュ・ダムールをのんでみてよ」<br />
+「え？」<br />
+「ジュ・ダムールです。愛の汁という意味のカクテルです。もぎたての果物ジュースを使うんです。のんでみて、美味しいことは保障する」<br />
+「ごめんなさい、私の顔に寝たいと書いてある？」<br />
+「コンタクトしてないんで何にも見えません。」<br />
+「自信家なのね」</p>
+
+<hr /><strong>ジュ・ダムール</strong><br />不明<br />映像から見る限り、ラムのパインジュース割りにチェリーブランデーを垂らすんでしょうか。。]]>
+<![CDATA[<p><?php require ("./moviecocktail.php"); ?></p>]]>
+</content>
+</entry>
+<entry>
+<title>映画cocktailのカクテル（６）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000055.php" />
+<modified>2005-04-17T20:48:11Z</modified>
+<issued>2005-03-28T12:05:54Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.55</id>
+<created>2005-03-28T12:05:54Z</created>
+<summary type="text/plain">トムクルーズ主演の映画「カクテル」にでてくるカクテルを紹介。ダイキリ編</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>510moviecocktail</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。<br />
+【43'43ごろ】<br />
+<img src="./images/cocktail7.jpg"><br />
+フラナガンと再会したコグランは「バーテンさんレッドアイを作ってくれないかな」と声をかけます。最終的にはフローズンダイキリを飲みます。ジャマイカでダイキリというと普通にフローズンダイキリが出てくるのでしょうか。。。<hr /><strong>ダイキリ</strong><br />
+ラム　3／4<br />
+ライム ジュース　1／4<br />
+砂糖　1tsp</p>]]>
+<![CDATA[<p><?php require ("./moviecocktail.php"); ?></p>]]>
+</content>
+</entry>
+<entry>
+<title>映画cocktailのカクテル（５）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000054.php" />
+<modified>2005-04-17T20:47:58Z</modified>
+<issued>2005-03-28T12:03:49Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.54</id>
+<created>2005-03-28T12:03:49Z</created>
+<summary type="text/plain">トムクルーズ主演の映画「カクテル」にでてくるカクテルを紹介。スクリュードライバー編</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>510moviecocktail</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。<br />
+【37'09ごろ】<br />
+<img src="./images/cocktail6.jpg"><br />
+フラナガンはコグランとキスをしているのを見て、不愉快になります。そんな中、客からスクリュードライバーを注文され不機嫌に聞き返します。<hr /><strong>スクリュードライバー</strong><br />
+ウオッカ　30ml<br />
+オレンジジュース　適量</p>]]>
+<![CDATA[<p><?php require ("./moviecocktail.php"); ?></p>]]>
+</content>
+</entry>
+<entry>
+<title>映画cocktailのカクテル（４）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000053.php" />
+<modified>2005-04-17T20:47:44Z</modified>
+<issued>2005-03-28T11:53:19Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.53</id>
+<created>2005-03-28T11:53:19Z</created>
+<summary type="text/plain">トムクルーズ主演の映画「カクテル」にでてくるカクテルを紹介。セックス・オン・ザ・ビーチ／ベルベット・ハンマー／アラバマ・スランマー／ピンク･スクワレル／スリートウド・スロー／アイスティー(ice-T)／カミカゼ／オーガズム／デス・スパズム（死の痙攣［けいれん］）／シンガポール・スリング／ディンガリン編</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>510moviecocktail</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。<br />
+【28'50ごろ】<br />
+<img src="./images/cocktail5.jpg"><br />
+ポエムを詠んだフラナガンをみて一人の女性客がオーガズムを飲んでみたいといいますが、フラナガンはターコイズ・ブルーを勧めます。<br />
+「私もオーガズムを試してみたいわ」<br />
+「どれだけ欲しいんだい？」<br />
+「え、えぇ。たくさん」<br />
+「まずは、ターコイズ・ブルーにしてみなよ。」<hr /><strong>オーガズム</strong><br />
+クリーム リキュール　20ml<br />
+コーヒー リキュール　20ml<br />
+アマレット 15ml<br />
+生クリーム　15ml<br />
+牛乳　15ml</p>
+
+<p><strong>ターコイズ・ブルー</strong><br />
+ラム　30ml<br />
+ホワイト キュラソー　15ml<br />
+ブルー キュラソー　15ml<br />
+レモン ジュース　1tsp<br />
+パイナップル ジュース	適量</p>]]>
+<![CDATA[<p><?php require ("./moviecocktail.php"); ?></p>]]>
+</content>
+</entry>
+<entry>
+<title>映画cocktailのカクテル（３）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000052.php" />
+<modified>2005-04-17T20:47:08Z</modified>
+<issued>2005-03-28T10:53:51Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.52</id>
+<created>2005-03-28T10:53:51Z</created>
+<summary type="text/plain">トムクルーズ主演の映画「カクテル」にでてくるカクテルを紹介。オーガズム／ターコイズ・ブルー編</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>510moviecocktail</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。<br />
+【28'50ごろ】<br />
+<img src="./images/cocktail3.jpg"><br />
+　CELL BLOCというバーにスカウトされたフラナガンとコグラン。そこでフラナガンがお客から求められてポエムを詠みます。</p>
+
+<p>I see America drinking... the fabulous cocktails I make.<br />
+America's getting stinking on something I stir or shake<br />
+The Sex on the Beach... the schnapps made from peach... the Velvet Hammer, the Alabama Slammer.<br />
+I make things with juice and froth... the Pink Squirrel, the Three-Toed Sloth.<br />
+I make drinks so sweet and snazzy... the Ice-T, Kamikaze.<br />
+The Orgasm.<br />
+The Death Spasm.<br />
+The Singapore Sling, the Ding-a-ling.<br />
+America, you're just devoted... to every flavor I've got.<br />
+But if you want to get loaded... why don't you just order a shot?<hr /><strong>セックス・オン・ザ・ビーチ</strong><br />
+メロン リキュール　20ml<br />
+ウォッカ　15ml<br />
+クレーム ド フランボワーズ　10ml<br />
+パイナップル ジュース　80ml<br />
+意外においしいです。</p>
+
+<p><strong>ベルベット・ハンマー</strong><br />
+ホワイト キュラソー　1/3<br />
+コーヒー リキュール　1/3<br />
+生クリーム　1/3</p>
+
+<p><strong>アラバマ・スランマー</strong><br />
+アマレット　2／5<br />
+サザン カンフォート　2／5<br />
+スロー ジン	　1／5<br />
+レモン ジュース　1tsp<br />
+直訳すると”アラバマのナンパ師”</p>
+
+<p><strong>ピンク･スクワレル</strong><br />
+クレーム ド ノワヨー　2/4<br />
+ホワイト クレーム ド カカオ　1/4<br />
+生クリーム　1/4</p>
+
+<p><strong>スリートウド・スロー</strong><br />
+不明</p>
+
+<p><strong>アイスティー(ice-T)</strong><br />
+ピーチリキュール　15ml<br />
+ラム　30ml<br />
+７ＵＰ　１／２<br />
+クランベリージュース　適量</p>
+
+<p><strong>カミカゼ</strong><br />
+ウォッカ　45ml <br />
+ライムジュース　15ml <br />
+ホワイト・キュラソー　1tsp.<br />
+名前からは意外。日本酒は入っていません。</p>
+
+<p><strong>オーガズム</strong><br />
+クリーム リキュール　20ml<br />
+コーヒー リキュール　20ml<br />
+アマレット 15ml<br />
+生クリーム　15ml<br />
+牛乳　15ml</p>
+
+<p><strong>デス・スパズム（死の痙攣［けいれん］）</strong><br />
+不明</p>
+
+<p><strong>シンガポール・スリング</strong><br />
+ジン　45ml<br />
+チェリー ブランデー　20ml<br />
+レモン ジュース　20ml<br />
+ソーダ　適量<br />
+チェリーブランデーはフローとする</p>
+
+<p><strong>ディンガリン</strong><br />
+不明</p>]]>
+<![CDATA[<p><?php require ("./moviecocktail.php"); ?></p>]]>
+</content>
+</entry>
+<entry>
+<title>映画cocktailのカクテル（２）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000051.php" />
+<modified>2005-04-17T20:46:49Z</modified>
+<issued>2005-03-28T10:16:24Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.51</id>
+<created>2005-03-28T10:16:24Z</created>
+<summary type="text/plain">トムクルーズ主演の映画「カクテル」にでてくるカクテルを紹介。ハーベイ・ウォルバンガー／ベルベット・ハンマー／キューバリブレ／オーガズム／ブラッディメアリー／ピンク･スクワレル／エンジェル・ディップ／ダーティー・マザー／ティンガリン／マティーニ編</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>510moviecocktail</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。<br />
+【10'41ごろ】<br />
+<img src="./images/cocktail2.jpg"><br />
+　コグランと一緒に働くことになったフラナガン、しかしレシピも知らないままでカウンターに入り客から次々と注文を受けて大変なことになります。これ以外にも白ワインやジム・ビーム、モルソンの注文も。。。<hr /><br />
+<strong>ハーベイ・ウォルバンガー</strong><br />
+ウォッカ　30ml<br />
+オレンジジュース　適量<br />
+ガリアーノを浮かべます。プロサーファーのハーベイが酔うと壁をたたきながら帰るところから名前をつけられたそうです。</p>
+
+<p><strong>ベルベット・ハンマー</strong><br />
+ホワイト キュラソー　1／3<br />
+コーヒー リキュール　1／3<br />
+生クリーム　1／3<br />
+シェイクします。</p>
+
+<p><strong>キューバリブレ</strong><br />
+ラム　30ml<br />
+コーラ　適量<br />
+フラナガンがウエイターにラム・コークのことじゃないかと怒ってます。</p>
+
+<p><strong>オーガズム</strong><br />
+クリーム リキュール　20ml<br />
+コーヒー リキュール　20ml<br />
+アマレット	15ml<br />
+生クリーム　15ml<br />
+牛乳　15ml<br />
+おいしいんですけど頼みづらい。。</p>
+
+<p><strong>ブラッディ・メアリー</strong><br />
+ウォッカ　30ml<br />
+レモン ジュース　1tsp<br />
+トマト ジュース　適量<br />
+ジンベースだとブラッディ・サムになります。</p>
+
+<p><strong>ピンク･スクワレル</strong><br />
+クレーム ド ノワヨー　2/4<br />
+ホワイト クレーム ド カカオ　1/4<br />
+生クリーム　1/4<br />
+ピンクの乳首という意味です。</p>
+
+<p><strong>エンジェル・ディップ</strong><br />
+クレーム ド カカオ　3/4<br />
+生クリーム　1/4<br />
+マラスキーノチェリー　1個	<br />
+シェイクします。</p>
+
+<p><strong>ダーティー・マザー</strong><br />
+ブランデー　40ml<br />
+コーヒー リキュール　20ml<br />
+好きな人は好きですよね。</p>
+
+<p><strong>ティンガリン</strong>（Ding-a-ling）<br />
+不明です。知りません。</p>
+
+<p><strong>マティーニ</strong><br />
+ジン　3／4<br />
+ドライ ベルモット　1／4<br />
+オリーブ　1個<br />
+レモンピールします。</p>]]>
+<![CDATA[<p><?php require ("./moviecocktail.php"); ?></p>]]>
+</content>
+</entry>
+<entry>
+<title>映画cocktailのカクテル（１）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000050.php" />
+<modified>2005-04-17T20:46:29Z</modified>
+<issued>2005-03-28T09:00:22Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.50</id>
+<created>2005-03-28T09:00:22Z</created>
+<summary type="text/plain">トムクルーズ主演の映画「カクテル」にでてくるカクテルを紹介。レッドアイ／マティーニ編</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>510moviecocktail</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>トムクルーズ主演の「カクテル」に出てくるカクテルを７回に分けてご紹介します。昔、「A PEACEFUL BAR」というサイトに乗っていましたが、現在サイトは閉鎖されているようです。ネタばれ含みますのでご注意ください。<br />
+【9'30ごろ】<br />
+<img src="./images/cocktail1.jpg"><br />
+　ブライアン・フラナガン(Tom Cruise)がＮＹに出てきて仕事を探そうとしますが、なかなか見つからずさまよっていると、あるバーで求人が。そこで働きたいと申し出ると、ダグラス・コグラン(Bryan Brown)から<br />
+You know how to make a "Red Eye"?（<strong>レッドアイ</strong>はどうやって作るか知ってるかい？）<br />
+What about a vodka martini with a Pernod float?（ペルノをフロートさせた<strong>ウオッカマティーニ</strong>は？）<br />
+と聞かれます。<hr /><strong>レッドアイ</strong><br />
+ビール　1／2<br />
+トマトジュース　1／2<br />
+二日酔いに効くと言われている飲み物。コグランの大好物のようで物語中良く出てくる。二日酔いの目から命名されている。ちなみに、本編中でコグランが生卵を入れているが、これは、彼のオリジナルです。試したくないですけど。。。</p>
+
+<p><strong>ウオッカマティーニ</strong><br />
+ウオッカ　3／4<br />
+ドライベルモット　1／4<br />
+オリーブ　1個<br />
+本編中に出てくるペルノ入りのものはどんなレシピなのか分かりません。おそらく、ベルモットの代わりにペルノを入れてフロートさせるのではないかと思います。ウォッカ アイスバーグのようなものでしょうか。知ってる方、コメントしてください。日本ではマティーニといえばジンベースですが、アメリカではウオッカが多いそうです。</p>]]>
+<![CDATA[<p><?php require ("./moviecocktail.php"); ?></p>]]>
+</content>
+</entry>
+<entry>
+<title>酔っ払いの正しい介抱の仕方</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000049.php" />
+<modified>2005-04-17T20:44:22Z</modified>
+<issued>2005-03-17T02:25:11Z</issued>
+<id>tag:www.milliontimes.jp,2005:/column//2.49</id>
+<created>2005-03-17T02:25:11Z</created>
+<summary type="text/plain">　初めに書いておきますがすごーく酔ってしまう前に周りの人が止めてあげるのが基本です。「イッキ」とか危険です。ほどほどに。その上で、やっぱり潰れちゃう人っていますよね。その時の対処法。 　まず、基本的に小腸で体内（血液中）に入ったお酒は時間が...</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>240health</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>　初めに書いておきますがすごーく酔ってしまう前に周りの人が止めてあげるのが基本です。「イッキ」とか危険です。ほどほどに。その上で、やっぱり潰れちゃう人っていますよね。その時の対処法。</p>
+
+<p>　まず、基本的に小腸で体内（血液中）に入ったお酒は時間が経ち体の中で分解されるまで消えません。その直前にある（胃と食道）お酒は全部取り除いてあげましょう。難しいようであれば、一度水を飲ませることで吐きやすくなります。一人によりますが、これで直前の３０分ぐらいのアルコールが体内に追加で吸収されることを防ぎます。</p>
+
+<p>　続いて、アルコールを大量摂取すると脱水症状をおこしますので、水分補給を行います。スポーツドリンクがいいですが、ないなら普通の水やお茶で十分です。</p>
+
+<p>　ここまで書いて思いましたが、当然、叩いても呼びかけても反応ナシの場合は救急車ですよ！必ず呼んでくださいね。反応が薄い場合も本当は病院行ったほうがいいのですが、なかなか難しいと思うのでその時の対処法です。</p>
+
+<p>・吐いて窒息しないように横向きに寝かせる【重要】必要なら、顔の下にゴミ袋でも。。<br />
+・ベルトは緩める。タイトな服なら着替えさせてあげる。<br />
+・毛布などをかけてあげる。（冬の野外とかだと確実に死にます）<br />
+・誰かがつきそう。</p>
+
+<p>【memo】<br />
+・どうしても吐けないときは、おなか（小腸～胃）を刺激すると良いです。</p>]]>
+
+</content>
+</entry>
+<entry>
+<title>カクテルを作る（メジャーカップ）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000048.php" />
+<modified>2005-04-17T20:44:08Z</modified>
+<issued>2004-11-20T09:08:20Z</issued>
+<id>tag:www.milliontimes.jp,2004:/column//2.48</id>
+<created>2004-11-20T09:08:20Z</created>
+<summary type="text/plain">　カクテルを作るときに知らないといけないのがレシピ。そのレシピ通りの分量にするために必要なのがメジャーカップです。リキュールやスピリッツの分量を量るための道具です。このことをメジャーを切るといったりします。 　例えば、Ｘ．Ｙ．Ｚ．※を60m...</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>220make</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>　カクテルを作るときに知らないといけないのがレシピ。そのレシピ通りの分量にするために必要なのがメジャーカップです。リキュールやスピリッツの分量を量るための道具です。このことをメジャーを切るといったりします。</p>
+
+<p>　例えば、Ｘ．Ｙ．Ｚ．※を60ml作るときには、30mlのメジャーカップを使って、まずライトラムを30ml（満タン：表面張力で盛り上がるまで）注ぎ、シェイカーに移します。次に同じ30mlのカップ半分のホワイトキュラソーをいれシェイカーに移します。最後に同じようにレモンジュース15mlを計って、終了となります。15ml量れるメジャーカップもありますが、通常は1種類のメジャーカップを使います。そのほうが、早いしかっこよいからです。<br />
+<img src="./images/half.gif" align="left" alt="シェイカー"  />　慣れないうちは、30mlのメジャーカップで15mlを量るのは難しいかもしれませんが、左の図のように大体7分目ぐらいまで入れると、ちょうど15ml量れます。本格的にしたい人は15mlを3回量り、それが本当に45mlになっているかの練習をすると良いでしょう。慣れてくれば、10mlや20mlも量れるようになります。</p>
+
+<p>　しかしながらこのようにきっちりと量ってシェイクしても実際には氷が溶けて70mlぐらいに増えてしまいます。</p>
+
+<p><br clear=all>※Ｘ．Ｙ．Ｚ．（エックス・ワイ・ジー）のレシピはライトラム1/2、ホワイトキュラソー1/4、レモンジュース1/4です。この場合はそれぞれ30ml、15ml、15mlとなる</p>
+
+<p>　使い方は簡単です。でも、きちんと水平にしないと正確に量れません。<br />
+・使う指は利き腕でない親指と小指を除いた中３本です。<br />
+・人差し指（手前）・中指（奥）・薬指（手前）でメジャーカップをくびれのところではさみます。<br />
+・親指と人差し指であけたボトルのキャップを持つこともあります。<br />
+・利き腕でボトルからメジャーカップに注ぎ、シェイカー等に入れるときは、奥に（手のひらを上にするように）手を返します。</p>]]>
+<![CDATA[<p><img border="0" src="http://sun.d-064.com/include/implession.php?pid=1724&hid=44916&flag1=product&afid=2901564&oid=9" alt="メジャーカップ" width="73" height="100" align=left>　メジャーカップにも３種類の大きさがあります。それぞれに２種類の容量カップがついていますので、用途によって使い分けたりしています。<a href="http://www.store-mix.com/ko-bai/product.php?afid=2901562&pid=1723&hid=44916&oid=9" TARGET=_blank><br />
+大［50/30ml］</a>・<a href="http://www.store-mix.com/ko-bai/product.php?afid=2901564&pid=1724&hid=44916&oid=9" TARGET=_blank>中［45/30ml］</a>・<a href="http://www.store-mix.com/ko-bai/product.php?afid=2901561&pid=1725&hid=44916&oid=9" TARGET=_blank>小［30/15ml］</a>で普通であれば、中を買っておけば問題ないでしょう。</p>
+
+<p><br clear=all>　リンクはすべて<a href="http://www.store-mix.com/ko-bai/p_list.php?oid=9&hid=44916" TARGET=_blank>こだわりキッチン　プロの道具屋さん</a>に飛びます。<a href="http://www.store-mix.com/ko-bai/product.php?afid=2902469&pid=20354&hid=44916&oid=9" TARGET=_blank>初心者用カクテルセット</a>等もあります。僕もいつもここで購入しています。便利ですよ。</p>]]>
+</content>
+</entry>
+<entry>
+<title>カクテルを作る（シェイカー）</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000047.php" />
+<modified>2005-04-17T20:43:54Z</modified>
+<issued>2004-11-14T14:21:03Z</issued>
+<id>tag:www.milliontimes.jp,2004:/column//2.47</id>
+<created>2004-11-14T14:21:03Z</created>
+<summary type="text/plain">自宅でカクテルを作ろうと思ったとき、一番に思い浮かぶのがこれ、シェイカーですよね。そもそもshakeには”振れる”とか”振動する”という意味があります。シェイカーの中でお酒を数種類混ぜ合わせるための道具になります。目的は３つあります。 ・お...</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>220make</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>自宅でカクテルを作ろうと思ったとき、一番に思い浮かぶのがこれ、<strong>シェイカー</strong>ですよね。そもそもshakeには”振れる”とか”振動する”という意味があります。シェイカーの中でお酒を数種類混ぜ合わせるための道具になります。目的は３つあります。<br />
+・お酒同士を混ぜる<br />
+・お酒の中に空気を入れることでお酒の味をまろやかに変える<br />
+・氷を中に入れることで、お酒を急激に冷やす</p>
+
+<p>シェイカーは３つに分解されますが、お酒や氷をいれる一番大きな部分を”ボディ”、お酒をそそぐときに氷が出ないように小さな穴のあいている中蓋を”ストレイナー”、キャップを”トップ”と呼びます。</p>]]>
+<![CDATA[<table><tr><td valign=top><img border="0" src="http://sun.d-064.com/include/implession.php?pid=1599&hid=44916&flag1=product&afid=2869333&oid=9" alt="スタンダードカクテルシェーカー" width="51" height="100"></a></td>
+<td>シェイカーの選び方ですが、スタンダードのもので<a href="http://www.store-mix.com/ko-bai/product.php?afid=2869572&pid=1599&oid=9&hid=44916" target=_blank>大(530cc)</a>［大きなカクテルグラス（90～120cc）２～３杯分］・<a href="http://www.store-mix.com/ko-bai/product.php?afid=2869573&pid=1600&oid=9&hid=44916 " target=_blank>中(350cc)</a>［大きなカクテルグラス（90～120cc）１杯分］・<a href="http://www.store-mix.com/ko-bai/product.php?afid=2869574&pid=1601&oid=9&hid=44916 " target=_blank>小(250cc)</a>［小さなカクテルグラス(60cc)1杯分］があります。まずは、中サイズを購入しておけば問題ないでしょう。サイズもちょうど手にフィットして一番使いやすいと思います。1500～2500円ぐらいです。<br />
+リンクはすべて<a href="http://www.store-mix.com/ko-bai/p_list.php?oid=9&hid=44916" TARGET=_blank>こだわりキッチン　プロの道具屋さん</a>に飛びます<a href="http://www.store-mix.com/ko-bai/product.php?afid=2903287&pid=20358&hid=44916&oid=9" TARGET=_blank>初心者用カクテルセット</a>等もあります。僕もいつもここで購入しています。便利ですよ。</td></tr></table>]]>
+</content>
+</entry>
+<entry>
+<title>目散るアルコール</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000046.php" />
+<modified>2005-04-17T21:46:01Z</modified>
+<issued>2004-09-29T06:59:33Z</issued>
+<id>tag:www.milliontimes.jp,2004:/column//2.46</id>
+<created>2004-09-29T06:59:33Z</created>
+<summary type="text/plain">　今回は悲惨な話。アルコール→お酢のコラムでも紹介したように人間が飲んでも大丈夫なのはエタノール（エチルアルコール）でメタノールを飲むと失明してしまいます。戦後間もない日本や現在でも発展途上国でお酒にメチルアルコールが入っていたという事件は...</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>900other</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>　今回は悲惨な話。<a href="./000026.php"><strong>アルコール→お酢</strong></a>のコラムでも紹介したように人間が飲んでも大丈夫なのはエタノール（エチルアルコール）でメタノールを飲むと失明してしまいます。戦後間もない日本や現在でも発展途上国でお酒にメチルアルコールが入っていたという事件は聞きます。実際に飲んだことのある人から聞いた話によると、同じ量でもメチルアルコールのほうが強烈に酔いが回るそうです。皆さん、真似しないように。ちなみに、メチルアルコールが国際化学命名法の呼び名で、メタノールは慣用名です。</p>]]>
+
+</content>
+</entry>
+<entry>
+<title>火酒</title>
+<link rel="alternate" type="text/html" href="http://www.milliontimes.jp/column/archives/000045.php" />
+<modified>2005-04-17T20:42:46Z</modified>
+<issued>2004-09-29T06:59:30Z</issued>
+<id>tag:www.milliontimes.jp,2004:/column//2.45</id>
+<created>2004-09-29T06:59:30Z</created>
+<summary type="text/plain">　ビールを漢字で書くと麦酒、ワインはぶどう酒で葡萄酒。それでは、火酒っていったいなんでしょう。実はこれブランデーのことなんです。度数が強いので口に入れたときの感覚を「火」と表現したんですかね？なんとか、カクテル＝混合酒やラム＝糖酒（ラムの原...</summary>
+<author>
+<name>takato</name>
+<url>http://www.milliontimes.jp/</url>
+<email>info@milliontimes.jp</email>
+</author>
+<dc:subject>230name</dc:subject>
+<content type="text/html" mode="escaped" xml:lang="ja" xml:base="http://www.milliontimes.jp/column/">
+<![CDATA[<p>　ビールを漢字で書くと麦酒、ワインはぶどう酒で葡萄酒。それでは、火酒っていったいなんでしょう。実はこれ<strong>ブランデー</strong>のことなんです。度数が強いので口に入れたときの感覚を「火」と表現したんですかね？なんとか、<strong>カクテル＝混合酒</strong>や<strong>ラム＝糖酒</strong>（ラムの原料はサトウキビ）あたりまではわかるとしても、<strong>三鞭酒＝シャンパン</strong>（読み方からか？）、<strong>洋酒＝ジン</strong>（洋酒はジンだけではないんだけど・・）、<strong>小酒＝リキュール</strong>（？？）までくると、多少無理があるような気がします。他にも当て字知ってたら<a href ="http://www.milliontimes.jp/mail.php">メール</A>で教えてください。</p>
+
+<p>【追加】上のコラムを書いていて思い出しました。<strong>酒精＝アルコール</strong>です。<br /><br />
+【指摘】<a href="http://homepage2.nifty.com/kuma-bar/" target="_blank">カクテル×カクテル</a>のKUMAさんに火酒は、ウオッカを指すのではないかというご指摘がありましたので、現在調査中です。ご指摘ありがとう。_(._.)_<br /> <br />
+【結論】火酒についてはいろいろ調べた結果、”蒸留酒”と同義であることがわかりました。お酒を蒸留するときには、必ず火を入れることからその名前がついたようです。</p>]]>
+
+</content>
+</entry>
+
+</feed>

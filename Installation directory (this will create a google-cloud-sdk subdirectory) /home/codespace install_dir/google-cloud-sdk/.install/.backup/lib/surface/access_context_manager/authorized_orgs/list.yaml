@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: List authorized organizations descriptions.
+    description: List all authorized organizations descriptions in an access policy object.
+    GA:
+      examples: |
+        To list authorized organizations description in an access policy, run:
+
+          $ {command}
+
+        This command prints out a list of authorized organizations descriptions in a tabular form:
+
+          NAME
+          my_authorized_orgs_desc
+    ALPHA:
+      examples: |
+        To list authorized organizations description in an access policy, run:
+
+          $ {command}
+
+        This will print out a list of authorized organizations descriptions in a tabular form:
+
+          NAME
+          my_authorized_orgs_desc
+  request:
+    collection: accesscontextmanager.accessPolicies.authorizedOrgsDescs
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
+    api_version: v1
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The access policy for which you want to list the corresponding authorized organizations descriptions.
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy
+
+  output:
+    format: |
+      table(
+          name.basename()
+      )

@@ -1,0 +1,37 @@
+name: Detection Coverage
+
+on: [push, pull_request]
+
+jobs:
+  detection_coverage:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -U pip setuptools
+        pip install -r dev-requirements.txt
+        pip uninstall -y charset-normalizer
+    - name: Install the package
+      run: |
+        python setup.py install
+    - name: Clone the complete dataset
+      run: |
+        git clone https://github.com/Ousret/char-dataset.git
+    - name: Coverage WITH preemptive
+      run: |
+        python ./bin/coverage.py --coverage 97 --with-preemptive
+    - name: Coverage WITHOUT preemptive
+      run: |
+        python ./bin/coverage.py --coverage 95

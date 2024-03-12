@@ -1,0 +1,130 @@
+
+Revision 0.2.1, released 23-11-2017
+-----------------------------------
+
+- Allow ANY DEFINED BY objects expanding automatically if requested
+- Imports PEP8'ed
+
+Revision 0.1.5, released 10-10-2017
+-----------------------------------
+
+- OCSP response blob fixed in test
+- Fixed wrong OCSP ResponderID components tagging
+
+Revision 0.1.4, released 07-09-2017
+-----------------------------------
+
+- Typo fixed in the dependency spec
+
+Revision 0.1.3, released 07-09-2017
+-----------------------------------
+
+- Apparently, pip>=1.5.6 is still widely used and it is not PEP440
+  compliant. Had to replace the `~=` version dependency spec with a
+  sequence of simple comparisons to remain compatible with the aging pip.
+
+Revision 0.1.2, released 07-09-2017
+-----------------------------------
+
+- Pinned to pyasn1 ~0.3.4
+
+Revision 0.1.1, released 27-08-2017
+-----------------------------------
+
+- Tests refactored into proper unit tests
+- pem.readBase64fromText() convenience function added
+- Pinned to pyasn1 0.3.3
+
+Revision 0.0.11, released 04-08-2017
+------------------------------------
+
+- Fixed typo in ASN.1 definitions at rfc2315.py
+
+Revision 0.0.10, released 27-07-2017
+------------------------------------
+
+* Fixed SequenceOf initializer to pass now-mandatory componentType
+  keyword argument (since pyasn1 0.3.1)
+* Temporarily fixed recursive ASN.1 type definition to work with
+  pyasn1 0.3.1+. This is going to be fixed properly shortly.
+
+Revision 0.0.9, released 01-06-2017
+-----------------------------------
+
+* More CRL data structures added (RFC3279)
+* Added X.509 certificate extensions map
+* Added X.509 attribute type map
+* Fix to __doc__ use in setup.py to make -O0 installation mode working
+* Copyright added to source files
+* More PEP-8'ing done on the code
+* Author's e-mail changed
+
+Revision 0.0.8, released 28-09-2015
+-----------------------------------
+
+- Wheel distribution format now supported
+- Fix to misspelled rfc2459.id_at_sutname variable
+- Fix to misspelled rfc2459.NameConstraints component tag ID
+- Fix to misspelled rfc2459.GeneralSubtree component default status
+
+Revision 0.0.7, released 01-08-2015
+-----------------------------------
+
+- Extensions added to text files, CVS attic flushed.
+- Fix to rfc2459.BasicConstraints syntax.
+
+Revision 0.0.6, released 21-06-2015
+-----------------------------------
+
+- Typo fix to id_kp_serverAuth object value
+- A test case for indefinite length encoding eliminated as it's
+  forbidden in DER.
+
+Revision 0.0.5
+--------------
+
+- License updated to vanilla BSD 2-Clause to ease package use
+  (http://opensource.org/licenses/BSD-2-Clause).
+- Missing components added to rfc4210.PKIBody.
+- Fix to rfc2459.CRLDistPointsSyntax typo.
+- Fix to rfc2511.CertReqMsg typo.
+
+Revision 0.0.4
+--------------
+
+- CMP structures (RFC4210), cmpdump.py tool and test case added.
+- SNMPv2c Message syntax (RFC1901) properly defined.
+- Package version established in form of __init__.__version__
+  which is in-sync with distutils.
+- Package meta information and classifiers updated.
+
+Revision 0.0.3
+--------------
+
+- Text cases implemented
+- X.509 CRMF structures (RFC2511) and crmfdump.py tool added
+- X.509 CRL structures and crldump.py tool added
+- PKCS#10 structures and pkcs10dump.py tool added
+- PKCS#8 structures and pkcs8dump.py tool added
+- PKCS#1 (rfc3447) structures added
+- OCSP request & response dumping tool added
+- SNMPv2c & SNMPv3/USM structures added
+- keydump.py moved into pkcs1dump.py
+- PEM files read function generalized to be used more universally.
+- complete PKIX1 '88 code implemented at rfc2459.py
+
+
+Revision 0.0.2
+--------------
+
+- Require pyasn1 >= 0.1.1
+- Fixes towards Py3K compatibility
+  + use either of existing urllib module
+  + adopt to the new bytes type
+  + print operator is now a function
+  + new exception syntax
+
+Revision 0.0.1a
+---------------
+
+- Initial revision, most code carried from pyasn1 examples.

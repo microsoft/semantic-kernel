@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
+"""Test script used by test.TestBash."""
+from __future__ import print_function
+
+import argparse
+import argcomplete
+import os
+import sys
+
+
+def complete_cont(*args, **kwargs):
+    return ['foo=', 'bar/', 'baz:']
+
+
+def check_environ(*args, **kwargs):
+    assert 'COMP_TYPE' in os.environ, 'wrapper should have set COMP_TYPE'
+    assert len(sys.argv) == 1, 'should never be completed with arguments'
+    return ['ok']
+
+
+def print_output(*args, **kwargs):
+    print('PYTHON_ARGCOMPLETE_STDOUT')
+    print('PYTHON_ARGCOMPLETE_STDERR', file=sys.stderr)
+    return ['foo']
+
+
+def get_comp_point(*args, **kwargs):
+    return [os.environ['COMP_POINT']]
+
+
+parser = argparse.ArgumentParser()
+subparsers = parser.add_subparsers()
+subparsers.add_parser('basic').add_argument('arg', choices=['foo', 'bar', 'baz'])
+subparsers.add_parser('space').add_argument('arg', choices=['foo bar', 'baz'])
+subparsers.add_parser('cont').add_argument('arg').completer = complete_cont
+subparsers.add_parser('spec').add_argument('arg', choices=['d$e$f', 'd$e$g', 'x!x', r'y\y'])
+subparsers.add_parser('quote').add_argument('arg', choices=["1'1", '2"2'])
+subparsers.add_parser('break').add_argument('arg', choices=['a:b:c', 'a:b:d'])
+subparsers.add_parser('env').add_argument('arg').completer = check_environ
+subparsers.add_parser('debug').add_argument('arg').completer = print_output
+subparsers.add_parser('point', add_help=False).add_argument('arg', nargs='*').completer = get_comp_point
+
+
+if 'POINT' in os.environ:
+    argcomplete.autocomplete(parser, validator=lambda x, y: True)
+else:
+    argcomplete.autocomplete(parser)
+
+args = parser.parse_args()
+
+if 'POINT' in os.environ:
+    print(args.arg[-1])
+else:
+    print(args.arg)

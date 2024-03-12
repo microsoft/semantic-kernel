@@ -1,0 +1,176 @@
+# Copyright 2018 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+info_type:
+  api_field: googlePrivacyDlpV2InspectContentRequest.inspectConfig.infoTypes
+  metavar: 'infotype'
+  arg_name: info-types
+  type: googlecloudsdk.command_lib.dlp.hooks:InfoType
+  help_text: |
+    Which infoTypes to scan input for. The values must correspond to
+    infoType values found in documentation. For more information about
+    valid infoTypes, see [infoTypes Reference](https://cloud.google.com/dlp/docs/infotypes-reference)
+
+min_likelihood:
+  arg_name: min-likelihood
+  api_field: googlePrivacyDlpV2InspectContentRequest.inspectConfig.minLikelihood
+  default: possible
+  help_text: |
+    Only return findings equal to or above this threshold.
+  choices:
+  - arg_value: very-unlikely
+    enum_value: VERY_UNLIKELY
+  - arg_value: unlikely
+    enum_value: UNLIKELY
+  - arg_value: possible
+    enum_value: POSSIBLE
+  - arg_value: likely
+    enum_value: LIKELY
+  - arg_value: very-likely
+    enum_value: VERY_LIKELY
+
+include_quote:
+  api_field: googlePrivacyDlpV2InspectContentRequest.inspectConfig.includeQuote
+  arg_name: include-quote
+  type: bool
+  default: false
+  help_text: |
+    If True, a contextual quote from the data that triggered a
+    finding is included in the response. Even if the content is not
+    text, it may be converted to a textual representation in the
+    response. For example, given the input value 'My phone number is
+    (415) 555-0890' and a search for the infoType PHONE_NUMBER, the
+    contextual quote would be '(415) 555-0890.'
+exclude_info_types:
+  api_field: googlePrivacyDlpV2InspectContentRequest.inspectConfig.excludeInfoTypes
+  arg_name: exclude-info-types
+  type: bool
+  default: false
+  help_text: |
+    Whether or not to exclude type information of the findings.
+    Type information is included by default.
+
+max_findings:
+  api_field: googlePrivacyDlpV2InspectContentRequest.inspectConfig.limits.maxFindingsPerRequest
+  arg_name: max-findings
+  type: int
+  help_text: |
+    Maximum number of findings that will be returned per execution.
+
+    If not specified, no limits are applied.
+
+datastore_kind:
+  arg_name: datastore-kind
+  api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.storageConfig.datastoreOptions
+  type: googlecloudsdk.command_lib.dlp.hooks:DatastoreInputOptions
+  is_positional: false
+  help_text: |
+    The Cloud Datastore kind or table to scan. The kind can optionally be
+    prefixed with the Cloud Datastore namespace ID - for example
+    `namespace:example-kind` or simply `example-kind`
+
+gcs_path:
+  arg_name: path
+  api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.storageConfig.cloudStorageOptions
+  type: googlecloudsdk.command_lib.dlp.hooks:GcsInputOptions
+  is_positional: false
+  help_text: |
+    Google Cloud Storage URL to scan for files with optional wildcard
+    character (```*```) -- for example, gs://my-bucket/```*```.
+
+big_query_table:
+  arg_name: input-table
+  api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.storageConfig.bigQueryOptions
+  type: googlecloudsdk.command_lib.dlp.hooks:BigQueryInputOptions
+  is_positional: false
+  help_text: |
+    BigQuery table to scan. BigQuery tables are uniquely identified by
+    their project_id, dataset_id, and table_id in the format
+    `<project_id>.<dataset_id>.<table_id>`.
+
+min_time:
+  arg_name: min-time
+  api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.timespanConfig.startTime
+  type: googlecloudsdk.calliope.arg_parsers:Datetime.Parse
+  processor: googlecloudsdk.command_lib.dlp.hooks:DlpTimeStamp
+  is_positional: false
+  help_text: |
+    Scan will include items in repository whose age is >= min-time
+    and <= max-time.
+
+    If max-time is omitted then there is no maximum time limit.
+
+    See $ gcloud topic datetimes for information on time formats.
+
+max_time:
+  arg_name: max-time
+  api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.timespanConfig.endTime
+  type: googlecloudsdk.calliope.arg_parsers:Datetime.Parse
+  processor: googlecloudsdk.command_lib.dlp.hooks:DlpTimeStamp
+  is_positional: false
+  help_text: |
+    Scan will include items in repository whose age is >= min-time
+    and <= max-time.
+
+    If max-time is omitted then there is no maximum time limit.
+
+    See $ gcloud topic datetimes for information on time formats.
+
+job_id:
+  arg_name: job-id
+  api_field: googlePrivacyDlpV2CreateDlpJobRequest.jobId
+  is_positional: false
+  required: false
+  help_text: |
+    Optional job ID to use for the created job. If not provided, a job
+    ID will automatically be generated. Must be unique within the project.
+    The job ID can contain uppercase and lowercase letters, numbers, and
+    hyphens; that is, it must match the regular expression:
+    `[a-zA-Z\\d-]+`. The maximum length is 100 characters. Can be empty to
+    allow the system to generate one.
+
+max_item_findings:
+  arg_name: max-findings-per-item
+  api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.limits.maxFindingsPerItem
+  type: int
+  is_positional: false
+  required: false
+  help_text: |
+    Maximum number of findings that will be returned for each item scanned.
+
+    If not specified, no limits are applied.
+
+jobs_output_group:
+  group:
+    mutex: true
+    required: false
+    params:
+    - arg_name: output-topics
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.actions
+      type: googlecloudsdk.command_lib.dlp.hooks:PubSubTopicAction
+      help_text: |
+        Publishes the results of a Cloud DLP job to one or more Cloud Pub/Sub
+        topics.
+
+        Note: The topic must have given publishing access rights to the DLP
+        API service account executing the Cloud DLP job.
+    - arg_name: output-table
+      repeated: false
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.actions
+      type: googlecloudsdk.command_lib.dlp.hooks:BigQueryTableAction
+      help_text: |
+        Publishes results of a Cloud DLP job a BigQuery table.
+        BigQuery tables are uniquely identified by their project_id,
+        dataset_id, and table_id in the format
+        `<project_id>.<dataset_id>.<table_id>` or `<project_id>.<dataset_id>.<table_id>`. If
+        no table_id is specified, DLP will create a table for you.

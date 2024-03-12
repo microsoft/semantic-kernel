@@ -1,0 +1,112 @@
+# Copyright 2019 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Searches for Groups matching a specified query.
+    description: Searches for Groups matching a specified query.
+    examples: |
+      To Search groups:
+
+        $ {command} --organization="5149234212"  \
+            --labels="cloudidentity.googleapis.com/groups.discussion_forum"  \
+            --page-size=3  \
+            --page-token="ala9glealanal908"
+
+  arguments:
+    params:
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: organization
+          type: str
+          help_text: |
+            The organization ID for the groups being searched.
+        - arg_name: customer
+          release_tracks: [GA]
+          type: str
+          help_text: |
+            The customer ID for the customer's G Suite account.
+            Example of customer: "C01k1e9nw"
+
+    - arg_name: labels
+      required: true
+      help_text: |
+        One or more label entries that apply to the Group. Currently supported labels contain a key
+        with an empty value.
+
+        Google Groups are the default type of group and have a label with a key of
+        'cloudidentity.googleapis.com/groups.discussion_forum' and an empty value.
+
+        Existing Google Groups can have an additional label with a key of
+        'cloudidentity.googleapis.com/groups.security' and an empty value added to them.
+        *This is an immutable change and the security label cannot be removed once added.*
+
+        POSIX groups have a label with a key of 'cloudidentity.googleapis.com/groups.posix'.
+
+        Dynamic groups have a label with a key of 'cloudidentity.googleapis.com/groups.dynamic'.
+
+        Identity-mapped groups for Cloud Search have a label with a key of 'system/groups/external'
+        and an empty value.
+
+        Examples: {"cloudidentity.googleapis.com/groups.discussion_forum": ""} or
+        {"system/groups/external": ""}.
+
+    - arg_name: view
+      api_field: view
+      help_text: |
+        The level of detail to be returned. There are two possible views: 'basic' and 'full'.
+        If unspecified, default to 'basic'
+      choices:
+      - enum_value: BASIC
+        arg_value: basic
+        help_text: |
+          Default. Only basic group information is returned.
+      - enum_value: FULL
+        arg_value: full
+        help_text: |
+          All group information is returned.
+      default: basic
+
+    - arg_name: page-token
+      api_field: pageToken
+      help_text: |
+        The nextPageToken value returned from a previous search request, if any.
+
+    - arg_name: page-size
+      type: int
+      api_field: pageSize
+      help_text: |
+        The maximum number of results to return.
+
+        Note that the number of results returned may be less than this value even if there are more
+        available results. To fetch all results, clients must continue calling this method
+        repeatedly until the response no longer contains a nextPageToken.
+
+        If unspecified, defaults to 200 'basic' view and to 50 for 'full' view.
+
+        Must not be greater than 1000 for 'basic' view or 500 for 'full' view.
+
+  request:
+    collection: cloudidentity.groups
+    method: search
+    disable_pagination: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.identity.groups.hooks:GenerateQuery
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1

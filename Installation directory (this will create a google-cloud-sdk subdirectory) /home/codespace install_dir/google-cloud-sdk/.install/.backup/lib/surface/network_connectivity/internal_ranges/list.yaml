@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: |
+      List internal ranges.
+    description: |
+      Retrieve and display a list of all internal ranges in the specified project.
+    examples: |
+      List all internal ranges:
+
+        $ {command}
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:regionDefaultGlobal
+      help_text: |
+        Location of the internal ranges to display.
+
+  output:
+    format: table(name.basename(), description, network.basename(), ipCidrRange)
+
+  request: &request
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: networkconnectivity.projects.locations.internalRanges

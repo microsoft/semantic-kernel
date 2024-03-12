@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: List locations.
+    description: |
+      List Backup for GKE locations.
+
+      ## EXAMPLES
+
+      To list all locations in project 'my-project', run:
+
+        $ {command} --project=my-project
+
+  request:
+    collection: gkebackup.projects.locations
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Project under which the locations to list.
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_project
+
+  output:
+    format: |
+      table(
+         name
+       )

@@ -1,0 +1,78 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Update a Dialogflow entity type.
+  description: Update a Dialogflow entity type.
+  examples: |
+    To update the display name of an entity type:
+
+      $ {command} --display-name="color"
+
+update:
+  disable_auto_field_mask: true
+  read_modify_update: true
+
+arguments:
+  resource:
+    help_text: Entity type to update.
+    spec: !REF googlecloudsdk.command_lib.dialogflow.resources:entityType
+  params:
+  - _COMMON_: flags.display_name
+  - _COMMON_: flags.auto_expand
+  - group:
+      help_text: 'Use these flags for adding and removing entities:'
+      params:
+      - arg_name: add-entities
+        repeated: false
+        type: googlecloudsdk.command_lib.dialogflow.entity_types.hooks:EntitiesType
+        help_text: |
+          Comma separated list of entities, or a map of entities to synonyms, to be added to
+          existing list of entities.
+
+          If specified with `--remove-entities` or `--clear-entities`, entities will be removed in
+          a separate request before entities are added. If an entity with a given value exists,
+          it will be overwritten.
+
+          If a list, the entities can contain references to other entity types (with or without
+          aliases).
+
+          To specify a map, set this flag with `--flags-file` as a map, where each key is the
+          canonical name and each value is a list of synonyms to map to the canonical name. The
+          canonical name must be explicitly included in the list of synonyms. For more information on
+          `--flags-file`, see `gcloud topics flags-file`.
+
+          For example, use `--flags-file=flags.yaml`, where `flags.yaml` contains:
+
+          ```
+          --entities:
+            red:
+            - red
+            - cherry
+            - rose
+            blue:
+            - blue
+            - azure
+            - cyan
+          ```
+
+          For more information, see
+          https://cloud.google.com/dialogflow-enterprise/docs/reference/rest/v2/Entity.
+      - group:
+          mutex: true
+          params:
+          - arg_name: remove-entities
+            type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+            help_text: A comma separated list of entities to be removed.
+          - arg_name: clear-entities
+            type: bool
+            help_text: |
+              If true, remove all existing entities.
+
+              Can be used with `--add-entities` to replace existing entities.
+
+request:
+  collection: dialogflow.projects.agent.entityTypes
+  method: patch
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.dialogflow.entity_types.hooks:PatchEntityType
+  - googlecloudsdk.command_lib.dialogflow.entity_types.hooks:SetUpdateMask
+  - googlecloudsdk.command_lib.dialogflow.entity_types.hooks:AddEntityTypeKind

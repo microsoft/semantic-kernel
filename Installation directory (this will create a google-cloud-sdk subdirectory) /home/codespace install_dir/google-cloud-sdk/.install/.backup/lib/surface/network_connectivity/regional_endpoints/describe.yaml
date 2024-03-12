@@ -1,0 +1,23 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: |
+      Describe a regional endpoint.
+    description: |
+      Retrieve and display details about a regional endpoint.
+    examples: |
+      Display details about a regional endpoint named 'my-regional-endpoint' in us-central1:
+
+        $ {command} my-regional-endpoint
+          --region=us-central1
+          [--project=my-project]
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:regionalEndpoint
+      help_text: Name of the regional endpoint to be described.
+
+  request: &request
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.regionalEndpoints

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="windows-1255"?>
+<!--
+Source: http://www.sharks.co.il/backend2.php
+Expect: windows-1255
+-->
+<rss version="2.0">
+
+<channel>
+<title>Sharks.co.il</title>
+<link>http://www.sharks.co.il</link>
+<description>חדשות חמות מהאתר</description>
+<language>he-il</language>
+<copyright>© Copyright 2005, Sharks.co.il. All Rights Reserved.</copyright>
+<ttl>60</ttl>
+<image>
+	<title>Sharks News</title> 
+	<url>http://www.sharks.co.il/images/sharks_feed.gif</url>
+	<link>http://www.sharks.co.il/</link>
+</image>
+
+<item>
+<title>פריס-דקאר 2006, יום- 5.</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=186</link>
+<pubDate>Wed, 04 Jan 2006 18:35:43 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;חזרתו של הג'די ! כך הייתי מגדיר את היום הזה בדקאר, כאשר פטרהנסל שמנסה השנה להגן על התואר שלו, ניצל את נקודת ההתחלה הנמוכה שלו, לאחר שאיבד 18 דקות בגלל טעות ניווט אתמול, והשתמש בסימני המתחרים שיצאו לפניו כדי להגיע ראשון ולצמצם את הפער &lt;/div&gt;</description>
+</item>
+
+<item>
+<title>פריס-דקאר 2006, יום- 4.</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=185</link>
+<pubDate>Tue, 03 Jan 2006 18:07:09 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;אחרי שהמתחרים הרגישו קצת את החול בין האצבעות אתמול, בקטע המיוחד של היום הם כבר טבעו בדיונות.
+הספיישל הכי ארוך עד היום היה תערובת מצויינת של דיונות, שבילי עפר מפותלים וקרקע סילעית, וכך לצד מהירויות גבוהות בקטעים מסויימת נדרשה מיומנות גבוהה מאוד באחרים.&lt;/div&gt;</description>
+</item>
+
+<item>
+<title>פריס-דקאר 2006, יום- 3.</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=184</link>
+<pubDate>Mon, 02 Jan 2006 18:47:33 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;היום השלישי של הפריס-דקאר עשה הפרדה בין הילדים למבוגרים, סיינז שהרשים עם נהיגה מצויינת בקטעים הדומים לסבב ה-WRC כבר לא ראשון. במקום זה חוזרים לככב שמות כמו פטרהנסל ואלופי השנים שעברו.&lt;/div&gt;</description>
+</item>
+
+<item>
+<title>פריס-דקאר 2006, יום-2.</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=183</link>
+<pubDate>Sun, 01 Jan 2006 18:51:14 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;עוד יום עבר בפריס דקאר, הקטע של היום היה סה&quot;כ 567 ק&quot;מ, מתוכם 115 ק&quot;מ ספיישל.
+הקטע שהוא השני והאחרון באירופה נתן למתחרים רגעים אחרונים של נחת לפני תחילת הקרב האמיתי.
+המנצח כמו אתמול היה הספרדי קרלוס סיינז, תתחילו להתרגל להגיד - אל מטדור !&lt;/div&gt;</description>
+</item>
+
+<item>
+<title>פריס-דקאר 2006, יום-I.</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=182</link>
+<pubDate>Sat, 31 Dec 2005 17:45:26 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;נראה כאילו רק אתמול כתבתי על הראלי הקשה בעולם והנה שוב הוא הגיע !.
+כבכול יום אשתדל לעדכן אותכם באירועי היום, הקטעים ובחדשות.
+אז נתחיל.&lt;/div&gt;</description>
+</item>
+
+<item>
+<title>חוק הספורט המוטורי בישראל</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=181</link>
+<pubDate>Tue, 27 Dec 2005 10:43:21 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;חוק הספורט המוטורי התקבל בכנסת בקריאה שניה ושלישית, יש! מאמר קצר הסוקר את החוק החדש מאת ראם סמואל.&lt;/div&gt;</description>
+</item>
+
+<item>
+<title>עשרת הדיברות לנהיגת חורף</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=180</link>
+<pubDate>Tue, 01 Nov 2005 01:08:28 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;עשרת הדיברות לנהיגת חורף מאת ראם סמואל, מנכ&quot;ל &quot;מסלולים&quot; הינו מאמר חובה לפני שאתם עולים עם רכבכם לכבישים הרטובים של מדינת ישראל.&lt;/div&gt;</description>
+</item>
+
+<item>
+<title>פרוייקט ראש מנוע - חלק ב'</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=179</link>
+<pubDate>Fri, 21 Oct 2005 18:39:03 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;אז איפה היינו?
+כן, הראש נשלח לשיפוץ, גם השסתומים ושאר החלקים שניזוקו בתהליך.
+עכשיו נשאר שהכל יחזור כמושצריך, להרכיב הכל מחדש ולהתפלל.
+איך נגמר הפרוייקט? הכל מחכה לכם בחלק הזה.&lt;/div&gt;</description>
+</item>
+
+<item>
+<title>אאודי S8 חדשה</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=178</link>
+<pubDate>Wed, 19 Oct 2005 13:45:56 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;כשאאודי קנו את למבורגיני, הם ידעו מה הם עושים. מנוע ה-V10 של החברה האטלקית (במקור) הפך לאאודי, והושתל ב-A8, מה שיוצר דגם חדש למכונית מדהימה, ה-S8.&lt;/div&gt;</description>
+</item>
+
+<item>
+<title>595 כ&quot;ס? איזה שיעמום...</title>
+<link>http://www.sharks.co.il/modules.php?name=News&amp;file=article&amp;sid=177</link>
+<pubDate>Tue, 18 Oct 2005 19:22:12 +0200</pubDate>
+<description>&lt;div dir=&quot;rtl&quot;&gt;סטיישן, ארבע על ארבע, מנוע V8 וכמעט 600 כוחות סוס. קלימאן לא עוצרים לרגע, פשוט לא נמאס להם. למען האמת, גם לנו לא נמאס. תכירו - זוהי הקלימאן 50KCC.&lt;/div&gt;</description>
+</item>
+
+</channel>
+</rss>

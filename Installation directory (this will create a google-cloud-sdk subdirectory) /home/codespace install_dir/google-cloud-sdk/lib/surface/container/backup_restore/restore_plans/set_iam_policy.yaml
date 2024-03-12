@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Set the IAM policy for a restore plan.
+    description: |
+      Set the IAM policy associated with a restore plan.
+
+      ## EXAMPLES
+
+      To set the IAM policy associated with a restore plan ``my-restore-plan'' in project ``my-project'' in location ``us-central1'' with the policy defined in the JSON file ``policy.json'', run:
+
+        $ {command} my-restore-plan policy.json --project=my-project --location=us-central1
+
+  request:
+    collection: gkebackup.projects.locations.restorePlans
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the restore plan for which to display IAM policy. The name may be provided either as
+        a relative name, e.g.
+        `projects/<project>/locations/<location>/restorePlans/<restorePlan>`
+        or as a single ID name (with the parent resources provided via options or through
+        properties), e.g.
+        `RESTORE_PLAN --project=<project> --location=<location>`
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:positional_restore_plan

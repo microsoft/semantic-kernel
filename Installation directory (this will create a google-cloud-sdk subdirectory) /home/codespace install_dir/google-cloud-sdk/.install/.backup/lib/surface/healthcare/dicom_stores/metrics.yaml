@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Get the metrics for a Cloud Healthcare API DICOM store.
+    description:  Gets the metrics for a Cloud Healthcare API DICOM store.
+    examples: |
+       To get metrics for the DICOM store 'test-dicom-store', run:
+
+        $ {command} test-dicom-store --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.dicomStores
+    method: getDICOMStoreMetrics
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API DICOM store to get metrics for.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:dicom_store

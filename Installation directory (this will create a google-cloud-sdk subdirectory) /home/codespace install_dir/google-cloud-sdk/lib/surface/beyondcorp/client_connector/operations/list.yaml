@@ -1,0 +1,36 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: |
+      List BeyondCorp client connector operations (Deprecated).
+    description: |
+      List all BeyondCorp client connector operations in the specified project.
+
+      You can specify the maximum number of operations to list using the
+      `--limit` flag.
+    examples: |
+      The following command lists a maximum of five operations:
+
+          $ {command} --project=consumer-project-id --location=us-central1 --limit=5
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:location
+      help_text: |
+        Location of the operations to display.
+
+  request:
+    collection: beyondcorp.projects.locations.operations
+    BETA:
+      api_version: v1
+
+  output:
+    format: |
+       table(
+          name.basename():label=OPERATION_NAME,
+          metadata.verb:label=TYPE,
+          metadata.target.basename(),
+          done,
+          metadata.createTime.date():sort=1,
+          duration(start=metadata.createTime,end=metadata.endTime,precision=0,calendar=false).slice(2:).join("").yesno(no="<1S"):label=DURATION
+        )

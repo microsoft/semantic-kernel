@@ -1,0 +1,30 @@
+- release_tracks: [GA, BETA, ALPHA]
+
+  help_text:
+    brief: Set the IAM policy for a configuration.
+    description: |
+      Sets the IAM policy for the given configuration as defined in a JSON or YAML file.
+
+    examples: |
+      The following command will read an IAM policy defined in a JSON file 'policy.json' and set it
+      for the given configuration:
+
+        $ {command} CONFIG policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.workstations.resources:config
+      help_text: |
+        The configuration for which to display the IAM policy.
+
+  request:
+    GA:
+      api_version: v1
+    BETA:
+      api_version: v1beta
+    ALPHA:
+      api_version: v1beta
+    collection: workstations.projects.locations.workstationClusters.workstationConfigs

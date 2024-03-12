@@ -1,0 +1,16 @@
+>>> from _init_environment import MTurkConnection, mturk_host
+>>> conn = MTurkConnection(host=mturk_host)
+
+# should have some HIT's returned by a search (but only if your account has existing HIT's)
+>>> search_rs = conn.search_hits()
+
+# this is a valid request
+>>> search_rs.status
+True
+
+>>> len(search_rs) > 1
+True
+
+>>> search_rs # doctest: +ELLIPSIS
+[<boto.mturk.connection.HIT instance at ...]
+

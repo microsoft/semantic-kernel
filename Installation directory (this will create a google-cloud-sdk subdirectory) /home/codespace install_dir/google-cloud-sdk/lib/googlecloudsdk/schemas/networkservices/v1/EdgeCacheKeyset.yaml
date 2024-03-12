@@ -1,0 +1,72 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 EdgeCacheKeyset export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- name
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  description:
+    description: A human-readable description of the resource.
+    type: string
+  labels:
+    description: |-
+      A set of label tags associated with the EdgeCacheKeyset resource.
+    $ref: LabelsValue.yaml
+  name:
+    description: |-
+      The name of the resource as provided by the client when the resource is
+      created. The name must be 1-64 characters long, and match the regular
+      expression `[a-zA-Z]([a-zA-Z0-9_-])*` which means the first character must
+      be a letter, and all following characters must be a dash, an underscore, a
+      letter, or a digit.
+    type: string
+  publicKeys:
+    description: |-
+      An ordered list of Ed25519 public keys to use for validating signed
+      requests. Ed25519 public keys are not secret and only allow Google to
+      validate that a request was signed by your corresponding private key.
+      Ensure that the private key is kept secret and that only authorized users
+      can add public keys to a keyset. You can rotate keys by appending
+      (pushing) a new key to the list of public keys, and removing any
+      superseded keys. You must specify `public_keys` or validation_shared_keys
+      (or both). The keys in `public_keys` are checked first. You can specify at
+      most one Google-managed public key. If you specify `public_keys`, you must
+      specify at least one key and can specify up to three keys.
+    type: array
+    items:
+      $ref: PublicKey.yaml
+  validationSharedKeys:
+    description: |-
+      An ordered list of shared keys to use for validating signed requests.
+      Shared keys are secret. Ensure that only authorized users can add
+      `validation_shared_keys` to a keyset. You can rotate keys by appending
+      (pushing) a new key to the list of `validation_shared_keys` and
+      removing any superseded keys. You must specify public_keys or
+      `validation_shared_keys` (or both). The keys in `public_keys` are
+      checked first. If you specify `validation_shared_keys`, you must
+      specify at least one key and can specify up to three keys.
+    type: array
+    items:
+      $ref: Secret.yaml

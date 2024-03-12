@@ -1,0 +1,61 @@
+- release_tracks: [BETA, GA]
+  help_text:
+    brief: |
+      Delete a Filestore snapshot.
+    description: |
+      Delete a Filestore snapshot.
+
+      This command can fail for the following reasons:
+        * The snapshot or instance specified does not exist.
+        * The active account does not have permission to delete the given
+          snapshot.
+    examples: |
+      To delete a snapshot named ``my-snapshot'' for the instance ``my-instance''
+      from ``us-central1'', run:
+
+        $ {command} my-snapshot --instance=my-instance --instance-region=us-central1
+
+  arguments:
+    params:
+    - arg_name: snapshot
+      required: true
+      is_positional: true
+      help_text: |
+        Name of the Filestore snapshot to be deleted.
+    - arg_name: instance
+      required: true
+      help_text: |
+        Name of the Filestore instance the snapshot belongs to.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: instance-region
+          help_text: |
+            Region of the Filestore instance.
+        - arg_name: instance-location
+          help_text: |
+            Location of the Filestore instance.
+
+
+  async:
+    collection: file.projects.locations.operations
+    request_issued_message: |-
+      Delete request issued
+
+  input:
+    confirmation_prompt: |
+      You are about to delete Filestore snapshot. Are you sure?
+
+  request:
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    display_resource_type: snapshot
+    collection: file.projects.locations.instances.snapshots
+    # Disable validating that a snapshot resource arg is specified (as we are using the
+    # file.projects.locations.instances.snapshots collection). This collection is populated manually.
+    disable_resource_check: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:FormatSnapshotAccessRequest

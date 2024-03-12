@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="ref.css" type='text/css' />
+<link rel="first" href="ref.html" title='The httplib2 Library' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<link rel="next" href="cache-objects.html" />
+<link rel="prev" href="module-httplib2.html" />
+<link rel="parent" href="module-httplib2.html" />
+<link rel="next" href="cache-objects.html" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name='aesop' content='information' />
+<title>1.1.1 Http Objects</title>
+</head>
+<body>
+<div class="navigation">
+<div id='top-navigation-panel' xml:id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="1.1 httplib2 A comprehensive"
+  href="module-httplib2.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="1.1 httplib2 A comprehensive"
+  href="module-httplib2.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="1.1.2 cache Objects"
+  href="cache-objects.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">The httplib2 Library</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents"
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></a></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="module-httplib2.html">1.1 httplib2 A comprehensive</a>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="module-httplib2.html">1.1 httplib2 A comprehensive</a>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="cache-objects.html">1.1.2 Cache Objects</a>
+</div>
+<hr /></div>
+</div>
+<!--End of Navigation Panel-->
+
+<h2><a name="SECTION002110000000000000000"></a>
+<a name="http-objects"></a>
+<br>
+1.1.1 Http Objects
+</h2>
+
+<p>
+Http objects have the following methods:
+
+<p>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-15' xml:id='l2h-15' class="method">request</tt></b>(</nobr></td>
+  <td><var>uri, </var><big>[</big><var>method="GET", body=None, headers=None, redirections=DEFAULT_MAX_REDIRECTS, connection_type=None</var><big>]</big><var></var>)</td></tr></table></dt>
+<dd>
+Performs a single HTTP request.
+The <var>uri</var> is the URI of the HTTP resource and can begin with either <code>http</code> or <code>https</code>. The value of <var>uri</var> must be an absolute URI.
+
+<p>
+The <var>method</var> is the HTTP method to perform, such as <code>GET</code>, <code>POST</code>, <code>DELETE</code>, etc. There is no restriction
+on the methods allowed.
+
+<p>
+The <var>body</var> is the entity body to be sent with the request. It is a string
+object.
+
+<p>
+Any extra headers that are to be sent with the request should be provided in the
+<var>headers</var> dictionary.
+
+<p>
+The maximum number of redirect to follow before raising an exception is <var>redirections</var>. The default is 5.
+
+<p>
+The <var>connection_type</var> is the type of connection object to use. The supplied class
+should implement the interface of httplib.HTTPConnection.
+
+<p>
+The return value is a tuple of (response, content), the first being and instance of the
+<tt class="class">Response</tt> class, the second being a string that contains the response entity body.
+</dl>
+
+<p>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-16' xml:id='l2h-16' class="method">add_credentials</tt></b>(</nobr></td>
+  <td><var>name, password, </var><big>[</big><var>domain=None</var><big>]</big><var></var>)</td></tr></table></dt>
+<dd>
+Adds a name and password that will be used when a request
+requires authentication. Supplying the optional <var>domain</var> name will
+restrict these credentials to only be sent to the specified
+domain. If <var>domain</var> is not specified then the given credentials will
+be used to try to satisfy every HTTP 401 challenge.
+</dl>
+
+<p>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-17' xml:id='l2h-17' class="method">add_certificate</tt></b>(</nobr></td>
+  <td><var>key, cert, domain</var>)</td></tr></table></dt>
+<dd>
+Add a <var>key</var> and <var>cert</var> that will be used for an SSL connection
+to the specified domain. <var>keyfile</var> is the name of a PEM formatted
+file that contains your private key. <var>certfile</var> is a PEM formatted certificate chain file.
+</dl>
+
+<p>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-18' xml:id='l2h-18' class="method">clear_credentials</tt></b>(</nobr></td>
+  <td><var></var>)</td></tr></table></dt>
+<dd>
+Remove all the names and passwords used for authentication.
+</dl>
+
+<p>
+<dl><dt><b><tt id='l2h-19' xml:id='l2h-19' class="member">follow_redirects</tt></b></dt>
+<dd>
+If <code>True</code>, which is the default, safe redirects are followed, where
+safe means that the client is only doing a <code>GET</code> or <code>HEAD</code> on the
+URI to which it is being redirected. If <code>False</code> then no redirects are followed.
+Note that a False 'follow_redirects' takes precedence over a True 'follow_all_redirects'.
+Another way of saying that is for 'follow_all_redirects' to have any affect, 'follow_redirects'
+must be True.
+</dl>
+
+<p>
+<dl><dt><b><tt id='l2h-20' xml:id='l2h-20' class="member">follow_all_redirects</tt></b></dt>
+<dd>
+If <code>False</code>, which is the default, only safe redirects are followed, where
+safe means that the client is only doing a <code>GET</code> or <code>HEAD</code> on the
+URI to which it is being redirected. If <code>True</code> then all redirects are followed.
+Note that a False 'follow_redirects' takes precedence over a True 'follow_all_redirects'.
+Another way of saying that is for 'follow_all_redirects' to have any affect, 'follow_redirects'
+must be True.
+</dl>
+
+<p>
+<dl><dt><b><tt id='l2h-21' xml:id='l2h-21' class="member">force_exception_to_status_code</tt></b></dt>
+<dd>
+If <code>True</code>, which is the default, then no <tt class="module">httplib2</tt> exceptions will be thrown. Instead,
+those error conditions will be turned into <tt class="class">Response</tt> objects
+that will be returned normally.
+
+<p>
+If <code>False</code>, then exceptions will be thrown.
+</dl>
+
+<p>
+<dl><dt><b><tt id='l2h-22' xml:id='l2h-22' class="member">ignore_etag</tt></b></dt>
+<dd>
+Defaults to <code>False</code>. If <code>True</code>, then any etags present in the cached response
+are ignored when processing the current request, i.e. httplib2 does <strong>not</strong> use
+'if-match' for PUT or 'if-none-match' when GET or HEAD requests are made. This
+is mainly to deal with broken servers which supply an etag, but change it capriciously.
+</dl>
+
+<p>
+
+<div class="navigation">
+<div class='online-navigation'>
+<p></p><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="1.1 httplib2 A comprehensive"
+  href="module-httplib2.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></a></td>
+<td class='online-navigation'><a rel="parent" title="1.1 httplib2 A comprehensive"
+  href="module-httplib2.html"><img src='up.png'
+  border='0' height='32'  alt='Up one Level' width='32' /></a></td>
+<td class='online-navigation'><a rel="next" title="1.1.2 cache Objects"
+  href="cache-objects.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></a></td>
+<td align="center" width="100%">The httplib2 Library</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents"
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></a></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="module-httplib2.html">1.1 httplib2 A comprehensive</a>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="module-httplib2.html">1.1 httplib2 A comprehensive</a>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="cache-objects.html">1.1.2 Cache Objects</a>
+</div>
+</div>
+<hr />
+<span class="release-info">Release 0.3, documentation updated on Mar 8, 2007.</span>
+</div>
+<!--End of Navigation Panel-->
+
+</body>
+</html>

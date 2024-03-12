@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Show the metadata for a Backup and DR backup vault.
+    description: Show the metadata for a Backup and DR backup vault in a project for a location.
+    examples: |
+      To view details associated with backup vault 'BACKUP_VAULT', run:
+
+      $ {command} BACKUP_VAULT
+
+  request:
+    collection: backupdr.projects.locations.backupVaults
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Location for which backup vaults should be listed.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:backupVault
+
+  output:
+    format: json

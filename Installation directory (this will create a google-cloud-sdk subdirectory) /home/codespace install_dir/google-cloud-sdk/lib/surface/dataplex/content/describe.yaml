@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Retrieve a Dataplex Content Resource.
+    description: |
+      Get a Dataplex Content resource based on project, location, lake, and content.
+
+    examples: |
+       To describe a Dataplex Content `test-content` in project `test-project` under loaction `us-central1`  inside project `test-project`, run:
+
+         $ {command} test-content --project=test-project --location=us-central1 --lake=test-lake
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.contentitems
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Content you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:content
+    params:
+    - arg_name: view
+      api_field: view
+      help_text: |
+        There are two possible views, 'basic' and 'full'. The default view is 'basic'.
+      choices:
+      - enum_value: BASIC
+        arg_value: basic
+        help_text: |
+          Does not include the Content data in response.
+      - enum_value: FULL
+        arg_value: full
+        help_text: |
+          Includes the content data in response.
+      default: basic

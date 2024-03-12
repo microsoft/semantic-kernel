@@ -1,0 +1,30 @@
+- help_text:
+    brief: |
+      Show metadata for a Looker operation.
+    description: |
+      Display all metadata associated with a Looker operation given a valid
+      operation name.
+
+      This command can fail for the following reasons:
+      * The operation specified does not exist.
+      * The active account does not have permission to access the given
+        operation.
+    examples: |
+      To display the metadata for an operation named `my-looker-operation` in the default region,
+      run:
+
+        $ {command} my-looker-operation
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:operation
+      help_text: |
+        Arguments and flags that specify the Looker operation you
+        want to describe.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: looker.projects.locations.operations

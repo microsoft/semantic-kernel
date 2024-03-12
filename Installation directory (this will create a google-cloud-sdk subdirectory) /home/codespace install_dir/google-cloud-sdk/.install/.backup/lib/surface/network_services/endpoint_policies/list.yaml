@@ -1,0 +1,35 @@
+release_tracks: [GA, BETA, ALPHA]
+
+help_text:
+  brief: |
+    List endpoint policies.
+  description: |
+    List all endpoint policies in the specified location of the current project.
+  examples: |
+      To list endpoint policies in the current project, run:
+
+        $ {command} --location=global
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networkservices.projects.locations.endpointPolicies
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: |
+      The project of the endpoint policies to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

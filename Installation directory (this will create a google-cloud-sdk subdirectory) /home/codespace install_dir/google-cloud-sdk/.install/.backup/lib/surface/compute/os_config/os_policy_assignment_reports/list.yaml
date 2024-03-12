@@ -1,0 +1,60 @@
+- release_tracks: [GA, ALPHA]
+
+  help_text:
+    brief: List OS policy assignment reports.
+    description: |
+      List OS policy assignment reports.
+
+      ## EXAMPLES
+
+      To list reports OS policy assignment in location `us-central1-a`:
+
+        $ {command} --location=us-central1-a
+
+      To list reports of an instance `my-instance` in location `us-central1-a`:
+
+        $ {command} --location=us-central1-a --instance=my-instance
+
+      To list reports of an OS policy assignment `my-assignment` in location `us-central1-a`:
+
+        $ {command} --location=us-central1-a --assignment-id=my-assignment
+
+
+  request:
+    collection: osconfig.projects.locations.instances.osPolicyAssignments.reports
+    disable_resource_check: true
+    ALPHA:
+      api_version: v1alpha
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.os_config.os_policy_assignment_reports.declarative:SetParentOnListRequestHook
+
+  response:
+    id_field: name
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.compute.os_config.os_policy_assignment_reports.declarative:CreateSummarizedListOSPolicyAssignmentReportsHook
+
+
+  arguments:
+    exclude: ['uri']
+    params:
+    - arg_name: location
+      help_text: |
+          Location of the OS policy assignment reports to list, will default to the user's compute/zone property if not specified.
+    - group:
+        help_text: Specify which instance or OS policy assignment to list reports for.
+        mutex: true
+        params:
+        - arg_name: instance
+          help_text: Either instance name or instance ID. If not provided, OSPolicyAssignmentReports for all instances in the project and location will be listed.
+        - arg_name: assignment-id
+          help_text: An OSPolicyAssignment ID. If not provided, OSPolicyAssignmentReports for all instances in the project and location will be listed.
+
+  output:
+    format: |
+      table(
+         instance,
+         assignment_id,
+         location,
+         update_time,
+         summary_str:label=SUMMARY
+       )

@@ -1,0 +1,67 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 Timeout export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  connectTimeout:
+    description: |-
+      The maximum duration to wait for a single origin connection to be
+      established, including DNS lookup, TLS handshake, and TCP/QUIC connection
+      establishment. Defaults to 5 seconds. The timeout must be a value between
+      1s and 15s. The `connect_timeout` capped by the deadline set by the
+      request's max_attempts_timeout. The last connection attempt can have a
+      smaller `connect_timeout` so that the total `max_attempts_timeout` value
+      is not exceeded.
+    type: string
+  maxAttemptsTimeout:
+    description: |-
+      The maximum time across all connection attempts to all origins, including
+      failover origins, before returning an error to the client. An `HTTP 504`
+      error is returned if the timeout is reached before a response is returned.
+      Defaults to 15 seconds. The timeout must be a value between 1s and 30s. If
+      a failover origin is specified, the `max_attempts_timeout` value of the
+      first configured origin sets the deadline for all connection attempts
+      across all failover origins.
+    type: string
+  readTimeout:
+    description: |-
+      The maximum duration to wait between reads of a single HTTP connection or
+      stream. Defaults to 15 seconds. The timeout must be a value between 1s and
+      30s. The `read_timeout` value is capped by the response_timeout value. All
+      reads of the HTTP connection or stream must be completed by the deadline
+      set by response_timeout. If the response headers have already been written
+      to the connection, the response is truncated and logged.
+    type: string
+  responseTimeout:
+    description: |-
+      The maximum duration to wait for the last byte of a response to arrive
+      when reading from the HTTP connection/stream. Defaults to 30 seconds. The
+      timeout must be a value between 1s and 120s. The `response_timeout` starts
+      after the connection has been established. Origins that take longer to
+      write additional bytes to the response than the configured
+      `response_timeout` value result in an error returned to the client. If the
+      response headers have already been written to the connection, the response
+      is truncated and logged.
+    type: string

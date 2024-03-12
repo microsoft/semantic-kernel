@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Delete a Dataproc GDC operation.
+    description: Delete a Dataproc GDC operation.
+    examples: |
+      To delete a Dataproc GDC operation named 'my-operation' in project `test-project` in `us-central1`, run:
+
+          $ {command} my-operation --project=test-project --location=us-central1
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    collection: dataprocgdc.projects.locations.operations
+    method: delete
+  arguments:
+    resource:
+      help_text: |
+        The Dataproc GDC operation to delete.
+      spec: !REF googlecloudsdk.command_lib.dataproc_gdc.resources:operation

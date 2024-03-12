@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Delete a Dataplex Data Attribute Binding.
+    description: |
+      Delete a Dataplex Data Attribute Binding.
+
+    examples: |
+       To Delete Data Attribute Binding `test-attribute-binding` in project `test-dataplex` at location `us-central1`, run:
+
+        ${command} test-attribute-binding --project=test-dataplex --location=us-central1
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataAttributeBindings
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Attribute Binding you want to delete.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_attribute_binding
+    params:
+    - arg_name: etag
+      api_field: etag
+      required: true
+      help_text: |
+        etag value for particular Data Attribute Binding.
+  async:
+    collection: dataplex.projects.locations.operations

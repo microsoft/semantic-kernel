@@ -1,0 +1,139 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 EdgeCacheOrigin export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- name
+- originAddress
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  awsV4Authentication:
+    description: Enable AWS Signature Version 4 origin authentication.
+    $ref: AWSV4Signature.yaml
+  description:
+    description: A human-readable description of the resource.
+    type: string
+  failoverOrigin:
+    description: |-
+      The EdgeCacheOrigin resource to try when the current origin cannot be
+      reached. After max_attempts is reached, the configured failover_origin is
+      used to fulfil the request. The following are both valid paths to an
+      `EdgeCacheOrigin` resource: * `projects/my-
+      project/locations/global/edgeCacheOrigins/my-origin` * `my-origin` The
+      value of max_attempts_timeout dictates the timeout across all origins.
+    type: string
+  labels:
+    description: |-
+      A set of label tags associated with the EdgeCacheOrigin resource.
+    $ref: LabelsValue.yaml
+  maxAttempts:
+    description: |-
+      The maximum number of attempts to cache fill from this origin. Another
+      attempt is made when a cache fill fails with one of the retry_conditions
+      or following a redirect response matching one of the
+      origin_redirect.redirect_conditions. Once the maximum attempts to this
+      origin have failed, the failover origin][], if specified, is used. The
+      failover origin can have its own `max_attempts`, `retry_conditions`,
+      `redirect_conditions`, and `failover_origin` values to control its cache
+      fill failures. The total number of allowed attempts to cache fill across
+      this and failover origins is limited to four. The total time allowed for
+      cache fill attempts across this and failover origins can be controlled
+      with `max_attempts_timeout`. The last valid, non-retried response from all
+      origins is returned to the client. If no origin returns a valid response,
+      an `HTTP 502` error is returned to the client. Defaults to 1. Must be a
+      value greater than 0 and less than 5.
+    type: integer
+  name:
+    description: |-
+      The name of the resource as provided by the client when the resource is
+      created. The name must be 1-64 characters long, and match the regular
+      expression `[a-zA-Z]([a-zA-Z0-9_-])*`, which means that the first
+      character must be a letter, and all following characters must be a dash,
+      an underscore, a letter, or a digit.
+    type: string
+  originAddress:
+    description: |-
+      A fully qualified domain name (FQDN), an IPv4 or IPv6 address reachable
+      over the public internet, or the address of a Google Cloud Storage bucket.
+      This address is used as the origin for cache requests. The following are
+      example origins: - **FQDN**: `media- backend.example.com` - **IPv4**:
+      `35.218.1.1` - **IPv6**: `2607:f8b0:4012:809::200e` - **Google Cloud
+      Storage**: `gs://bucketname` or `bucketname.storage.googleapis.com` The
+      following limitations apply to fully-qualified domain names: * They must
+      be resolvable through public DNS. * They must not contain a protocol (such
+      as `https://`). * They must not contain any slashes. When providing an IP
+      address, it must be publicly routable. IPv6 addresses must not be enclosed
+      in square brackets.
+    type: string
+  originOverrideAction:
+    description: |-
+      The override actions, including URL rewrites and header additions, for
+      requests that use this origin.
+    $ref: OriginOverrideAction.yaml
+  originRedirect:
+    description: Follow redirects from this origin.
+    $ref: OriginRedirect.yaml
+  port:
+    description: |-
+      The port to connect to the origin on. Defaults to port **443** for HTTP2
+      and HTTPS protocols and port **80** for HTTP.
+    type: integer
+  protocol:
+    description: |-
+      The protocol to use to connect to the configured origin. Defaults to
+      HTTP2, which is strongly recommended for both security and performance.
+      When using HTTP2 or HTTPS as the protocol, a valid, publicly-signed,
+      unexpired TLS (SSL) certificate must be presented by the origin server.
+    type: string
+    enum:
+    - HTTP
+    - HTTP2
+    - HTTPS
+    - PROTOCOL_UNSPECIFIED
+  retryConditions:
+    description: |-
+      Specifies one or more retry conditions for the configured origin. If the
+      failure mode during a connection attempt to the origin matches the
+      configured `retryConditions` values, the origin request retries up to
+      max_attempts times. The failover origin, if configured, is then used to
+      satisfy the request. The default `retry_conditions` value is
+      `CONNECT_FAILURE`. `retry_conditions` values apply to this origin, and not
+      to subsequent failover origins, which can specify their own
+      `retry_conditions` and `max_attempts` values. For a list of valid values,
+      see RetryConditions.
+    type: array
+    items:
+      type: string
+      enum:
+      - CONNECT_FAILURE
+      - FORBIDDEN
+      - GATEWAY_ERROR
+      - HTTP_5XX
+      - NOT_FOUND
+      - RETRIABLE_4XX
+      - RETRY_CONDITIONS_UNSPECIFIED
+  timeout:
+    description: |-
+      The connection and HTTP timeout configuration for this origin.
+    $ref: Timeout.yaml

@@ -1,0 +1,16 @@
+language: python
+sudo: false
+env:
+- TOX_ENV=py27
+install:
+- pip install tox
+script: tox -e $TOX_ENV
+deploy:
+  provider: pypi
+  user: jiangk
+  password:
+    secure: VtLUZu3b9aiqhZ+zhsvnWv0kqNE9hrUgmak2UhV+ymLMcNJIYve2QMXGz7iZbi2KqRUcQSF9DDoupSKINz3HAolXmAr3DB4T+wNlZqa57XQ/vL3VzZci0N5JmzhZbexRdXxA13HywlaiOSn85WtAIU0txhLPQmBeC2BNk9gqiGg1CZ1iXg8DiXzadgq33oRHWdbzFSZGPhpDmVmQxN0j7XrSQunevbgBVWQ/QMZEGGtUTz5JtK4smo/z9tM4hqUzoVdVsuBZU3p9yH+wIzU+2FucRDWeY0zE/nNPDgeUaDkbE++hDWuYfiz/DBIOwv0UiSHw0hCJjfY5yfpPAtgtC/YC9Kny8fBkOfz8wvcrlbaod32JPDX+JiJoDTlpUePYmq58nd/euhW8rJiLB7rxhP7GitYibClgpQf1cWLfHt8SU4MSom0gk4KfjcTxwEKbIpj8Xnj5Hxo5g9P8lwYaZTQ6zOFpthzBQ7sEGAo18LwjaRvLz/OIyu6QHfLH9a38aBumpBROXfBF4ftwioNSj5gxxR3FO5i0wG+KVkzlSYQNLcukHeMPzh8mDehBJZ5ebd+5tuv8siimAO8+8h4xpssY6rOMQaz91doS5gRDBSvaSjukA76I7fg5GdpxfTlyvz/pXMlDCFp2c9SLOxmLg7emrFNIEEQgtQd+YIzbSng=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: google/pyu2f

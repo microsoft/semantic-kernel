@@ -1,0 +1,38 @@
+- release_tracks: [GA, ALPHA, BETA]
+
+  help_text:
+    brief: Show details about an access level.
+    description: Show details about an access level in a given access policy.
+    examples: |
+      To show the details of the access policy ``my-policy'', run:
+
+        $ {command} my-policy
+
+  request:
+    collection: accesscontextmanager.accessPolicies.accessLevels
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
+    api_version: v1
+    BETA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The access level you want to show details about.
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:level
+    params:
+    - api_field: accessLevelFormat
+      arg_name: level-format
+      required: false
+      default: as_defined
+      hidden: true  # Hide until CEL is ready
+      help_text: The format in which to display the access level.
+      choices:
+      - arg_value: as_defined
+        enum_value: AS_DEFINED
+        help_text: Display each access level as-defined.
+      - arg_value: cel
+        enum_value: CEL
+        help_text: Display basic levels in CEL expression format.

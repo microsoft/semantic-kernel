@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Delete a Cloud Media Asset complex type.
+    description: Delete a new Media Asset complex type.
+    examples: |
+      To delete a new asset type with id  my-ct, run:
+
+        $ {command} my-ct
+
+  request:
+    collection: mediaasset.projects.locations.complexTypes
+    method: delete
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset asset type to delete.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:complex_type
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.media.asset.complex_types.hooks:ProcessOutput

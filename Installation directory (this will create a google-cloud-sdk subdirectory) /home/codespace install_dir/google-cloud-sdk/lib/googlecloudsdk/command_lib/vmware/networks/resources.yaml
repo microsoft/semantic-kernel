@@ -1,0 +1,37 @@
+project:
+  name: project
+  collection: vmwareengine.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: Project ID.
+    property: core/project
+  disable_auto_completers: false
+
+location:
+  name: location
+  collection: vmwareengine.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The resource name of the location.
+    fallthroughs:
+    - hook: googlecloudsdk.command_lib.vmware.networks.util:DefaultToGlobal
+      hint: set location as 'global' (default) or a region
+  disable_auto_completers: false
+
+vmware_engine_network:
+  name: VMware Engine network
+  collection: vmwareengine.projects.locations.vmwareEngineNetworks
+  attributes:
+  - *project
+  - *location
+  - &vmware_engine_network
+    parameter_name: vmwareEngineNetworksId
+    attribute_name: vmware-engine-network
+    help: VMware Engine network
+  disable_auto_completers: false
+

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="windows-1255"?>
+<!--
+Source: http://www.law.co.il/rss.php
+Expect: windows-1255
+-->
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN"
+ "http://my.netscape.com/publish/formats/rss-0.91.dtd">
+
+<?xml-stylesheet type="text/xsl" href="/template/rss2html.xsl"?>
+<rss version="0.91">
+
+<channel>
+  <title>law.co.il CyberLaw Articles (Hebrew)</title>
+  <link>http://www.law.co.il</link>
+<description>Articles &amp; News from Ravia &amp; Co., Law Offices, website.</description>
+<language>he-il</language>
+
+<copyright>Haim Ravia</copyright>
+
+<image>
+<width>124</width>
+<height>38</height>
+<url>http://www.law.co.il/images/law.co.il_rss.gif</url>
+<link>http://www.law.co.il/</link>
+</image>
+
+  <item>
+    <title>בדיחה רעה</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=258</link>
+    <description>
+תזכיר חוק מסחר אלקטרוני, התשס&amp;quot;ו-2005 מבקש להסדיר בחקיקה שתי סוגיות טעונות: חשיפת זהותם של מחברים אנונימיים והסרת תכנים פוגעניים. אלא שהוראות התזכיר בעניינים אלה לוקות בחסר ואינן מיישמות אחר לקחים שנלמדו בחיי המעשה מהוראות מקבילות בדינים האירופאיים והאמריקאיים.
+</description>
+   </item>
+
+  <item>
+    <title>על חוק מסחר אלקטרוני</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=257</link>
+    <description>
+בימים אלה פרסם משרד המשפטים להערות הציבור תזכיר חוק, המבקש להסדיר היבטים שונים של סחר אלקטרוני ושימוש ברשתות מחשב מקוונות. תזכיר החוק מבוסס על דו&amp;quot;ח ועדת הסחר האלקטרוני שפעלה במשרד. לא את כל ליקויי הדו&amp;quot;ח תיקן
+התזכיר...
+</description>
+   </item>
+
+  <item>
+    <title>אנונימיות מוגנת</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=256</link>
+    <description>
+העדרו של הליך לחשיפת פרטיהם של אלמונים המשתמשים באינטרנט לרעה - לדוגמה, כדי להשמיץ, לחדור למחשב או להפר זכויות יוצרים - הוא חסרון מהותי בדיני מידע בישראל. כיצד לאזן בין זכותם של תובעים תמימים לשם טוב או להגנה על קניינם לבין זכותם של דוברים אנונימיים להתבטא בחופשיות כל עוד אינם מפרים חוק? הפסיקה האמריקאית מגבשת קווים מנחים ב- John Doe v. Cahill.
+</description>
+   </item>
+
+  <item>
+    <title>לזבל או לא לזבל?</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=255</link>
+    <description>
+פסיקה חדשה של בית המשפט המחוזי בתל-אביב (בר&amp;quot;ע 2542/03 סוויסה נ' בן חיים) עוסקת באיסוף כתובות דואר אלקטרוני לצרכי דיוור. האמנם פסק הדין הוא 'עקרוני' ו'ראשון מסוגו' כפי שהכתירו אותו העתונים? המאמר מציע קריאה מונחית בפסק-הדין וגישה זהירה כלפי מה שמצטייר כהכרעה מטרידה.
+</description>
+   </item>
+
+  <item>
+    <title>טכנולוגיות מידע והגנת הפרטיות</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=254</link>
+    <description>
+משרד המשפטים מקים בימים אלה רשות משפטית לטכנולוגיות מידע ולהגנת הפרטיות. הרשות תחל לפעול ב- 2006 ובין השאר תאגד את רשמי מאגרי המידע והגורמים המאשרים. בין הסיבות להקמתה - החשש שהימנעות מאכיפת דינים וסיוע בחקירות מחשב בינלאומיות תמיט על ישראל סנקציות כדוגמת אלה שהוטלו קודם להקמת הרשות לאיסור הלבנת הון. מה מיועדת הרשות לעשות ובאיזה אופן תוכל להשפיע על תחומי עיסוקה? </description>
+   </item>
+
+  <item>
+    <title>שיתוף הקבצים חי ובועט</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=253</link>
+    <description>בימים אלה ניתן פסק דין בבית משפט באוסטרליה כנגד בעליה של תוכנת שיתוף הקבצים קאזה. פסק הדין מחסל, הלכה למעשה, את עסקיה של קאזה עם השוק האוסטרלי ומצטרף לפסק דין דומה שניתן בארצות הברית כנגד תוכנות נוספות. רבים רואים בהחלטה זו מכה נוספת שניחתה על תוכנות שיתוף הקבצים וכהישג במאבק בהפרת זכויות יוצרים באינטרנט. מאמר זה מבקש לצנן את ההתלהבות האוחזת במצדדים במאבק של תעשיות התקליטים, הסרטים והתוכנה. ההישג קטן מדי, בא באיחור ומהר מאד יהפוך לבלתי רלבנטי. </description>
+   </item>
+
+  <item>
+    <title>המחיר החברתי של אחריות ספקים</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=248</link>
+    <description>פסק-דין חדש של בית משפט השלום בתל-אביב מחזק את המגמה של הסרת האחריות מספקי שירותים באינטרנט על תוכן משמיץ שפירסמו המשתמשים באתרי האינטרנט שלהם. הוא אף קובע שאין לאפשר לאדם ליצור לעצמו &amp;quot;חסינות&amp;quot; מפני כל פרסום שהוא לכאורה פוגע, על ידי משלוח מכתב אזהרה לאתר, תוך חיוב האתר מאותו שלב ואילך להיות אחראי למנוע כל פרסום המתייחס לאותו אדם שיש בו משום לשון הרע. לצד זה, יש בו הרהור מדאיג בשאלה האם אתר אינטרנט = עיתון. </description>
+   </item>
+
+  <item>
+    <title>סוף עידן החלפת הקבצים?</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=247</link>
+    <description>בית המשפט העליון של ארצות-הברית פסק: חברות המפתחות תוכנות לשיתוף קבצים מסייעות בהפרת זכות יוצרים אם הן מפיצות את התוכנה בכוונה לקדם הפרות. בכך סייג בית המשפט את הלכת סוני (1984). האם החלפת הקבצים תעלם מן העולם? </description>
+   </item>
+
+  <item>
+    <title>פיל לבן</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=245</link>
+    <description>חלפו עשר שנים מאז נחקק חוק המחשבים. זמן לחשבון נפש - האם זהו החוק הנכון? (לא), האם הבעיה נמצאת רק בו? (לא) ומה כדאי לעשות הלאה.
+</description>
+   </item>
+
+  <item>
+    <title>אפשר אחרת</title>
+    <link>http://law.co.il/showarticles.php?d=h&amp;article=244</link>
+    <description>חשיפה ראשונה - מערכת לניהול בוררויות מקוונות בין חברות הביטוח טיפלה בשנה החולפת בתביעות בסכום של כ- 200 מליון ש&amp;quot;ח. מהשקתה לפני כשנתיים נוהלו בה 16,000 תיקים. המערכת מאפשרת למנוייה - כל חברות הביטוח בישראל למעט אחת - ממשק דפדפן לניהול תיקים וקבלת מידע. היא מציעה ערכאת ערעור פנימית ומפרסמת פסקי בורר בעלי עניין לכל מנויה.&amp;quot;אפשר אחרת&amp;quot; מסכם יוזם המערכת, עו&amp;quot;ד יהודה טוניק.
+</description>
+   </item>
+
+</channel>
+</rss>

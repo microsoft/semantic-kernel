@@ -1,0 +1,67 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Create a simulation.
+    description: |
+      Create a new simulation.
+
+    examples: |
+      The following command creates a simulation where the proposed config changes are specified
+      in the `PROPOSED_CONFIG_FILE` argument and the file is in tf format and
+      requested simulation-type is connectivity-test.
+
+        $ {command} --proposed-config-file=`PROPOSED_CONFIG_FILE` --file-format=tf --simulation-type=connectivity-test
+
+      The following command creates a simulation where the proposed config changes are specified
+      in the `PROPOSED_CONFIG_FILE` argument, original config is specified in `ORIGINAL_CONFIG_FILE`
+      argument and both the files are in gcp format and requested simulation-type is connectivity-test.
+
+       $ {command} --proposed-config-file=`PROPOSED_CONFIG_FILE` --original-config=`ORIGINAL_CONFIG_FILE` --file-format=gcp --simulation-type=connectivity-test
+
+  request:
+    collection: networkmanagement.projects.locations.simulations
+    disable_resource_check: true
+    ALPHA:
+      api_version: v1alpha1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.network_management.simulation.hooks:SetProjectAsParent
+    - googlecloudsdk.command_lib.network_management.simulation.hooks:ProcessSimulationConfigChangesFile
+
+  arguments:
+    params:
+    - arg_name: proposed-config-file
+      metavar: PROPOSED_CONFIG_FILE
+      required: true
+      help_text: |
+        Path to json file containing the changes.
+    - arg_name: original-config-file
+      metavar: ORIGINAL_CONFIG_FILE
+      help_text: |
+        Path to JSON file with the original config. Required when FILE_FORMAT is gcp.
+    - arg_name: file-format
+      metavar: FILE_FORMAT
+      required: true
+      help_text: |
+        Format of the proposed-config-file.
+      choices:
+      - arg_value: gcp
+        help_text: The config change file is in gcp format.
+      - arg_value: tf
+        help_text: The config change file is in terraform format.
+    - arg_name: simulation-type
+      required: true
+      help_text: |
+        Type of simulation.
+      choices:
+      - arg_value: connectivity-test
+      - arg_value: shadowed-firewall
+
+  async:
+    collection: networkmanagement.projects.locations.operations
+
+  output:
+    format: |
+      table(
+         response.name.basename():label=SIMULATION_ID
+        )

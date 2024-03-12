@@ -1,0 +1,69 @@
+region:
+  name: region
+  collection: datamigration.projects.locations
+  request_id_field: location.name
+  attributes:
+  - &region
+    parameter_name: locationsId
+    attribute_name: region
+    help: The name of the region.
+
+connection_profile:
+  name: connection_profile
+  collection: datamigration.projects.locations.connectionProfiles
+  request_id_field: connection_profile.name
+  attributes:
+  - *region
+  - &connection_profile
+    parameter_name: connectionProfilesId
+    attribute_name: connection_profile
+    help: The connection profile name.
+  disable_auto_completers: false
+
+migration_job:
+  name: migration_job
+  collection: datamigration.projects.locations.migrationJobs
+  request_id_field: migration_job.name
+  attributes:
+  - *region
+  - &migration_job
+    parameter_name: migrationJobsId
+    attribute_name: migration_job
+    help: The migration job name.
+  disable_auto_completers: false
+
+conversion_workspace:
+  name: conversion_workspace
+  collection: datamigration.projects.locations.conversionWorkspaces
+  request_id_field: conversion_workspace.name
+  attributes:
+  - *region
+  - &conversion_workspace
+    parameter_name: conversionWorkspacesId
+    attribute_name: conversion_workspace
+    help: The conversion workspace name.
+  disable_auto_completers: false
+
+operation:
+  name: operation
+  collection: datamigration.projects.locations.operations
+  request_id_field: operation.name
+  attributes:
+  - *region
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: The operation name.
+  disable_auto_completers: false
+
+private_connection:
+  name: private_connection
+  collection: datamigration.projects.locations.privateConnections
+  request_id_field: private_connection.name
+  attributes:
+  - *region
+  - &private_connection
+    parameter_name: privateConnectionsId
+    attribute_name: private_connection
+    help: The private connection name.
+  disable_auto_completers: false

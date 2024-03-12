@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Update an IAM service account.
+    description: |
+      Update an IAM service account.
+
+      If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
+    examples: |
+      To update the description and display name for a service account, run:
+
+        $ {command} my-iam-account@my-project.iam.gserviceaccount.com --description="Updated description." --display-name="Updated Name"
+
+  arguments:
+    resource:
+      help_text: |-
+        The service account to update. The account should be formatted either as a numeric service account ID or as an email, like this: 123456789876543212345 or my-iam-account@somedomain.com.
+      spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
+    params:
+    - arg_name: display-name
+      api_field: patchServiceAccountRequest.serviceAccount.displayName
+      help_text: |
+        The new textual name to display for the account.
+    - arg_name: description
+      api_field: patchServiceAccountRequest.serviceAccount.description
+      help_text: |
+        The new textual description for the account.
+
+  request:
+    collection: iam.projects.serviceAccounts
+    parse_resource_into_request: false
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:SetServiceAccountResource
+    - googlecloudsdk.command_lib.iam.hooks:ValidateUpdateFieldMask

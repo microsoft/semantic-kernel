@@ -1,0 +1,48 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta HostRule export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  description:
+    description: |-
+      An optional description of this resource. Provide this property when you
+      create the resource.
+    type: string
+  hosts:
+    description: |-
+      The list of host patterns to match. They must be valid hostnames with
+      optional port numbers in the format host:port. * matches any string of
+      ([a-z0-9-.]*). In that case, * must be the first character, and if
+      followed by anything, the immediate following character must be either -
+      or .. * based matching is not supported when the URL map is bound to a
+      target gRPC proxy that has the validateForProxyless field set to true.
+    type: array
+    items:
+      type: string
+  pathMatcher:
+    description: |-
+      The name of the PathMatcher to use to match the path portion of the
+      URL if the hostRule matches the URL's host portion.
+    type: string

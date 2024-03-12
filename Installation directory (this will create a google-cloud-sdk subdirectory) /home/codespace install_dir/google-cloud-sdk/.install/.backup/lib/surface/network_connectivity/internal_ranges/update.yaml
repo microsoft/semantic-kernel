@@ -1,0 +1,72 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: |
+      Update an internal range.
+    description: |
+      Update the details of an internal range.
+    examples: |
+      Update ip-cidr-range of an internal range named ``my-range'':
+
+        $ {command} my-range
+          --ip-cidr-range="192.168.0.0/24"
+
+      Extend an internal range named ``my-range'' to an address block of /24:
+
+        $ {command} my-range
+          --prefix-length=24
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:internalRange
+      help_text: |
+        Name of the internal range to be created.
+    params:
+    - group:
+        mutex: true
+        params:
+        - arg_name: ip-cidr-range
+          api_field: internalRange.ipCidrRange
+          help_text: |
+            IP range that this internal range defines.
+        - arg_name: prefix-length
+          api_field: internalRange.prefixLength
+          help_text: |
+            An alternative to ip-cidr-range.
+            Can be set when trying to create a reservation that automatically finds a free range of
+            the given size.
+    - group:
+        mutex: true
+        params:
+        - arg_name: clear-overlaps
+          type: bool
+          help_text: |
+            Clear existing overlap fields for the range.
+        - arg_name: overlaps
+          api_field: internalRange.overlaps
+          help_text: Overlap specifications for the range being updated.
+          choices:
+          - arg_value: overlap-route-range
+            enum_value: OVERLAP_ROUTE_RANGE
+            help_text: |
+              Allows for creation or existence of routes that have a more specific destination
+              than the created range.
+          - arg_value: overlap-existing-subnet-range
+            enum_value: OVERLAP_EXISTING_SUBNET_RANGE
+            help_text: |
+              Allows for creation of internal ranges that overlap with existing subnets.
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.network_connectivity.util:ClearOverlaps
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.network_connectivity.util:ClearOverlaps
+    collection: networkconnectivity.projects.locations.internalRanges
+    method: patch

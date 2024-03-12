@@ -1,0 +1,60 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Update a VPC Access connector.
+    description: |
+      Update an existing VPC Access connector with the given name.
+
+      This command can fail for the following reasons:
+        * Invalid parameters are passed to this command.
+        * The active account does not have permission to update instances.
+    examples: |
+      The following command updates a VPC Access connector with name
+      `my-vpc-connector` in region `us-central1`:
+
+        $ {command} my-vpc-connector --region=us-central1 --min-instances=3 --max-instances=5
+
+  async:
+    collection: vpcaccess.projects.locations.operations
+
+  request:
+    collection: vpcaccess.projects.locations.connectors
+    api_version: v1
+    BETA:
+      api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:connector_v1
+      ALPHA:
+        spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:connector
+      help_text: |
+        Arguments and flags that specify the VPC Access connector you want to update.
+    params:
+    - arg_name: min-instances
+      release_tracks: [ALPHA, BETA, GA]
+      api_field: connector.minInstances
+      required: false
+      help_text: |
+        If set, updates the minimum number of instances within an autoscaling group underlying the
+        connector. Value must be between 2 and 9, inclusive, greater than or equal to the currently
+        set minimum number of instances, and less than the value specified by --max-instances`.
+        `--max-instances` must be provided
+    - arg_name: max-instances
+      release_tracks: [ALPHA, BETA, GA]
+      api_field: connector.maxInstances
+      required: false
+      help_text: |
+        If set, updates the maximum number of instances within an autoscaling group underlying the
+        connector. Value must be between 3 and 10, inclusive, greater than or equal to the currently
+        set maximum number of instances, and greater than the value specified by `--min-instances`.
+        `--min-instances` must be provided.
+    - arg_name: machine-type
+      release_tracks: [ALPHA, BETA, GA]
+      api_field: connector.machineType
+      required: false
+      help_text: |
+        If set, updates the machine type of VMs underlying the connector. Accepted values are
+        "e2-micro", "f1-micro", and "e2-standard-4".

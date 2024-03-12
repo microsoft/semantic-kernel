@@ -1,0 +1,22 @@
+- help_text:
+    brief: Describe a Tensorflow version available for Cloud TPUs.
+    description: |
+      Get details on a Tensorflow version.
+
+      To get a list of available Tesnorflow versions for your location run:
+
+        $ {parent_command} list
+
+    examples: |
+      The following command describes the TensorFlow `1.15` version running in zone `us-central1-b`:
+
+        $ {command} 1.15 --zone=us-central1-b
+
+  request:
+    collection: tpu.projects.locations.tensorflowVersions
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The Tensorflow version you want to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:tensorflowversion

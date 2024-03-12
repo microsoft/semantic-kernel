@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Deny a grant.
+    description: |
+      Deny a grant with a given name and reason.
+    examples: |
+      The following command denies a grant with a given name and provides a reason for denial:
+
+      $ {command} grant-name --reason denial-reason
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    method: deny
+    collection:
+    - privilegedaccessmanager.projects.locations.entitlements.grants
+    - privilegedaccessmanager.folders.locations.entitlements.grants
+    - privilegedaccessmanager.organizations.locations.entitlements.grants
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:grant
+      help_text: |
+        The name of the grant to deny.
+    params:
+    - api_field: denyGrantRequest.reason
+      arg_name: reason
+      help_text: Reason for denying the grant.

@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Set the IAM policy of the given storage pool."
+    description: "Set the IAM policy of the given storage pool."
+    examples: |
+      The following command sets the IAM configuration of the specified
+      storage pool with the specified policy file.
+
+        $ {command} my-storage-pool policy.json
+
+  request:
+    collection: compute.storagePools
+    use_relative_name: false
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=zoneSetPolicyRequest.policy.version
+    api_version: alpha
+    method: setIamPolicy
+
+  arguments:
+    resource:
+      help_text: Storage pool you want to get the IAM permissions of.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool
+
+  iam:
+    set_iam_policy_request_path: zoneSetPolicyRequest
+    message_type_overrides:
+      policy: Policy
+      set_iam_policy_request: ComputeStoragePoolsSetIamPolicyRequest

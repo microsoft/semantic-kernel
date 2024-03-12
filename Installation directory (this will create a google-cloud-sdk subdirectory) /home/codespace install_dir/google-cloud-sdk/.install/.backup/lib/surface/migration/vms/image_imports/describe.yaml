@@ -1,0 +1,18 @@
+- help_text:
+    brief: describe an Image Import.
+    description: |
+      {command} describes an Image Import resource with a nested Image Import Job.
+      The Image Import Job resource tracks the image import progress.
+      To use this command, you must enable VM Migration API in your project.
+
+    examples: |
+      To describe my-image-import resource in us-central1 in the default project, run:
+        $ {command} my-image-import --location=us-central1
+
+  request:
+    collection: vmmigration.projects.locations.imageImports
+
+  arguments:
+    resource:
+      help_text: The Image Import you want to describe.
+      spec: !REF googlecloudsdk.command_lib.migration.vms.resources:imageImport

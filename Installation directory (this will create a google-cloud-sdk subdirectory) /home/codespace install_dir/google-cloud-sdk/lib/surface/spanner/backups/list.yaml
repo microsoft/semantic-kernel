@@ -1,0 +1,44 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List existing Cloud Spanner Cloud Spanner backups.
+    description: List existing Cloud Spanner Cloud Spanner backups.
+    examples: |
+      To list existing backups for the instance, run:
+
+        $ {command} --instance=INSTANCE_NAME
+
+      To list existing backups for a database, run:
+
+        $ {command} --instance=INSTANCE_NAME --database=DATABASE
+
+  request:
+    collection: spanner.projects.instances.backups
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.spanner.backups:ModifyListRequest
+
+  arguments:
+    params:
+    - arg_name: database
+      api_field: filter
+      required: false
+      help_text: |
+        ID of the source database. The database flag will take precedence over filters added for
+        database.
+    resource:
+      help_text: Cloud Spanner instance ID.
+      spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
+
+  output:
+    format: |
+      table(
+        name.basename(): label=BACKUP,
+        database.basename(): label=SOURCE_DATABASE,
+        versionTime: label=VERSION_TIME,
+        createTime: label=CREATION_TIME,
+        expireTime: label=EXPIRATION_TIME,
+        state: label=STATE,
+        encryptionInfo.encryptionType: label=ENCRYPTION_TYPE,
+        sizeBytes: label=BACKUP_SIZE_IN_BYTES,
+        referencingDatabases: label=IN_USE_BY
+      )

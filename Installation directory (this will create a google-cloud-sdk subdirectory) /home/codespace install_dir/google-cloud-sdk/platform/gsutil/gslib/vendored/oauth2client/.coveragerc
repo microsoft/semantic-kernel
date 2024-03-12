@@ -1,0 +1,16 @@
+[run]
+branch = True
+
+[report]
+omit =
+    */samples/*
+    */conftest.py
+    # Don't report coverage over platform-specific modules.
+    oauth2client/contrib/_fcntl_opener.py
+    oauth2client/contrib/_win32_opener.py
+    oauth2client/contrib/django_util/apps.py
+exclude_lines =
+    # Re-enable the standard pragma
+    pragma: NO COVER
+    # Ignore debug-only repr
+    def __repr__

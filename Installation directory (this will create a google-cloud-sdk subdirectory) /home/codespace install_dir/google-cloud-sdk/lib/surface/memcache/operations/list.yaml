@@ -1,0 +1,46 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      List Memorystore Memcached operations.
+    description: |
+      List all Memorystore Memcached operations under the specified project and region.
+
+      Specify the maximum number of operations to list using the `--limit` flag.
+    examples: |
+      To list all operations in region `us-central1`, run:
+
+          $ {command} --region=us-central1
+
+      To list up to five operations in region `us-central1`, run:
+
+          $ {command} --limit=5 --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.memcache.resources:region
+      help_text: |
+        Region of the operations to display.
+
+  request:
+    ALPHA:
+      api_version: v1beta2
+    BETA:
+      api_version: v1beta2
+    GA:
+      api_version: v1
+    collection: memcache.projects.locations.operations
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+     table(
+        name.basename():label=OPERATION_NAME,
+        name.segment(3):label=LOCATION,
+        metadata.verb:label=TYPE,
+        metadata.target.basename(),
+        done,
+        metadata.createTime.date():sort=1,
+        duration(start=metadata.createTime,end=metadata.endTime,precision=0,calendar=false).slice(2:).join("").yesno(no="<1S"):label=DURATION
+      )

@@ -1,0 +1,67 @@
+# Copyright 2018 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Redact potentially sensitive data from image content.
+    description: |
+      Redact potentially sensitive data from image content.
+    examples: |
+      To redact phone numbers from an image named my-image.jpg and write the
+      redacted image to my-redacted-image.jpg, run:
+
+        $ {command} my-image.jpg --info-types PHONE_NUMBER \
+            --output-file my-redacted-image.jpg
+
+  request:
+    collection: dlp.projects.image
+    method: redact
+    api_version: v2
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.dlp.hooks:AddOutputFileFlag
+    params:
+    - _COMMON_: image_file
+      api_field: googlePrivacyDlpV2RedactImageRequest.byteItem
+    - arg_name: redact-all-text
+      api_field: googlePrivacyDlpV2RedactImageRequest.imageRedactionConfigs.redactAllText
+      action: store_true
+      help_text: |
+        If specified, all text info in the image will be removed,
+        whether it is detected as sensitive or not.
+      required: false
+    - arg_name: redact-color
+      api_field: googlePrivacyDlpV2RedactImageRequest.imageRedactionConfigs.redactionColor
+      processor: googlecloudsdk.command_lib.dlp.hooks:GetRedactColorFromString
+      help_text: |
+        The color to use when redacting content from an image. If not
+        specified, the default value is black. Colors should be specified as
+        a string of `r,g,b` float values in the interval [0,1] representing
+        the amount of red, green, and blue in the color, respectively.
+        For example, `black = 0,0,0`, `red = 1.0,0,0`, `white = 1.0,1.0,1.0`,
+        and so on.
+      required: false
+    # Need to override shared arg definitions
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
+      api_field: googlePrivacyDlpV2RedactImageRequest.inspectConfig.infoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
+      api_field: googlePrivacyDlpV2RedactImageRequest.inspectConfig.minLikelihood
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:include_quote
+      api_field: googlePrivacyDlpV2RedactImageRequest.inspectConfig.includeQuote
+    resource:
+      help_text: Project to use to redact images.
+      spec: !REF googlecloudsdk.command_lib.dlp.resources:project_image
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.dlp.hooks:PossiblyWriteRedactedImageResponseToOutputFile

@@ -1,0 +1,17 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Show details about a database migration private connection.
+    description: Show details about a private connection.
+    examples: |
+      To show details about a private connection called 'my-private-connection', run:
+
+        $ {command} my-private-connection --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.privateConnections
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The private connection you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:private_connection

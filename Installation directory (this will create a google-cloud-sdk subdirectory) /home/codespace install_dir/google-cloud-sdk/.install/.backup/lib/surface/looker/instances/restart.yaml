@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: |
+      Restart a Looker instance.
+    description: |
+      Restart for a Looker instance.
+
+      This command can fail for the following reasons:
+        * The instance specified does not exist.
+        * The active account does not have permission to access the given
+          instance.
+    examples: |
+      To restart an instance with the name `my-looker-instance` in the default
+      region, run:
+
+        $ {command} my-looker-instance --async
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:instance
+      help_text: |
+        Arguments and flags that specify the Looker instance you want
+        to describe.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    collection: looker.projects.locations.instances
+    method: restart
+
+  async:
+    collection: looker.projects.locations.operations
+
+  output:
+    format: none

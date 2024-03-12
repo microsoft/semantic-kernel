@@ -1,0 +1,192 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Update a Data Catalog entry.
+    description: |-
+      Update a Data Catalog entry. The entry to update can either be specified directly, or
+      the `--lookup-entry` flag may be used to update the entry corresponding to the lookup of the
+      given resource.
+    examples: |-
+      To update the schema of a Cloud Pub/Sub entry inline, run:
+
+        $ {command} entry1 \
+            --location=global --entry-group=@pubsub \
+            --schema="column1=type1,column2=type2"
+
+      To update the schema of a Cloud Pub/Sub entry from a file, run:
+
+        $ {command} entry1 \
+            --location=global --entry-group=@pubsub \
+            --schema-from-file="/tmp/schema.json"
+
+      To lookup the entry of a Cloud Pub/Sub topic by its SQL name and update its schema in one command, run:
+
+        $ {command} \
+            --lookup-entry='pubsub.topic.`my-project1`.topic1' \
+            --schema="column1=type1,column2=type2"
+
+  request:
+    api_version: v1
+    collection: datacatalog.projects.locations.entryGroups.entries
+    display_resource_type: entry
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:LookupAndParseEntry
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:CorrectUpdateMask
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:MergeGcsFilePatterns
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:ParsePhysicalSchema
+
+  arguments:
+    params:
+    - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:description
+    - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:display_name
+    - group:
+        mutex: true
+        help_text: |
+          New column schema for the entry. A schema consists of a list of column names along with
+          their types, descriptions, modes, and nested subcolumns. For example:
+
+          ```
+          - column: first_name
+            description: First name
+            mode: REQUIRED
+            type: STRING
+          - column: last_name
+            description: Last name
+            mode: REQUIRED
+            type: STRING
+          - column: addresses
+            description: Addresses
+            mode: REPEATED
+            type: RECORD
+            subcolumns:
+            - column: city
+              description: City
+              mode: NULLABLE
+              type: STRING
+            - column: state
+              description: State
+              mode: NULLABLE
+              type: STRING
+
+          ```
+        params:
+        - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:schema
+        - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:schema_from_file
+
+    - group:
+        mutex: true
+        params:
+        - group:
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:add_file_patterns
+            - group:
+                mutex: true
+                params:
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:remove_file_patterns
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:clear_file_patterns
+        - group:
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:user_specified_type
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:user_specified_system
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:linked_resource
+        - group:
+            hidden: true
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster_bootstrap_servers
+        - group:
+            hidden: true
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_topic
+            - group:
+                params:
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:physical_schema_type
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:physical_schema_file
+
+
+    additional_arguments_hook: |-
+      googlecloudsdk.command_lib.data_catalog.entries.flags:AddEntryUpdateArgs
+
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Update a Data Catalog entry.
+    description: |-
+      Update a Data Catalog entry. The entry to update can either be specified directly, or
+      the `--lookup-entry` flag may be used to update the entry corresponding to the lookup of the
+      given resource.
+    examples: |-
+      To update the schema of a Cloud Pub/Sub entry inline, run:
+
+        $ {command} entry1 \
+            --location=global --entry-group=@pubsub \
+            --schema="column1=type1,column2=type2"
+
+      To update the schema of a Cloud Pub/Sub entry from a file, run:
+
+        $ {command} entry1 \
+            --location=global --entry-group=@pubsub \
+            --schema-from-file="/tmp/schema.json"
+
+      To lookup the entry of a Cloud Pub/Sub topic by its SQL name and update its schema in one command, run:
+
+        $ {command} \
+            --lookup-entry='pubsub.topic.`my-project1`.topic1' \
+            --schema="column1=type1,column2=type2"
+
+  request:
+    collection: datacatalog.projects.locations.entryGroups.entries
+    display_resource_type: entry
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.entries.util:LookupAndParseEntry
+    - googlecloudsdk.command_lib.data_catalog.entries.util:CorrectUpdateMask
+    - googlecloudsdk.command_lib.data_catalog.entries.util:MergeGcsFilePatterns
+
+  arguments:
+    params:
+    - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:description
+    - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:display_name
+    - group:
+        mutex: true
+        help_text: |
+          New column schema for the entry. A schema consists of a list of column names along with
+          their types, descriptions, modes, and nested subcolumns. For example:
+
+          ```
+          - column: first_name
+            description: First name
+            mode: REQUIRED
+            type: STRING
+          - column: last_name
+            description: Last name
+            mode: REQUIRED
+            type: STRING
+          - column: addresses
+            description: Addresses
+            mode: REPEATED
+            type: RECORD
+            subcolumns:
+            - column: city
+              description: City
+              mode: NULLABLE
+              type: STRING
+            - column: state
+              description: State
+              mode: NULLABLE
+              type: STRING
+
+          ```
+        params:
+        - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:schema
+        - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:schema_from_file
+
+    - group:
+        params:
+        - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:add_file_patterns
+        - group:
+            mutex: true
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:remove_file_patterns
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:clear_file_patterns
+
+
+    additional_arguments_hook: |-
+      googlecloudsdk.command_lib.data_catalog.entries.flags:AddEntryUpdateArgs

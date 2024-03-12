@@ -1,0 +1,20 @@
+- help_text:
+    brief: Delete a Cloud Build Repository
+    description: Delete a Cloud Build Repository in a Connection.
+    examples: |
+      To delete Cloud Build repository ``my-repo'' in connection ``my-conn'',
+      run the following command:
+
+      $ {command} my-repo --connection=my-conn --region=us-central1
+
+  request:
+    collection: cloudbuild.projects.locations.connections.repositories
+    api_version: v2
+
+  arguments:
+    resource:
+      help_text: Cloud Build repository to delete.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources_v2:repository
+
+  async:
+    collection: cloudbuild.projects.locations.operations

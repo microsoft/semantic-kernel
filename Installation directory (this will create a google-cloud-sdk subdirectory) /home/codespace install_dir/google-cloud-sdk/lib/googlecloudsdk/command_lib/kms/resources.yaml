@@ -1,0 +1,61 @@
+project:
+  name: project
+  collection: cloudkms.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project name.
+
+location:
+  name: location
+  collection: cloudkms.projects.locations
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location of the resource.
+
+ekm_connection:
+  name: ekm connection
+  collection: cloudkms.projects.locations.ekmConnections
+  attributes:
+  - *project
+  - *location
+  - &ekm_connection
+    parameter_name: ekmConnectionsId
+    attribute_name: ekm_connection
+    help: The name of the ekm connection.
+
+key_ring:
+  name: keyring
+  collection: cloudkms.projects.locations.keyRings
+  attributes:
+  - *project
+  - *location
+  - &keyring
+    parameter_name: keyRingsId
+    attribute_name: keyring
+    help: The containing keyring.
+
+import_job:
+  name: import job
+  collection: cloudkms.projects.locations.keyRings.importJobs
+  attributes:
+  - *project
+  - *location
+  - *keyring
+  - parameter_name: importJobsId
+    attribute_name: import_job
+    help: The name of the import job.
+
+key:
+  name: key
+  collection: cloudkms.projects.locations.keyRings.cryptoKeys
+  attributes:
+  - *project
+  - *location
+  - *keyring
+  - parameter_name: cryptoKeysId
+    attribute_name: key
+    help: The name of the key.

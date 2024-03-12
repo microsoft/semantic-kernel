@@ -1,0 +1,29 @@
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: Get the IAM policy for a Compute Engine machine image.
+  description: |
+    *{command}* displays the IAM policy associated with a Compute Engine machine image in a
+    project. If formatted as JSON, the output can be edited and used as a policy file for {command}
+    set-iam-policy. The output includes an `etag` field that identifies the version emitted and
+    allows detection of concurrent policy updates; see $ {command} set-iam-policy for additional details.
+  examples: |
+    To print the IAM policy for a given machine image, run:
+
+      $ {command} my-machine-image
+
+request:
+  collection: compute.machineImages
+  use_relative_name: false
+  api_version: v1
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=optionsRequestedPolicyVersion
+
+arguments:
+  resource:
+    help_text: The machine image to display the IAM policy for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:machine_image

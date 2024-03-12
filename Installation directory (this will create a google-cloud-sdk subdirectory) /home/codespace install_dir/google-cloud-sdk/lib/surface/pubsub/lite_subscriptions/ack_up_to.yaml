@@ -1,0 +1,35 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Acknowledge messages on a Pub/Sub Lite subscription.
+  description: |
+    Acknowledge all messages on a Pub/Sub Lite subscription up to the provided offset. The message
+    corresponding to the provided offset will be included in the list of messages that are
+    acknowledged.
+  examples: |
+    To acknowledge messages on a Pub/Sub Lite subscription, run:
+
+        $ {command} mysubscription \
+            --location=us-central1-a \
+            --partition=0 \
+            --offset=10
+
+request:
+  collection: pubsublite.cursor.projects.locations.subscriptions
+  method: commitCursor
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateCommitCursorRequest
+
+arguments:
+  resource:
+    help_text: Subscription on which to acknowledge messages.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_cursor_subscription
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:partition
+    required: true
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:offset
+    required: true

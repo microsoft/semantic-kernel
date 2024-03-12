@@ -1,0 +1,18 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Show details about a certificate template.
+    description: Show details about a certificate template.
+    examples: |
+      To show details about a certificate template, run:
+
+        $ {command} my-template --location=us-central1
+
+  request:
+    collection: privateca.projects.locations.certificateTemplates
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The certificate template you want to describe.
+      spec: !REF googlecloudsdk.command_lib.privateca.resources:certificate_template

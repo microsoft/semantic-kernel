@@ -1,0 +1,2112 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-04-20",
+    "endpointPrefix":"bedrock",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"Amazon Bedrock",
+    "serviceId":"Bedrock",
+    "signatureVersion":"v4",
+    "signingName":"bedrock",
+    "uid":"bedrock-2023-04-20"
+  },
+  "operations":{
+    "CreateModelCustomizationJob":{
+      "name":"CreateModelCustomizationJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/model-customization-jobs",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateModelCustomizationJobRequest"},
+      "output":{"shape":"CreateModelCustomizationJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a fine-tuning job to customize a base model.</p> <p>You specify the base foundation model and the location of the training data. After the model-customization job completes successfully, your custom model resource will be ready to use. Training data contains input and output text for each record in a JSONL format. Optionally, you can specify validation data in the same format as the training data. Amazon Bedrock returns validation loss metrics and output generations after the job completes. </p> <p> Model-customization jobs are asynchronous and the completion time depends on the base model and the training/validation data size. To monitor a job, use the <code>GetModelCustomizationJob</code> operation to retrieve the job status.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a> in the Bedrock User Guide.</p>",
+      "idempotent":true
+    },
+    "CreateProvisionedModelThroughput":{
+      "name":"CreateProvisionedModelThroughput",
+      "http":{
+        "method":"POST",
+        "requestUri":"/provisioned-model-throughput",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateProvisionedModelThroughputRequest"},
+      "output":{"shape":"CreateProvisionedModelThroughputResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a provisioned throughput with dedicated capacity for a foundation model or a fine-tuned model.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-service.html\">Provisioned throughput</a> in the Bedrock User Guide.</p>",
+      "idempotent":true
+    },
+    "DeleteCustomModel":{
+      "name":"DeleteCustomModel",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/custom-models/{modelIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteCustomModelRequest"},
+      "output":{"shape":"DeleteCustomModelResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes a custom model that you created earlier. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a> in the Bedrock User Guide.</p>",
+      "idempotent":true
+    },
+    "DeleteModelInvocationLoggingConfiguration":{
+      "name":"DeleteModelInvocationLoggingConfiguration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/logging/modelinvocations",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteModelInvocationLoggingConfigurationRequest"},
+      "output":{"shape":"DeleteModelInvocationLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Delete the invocation logging. </p>",
+      "idempotent":true
+    },
+    "DeleteProvisionedModelThroughput":{
+      "name":"DeleteProvisionedModelThroughput",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/provisioned-model-throughput/{provisionedModelId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteProvisionedModelThroughputRequest"},
+      "output":{"shape":"DeleteProvisionedModelThroughputResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes a provisioned throughput. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-service.html\">Provisioned throughput</a> in the Bedrock User Guide.</p>",
+      "idempotent":true
+    },
+    "GetCustomModel":{
+      "name":"GetCustomModel",
+      "http":{
+        "method":"GET",
+        "requestUri":"/custom-models/{modelIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetCustomModelRequest"},
+      "output":{"shape":"GetCustomModelResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Get the properties associated with a Amazon Bedrock custom model that you have created.For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a> in the Bedrock User Guide.</p>"
+    },
+    "GetFoundationModel":{
+      "name":"GetFoundationModel",
+      "http":{
+        "method":"GET",
+        "requestUri":"/foundation-models/{modelIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetFoundationModelRequest"},
+      "output":{"shape":"GetFoundationModelResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Get details about a Amazon Bedrock foundation model.</p>"
+    },
+    "GetModelCustomizationJob":{
+      "name":"GetModelCustomizationJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/model-customization-jobs/{jobIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetModelCustomizationJobRequest"},
+      "output":{"shape":"GetModelCustomizationJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the properties associated with a model-customization job, including the status of the job. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a> in the Bedrock User Guide.</p>"
+    },
+    "GetModelInvocationLoggingConfiguration":{
+      "name":"GetModelInvocationLoggingConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/logging/modelinvocations",
+        "responseCode":200
+      },
+      "input":{"shape":"GetModelInvocationLoggingConfigurationRequest"},
+      "output":{"shape":"GetModelInvocationLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Get the current configuration values for model invocation logging.</p>"
+    },
+    "GetProvisionedModelThroughput":{
+      "name":"GetProvisionedModelThroughput",
+      "http":{
+        "method":"GET",
+        "requestUri":"/provisioned-model-throughput/{provisionedModelId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetProvisionedModelThroughputRequest"},
+      "output":{"shape":"GetProvisionedModelThroughputResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Get details for a provisioned throughput. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-service.html\">Provisioned throughput</a> in the Bedrock User Guide.</p>"
+    },
+    "ListCustomModels":{
+      "name":"ListCustomModels",
+      "http":{
+        "method":"GET",
+        "requestUri":"/custom-models",
+        "responseCode":200
+      },
+      "input":{"shape":"ListCustomModelsRequest"},
+      "output":{"shape":"ListCustomModelsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of the custom models that you have created with the <code>CreateModelCustomizationJob</code> operation.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a> in the Bedrock User Guide.</p>"
+    },
+    "ListFoundationModels":{
+      "name":"ListFoundationModels",
+      "http":{
+        "method":"GET",
+        "requestUri":"/foundation-models",
+        "responseCode":200
+      },
+      "input":{"shape":"ListFoundationModelsRequest"},
+      "output":{"shape":"ListFoundationModelsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List of Amazon Bedrock foundation models that you can use. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/foundation-models.html\">Foundation models</a> in the Bedrock User Guide.</p>"
+    },
+    "ListModelCustomizationJobs":{
+      "name":"ListModelCustomizationJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/model-customization-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListModelCustomizationJobsRequest"},
+      "output":{"shape":"ListModelCustomizationJobsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of model customization jobs that you have submitted. You can filter the jobs to return based on one or more criteria.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a> in the Bedrock User Guide.</p>"
+    },
+    "ListProvisionedModelThroughputs":{
+      "name":"ListProvisionedModelThroughputs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/provisioned-model-throughputs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListProvisionedModelThroughputsRequest"},
+      "output":{"shape":"ListProvisionedModelThroughputsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List the provisioned capacities. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-service.html\">Provisioned throughput</a> in the Bedrock User Guide.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listTagsForResource",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List the tags associated with the specified resource.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-service.html\">Tagging resources</a> in the Bedrock User Guide.</p>"
+    },
+    "PutModelInvocationLoggingConfiguration":{
+      "name":"PutModelInvocationLoggingConfiguration",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/logging/modelinvocations",
+        "responseCode":200
+      },
+      "input":{"shape":"PutModelInvocationLoggingConfigurationRequest"},
+      "output":{"shape":"PutModelInvocationLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Set the configuration values for model invocation logging.</p>",
+      "idempotent":true
+    },
+    "StopModelCustomizationJob":{
+      "name":"StopModelCustomizationJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/model-customization-jobs/{jobIdentifier}/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopModelCustomizationJobRequest"},
+      "output":{"shape":"StopModelCustomizationJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Stops an active model customization job. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a> in the Bedrock User Guide.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tagResource",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Associate tags with a resource. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-service.html\">Tagging resources</a> in the Bedrock User Guide.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/untagResource",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Remove one or more tags from a resource. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-service.html\">Tagging resources</a> in the Bedrock User Guide.</p>"
+    },
+    "UpdateProvisionedModelThroughput":{
+      "name":"UpdateProvisionedModelThroughput",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/provisioned-model-throughput/{provisionedModelId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateProvisionedModelThroughputRequest"},
+      "output":{"shape":"UpdateProvisionedModelThroughputResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Update a provisioned throughput. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-service.html\">Provisioned throughput</a> in the Bedrock User Guide.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The request is denied because of missing access permissions.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "BaseModelIdentifier":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"(arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:(([0-9]{12}:custom-model/([a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([.]?[a-z0-9-]{1,63})([:][a-z0-9-]{1,63}){0,2})/[a-z0-9]{12})|(:foundation-model/[a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([:][a-z0-9-]{1,63}){0,2})))|([a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([.]?[a-z0-9-]{1,63})([:][a-z0-9-]{1,63}){0,2})|(([0-9a-zA-Z][_-]?)+)"
+    },
+    "BedrockModelId":{
+      "type":"string",
+      "max":140,
+      "min":0,
+      "pattern":"[a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([a-z0-9-]{1,63}[.]){0,2}[a-z0-9-]{1,63}([:][a-z0-9-]{1,63}){0,2}(/[a-z0-9]{12}|)"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "BrandedName":{
+      "type":"string",
+      "max":20,
+      "min":1,
+      "pattern":".*"
+    },
+    "BucketName":{
+      "type":"string",
+      "max":63,
+      "min":3
+    },
+    "CloudWatchConfig":{
+      "type":"structure",
+      "required":[
+        "logGroupName",
+        "roleArn"
+      ],
+      "members":{
+        "logGroupName":{
+          "shape":"LogGroupName",
+          "documentation":"<p>The log group name.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The role ARN.</p>"
+        },
+        "largeDataDeliveryS3Config":{
+          "shape":"S3Config",
+          "documentation":"<p>S3 configuration for delivering a large amount of data.</p>"
+        }
+      },
+      "documentation":"<p>CloudWatch logging configuration.</p>"
+    },
+    "CommitmentDuration":{
+      "type":"string",
+      "enum":[
+        "OneMonth",
+        "SixMonths"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>Error occurred because of a conflict while performing an operation.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateModelCustomizationJobRequest":{
+      "type":"structure",
+      "required":[
+        "jobName",
+        "customModelName",
+        "roleArn",
+        "baseModelIdentifier",
+        "trainingDataConfig",
+        "outputDataConfig",
+        "hyperParameters"
+      ],
+      "members":{
+        "jobName":{
+          "shape":"JobName",
+          "documentation":"<p>Enter a unique name for the fine-tuning job.</p>"
+        },
+        "customModelName":{
+          "shape":"CustomModelName",
+          "documentation":"<p>Enter a name for the custom model.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an IAM role that Amazon Bedrock can assume to perform tasks on your behalf. For example, during model training, Amazon Bedrock needs your permission to read input data from an S3 bucket, write model artifacts to an S3 bucket. To pass this role to Amazon Bedrock, the caller of this API must have the <code>iam:PassRole</code> permission. </p>"
+        },
+        "clientRequestToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>Unique token value that you can provide. The GetModelCustomizationJob response includes the same token value.</p>",
+          "idempotencyToken":true
+        },
+        "baseModelIdentifier":{
+          "shape":"BaseModelIdentifier",
+          "documentation":"<p>Name of the base model.</p>"
+        },
+        "customizationType":{
+          "shape":"CustomizationType",
+          "documentation":"<p>The customization type.</p>"
+        },
+        "customModelKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The custom model is encrypted at rest using this key.</p>"
+        },
+        "jobTags":{
+          "shape":"TagList",
+          "documentation":"<p>Assign tags to the job.</p>"
+        },
+        "customModelTags":{
+          "shape":"TagList",
+          "documentation":"<p>Assign tags to the custom model.</p>"
+        },
+        "trainingDataConfig":{
+          "shape":"TrainingDataConfig",
+          "documentation":"<p>Information about the training dataset.</p>"
+        },
+        "validationDataConfig":{
+          "shape":"ValidationDataConfig",
+          "documentation":"<p>Information about the validation dataset. </p>"
+        },
+        "outputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>S3 location for the output data.</p>"
+        },
+        "hyperParameters":{
+          "shape":"ModelCustomizationHyperParameters",
+          "documentation":"<p>Parameters related to tuning the model.</p>"
+        },
+        "vpcConfig":{
+          "shape":"VpcConfig",
+          "documentation":"<p>VPC configuration (optional). Configuration parameters for the private Virtual Private Cloud (VPC) that contains the resources you are using for this job.</p>"
+        }
+      }
+    },
+    "CreateModelCustomizationJobResponse":{
+      "type":"structure",
+      "required":["jobArn"],
+      "members":{
+        "jobArn":{
+          "shape":"ModelCustomizationJobArn",
+          "documentation":"<p>ARN of the fine tuning job</p>"
+        }
+      }
+    },
+    "CreateProvisionedModelThroughputRequest":{
+      "type":"structure",
+      "required":[
+        "modelUnits",
+        "provisionedModelName",
+        "modelId"
+      ],
+      "members":{
+        "clientRequestToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>Unique token value that you can provide. If this token matches a previous request, Amazon Bedrock ignores the request, but does not return an error.</p>",
+          "idempotencyToken":true
+        },
+        "modelUnits":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Number of model units to allocate.</p>"
+        },
+        "provisionedModelName":{
+          "shape":"ProvisionedModelName",
+          "documentation":"<p>Unique name for this provisioned throughput.</p>"
+        },
+        "modelId":{
+          "shape":"ModelIdentifier",
+          "documentation":"<p>Name or ARN of the model to associate with this provisioned throughput.</p>"
+        },
+        "commitmentDuration":{
+          "shape":"CommitmentDuration",
+          "documentation":"<p>Commitment duration requested for the provisioned throughput.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags to associate with this provisioned throughput.</p>"
+        }
+      }
+    },
+    "CreateProvisionedModelThroughputResponse":{
+      "type":"structure",
+      "required":["provisionedModelArn"],
+      "members":{
+        "provisionedModelArn":{
+          "shape":"ProvisionedModelArn",
+          "documentation":"<p>The ARN for this provisioned throughput.</p>"
+        }
+      }
+    },
+    "CustomModelArn":{
+      "type":"string",
+      "max":1011,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:[0-9]{12}:custom-model/[a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([a-z0-9-]{1,63}[.]){0,2}[a-z0-9-]{1,63}([:][a-z0-9-]{1,63}){0,2}/[a-z0-9]{12}"
+    },
+    "CustomModelName":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"([0-9a-zA-Z][_-]?)+"
+    },
+    "CustomModelSummary":{
+      "type":"structure",
+      "required":[
+        "modelArn",
+        "modelName",
+        "creationTime",
+        "baseModelArn",
+        "baseModelName"
+      ],
+      "members":{
+        "modelArn":{
+          "shape":"CustomModelArn",
+          "documentation":"<p>The ARN of the custom model.</p>"
+        },
+        "modelName":{
+          "shape":"CustomModelName",
+          "documentation":"<p>The name of the custom model.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Creation time of the model.</p>"
+        },
+        "baseModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The base model ARN.</p>"
+        },
+        "baseModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The base model name.</p>"
+        },
+        "customizationType":{
+          "shape":"CustomizationType",
+          "documentation":"<p>Specifies whether to carry out continued pre-training of a model or whether to fine-tune it. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a>.</p>"
+        }
+      },
+      "documentation":"<p>Summary information for a custom model.</p>"
+    },
+    "CustomModelSummaryList":{
+      "type":"list",
+      "member":{"shape":"CustomModelSummary"}
+    },
+    "CustomizationType":{
+      "type":"string",
+      "enum":[
+        "FINE_TUNING",
+        "CONTINUED_PRE_TRAINING"
+      ]
+    },
+    "DeleteCustomModelRequest":{
+      "type":"structure",
+      "required":["modelIdentifier"],
+      "members":{
+        "modelIdentifier":{
+          "shape":"ModelIdentifier",
+          "documentation":"<p>Name of the model to delete.</p>",
+          "location":"uri",
+          "locationName":"modelIdentifier"
+        }
+      }
+    },
+    "DeleteCustomModelResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteModelInvocationLoggingConfigurationRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteModelInvocationLoggingConfigurationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteProvisionedModelThroughputRequest":{
+      "type":"structure",
+      "required":["provisionedModelId"],
+      "members":{
+        "provisionedModelId":{
+          "shape":"ProvisionedModelId",
+          "documentation":"<p>The ARN or name of the provisioned throughput.</p>",
+          "location":"uri",
+          "locationName":"provisionedModelId"
+        }
+      }
+    },
+    "DeleteProvisionedModelThroughputResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":2048,
+      "min":0
+    },
+    "FineTuningJobStatus":{
+      "type":"string",
+      "enum":[
+        "InProgress",
+        "Completed",
+        "Failed",
+        "Stopping",
+        "Stopped"
+      ]
+    },
+    "FoundationModelArn":{
+      "type":"string",
+      "pattern":"arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}::foundation-model/[a-z0-9-]{1,63}[.]{1}([a-z0-9-]{1,63}[.]){0,2}[a-z0-9-]{1,63}([:][a-z0-9-]{1,63}){0,2}"
+    },
+    "FoundationModelDetails":{
+      "type":"structure",
+      "required":[
+        "modelArn",
+        "modelId"
+      ],
+      "members":{
+        "modelArn":{
+          "shape":"FoundationModelArn",
+          "documentation":"<p>The model ARN.</p>"
+        },
+        "modelId":{
+          "shape":"BedrockModelId",
+          "documentation":"<p>The model identifier.</p>"
+        },
+        "modelName":{
+          "shape":"BrandedName",
+          "documentation":"<p>The model name.</p>"
+        },
+        "providerName":{
+          "shape":"BrandedName",
+          "documentation":"<p>he model's provider name.</p>"
+        },
+        "inputModalities":{
+          "shape":"ModelModalityList",
+          "documentation":"<p>The input modalities that the model supports.</p>"
+        },
+        "outputModalities":{
+          "shape":"ModelModalityList",
+          "documentation":"<p>The output modalities that the model supports.</p>"
+        },
+        "responseStreamingSupported":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the model supports streaming.</p>"
+        },
+        "customizationsSupported":{
+          "shape":"ModelCustomizationList",
+          "documentation":"<p>The customization that the model supports.</p>"
+        },
+        "inferenceTypesSupported":{
+          "shape":"InferenceTypeList",
+          "documentation":"<p>The inference types that the model supports.</p>"
+        },
+        "modelLifecycle":{
+          "shape":"FoundationModelLifecycle",
+          "documentation":"<p>Contains details about whether a model version is available or deprecated</p>"
+        }
+      },
+      "documentation":"<p>Information about a foundation model.</p>"
+    },
+    "FoundationModelLifecycle":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"FoundationModelLifecycleStatus",
+          "documentation":"<p>Specifies whether a model version is available (<code>ACTIVE</code>) or deprecated (<code>LEGACY</code>.</p>"
+        }
+      },
+      "documentation":"<p>Details about whether a model version is available or deprecated.</p>"
+    },
+    "FoundationModelLifecycleStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "LEGACY"
+      ]
+    },
+    "FoundationModelSummary":{
+      "type":"structure",
+      "required":[
+        "modelArn",
+        "modelId"
+      ],
+      "members":{
+        "modelArn":{
+          "shape":"FoundationModelArn",
+          "documentation":"<p>The ARN of the foundation model.</p>"
+        },
+        "modelId":{
+          "shape":"BedrockModelId",
+          "documentation":"<p>The model Id of the foundation model.</p>"
+        },
+        "modelName":{
+          "shape":"BrandedName",
+          "documentation":"<p>The name of the model.</p>"
+        },
+        "providerName":{
+          "shape":"BrandedName",
+          "documentation":"<p>The model's provider name.</p>"
+        },
+        "inputModalities":{
+          "shape":"ModelModalityList",
+          "documentation":"<p>The input modalities that the model supports.</p>"
+        },
+        "outputModalities":{
+          "shape":"ModelModalityList",
+          "documentation":"<p>The output modalities that the model supports.</p>"
+        },
+        "responseStreamingSupported":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the model supports streaming.</p>"
+        },
+        "customizationsSupported":{
+          "shape":"ModelCustomizationList",
+          "documentation":"<p>Whether the model supports fine-tuning or continual pre-training.</p>"
+        },
+        "inferenceTypesSupported":{
+          "shape":"InferenceTypeList",
+          "documentation":"<p>The inference types that the model supports.</p>"
+        },
+        "modelLifecycle":{
+          "shape":"FoundationModelLifecycle",
+          "documentation":"<p>Contains details about whether a model version is available or deprecated.</p>"
+        }
+      },
+      "documentation":"<p>Summary information for a foundation model.</p>"
+    },
+    "FoundationModelSummaryList":{
+      "type":"list",
+      "member":{"shape":"FoundationModelSummary"}
+    },
+    "GetCustomModelRequest":{
+      "type":"structure",
+      "required":["modelIdentifier"],
+      "members":{
+        "modelIdentifier":{
+          "shape":"ModelIdentifier",
+          "documentation":"<p>Name or ARN of the custom model.</p>",
+          "location":"uri",
+          "locationName":"modelIdentifier"
+        }
+      }
+    },
+    "GetCustomModelResponse":{
+      "type":"structure",
+      "required":[
+        "modelArn",
+        "modelName",
+        "jobArn",
+        "baseModelArn",
+        "trainingDataConfig",
+        "outputDataConfig",
+        "creationTime"
+      ],
+      "members":{
+        "modelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>ARN associated with this model.</p>"
+        },
+        "modelName":{
+          "shape":"CustomModelName",
+          "documentation":"<p>Model name associated with this model.</p>"
+        },
+        "jobName":{
+          "shape":"JobName",
+          "documentation":"<p>Job name associated with this model.</p>"
+        },
+        "jobArn":{
+          "shape":"ModelCustomizationJobArn",
+          "documentation":"<p>Job ARN associated with this model.</p>"
+        },
+        "baseModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>ARN of the base model.</p>"
+        },
+        "customizationType":{
+          "shape":"CustomizationType",
+          "documentation":"<p>The type of model customization.</p>"
+        },
+        "modelKmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The custom model is encrypted at rest using this key.</p>"
+        },
+        "hyperParameters":{
+          "shape":"ModelCustomizationHyperParameters",
+          "documentation":"<p>Hyperparameter values associated with this model.</p>"
+        },
+        "trainingDataConfig":{
+          "shape":"TrainingDataConfig",
+          "documentation":"<p>Information about the training dataset.</p>"
+        },
+        "validationDataConfig":{"shape":"ValidationDataConfig"},
+        "outputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>Output data configuration associated with this custom model.</p>"
+        },
+        "trainingMetrics":{
+          "shape":"TrainingMetrics",
+          "documentation":"<p>The training metrics from the job creation.</p>"
+        },
+        "validationMetrics":{
+          "shape":"ValidationMetrics",
+          "documentation":"<p>The validation metrics from the job creation.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Creation time of the model.</p>"
+        }
+      }
+    },
+    "GetFoundationModelRequest":{
+      "type":"structure",
+      "required":["modelIdentifier"],
+      "members":{
+        "modelIdentifier":{
+          "shape":"ModelIdentifier",
+          "documentation":"<p>The model identifier. </p>",
+          "location":"uri",
+          "locationName":"modelIdentifier"
+        }
+      }
+    },
+    "GetFoundationModelResponse":{
+      "type":"structure",
+      "members":{
+        "modelDetails":{
+          "shape":"FoundationModelDetails",
+          "documentation":"<p>Information about the foundation model.</p>"
+        }
+      }
+    },
+    "GetModelCustomizationJobRequest":{
+      "type":"structure",
+      "required":["jobIdentifier"],
+      "members":{
+        "jobIdentifier":{
+          "shape":"ModelCustomizationJobIdentifier",
+          "documentation":"<p>Identifier for the customization job.</p>",
+          "location":"uri",
+          "locationName":"jobIdentifier"
+        }
+      }
+    },
+    "GetModelCustomizationJobResponse":{
+      "type":"structure",
+      "required":[
+        "jobArn",
+        "jobName",
+        "outputModelName",
+        "roleArn",
+        "creationTime",
+        "baseModelArn",
+        "hyperParameters",
+        "trainingDataConfig",
+        "validationDataConfig",
+        "outputDataConfig"
+      ],
+      "members":{
+        "jobArn":{
+          "shape":"ModelCustomizationJobArn",
+          "documentation":"<p>The ARN of the customization job.</p>"
+        },
+        "jobName":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the customization job.</p>"
+        },
+        "outputModelName":{
+          "shape":"CustomModelName",
+          "documentation":"<p>The name of the output model.</p>"
+        },
+        "outputModelArn":{
+          "shape":"CustomModelArn",
+          "documentation":"<p>The ARN of the output model.</p>"
+        },
+        "clientRequestToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>The token that you specified in the CreateCustomizationJob request.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role.</p>"
+        },
+        "status":{
+          "shape":"ModelCustomizationJobStatus",
+          "documentation":"<p>The status of the job. A successful job transitions from in-progress to completed when the output model is ready to use. If the job failed, the failure message contains information about why the job failed.</p>"
+        },
+        "failureMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>Information about why the job failed.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Time that the resource was created.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Time that the resource was last modified.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Time that the resource transitioned to terminal state.</p>"
+        },
+        "baseModelArn":{
+          "shape":"FoundationModelArn",
+          "documentation":"<p>ARN of the base model.</p>"
+        },
+        "hyperParameters":{
+          "shape":"ModelCustomizationHyperParameters",
+          "documentation":"<p>The hyperparameter values for the job. For information about hyperparameters for specific models, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-guidelines.html\">Guidelines for model customization</a>.</p>"
+        },
+        "trainingDataConfig":{"shape":"TrainingDataConfig"},
+        "validationDataConfig":{"shape":"ValidationDataConfig"},
+        "outputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>Output data configuration </p>"
+        },
+        "customizationType":{
+          "shape":"CustomizationType",
+          "documentation":"<p>The type of model customization.</p>"
+        },
+        "outputModelKmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The custom model is encrypted at rest using this key.</p>"
+        },
+        "trainingMetrics":{"shape":"TrainingMetrics"},
+        "validationMetrics":{
+          "shape":"ValidationMetrics",
+          "documentation":"<p>The loss metric for each validator that you provided in the createjob request.</p>"
+        },
+        "vpcConfig":{
+          "shape":"VpcConfig",
+          "documentation":"<p>VPC configuration for the custom model job.</p>"
+        }
+      }
+    },
+    "GetModelInvocationLoggingConfigurationRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetModelInvocationLoggingConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "loggingConfig":{
+          "shape":"LoggingConfig",
+          "documentation":"<p>The current configuration values.</p>"
+        }
+      }
+    },
+    "GetProvisionedModelThroughputRequest":{
+      "type":"structure",
+      "required":["provisionedModelId"],
+      "members":{
+        "provisionedModelId":{
+          "shape":"ProvisionedModelId",
+          "documentation":"<p>The ARN or name of the provisioned throughput.</p>",
+          "location":"uri",
+          "locationName":"provisionedModelId"
+        }
+      }
+    },
+    "GetProvisionedModelThroughputResponse":{
+      "type":"structure",
+      "required":[
+        "modelUnits",
+        "desiredModelUnits",
+        "provisionedModelName",
+        "provisionedModelArn",
+        "modelArn",
+        "desiredModelArn",
+        "foundationModelArn",
+        "status",
+        "creationTime",
+        "lastModifiedTime"
+      ],
+      "members":{
+        "modelUnits":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The current number of model units requested to be available for this provisioned throughput.</p>"
+        },
+        "desiredModelUnits":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The desired number of model units that was requested to be available for this provisioned throughput.</p>"
+        },
+        "provisionedModelName":{
+          "shape":"ProvisionedModelName",
+          "documentation":"<p>The name of the provisioned throughput.</p>"
+        },
+        "provisionedModelArn":{
+          "shape":"ProvisionedModelArn",
+          "documentation":"<p>The ARN of the provisioned throughput.</p>"
+        },
+        "modelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The ARN or name of the model associated with this provisioned throughput.</p>"
+        },
+        "desiredModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The ARN of the new model to asssociate with this provisioned throughput.</p>"
+        },
+        "foundationModelArn":{
+          "shape":"FoundationModelArn",
+          "documentation":"<p>ARN of the foundation model.</p>"
+        },
+        "status":{
+          "shape":"ProvisionedModelStatus",
+          "documentation":"<p>Status of the provisioned throughput. </p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the creation time for this provisioned throughput. </p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the last modified time of this provisioned throughput. </p>"
+        },
+        "failureMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>Failure message for any issues that the create operation encounters.</p>"
+        },
+        "commitmentDuration":{
+          "shape":"CommitmentDuration",
+          "documentation":"<p>Commitment duration of the provisioned throughput.</p>"
+        },
+        "commitmentExpirationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Commitment expiration time for the provisioned throughput.</p>"
+        }
+      }
+    },
+    "IdempotencyToken":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z0-9](-*[a-zA-Z0-9])*"
+    },
+    "InferenceType":{
+      "type":"string",
+      "enum":[
+        "ON_DEMAND",
+        "PROVISIONED"
+      ]
+    },
+    "InferenceTypeList":{
+      "type":"list",
+      "member":{"shape":"InferenceType"}
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>An internal server error occurred. Retry your request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "JobName":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"[a-zA-Z0-9](-*[a-zA-Z0-9\\+\\-\\.])*"
+    },
+    "KeyPrefix":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"arn:aws(-[^:]+)?:kms:[a-zA-Z0-9-]*:[0-9]{12}:key/[a-zA-Z0-9-]{36}"
+    },
+    "KmsKeyId":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"arn:aws(-[^:]+)?:kms:[a-zA-Z0-9-]*:[0-9]{12}:((key/[a-zA-Z0-9-]{36})|(alias/[a-zA-Z0-9-_/]+))"
+    },
+    "ListCustomModelsRequest":{
+      "type":"structure",
+      "members":{
+        "creationTimeBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>Return custom models created before the specified time. </p>",
+          "location":"querystring",
+          "locationName":"creationTimeBefore"
+        },
+        "creationTimeAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>Return custom models created after the specified time. </p>",
+          "location":"querystring",
+          "locationName":"creationTimeAfter"
+        },
+        "nameContains":{
+          "shape":"CustomModelName",
+          "documentation":"<p>Return custom models only if the job name contains these characters.</p>",
+          "location":"querystring",
+          "locationName":"nameContains"
+        },
+        "baseModelArnEquals":{
+          "shape":"ModelArn",
+          "documentation":"<p>Return custom models only if the base model ARN matches this parameter.</p>",
+          "location":"querystring",
+          "locationName":"baseModelArnEquals"
+        },
+        "foundationModelArnEquals":{
+          "shape":"FoundationModelArn",
+          "documentation":"<p>Return custom models only if the foundation model ARN matches this parameter.</p>",
+          "location":"querystring",
+          "locationName":"foundationModelArnEquals"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Maximum number of results to return in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Continuation token from the previous response, for Amazon Bedrock to list the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "sortBy":{
+          "shape":"SortModelsBy",
+          "documentation":"<p>The field to sort by in the returned list of models.</p>",
+          "location":"querystring",
+          "locationName":"sortBy"
+        },
+        "sortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sort order of the results.</p>",
+          "location":"querystring",
+          "locationName":"sortOrder"
+        }
+      }
+    },
+    "ListCustomModelsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Continuation token for the next request to list the next set of results.</p>"
+        },
+        "modelSummaries":{
+          "shape":"CustomModelSummaryList",
+          "documentation":"<p>Model summaries.</p>"
+        }
+      }
+    },
+    "ListFoundationModelsRequest":{
+      "type":"structure",
+      "members":{
+        "byProvider":{
+          "shape":"Provider",
+          "documentation":"<p>A Amazon Bedrock model provider.</p>",
+          "location":"querystring",
+          "locationName":"byProvider"
+        },
+        "byCustomizationType":{
+          "shape":"ModelCustomization",
+          "documentation":"<p>List by customization type.</p>",
+          "location":"querystring",
+          "locationName":"byCustomizationType"
+        },
+        "byOutputModality":{
+          "shape":"ModelModality",
+          "documentation":"<p>List by output modality type.</p>",
+          "location":"querystring",
+          "locationName":"byOutputModality"
+        },
+        "byInferenceType":{
+          "shape":"InferenceType",
+          "documentation":"<p>List by inference type.</p>",
+          "location":"querystring",
+          "locationName":"byInferenceType"
+        }
+      }
+    },
+    "ListFoundationModelsResponse":{
+      "type":"structure",
+      "members":{
+        "modelSummaries":{
+          "shape":"FoundationModelSummaryList",
+          "documentation":"<p>A list of Amazon Bedrock foundation models.</p>"
+        }
+      }
+    },
+    "ListModelCustomizationJobsRequest":{
+      "type":"structure",
+      "members":{
+        "creationTimeAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>Return customization jobs created after the specified time. </p>",
+          "location":"querystring",
+          "locationName":"creationTimeAfter"
+        },
+        "creationTimeBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>Return customization jobs created before the specified time. </p>",
+          "location":"querystring",
+          "locationName":"creationTimeBefore"
+        },
+        "statusEquals":{
+          "shape":"FineTuningJobStatus",
+          "documentation":"<p>Return customization jobs with the specified status. </p>",
+          "location":"querystring",
+          "locationName":"statusEquals"
+        },
+        "nameContains":{
+          "shape":"JobName",
+          "documentation":"<p>Return customization jobs only if the job name contains these characters.</p>",
+          "location":"querystring",
+          "locationName":"nameContains"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Maximum number of results to return in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Continuation token from the previous response, for Amazon Bedrock to list the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "sortBy":{
+          "shape":"SortJobsBy",
+          "documentation":"<p>The field to sort by in the returned list of jobs.</p>",
+          "location":"querystring",
+          "locationName":"sortBy"
+        },
+        "sortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sort order of the results.</p>",
+          "location":"querystring",
+          "locationName":"sortOrder"
+        }
+      }
+    },
+    "ListModelCustomizationJobsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Page continuation token to use in the next request.</p>"
+        },
+        "modelCustomizationJobSummaries":{
+          "shape":"ModelCustomizationJobSummaries",
+          "documentation":"<p>Job summaries.</p>"
+        }
+      }
+    },
+    "ListProvisionedModelThroughputsRequest":{
+      "type":"structure",
+      "members":{
+        "creationTimeAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>Return provisioned capacities created after the specified time. </p>",
+          "location":"querystring",
+          "locationName":"creationTimeAfter"
+        },
+        "creationTimeBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>Return provisioned capacities created before the specified time. </p>",
+          "location":"querystring",
+          "locationName":"creationTimeBefore"
+        },
+        "statusEquals":{
+          "shape":"ProvisionedModelStatus",
+          "documentation":"<p>Return the list of provisioned capacities that match the specified status.</p>",
+          "location":"querystring",
+          "locationName":"statusEquals"
+        },
+        "modelArnEquals":{
+          "shape":"ModelArn",
+          "documentation":"<p>Return the list of provisioned capacities where their model ARN is equal to this parameter.</p>",
+          "location":"querystring",
+          "locationName":"modelArnEquals"
+        },
+        "nameContains":{
+          "shape":"ProvisionedModelName",
+          "documentation":"<p>Return the list of provisioned capacities if their name contains these characters.</p>",
+          "location":"querystring",
+          "locationName":"nameContains"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>THe maximum number of results to return in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Continuation token from the previous response, for Amazon Bedrock to list the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "sortBy":{
+          "shape":"SortByProvisionedModels",
+          "documentation":"<p>The field to sort by in the returned list of provisioned capacities.</p>",
+          "location":"querystring",
+          "locationName":"sortBy"
+        },
+        "sortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sort order of the results.</p>",
+          "location":"querystring",
+          "locationName":"sortOrder"
+        }
+      }
+    },
+    "ListProvisionedModelThroughputsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Continuation token for the next request to list the next set of results.</p>"
+        },
+        "provisionedModelSummaries":{
+          "shape":"ProvisionedModelSummaries",
+          "documentation":"<p>List of summaries, one for each provisioned throughput in the response.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceARN"],
+      "members":{
+        "resourceARN":{
+          "shape":"TaggableResourcesArn",
+          "documentation":"<p>The ARN of the resource.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>An array of the tags associated with this resource.</p>"
+        }
+      }
+    },
+    "LogGroupName":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "LoggingConfig":{
+      "type":"structure",
+      "members":{
+        "cloudWatchConfig":{
+          "shape":"CloudWatchConfig",
+          "documentation":"<p>CloudWatch logging configuration.</p>"
+        },
+        "s3Config":{
+          "shape":"S3Config",
+          "documentation":"<p>S3 configuration for storing log data.</p>"
+        },
+        "textDataDeliveryEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Set to include text data in the log delivery.</p>"
+        },
+        "imageDataDeliveryEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Set to include image data in the log delivery.</p>"
+        },
+        "embeddingDataDeliveryEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Set to include embeddings data in the log delivery.</p>"
+        }
+      },
+      "documentation":"<p>Configuration fields for invokation logging.</p>"
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "MetricFloat":{
+      "type":"float",
+      "box":true
+    },
+    "ModelArn":{
+      "type":"string",
+      "max":1011,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:(([0-9]{12}:custom-model/[a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}/[a-z0-9]{12})|(:foundation-model/[a-z0-9-]{1,63}[.]{1}([a-z0-9-]{1,63}[.]){0,2}[a-z0-9-]{1,63}([:][a-z0-9-]{1,63}){0,2}))"
+    },
+    "ModelCustomization":{
+      "type":"string",
+      "enum":[
+        "FINE_TUNING",
+        "CONTINUED_PRE_TRAINING"
+      ]
+    },
+    "ModelCustomizationHyperParameters":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "ModelCustomizationJobArn":{
+      "type":"string",
+      "max":1011,
+      "min":0,
+      "pattern":"arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:[0-9]{12}:model-customization-job/[a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([a-z0-9-]{1,63}[.]){0,2}[a-z0-9-]{1,63}([:][a-z0-9-]{1,63}){0,2}/[a-z0-9]{12}"
+    },
+    "ModelCustomizationJobIdentifier":{
+      "type":"string",
+      "max":1011,
+      "min":0,
+      "pattern":"(arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:[0-9]{12}:model-customization-job/[a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([a-z0-9-]{1,63}[.]){0,2}[a-z0-9-]{1,63}([:][a-z0-9-]{1,63}){0,2}/[a-z0-9]{12})|([a-zA-Z0-9](-*[a-zA-Z0-9\\+\\-\\.])*)"
+    },
+    "ModelCustomizationJobStatus":{
+      "type":"string",
+      "enum":[
+        "InProgress",
+        "Completed",
+        "Failed",
+        "Stopping",
+        "Stopped"
+      ]
+    },
+    "ModelCustomizationJobSummaries":{
+      "type":"list",
+      "member":{"shape":"ModelCustomizationJobSummary"}
+    },
+    "ModelCustomizationJobSummary":{
+      "type":"structure",
+      "required":[
+        "jobArn",
+        "baseModelArn",
+        "jobName",
+        "status",
+        "creationTime"
+      ],
+      "members":{
+        "jobArn":{
+          "shape":"ModelCustomizationJobArn",
+          "documentation":"<p>ARN of the customization job.</p>"
+        },
+        "baseModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>ARN of the base model.</p>"
+        },
+        "jobName":{
+          "shape":"JobName",
+          "documentation":"<p>Name of the customization job.</p>"
+        },
+        "status":{
+          "shape":"ModelCustomizationJobStatus",
+          "documentation":"<p>Status of the customization job. </p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Time that the customization job was last modified.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Creation time of the custom model. </p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Time that the customization job ended.</p>"
+        },
+        "customModelArn":{
+          "shape":"CustomModelArn",
+          "documentation":"<p>ARN of the custom model.</p>"
+        },
+        "customModelName":{
+          "shape":"CustomModelName",
+          "documentation":"<p>Name of the custom model.</p>"
+        },
+        "customizationType":{
+          "shape":"CustomizationType",
+          "documentation":"<p>Specifies whether to carry out continued pre-training of a model or whether to fine-tune it. For more information, see <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html\">Custom models</a>.</p>"
+        }
+      },
+      "documentation":"<p>Information about one customization job</p>"
+    },
+    "ModelCustomizationList":{
+      "type":"list",
+      "member":{"shape":"ModelCustomization"}
+    },
+    "ModelIdentifier":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:(([0-9]{12}:custom-model/[a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}(([:][a-z0-9-]{1,63}){0,2})?/[a-z0-9]{12})|(:foundation-model/([a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([.]?[a-z0-9-]{1,63})([:][a-z0-9-]{1,63}){0,2})))|(([a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([.]?[a-z0-9-]{1,63})([:][a-z0-9-]{1,63}){0,2}))|(([0-9a-zA-Z][_-]?)+)"
+    },
+    "ModelModality":{
+      "type":"string",
+      "enum":[
+        "TEXT",
+        "IMAGE",
+        "EMBEDDING"
+      ]
+    },
+    "ModelModalityList":{
+      "type":"list",
+      "member":{"shape":"ModelModality"}
+    },
+    "ModelName":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"([a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63})"
+    },
+    "NonBlankString":{
+      "type":"string",
+      "pattern":"[\\s\\S]*"
+    },
+    "OutputDataConfig":{
+      "type":"structure",
+      "required":["s3Uri"],
+      "members":{
+        "s3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The S3 URI where the output data is stored.</p>"
+        }
+      },
+      "documentation":"<p>S3 Location of the output data.</p>"
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"\\S*"
+    },
+    "PositiveInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "Provider":{
+      "type":"string",
+      "pattern":"[A-Za-z0-9- ]{1,63}"
+    },
+    "ProvisionedModelArn":{
+      "type":"string",
+      "pattern":"arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:[0-9]{12}:provisioned-model/[a-z0-9]{12}"
+    },
+    "ProvisionedModelId":{
+      "type":"string",
+      "pattern":"((([0-9a-zA-Z][_-]?)+)|(arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:[0-9]{12}:provisioned-model/[a-z0-9]{12}))"
+    },
+    "ProvisionedModelName":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"([0-9a-zA-Z][_-]?)+"
+    },
+    "ProvisionedModelStatus":{
+      "type":"string",
+      "enum":[
+        "Creating",
+        "InService",
+        "Updating",
+        "Failed"
+      ]
+    },
+    "ProvisionedModelSummaries":{
+      "type":"list",
+      "member":{"shape":"ProvisionedModelSummary"}
+    },
+    "ProvisionedModelSummary":{
+      "type":"structure",
+      "required":[
+        "provisionedModelName",
+        "provisionedModelArn",
+        "modelArn",
+        "desiredModelArn",
+        "foundationModelArn",
+        "modelUnits",
+        "desiredModelUnits",
+        "status",
+        "creationTime",
+        "lastModifiedTime"
+      ],
+      "members":{
+        "provisionedModelName":{
+          "shape":"ProvisionedModelName",
+          "documentation":"<p>The name of the provisioned throughput.</p>"
+        },
+        "provisionedModelArn":{
+          "shape":"ProvisionedModelArn",
+          "documentation":"<p>The ARN of the provisioned throughput.</p>"
+        },
+        "modelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The ARN of the model associated with this provisioned throughput.</p>"
+        },
+        "desiredModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>Desired model ARN.</p>"
+        },
+        "foundationModelArn":{
+          "shape":"FoundationModelArn",
+          "documentation":"<p>Foundation model ARN.</p>"
+        },
+        "modelUnits":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The number of model units allocated.</p>"
+        },
+        "desiredModelUnits":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Desired model units.</p>"
+        },
+        "status":{
+          "shape":"ProvisionedModelStatus",
+          "documentation":"<p>Status of the provisioned throughput.</p>"
+        },
+        "commitmentDuration":{
+          "shape":"CommitmentDuration",
+          "documentation":"<p>Commitment duration for the provisioned throughput.</p>"
+        },
+        "commitmentExpirationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Commitment expiration time for the provisioned throughput.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time that this provisioned throughput was created. </p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time that this provisioned throughput was last modified. </p>"
+        }
+      },
+      "documentation":"<p>Set of fields associated with a provisioned throughput.</p>"
+    },
+    "PutModelInvocationLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["loggingConfig"],
+      "members":{
+        "loggingConfig":{
+          "shape":"LoggingConfig",
+          "documentation":"<p>The logging configuration values to set.</p>"
+        }
+      }
+    },
+    "PutModelInvocationLoggingConfigurationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The specified resource ARN was not found. Check the ARN and try your request again.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:aws(-[^:]+)?:iam::([0-9]{12})?:role/.+"
+    },
+    "S3Config":{
+      "type":"structure",
+      "required":["bucketName"],
+      "members":{
+        "bucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>S3 bucket name.</p>"
+        },
+        "keyPrefix":{
+          "shape":"KeyPrefix",
+          "documentation":"<p>S3 prefix. </p>"
+        }
+      },
+      "documentation":"<p>S3 configuration for storing log data.</p>"
+    },
+    "S3Uri":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"s3://[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9](/.*)?"
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "max":32,
+      "min":0,
+      "pattern":"[-0-9a-zA-Z]+"
+    },
+    "SecurityGroupIds":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"},
+      "max":5,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The number of requests exceeds the service quota. Resubmit your request later.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SortByProvisionedModels":{
+      "type":"string",
+      "enum":["CreationTime"]
+    },
+    "SortJobsBy":{
+      "type":"string",
+      "enum":["CreationTime"]
+    },
+    "SortModelsBy":{
+      "type":"string",
+      "enum":["CreationTime"]
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "Ascending",
+        "Descending"
+      ]
+    },
+    "StopModelCustomizationJobRequest":{
+      "type":"structure",
+      "required":["jobIdentifier"],
+      "members":{
+        "jobIdentifier":{
+          "shape":"ModelCustomizationJobIdentifier",
+          "documentation":"<p>Job identifier of the job to stop.</p>",
+          "location":"uri",
+          "locationName":"jobIdentifier"
+        }
+      }
+    },
+    "StopModelCustomizationJobResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "String":{"type":"string"},
+    "SubnetId":{
+      "type":"string",
+      "max":32,
+      "min":0,
+      "pattern":"[-0-9a-zA-Z]+"
+    },
+    "SubnetIds":{
+      "type":"list",
+      "member":{"shape":"SubnetId"},
+      "max":16,
+      "min":1
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{
+          "shape":"TagKey",
+          "documentation":"<p>Key for the tag.</p>"
+        },
+        "value":{
+          "shape":"TagValue",
+          "documentation":"<p>Value for the tag.</p>"
+        }
+      },
+      "documentation":"<p>Definition of the key/value pair for a tag.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\s._:/=+@-]*"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceARN",
+        "tags"
+      ],
+      "members":{
+        "resourceARN":{
+          "shape":"TaggableResourcesArn",
+          "documentation":"<p>The ARN of the resource to tag.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags to associate with the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"[a-zA-Z0-9\\s._:/=+@-]*"
+    },
+    "TaggableResourcesArn":{
+      "type":"string",
+      "max":1011,
+      "min":20,
+      "pattern":".*(^[a-zA-Z0-9][a-zA-Z0-9\\-]*$)|(^arn:aws(-[^:]+)?:bedrock:[a-z0-9-]{1,20}:([0-9]{12}|)((:(fine-tuning-job|model-customization-job|custom-model)/[a-z0-9-]{1,63}[.]{1}[a-z0-9-]{1,63}([a-z0-9-]{1,63}[.]){0,2}[a-z0-9-]{1,63}([:][a-z0-9-]{1,63}){0,2}(/[a-z0-9]{12})$)|(:provisioned-model/[a-z0-9]{12}$))).*"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The number of requests exceeds the limit. Resubmit your request later.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Timestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"},
+        "resourceName":{
+          "shape":"TaggableResourcesArn",
+          "documentation":"<p>The name of the resource with too many tags.</p>"
+        }
+      },
+      "documentation":"<p>The request contains more tags than can be associated with a resource (50 tags per resource). The maximum number of tags includes both existing tags and those included in your current request. </p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "TrainingDataConfig":{
+      "type":"structure",
+      "required":["s3Uri"],
+      "members":{
+        "s3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The S3 URI where the training data is stored.</p>"
+        }
+      },
+      "documentation":"<p>S3 Location of the training data.</p>"
+    },
+    "TrainingMetrics":{
+      "type":"structure",
+      "members":{
+        "trainingLoss":{
+          "shape":"MetricFloat",
+          "documentation":"<p>Loss metric associated with the custom job.</p>"
+        }
+      },
+      "documentation":"<p>Metrics associated with the custom job.</p>"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceARN",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceARN":{
+          "shape":"TaggableResourcesArn",
+          "documentation":"<p>The ARN of the resource to untag.</p>"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Tag keys of the tags to remove from the resource.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateProvisionedModelThroughputRequest":{
+      "type":"structure",
+      "required":["provisionedModelId"],
+      "members":{
+        "provisionedModelId":{
+          "shape":"ProvisionedModelId",
+          "documentation":"<p>The ARN or name of the provisioned throughput to update.</p>",
+          "location":"uri",
+          "locationName":"provisionedModelId"
+        },
+        "desiredProvisionedModelName":{
+          "shape":"ProvisionedModelName",
+          "documentation":"<p>The new name for this provisioned throughput.</p>"
+        },
+        "desiredModelId":{
+          "shape":"ModelIdentifier",
+          "documentation":"<p>The ARN of the new model to associate with this provisioned throughput.</p>"
+        }
+      }
+    },
+    "UpdateProvisionedModelThroughputResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ValidationDataConfig":{
+      "type":"structure",
+      "required":["validators"],
+      "members":{
+        "validators":{
+          "shape":"Validators",
+          "documentation":"<p>Information about the validators.</p>"
+        }
+      },
+      "documentation":"<p>Array of up to 10 validators.</p>"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>Input validation failed. Check your request parameters and retry the request.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationMetrics":{
+      "type":"list",
+      "member":{"shape":"ValidatorMetric"}
+    },
+    "Validator":{
+      "type":"structure",
+      "required":["s3Uri"],
+      "members":{
+        "s3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The S3 URI where the validation data is stored.</p>"
+        }
+      },
+      "documentation":"<p>Information about a validator.</p>"
+    },
+    "ValidatorMetric":{
+      "type":"structure",
+      "members":{
+        "validationLoss":{
+          "shape":"MetricFloat",
+          "documentation":"<p>The validation loss associated with this validator.</p>"
+        }
+      },
+      "documentation":"<p>The metric for the validator.</p>"
+    },
+    "Validators":{
+      "type":"list",
+      "member":{"shape":"Validator"},
+      "max":10,
+      "min":0
+    },
+    "VpcConfig":{
+      "type":"structure",
+      "required":[
+        "subnetIds",
+        "securityGroupIds"
+      ],
+      "members":{
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>VPC configuration subnets.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>VPC configuration security group Ids.</p>"
+        }
+      },
+      "documentation":"<p>VPC configuration.</p>"
+    }
+  },
+  "documentation":"<p>Describes the API operations for creating and managing Amazon Bedrock models.</p>"
+}

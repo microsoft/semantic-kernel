@@ -1,0 +1,60 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Create a SSE gateway.
+  description: |
+    Create a new gateway within an existing SSE realm.
+  examples: |
+    The following command creates a new gateway named `my-gateway` in the location `us-central1` within the SSE realm `my-realm`.
+
+      $ {command} my-gateway --location=us-central1 --realm=my-realm --untrusted-network=my-untrusted-network
+
+    The gateway connects `my-untrusted-network` to a SSE-owned subnet in `us-central1`.
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:sseGateway
+    help_text: |
+      The gateway to be created.
+  params:
+  - arg_name: realm
+    required: true
+    api_field: sSEGateway.sseRealm
+    help_text: |
+      SSE realm to which this gateway belongs.
+  - arg_name: untrusted-network
+    api_field: sSEGateway.untrustedNetwork
+    help_text: |
+      Network in your project where untrusted users land.
+  - arg_name: app-facing-target-ip
+    api_field: sSEGateway.appFacingTargetIp
+    help_text: |
+      Target IP address where application traffic is routed.
+      Default value is set to "100.64.1.253".
+  - arg_name: app-facing-subnet-range
+    api_field: sSEGateway.appFacingSubnetRange
+    help_text: |
+      Address range (in CIDR format) of the subnet where application traffic is routed.
+      Default value is set to "100.64.1.0/24".
+      The CIDR suffix should be less than or equal to 24.
+  - arg_name: untrusted-facing-target-ip
+    api_field: sSEGateway.untrustedFacingTargetIp
+    help_text: |
+      Target IP address where untrusted traffic is routed.
+      Default value is set to "100.64.2.253".
+  - arg_name: untrusted-facing-subnet-range
+    api_field: sSEGateway.untrustedFacingSubnetRange
+    help_text: |
+      Address range (in CIDR format) of the subnet where untrusted traffic is routed.
+      Default value is set to "100.64.2.0/24".
+      The CIDR suffix should be less than or equal to 24.
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.sseGateways
+  method: create

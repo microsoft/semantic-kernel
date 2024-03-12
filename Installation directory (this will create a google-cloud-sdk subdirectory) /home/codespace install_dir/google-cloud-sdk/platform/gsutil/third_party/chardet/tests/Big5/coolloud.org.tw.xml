@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="big5"?>
+<!--
+Source: http://www.coolloud.org.tw/index.xml
+Expect: Big5
+-->
+<rdf:RDF
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+ xmlns:admin="http://webns.net/mvcb/"
+ xmlns:cc="http://web.resource.org/cc/"
+ xmlns="http://purl.org/rss/1.0/">
+
+<channel rdf:about="http://www.coolloud.org.tw/news/database/Interface/Sort2-Infindex.asp?Sort2=關於苦勞網">
+<title>苦勞網</title>
+<link>http://www.coolloud.org.tw/</link>
+<description>這是苦勞網的 RSS</description>
+<dc:creator>苦勞網</dc:creator>
+<dc:date>2005-12-31T04:10:06+08:00</dc:date>
+<image>
+<title>文建會硬不起來</title>
+<url>http://www.coolloud.org.tw/images/20051118/IMG_0119_200_small.jpg</url>
+<link>http://www.coolloud.org.tw/news/database/interface/data_display2003.asp?ID=108135</link>
+</image>
+</channel>
+
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108725">
+  <title>1226檔下點交之後
+不見棺材不走人 進輪自救會長期抗戰</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108725</link>
+  <description>　　雖然手中的汽油彈、綁在身上的瓦斯筒，成功阻擋了12/26法院的點交程序。但在買方、銀行團仍不願提供足額補償的情況下，遭資方違法積欠退休金、資遣費的近百名進輪自救會會員，將持續駐廠抗爭。從抗爭初始就協助自救會抗爭的桃園縣勞義務輔佐人協會鄭金鎗表示，這群遭資方遺棄、未獲法律保障的勞工，已抗爭近三年，「沒有理由在這個時候放棄，」他強調，若買方再不釋出善意，自救會不排除提高抗爭程度，「挖廠區砂石、倒廢...</description>
+  <dc:subject>關廠</dc:subject>
+  <dc:creator>苦勞報導</dc:creator>
+  <dc:date>2005-12-30T23:26:28+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">關廠</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108721">
+  <title>【My Cool News】
+捷運不要再白賊！「毀約在先，吃完抹嘴，帳要樂生賠？」
+丘延亮說：台灣無道作為，聯合國一定接管樂生。</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108721</link>
+  <description>　　今年七月二十日，聯合國人權組織發出緊急公報全世界！稱樂生院民「台灣」漢生病友，呼籲「台灣」政府不能迫遷病友。這是從民國六十幾年之後，「台灣」首次被聯合國看到與關注的議題。今年十月二十五日「台灣漢生病友跨海向日求償勝訴」，病友終於陳冤召雪一掃七十五載社會污名歧視，終於可以奢望談談什麼是「漢生人權」。樂生保留自救會近期在立法院推動「漢生病友人權保障條例立法工作」，幸運獲得國親台無等各黨團立委全力支...</description>
+  <dc:subject>200410樂生療養院遭拆除</dc:subject>
+  <dc:creator>苦勞論壇</dc:creator>
+  <dc:date>2005-12-30T18:40:48+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">200410樂生療養院遭拆除</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108702">
+  <title>草率決策　惡搞公共化
+華視工會抗議新聞局南遷政策</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108702</link>
+  <description>　　立法院今（12/30）審議「無線電視公股釋出條例」，由於日前新聞局長姚文智突然丟出「華視南遷」的議題，並且爭取在今天審查條例時將該條文納入，這個舉動，引起華視工會群情激憤，一行百餘人前往立法院表達抗議。
+
+　　華視工會常務理事朱俊認為，在相關的資源、配套都沒有到位的情形下，因為新聞局長臨時起意的一個決定，就要把電視台遷到高雄去，簡直像「把於放在沙漠裡」一樣，在這種情形下，華視一旦南遷，必定...</description>
+  <dc:subject>媒體</dc:subject>
+  <dc:creator>苦勞報導</dc:creator>
+  <dc:date>2005-12-30T15:44:01+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">媒體</category>
+  <category domain="http://www.technorati.com/tag">200509無線電視事業公股處理方案</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108686">
+  <title>14名反世貿被訴人士　香港30日開庭
+HKPA再度發動抗議　並呼籲海外踴躍電匯</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108686</link>
+  <description>　　香港WTO部長級會議場外抗議被起訴的14名人士，明天香港觀塘法庭將進行第三次的審理。南韓11名被起訴人士的家屬及所屬團體成員，一行35人也於昨天從南韓飛抵香港，參與香港民間監察世貿聯盟（Hong 
+  Kong People's Alliance on WTO；HKPA）於今、明兩天舉辦的三場活動，要求明天無罪釋放被起訴人士。
+　　上週經過香港社運團體的努力及國際聲援，觀塘法院於12月23...</description>
+  <dc:subject>香港反WTO部長級會議</dc:subject>
+  <dc:creator>苦勞報導</dc:creator>
+  <dc:date>2005-12-29T22:40:41+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">香港反WTO部長級會議</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108682">
+  <title>【My Cool News】
+貿易成癮（Addicted to Trade） </title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108682</link>
+  <description>　　昨日參加一場「瞄準WTO，審視台灣經濟」座談會，由立委賴幸媛主持，包括台灣農民聯盟、苦勞網、台灣經濟研究院和全國總工會，都有代表參加。除檢視香港會議內容、反WTO正當性、另類全球化等議題外，也探討組成「民間監督WTO聯盟」可能性。
+ 
+　　世新蔡建仁、台經院吳福成和中研院邱延亮，彼此言詞交鋒，互相比聲音大，反而一位外籍「環保」律師文魯彬（Robin Winkler）有趣的經歷，吸引目光，現...</description>
+  <dc:subject>香港反WTO部長級會議</dc:subject>
+  <dc:creator>苦勞論壇</dc:creator>
+  <dc:date>2005-12-29T21:36:36+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">香港反WTO部長級會議</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108681">
+  <title>牽手！反水利署錯誤開發　摧殘環境生態
+反曾文越域引水與反湖山水庫結盟　施壓立院黨團刪除預算</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108681</link>
+  <description>　　曾文文庫越域引水與湖山水庫兩重大開發案，幾年來爭議不斷，引發激烈抗爭，水利署似乎還是想蠻幹，硬是編列了年度預算送進立法院審議。為捍衛生存權、維護環境生態永續，高雄市教師會生態教育中心與美濃愛鄉協進會居中奔走，串連了荖農溪流域桃源鄉、三民鄉原住民與全台反湖山水庫團體，聯合組成台灣護水聯盟，要求立法院刪除水利署的開發預算。
+
+　　聯盟團體代表一行三、四十人上午先在立法院門口召開記者會，在一道道...</description>
+  <dc:subject>水資源</dc:subject>
+  <dc:creator>苦勞報導</dc:creator>
+  <dc:date>2005-12-29T21:32:44+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">水資源</category>
+  <category domain="http://www.technorati.com/tag">反水庫</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108677">
+  <title>中國加入世界貿易組織的社會成本</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108677</link>
+  <description>　　中國加入世界貿易組織已經三年了。這三年及之前&#29234;此而作準備的十多年，深刻地改變了中國。
+
+　　多年來，中國政府和中國的主流的經濟學家們，一直將中國加入世貿組織看作一個與政治，社會問題無直接關係的對外貿易的政策問題，是一個經濟對外開放的技術性問題。他們當時幾乎是完全沒有預計到，中國，尤其是普通的中國老百姓，會&#29234;此付出如此之高的代價。
+
+　　首先，加入世貿及&#2...</description>
+  <dc:subject>中國勞工</dc:subject>
+  <dc:creator>苦勞論壇</dc:creator>
+  <dc:date>2005-12-29T19:54:30+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">中國勞工</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108672">
+  <title>從德國左翼黨聯盟的勝出談起</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108672</link>
+  <description>【德國大選結果說明了什麼？】 
+　　國際關注的德國國會大選於兩個多月前揭曉了，在連串的談判與交易後，新的「基民盟／基社盟－社民黨」大聯合政府也終於形成，但大選結果對德國政局的撼動才剛開始。這次選舉明顯反映德國民眾政治意識的向左轉，表達了勞動群眾對削減社會福利、失業和貧窮化的拒絕。德國極富影響力的媒體《明鏡周刊》在選後以「德國保守主義的死亡」為題評論此次大選，稱「是時候替德國保守主義寫訃聞了」註2...</description>
+  <dc:subject>國際政治</dc:subject>
+  <dc:creator>苦勞論壇</dc:creator>
+  <dc:date>2005-12-29T12:40:48+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">國際政治</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108671">
+  <title>【KONG YEE SAI MAU!!!】香港遠征&#39722;爭團 </title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108671</link>
+  <description>　　這完全是一篇失控的文章，本來是希望多挖掘一些香港反WTO的活動以及參與組織，但是焦點從搜尋場外座談開始，到挖掘哪些團體身在其中，隨即一發不可收拾。就連韓國&#39722;爭團都撲天蓋地四處連結個沒完（這當中不要提很多根本是我語言不通、讀不懂的資料）。總之，以下是那些失控又華麗搜尋記錄。
+
+　　香港世貿會議舉行期間，場外的抗議示威組織同時舉辦多場論壇、座談會（議程），讓世界各地的反WTO組織...</description>
+  <dc:subject>香港反WTO部長級會議</dc:subject>
+  <dc:creator>苦勞論壇</dc:creator>
+  <dc:date>2005-12-29T01:17:07+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">香港反WTO部長級會議</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108668">
+  <title>黨政軍退出媒體　朝野再加油</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108668</link>
+  <description>　　12月26日是黨政軍退出媒體的最後期限，依據立法院2003年通過的廣電法修正案，政府及政黨股份必須在兩年內退出廣電媒體，然而，攸關台﹑華視股權轉移的「無線電視公股釋出條例」日前在立法院協商破局，一直到大限的最後一天仍未能過關，因此，民進黨政府黨政軍退出媒體的承諾已經跳票。
+
+【所有權仍在政府手中】
+
+　　雖然，25日傍晚台視董事長賴國洲﹑總經理鄭優，華視董事長周蓉生﹑總經理江霞等公股董...</description>
+  <dc:subject>媒體</dc:subject>
+  <dc:creator>苦勞論壇</dc:creator>
+  <dc:date>2005-12-28T22:55:43+08:00</dc:date>
+  <category domain="http://www.technorati.com/tag">媒體</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108720">
+  <title>大家一起討論樂生現況及製作模型</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108720</link>
+  <description>討論時間：周六12/31，pm6:00~9 :00
+製作時間：12/31,1/1,1/2 三天
+地點:樂生蓬萊舍
+邀請對象：義工，關心樂生的朋友，
+教學與製作：賴澤君、林欣怡
+報名聯絡：賴澤君，0968418663，sawalai@gmail.com，r92544020@ntu.edu.tw
+有意參與者可隨意贊助每人200元模型製作費。
+
+說明:樂生保留自救會近期在立法院推動「漢生病友人權保障條例立法...</description>
+  <dc:subject>200410樂生療養院遭拆除</dc:subject>
+  <dc:creator>樂生保留自救會</dc:creator>
+  <dc:date>2005-12-30T18:26:16+08:00</dc:date>
+  <category>200410樂生療養院遭拆除</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108713">
+  <title>支持安老九九方案</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108713</link>
+  <description>九 十 四 年 十二 月 三十日
+
+（94）高市總新字第 一三三號
+
+全國教師理事會所提「安老九九方案」，將18%改為9%；國民黨黨主席馬英九指示政策會進行研究，再交由立院黨團提出黨版修法。「九九方案」的基本構思為，退休勞工請領老年給付時僅領半數，另外半數交勞保局依規定運用生息，以請領的金額老年給付1/2計息9%給予勞工在退休後的生活保障。對於全國教師會所提「安老九九方案」，高雄市總工會給予高度肯定並表示支持...</description>
+  <dc:subject>社會福利</dc:subject>
+  <dc:creator>
+高雄市總工會</dc:creator>
+  <dc:date>2005-12-30T16:23:49+08:00</dc:date>
+  <category>社會福利</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108710">
+  <title>東海十字路口-交通公共議題座談</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108710</link>
+  <description>
+活動流程
+海報 12.30前張貼
+問卷 兩份 一1.2開始發 二1.5當天
+
+1.2~1.5 尋求目擊證人
+約農路沿線貼 以及畫粉筆 尋求破壞東海週邊空間品質的兇手
+
+1.5 目擊者記者會
+
+活動時間預計兩小時 17:00~19:00
+
+25分鐘
+市政路延伸穿越東海牧場事件說明
+開場 簡要說明此次事件、與過去聯外道路的事件 5~10分鐘
+影像紀錄 平安頁手護東海、12.27的內政部審議...</description>
+  <dc:subject>教育</dc:subject>
+  <dc:creator>手護東海聯盟、東海大學建築系研究所</dc:creator>
+  <dc:date>2005-12-30T16:15:53+08:00</dc:date>
+  <category>教育</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108723">
+  <title>譴責特區政府未有充足證據前肆意起訴，要求立刻撤銷對14名示威者的檢控</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108723</link>
+  <description>　今天(12月30日)，14名因參與抗議世貿示威活動而遭政府檢控的人士再度提堂。由於特區政府仍然未能就檢控提供充足的證據，令法庭再次再把案件押後至2006年1月11日(星期三)再次提堂。
+
+　　民間監察世貿聯盟譴責特區政府，在未有充足證據之前便匆忙及肆意地檢控示威人士，卻在案件開始了法律程序之後一再作出拖延。需知道所有被檢控者均是海外人士，政府一再拖延法律程序，令他們繼續被逼滯留香港。這對他們以及他們遠在家鄉的家...</description>
+  <dc:subject>香港反WTO部長級會議</dc:subject>
+  <dc:creator>香港民間監察世貿聯盟</dc:creator>
+  <dc:date>2005-12-30T23:14:58+08:00</dc:date>
+  <category>香港反WTO部長級會議</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108685">
+  <title>全球民間社會要求香港特區政府釋放抗議世貿示威者聯合聲明</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108685</link>
+  <description>　　我們乃來自世界不同角落的工會、農民、漁民、婦女、宗教、學生、學術等團體。縱使我們的成員擁有不同的語言、膚色、種族、國藉，但我們卻擁有同一種信念──反對世貿剝削和損害世界各地的勞動人民。
+
+　　世貿第六屆部長級會議剛於香港完結，我們均對談判結果以及《香港宣言》表示失望。同樣令我們失望及憤怒的是，香港政府竟然大規模地拘捕超過一千名參與和平示威的民眾，而大部份被拘留人士遭到不人道對待，其中十四名示威者更被政府以參與...</description>
+  <dc:subject>香港反WTO部長級會議</dc:subject>
+  <dc:creator>香港民間監察世貿聯盟</dc:creator>
+  <dc:date>2005-12-29T22:33:41+08:00</dc:date>
+  <category>香港反WTO部長級會議</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108684">
+  <title>華視工會採訪通知
+反對新聞局決策粗糙行動
+「華視南遷」枉顧員工權益與電視產業經營條件！</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108684</link>
+  <description>活動日期：94年12月30日（週五）
+活動時間、地點：上午9時立法院群賢樓(濟南路)
+新聞聯絡：常務理事　朱　俊　0921-138-334
+秘    書　林奎妙　0919-125-579、02-2775-6977
+
+昨日朝野各政黨就「公股處理條例草案」進行協商，過程中，新聞局姚局長表示五年內將把華視遷移至南部以平衡南北差異、調整重北輕南的發展趨勢。站在員工權益的立場，華視工會強烈反對新聞局此種漠視員工聲音、...</description>
+  <dc:subject>媒體</dc:subject>
+  <dc:creator>中華電視公司產業工會</dc:creator>
+  <dc:date>2005-12-29T22:30:58+08:00</dc:date>
+  <category>媒體</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108676">
+  <title>2005十大違反性權事件記者會
+──道德亂飆的年代　性權誓師出征──</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108676</link>
+  <description>時間：2005年12月30日（五）上午十時
+
+地點：台北市NGO會館（台北市青島東路8號）
+
+在「性別主流化」的呼聲漫天嘎響的此刻，官方釋出大量資源推動各式性別平等活動，但是在這些活動中，性別只見僵化的「男」「女」二性，所談的議題亦是早已有共識的兩性平等與尊重，未曾見到談論性以及弱勢性別，性別主流化口號僅突顯其狹隘內涵。
+
+台灣的性戒嚴已經行之已久，令人震驚的是，性宰制已然一步步制度化，透過體制聯手，壓迫...</description>
+  <dc:subject>性別</dc:subject>
+  <dc:creator>性別人權協會、同志諮詢熱線協會、反對假分級制度聯盟、日日春關懷互助協會、台灣TG蝶園</dc:creator>
+  <dc:date>2005-12-29T18:07:30+08:00</dc:date>
+  <category>性別</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108675">
+  <title>1229漢生病友人權立法公聽會新聞稿
+還漢生人一個公道！民間監察，落實立法，國際接軌</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108675</link>
+  <description>台灣漢生人權、醫療、史蹟、文化共生立法公聽會，讓台北市與台北縣，不僅交通接軌，也要文化接軌，更要讓新莊與歐洲接軌，讓台灣與世界人權接軌。
+
+ 新聞稿聯絡人：詹銘洲0938 -261069、 賴澤君0968-418663。※電郵: tglhra-office@umail.hinet.net
+
+今年七月二十日，聯合國人權組織發出緊急公報全世界！尊稱樂生院民「台灣漢生病友」呼籲台政府不能迫遷病友。這是從民國六十幾年...</description>
+  <dc:subject>200410樂生療養院遭拆除</dc:subject>
+  <dc:creator>樂生保留自救會</dc:creator>
+  <dc:date>2005-12-29T16:49:36+08:00</dc:date>
+  <category>200410樂生療養院遭拆除</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108674">
+  <title>反對新聞局決策粗糙行動</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108674</link>
+  <description>■活動日期：94年12月30日（週五）
+■活動時間、地點：上午9時立法院群賢樓(濟南路)
+■新聞聯絡：常務理事　朱　俊　0921-138-334
+
+秘書　林奎妙　0919-125-579、02-2775-6977
+
+昨日朝野各政黨就「公股處理條例草案」進行協商，過程中，新聞局姚局長表示五年內將把華視遷移至南部以平衡南北差異、調整重北輕南的發展趨勢。站在員工權益的立場，華視工會強烈反對新聞局此種漠視員工聲音...</description>
+  <dc:subject>契約</dc:subject>
+  <dc:creator>華視產業工會</dc:creator>
+  <dc:date>2005-12-29T16:47:46+08:00</dc:date>
+  <category>契約</category>
+  </item>
+<item rdf:about="http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108673">
+  <title>第一屆北京同性戀文化節公開信</title>
+  <link>http://www.coolloud.org.tw/news/database/interface/detailstander.asp?ID=108673</link>
+  <description>2005年12月14日，我們接到北京公安局通知，不許我們在798藝術區開展第一屆北京同性戀文化節。我們只好迅速轉場。幸虧上下線(ON OFF)酒吧十分支持我們。於是，2005年12月16日15時，我們在上下線(ON OFF)布展完成了第一屆北京同性戀文化節的展廳部分。同時，酒會佈局也已經確定，晚上的開幕式嘉賓和歌舞晚會的演員也陸續到場走台。一些國內外媒體記者也相應入場。但是，辛勞的公安干警們出動警力再次找到我們，勒令...</description>
+  <dc:subject>性別</dc:subject>
+  <dc:creator>第一屆北京同性戀文化節組委會</dc:creator>
+  <dc:date>2005-12-29T12:42:34+08:00</dc:date>
+  <category>性別</category>
+  </item>
+</rdf:RDF>
+

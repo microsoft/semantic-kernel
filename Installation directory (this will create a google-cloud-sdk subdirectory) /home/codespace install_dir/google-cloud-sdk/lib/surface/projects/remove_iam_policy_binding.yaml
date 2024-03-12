@@ -1,0 +1,51 @@
+release_tracks: [GA]
+help_text:
+  brief: Remove IAM policy binding for a project.
+  description: |
+    Removes a policy binding to the IAM policy of a project, given a
+    project ID and the binding. One binding consists of a member, a role and an
+    optional condition.
+
+  examples: |
+    To remove an IAM policy binding for the role of 'roles/editor' for the user
+    'test-user@gmail.com' on project with identifier 'example-project-id-1',
+    run:
+
+      $ {command} example-project-id-1 --member='user:test-user@gmail.com' --role='roles/editor'
+
+    To remove an IAM policy binding for the role of 'roles/editor' from all
+    authenticated users on project 'example-project-id-1', run:
+
+      $ {command} example-project-id-1 --member='allAuthenticatedUsers' --role='roles/editor'
+
+    To remove an IAM policy binding with a condition of
+    expression='request.time < timestamp("2019-01-01T00:00:00Z")',
+    title='expires_end_of_2018', and description='Expires at midnight on
+    2018-12-31' for the role of 'roles/browser' for the user
+    'test-user@gmail.com' on project with identifier 'example-project-id-1',
+    run:
+
+      $ {command} example-project-id-1 --member='user:test-user@gmail.com' --role='roles/browser' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+
+    To remove all IAM policy bindings regardless of the condition for the role
+    of 'roles/browser' and for the user 'test-user@gmail.com' on project with
+    identifier 'example-project-id-1', run:
+
+      $ {command} example-project-id-1 --member='user:test-user@gmail.com' --role='roles/browser' --all
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: cloudresourcemanager.projects
+  use_relative_name: false
+
+arguments:
+  resource:
+    help_text: The project to remove the IAM policy binding from.
+    spec: !REF googlecloudsdk.command_lib.projects.resources:project
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

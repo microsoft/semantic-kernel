@@ -1,0 +1,15 @@
+- release_tracks: [GA, BETA, ALPHA]
+  hidden: true  # TODO(b/277573292): unhide the CLI for GA.
+
+  help_text:
+    brief: Delete a Cloud Bigtable authorized view.
+    description: Delete new Cloud Bigtable authorized view.
+
+  request:
+    collection: bigtableadmin.projects.instances.tables.authorizedViews
+    method: delete
+
+  arguments:
+    resource:
+      help_text: Cloud Bigtable authorized view to delete.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:authorized_view

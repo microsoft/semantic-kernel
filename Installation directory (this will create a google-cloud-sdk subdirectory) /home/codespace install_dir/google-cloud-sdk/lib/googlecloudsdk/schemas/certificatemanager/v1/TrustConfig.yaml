@@ -1,0 +1,64 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: certificatemanager v1 TrustConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  description:
+    description: One or more paragraphs of text description of a TrustConfig.
+    type: string
+  etag:
+    description: |-
+      This checksum is computed by the server based on the value of other
+      fields, and may be sent on update and delete requests to ensure the client
+      has an up-to-date value before proceeding.
+    type: string
+  labels:
+    description: Set of labels associated with a TrustConfig.
+    $ref: LabelsValue.yaml
+  name:
+    description: |-
+      A user-defined name of the trust config. TrustConfig names must be unique
+      globally and match pattern `projects/*/locations/*/trustConfigs/*`.
+    type: string
+  trustStores:
+    description: |-
+      Set of trust stores to perform validation against. This field is supported
+      when TrustConfig is configured with Load Balancers, currently not
+      supported for SPIFFE certificate validation. Only one TrustStore specified
+      is currently allowed.
+    type: array
+    items:
+      $ref: TrustStore.yaml
+  allowlistedCertificates:
+    description: |-
+      A certificate matching an allowlisted certificate is always considered
+      valid as long as the certificate is parseable, proof of private key
+      possession is established, and constraints on the certificate's SAN field
+      are met.
+    type: array
+    # TODO: b/289174140 - Remove on public launch.
+    hidden: true
+    items:
+      $ref: AllowlistedCertificate.yaml

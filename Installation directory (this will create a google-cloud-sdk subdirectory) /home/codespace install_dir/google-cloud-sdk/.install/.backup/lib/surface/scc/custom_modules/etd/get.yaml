@@ -1,0 +1,60 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get the details of an Event Threat Detection custom module.
+    description: |
+      Get the details of an Event Threat Detection custom module. It does not resolve `INHERITED` enablement states
+      to `ENABLED` or `DISABLED` for modules created at ancestor levels. For example, if the module is enabled
+      at the ancestor level, modules for all child resources will have the enablement state set to
+      `INHERITED`. Use `gcloud alpha scc custom-modules etd get-effective` to retrieve a custom module with its effective enablement state.
+    examples: |
+      To get the details of an Event Threat Detection custom module with ID `123456` for organization `123`, run:
+
+        $ {command} 123456 --organization=organizations/123
+
+      To get the details of an Event Threat Detection custom module with ID `123456` for folder `456`, run:
+
+        $ {command} 123456 --folder=folders/456
+
+      To get the details of an Event Threat Detection custom module with ID `123456` for project `789`, run:
+
+        $ {command} 123456 --project=projects/789
+
+  request:
+    collection: securitycenter.organizations.eventThreatDetectionSettings.customModules
+    disable_resource_check: true
+    api_version: v1
+    method: get
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.etd.request_hooks:GetEventThreatDetectionCustomModuleReqHook
+
+  arguments:
+
+    params:
+    - arg_name: custom_module
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        ID or the full resource name of the Event Threat Detection custom module. If you specify the full resource name, you do not need to specify the --organization, --folder, or --project flags.
+
+    - group:
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: name
+          help_text: |
+            Organization from which to get the custom module details. Formatted as
+            `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: name
+          help_text: |
+            Folder from which to get the custom module details. Formatted as `folders/456`
+            or just `456`.
+
+        - arg_name: project
+          api_field: name
+          help_text: |
+            ID or number of the project from which to get the custom module details. Formatted as
+            `projects/789` or just `789`.

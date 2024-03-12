@@ -1,0 +1,46 @@
+project:
+  name: project
+  collection: notebooks.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project ID.
+    property: core/project
+  disable_auto_completers: false
+
+location:
+  name: location
+  collection: notebooks.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location of the notebook instance.
+    property: notebooks/location
+  disable_auto_completers: false
+
+instance:
+  name: instance
+  collection: notebooks.projects.locations.instances
+  attributes:
+  - *project
+  - *location
+  - &instance
+    parameter_name: instancesId
+    attribute_name: instance
+    help: The notebooks instance.
+  disable_auto_completers: false
+
+runtime:
+  name: runtime
+  collection: notebooks.projects.locations.runtimes
+  attributes:
+  - *project
+  - *location
+  - &runtime
+    parameter_name: runtimesId
+    attribute_name: runtime
+    help: The notebooks runtime.
+  disable_auto_completers: false

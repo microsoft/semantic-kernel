@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      List Dataplex zone actions.
+    description: |
+      List all Dataplex Actions under a specific zone.
+
+    examples: |
+      To list all actions of a Dataplex zone `test-zone` defined in project `test-project` in
+      location `us-central1` with lake `test-lake`, run:
+
+        $ {command} --project=test-project --location=us-central1 --lake=test-lake --zone=test-zone
+
+  command_type: LIST
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.zones.actions
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex zone Actions you want to list.
+      override_resource_collection: true
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:zone
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        data_locations:label=DATA_LOCATION,
+        category: label=CATEGORY,
+        issue:label=ISSUE
+      )

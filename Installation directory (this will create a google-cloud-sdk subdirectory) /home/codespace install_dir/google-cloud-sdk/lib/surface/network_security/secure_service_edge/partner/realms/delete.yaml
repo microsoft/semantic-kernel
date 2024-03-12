@@ -1,0 +1,26 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete a partner SSE realm.
+  description: |
+    Delete the specified partner SSE realm.
+  examples: |
+    To delete a partner realm named `my-realm`, run:
+
+      $ {command} my-realm
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:partnerSSERealm
+    help_text: |
+      The partner realm to be deleted.
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.partnerSSERealms
+  method: delete

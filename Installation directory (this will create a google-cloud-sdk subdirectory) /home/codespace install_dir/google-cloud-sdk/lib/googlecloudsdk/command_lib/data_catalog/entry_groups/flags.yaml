@@ -1,0 +1,10 @@
+description:
+  arg_name: description
+  api_field: googleCloudDatacatalogV1beta1EntryGroup.description
+  help_text: |-
+    Description of the entry group.
+display_name:
+  arg_name: display-name
+  api_field: googleCloudDatacatalogV1beta1EntryGroup.displayName
+  help_text: |-
+    Human-readable name of the entry group.

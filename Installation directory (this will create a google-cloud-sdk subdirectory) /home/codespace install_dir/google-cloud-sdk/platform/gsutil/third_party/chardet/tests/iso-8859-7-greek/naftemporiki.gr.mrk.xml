@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="iso-8859-7"?>
+<!--
+Source: http://www.naftemporiki.gr/news/static/rss/news_mrk.xml
+Expect: ISO-8859-7
+-->
+<rss version="2.0">
+<channel>
+<title>Η ΝΑΥΤΕΜΠΟΡΙΚΗ : ΑΓΟΡΕΣ</title>
+<link>http://www.naftemporiki.gr/</link>
+<description>Η ΝΑΥΤΕΜΠΟΡΙΚΗ : ΑΓΟΡΕΣ</description>
+<language>el</language>
+<copyright>Copyright 2006, Η ΝΑΥΤΕΜΠΟΡΙΚΗ - Π. ΑΘΑΝΑΣΙΑΔΗΣ &amp; ΣΙΑ Α.Ε.</copyright>
+<webMaster>webmaster@naftemporiki.gr</webMaster>
+<lastBuildDate>Wed, 4 Jan 2006 07:11:00 +0200</lastBuildDate>
+<ttl>10</ttl> 
+<docs>http://www.naftemporiki.gr/news/rss.asp</docs> 
+
+<image>
+<title>Η ΝΑΥΤΕΜΠΟΡΙΚΗ</title> 
+<width>120</width> 
+<height>24</height> 
+<link>http://www.naftemporiki.gr</link> 
+<url>http://www.naftemporiki.gr/_images/sources/naftlogo_120.gif</url> 
+</image>
+
+
+<item>
+<title>Ισοτιμίες νομισμάτων - Ευρώ
+</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137277</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137277</link>
+<pubDate>Wed, 4 Jan 2006 07:06:00 +0200</pubDate>
+<description></description>
+<author>editor@ana.gr (ΑΠΕ)</author>
+</item>
+
+<item>
+<title>N - Διεθνείς - Ισοτιμίες νομισμάτων  - Δολαρίου.
+</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137276</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137276</link>
+<pubDate>Wed, 4 Jan 2006 07:06:00 +0200</pubDate>
+<description></description>
+<author>editor@ana.gr (ΑΠΕ)</author>
+</item>
+
+<item>
+<title>Χρηματιστήριο Τόκυο-Nikkei</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137275</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137275</link>
+<pubDate>Wed, 4 Jan 2006 07:05:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ ON LINE)</author>
+</item>
+
+<item>
+<title>Ασιατικά Χρηματιστήρια</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137273</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137273</link>
+<pubDate>Wed, 4 Jan 2006 07:01:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ ON LINE)</author>
+</item>
+
+<item>
+<title>Δυναμική αρχή στο 2006</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137210</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137210</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Σοφόν... το ασαφές: Χωρίς αντιστάσεις</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137109</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137109</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Καθυστερημένη έναρξη για τα παράγωγα</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137185</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137185</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Εμπορεύματα</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137214</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137214</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Τα πρακτικά της Fed «έριξαν» το δολάριο</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137215</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137215</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Πετρέλαιο</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137213</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137213</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+
+
+</channel>
+</rss>
+
+

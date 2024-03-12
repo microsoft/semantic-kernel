@@ -1,0 +1,37 @@
+help_text:
+  brief: |
+    Update a backup, only supported for the following fields: --expiration-date and --retention-period.
+  description: |
+    Update a backup, only supported for the following fields: --expiration-date and --retention-period.
+  examples: |
+    To update the expire time of backup 'BACKUP_NAME' to 7 days from now, run:
+
+      $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
+      --retention-period=7d
+request:
+  collection: bigtableadmin.projects.instances.clusters.backups
+  modify_request_hooks:
+  - googlecloudsdk.api_lib.bigtable.backups:ResetDefaultMaskField
+  - googlecloudsdk.api_lib.bigtable.backups:AddExpireTimeToUpdateReq
+
+arguments:
+  resource:
+    help_text: Cloud Bigtable backup to update.
+    spec: !REF googlecloudsdk.command_lib.bigtable.resources:backup
+  params:
+  - group:
+      mutex: true
+      required: true
+      params:
+      - arg_name: expiration-date
+        api_field: backup.expireTime
+        help_text: |
+          Absolute expiration time of the backup; must be at least 6 hours and at most 90 days from
+          the time the request is received. See `$ gcloud topic datetimes` for information on
+          date/time formats.
+      - arg_name: retention-period
+        api_field: backup.expireTime
+        help_text: |
+          Retention period of the backup relative from now; must be at least 6 hours and at most 90
+          days from backup creation time. See `$ gcloud topic datetimes` for information on duration
+          formats. See `$ gcloud bigtable backups describe` for creation time.

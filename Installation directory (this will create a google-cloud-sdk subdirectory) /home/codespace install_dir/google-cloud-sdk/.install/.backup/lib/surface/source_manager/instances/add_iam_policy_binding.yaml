@@ -1,0 +1,24 @@
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Add an IAM policy binding to a Secure Source Manager instance.
+  description: Add an IAM policy binding to a Secure Source Manager instance.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with instance named 'my-instance' and location 'us-central1', run:
+
+      $ {command} my-instance --region='us-central1' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of policy role and member types.
+
+request:
+  api_version: v1
+  collection: securesourcemanager.projects.locations.instances
+
+arguments:
+  resource:
+    help_text: The instance for which to add the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.source_manager.resources:instance
+
+iam:
+  enable_condition: false

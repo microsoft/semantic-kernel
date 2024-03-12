@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono');
+
+@media screen and (min-width: 1080px) {
+    div.document {
+        width: 1040px;
+    }
+}
+
+code.descname {
+    color: #4885ed;
+}
+
+th.field-name {
+    min-width: 100px;
+    color: #3cba54;
+}

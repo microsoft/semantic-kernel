@@ -1,0 +1,44 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Update an existing Beyondcorp application connector.
+    description: Update an existing Beyondcorp application connector.
+    examples: |
+      To modify the connector ``my-connector'' in 'us-central1' by adding
+      labels 'k0', with value 'value1' and label 'k1' with value 'value2' and
+      removing labels with key 'k3', run:
+
+        $ {command} my-connector \
+            --location=us-central1 \
+            --display-name=new-display-name \
+            --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+  request:
+    collection: beyondcorp.projects.locations.appConnectors
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:CheckFieldsSpecified
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:UpdateLabels
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:PrintMessageInResponse
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  arguments:
+    resource:
+      arg_name: connector
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:appconnector
+      help_text: The Beyondcorp connector you want to update
+    params:
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:display_name_v1alpha
+      release_tracks: [ALPHA]
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:display_name_v1
+      release_tracks: [BETA]
+
+
+    additional_arguments_hook: googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:UpdateLabelsFlags

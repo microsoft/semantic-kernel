@@ -1,0 +1,71 @@
+#
+# documentsignoffstate.pystate
+#
+# state machine model of the states and associated behaviors and properties for each
+# different state of a document in a document control system
+#
+# example using named state transitions
+
+# This implements a state model for submitting,
+# approving, activating, and purging document 
+# revisions in a document management system.
+#
+# The state model looks like:
+#
+#   New
+#    |
+#    | (create)
+#    |
+#    v 
+#   Editing ----------------------------------------------+
+#    |   ^                                                |
+#    |   |                                                |
+#    |   +----------+                                     |
+#    |              |                                     |
+#    | (submit)     |                                     | (cancel)
+#    |              | (reject)                            |
+#    v              |                                     |
+#   PendingApproval-+                                     |
+#    |                                                    |
+#    | (approve)                                          |
+#    |                                                    |
+#    v                                                    |
+#   Approved <--------------------------+ (deactivate)    |
+#    |    |                             |                 |
+#    |    +--------------+              |                 |
+#    |                   | (activate)   |                 |
+#    |                   v              |                 |
+#    | (retire)        Active ----------+                 |
+#    |                                                    |
+#    v                                                    |
+#   Retired                                               |
+#    |                                                    |
+#    | (purge)                                            |
+#    |                                                    |
+#    v                                                    |
+#   Deleted <---------------------------------------------+
+#
+#
+# There is no behavior attached to these states, this is
+# just an example of a state machine with named transitions.
+#
+
+   
+statemachine DocumentRevisionState:
+    New      -( create     )-> Editing
+    Editing  -( cancel     )-> Deleted
+    Editing  -( submit     )-> PendingApproval
+    PendingApproval  -( reject     )-> Editing
+    PendingApproval  -( approve    )-> Approved
+    Approved -( activate   )-> Active
+    Active   -( deactivate )-> Approved
+    Approved -( retire     )-> Retired
+    Retired  -( purge      )-> Deleted
+
+New.description = 'creating...'
+Editing.description = 'editing...'
+PendingApproval.description = 'reviewing...'
+Approved.description = 'approved/inactive...'
+Active.description = 'approved/active...'
+Deleted.description = 'deleted...'
+Retired.description = 'retired...'

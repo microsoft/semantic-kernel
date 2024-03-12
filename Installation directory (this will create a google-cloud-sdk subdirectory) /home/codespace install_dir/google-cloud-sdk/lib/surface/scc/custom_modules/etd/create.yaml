@@ -1,0 +1,89 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create an Event Threat Detection custom module.
+    description: Create an Event Threat Detection custom module.
+    examples: |
+      To create an Event Threat Detection custom module for organization `123`, run:
+
+        $ {command} --organization=organizations/123 \
+            --display-name="test_display_name" \
+            --module-type="CONFIGURABLE_BAD_IP" \
+            --enablement-state="ENABLED" \
+            --custom-config-from-file=config.json
+
+      To create an Event Threat Detection custom module for folder `456`, run:
+
+        $ {command} --folder=folders/456 \
+            --display-name="test_display_name" \
+            --module-type="CONFIGURABLE_BAD_IP" \
+            --enablement-state="ENABLED" \
+            --custom-config-from-file=config.json
+
+      To create an Event Threat Detection custom module for project `789`, run:
+
+        $ {command} --project=projects/789 \
+            --display-name="test_display_name" \
+            --module-type="CONFIGURABLE_BAD_IP" \
+            --enablement-state="ENABLED" \
+            --custom-config-from-file=config.json
+
+  request:
+    collection: securitycenter.organizations.eventThreatDetectionSettings.customModules
+    disable_resource_check: true
+    api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.etd.request_hooks:CreateEventThreatDetectionCustomModuleReqHook
+
+  arguments:
+    params:
+    - group:
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: parent
+          help_text: |
+            Organization where the Event Threat Detection custom module resides. Formatted as `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: parent
+          help_text: |
+            Folder where the Event Threat Detection custom module resides. Formatted as `folders/456` or just `456`.
+
+        - arg_name: project
+          api_field: parent
+          help_text: |
+            ID or number of the project where the Event Threat Detection custom module resides. Formatted as `projects/789` or just `789`.
+
+    - arg_name: display-name
+      api_field: eventThreatDetectionCustomModule.displayName
+      is_positional: false
+      required: true
+      help_text: |
+        Sets the display name of the Event Threat Detection custom module. This display name becomes the finding category for all findings that are returned by this custom module. The display name must be between 1 and 128 characters, start with a lowercase letter, and contain alphanumeric characters or underscores only.
+
+    - arg_name: module-type
+      api_field: eventThreatDetectionCustomModule.type
+      is_positional: false
+      required: true
+      help_text: |
+        Sets the module type of the Event Threat Detection custom module.
+
+    - arg_name: enablement-state
+      api_field: eventThreatDetectionCustomModule.enablementState
+      is_positional: false
+      required: true
+      help_text: |
+        Sets the enablement state of the Event Threat Detection custom module. From the following list of possible enablement states, specify either enabled or disabled only
+
+    - arg_name: custom-config-from-file
+      api_field: eventThreatDetectionCustomModule.config
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+      processor: googlecloudsdk.command_lib.scc.hooks:ProcessCustomEtdConfigFile
+      is_positional: false
+      required: true
+      help_text: |
+        Path to a JSON file that contains the configuration for the Event Threat Detection custom module.
+
+  output:
+    format: yaml

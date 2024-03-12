@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Export an EdgeCacheService resource.
+    description: Export an EdgeCacheService resource to YAML.
+    examples: |
+      To export an existing EdgeCacheService resource named
+      'my-service', run:
+
+        $ {command} my-service --destination=my-service.yaml
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheServices
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The EdgeCacheService resource you want to export.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheService

@@ -1,0 +1,85 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta Principal export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  condition:
+    description: An expression to specify custom condition.
+    type: string
+  groups:
+    description: |-
+      The groups the principal belongs to. Exact match, prefix match, and suffix
+      match are supported.
+    type: array
+    items:
+      type: string
+  ips:
+    description: IPv4 or IPv6 address or range (In CIDR format)
+    type: array
+    items:
+      type: string
+  namespaces:
+    description: |-
+      The namespaces. Exact match, prefix match, and suffix match are
+      supported.
+    type: array
+    items:
+      type: string
+  notGroups:
+    description: Negate of groups. Specifies exclusions.
+    type: array
+    items:
+      type: string
+  notIps:
+    description: Negate of IPs. Specifies exclusions.
+    type: array
+    items:
+      type: string
+  notNamespaces:
+    description: Negate of namespaces. Specifies exclusions.
+    type: array
+    items:
+      type: string
+  notUsers:
+    description: Negate of users. Specifies exclusions.
+    type: array
+    items:
+      type: string
+  properties:
+    description: |-
+      A map of Istio attribute to expected values.
+      Exact match, prefix match, and suffix match
+      are supported for values. For example,
+      `request.headers[version]: ?v1?`. The
+      properties are ANDed together.
+    $ref: PropertiesValue.yaml
+  users:
+    description: |-
+      The user names/IDs or service accounts. Exact
+      match, prefix match, and suffix match are
+      supported.
+    type: array
+    items:
+      type: string

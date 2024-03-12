@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List configs for a device.
+    description: |
+      This command lists all available configurations in the history of the
+      device. Up to 10 are kept; you may restrict the output to fewer via the
+      `--limit` flag.
+    examples: |
+     To list the 3 latest configurations of a device in region 'us-central1', run:
+
+       $ {command} --region=us-central1 --registry=my-registry --device=my-device --limit=3
+  request:
+    collection: cloudiot.projects.locations.registries.devices.configVersions
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromArg:api_field=numVersions,arg_name=limit
+
+  arguments:
+    resource:
+      help_text: The device you want to list the configs for.
+      spec: !REF googlecloudsdk.command_lib.iot.resources:device
+
+  output:
+    format: table(version, cloudUpdateTime, deviceAckTime)

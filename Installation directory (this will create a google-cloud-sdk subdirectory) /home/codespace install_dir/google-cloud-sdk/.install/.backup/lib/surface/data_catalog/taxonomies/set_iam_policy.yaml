@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Set the IAM policy for a Policy Tag taxonomy.
+    description: |
+      Set the IAM policy for the given Policy Tag taxonomy as
+      defined in a JSON or YAML file.
+
+    examples: |
+      The following command will read am IAM policy defined in a JSON file
+      'policy.json' and set it for the taxonomy 'TAXONOMY' in location 'LOCATION':
+
+        $ {command} TAXONOMY --location='LOCATION' policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+
+  request:
+    collection: datacatalog.projects.locations.taxonomies
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Policy tag taxonomy for which to set the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:taxonomy

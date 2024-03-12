@@ -1,0 +1,45 @@
+project:
+  name: project
+  collection: authztoolkit.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The project Id.
+    property: core/project
+
+location:
+  name: location
+  collection: authztoolkit.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      The location Id.
+
+policy:
+  name: policy
+  collection: authztoolkit.projects.locations.policies
+  request_id_field: policyId
+  attributes:
+  - *project
+  - *location
+  - &policy
+    parameter_name: policiesId
+    attribute_name: policy
+    help: Id of the policy.
+
+target_association:
+  name: target_association
+  collection: authztoolkit.projects.locations.targetAssociations
+  request_id_field: targetAssociationId
+  attributes:
+  - *project
+  - *location
+  - &target_association
+    parameter_name: targetAssociationsId
+    attribute_name: target_association
+    help: Id of the targetAssociation.

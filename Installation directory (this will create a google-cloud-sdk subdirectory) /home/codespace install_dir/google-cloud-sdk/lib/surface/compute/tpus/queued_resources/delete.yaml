@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Delete a Queued Resource.
+    description: |
+      Delete an existing Queued Resource.
+
+      To get a list of Queued Resources for deletion, run:
+
+        $ {parent_command} list
+    examples: |
+      To delete a Queued Resource in zone `us-central1-b` and project `my-project`, run:
+
+        $ {command} --zone=us-central1-b --project=my-project
+
+  request:
+    collection: tpu.projects.locations.queuedResources
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetForce
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
+
+  async:
+    collection: tpu.projects.locations.operations
+    extract_resource_result: false
+    ALPHA:
+      api_version: v2alpha1
+    GA:
+      api_version: v2
+
+  arguments:
+    resource:
+      help_text: The Queued Resource you want to delete.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.queued_resources.resources:queuedresource
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:force

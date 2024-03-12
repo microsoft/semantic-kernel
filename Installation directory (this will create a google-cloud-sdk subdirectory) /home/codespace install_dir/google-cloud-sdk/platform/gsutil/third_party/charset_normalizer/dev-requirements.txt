@@ -1,0 +1,10 @@
+pytest
+pytest-cov
+codecov
+chardet==4.0.*
+Flask>=2.0,<3.0; python_version >= '3.6'
+requests>=2.26,<3.0; python_version >= '3.6'
+black==22.1.0; python_version >= '3.6'
+flake8==4.0.1; python_version >= '3.6'
+mypy==0.931; python_version >= '3.6'
+isort; python_version >= '3.6'

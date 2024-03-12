@@ -1,0 +1,41 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Add IAM policy binding to a Cloud Run service.
+    description: |
+      Add an IAM policy binding to the IAM policy of a Cloud Run service. One binding consists of a member,
+      and a role.
+
+    examples: |
+      To add an IAM policy binding for the role of 'roles/run.invoker' for the user 'test-user@gmail.com'
+      with service 'my-service' and region 'us-central1', run:
+
+        $ {command} my-service --region='us-central1' --member='user:test-user@gmail.com' --role='roles/run.invoker'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  request:
+    collection: run.projects.locations.services
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.run.platforms:ValidatePlatformIsManaged
+
+  arguments:
+    resource:
+      help_text: The service for which to add IAM policy binding to.
+      spec: !REF googlecloudsdk.command_lib.run.resources:service
+      # The --region flag is specified at the group level, so don't try to add it here
+      removed_flags: ['region']
+      command_level_fallthroughs:
+        region:
+        - arg_name: 'region'
+
+  ALPHA:
+    iam:
+      enable_condition: true
+      policy_version: 3
+      get_iam_policy_version_path: options_requestedPolicyVersion
+  BETA:
+    iam:
+      enable_condition: true
+      policy_version: 3
+      get_iam_policy_version_path: options_requestedPolicyVersion

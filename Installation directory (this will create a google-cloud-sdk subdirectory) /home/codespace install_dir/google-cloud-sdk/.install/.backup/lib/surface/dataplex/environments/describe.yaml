@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Retrieve a Dataplex Environment.
+    description: |
+      Get a Dataplex Environment resource based on project, location, lake, and environment.
+
+    examples: |
+     To describe a Dataplex Environment `test-environment` in project `test-project` under location `us-central1` within lake `test-lake`, run:
+
+       $ {command} test-environment --project=test-project --location=us-central1 --lake=test-lake
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.environments
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Environment you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:environment

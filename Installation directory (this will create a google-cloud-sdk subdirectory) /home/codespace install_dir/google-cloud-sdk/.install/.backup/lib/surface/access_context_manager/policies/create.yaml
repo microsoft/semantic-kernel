@@ -1,0 +1,67 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Create a new access policy.
+    description: |
+      Create a new Access Context Manager policy. An Access Context Manager policy, also known as
+      an access policy, is a container for access levels and VPC Service Controls service
+      perimeters.
+
+      You can optionally specify either a folder or a project as a scope of an access policy. A
+      scoped policy only allows projects under that scope to be restricted by any service perimeters
+      defined with that policy. The scope must be within the organization that this policy is
+      associated with. You can specify only one folder or project as the scope for an access
+      policy. If you don't specify a scope, then the scope extends to the entire organization and
+      any projects within the organization can be added to service perimeters in this policy.
+
+      This command only creates an access policy. Access levels and service perimeters need to be
+      created explicitly.
+    examples: |
+      To create an access policy that applies to the entire organization, run:
+
+        $ {command} --organization=organizations/123 --title="My Policy"
+
+      To create an access policy that applies to the folder with the ID 345, run:
+
+        $ {command} --organization=organizations/123 --scopes=folders/345 \
+          --title="My Folder Policy"
+
+      Only projects within this folder can be added to service perimeters within this policy.
+
+      To create an access policy that applies only to the project with the project number 567, run:
+
+        $ {command} --organization=organizations/123 --scopes=projects/567 \
+          --title="My Project Policy"
+
+  request:
+    collection: accesscontextmanager.accessPolicies
+    api_version: v1
+    BETA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha
+
+  async:
+    collection: accesscontextmanager.operations
+    result_attribute: response
+    extract_resource_result: false
+
+  arguments:
+    params:
+    - api_field: title
+      arg_name: title
+      required: true
+      help_text: Short human-readable title of the access policy.
+    - api_field: parent
+      arg_name: organization
+      required: true
+      type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=cloudresourcemanager.organizations
+      processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
+      help_text: Parent organization for the access policies.
+    - api_field: scopes
+      arg_name: scopes
+      required: false
+      help_text: |
+        Folder or project on which this policy is applicable. You can specify only one folder or
+        project as the scope and the scope must exist within the specified organization. If you
+        don't specify a scope, the policy applies to the entire organization.

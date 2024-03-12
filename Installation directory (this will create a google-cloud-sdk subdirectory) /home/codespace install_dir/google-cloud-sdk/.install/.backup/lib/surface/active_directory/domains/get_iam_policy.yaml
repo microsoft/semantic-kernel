@@ -1,0 +1,30 @@
+- release_tracks: [GA, BETA, ALPHA]
+
+  help_text:
+    brief:  |
+      Describe the IAM policy for a Managed Microsoft AD domain.
+    description: |
+      *{command}* displays the IAM policy associated with an Managed Microsoft AD domain.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates.
+
+      This command can fail for the following reasons:
+        * The domain specified does not exist.
+        * The active account does not have permission to access the given
+          domain's IAM policies.
+    examples: |
+      To print the IAM policy for `my-domain.com`, run:
+
+        $ {command} my-domain.com
+
+  request: &request
+    api_version: v1
+    collection: managedidentities.projects.locations.global.domains
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:domain
+      help_text: |
+        Name of the Managed Microsoft AD domain that you want to get the IAM policy for.

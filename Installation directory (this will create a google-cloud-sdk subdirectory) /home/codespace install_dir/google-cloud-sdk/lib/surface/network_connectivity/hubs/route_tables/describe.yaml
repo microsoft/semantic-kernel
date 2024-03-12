@@ -1,0 +1,20 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Describe a route table.
+    description: |
+      Retrieve and display details about a route table.
+    examples: |
+      To display details about a route table named ``my-route-table'', run:
+
+        $ {command} my-route-table
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:routeTable
+      help_text: |
+        Name of the route table to describe.
+
+  request: &request
+    api_version: v1
+    collection: networkconnectivity.projects.locations.global.hubs.routeTables

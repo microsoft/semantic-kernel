@@ -1,0 +1,27 @@
+- release_tracks: []
+
+  help_text:
+    brief: Detect shot changes in videos.
+    description: |
+      Detect when the shot changes in a video.
+    examples: |
+      To detect shot changes in a video file named 'gs://my_bucket/input_file.mp4', run the following command:
+
+        $ {command} gs://my_bucket/input_file.mp4
+
+  request:
+    _COMMON_: request
+    static_fields:
+      features: [SHOT_CHANGE_DETECTION]
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.ml.video.util:UpdateRequestWithInput
+
+  async:
+    _COMMON_: async
+
+  arguments:
+    params:
+    - _COMMON_args
+
+  output:
+    format: json

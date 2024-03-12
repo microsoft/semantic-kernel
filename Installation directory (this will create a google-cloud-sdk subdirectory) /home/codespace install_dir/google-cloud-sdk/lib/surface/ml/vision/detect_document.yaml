@@ -1,0 +1,72 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Detect dense text in an image.
+    description: |
+      Detect dense text in an image, such as books and research reports.
+
+      Google Cloud Vision uses OCR (Optical Character Recognition) to analyze text.
+      This is a premium feature for dense text such as books, research
+      reports, and PDFs. To detect small amounts of text such as on signs, use
+      `detect-text` instead. For more information on this feature, see the Google
+      Cloud Vision documentation at https://cloud.google.com/vision/docs/.
+
+      {language_hints}
+    language_hints: !COMMON help_text.language_hints
+
+    examples: |
+      To detect dense text in image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: DOCUMENT_TEXT_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.language_hints_field
+
+  output:
+    format: json
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Detect dense text in an image.
+    description: |
+      Detect dense text in an image, such as books and research reports.
+
+      Google Cloud Vision uses OCR (Optical Character Recognition) to analyze text.
+      This is a premium feature for dense text such as books, research
+      reports, and PDFs. To detect small amounts of text such as on signs, use
+      `detect-text` instead. For more information on this feature, see the Google
+      Cloud Vision documentation at https://cloud.google.com/vision/docs/.
+
+      {language_hints}
+    language_hints: !COMMON help_text.language_hints
+    examples: |
+      To detect dense text in image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: DOCUMENT_TEXT_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.language_hints_field
+    - _COMMON_: args.model_field
+
+  output:
+    format: json

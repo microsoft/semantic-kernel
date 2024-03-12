@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Retrieves information about a backup.
+    description: Retrieves information about a backup.
+    examples: |
+      To describe a backup, run:
+
+        $ {command} BACKUP_ID --instance=INSTANCE_NAME
+
+  request:
+    collection: spanner.projects.instances.backups
+
+  arguments:
+    resource:
+      help_text: Cloud Spanner backup to describe.
+      spec: !REF googlecloudsdk.command_lib.spanner.resources:backup

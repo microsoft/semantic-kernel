@@ -1,0 +1,50 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: import Virtual Disk images to Google Compute Engine.
+    description: |
+      {command} imports images such as VMWare VMDK files and VHD files, from a Google Cloud Storage
+      file (gs://...) to Google Compute Engine, using the Migrate to Virtual Machines service API.
+      This command creates an Image Import resource with a nested Image Import Job
+      resource. The Image Import Job resource tracks the image import progress.
+      To use this command, you must enable VM Migration API in your project.
+    examples: |
+      To import my-ubuntu22.04.vmdk from my-images-bucket to my-target-project in us-central1,
+      create my-image-import resource in my-project in us-central1.
+      Run:
+        $ {command} my-image-import \
+          --source-file=gs://my-images-bucket/my-ubuntu22.04.vmdk \
+          --image-name=my-ubuntu-image \
+          --location=us-central1 \
+          --target-project=projects/my-project/locations/global/targetProjects/my-target-project
+          --project=my-project
+
+  request:
+    collection: vmmigration.projects.locations.imageImports
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.migration.vms.hooks:FixCreateImageImportRequest
+
+  arguments:
+    resource:
+      help_text: The Image Import resource you want to create. This would be the image name if --image-name is not given.
+      spec: !REF googlecloudsdk.command_lib.migration.vms.resources:imageImport
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:source_file
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:image_name
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:target_project
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:description
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:family_name
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:labels
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:additional_licenses
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:single_region_storage
+    - _REF_: googlecloudsdk.command_lib.migration.vms.flags:kms_key
+    - group:
+        help_text: OS adaptation parameters
+        required: false
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.migration.vms.flags:skip_os_adaptation
+        - group:
+            params:
+            - _REF_: googlecloudsdk.command_lib.migration.vms.flags:generalize
+            - _REF_: googlecloudsdk.command_lib.migration.vms.flags:license_type

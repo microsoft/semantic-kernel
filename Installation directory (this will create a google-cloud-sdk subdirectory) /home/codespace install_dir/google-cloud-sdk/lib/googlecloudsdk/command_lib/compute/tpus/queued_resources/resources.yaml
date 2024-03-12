@@ -1,0 +1,32 @@
+project:
+  name: project
+  collection: tpu.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project ID.
+
+location:
+  name: location
+  collection: tpu.projects.locations
+  disable_auto_completers: false
+  attributes:
+  - &location
+    parameter_name: locationsId
+    attribute_name: zone
+    help: |
+      The compute/zone of the Cloud TPU.
+
+      If not specified, will use `default` compute/zone.
+    property: compute/zone
+
+queuedresource:
+  name: queued_resource
+  collection: tpu.projects.locations.queuedResources
+  attributes:
+  - *project
+  - *location
+  - parameter_name: queuedResourcesId
+    attribute_name: queued_resource
+    help: The unqualified resource name.

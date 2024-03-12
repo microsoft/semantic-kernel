@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: List the details of the Cloud Security Command Center (SCC) posture deployments.
+    description: |
+      List the details of the Cloud Security Command Center (SCC) posture deployments for the specified organization.
+    examples: |
+      To list Cloud Security Command Center posture deployments for organization `123` in the `global` location, run:
+
+        $ {command} organizations/123/locations/global
+
+  request:
+    collection: securityposture.organizations.locations.postureDeployments
+    disable_resource_check: true
+    api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    params:
+    - arg_name: parent
+      api_field: parent
+      is_positional: true
+      required: true
+      help_text: |
+        Organization for listing the Cloud Security Command Center posture deployments available at the
+        organization level. Formatted as `organizations/<organizationID>/locations/<location>`.
+
+  output:
+    format: yaml

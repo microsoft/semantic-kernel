@@ -1,0 +1,46 @@
+project:
+  name: project
+  collection: dataprocgdc.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      The cloud project to use.
+    property: core/project
+
+location:
+  name: location
+  collection: dataprocgdc.projects.locations
+  disable_auto_completers: false
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      Location of the Dataproc GDC resource.
+
+operation:
+  name: operation
+  collection: dataprocgdc.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: The id of the Dataproc GDC operation.
+
+service_instance:
+  name: service_instance
+  collection: dataprocgdc.projects.locations.serviceInstances
+  disable_auto_completers: false
+  request_id_field: serviceInstanceId
+  attributes:
+  - *project
+  - *location
+  - &instance
+    parameter_name: serviceInstancesId
+    attribute_name: instance
+    help: The id of the Dataproc GDC instance.

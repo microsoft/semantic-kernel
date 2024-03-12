@@ -1,0 +1,84 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 CORSPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- maxAge
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  allowCredentials:
+    description: |-
+      In response to a preflight request, setting this to `true` indicates that
+      the actual request can include user credentials. This translates to the
+      `Access-Control-Allow-Credentials` response header.
+    type: boolean
+  allowHeaders:
+    description: |-
+      The content for the `Access-Control-Allow-Headers` response header. You
+      can specify up to 25 headers to include in the `Access-Control-Allow-
+      Headers` header.
+    type: array
+    items:
+      type: string
+  allowMethods:
+    description: |-
+      The content for the `Access-Control-Allow-Methods` response header.
+      You can specify up to five allowed methods.
+    type: array
+    items:
+      type: string
+  allowOrigins:
+    description: |-
+      A list of origins that are allowed to do CORS requests. This
+      translates to the `Access-Control-Allow-Origin` response header.
+      You can specify up to 25 allowed origins.
+    type: array
+    items:
+      type: string
+  disabled:
+    description: |-
+      If `true`, specifies that the CORS policy is disabled. The
+      default value is `false`, which indicates that the CORS policy
+      is in effect.
+    type: boolean
+  exposeHeaders:
+    description: |-
+      The content for the Access-Control-Expose-Headers response
+      header. You can specify up to 25 headers to expose in the
+      `Access-Control-Expose-Headers` header.
+    type: array
+    items:
+      type: string
+  maxAge:
+    description: |-
+      Specifies how long results of a preflight request can be
+      cached by a client in seconds. Note that many browser
+      clients enforce a maximum TTL of 600s (10 minutes). The
+      following limitations apply: - Setting the value to `-1`
+      forces a pre-flight check for all requests (not
+      recommended) - A maximum TTL of `86400s` can be set;
+      however, some clients might force pre-flight checks at a
+      more regular interval. This translates to the `Access-
+      Control-Max-Age` header.
+    type: string

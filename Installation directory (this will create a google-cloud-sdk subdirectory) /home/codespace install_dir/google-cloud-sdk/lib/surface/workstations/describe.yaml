@@ -1,0 +1,29 @@
+- release_tracks: [GA, BETA, ALPHA]
+
+  help_text:
+    brief: |
+      Describe a workstation.
+    description: |
+      Describe a workstation.
+    examples: |
+      To describe a workstation, run:
+
+        $ {command} WORKSTATION
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.workstations.resources:workstation
+      help_text: |
+        The name of the workstation to display.
+
+  request:
+    GA:
+      api_version: v1
+    BETA:
+      api_version: v1beta
+    ALPHA:
+      api_version: v1beta
+    collection: workstations.projects.locations.workstationClusters.workstationConfigs.workstations
+
+  output:
+    format: json

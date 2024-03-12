@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List all `WasmPlugin` resources.
+    description: |
+      List `WasmPlugin` resources.
+    examples: |
+      To list existing `WasmPlugin` resources, run:
+
+        $ {command}
+
+  request:
+    collection: networkservices.projects.locations.wasmPlugins
+    ALPHA:
+      api_version: v1alpha1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The parent location.
+      spec: !REF googlecloudsdk.command_lib.service_extensions.resources:optionalLocation
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        description:label=DESCRIPTION,
+        mainVersionId:label=MAINVERSION,
+        updateTime:label=UPDATETIME:sort=1
+      )

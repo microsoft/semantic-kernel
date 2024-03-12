@@ -1,0 +1,44 @@
+- release_tracks: [GA]
+  help_text:
+    brief: List Data Catalog entry tags.
+    description: List Data Catalog entry tags.
+
+    examples: |
+      List the tags for a Data Catalog entry:
+
+        $ {command} --entry=ENTRY
+
+  request:
+    api_version: v1
+    collection: datacatalog.projects.locations.entryGroups.entries.tags
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Data Catalog entry in which to list tags. The arguments in this group can be used to specify the attributes of this resource.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      is_positional: false
+
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: List Data Catalog entry tags.
+    description: List Data Catalog entry tags.
+
+    examples: |
+      List the tags for a Data Catalog entry:
+
+        $ {command} --entry=ENTRY
+
+  request:
+    collection: datacatalog.projects.locations.entryGroups.entries.tags
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Data Catalog entry in which to list tags. The arguments in this group can be used to specify the attributes of this resource.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      is_positional: false

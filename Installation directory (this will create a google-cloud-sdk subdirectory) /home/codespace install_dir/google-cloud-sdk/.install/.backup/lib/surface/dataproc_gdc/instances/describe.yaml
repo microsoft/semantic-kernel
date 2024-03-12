@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Describe a Dataproc GDC service instance
+    description: Describe a Dataproc GDC service instance
+    examples: |
+      To describe a Dataproc GDC service instance named 'my-instance' in project `test-project` in `us-central1`, run:
+
+          $ {command} my-instance --project=test-project --location=us-central1
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    collection: dataprocgdc.projects.locations.serviceInstances
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        The Dataproc GDC service instance to describe.
+      spec: !REF googlecloudsdk.command_lib.dataproc_gdc.resources:service_instance

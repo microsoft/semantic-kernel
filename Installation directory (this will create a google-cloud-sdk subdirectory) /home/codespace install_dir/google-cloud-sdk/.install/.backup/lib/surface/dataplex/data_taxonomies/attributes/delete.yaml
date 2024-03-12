@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Delete a Dataplex Data Attribute.
+    description: |
+      Delete a Dataplex Data Attribute.
+
+    examples: |
+      To delete Data Attribute `test-attribute` for Data Taxonomy `test-datataxonomy` in project `test-dataplex` at location `us-central1`, run:
+
+        $ {command} test-attribute --location=us-central1 --project=test-dataplex --data_taxonomy=test-datataxonomy
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataTaxonomies.attributes
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Data Attribute you want to delete.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_attribute
+    params:
+    - arg_name: etag
+      api_field: etag
+      help_text: |
+        etag value for particular Data Attribute resource.
+  async:
+    collection: dataplex.projects.locations.operations

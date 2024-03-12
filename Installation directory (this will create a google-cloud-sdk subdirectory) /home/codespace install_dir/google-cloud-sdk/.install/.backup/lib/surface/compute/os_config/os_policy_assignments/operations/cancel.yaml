@@ -1,0 +1,28 @@
+- release_tracks: [GA, ALPHA]
+
+  help_text:
+    brief: Cancel an OS policy assignment operation
+    description: |
+      Cancel an OS policy assignment
+      ## EXAMPLES
+
+      To cancel a long-running operation `operation-id` for OS policy assignment `my-assignment` in location `us-central1-a`:
+
+        $ {command} operation-id --location=us-central1-a --os-policy-assignment=my-assignment
+
+      Or pass the full operation name:
+
+        $ {command} projects/my-project/locations/us-central1-a/osPolicyAssignments/my-assignment/operations/operation-id
+
+  request:
+    collection: osconfig.projects.locations.osPolicyAssignments.operations
+    method: cancel
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: OS policy assignment data to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:os_policy_assignment_operation

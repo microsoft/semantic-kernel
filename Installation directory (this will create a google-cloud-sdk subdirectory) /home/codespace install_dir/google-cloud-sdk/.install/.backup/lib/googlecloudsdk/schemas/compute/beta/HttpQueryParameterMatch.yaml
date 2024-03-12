@@ -1,0 +1,52 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta HttpQueryParameterMatch export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  exactMatch:
+    description: |-
+      The queryParameterMatch matches if the value of the parameter exactly
+      matches the contents of exactMatch. Only one of presentMatch, exactMatch,
+      or regexMatch must be set.
+    type: string
+  name:
+    description: |-
+      The name of the query parameter to match. The query parameter must exist
+      in the request, in the absence of which the request match fails.
+    type: string
+  presentMatch:
+    description: |-
+      Specifies that the queryParameterMatch matches if the request contains the
+      query parameter, irrespective of whether the parameter has a value or not.
+      Only one of presentMatch, exactMatch, or regexMatch must be set.
+    type: boolean
+  regexMatch:
+    description: |-
+      The queryParameterMatch matches if the value of the parameter matches the
+      regular expression specified by regexMatch. For more information about
+      regular expression syntax, see Syntax. Only one of presentMatch,
+      exactMatch, or regexMatch must be set. Regular expressions can only be
+      used when the loadBalancingScheme is set to INTERNAL_SELF_MANAGED.
+    type: string

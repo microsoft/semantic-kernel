@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Get the IAM policy for a Dataplex datascan resource.
+    description: |
+      Displays the IAM policy associated with a Dataplex datascan resource.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates.
+    examples: |
+      To print the IAM policy for Dataplex datascan `test-datascan` in location `us-central1`, run:
+
+          $ {command} test-datascan --location=us-central1
+  request:
+    collection: dataplex.projects.locations.dataScans
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex datascan IAM policy you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:datascan

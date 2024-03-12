@@ -1,0 +1,49 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: backup for gke v1 transformation rule schema
+description: backup for gke transformation rule file YAML validation schema
+type: object
+additionalProperties: false
+properties:
+  transformationRules:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        resourceFilter:
+          type: object
+          additionalProperties: false
+          properties:
+            namespaces:
+              type: array
+              items:
+                type: string
+            groupKinds:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                properties:
+                  resourceGroup:
+                    type: string
+                  resourceKind:
+                    type: string
+            jsonPath:
+              type: string
+        fieldActions:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              op:
+                type: string
+              fromPath:
+                type: string
+              path:
+                type: string
+              value:
+                type: string

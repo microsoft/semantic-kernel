@@ -1,0 +1,38 @@
+project:
+  name: project
+  collection: ondemandscanning.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: Cloud project ID.
+
+location:
+  name: location
+  collection: ondemandscanning.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: Cloud multi-region.
+
+operation:
+  name: operation
+  collection: ondemandscanning.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: Scan operation.
+
+scan:
+  name: scan
+  collection: ondemandscanning.projects.locations.scans
+  attributes:
+  - *project
+  - *location
+  - parameter_name: scansId
+    attribute_name: scan
+    help: A vulnerability scan.

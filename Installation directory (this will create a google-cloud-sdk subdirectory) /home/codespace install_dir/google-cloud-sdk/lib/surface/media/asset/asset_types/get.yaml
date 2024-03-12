@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a new Cloud Media Asset asset type.
+    description: Create a new Media Asset asset type.
+    examples: |
+      To get a specific asset type with id  my-at, run:
+
+        $ {command} my-at
+
+  request:
+    collection: mediaasset.projects.locations.assetTypes
+    method: get
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset asset type to create.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:asset_type

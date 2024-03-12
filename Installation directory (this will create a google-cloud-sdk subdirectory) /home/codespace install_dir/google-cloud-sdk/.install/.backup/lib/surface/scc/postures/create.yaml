@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Create a Cloud Security Command Center (SCC) posture.
+    description: |
+      Create a Cloud Security Command Center (SCC) posture. First argument consists of the parent
+      and name of the posture to be created. The posture details are provided in YAML file. The file
+      path is mentioned in `--posture-from-file` flag.
+
+      Created posture is returned as the response of the command. LRO operation ID is printed as the
+      standard output.
+    examples: |
+     Create a posture named `posture-foo-1` within parent `organizations/123/locations/global`(i.e. a posture in organization `123`, location `global`, with ID `posture-foo-1`):
+
+        $ {command} organizations/123/locations/global/postures/posture-foo-1 --posture-from-file=posture.yaml
+
+  request:
+    collection: securityposture.organizations.locations.postures
+    api_version: v1alpha
+    method: create
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.scc.resources:posture
+      help_text: |
+          The name of the posture to be created. For example organizations/<organizationID>/locations/<location>/postures/<postureID>.
+
+    params:
+    - arg_name: posture-from-file
+      api_field: posture
+      required: true
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+      processor: googlecloudsdk.core.yaml:load
+      help_text: |
+        YAML file containing the body of the posture to be created.
+
+  async:
+    collection: securityposture.organizations.locations.operations
+
+  output:
+    format: yaml

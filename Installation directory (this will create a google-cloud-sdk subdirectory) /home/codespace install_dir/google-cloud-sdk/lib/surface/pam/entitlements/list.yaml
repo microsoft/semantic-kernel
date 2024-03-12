@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List all entitlements under a parent.
+    description: |
+      List all entitlements under a project/folder/organization and location.
+    examples: |
+      The following command lists all entitlements under a given parent:
+
+      ${command} --location parent
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection:
+    - privilegedaccessmanager.projects.locations.entitlements
+    - privilegedaccessmanager.folders.locations.entitlements
+    - privilegedaccessmanager.organizations.locations.entitlements
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:location
+      help_text: |
+        The location under which the entitlements are to be listed.

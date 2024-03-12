@@ -1,0 +1,258 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: |
+      Create a Looker instance.
+    description: |
+      Create a new Looker instance.
+
+      This command can fail for the following reasons:
+        * An instance with the same name already exists.
+        * The active account does not have permission to create instances.
+        * --async flag is not passed
+    examples: |
+      To create a basic tier instance with the name `my-looker-instance` in region `us-central-1`
+      with an edition of "LOOKER_CORE_STANDARD", run:
+
+        $ {command} my-looker-instance --region=us-central1 --edition="core-standard" --oauth-client-id='looker' --oauth-client-secret='looker'  --async
+
+      Note: It is *recommended* that the *--async* argument is provided when creating
+      a Looker instance.
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:instance
+      help_text: |
+        Arguments and flags that specify the Looker instance you want
+        to create.
+    params:
+    # Required Flags - edition
+    - arg_name: edition
+      api_field: instance.platformEdition
+      required: true
+      help_text: |
+        The edition of the Looker instance.
+      choices:
+      - enum_value: STANDARD
+        arg_value: standard
+        release_tracks: [ALPHA]
+        help_text:  |
+          This edition provides a full-feature edition for product exploration
+          and development. Exceptional for all your Analytics.
+      - enum_value: ADVANCED
+        arg_value: advanced
+        release_tracks: [ALPHA]
+        help_text: |
+          This edition provides a full-feature edition for product exploration and development.
+          Scales as your organization and data add complexity.
+      - enum_value: ELITE
+        arg_value: elite
+        release_tracks: [ALPHA]
+        help_text: |
+          This edition provides a full-feature edition for product exploration and development.
+          Drive your business through operational analytics.
+      - enum_value: LOOKER_CORE_TRIAL
+        arg_value: core-trial
+        release_tracks: [ALPHA, GA]
+        help_text: |
+          Trial edition of Looker.
+      - enum_value: LOOKER_CORE_STANDARD
+        arg_value: core-standard
+        release_tracks: [GA]
+        help_text: |
+          A Looker (Google Cloud core) product for small organizations or teams with fewer than 50
+          users. This will be billed monthly while the instance is active.
+      - enum_value:  LOOKER_CORE_STANDARD_ANNUAL
+        arg_value: core-standard-annual
+        release_tracks: [GA]
+        help_text: |
+          A Looker (Google Cloud core) product for small organizations or teams with fewer than 50
+          users. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_CORE_ENTERPRISE_ANNUAL
+        arg_value: core-enterprise-annual
+        release_tracks: [GA]
+        help_text: |
+          A Looker (Google Cloud core) product with enhanced security features for a wide variety of
+          internal BI and analytics use cases. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_CORE_EMBED_ANNUAL
+        arg_value: core-embed-annual
+        release_tracks: [GA]
+        help_text: |
+          A Looker (Google Cloud core) product for deploying and maintaining external analytics and
+          custom applications at scale. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_MODELER
+        arg_value: looker-modeler
+        release_tracks: [ALPHA]
+        help_text: |
+          Standalone Model Service.
+    # Flags - Public IP
+    - arg_name: enable-public-ip
+      api_field: instance.enablePublicIp
+      release_tracks: [ALPHA]
+      type: bool
+      help_text: |
+        This specifies whether public IP is enabled on the Looker instance.
+      default: true
+    - arg_name: public-ip-enabled
+      api_field: instance.publicIpEnabled
+      release_tracks: [GA]
+      type: bool
+      help_text: |
+        This specifies whether public IP is enabled on the Looker instance.
+      default: true
+    # Required Flags - OAuth
+    - api_field: instance.oauthConfig.clientId
+      arg_name: oauth-client-id
+      required: true
+      help_text: |
+          The client ID from an external OAuth application.
+
+          OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
+          app that will allow users to authenticate and access the instance. For more
+          information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
+    - api_field: instance.oauthConfig.clientSecret
+      arg_name: oauth-client-secret
+      required: true
+      help_text: |
+          The client secret from an external OAuth application.
+
+          OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
+          app that will allow users to authenticate and access the instance. For more
+          information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
+    # Group for Private IP
+    - group:
+        required: false
+        help_text: |
+          Private IP - Assigns an internal, Google-hosted VPC IP address. Private IP
+          connectivity requires additional APIs and permissions. Private IP cannot be disabled once it
+          has been enabled. If enabled, *consumer-network* must be assigned.
+        params:
+        - api_field: instance.enablePrivateIp
+          arg_name: enable-private-ip
+          required: true
+          release_tracks: [ALPHA]
+          type: bool
+          help_text: |
+            This specifies whether private IP is enabled on the Looker instance.
+        - api_field: instance.privateIpEnabled
+          arg_name: private-ip-enabled
+          required: true
+          release_tracks: [GA]
+          type: bool
+          help_text: |
+            This specifies whether private IP is enabled on the Looker instance.
+        - api_field: instance.consumerNetwork
+          arg_name: consumer-network
+          required: true
+          help_text: |
+            The network name within the consumer project. This MUST be delared if enabling private IP.
+        - api_field: instance.reservedRange
+          arg_name: reserved-range
+          help_text: |
+            The name of a reserved IP address range within the consumer network to be used for private
+            service access connection.
+    # Group for KMS Encryption config
+    - group:
+        required: false
+        help_text: |
+          Key resource - The Cloud KMS (Key Management Service) cryptokey that will be used to
+          protect the Looker instance and backups. The 'Looker Service Agent' service account must hold
+          permission 'Cloud KMS CryptoKey Encrypter/Decrypter'. The arguments in this group can
+          be used to specify the attributes of this resource.
+        params:
+        - api_field: instance.encryptionConfig.kmsKeyName
+          arg_name: kms-key
+          help_text: |
+            ID of the key or fully qualified identifier for the key. To
+            set the *kms-key* attribute:
+            * provide the argument *--kms-key* on the command line.
+    # Group for Maintanence Windows
+    - group:
+        required: false
+        help_text: |
+          Maintenance Window - Maintenance typically only takes place once every few months, and requires your instance
+          to be restarted while updates are made, which disrupts service briefly.
+        params:
+        - api_field: instance.maintenanceWindow.dayOfWeek
+          required: true
+          arg_name: maintenance-window-day
+          choices:
+          - arg_value: monday
+            enum_value: MONDAY
+          - arg_value: tuesday
+            enum_value: TUESDAY
+          - arg_value: wednesday
+            enum_value: WEDNESDAY
+          - arg_value: thursday
+            enum_value: THURSDAY
+          - arg_value: friday
+            enum_value: FRIDAY
+          - arg_value: saturday
+            enum_value: SATURDAY
+          - arg_value: sunday
+            enum_value: SUNDAY
+          help_text: |
+            Day of week for maintenance window, in UTC time zone. To
+            set the *maintenance-window-day* attribute:
+            * provide the argument *--maintenance-window-day* on the command line.
+        - api_field: instance.maintenanceWindow.startTime
+          arg_name: maintenance-window-time
+          required: true
+          ALPHA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayMainWindowV1Alpha1
+          GA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayMainWindowV1
+          help_text: |
+            Hour of day for maintenance window, in UTC time zone. A valid time of day must be
+            specified in 24hr format (ex: 13:00, 17:30, 23:45). Maintenance will be scheduled
+            within 60 minutes. To set the maintenance-window-time* attribute:
+            * provide the argument *--maintenance-window-time* on the command line.
+    # Group for Deny Maintanence period
+    - group:
+        required: false
+        help_text: |
+              Deny Maintanence Period - You must allow at least 48 hours of maintenance availability in
+              a 60-day rolling window. Only contiguous availability windows of at least two hours are
+              considered. When setting a maintenance exclusion please be aware that excluding
+              application upgrades cannot exceed 60-days and excluding infrastructure upgrades cannot
+              exceed 90-days.
+        params:
+        - api_field: instance.denyMaintenancePeriod.startDate
+          arg_name: deny-maintenance-period-start-date
+          required: true
+          GA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1
+          ALPHA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1Alpha1
+          help_text: |
+                Start date of the deny maintenance period in format: YYYY-MM-DD
+        - api_field: instance.denyMaintenancePeriod.endDate
+          arg_name: deny-maintenance-period-end-date
+          required: true
+          GA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1
+          ALPHA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1Alpha1
+          help_text: |
+                End date of the deny maintenance period in format: YYYY-MM-DD
+        - api_field: instance.denyMaintenancePeriod.time
+          required: true
+          arg_name: deny-maintenance-period-time
+          GA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayDenyPeriodV1
+          ALPHA:
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayDenyPeriodV1Alpha1
+          help_text: |
+                Time in UTC when the period starts and ends.  A valid time of day must be
+                specified in 24hr format (ex: 13:00, 17:30, 23:45).
+
+  async:
+    collection: looker.projects.locations.operations
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+    collection: looker.projects.locations.instances

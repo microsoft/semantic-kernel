@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="gb2312"?>
+<!--
+Source: http://www.coverer.com/index.xml
+Expect: GB18030
+-->
+<!-- generator="Movable Type/2.65" -->
+<rss version="0.91">
+  <channel>
+    <title>coverer.com weblog</title>
+    <link>http://www.coverer.com/</link>
+    <description><![CDATA[当我们在建设网站时皆秉持着一个信念：无论这个网站是简单或复杂的，我们皆能提供一个高质量的设计和技术来解决并完成，同时我们追求的结果是帮委托人开辟更宽广的网络行销通路,所以我相信我们是宁波最专业的网站建设团队<br><hr size="1" color="#E4E4E4" />
+什么是SEO？SEO就是Search Engine Optimization的缩写。To use some technics to make your website in the top places in Search Engine when somebody is using Search Engine to find something. 
+
+使用一些方式在搜寻引擎中的最高地方中制造你的网站当某人正在使用搜寻引擎找某物的时候. ]]></description>
+    <language>en-us</language>
+    <webMaster></webMaster>
+    <pubDate>Sat, 17 Dec 2005 12:59:39 +0000</pubDate>
+    <item>
+      <title>网站排名下降的主要原因:</title>
+      <link>http://www.coverer.com/archives/000839.shtml</link>
+      <description>当搜索引擎的算法改变或者加强时,导致一些网站的某些关键字排名消失,一些管理员就说他们的网站消失了.实际上并非如此,在搜索引擎算法改变或加强时会引起一些页面丢失,或者是过滤、惩罚了某一些页面而不是整个网站。...</description>
+    </item>
+    <item>
+      <title>Google Sandbox 效应</title>
+      <link>http://www.coverer.com/archives/000838.shtml</link>
+      <description>1. 何谓sandbox效应？ Sandbox仅是发生在google排名中的一种现象。一般认为，sandbox效应是发生在距今最近的Google算法更新后（即业界称为“Florida” 与 “Austin” 更新）。具体是这样的，google会给新网站额外加上一定的分值，使得新网站的排名迅速上升（某几种目标关键字）。随后的一段时间里（大概是一到三、四个月），网站的排名就会逐渐下降，有的主要关键字排名甚至会消失，（尽管你的PR很高，页面内容与原来一样）。这就如沙漠里的沙流将周围的物体慢慢吞 ，所以业界给这种现象取名为 sandbox现象。...</description>
+    </item>
+    <item>
+      <title>使用Google语言工具访问被屏蔽的DMOZ</title>
+      <link>http://www.coverer.com/archives/000837.shtml</link>
+      <description>今天发现de.dmoz.org和ch.dmoz.org都不可以访问了！！使用代理又麻烦同时访问其他站点也很慢，于是想出使用Google语言工具里的翻译网页的功能访问被屏蔽的DMOZ.org，效果还不错 具体步骤如下： 1：打开google 语言工具：http://www.google.com/language_tools?hl=zh-CN 2：使用“ 翻译网页”功能，输入：http://www.dmoz.org 下面选择“中文(简体)翻译成英语”按翻译按钮，是不是又可以访问DMOZ了，而且速度也很快！其实就是使用GOOGLE的翻译服务器访问DMOZ 直接访问DMOZ.org...</description>
+    </item>
+    <item>
+      <title>Windows Live Domain Service详细操作说明书</title>
+      <link>http://www.coverer.com/archives/000836.shtml</link>
+      <description>&quot;跟当年Gmail推出时的容量飞跃相比，这次Windows Live把免费邮件服务扩展成免费邮局服务，有过之而无不及。邮件服务的竞争已经从容量、界面及易用性，进入到服务级别的第三阶段了。 &quot; Windows Live Domain Service的服务内容包括： - 为每个域名创建至多20个邮箱； - 每个邮箱跟Hotmail一样拥有250M空间； - 使用任何上网的电脑查看邮件； - &quot;Microsoft SmartScreen Technology&quot;垃圾邮件过滤系统； - Email病毒扫描功能； - 和MSN Messenger、MSN Spaces等其它服务无缝连接。 下面详细讲解一下如何申请和操作这个Windows Live Domain Service 第一步：打开这个地址http://domains.live.com/ 进行申请服务。 &quot;Click here to setup e-mail for an existing domain today! &quot;你会在页面找到这样一句话，点击here的链接即https://domains.live.com/Signup/。...</description>
+    </item>
+    <item>
+      <title>微软Hotmail提供的免费企业邮件服务了，可以使用自己域名为后缀</title>
+      <link>http://www.coverer.com/archives/000835.shtml</link>
+      <description>微软的live.com推出了一个domains.live.com的服务. 用户只要在这里将你自己的域名DNS定位到微软的服务器上，就可以享用 由微软Hotmail提供的免费邮件服务了。当然，这次是用你自己域名为后缀 的邮件地址. 现在测试阶段只有美国国内用户可以享用250M的免费服务,国外用户就只能 将就一下用25M的了.在设置完域名管理员帐号好,该站点会提示你去域名注册 商那里修改MX(Mail exchange) Server的地址.修改为形如2032718785.pamx1. hotmail.com得服务器名后,等等就可以使用新服务了. 你还可以同时拥有相应得MSN Messenger服务和Space服务.是不是很有趣? 相信会有更多的服务会陆续转移来这里. 终于轮到微软也创意连绵一会.不过这个中国人也早玩过了.早前的雅虎中国 推出过邮件联盟,就是类似得免费邮件推广业务....</description>
+    </item>
+    <item>
+      <title>Google Base 已经可以访问使用了</title>
+      <link>http://www.coverer.com/archives/000834.shtml</link>
+      <description>Google的分类广告Google Base 已经可以访问使用了 Google将这项服务视为“可供用户添加各种类型内容的数据库”。Google在网站上的声明中称：“Google Base将接收用户提交的所有内容，并将这些内容加入网络搜索引擎索引，供其它用户免费搜索。” Google Base网站给出了用户可提交内容的一些例子，其中包括二手车、聚会规划服务描述以及一个蛋白质结构数据库。 我发布的信息： http://base.google.com/base/search?q=neckties http://base.google.com/base/search?q=battery...</description>
+    </item>
+    <item>
+      <title>国际域名删除的规律和域名状态解释</title>
+      <link>http://www.coverer.com/archives/000833.shtml</link>
+      <description>1、比如域名msnask.com到期时间为2004年11月1日； 2、从2004年11月2日开始，域名的dns将会被系统自动删除，域名无法解析； 3、如果在30天期限内没有续费，即从2004年12月1日开始，域名将变成RedemptionPeriod状态，该状态将会保持30天，在此期间该域名不会掉下来，但是除了restore命令以外的所有命令对此域名无效；...</description>
+    </item>
+    <item>
+      <title>Google官方提供的关于Google优化的信息</title>
+      <link>http://www.coverer.com/archives/000832.shtml</link>
+      <description>网站管理员指南 遵循以下指南将有助于 Google 查找、检索您的网站并对其进行排名，这是确保在 Google 搜索结果中列出您的网址的最佳途径。即使您选择不采纳这些建议，我们也强烈建议您密切关注&quot;质量指南&quot;，该指南对可导致网站从 Google 索引中彻底删除的一些违禁行为做了简要说明。一旦网站删除之后，Google.com 或 Google 所有合作伙伴网站的搜索结果中都不会再显示该网站。 .........</description>
+    </item>
+    <item>
+      <title>日志分析软件awstats的安装使用简易指南</title>
+      <link>http://www.coverer.com/archives/000831.shtml</link>
+      <description>1. 下载地址 http://sourceforge.net/projects/awstats/ http://voxel.dl.sourceforge.net/ ... ts-6.4-1.noarch.rpm 2. 安装 2.1 rpm安装 [root@web tools]# rpm -ivh awstats-6.4-1.noarch.rpm Preparing... ########################################### [100%] 1:awstats ########################################### [100%] ----- AWStats 6.4 - Laurent Destailleur ----- AWStats files have been installed in /usr/local/awstats If first install, follow instructions...</description>
+    </item>
+    <item>
+      <title>Google推出广告分析服务 免费提供全方位报告</title>
+      <link>http://www.coverer.com/archives/000830.shtml</link>
+      <description>本周一Google将推出一款免费网络分析服务，即允许公司企业精确了解其网站的访问用户互动情况，以及其广告活动运行状况。 　　这款被称为Google Analytics的免费托管服务将首先推出英文版及其他16种语言版本，是Google基于其3月份收购的圣地亚哥Urchin公司的技术开发而成。 　　此前Urchin以每款495美元每月的价格销售该产品，之后曾被Google降至199美元每月。这款网络分析程序的全部功能均基于Urchin的技术，并将代替目前Google AdWords所提供的简单的跟踪工具。 　　Google Analytics允许网站主准确查看其网站访问用户的来源，站内流量最多的链接，用户正在浏览的网页，用户停留网站的时间，购物网站上被购买的产品以及人们在哪一个支付环节放弃购物等等，Google公司工程主管兼Urchin创始人之一的Paul Muret介绍道。 　　Google Analytics将与Google AdWords广告程序相结合，在现有的AdWords帐户内使用新的界面。营销商还可以利用该程序跟踪条幅广告、电子邮件、其他广告提供商的未支付和已支付广告活动等等。 　　Google Analytics还能自动导入投资回报报告数据，因此广告客户就能对他们的广告投入和产出进行很好的对比，Muret表示。 　　尽管理论上Google Analytics以及同类竞争性服务的使用者在利用这些程序监控他们的广告活动的同时，也能向Google反馈一些有关同类竞争对手工具的工作原理的数据，但Muret表示，Google不会从中获得任何竞争优势。 “我们严格控制这类数据。这款产品仅用于提供消费者报告，并让用户利用这些分析报告，”他说。 　　“它很有潜力成为一个知名公司”调查公司Jupiter Research资深分析师Eric Peterson就以上新闻发表看法时表示。“Google在今年年初就完成了收购，并且努力以更好的方式利用其优势。或许是件很简单的事情。” 　　Google Analytics可能对诸如Web Trends、Web Side Story和Click Tracks等专注于中小型市场的公司造成危害，Peterson表示。“它将打击到 搜索引擎营销市场上的低端一方。”他说。 　　微软在其AdCenter，与Google AdWords相竞争的关键字广告活动工具中也加入了网络分析功能。目前AdCenter正在新加坡和法国进行测试，所不同的是这款工具提供有关于广告目标用户的针对性信息，如访问用户的年龄、性别、所在地区的邮编等。...</description>
+    </item>
+    <item>
+      <title>Google AdSense &quot;推介产品&quot;</title>
+      <link>http://www.coverer.com/archives/000829.shtml</link>
+      <description>Google AdSense 推出新的发布商模式 &quot;推介产品&quot; 利用Google AdSense新的推介功能，您可以在增加收入的同时增加用户对实用产品和服务的了解。在网站上添加一个推介按钮，您可以引导用户注册 AdSense，且获利于此网站内容。 当用户得到的产品信息越多，您将获利越多 - 每一位新注册的发布商获得 $100 的收益时，我们便会向您支付 US$100。 我已经尝试投放了.......</description>
+    </item>
+    <item>
+      <title>How Much Is My Blog Worth?看看你的BLOG值多少钱</title>
+      <link>http://www.coverer.com/archives/000828.shtml</link>
+      <description>How Much Is My Blog Worth? Inspired by Tristan Louis&apos;s research into the value of each link to Weblogs Inc, I&apos;ve created this little applet using Technorati&apos;s API which computes and displays your blog&apos;s worth using the same link to...</description>
+    </item>
+    <item>
+      <title>Yahoo! Publisher Network, Yahoo挑战Google AdSense</title>
+      <link>http://www.coverer.com/archives/000827.shtml</link>
+      <description>Yahoo! 发布了一项类似于Google Adsense的广告服务：Yahoo! Publisher Network。 Yahoo! is expanding its distribution network to include you. Based on demand from online publishers, we are opening our Publisher Network to the broader publisher community. Through the expanded platform, we plan to offer unique...</description>
+    </item>
+    <item>
+      <title>Google相关的域名大全</title>
+      <link>http://www.coverer.com/archives/000826.shtml</link>
+      <description>日前，国外消息站点透露了Google所有注册的域名名单，这个名单记载了多达400多个域名网址。其中一些网址是我们正在使用的Google功能网站地址。 域名网址的大多数都涉及 Google 的主站名和已经发布的产品，例如：Google.com、 Google.net、 Google.org、Adwords.net等。 有一些网址似乎是防御钓鱼网站，防止对方欺骗用户重新导向，例如：Froogel.com。 有一些网址与色情有关，但会牵扯Google，败坏Google形象，例如：porngoogle.com、googleporn.com 、googlesex.com等。 还有一些，却可能与Google的未来发展有关，例如：gbrowser.com（浏览器）、googlewifi.com（WIFI，哈哈，前不久我们都听说了google这方面的信息）、gcalendar.com（日历）、gchat.com（难道除了Google Talk，他们还有别的聊天想法？）、googlebuy.com（在线购物）googlemusic.com（在线线音乐）。 有趣得是，Google 还拥有googlesucks.com 的网址。微软曾经被敌意用户注册过一个“windows-sucks” 的地址，看来Google也不想每天对着这么一个恶心自己的站点，让自己不高兴，不如自己买下来，好过被别人用来在自己头上拉屎。 这里还有一个纯数字的网址466453.com。400多域名中，Google单单挑选了这么一个数字域名，不知道是无聊还是别有企图？小庸搜索了一下才找到答案“ Google提供数字化的查询，即用数字代替字母；由于手机上键位比较少，例如要输入Google是，按下的其实是466453几个键，因此就用466453来代替Google这个单词进行查询。”看来google就是google，不服不行。...</description>
+    </item>
+    <item>
+      <title>PHP代码反编译软件出炉 zend已经可以被破解</title>
+      <link>http://www.coverer.com/archives/000825.shtml</link>
+      <description>10月4日，国内有一家名为清风工作室的网站推出一款名为deZender的软件，据他们说“deZender可以反编译被zend编译过的所有PHP代码，由deZender产生的PHP源代码同原始文件相比，在源代码级有超过95%以上的一致率，除极少数特殊情况外，无需经过任何修改，即能正确运行并实现与原始文件完全相同的功能。deZender能100%地还原PHP的变量名、函数名、类名、属性名、方法名，甚至函数的参数名。” 这个消息引起了众多php爱好者的关注......</description>
+    </item>
+
+  </channel>
+</rss>

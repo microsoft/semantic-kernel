@@ -1,0 +1,38 @@
+release_tracks: [GA, ALPHA]
+help_text:
+  brief: |
+    Import a mesh.
+  description: |
+    Import a mesh.
+  examples: |
+      To import a mesh named 'my-mesh' from a YAML file, run:
+
+        $ {command} my-mesh --source=my-mesh.yaml --location=global
+
+request:
+  collection: networkservices.projects.locations.meshes
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:mesh
+    help_text: |
+      Name of the mesh to import.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.meshes
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    method: create

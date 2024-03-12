@@ -1,0 +1,133 @@
+project:
+  name: project
+  collection: datastream.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project ID.
+    property: core/project
+
+location:
+  name: location
+  collection: datastream.projects.locations
+  request_id_field: location.name
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location of the resources.
+
+connection_profile:
+  name: connection_profile
+  collection: datastream.projects.locations.connectionProfiles
+  request_id_field: connection_profile.name
+  attributes:
+  - *project
+  - *location
+  - &connection_profile
+    parameter_name: connectionProfilesId
+    attribute_name: connection_profile
+    help: The connection profile name.
+    completion_request_params:
+    - fieldName: fieldMask
+      value: name
+  disable_auto_completers: false
+
+stream:
+  name: stream
+  collection: datastream.projects.locations.streams
+  request_id_field: stream.name
+  attributes:
+  - *location
+  - &stream
+    parameter_name: streamsId
+    attribute_name: stream
+    help: The stream name.
+    completion_request_params:
+    - fieldName: fieldMask
+      value: name
+  disable_auto_completers: false
+
+stream_object:
+  name: stream_object
+  collection: datastream.projects.locations.streams.objects
+  request_id_field: stream_object.name
+  attributes:
+  - *project
+  - *location
+  - *stream
+  - &stream_object
+    parameter_name: objectsId
+    attribute_name: object
+    help: The Stream object name.
+  disable_auto_completers: false
+
+operation:
+  name: operation
+  collection: datastream.projects.locations.operations
+  request_id_field: operation.name
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: The operation name.
+    completion_request_params:
+    - fieldName: fieldMask
+      value: name
+  disable_auto_completers: false
+
+# Gcloud disallows positional arguments with dashes (-) but the resource is expected to be referred
+# to with dashes when used in non-positional manner. To avoid the conflict, we define two
+# near-identical resources (only differing by attribute_name).
+positional_private_connection:
+  name: private_connection
+  collection: datastream.projects.locations.privateConnections
+  request_id_field: private_connection.name
+  attributes:
+  - *project
+  - *location
+  - &positional_private_connection
+    parameter_name: privateConnectionsId
+    attribute_name: private_connection
+    help: The private connection name.
+    completion_request_params:
+    - fieldName: fieldMask
+      value: name
+  disable_auto_completers: false
+
+private_connection:
+  name: private_connection
+  collection: datastream.projects.locations.privateConnections
+  request_id_field: private_connection.name
+  attributes:
+  - *project
+  - *location
+  - &private_connection
+    parameter_name: privateConnectionsId
+    attribute_name: private-connection
+    help: The private connection name.
+    completion_request_params:
+    - fieldName: fieldMask
+      value: name
+  disable_auto_completers: false
+
+route:
+  name: route
+  collection: datastream.projects.locations.privateConnections.routes
+  request_id_field: route.name
+  attributes:
+  - *project
+  - *location
+  - *private_connection
+  - &route
+    parameter_name: routesId
+    attribute_name: route
+    help: The route name.
+    completion_request_params:
+    - fieldName: fieldMask
+      value: name
+  disable_auto_completers: false

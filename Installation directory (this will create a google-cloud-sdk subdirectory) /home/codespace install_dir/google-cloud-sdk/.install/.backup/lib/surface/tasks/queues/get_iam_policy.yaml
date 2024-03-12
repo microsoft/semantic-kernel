@@ -1,0 +1,28 @@
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: Get the IAM policy for a queue.
+  description: |
+    *{command}* displays the IAM policy associated with a queue.
+    If formatted as JSON, the output can be edited and used as
+    a policy file for *set-iam-policy*. The output includes an "etag"
+    field identifying the version emitted and allowing detection of
+    concurrent policy updates; see
+    $ {parent_command} set-iam-policy for additional details.
+  examples: |
+    To print the IAM policy for a given queue, run:
+
+      $ {command} my-queue
+
+request:
+  collection: cloudtasks.projects.locations.queues
+  api_version: v2
+  BETA:
+    api_version: v2beta3
+  ALPHA:
+    api_version: v2beta2
+
+arguments:
+  resource:
+    help_text: The Cloud Tasks queue for which to display the IAM policy.
+    spec: !REF googlecloudsdk.command_lib.tasks.resources:queue

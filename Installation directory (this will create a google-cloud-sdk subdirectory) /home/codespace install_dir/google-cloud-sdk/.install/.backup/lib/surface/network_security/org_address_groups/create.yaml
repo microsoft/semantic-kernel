@@ -1,0 +1,60 @@
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: |
+    Create an address group.
+  description: |
+    Create a new address group with the given name.
+  examples: |
+    Create an address group with the name ``my-address-group'', type ``IPV4'', capacity ``100'' and the description ``optional description''.
+
+      $ {command} my-address-group --type=IPV4 --capacity=100 --description="optional description" --organization=1234
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:orgAddressGroup
+    help_text: |
+      Name of the address group to be created.
+  params:
+  - arg_name: description
+    api_field: addressGroup.description
+    help_text: Description of the address group.
+  - arg_name: type
+    api_field: addressGroup.type
+    help_text: Type of the address group.
+    required: true
+    choices:
+    - arg_value: ipv4
+      enum_value: ipv4
+    - arg_value: ipv6
+      enum_value: ipv6
+  - arg_name: capacity
+    api_field: addressGroup.capacity
+    help_text: Capacity of the address group.
+    required: true
+  - arg_name: items
+    api_field: addressGroup.items
+    help_text: Items of the address group.
+  - arg_name: labels
+    api_field: addressGroup.labels.additionalProperties
+    metavar: KEY=VALUE
+    help_text: |
+      List of label KEY=VALUE pairs to add.
+    type:
+      arg_dict:
+        flatten: true
+        spec:
+        - api_field: key
+        - api_field: value
+async:
+  collection: networksecurity.organizations.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networksecurity.organizations.locations.addressGroups
+  method: create

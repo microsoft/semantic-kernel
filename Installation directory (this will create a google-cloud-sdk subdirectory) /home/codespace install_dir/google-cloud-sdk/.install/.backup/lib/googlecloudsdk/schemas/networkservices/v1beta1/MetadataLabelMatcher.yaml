@@ -1,0 +1,46 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 MetadataLabelMatcher export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  metadataLabelMatchCriteria:
+    description: |-
+      Specifies how matching should be done. Supported values are: MATCH_ANY: At
+      least one of the Labels specified in the matcher should match the metadata
+      presented by xDS client.
+    type: string
+    enum:
+    - MATCH_ALL
+    - MATCH_ANY
+    - METADATA_LABEL_MATCH_CRITERIA_UNSPECIFIED
+  metadataLabels:
+    description: |-
+      The list of label value pairs that must match labels in the provided
+      metadata based on filterMatchCriteria This list can have at most 64
+      entries. The list can be empty if the match criteria is MATCH_ANY, to
+      specify a wildcard match (i.e this matches any client).
+    type: array
+    items:
+      $ref: MetadataLabels.yaml

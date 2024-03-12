@@ -1,0 +1,30 @@
+- help_text:
+    brief: Reimages the OS on a Cloud TPU.
+    description: Reimages the OS on a Cloud TPU.
+    examples: |
+      The following command reimages a TPU with ID `my-tpu` in zone `us-central1-b`
+      with TensorFlow version `1.15`:
+
+        $ {command} my-tpu --zone=us-central1-b --version=1.15
+
+  request:
+    collection: tpu.projects.locations.nodes
+    api_version: v1
+    method: reimage
+
+  async:
+    collection: tpu.projects.locations.operations
+    api_version: v1
+    extract_resource_result: false
+
+  arguments:
+    resource:
+      help_text: The Cloud TPU you want to reimage.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:tpu
+    params:
+    - api_field: reimageNodeRequest.tensorflowVersion
+      arg_name: version
+      required: true
+      help_text: |
+        TensorFlow version for the TPU, such as `1.6`. For a list of available
+        TensorFlow versions please see https://www.tensorflow.org/versions/.

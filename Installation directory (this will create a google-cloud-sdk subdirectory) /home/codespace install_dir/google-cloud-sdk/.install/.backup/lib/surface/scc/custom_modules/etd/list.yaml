@@ -1,0 +1,56 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List the details of Event Threat Detection custom modules.
+    description: |
+      List the details of the resident and inherited Event Threat Detection custom modules for
+      the specified folder or project. For an organization, this command lists only the custom
+      modules that were created at the organization level. Custom modules created in child folders
+      or projects are not included in the list. To list the resident custom modules and the modules
+      that are created in child folders or projects, use `gcloud alpha scc custom-modules etd list-descendant`.
+    examples: |
+      To list Event Threat Detection custom modules for organization `123`, run:
+
+        $ {command} --organization=organizations/123
+
+      To list resident and inherited Event Threat Detection custom modules for folder `456`, run:
+
+        $ {command} --folder=folders/456
+
+      To list resident and inherited Event Threat Detection custom modules for project `789`, run:
+
+        $ {command} --project=projects/789
+
+  request:
+    collection: securitycenter.organizations.eventThreatDetectionSettings.customModules
+    disable_resource_check: true
+    api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.etd.request_hooks:ListEventThreatDetectionCustomModulesReqHook
+
+  arguments:
+
+    params:
+    - group:
+        required: true
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: parent
+          help_text: |
+            Organization for listing the Event Threat Detection custom modules created at the
+            organization level. Formatted as `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: parent
+          help_text: |
+            Folder for listing the Event Threat Detection custom modules created at the current
+            folder level and inherited modules from CRM ancestors. Formatted as `folders/456` or
+            just `456`.
+
+        - arg_name: project
+          api_field: parent
+          help_text: |
+            ID or number of the project for listing the Event Threat Detections custom modules created
+            at current project level and inherited modules from CRM ancestors. Formatted as
+            `projects/789` or just `789`.

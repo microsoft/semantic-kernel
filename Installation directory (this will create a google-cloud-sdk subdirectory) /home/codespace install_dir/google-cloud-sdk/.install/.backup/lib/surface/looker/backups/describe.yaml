@@ -1,0 +1,40 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Show metadata of a backup for a Looker instance.
+    description: |
+      Show metadata of a backup for a Looker instance.
+
+      Displays all metadata associated with a backup of a Looker instance given a valid backup and
+      instance name.
+
+      This command can fail for the following reasons:
+        * The instance specified does not exist.
+        * The backup specified does not exist.
+        * The active account does not have permission to access the given
+          instance and backups.
+    examples: |
+      To display the metadata for a backup with id of `c24ad631-ad83-42f0-9f98-41e2b493263e` on instance with name `my-looker-instance`, run:
+
+        $ {command} c24ad631-ad83-42f0-9f98-41e2b493263e  --instance='my-looker-instance'
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.looker.resources:backup
+      help_text: |
+        The instance of the backup to describe.
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    collection: looker.projects.locations.instances.backups
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME:sort=2,
+        state:label=STATUS,
+        createTime.date(),
+        expireTime.date()
+      )

@@ -1,0 +1,671 @@
+#!/usr/bin/env python3
+
+import argparse, collections, datetime, os, re, sys, unicodedata
+from urllib.request import urlopen
+from intranges import intranges_from_list
+
+if sys.version_info[0] < 3:
+    print("Only Python 3 supported.")
+    sys.exit(2)
+
+PREFERRED_VERSION = '14.0.0'
+UCD_URL = 'http://www.unicode.org/Public/{version}/ucd/{filename}'
+UTS46_URL = 'http://www.unicode.org/Public/idna/{version}/{filename}'
+
+DEFAULT_CACHE_DIR = '~/.cache/unidata'
+
+# Scripts affected by IDNA contextual rules
+SCRIPT_WHITELIST = sorted(['Greek', 'Han', 'Hebrew', 'Hiragana', 'Katakana'])
+
+# Used to piece apart UTS#46 data for Jython compatibility
+UTS46_SEGMENT_SIZE = 100
+
+UTS46_STATUSES = {
+    'valid': ('V', False),
+    'ignored': ('I', False),
+    'mapped': ('M', True),
+    'deviation': ('D', True),
+    'disallowed': ('X', False),
+    'disallowed_STD3_valid': ('3', False),
+    'disallowed_STD3_mapped': ('3', True)
+}
+
+# Exceptions are manually assigned in Section 2.6 of RFC 5892.
+exceptions = {
+    0x00DF: 'PVALID',      # LATIN SMALL LETTER SHARP S
+    0x03C2: 'PVALID',      # GREEK SMALL LETTER FINAL SIGMA
+    0x06FD: 'PVALID',      # ARABIC SIGN SINDHI AMPERSAND
+    0x06FE: 'PVALID',      # ARABIC SIGN SINDHI POSTPOSITION MEN
+    0x0F0B: 'PVALID',      # TIBETAN MARK INTERSYLLABIC TSHEG
+    0x3007: 'PVALID',      # IDEOGRAPHIC NUMBER ZERO
+    0x00B7: 'CONTEXTO',    # MIDDLE DOT
+    0x0375: 'CONTEXTO',    # GREEK LOWER NUMERAL SIGN (KERAIA)
+    0x05F3: 'CONTEXTO',    # HEBREW PUNCTUATION GERESH
+    0x05F4: 'CONTEXTO',    # HEBREW PUNCTUATION GERSHAYIM
+    0x30FB: 'CONTEXTO',    # KATAKANA MIDDLE DOT
+    0x0660: 'CONTEXTO',    # ARABIC-INDIC DIGIT ZERO
+    0x0661: 'CONTEXTO',    # ARABIC-INDIC DIGIT ONE
+    0x0662: 'CONTEXTO',    # ARABIC-INDIC DIGIT TWO
+    0x0663: 'CONTEXTO',    # ARABIC-INDIC DIGIT THREE
+    0x0664: 'CONTEXTO',    # ARABIC-INDIC DIGIT FOUR
+    0x0665: 'CONTEXTO',    # ARABIC-INDIC DIGIT FIVE
+    0x0666: 'CONTEXTO',    # ARABIC-INDIC DIGIT SIX
+    0x0667: 'CONTEXTO',    # ARABIC-INDIC DIGIT SEVEN
+    0x0668: 'CONTEXTO',    # ARABIC-INDIC DIGIT EIGHT
+    0x0669: 'CONTEXTO',    # ARABIC-INDIC DIGIT NINE
+    0x06F0: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT ZERO
+    0x06F1: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT ONE
+    0x06F2: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT TWO
+    0x06F3: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT THREE
+    0x06F4: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT FOUR
+    0x06F5: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT FIVE
+    0x06F6: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT SIX
+    0x06F7: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT SEVEN
+    0x06F8: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT EIGHT
+    0x06F9: 'CONTEXTO',    # EXTENDED ARABIC-INDIC DIGIT NINE
+    0x0640: 'DISALLOWED',  # ARABIC TATWEEL
+    0x07FA: 'DISALLOWED',  # NKO LAJANYALAN
+    0x302E: 'DISALLOWED',  # HANGUL SINGLE DOT TONE MARK
+    0x302F: 'DISALLOWED',  # HANGUL DOUBLE DOT TONE MARK
+    0x3031: 'DISALLOWED',  # VERTICAL KANA REPEAT MARK
+    0x3032: 'DISALLOWED',  # VERTICAL KANA REPEAT WITH VOICED SOUND MARK
+    0x3033: 'DISALLOWED',  # VERTICAL KANA REPEAT MARK UPPER HALF
+    0x3034: 'DISALLOWED',  # VERTICAL KANA REPEAT WITH VOICED SOUND MARK UPPER HA
+    0x3035: 'DISALLOWED',  # VERTICAL KANA REPEAT MARK LOWER HALF
+    0x303B: 'DISALLOWED',  # VERTICAL IDEOGRAPHIC ITERATION MARK
+}
+backwardscompatible = {}
+
+
+def hexrange(start, end):
+    return range(int(start, 16), int(end, 16) + 1)
+
+def hexvalue(value):
+    return int(value, 16)
+
+
+class UnicodeVersion(object):
+
+    def __init__(self, version):
+        result = re.match(r'^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)$', version)
+        if result:
+            self.major = int(result.group('major'))
+            self.minor = int(result.group('minor'))
+            self.patch = int(result.group('patch'))
+            self.numerical = (self.major << 8) + (self.minor << 4) + self.patch
+            self.latest = False
+        elif version == 'latest':
+            self.latest = True
+        else:
+            raise ValueError('Unrecognized Unicode version')
+
+    def __repr__(self, with_date=True):
+        if self.latest:
+            if with_date:
+                return 'latest@{}'.format(datetime.datetime.now().strftime('%Y-%m-%d'))
+            else:
+                return 'latest'
+        else:
+            return '{}.{}.{}'.format(self.major, self.minor, self.patch)
+
+    @property
+    def tag(self):
+        return self.__repr__(with_date=False)
+
+    def __gt__(self, other):
+        if self.latest:
+            return True
+        return self.numerical > other.numerical
+
+    def __eq__(self, other):
+        if self.latest:
+            return False
+        return self.numerical == other.numerical
+
+
+class UnicodeData(object):
+
+    def __init__(self, version, cache, args):
+        self.version = UnicodeVersion(version)
+        self.system_version = UnicodeVersion(unicodedata.unidata_version)
+        self.source = args.source
+        self.cache = cache
+        self.max = 0
+
+        if self.system_version < self.version:
+            print('Warning: Character stability not guaranteed as Python Unicode data {}'
+                   ' older than requested {}'.format(self.system_version, self.version))
+
+        self._load_unicodedata()
+        self._load_proplist()
+        self._load_derivedcoreprops()
+        self._load_blocks()
+        self._load_casefolding()
+        self._load_hangulst()
+        self._load_arabicshaping()
+        self._load_scripts()
+        self._load_uts46mapping()
+
+    def _load_unicodedata(self):
+
+        f_ud = self._ucdfile('UnicodeData.txt')
+        self.ucd_data = {}
+        range_begin = None
+        for line in f_ud.splitlines():
+            fields = line.split(';')
+            value = int(fields[0], 16)
+            start_marker = re.match('^<(?P<name>.*?), First>$', fields[1])
+            end_marker = re.match('^<(?P<name>.*?), Last>$', fields[1])
+            if start_marker:
+                range_begin = value
+            elif end_marker:
+                for i in range(range_begin, value+1):
+                    fields[1] = '<{}>'.format(end_marker.group('name'))
+                    self.ucd_data[i] = fields[1:]
+                range_begin = None
+            else:
+                self.ucd_data[value] = fields[1:]
+
+    def _load_proplist(self):
+
+        f_pl = self._ucdfile('PropList.txt')
+        self.ucd_props = collections.defaultdict(list)
+        for line in f_pl.splitlines():
+            result = re.match(
+                r'^(?P<start>[0-9A-F]{4,6})(|\.\.(?P<end>[0-9A-F]{4,6}))\s*;\s*(?P<prop>\S+)\s*(|\#.*)$',
+                line)
+            if result:
+                if result.group('end'):
+                    for i in hexrange(result.group('start'), result.group('end')):
+                        self.ucd_props[i].append(result.group('prop'))
+                else:
+                    i = hexvalue(result.group('start'))
+                    self.ucd_props[i].append(result.group('prop'))
+
+    def _load_derivedcoreprops(self):
+
+        f_dcp = self._ucdfile('DerivedCoreProperties.txt')
+        for line in f_dcp.splitlines():
+            result = re.match(
+                r'^(?P<start>[0-9A-F]{4,6})(|\.\.(?P<end>[0-9A-F]{4,6}))\s*;\s*(?P<prop>\S+)\s*(|\#.*)$',
+                line)
+            if result:
+                if result.group('end'):
+                    for i in hexrange(result.group('start'), result.group('end')):
+                        self.ucd_props[i].append(result.group('prop'))
+                else:
+                    i = hexvalue(result.group('start'))
+                    self.ucd_props[i].append(result.group('prop'))
+
+    def _load_blocks(self):
+
+        self.ucd_block = {}
+        f_b = self._ucdfile('Blocks.txt')
+        for line in f_b.splitlines():
+            result = re.match(
+                r'^(?P<start>[0-9A-F]{4,6})\.\.(?P<end>[0-9A-F]{4,6})\s*;\s*(?P<block>.*)\s*$',
+                line)
+            if result:
+                for i in hexrange(result.group('start'), result.group('end')):
+                    self.ucd_block[i] = result.group('block')
+                    self.max = max(self.max, i)
+
+    def _load_casefolding(self):
+
+        self.ucd_cf = {}
+        f_cf = self._ucdfile('CaseFolding.txt')
+        for line in f_cf.splitlines():
+            result = re.match(
+                r'^(?P<cp>[0-9A-F]{4,6})\s*;\s*(?P<type>\S+)\s*;\s*(?P<subst>[0-9A-F\s]+)\s*',
+                line)
+            if result:
+                if result.group('type') in ('C', 'F'):
+                    self.ucd_cf[int(result.group('cp'), 16)] = \
+                        ''.join([chr(int(x, 16)) for x in result.group('subst').split(' ')])
+
+    def _load_hangulst(self):
+
+        self.ucd_hst = {}
+        f_hst = self._ucdfile('HangulSyllableType.txt')
+        for line in f_hst.splitlines():
+            result = re.match(
+                r'^(?P<start>[0-9A-F]{4,6})\.\.(?P<end>[0-9A-F]{4,6})\s*;\s*(?P<type>\S+)\s*(|\#.*)$',
+                line)
+            if result:
+                for i in hexrange(result.group('start'), result.group('end')):
+                    self.ucd_hst[i] = result.group('type')
+
+    def _load_arabicshaping(self):
+
+        self.ucd_as = {}
+        f_as = self._ucdfile('ArabicShaping.txt')
+        for line in f_as.splitlines():
+            result = re.match(r'^(?P<cp>[0-9A-F]{4,6})\s*;\s*.*?\s*;\s*(?P<jt>\S+)\s*;', line)
+            if result:
+                self.ucd_as[int(result.group('cp'), 16)] = result.group('jt')
+
+    def _load_scripts(self):
+
+        self.ucd_s = {}
+        f_s = self._ucdfile('Scripts.txt')
+        for line in f_s.splitlines():
+            result = re.match(
+                r'^(?P<start>[0-9A-F]{4,6})(|\.\.(?P<end>[0-9A-F]{4,6}))\s*;\s*(?P<script>\S+)\s*(|\#.*)$',
+                line)
+            if result:
+                if not result.group('script') in self.ucd_s:
+                    self.ucd_s[result.group('script')] = set()
+                if result.group('end'):
+                    for i in hexrange(result.group('start'), result.group('end')):
+                        self.ucd_s[result.group('script')].add(i)
+                else:
+                    i = hexvalue(result.group('start'))
+                    self.ucd_s[result.group('script')].add(i)
+
+    def _load_uts46mapping(self):
+
+        self.ucd_idnamt = {}
+        f_idnamt = self._ucdfile('IdnaMappingTable.txt', urlbase=UTS46_URL)
+        for line in f_idnamt.splitlines():
+            result = re.match(
+                r'^(?P<start>[0-9A-F]{4,6})(|\.\.(?P<end>[0-9A-F]{4,6}))\s*;\s*(?P<fields>[^#]+)',
+                line)
+            if result:
+                fields = [x.strip() for x in result.group('fields').split(';')]
+                if result.group('end'):
+                    for i in hexrange(result.group('start'), result.group('end')):
+                        self.ucd_idnamt[i] = fields
+                else:
+                    i = hexvalue(result.group('start'))
+                    self.ucd_idnamt[i] = fields
+
+    def _ucdfile(self, filename, urlbase=UCD_URL):
+        if self.source:
+            f = open('{}/{}'.format(self.source, filename))
+            return f.read()
+        else:
+            cache_file = None
+            if self.cache:
+                cache_file = os.path.expanduser('{}/{}/{}'.format(
+                    self.cache, self.version.tag, filename))
+                if os.path.isfile(cache_file):
+                    f = open(cache_file)
+                    return f.read()
+
+            version_path = self.version.tag
+            if version_path == 'latest':
+                version_path = 'UCD/latest'
+            url = urlbase.format(
+                version=version_path,
+                filename=filename,
+            )
+            content = urlopen(url).read().decode('utf-8')
+
+            if cache_file:
+                if not os.path.isdir(os.path.dirname(cache_file)):
+                    os.makedirs(os.path.dirname(cache_file))
+                f = open(cache_file, 'wb')
+                f.write(content.encode('utf-8'))
+                f.close()
+
+            return str(content)
+
+    def codepoints(self):
+        for i in range(0, self.max + 1):
+            yield CodePoint(i, ucdata=self)
+
+
+class CodePoint:
+
+    def __init__(self, value=None, ucdata=None):
+        self.value = value
+        self.ucdata = ucdata
+
+    def _casefold(self, s):
+        r = ''
+        for c in s:
+            r += self.ucdata.ucd_cf.get(ord(c), c)
+        return r
+
+    @property
+    def exception_value(self):
+        return exceptions.get(self.value, False)
+
+    @property
+    def compat_value(self):
+        return backwardscompatible.get(self.value, False)
+
+    @property
+    def name(self):
+        if self.value in self.ucdata.ucd_data:
+            return self.ucdata.ucd_data[self.value][0]
+        elif 'Noncharacter_Code_Point' in self.ucdata.ucd_props[self.value]:
+            return '<noncharacter>'
+        else:
+            return '<reserved>'
+
+    @property
+    def general_category(self):
+        return self.ucdata.ucd_data.get(self.value, [None, None])[1]
+
+    @property
+    def unassigned(self):
+        return not ('Noncharacter_Code_Point' in self.ucdata.ucd_props[self.value] or \
+                    self.value in self.ucdata.ucd_data)
+
+    @property
+    def ldh(self):
+        if self.value == 0x002d or \
+           self.value in range(0x0030, 0x0039+1) or \
+           self.value in range(0x0061, 0x007a+1):
+            return True
+        return False
+
+    @property
+    def join_control(self):
+        return 'Join_Control' in self.ucdata.ucd_props[self.value]
+
+    @property
+    def joining_type(self):
+        return self.ucdata.ucd_as.get(self.value, None)
+
+    @property
+    def char(self):
+        return chr(self.value)
+
+    @property
+    def nfkc_cf(self):
+        return unicodedata.normalize('NFKC',
+                                     self._casefold(unicodedata.normalize('NFKC', self.char)))
+
+    @property
+    def unstable(self):
+        return self.char != self.nfkc_cf
+
+    @property
+    def in_ignorableproperties(self):
+        for prop in ['Default_Ignorable_Code_Point', 'White_Space', 'Noncharacter_Code_Point']:
+            if prop in self.ucdata.ucd_props[self.value]:
+                return True
+        return False
+
+    @property
+    def in_ignorableblocks(self):
+        return self.ucdata.ucd_block.get(self.value) in (
+            'Combining Diacritical Marks for Symbols', 'Musical Symbols',
+            'Ancient Greek Musical Notation'
+        )
+
+    @property
+    def oldhanguljamo(self):
+        return self.ucdata.ucd_hst.get(self.value) in ('L', 'V', 'T')
+
+    @property
+    def in_lettersdigits(self):
+        return self.general_category in ('Ll', 'Lu', 'Lo', 'Nd', 'Lm', 'Mn', 'Mc')
+
+    @property
+    def idna2008_status(self):
+        if self.exception_value:
+            return self.exception_value
+        elif self.compat_value:
+            return self.compat_value
+        elif self.unassigned:
+            return 'UNASSIGNED'
+        elif self.ldh:
+            return 'PVALID'
+        elif self.join_control:
+            return 'CONTEXTJ'
+        elif self.unstable:
+            return 'DISALLOWED'
+        elif self.in_ignorableproperties:
+            return 'DISALLOWED'
+        elif self.in_ignorableblocks:
+            return 'DISALLOWED'
+        elif self.oldhanguljamo:
+            return 'DISALLOWED'
+        elif self.in_lettersdigits:
+            return 'PVALID'
+        else:
+            return 'DISALLOWED'
+
+    @property
+    def uts46_data(self):
+        return self.ucdata.ucd_idnamt.get(self.value, None)
+
+    @property
+    def uts46_status(self):
+        return ' '.join(self.uts46_data)
+
+
+def diagnose_codepoint(codepoint, args, ucdata):
+
+    cp = CodePoint(codepoint, ucdata=ucdata)
+
+    print('U+{:04X}:'.format(codepoint))
+    print('   Name:             {}'.format(cp.name))
+    print('1  Exceptions:       {}'.format(exceptions.get(codepoint, False)))
+    print('2  Backwards Compat: {}'.format(backwardscompatible.get(codepoint, False)))
+    print('3  Unassigned:       {}'.format(cp.unassigned))
+    print('4  LDH:              {}'.format(cp.ldh))
+    print('   Properties:       {}'.format(' '.join(sorted(ucdata.ucd_props.get(codepoint, ['None'])))))
+    print('5  .Join Control:    {}'.format(cp.join_control))
+    print('   NFKC CF:          {}'.format(' '.join(['U+{:04X}'.format(ord(x)) for x in cp.nfkc_cf])))
+    print('6  .Unstable:        {}'.format(cp.unstable))
+    print('7  .Ignorable Prop:  {}'.format(cp.in_ignorableproperties))
+    print('   Block:            {}'.format(ucdata.ucd_block.get(codepoint, None)))
+    print('8  .Ignorable Block: {}'.format(cp.in_ignorableblocks))
+    print('   Hangul Syll Type: {}'.format(ucdata.ucd_hst.get(codepoint, None)))
+    print('9  .Old Hangul Jamo: {}'.format(cp.oldhanguljamo))
+    print('   General Category: {}'.format(cp.general_category))
+    print('10 .Letters Digits:  {}'.format(cp.in_lettersdigits))
+    print('== IDNA 2008:        {}'.format(cp.idna2008_status))
+    print('== UTS 46:           {}'.format(cp.uts46_status))
+    print('(Unicode {} [sys:{}])'.format(ucdata.version, ucdata.system_version))
+
+def ucdrange(start, end):
+    if start == end:
+        return ('{:04X}'.format(start.value), start.name)
+    else:
+        return ('{:04X}..{:04X}'.format(start.value, end.value),
+                '{}..{}'.format(start.name, end.name))
+
+def optimised_list(d):
+    yield '('
+    for value in intranges_from_list(d):
+        yield '        {},'.format(hex(value))
+    yield '    ),'
+
+def make_table(args, ucdata):
+
+    last_status = None
+    cps = []
+    table_data = []
+
+    for cp in ucdata.codepoints():
+        status = cp.idna2008_status
+        if (last_status and last_status != status):
+            (values, description) = ucdrange(cps[0], cps[-1])
+            table_data.append([values, last_status, description])
+            cps = []
+        last_status = status
+        cps.append(cp)
+    (values, description) = ucdrange(cps[0], cps[-1])
+    table_data.append([values, last_status, description])
+
+    if args.dir:
+
+        f = open('{}/idna-table-{}.txt'.format(args.dir, ucdata.version), 'wb')
+        for row in table_data:
+            f.write('{:12}; {:12}# {:.44}\n'.format(*row).encode('ascii'))
+        f.close()
+
+    else:
+
+        for row in table_data:
+            print('{:12}; {:12}# {:.44}'.format(*row))
+
+def idna_libdata(ucdata):
+
+    yield '# This file is automatically generated by tools/idna-data\n'
+    yield '__version__ = \'{}\''.format(ucdata.version)
+
+    #
+    # Script classifications are used by some CONTEXTO rules in RFC 5891
+    #
+    yield 'scripts = {'
+    for script in SCRIPT_WHITELIST:
+        prefix = '    \'{}\': '.format(script)
+        for line in optimised_list(ucdata.ucd_s[script]):
+            yield prefix + line
+            prefix = ''
+    yield '}'
+
+    #
+    # Joining types are used by CONTEXTJ rule A.1
+    #
+    yield 'joining_types = {'
+    for cp in ucdata.codepoints():
+        if cp.joining_type:
+            yield '    0x{:x}: {},'.format(cp.value, ord(cp.joining_type))
+    yield '}'
+
+    #
+    # These are the classification of codepoints into PVALID, CONTEXTO, CONTEXTJ, etc.
+    #
+    yield 'codepoint_classes = {'
+    classes = {}
+    for cp in ucdata.codepoints():
+        status = cp.idna2008_status
+        if status in ('UNASSIGNED', 'DISALLOWED'):
+            continue
+        if not status in classes:
+            classes[status] = set()
+        classes[status].add(cp.value)
+    for status in ['PVALID', 'CONTEXTJ', 'CONTEXTO']:
+        prefix = '    \'{}\': '.format(status)
+        for line in optimised_list(classes[status]):
+            yield prefix + line
+            prefix = ''
+    yield '}'
+
+def uts46_ranges(ucdata):
+
+    last = (None, None)
+    for cp in ucdata.codepoints():
+        fields = cp.uts46_data
+        if not fields:
+            continue
+        status, mapping = UTS46_STATUSES[fields[0]]
+        if mapping:
+            mapping = ''.join(chr(int(codepoint, 16)) for codepoint in fields[1].split())
+            mapping = mapping.replace('\\', '\\\\').replace('\'', '\\\'')
+        else:
+            mapping = None
+        if cp.value > 255 and (status, mapping) == last:
+            continue
+        last = (status, mapping)
+
+        if mapping is not None:
+            yield '(0x{:X}, \'{}\', \'{}\')'.format(cp.value, status, mapping)
+        else:
+            yield '(0x{:X}, \'{}\')'.format(cp.value, status)
+
+def uts46_libdata(ucdata):
+
+    yield '# This file is automatically generated by tools/idna-data'
+    yield '# vim: set fileencoding=utf-8 :\n'
+    yield 'from typing import List, Tuple, Union\n\n'
+    yield '"""IDNA Mapping Table from UTS46."""\n\n'
+
+    yield '__version__ = \'{}\''.format(ucdata.version)
+
+    idx = -1
+    for row in uts46_ranges(ucdata):
+        idx += 1
+        if idx % UTS46_SEGMENT_SIZE == 0:
+            if idx != 0:
+                yield '    ]\n'
+            yield 'def _seg_{}() -> List[Union[Tuple[int, str], Tuple[int, str, str]]]:\n    return ['.format(idx // UTS46_SEGMENT_SIZE)
+        yield '    {},'.format(row)
+    yield '    ]\n'
+
+    yield 'uts46data = tuple('
+    yield '    _seg_0()'
+    for i in range(1, idx // UTS46_SEGMENT_SIZE + 1):
+        yield '    + _seg_{}()'.format(i)
+    yield ')  # type: Tuple[Union[Tuple[int, str], Tuple[int, str, str]], ...]'
+
+def make_libdata(args, ucdata):
+
+    dest_dir = args.dir or '.'
+
+    target_filename = os.path.join(dest_dir, 'idnadata.py')
+    with open(target_filename, 'wb') as target:
+        for line in idna_libdata(ucdata):
+            target.write((line + '\n').encode('utf-8'))
+
+    target_filename = os.path.join(dest_dir, 'uts46data.py')
+    with open(target_filename, 'wb') as target:
+        for line in uts46_libdata(ucdata):
+            target.write((line + '\n').encode('utf-8'))
+
+def arg_error(message, parser):
+
+    parser.print_usage()
+    print('{}: error: {}'.format(sys.argv[0], message))
+    sys.exit(2)
+
+def main():
+
+    parser = argparse.ArgumentParser(description='Determine IDNA code-point validity data')
+    parser.add_argument('action', type=str, default='preferred',
+                        help='Task to perform (make-libdata, make-tables, <codepoint>)')
+
+    parser.add_argument('--version', type=str, default='preferred',
+                        help='Unicode version to use (preferred, latest, <x.y.z>)')
+    parser.add_argument('--source', type=str, default=None,
+                        help='Where to fetch Unicode data (file path)')
+    parser.add_argument('--dir', type=str, default=None, help='Where to export the output')
+    parser.add_argument('--cache', type=str, default=None, help='Where to cache Unicode data')
+    parser.add_argument('--no-cache', action='store_true', help='Don\'t cache Unicode data')
+    libdata = parser.add_argument_group('make-libdata', 'Make module data for Python IDNA library')
+
+    tables = parser.add_argument_group('make-table', 'Make IANA-style reference table')
+
+    codepoint = parser.add_argument_group('codepoint',
+                                          'Display related data for given codepoint (e.g. U+0061)')
+
+    args = parser.parse_args()
+
+    if args.version == 'preferred':
+        target_version = PREFERRED_VERSION
+    else:
+        target_version = args.version
+
+    if args.cache and args.no_cache:
+        arg_error('I can\'t both --cache and --no-cache', parser)
+    cache = args.cache or DEFAULT_CACHE_DIR
+    if args.no_cache:
+        cache = None
+
+    ucdata = UnicodeData(target_version, cache, args)
+
+    if args.action == 'make-table':
+        make_table(args, ucdata)
+    elif args.action == 'make-libdata':
+        make_libdata(args, ucdata)
+    else:
+        result = re.match(r'^(?i)(U\+|)(?P<cp>[0-9A-F]{4,6})$', args.action)
+        if result:
+            codepoint = int(result.group('cp'), 16)
+            diagnose_codepoint(codepoint, args, ucdata)
+            sys.exit(0)
+        arg_error('Don\'t recognize action or codepoint value', parser)
+        
+
+if __name__ == '__main__':
+    main()
+
+
+

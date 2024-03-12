@@ -1,0 +1,18 @@
+- help_text:
+    brief: |
+      Describe an operation.
+    description: |
+      Describe a Backup and DR operation.
+    examples: |
+      To view details for operation 'OPERATION', run:
+
+        $ {command} OPERATION
+
+  request:
+    collection: backupdr.projects.locations.operations
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:operation
+      help_text: |
+        Backup and DR operation to describe.

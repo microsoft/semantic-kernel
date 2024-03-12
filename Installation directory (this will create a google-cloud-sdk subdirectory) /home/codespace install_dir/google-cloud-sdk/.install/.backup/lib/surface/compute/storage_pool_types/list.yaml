@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "View storage pools types."
+    description: "View storage pools."
+    examples: |
+        To display all storage pool types and their locations visible the project,
+        run the following command:
+
+        $ {command}
+
+        The `--filter` option can be used to filter down available options. To display all
+        available storage pool types in US-based zones, run the following command:
+
+        $ {command} --filter="zone ~ us"
+
+  request:
+    collection: compute.storagePoolTypes
+    api_version: alpha
+    method: aggregatedList
+
+  arguments:
+    resource:
+      help_text: |
+        The project of the storage pools to list.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:compute_project
+      override_resource_collection: true
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.api_lib.compute.response_hooks:flatten_aggregated_list:field_name=storagePoolTypes
+
+  output:
+    format: |
+      table(
+        name,
+        location():sort=1)

@@ -1,0 +1,76 @@
+# Copyright 2018 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Redact potentially sensitive data from text content.
+    description: |
+      Redacts potentially sensitive data from text content.
+    examples: |
+      To redact email addresses from a file named my-data.csv and write the
+      redacted contents to my-redacted-data.csv, run:
+
+        $ {command} --info-types EMAIL_ADDRESS --replace-with-info-type \
+          --content-file my-data.csv --output-file my-redacted-data.csv
+
+  request:
+    collection: dlp.projects.content
+    method: deidentify
+    api_version: v2
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.dlp.hooks:AddOutputFileFlag
+    params:
+    - _COMMON_: text_args.redact_content_arg
+    # Need to override shared arg definitions
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
+      api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.infoTypes
+      required: true
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
+      api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.minLikelihood
+    - group:
+        mutex: true
+        required: true
+        params:
+        - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.replaceWithInfoTypeConfig
+          arg_name: replace-with-info-type
+          action: store_true
+          repeated: false
+          default: null
+          processor: googlecloudsdk.command_lib.dlp.hooks:GetInfoTypeTransform
+          help_text: |
+            If specified, all sensitive data will be replaced with its infoType.
+            For example, 'email:guest@example.com' would become
+            'email:[EMAIL_ADDRESS]'.
+        - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.redactConfig
+          arg_name: remove-findings
+          action: store_true
+          default: null
+          repeated: false
+          processor: googlecloudsdk.command_lib.dlp.hooks:GetRedactTransform
+          help_text: |
+            If specified, all sensitive data will be removed, instead of
+            replaced.
+        - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.replaceConfig
+          arg_name: replacement-text
+          repeated: false
+          processor: googlecloudsdk.command_lib.dlp.hooks:GetReplaceTextTransform
+          help_text: |
+            Text to replace each sensitive data finding with.
+    resource:
+      help_text: Project to use to redact images.
+      spec: !REF googlecloudsdk.command_lib.dlp.resources:project_content
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.dlp.hooks:PossiblyWriteRedactedTextResponseToOutputFile

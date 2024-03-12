@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Source: http://linuxbox.hu/node/feed
+Expect: UTF-8
+-->
+<!DOCTYPE rss [<!ENTITY % HTMLlat1 PUBLIC "-//W3C//ENTITIES Latin 1 for XHTML//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">]>
+<rss version="2.0" xml:base="http://linuxbox.hu">
+<channel>
+ <title>linuxbox.hu - Linux apróságok gyűjteménye</title>
+ <link>http://linuxbox.hu</link>
+ <description>Linux használata közben találkoztam az itt bemutatott apróságokkal. Elkezdem gyűjtögetni őket, mivel voltak köztük amelyeket csak ritkán használtam és újra és újra elő kellett ásnom mikor újfent szükségem volt rájuk. Itt próbálom rendszerben, könnyen elérhető, kereshető módon gyűjtögetni tovább tapasztalataim magam és mások okulására.
+Szerencsére egyre többen használnak nap-mint-nap linuxot. Biztos vagyok abban, hogy &lt;strong&gt;Nektek&lt;/strong&gt; is vannak trükkjeitek, tapasztalataitok amiket szívesen megosztanátok másokkal. &lt;a href=&quot;/gyik&quot;&gt;Csatlakozz&lt;/a&gt; Te is és mutasd meg milyen szoftvereket hogyan használsz kedvenc operációs rendszereden! Avagy kívánom töltsd kellemesen időd böngészgetéssel weblapomon!</description>
+ <language>hu</language>
+<item>
+ <title>Hogyan fordíthatunk arhitektúra optimalizált debian csomagokat.</title>
+ <link>http://linuxbox.hu/apt-build</link>
+ <description>&lt;p&gt;Az apt-build debian csomag segítségével gentoo stílusú architektúrára optimalizált debian csomagokat készíthetünk magunknak.&lt;br /&gt;
+Telepítsük fel először a csomagot.&lt;br /&gt;
+&lt;code &gt;&lt;br /&gt;
+  $ wajig install apt-build&lt;br /&gt;
+&lt;/code&gt;&lt;br /&gt;
+közben kérdez bennünk pár opcióról, ezek a &lt;em &gt;/etc/apt/apt-build.conf&lt;/em&gt; állományba kerülnek lementésre:&lt;br /&gt;
+&lt;code &gt;&lt;br /&gt;
+  build-dir = /var/cache/apt-build/build&lt;br /&gt;
+  repository-dir = /var/cache/apt-build/repository&lt;br /&gt;
+  Olevel = -O2&lt;br /&gt;
+  march = -march=pentium4&lt;br /&gt;
+  mcpu = -mcpu=pentium4&lt;br /&gt;
+  options = &quot; &quot;&lt;br /&gt;
+&lt;/code&gt;&lt;br /&gt;
+Az elkészült csomagok a &lt;em &gt;/var/cache/apt-build/repository&lt;/em&gt; könyvtárba kerülnek. Innét aztán egyszerűen telepíthetjük is őket, ha beadjuk a következő sort a &lt;em &gt;/etc/apt/sources.list&lt;/em&gt; konfigurációs állományunk elejére. (apt-build telepítése közben automatikusan is megtehettük ezt.)&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/5">Debian</category>
+ <pubDate>Tue, 03 Jan 2006 16:53:41 -0500</pubDate>
+</item>
+<item>
+ <title>Egy pehelysúlyú rendszermonitor</title>
+ <link>http://linuxbox.hu/conky</link>
+ <description>&lt;a href=&quot;conky&quot;&gt;&lt;div class=&quot;image thumbnail&quot;&gt;&lt;img src=&quot;http://linuxbox.hu/files/images/conky.thumbnail.png&quot; width=&quot;140&quot; height=&quot;200&quot;  alt=&quot;Egy pehelysúlyú rendszermonitor&quot; title=&quot;Egy pehelysúlyú rendszermonitor&quot; /&gt;&lt;/div&gt;
+&lt;/a&gt;&lt;p&gt;Számítógépünk aktuális állapotáról több szoftver segítségével is kaphatunk információkat. Engettessék meg nekem bemutatni egy újabbat(általam még nem ismert): &lt;a href=&quot;http://conky.sourceforge.net/&quot;&gt;conky&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Szolgálatatásai:&lt;br /&gt;
+ - X gyökér ablakra képes rajzolni és saját ablakba is.&lt;br /&gt;
+ - Szinte bármit képes megjeleníteni, szenzorok eredményeitől, egyéb szoftverek, szkriptek kimenetéig.&lt;br /&gt;
+- Létezik belőle debian és gentoo csomag!&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/13">egyéb</category>
+ <pubDate>Mon, 02 Jan 2006 14:35:32 -0500</pubDate>
+</item>
+<item>
+ <title>Beesoft Commander ver. 2.02.1</title>
+ <link>http://linuxbox.hu/bsc</link>
+ <description>&lt;p&gt;&lt;a href=&quot;http://freshmeat.net/projects/besc/?branch_id=61879&amp;amp;release_id=214566&quot;&gt;Frisshús-weben&lt;/a&gt; akadtam rá egy újabb X-es állomány kezelő progira: &lt;a href=&quot;http://www.beesoft.org/bsc.html&quot;&gt;Beesoft Commander&lt;/a&gt; Kipróbálni még nem volt időm, de rövidesen megteszem és fissítem a cikkem. &lt;img src=&quot;misc/smileys/smile.png&quot; title=&quot;Vigyor&quot; alt=&quot;Vigyor&quot; /&gt;&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/3">X</category>
+ <pubDate>Wed, 14 Dec 2005 15:27:33 -0500</pubDate>
+</item>
+<item>
+ <title>Drupal 4.6.5</title>
+ <link>http://linuxbox.hu/drupal_4.6.5</link>
+ <description>&lt;p&gt;Ezek a drupalos fiúk megint kaidtak egy újabb frissitést ez alkalommal nem biztonsági, hanem foltozó verziót.&lt;br /&gt;
+Már rutinból megy, feltoltam.&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/9">Drupal</category>
+ <pubDate>Mon, 12 Dec 2005 13:21:42 -0500</pubDate>
+</item>
+<item>
+ <title>Bármit a tálcára; alltray!</title>
+ <link>http://linuxbox.hu/alltray</link>
+ <description>&lt;p&gt;&lt;a href=&quot;http://alltray.sourceforge.net/&quot;&gt;AllTray&lt;/a&gt; nevű kis szoftverrel bármely alkalmazás dokkolható a rendszer tálcára. Még a Mozilla Thunderbird, Evolution, vagy akár egy terminál is. Egy kiemelés funkció segít tisztán látni mely alkalmazás a &quot;bezárás&quot;  gombra csak tálcára kerül működés befejezés helzett. Alkalmazásunk szépen együttműködik Gnome-mal, KDEvel, XFCE 4-gyel, Fluxboxxal, and WindowMakerrel. &lt;/p&gt;
+&lt;p&gt;Debian SID, Ubuntu, Suse csomagok &lt;a href=&quot;http://alltray.sourceforge.net/downloads.html&quot;&gt;letölthetőek&lt;/a&gt;!&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/3">X</category>
+ <pubDate>Sat, 10 Dec 2005 17:44:17 -0500</pubDate>
+</item>
+<item>
+ <title>KDE</title>
+ <link>http://linuxbox.hu/node/112</link>
+ <description>&lt;p&gt;hello&lt;br /&gt;
+az lenne a kérdésem, hogy hogyan tudok kde alatt ilyen &quot;kmenu buttont&quot; csinálni&lt;br /&gt;
+&lt;a href=&quot;http://nagy7.freebase.hu/kmenu.jpg&quot;&gt;a kép itt&lt;/a&gt;&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/6">Linux segítség</category>
+ <pubDate>Thu, 08 Dec 2005 07:55:16 -0500</pubDate>
+</item>
+<item>
+ <title>Drupal 4.6.4</title>
+ <link>http://linuxbox.hu/drupal_4.6.4</link>
+ <description>&lt;p&gt;Kijött egy újabb javító verzió. Frissítés megtörtént.&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/9">Drupal</category>
+ <pubDate>Fri, 02 Dec 2005 07:29:49 -0500</pubDate>
+</item>
+<item>
+ <title>Ipod/zene menedzselés - YamiPod</title>
+ <link>http://linuxbox.hu/YamiPod</link>
+ <description>&lt;a href=&quot;YamiPod&quot;&gt;&lt;div class=&quot;image thumbnail&quot;&gt;&lt;img src=&quot;http://linuxbox.hu/files/images/Yamipod_main.thumbnail.PNG&quot; width=&quot;200&quot; height=&quot;128&quot;  alt=&quot;Ipod/zene menedzselés - YamiPod&quot; title=&quot;Ipod/zene menedzselés - YamiPod&quot; /&gt;&lt;/div&gt;
+&lt;/a&gt;&lt;p&gt;Kellemes szolgátatás halmazzal rendelkező multiplatformos lejátszóra hívta fel figyelmem nemrég egy haverom: &lt;a href=&quot;http://www.yamipod.com/&quot;&gt;YamiPod&lt;/a&gt;&lt;/p&gt;
+&lt;ul &gt;
+&lt;li &gt; önálló alkalmazás&lt;/li&gt;
+&lt;li &gt; iPod-ot automatikusan felismeri&lt;/li&gt;
+&lt;li &gt; mp3 és AAC állományok másolása iPodra/ról&lt;/li&gt;
+&lt;li &gt; mp3 id3 és AAC infók irása/olvasása&lt;/li&gt;
+&lt;li &gt; zeneszöveg támogatás (internetről automatikus kereséssel, unicode support)&lt;/li&gt;
+&lt;li &gt; lejátszási lista (On-The-Go is)&lt;/li&gt;
+&lt;li &gt; lejátszási lista importálás (PLS,M3U)&lt;/li&gt;
+&lt;li &gt; lejátszási lista exportálás (PLS,M3U)&lt;/li&gt;
+&lt;li &gt; teljes unicode támogatás&lt;/li&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/13">egyéb</category>
+ <pubDate>Tue, 29 Nov 2005 16:43:43 -0500</pubDate>
+</item>
+<item>
+ <title>Nettelefon szoftver</title>
+ <link>http://linuxbox.hu/linphone</link>
+ <description>&lt;p&gt;Beleakadtam egy igéretesnek látszó, ingyenes, apró alkalmazásba. Még nem volt időm kipróbálni, de felteszem, hátha valaki megteszi helyettem: &lt;a href=&quot;http://www.linphone.org/?lang=us&amp;amp;rubrique=1&quot;&gt;linphone&lt;/a&gt;&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/3">X</category>
+ <pubDate>Wed, 19 Oct 2005 00:54:14 -0400</pubDate>
+</item>
+<item>
+ <title>Csapatmunka szövegszerkesztő</title>
+ <link>http://linuxbox.hu/gobby</link>
+ <description>&lt;p&gt;Hát ez az ötlet azért még engem is meglepett. Igazából lefordítani sem tudom rendesen a valós idejű együtműködés lehetőségét, amit a &lt;a href=&quot;http://gobby.0x539.de&quot;&gt;gobby&lt;/a&gt; nevű szoftver ad. Vagy legalábbis nem hangzik túl jól. De nagy találmánynak tartom.&lt;br /&gt;
+Különböző színeket használhat mindenki, jelszóval védhető a munkafázis, csevegés...bődületes. &lt;img src=&quot;misc/smileys/smile.png&quot; title=&quot;Vigyor&quot; alt=&quot;Vigyor&quot; /&gt;&lt;br /&gt;
+Kíváncsi lennék a hatékonyságára.&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/2">Linux</category>
+ <pubDate>Mon, 17 Oct 2005 23:15:09 -0400</pubDate>
+</item>
+<item>
+ <title>Parancssoros bűvészet: CheckInstall</title>
+ <link>http://linuxbox.hu/node/105</link>
+ <description>&lt;p&gt;A minap bukkantam egy irasra az &lt;a &gt;OSNews&lt;/a&gt; oldalon, ami egy kis segédeszköt mutatott be. Amivel a forrásból fordított programokat telepítve azok bele kerülnek a rendszer csomagkezelőjének látóterébe &lt;img src=&quot;misc/smileys/smile.png&quot; title=&quot;Vigyor&quot; alt=&quot;Vigyor&quot; /&gt;&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/2">Linux</category>
+ <pubDate>Wed, 12 Oct 2005 08:31:00 -0400</pubDate>
+</item>
+<item>
+ <title>Gourmet recept menedzser</title>
+ <link>http://linuxbox.hu/gourmet</link>
+ <description>&lt;a href=&quot;gourmet&quot;&gt;&lt;div class=&quot;image thumbnail&quot;&gt;&lt;img src=&quot;http://linuxbox.hu/files/images/receptmenedzser.thumbnail.png&quot; width=&quot;200&quot; height=&quot;150&quot;  alt=&quot;Gourmet recept menedzser&quot; title=&quot;Gourmet recept menedzser&quot; /&gt;&lt;/div&gt;
+&lt;/a&gt;&lt;p&gt;Hát mint nem talál az ember a weben: &lt;a href=&quot;http://grecipe-manager.sourceforge.net/&quot;&gt;recept medzser szoftver!&lt;/a&gt;&lt;br /&gt;
+Igéretes szolgáltatásokat ad a kis programocska:&lt;br /&gt;
+ - receptek felvitele, képekkel.&lt;br /&gt;
+ - keresés&lt;br /&gt;
+ - vásárlási lista készítés&lt;br /&gt;
+ - receptek importálása allományokból és a webről.&lt;br /&gt;
+Sajnos van egy hátulütője a dolognak: jelenleg még nem tud magyarul a program. Viszont van egy egyszerű webes felület a fordítóknak! Aki érdekel a dolog és belekezd, szóljon ha keszül a magyar verzió!&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/13">egyéb</category>
+ <pubDate>Sun, 18 Sep 2005 13:59:36 -0400</pubDate>
+</item>
+<item>
+ <title>xgestures</title>
+ <link>http://linuxbox.hu/xgestures</link>
+ <description>&lt;p&gt;Egy érdekes új projektre leletem a mai böngészgetésem közepette: &lt;a href=&quot;http://sourceforge.net/projects/xgestures/&quot;&gt;xgestures&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Nem tudom kell-e magyaráznom mit nyújt a kis szolgáltatás.&lt;br /&gt;
+Az ölet a firefox azonos szolgáltatásából jött, ami alapjában véve nem is olyan rossz 5let. Szóval különböző kurzormozdulatokhoz különböző események vannak hozzárendelve; mint például minimalizálás, kilépés, futtatás, bezárás, maximalizálás stb.&lt;/p&gt;
+&lt;p&gt;Persze csakis annak aki szereti az egérrel való manőverezést.&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/3">X</category>
+ <pubDate>Tue, 13 Sep 2005 13:24:28 -0400</pubDate>
+</item>
+<item>
+ <title>Pioneers</title>
+ <link>http://linuxbox.hu/pioneers</link>
+ <description>&lt;a href=&quot;pioneers&quot;&gt;&lt;div class=&quot;image thumbnail&quot;&gt;&lt;img src=&quot;http://linuxbox.hu/files/images/pioneers-client.thumbnail.png&quot; width=&quot;200&quot; height=&quot;160&quot;  alt=&quot;Pioneers&quot; title=&quot;Pioneers&quot; /&gt;&lt;/div&gt;
+&lt;/a&gt;&lt;p&gt;Talán ismered a Catan nevű táblás társasjátékot. Ezt a játékot gnocatan névről nevezték át nemrég Pioneersra, tehát nagyon hasonló hozzá... Én tavaly vettem egy táblás verziót a keresztfiamnak, nagy derbiket tartottunk...&lt;br /&gt;
+Mindenesetre a dolog egy sziget kolonizálásáról szól. Amit most megtehetünk az interneten keresztül haverokkal a &lt;a href=&quot;http://pio.sourceforge.net/&quot;&gt;játék beszerzése után&lt;/a&gt;!&lt;br /&gt;
+ Aki nem ismeri feltétlen érdemes kipróbálni és nem sajnálni az időt megtanulni a játékszabályokat!!!&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/12">játékok</category>
+ <pubDate>Fri, 09 Sep 2005 20:36:43 -0400</pubDate>
+</item>
+<item>
+ <title>SSH démon védelme</title>
+ <link>http://linuxbox.hu/ssh_hammer</link>
+ <description>&lt;p&gt;Manapság az interneten robotok kutatnak a gyenge jelszavas felhasználók shelljei után. Meglehetősen kellemetlen dolog mikor látjuk a logjainkban a sikertelen belépési kísérleteket, mikor próbálgatják kitalálni a felhasználóink a jelszavát, usernevét.&lt;/p&gt;
+&lt;p&gt;Természetesen tudunk védekezni a probléma ellen.&lt;br /&gt;
+Két fejta egyszerű megoldás is van:&lt;/p&gt;
+&lt;p&gt;1. Beállíthatunk egy speciálisan erre fejlesztett ssh démon konfigurációs paramétert: &lt;strong &gt;MaxStartups&lt;/strong&gt;&lt;br /&gt;
+ &lt;strong &gt;/etc/ssh/sshd_config&lt;/strong&gt; konfigurációs állomány végén. További információt kahatunk a manuálokból. man sshd_config&lt;/p&gt;
+</description>
+ <category domain="http://linuxbox.hu/taxonomy/term/2">Linux</category>
+ <pubDate>Fri, 09 Sep 2005 16:06:29 -0400</pubDate>
+</item>
+</channel>
+</rss>

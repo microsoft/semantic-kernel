@@ -1,0 +1,25 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Set the IAM policy for a BeyondCorp client gateway (Deprecated).
+    description: Sets the IAM policy for the given BeyondCorp client gateway.
+    examples: |
+      The following command will read an IAM policy defined in a JSON file
+      'policy.json' and set it for the client gateway with ID ``my-client-gateway'':
+
+        $ {command} my-client-gateway policy.json --location=us-central1
+
+  request:
+    collection: beyondcorp.projects.locations.clientGateways
+    BETA:
+      api_version: v1
+
+  iam:
+    set_iam_policy_request_path: googleIamV1SetIamPolicyRequest
+    message_type_overrides:
+      policy: GoogleIamV1Policy
+      set_iam_policy_request: BeyondcorpProjectsLocationsClientGatewaysSetIamPolicyRequest
+
+  arguments:
+    resource:
+      help_text: The BeyondCorp client gateway for which to set the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:client_gateway

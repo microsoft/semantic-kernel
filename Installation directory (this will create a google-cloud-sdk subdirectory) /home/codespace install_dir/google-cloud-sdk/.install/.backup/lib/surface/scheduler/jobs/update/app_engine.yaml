@@ -1,0 +1,123 @@
+- help_text:
+    brief: Update a Cloud Scheduler job with an App Engine target.
+    description: Update a Cloud Scheduler job with an App Engine target.
+    examples: |
+      Update my-job's retry attempt limit:
+
+        $ {command} my-job --max-retry-attempts=2
+
+  request:
+    collection: cloudscheduler.projects.locations.jobs
+    method: patch
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scheduler.util:SetRequestJobName
+    - googlecloudsdk.command_lib.scheduler.util:SetAppEngineRequestMessageBody
+    - googlecloudsdk.command_lib.scheduler.util:SetAppEngineRequestUpdateHeaders
+    - googlecloudsdk.command_lib.scheduler.util:UpdateAppEngineMaskHook
+
+  arguments:
+    resource:
+      help_text: Job to update.
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
+    params:
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:schedule
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:clearable_timezone
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:description
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:attempt_deadline
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:clearable_retry_attempts
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:clearable_retry_duration
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:clearable_min_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:clearable_max_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:clearable_max_doublings
+    - group:
+        mutex: true
+        params:
+        - api_field: job.appEngineHttpTarget.relativeUri
+          arg_name: relative-url
+          default: /
+          type: googlecloudsdk.calliope.arg_parsers:RegexpValidator:pattern=^/.*,description=Must
+            begin with [/].)
+          help_text: |
+            Relative URL to use for the request (beginning with "/").
+        - arg_name: clear-relative-url
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Clear the field corresponding to `--relative-url`.
+    - api_field: job.appEngineHttpTarget.httpMethod
+      arg_name: http-method
+      default: post
+      choices:
+      - arg_value: post
+        enum_value: POST
+      - arg_value: head
+        enum_value: HEAD
+      - arg_value: get
+        enum_value: GET
+      - arg_value: put
+        enum_value: PUT
+      - arg_value: delete
+        enum_value: DELETE
+      help_text: |
+        HTTP method to use for the request.
+    # TODO(b/113588592) Convert --version and --service to a resource arg.
+    - api_field: job.appEngineHttpTarget.appEngineRouting.version
+      arg_name: version
+      help_text: |
+        Version of the App Engine service to send the request to.
+    - group:
+        mutex: true
+        params:
+        - arg_name: clear-service
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Clear the field corresponding to `--service`.
+        - api_field: job.appEngineHttpTarget.appEngineRouting.service
+          arg_name: service
+          default: default
+          help_text: |
+            ID of the App Engine service to send the request to.
+    - group:
+        mutex: true
+        params:
+        - arg_name: clear-headers
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Clear the list of HTTP headers.
+        - group:
+            params:
+            - arg_name: update-headers
+              metavar: KEY=VALUE
+              type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+              help_text: |
+                KEY=VALUE pairs of HTTP headers to include in the request.
+                *Cannot be repeated*. For example:
+                `--update-headers Accept-Language=en-us,Accept=text/plain`
+            - arg_name: remove-headers
+              type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+              help_text: |
+                KEY1,KEY2 list of HTTP headers to remove from the request.
+                `--remove-headers Accept-Language,Accept`
+    - group:
+        mutex: true
+        params:
+        - api_field: job.appEngineHttpTarget.body
+          arg_name: message-body
+          help_text: |
+            Data payload to be included as the body of the HTTP
+            request. May only be given with compatible HTTP methods (PUT
+            or POST).
+        - api_field: job.appEngineHttpTarget.body
+          arg_name: message-body-from-file
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:binary=True"
+          help_text: |
+            Path to file containing the data payload to be included as the
+            body of the HTTP request. May only be given with compatible HTTP
+            methods (PUT or POST).
+        - arg_name: clear-message-body
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Clear the field corresponding to `--message-body` or `--message-body-from-file`.

@@ -1,0 +1,44 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute alpha SchedulingNodeAffinity export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  key:
+    description: Corresponds to the label key of Node resource.
+    type: string
+  operator:
+    description: |-
+      Defines the operation of node selection. Valid operators are IN for
+      affinity and NOT_IN for anti-affinity.
+    type: string
+    enum:
+    - IN
+    - NOT_IN
+    - OPERATOR_UNSPECIFIED
+  values:
+    description: Corresponds to the label values of Node resource.
+    type: array
+    items:
+      type: string

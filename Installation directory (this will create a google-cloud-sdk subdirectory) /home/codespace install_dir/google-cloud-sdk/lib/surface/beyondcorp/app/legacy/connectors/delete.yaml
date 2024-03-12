@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a single legacy Connector
+    description: Delete a single legacy Connector.
+    examples: |
+      To delete a legacy connector ``my-connector'' run:
+
+      $ {command} my-connector --project={project} --location={location}
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.connectors
+
+  arguments:
+    resource:
+      help_text: The Beyondcorp connector you want to delete.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connector

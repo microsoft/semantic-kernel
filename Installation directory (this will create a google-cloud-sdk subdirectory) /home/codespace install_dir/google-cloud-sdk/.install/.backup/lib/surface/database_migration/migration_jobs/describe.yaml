@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Show details about a Database Migration Service migration job.
+    description: Show details about a Database Migration Service migration job.
+    examples: |
+      To show details about a migration job, run:
+
+        $ {command} my-migration-job --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.migrationJobs
+    GA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha2
+
+  arguments:
+    resource:
+      help_text: The migration job you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:migration_job

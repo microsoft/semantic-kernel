@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Describe a Data Attribute Binding resource.
+    description: |
+      Describe a Data Attribute Binding resource.
+      Displays all details of a Data Attribute Binding resource given a valid DataAttributeBindingID.
+    examples: |
+       To Describe Data Attribute Binding `test-attribute-binding` in project `test-dataplex` at location `us-central1`, run:
+
+        ${command} test-attribute-binding --project=test-dataplex --location=us-central1
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataAttributeBindings
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        Data Attribute Binding you want to describe.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_attribute_binding

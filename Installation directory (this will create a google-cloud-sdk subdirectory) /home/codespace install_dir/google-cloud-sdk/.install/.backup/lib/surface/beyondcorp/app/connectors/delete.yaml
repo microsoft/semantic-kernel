@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Delete a single Connector
+    description: Delete a single Connector.
+    examples: |
+      To delete a connector ``my-connector'' run:
+
+      $ {command} my-connector --project={project} --location={location}
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.appConnectors
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:PrintMessageInResponse
+
+  arguments:
+    resource:
+      arg_name: connector
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:appconnector
+      help_text: The Beyondcorp connector you want to delete.

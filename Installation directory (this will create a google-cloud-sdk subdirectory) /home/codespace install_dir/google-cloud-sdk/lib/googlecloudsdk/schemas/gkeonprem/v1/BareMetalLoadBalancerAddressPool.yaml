@@ -1,0 +1,50 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 BareMetalLoadBalancerAddressPool export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- addresses
+- pool
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  addresses:
+    description: |-
+      The addresses that are part of this pool. Each address must be either in
+      the CIDR form (1.2.3.0/24) or range form (1.2.3.1-1.2.3.5).
+    type: array
+    items:
+      type: string
+  avoidBuggyIps:
+    description: |-
+      If true, avoid using IPs ending in .0 or .255. This avoids buggy
+      consumer devices mistakenly dropping IPv4 traffic for those special IP
+      addresses.
+    type: boolean
+  manualAssign:
+    description: |-
+      If true, prevent IP addresses from being automatically assigned.
+    type: boolean
+  pool:
+    description: The name of the address pool.
+    type: string

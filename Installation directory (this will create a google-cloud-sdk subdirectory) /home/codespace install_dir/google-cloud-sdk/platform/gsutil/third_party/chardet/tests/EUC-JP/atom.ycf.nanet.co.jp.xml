@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="EUC-JP"?>
+<!--
+Source: http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/atom.xml
+Expect: EUC-JP
+-->
+<feed version="0.3" xmlns="http://purl.org/atom/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en">
+  <title>andoのページの雑記帳</title>
+  <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/" />
+  <modified>2005-12-31T16:24:19Z</modified>
+  <tagline>andoのページの雑記帳</tagline>
+  <id>tag:www.ycf.nanet.co.jp,2006:/~dre/cgi-bin/diary//1</id>
+  <generator url="http://www.movabletype.org/" version="3.151-ja">Movable Type</generator>
+  <copyright>Copyright (c) 2006, AND0</copyright>
+  <entry>
+    <title>さだまさし</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000435.html" />
+    <modified>2005-12-31T16:24:19Z</modified>
+    <issued>2006-01-01T01:22:43+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2006:/~dre/cgi-bin/diary//1.435</id>
+    <created>2005-12-31T16:22:43Z</created>
+    <summary type="text/plain">新年早々、「おやじの一番長い日」をノーカット、フルコーラスで歌っている。生で歌うの、初めて見た。やるなあ、ＮＨＫ。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>新年早々、「おやじの一番長い日」をノーカット、フルコーラスで歌っている。生で歌うの、初めて見た。やるなあ、ＮＨＫ。<br />
+</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>あけましておめでとうございます</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000434.html" />
+    <modified>2005-12-31T16:19:37Z</modified>
+    <issued>2006-01-01T01:14:28+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2006:/~dre/cgi-bin/diary//1.434</id>
+    <created>2005-12-31T16:14:28Z</created>
+    <summary type="text/plain">何とかトップページ更新。 なぜ雑記帳が更新できないかと言えば、回線ががんがん切れてしまうからです。 もうすぐ回線が復帰するのでお待ち下さい。 年賀状でびっくりした方、驚かせてごめんなさい。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>何とかトップページ更新。<br />
+なぜ雑記帳が更新できないかと言えば、回線ががんがん切れてしまうからです。<br />
+もうすぐ回線が復帰するのでお待ち下さい。<br />
+年賀状でびっくりした方、驚かせてごめんなさい。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>ｓｋｙｐｅ実験</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000432.html" />
+    <modified>2005-12-14T15:52:13Z</modified>
+    <issued>2005-12-15T00:47:29+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.432</id>
+    <created>2005-12-14T15:47:29Z</created>
+    <summary type="text/plain">ｓｋｙｐｅで、ちょっと無茶な実験をやってみた。 こっち：ＷｉｎＸＰ　しかし回線は６４ｋｂｐｓ あいて：ＡＤＳＬ　１Ｍｂｐｓ　しかしＷｉｎＭｅ どっちも推奨範囲ではない。 つなぐ・・・・・・成功！ 見事に接続できました。結構行けるぞ、ｓｋｙｐｅ。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>ｓｋｙｐｅで、ちょっと無茶な実験をやってみた。<br />
+こっち：ＷｉｎＸＰ　しかし回線は<strong>６４ｋｂｐｓ</strong><br />
+あいて：ＡＤＳＬ　１Ｍｂｐｓ　しかし<strong>ＷｉｎＭｅ</strong></p>
+
+<p>どっちも推奨範囲ではない。</p>
+
+<p>つなぐ・・・・・・<strong>成功</strong>！</p>
+
+<p>見事に接続できました。結構行けるぞ、ｓｋｙｐｅ。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>マウンテンのしるこスパ</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000433.html" />
+    <modified>2005-12-14T17:57:38Z</modified>
+    <issued>2005-12-14T02:56:04+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.433</id>
+    <created>2005-12-13T17:56:04Z</created>
+    <summary type="text/plain">引っ越しも落ち着き、なぜか突然マウンテンに行きたくなる。 急に思い立ったので、同行者を誘うことなく、一人で登山口へ。 店の前で、不思議と頭の中にしるこスパが浮かぶ。 思い切ってシェルパ無しで注文・・・たべる・・・うまい！！ 麺に甘みが練り込んでいないため、見た目よりもあっさりしている。 そういえば、昔、小倉抹茶スパに挑戦したとき、あんこが無くなった時点で遭難したことを思い出した。 このパスタ、私の中ではチャレンジメニューではなく、定番として注文できそうな気がする。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>引っ越しも落ち着き、なぜか突然マウンテンに行きたくなる。<br />
+急に思い立ったので、同行者を誘うことなく、一人で登山口へ。</p>
+
+<p>店の前で、不思議と頭の中にしるこスパが浮かぶ。</p>
+
+<p>思い切ってシェルパ無しで注文・・・たべる・・・うまい！！</p>
+
+<p>麺に甘みが練り込んでいないため、見た目よりもあっさりしている。<br />
+そういえば、昔、小倉抹茶スパに挑戦したとき、あんこが無くなった時点で遭難したことを思い出した。</p>
+
+<p>このパスタ、私の中ではチャレンジメニューではなく、定番として注文できそうな気がする。<br />
+</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>機器確認</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000431.html" />
+    <modified>2005-12-12T14:28:40Z</modified>
+    <issued>2005-12-12T23:24:59+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.431</id>
+    <created>2005-12-12T14:24:59Z</created>
+    <summary type="text/plain">引っ越し先の機器の確認。 まだ使っていなかった食器洗い機とガス衣類乾燥機と洗濯機のテスト。 洗濯機と衣類乾燥機は、すごい性能。しかもガス代計算したら１６円。安い。 しかし・・・食器洗い機は時間かかりすぎ。ついでに言うと電気食い過ぎ。 これはイマイチだった。さすがナショナル。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>引っ越し先の機器の確認。<br />
+まだ使っていなかった食器洗い機とガス衣類乾燥機と洗濯機のテスト。<br />
+洗濯機と衣類乾燥機は、すごい性能。しかもガス代計算したら１６円。安い。<br />
+しかし・・・食器洗い機は時間かかりすぎ。ついでに言うと電気食い過ぎ。<br />
+これはイマイチだった。さすがナショナル。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>引っ越し完了</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000430.html" />
+    <modified>2005-12-11T11:45:33Z</modified>
+    <issued>2005-12-11T20:42:04+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.430</id>
+    <created>2005-12-11T11:42:04Z</created>
+    <summary type="text/plain">引っ越し完了。しかしネット開通予定は未定。 とりあえず暫定回線は確保。しかし６４ｋ。 しかも、なぜかメールが繋がらない。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>引っ越し完了。しかしネット開通予定は未定。<br />
+とりあえず暫定回線は確保。しかし<strong>６４ｋ</strong>。<br />
+しかも、なぜかメールが繋がらない。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>引っ越し準備</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000429.html" />
+    <modified>2005-12-05T14:23:41Z</modified>
+    <issued>2005-12-05T23:16:19+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.429</id>
+    <created>2005-12-05T14:16:19Z</created>
+    <summary type="text/plain">と言っても、梱包お任せでお願いしているので、床の上に散らばったものの整理と、引っ越し屋の敵、電気配線の取りまずしがメイン。 特に我が家は、アンテナケーブルがとぐろを巻いているのと、電話系がｓｋｙｐｅ用ヘッドセットを改造してヴィレッジバンガードで買った電話機に繋いでいるので、これだけは絶対に外しておいてくださいと念を押された。 使えないゴミも多いが、とりあえず新居に持って行く。ヤフオクで売るかなぁ。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>と言っても、梱包お任せでお願いしているので、床の上に散らばったものの整理と、引っ越し屋の敵、電気配線の取りまずしがメイン。<br />
+特に我が家は、アンテナケーブルがとぐろを巻いているのと、電話系がｓｋｙｐｅ用ヘッドセットを改造してヴィレッジバンガードで買った電話機に繋いでいるので、これだけは絶対に外しておいてくださいと念を押された。<br />
+使えないゴミも多いが、とりあえず新居に持って行く。ヤフオクで売るかなぁ。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>トップページ更新</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000428.html" />
+    <modified>2005-12-01T18:43:46Z</modified>
+    <issued>2005-12-02T03:41:38+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.428</id>
+    <created>2005-12-01T18:41:38Z</created>
+    <summary type="text/plain">前回から１ヶ月弱で、トップページ更新。 なお、トップに書いたとおり、しばらくアクセス不可になる可能性がありますがご了承願います。 眠い・・・寝ます。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>前回から１ヶ月弱で、トップページ更新。</p>
+
+<p>なお、トップに書いたとおり、しばらくアクセス不可になる可能性がありますがご了承願います。</p>
+
+<p>眠い・・・寝ます。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>ガンダムのＣＭ（生協の白石さん）</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000427.html" />
+    <modified>2005-11-22T14:56:59Z</modified>
+    <issued>2005-11-23T00:04:15+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.427</id>
+    <created>2005-11-22T15:04:15Z</created>
+    <summary type="text/plain">期間限定ネタ。 ガンダムのＣＭ、生協の白石さんバージョン、１１／３０までの期間限定公開。 ＣＭ見れない人もこれなら安心。 個人的には、ページ右側のひとことカードの方が映像よりも面白い。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>etc</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>期間限定ネタ。<br />
+<a href="http://www.sonymusic.co.jp/anime/destiny/" target="_blank">ガンダムのＣＭ、生協の白石さんバージョン、１１／３０までの期間限定公開。</a><br />
+ＣＭ見れない人もこれなら安心。</p>
+
+<p>個人的には、ページ右側のひとことカードの方が映像よりも面白い。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>プラチナ確定</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000426.html" />
+    <modified>2005-11-21T16:57:32Z</modified>
+    <issued>2005-11-22T01:53:21+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.426</id>
+    <created>2005-11-21T16:53:21Z</created>
+    <summary type="text/plain">いや、目標にはしてたんだけど、まさか１１月に達成できるとは・・・ ＡＮＡプラチナメンバーズ達成。（しかも国内線のみ） スターアライアンスゴールドもついてくる。 一山超えた感じ。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>いや、目標にはしてたんだけど、まさか１１月に達成できるとは・・・<br />
+ＡＮＡプラチナメンバーズ達成。（しかも国内線のみ）<br />
+スターアライアンスゴールドもついてくる。</p>
+
+<p>一山超えた感じ。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>ウィルス</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000425.html" />
+    <modified>2005-11-21T16:49:54Z</modified>
+    <issued>2005-11-21T23:46:36+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.425</id>
+    <created>2005-11-21T14:46:36Z</created>
+    <summary type="text/plain">最近動きが鈍い。と思って、ノートンアンチウィルス起動して、手動で検索したら・・・ ４匹発見。 活動はしていなかったようだが。 しかし、なんで自動検出できなかったのだろう・・・　キングソフトに乗り換えるかな。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>最近動きが鈍い。と思って、ノートンアンチウィルス起動して、手動で検索したら・・・<br />
+４匹発見。<br />
+活動はしていなかったようだが。<br />
+しかし、なんで自動検出できなかったのだろう・・・　キングソフトに乗り換えるかな。</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>名古屋街中ナビ</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000424.html" />
+    <modified>2005-11-17T16:38:45Z</modified>
+    <issued>2005-11-18T01:13:58+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.424</id>
+    <created>2005-11-17T16:13:58Z</created>
+    <summary type="text/plain">便利なサイト発見。 これを使えば、誰かを案内するのがとても楽だ。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>etc</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p><a href="http://www.nagoya-tmo.jp/gourmet/data1_map00.html" target="_blank">便利なサイト発見。</a></p>
+
+<p>これを使えば、誰かを案内するのがとても楽だ。<br />
+</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>ステーキであってステーキでない</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000423.html" />
+    <modified>2005-11-17T12:51:25Z</modified>
+    <issued>2005-11-17T21:43:50+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.423</id>
+    <created>2005-11-17T12:43:50Z</created>
+    <summary type="text/plain">公正取引委員会、ステーキ屋「フォルクス」に対して排除命令。 牛の成型肉（牛の生肉，脂身等を人工的に結着し，形状を整えたもの）を「ステーキ」として売っていたそうな。 そういえば、ステーキのあさくまにも、「学生ステーキ」と称した、似たものがあったなぁ。こっちはメニューに合成肉っぽいことが書いてあったからぎりぎりセーフか、と思ったら・・・ 「学生バーグ」　　(･｡･) なんと、いつの間にか名称が変わっている。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>etc</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p><a href="http://www.jftc.go.jp/pressrelease/05.november/05111502.pdf" target="_blank">公正取引委員会、ステーキ屋「フォルクス」に対して排除命令。</a><br />
+牛の成型肉（牛の生肉，脂身等を人工的に結着し，形状を整えたもの）を「ステーキ」として売っていたそうな。<br />
+そういえば、ステーキのあさくまにも、<strong>「学生ステーキ」</strong>と称した、似たものがあったなぁ。こっちはメニューに合成肉っぽいことが書いてあったからぎりぎりセーフか、と思ったら・・・</p>
+
+<p><a href="http://www.asakuma.co.jp/cgi-bin/menu/ham/list.cgi" target="_blank">「学生バーグ」</a>　　(･｡･)</p>
+
+<p>なんと、いつの間にか名称が変わっている。<br />
+</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>高速道路技術センター</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000422.html" />
+    <modified>2005-10-31T15:45:22Z</modified>
+    <issued>2005-11-01T00:42:27+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.422</id>
+    <created>2005-10-31T15:42:27Z</created>
+    <summary type="text/plain">高速道路技術センターというところから、わび状がやってくる。 封を開けると、東日本／西日本／中日本高速道路会社と連名。 アンケートサイトにＳＳＬをつけ忘れたことに対するわび状とともに、ＱＵＯカード５００円分が入っていた。 やったことと詫び賃のバランスが取れていたのと、わび状が早かったことから、今回は不問に処す（笑）...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>高速道路技術センターというところから、わび状がやってくる。<br />
+封を開けると、東日本／西日本／中日本高速道路会社と連名。<br />
+アンケートサイトにＳＳＬをつけ忘れたことに対するわび状とともに、ＱＵＯカード５００円分が入っていた。<br />
+やったことと詫び賃のバランスが取れていたのと、わび状が早かったことから、今回は不問に処す（笑）</p>]]>
+      
+    </content>
+  </entry>
+  <entry>
+    <title>大規模改造</title>
+    <link rel="alternate" type="text/html" href="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/archives/000421.html" />
+    <modified>2005-10-27T17:48:14Z</modified>
+    <issued>2005-10-28T02:46:13+09:00</issued>
+    <id>tag:www.ycf.nanet.co.jp,2005:/~dre/cgi-bin/diary//1.421</id>
+    <created>2005-10-27T17:46:13Z</created>
+    <summary type="text/plain">ＤＩＯＮに残っていたページを、一括削除しました。 １ヶ月ほどは転送設定してありますが、転送が落ち着いた時点でＤＩＯＮのページは撤退予定です。...</summary>
+    <author>
+      <name>AND0</name>
+      <url>http://www1.ocn.ne.jp/~t.ando/</url>
+      <email>dre@ycf.nanet.co.jp</email>
+    </author>
+    <dc:subject>私的日記</dc:subject>
+    <content type="text/html" mode="escaped" xml:lang="en" xml:base="http://www.ycf.nanet.co.jp/~dre/cgi-bin/diary/">
+      <![CDATA[<p>ＤＩＯＮに残っていたページを、一括削除しました。<br />
+１ヶ月ほどは転送設定してありますが、転送が落ち着いた時点でＤＩＯＮのページは撤退予定です。</p>]]>
+      
+    </content>
+  </entry>
+
+</feed>

@@ -1,0 +1,9 @@
+*.pyc
+*.egg-info
+*.swp
+PKG-INFO
+/dist
+/build
+.hypothesis
+.cache
+.eggs

@@ -1,0 +1,78 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 LbTrafficExtension export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- extensionChains
+- forwardingRules
+- loadBalancingScheme
+- name
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  description:
+    description: A human-readable description of the resource.
+    type: string
+  extensionChains:
+    description: |-
+      A set of ordered extension chains that contain the match conditions and
+      extensions that will be executed. Match conditions for each extension
+      chain are evaluated in sequence for a given request. The first extension
+      chain that has a condition that matches the request will execute. Any
+      subsequent extension chains will not execute.
+    type: array
+    items:
+      $ref: ExtensionChain.yaml
+  forwardingRules:
+    description: |-
+      A list of references to the Forwarding Rules to which this service
+      extension will attach to in format:
+      projects/{project}/global/forwardingRules/{forwarding_rule} or
+      projects/{project}/regions/{region}/forwardingRules/{forwarding_rule}.
+      At least one forwarding rule is required. There can be only one
+      LBTrafficExtension resource per Forwarding Rule.
+    type: array
+    items:
+      type: string
+  labels:
+    description: |-
+      Set of label tags associated with the LbTrafficExtension resource.
+    $ref: LabelsValue.yaml
+  loadBalancingScheme:
+    description: |-
+      All backend services and forwarding rules referenced by this
+      extension must share the same load balancing scheme. Supported
+      values: INTERNAL_MANAGED, EXTERNAL_MANAGED. For more information,
+      refer to [Choosing a load balancer](https://cloud.google.com/load-
+      balancing/docs/backend-service).
+    type: string
+    enum:
+    - EXTERNAL_MANAGED
+    - INTERNAL_MANAGED
+    - LOAD_BALANCING_SCHEME_UNSPECIFIED
+  name:
+    description: |-
+      Name of the LbTrafficExtension resource. It matches pattern
+      `projects/{project}/locations/{location}/lbTrafficExtensions/{lb
+      _traffic_extension}`.
+    type: string

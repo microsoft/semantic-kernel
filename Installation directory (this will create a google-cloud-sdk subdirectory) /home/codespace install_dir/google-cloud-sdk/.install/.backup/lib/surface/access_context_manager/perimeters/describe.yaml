@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Show details about a service perimeter.
+    description: Show details about an service perimeter in a given access policy.
+
+  request:
+    collection: accesscontextmanager.accessPolicies.servicePerimeters
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
+    api_version: v1
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The service perimeter you want to show details about.
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:perimeter

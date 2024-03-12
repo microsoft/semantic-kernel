@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<!--
+Source: http://www.bbc.co.uk/hungarian/index.rdf
+Expect: windows-1250
+-->
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:cc="http://web.resource.org/cc/" xmlns="http://purl.org/rss/1.0/">
+   <channel rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/worldservice/us/index.shtml">
+      <title>BBCHungarian.com | Nyitólap | Hungarian News index</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/index.shtml</link>
+      <description>Jogvédelem BBC 2004</description>
+      <dc:language>hu</dc:language>
+      <dc:date>2005-06-27T09:54:11+00:00</dc:date>
+      <dc:copyright>Jogvédelem BBC 2004 : http://www.bbc.co.uk/hungarian/institutional/rss.shtml#copyright</dc:copyright>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <sy:updatePeriod>hourly</sy:updatePeriod>
+      <sy:updateFrequency>1</sy:updateFrequency>
+      <sy:updateBase>2005-06-27T09:54:11+00:00</sy:updateBase>
+      <image rdf:resource="http://www.bbc.co.uk/hungarian/images/furniture/syndication/bbchungarian_180x80.gif"/>
+      <items>
+         <rdf:Seq>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_rumsfeldiraq.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_globalwarm.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_glastonbury.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050625_iran.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_oilsixty.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_japanrobotguards.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_mandelson.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_chinausoil.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1320_prince_william/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1425_paris_show/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1832_stonehenge/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1142_factfile_migrat/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/worldservice/learningenglish/sport/tennis/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1432_live8/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/142_frida_kahlo/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1452_brussels/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/learningenglish/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1010_eu_differences/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1622_A380_jumbo/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1641_bolivia/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1411_ethiopia/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1456_anne_bankroft/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1624_kylie/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1341_tony_curtis/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/125_dutch_no/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1142_eu_milestones/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/040610_eu_parliament.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1740_mac_eu_smoke/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1819_oil_world/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1417_climate/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1555_pills/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1252_new_states/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/04/050420_popegoals.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1413_irak/index.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1144_ratzinger_life/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/hungarian/specials/1847_new_pope/"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2004/12/041223_carol.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2004/12/041223_panto.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_iranelextwo.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_chinausoil.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_afganistanus.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_brusseliraq.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_kukluxklan.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_hungintrajk.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_hunglibrary.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050606_szalayberzeviczy.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/05/050524_habsburginthung.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/05/050519_kunczeinthung.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_mandelson.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_oilsixty.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_migrationinternat.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_sonynewstrategy.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050621_perssonblair.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_japanrobotguards.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_newzeelanddrat.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_spym15.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050617_squireldanger.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050614_kgbphone.shtml"/>
+            <rdf:li rdf:resource="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050613_nanothingie.shtml"/>
+         </rdf:Seq>
+      </items>
+   </channel>
+   <image rdf:about="http://www.bbc.co.uk/hungarian/images/furniture/syndication/bbchungarian_180x80.gif">
+      <title>BBCHungarian.com</title>
+      <link>http://www.bbc.co.uk/hungarian/</link>
+      <url>http://www.bbc.co.uk/hungarian/images/furniture/syndication/bbchungarian_180x80.gif</url>
+   </image>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_rumsfeldiraq.shtml">
+      <title xml:lang="hu">Rumsfeld: még évekig tarthat a lázadás Irakban</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_rumsfeldiraq.shtml</link>
+      <description xml:lang="hu">Az amerikai védelmi miniszter elismerte azt is, hogy amerikai tisztviselők tárgyaltak iraki szunnita militánsokkal</description>
+      <dc:date>2005-06-27T04:44:06+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_globalwarm.shtml">
+      <title xml:lang="hu">Repülőipar és globális felmelegedés</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_globalwarm.shtml</link>
+      <description xml:lang="hu">Jelenleg a világ repülőgépei a szén-dioxid kibocsátásnak mintegy öt százalékáért felelősek</description>
+      <dc:date>2005-06-27T09:47:09+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_glastonbury.shtml">
+      <title xml:lang="hu">Véget ért a Glastonbury Fesztivál</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050627_glastonbury.shtml</link>
+      <description xml:lang="hu">Vasárnap ért véget a híres Glastonbury Fesztivál, amelyet pontosan 35 éve, 1970-ben rendeztek meg először</description>
+      <dc:date>2005-06-27T04:52:35+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050625_iran.shtml">
+      <title xml:lang="hu">Összefogásra buzdít az új iráni elnök</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050625_iran.shtml</link>
+      <description xml:lang="hu">Az új iráni elnök modern  és erős iszlám országot szeretne létrehozni, amely mintaként szolgálhat az egész világnak </description>
+      <dc:date>2005-06-25T14:12:38+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_oilsixty.shtml">
+      <title xml:lang="hu">Hatvandolláros rekordáron az olaj</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_oilsixty.shtml</link>
+      <description xml:lang="hu">A korábbi rekord olajárak sok gazdasági kárt okoztak, és hozzájárultak a globális gazdasági recesszióhoz is</description>
+      <dc:date>2005-06-24T11:59:13+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_japanrobotguards.shtml">
+      <title xml:lang="hu">Japán robotőrök</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_japanrobotguards.shtml</link>
+      <description xml:lang="hu">A japán irodákat és bevásárlóközpontokat hamarosan robotok fogják védeni betolakodók ellen</description>
+      <dc:date>2005-06-24T11:53:17+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_mandelson.shtml">
+      <title xml:lang="hu">Mandelson: 'Liberalizálni kell az EU szolgáltatási piacát'</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_mandelson.shtml</link>
+      <description xml:lang="hu">Mandelson a BBC-nek azt mondta, az energia, telekommunikációs, vasúti és postai szolgáltatások piacát meg kell nyitni a verseny előtt</description>
+      <dc:date>2005-06-24T13:58:15+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_chinausoil.shtml">
+      <title xml:lang="hu">Kínai cég tett ajánlatot az USA egyik legnagyobb olajtársaságára</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_chinausoil.shtml</link>
+      <description xml:lang="hu">Az Egyesült Államokban szenátusi bizottsági meghallgatáson foglalkoztak a Kína által támasztott úgymond "gazdasági fenyegetéssel". </description>
+      <dc:date>2005-06-24T16:33:25+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050624_williamgraduation.shtml">
+      <title xml:lang="hu">William herceg diplomaosztója</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1320_prince_william/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-24T13:26:46+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050622_parisair.shtml">
+      <title xml:lang="hu">Légi parádé Párizsban </title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1425_paris_show/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-22T19:29:12+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050622_stonehenge.shtml">
+      <title xml:lang="hu">Stonehenge napforduló</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1832_stonehenge/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-22T14:32:44+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2004/07/040718_migrationspecial.shtml">
+      <title xml:lang="hu">Migrációs robbanás</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1142_factfile_migrat/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-03-21T17:05:51+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/learningenglish/external_link/2005/06/050621_wimbledon.shtml">
+      <title xml:lang="hu">Wimbledon</title>
+      <link>http://www.bbc.co.uk/worldservice/learningenglish/sport/tennis/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-21T11:03:49+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, Learning English</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050601_live8pix.shtml">
+      <title xml:lang="hu">Live 8-ra készülve</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1432_live8/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-01T14:04:24+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050609_kahlopix.shtml">
+      <title xml:lang="hu">Frida Kahlo képei a Tate-ben</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/142_frida_kahlo/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-09T14:54:10+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050617_brusselsummit.shtml">
+      <title xml:lang="hu">EU csúcstalálkozó Brüsszelben</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1452_brussels/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-17T13:13:46+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/05/050526_wordsinthenews.shtml">
+      <title xml:lang="hu">Words in the news</title>
+      <link>http://www.bbc.co.uk/hungarian/learningenglish/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-05-26T16:43:19+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/05/050504_eudifferencespixs.shtml">
+      <title xml:lang="hu">Gazdasági különbségek az EU-n belül</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1010_eu_differences/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-05-04T14:48:25+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050613_a380jumbo.shtml">
+      <title xml:lang="hu">Az A380 premierje</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1622_A380_jumbo/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-13T15:57:40+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050610_boliviariots.shtml">
+      <title xml:lang="hu">Tüntetések Bolíviában</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1641_bolivia/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-10T15:48:28+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050609_ethiopiabloodshed.shtml">
+      <title xml:lang="hu">Vérontás Etiópiában</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1411_ethiopia/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-09T14:47:25+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050608_bancroft.shtml">
+      <title xml:lang="hu">Elhunyt Anne Bancroft</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1456_anne_bankroft/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-08T13:51:14+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/05/050517_kyliecareerpixs.shtml">
+      <title xml:lang="hu">Kylie karrierje</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1624_kylie/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-05-17T15:38:00+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050603_curtis80.shtml">
+      <title xml:lang="hu">Nyolcvan éves Tony Curtis</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1341_tony_curtis/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-03T12:55:35+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/06/050602_dutchnopixs.shtml">
+      <title xml:lang="hu">Hollandok a népszavazás után</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/125_dutch_no/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-06-02T13:00:23+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2004/07/040718_eumilestones.shtml">
+      <title xml:lang="hu">Mérföldkövek az EU történetében</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1142_eu_milestones/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-03-21T17:02:06+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2004/07/040719_euparliamnet.shtml">
+      <title xml:lang="hu">Európai Parlament</title>
+      <link>http://www.bbc.co.uk/hungarian/040610_eu_parliament.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-03-21T17:07:23+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2004/10/041028_tobaccoads.shtml">
+      <title xml:lang="hu">Sokkol és leszoktat?</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1740_mac_eu_smoke/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-03-15T12:42:06+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2004/10/041026_oil.shtml">
+      <title xml:lang="hu">A világ olajkészletei</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1819_oil_world/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-03-15T12:47:14+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/03/050324_climatechange.shtml">
+      <title xml:lang="hu"> Klímaváltozás – a világ négy égtáján</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1417_climate/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-03-24T19:47:34+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2004/12/041206_pillspatients.shtml">
+      <title xml:lang="hu"/>
+      <link>http://www.bbc.co.uk/hungarian/specials/1555_pills/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2004-12-06T11:08:11+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2004/07/040718_newstateseu.shtml">
+      <title xml:lang="hu">A kibővült Európa</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1252_new_states/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-04-29T13:44:04+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/04/050420_popegoals.shtml">
+      <title xml:lang="hu">XVI. Benedek célkitűzései</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/04/050420_popegoals.shtml</link>
+      <description xml:lang="hu">Első miséjén XVI. Benedek pápa kifejezte elkötelezettségét a Második Vatikáni Zsinat által meghatározott reformok iránt. </description>
+      <dc:date>2005-04-20T13:56:05+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/04/050412_irak2years.shtml">
+      <title xml:lang="hu">Irak, két évvel Szaddam után </title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1413_irak/index.shtml</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-04-12T15:48:40+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/04/050420_ratzinger_life.shtml">
+      <title xml:lang="hu">XVI. Benedek élete képekben</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1144_ratzinger_life/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-04-20T10:55:22+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/external_link/2005/04/050419_newpopepixs.shtml">
+      <title xml:lang="hu">Új vezetője van a katolikus egyháznak</title>
+      <link>http://www.bbc.co.uk/hungarian/specials/1847_new_pope/</link>
+      <description xml:lang="hu"/>
+      <dc:date>2005-04-19T17:51:54+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:type>External Link, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2004/12/041223_carol.shtml">
+      <title xml:lang="hu"/>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2004/12/041223_carol.shtml</link>
+      <description xml:lang="hu">Az angol karácsonyi dalok története</description>
+      <dc:date>2004-12-23T14:32:51+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2004/12/041223_panto.shtml">
+      <title xml:lang="hu"/>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2004/12/041223_panto.shtml</link>
+      <description xml:lang="hu">Egyedülálló angol színházi hagyomány</description>
+      <dc:date>2004-12-23T14:38:01+0000</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_iranelextwo.shtml">
+      <title xml:lang="hu">Választások Iránban</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_iranelextwo.shtml</link>
+      <description xml:lang="hu">Sok iráni szerint országuk most válaszút előtt áll, de azt nem tudni, melyik irányt választják majd</description>
+      <dc:date>2005-06-24T14:08:52+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_chinausoil.shtml">
+      <title xml:lang="hu">Kínai cég tett ajánlatot az USA egyik legnagyobb olajtársaságára</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_chinausoil.shtml</link>
+      <description xml:lang="hu">Az Egyesült Államokban szenátusi bizottsági meghallgatáson foglalkoztak a Kína által támasztott úgymond "gazdasági fenyegetéssel". </description>
+      <dc:date>2005-06-24T16:33:25+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_afganistanus.shtml">
+      <title xml:lang="hu">Több tucat talibánt öltek meg Afganisztánban</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_afganistanus.shtml</link>
+      <description xml:lang="hu">Az utóbbi néhány hónapban erőszakhullám söpört végig az országon, amelyért a tálibokat hibáztatják, és amely több száz ember halálát okozta</description>
+      <dc:date>2005-06-22T14:07:54+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_brusseliraq.shtml">
+      <title xml:lang="hu">Konferencia Irak jövőjéről</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_brusseliraq.shtml</link>
+      <description xml:lang="hu">Több mint nyolcvan ország és nemzetközi szervezet küldöttei vesznek részt a brüsszeli megbeszélésen</description>
+      <dc:date>2005-06-22T13:47:00+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_kukluxklan.shtml">
+      <title xml:lang="hu">Ku Klux Klán ítélet 41 év után</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_kukluxklan.shtml</link>
+      <description xml:lang="hu">Idős baptista prédikátort ítéltek el három gyilkosság 41 évvel ezelőtti kiterveléséért</description>
+      <dc:date>2005-06-22T05:30:26+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_hungintrajk.shtml">
+      <title xml:lang="hu">'Kultúra nélkül nincs gazdasági fejlődés'</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_hungintrajk.shtml</link>
+      <description xml:lang="hu">A BBC Magyar Adás vasárnapi interjú című műsorának vendége Rajk László volt</description>
+      <dc:date>2005-06-22T15:17:17+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_hunglibrary.shtml">
+      <title xml:lang="hu">A jövő könyvtárai</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_hunglibrary.shtml</link>
+      <description xml:lang="hu">Sokan jósolták, hogy a televízió, az Internet korában egyre veszít értékéből a könyv és a könyvtár</description>
+      <dc:date>2005-06-20T11:58:38+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050606_szalayberzeviczy.shtml">
+      <title xml:lang="hu">'A lényeg, hogy hosszú távon kell gondolkodni'</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050606_szalayberzeviczy.shtml</link>
+      <description xml:lang="hu">A BBC Magyar Adás vasárnapi interjújának vendége volt Szalay-Berzeviczy Attila, a Budapesti Értéktőzsde elnöke</description>
+      <dc:date>2005-06-06T10:34:36+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/05/050524_habsburginthung.shtml">
+      <title xml:lang="hu">'Mindig voltak feladataim és céljaim'</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/05/050524_habsburginthung.shtml</link>
+      <description xml:lang="hu">A BBC Magyar Adásának vasárnapi vendége volt Habsburg Ottó akivel Vincze András beszélgetett</description>
+      <dc:date>2005-05-24T10:46:32+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/05/050519_kunczeinthung.shtml">
+      <title xml:lang="hu">'Meg kell tudnunk szólítani a liberális szavazókat'</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/05/050519_kunczeinthung.shtml</link>
+      <description xml:lang="hu">A BBC Magyar Adásának vendége Kuncze Gábor, a Szabad Demokraták Szövetségének elnöke volt</description>
+      <dc:date>2005-05-19T10:45:11+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_mandelson.shtml">
+      <title xml:lang="hu">Mandelson: 'Liberalizálni kell az EU szolgáltatási piacát'</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_mandelson.shtml</link>
+      <description xml:lang="hu">Mandelson a BBC-nek azt mondta, az energia, telekommunikációs, vasúti és postai szolgáltatások piacát meg kell nyitni a verseny előtt</description>
+      <dc:date>2005-06-24T13:58:15+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_oilsixty.shtml">
+      <title xml:lang="hu">Hatvandolláros rekordáron az olaj</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_oilsixty.shtml</link>
+      <description xml:lang="hu">A korábbi rekord olajárak sok gazdasági kárt okoztak, és hozzájárultak a globális gazdasági recesszióhoz is</description>
+      <dc:date>2005-06-24T11:59:13+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_migrationinternat.shtml">
+      <title xml:lang="hu">Jelentés a nemzetközi bevándorlásról</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_migrationinternat.shtml</link>
+      <description xml:lang="hu">A Nemzetközi Migrációs Szervezet szerint a bevándorlók nem szipolyozzák ki a fogadó ország gazdaságát</description>
+      <dc:date>2005-06-22T11:34:27+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_sonynewstrategy.shtml">
+      <title xml:lang="hu">Új stratégiát választ a Sony</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_sonynewstrategy.shtml</link>
+      <description xml:lang="hu">Néhány éve még a Sony uralta az elektronikai piacot a walkmannel, a Playstationnel és más termékekkel.</description>
+      <dc:date>2005-06-22T11:07:17+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050621_perssonblair.shtml">
+      <title xml:lang="hu">Svéd - brit találkozó</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050621_perssonblair.shtml</link>
+      <description xml:lang="hu">Goran Persson svéd miniszterlnök Londonban tárgyal Tony Blair-rel az EU költségvetéséről</description>
+      <dc:date>2005-06-21T13:42:57+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_japanrobotguards.shtml">
+      <title xml:lang="hu">Japán robotőrök</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050624_japanrobotguards.shtml</link>
+      <description xml:lang="hu">A japán irodákat és bevásárlóközpontokat hamarosan robotok fogják védeni betolakodók ellen</description>
+      <dc:date>2005-06-24T11:53:17+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_newzeelanddrat.shtml">
+      <title xml:lang="hu">Patkány okozta káosz</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050622_newzeelanddrat.shtml</link>
+      <description xml:lang="hu">Egy patkány okolható jelentős részben az új-zélandi kommunikációs rendszerek összeomlásáért</description>
+      <dc:date>2005-06-22T10:46:55+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_spym15.shtml">
+      <title xml:lang="hu">Féltik a brit turistákat a kémektől</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050620_spym15.shtml</link>
+      <description xml:lang="hu">A titkosszolgálat arra figyelmezteti a briteket, hogy célpontjaivá válhatnak más országok hírszerzésének</description>
+      <dc:date>2005-06-20T10:16:44+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050617_squireldanger.shtml">
+      <title xml:lang="hu">Veszélyben a skót vörös mókusok</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050617_squireldanger.shtml</link>
+      <description xml:lang="hu">A mókushimlőt a brit félsziget délebbi területein élő szürke mókusok terjesztik, de rájuk nem jelent veszélyt</description>
+      <dc:date>2005-06-17T12:03:54+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050614_kgbphone.shtml">
+      <title xml:lang="hu">Mobiltelefon a KGB-től</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050614_kgbphone.shtml</link>
+      <description xml:lang="hu">A KGB utódja állítólag lehallgathatatlan mobiltelefont dobott piacra</description>
+      <dc:date>2005-06-14T02:58:23+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+   <item rdf:about="http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050613_nanothingie.shtml">
+      <title xml:lang="hu">A világ legkisebb keféje</title>
+      <link>http://www.bbc.co.uk/go/wsy/pub/rss/1.0/-/hungarian/news/story/2005/06/050613_nanothingie.shtml</link>
+      <description xml:lang="hu">Elkészítették a világ legkisebb keféjét, amelynek sörtéi ezerszer vékonyabbak az emberi hajszálnál</description>
+      <dc:date>2005-06-13T01:14:07+00:00</dc:date>
+      <dc:format>text/plain</dc:format>
+      <dc:language>hu</dc:language>
+      <dc:publisher>BBCHungarian.com</dc:publisher>
+      <dc:creator>http://www.bbc.co.uk/hungarian/</dc:creator>
+      <dc:type>Story, News</dc:type>
+   </item>
+</rdf:RDF>

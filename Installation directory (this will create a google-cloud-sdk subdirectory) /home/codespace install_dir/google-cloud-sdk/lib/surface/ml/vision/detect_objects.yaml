@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Detect and extract multiple objects in an image with object localization.
+    description: |
+      Detect and extract multiple objects in an image with object localization.
+
+      Object localization identifies multiple objects in an image
+      and provides a LocalizedObjectAnnotation for each object in the image.
+    examples: |
+      To detect objects for image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: OBJECT_LOCALIZATION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.model_field
+
+  output:
+    format: json

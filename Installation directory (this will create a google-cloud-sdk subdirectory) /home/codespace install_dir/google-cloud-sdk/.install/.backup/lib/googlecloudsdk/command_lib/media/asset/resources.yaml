@@ -1,0 +1,107 @@
+project:
+  name: project
+  collection: mediaasset.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: Cloud Project name.
+    property: core/project
+
+location:
+  name: location
+  collection: mediaasset.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    property: media_asset/location
+    help: Google Cloud location.
+
+operation:
+  name: operation
+  collection: mediaasset.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: Cloud Media Asset Operation.
+
+asset_type:
+  name: asset_type
+  collection: mediaasset.projects.locations.assetTypes
+  request_id_field: assetTypeId
+  attributes:
+  - *project
+  - *location
+  - &asset_type
+    parameter_name: assetTypesId
+    attribute_name: asset_type
+    help: Google Cloud Media Asset asset type.
+
+asset:
+  name: asset
+  collection: mediaasset.projects.locations.assetTypes.assets
+  request_id_field: assetId
+  attributes:
+  - *project
+  - *location
+  - *asset_type
+  - &asset
+    parameter_name: assetsId
+    attribute_name: asset
+    help: Google Cloud Media Asset asset.
+
+complex_type:
+  name: complex_type
+  collection: mediaasset.projects.locations.complexTypes
+  request_id_field: complexTypeId
+  attributes:
+  - *project
+  - *location
+  - &complex_type
+    parameter_name: complexTypesId
+    attribute_name: complex_type
+    help: Google Cloud Media Asset complex type.
+
+transformer:
+  name: transformer
+  collection: mediaasset.projects.locations.transformers
+  request_id_field: transformerId
+  attributes:
+  - *project
+  - *location
+  - &transformer
+    parameter_name: transformersId
+    attribute_name: transformer
+    help: Google Cloud Media Asset transformer.
+
+annotation_set:
+  name: annotation_set
+  collection: mediaasset.projects.locations.assetTypes.assets.annotationSets
+  attributes:
+  - *project
+  - *location
+  - *asset_type
+  - *asset
+  - &annotation_set
+    parameter_name: annotationSetsId
+    attribute_name: annotation_set
+    help: Google Cloud Media Asset annotation set
+
+annotation:
+  name: annotation
+  collection: mediaasset.projects.locations.assetTypes.assets.annotationSets.annotations
+  attributes:
+  - *project
+  - *location
+  - *asset_type
+  - *asset
+  - *annotation_set
+  - &annotation
+    parameter_name: annotationsId
+    attribute_name: annotation
+    help: Google Cloud Media Asset annotation

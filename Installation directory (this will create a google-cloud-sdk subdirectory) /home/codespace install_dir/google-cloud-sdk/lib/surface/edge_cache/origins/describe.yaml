@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Show details about an EdgeCacheOrigin resource.
+    description: Show details about an EdgeCacheOrigin resource.
+    examples: |
+      To show details about an EdgeCacheOrigin resource named 'my-origin', run:
+
+        $ {command} my-origin
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheOrigins
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The EdgeCacheOrigin resource you want to describe.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin

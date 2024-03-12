@@ -1,0 +1,50 @@
+os: linux
+dist: xenial
+language: python
+python:
+- 2.7
+- 3.4
+- 3.5
+- 3.6
+- 3.7
+- &mainstream_python 3.8
+- nightly
+- pypy
+- pypy3
+install:
+- pip install --upgrade --force-reinstall "setuptools; python_version != '3.3'" "setuptools < 40; python_version == '3.3'"
+- pip uninstall --yes six || true
+- pip install --upgrade --force-reinstall --ignore-installed -e .
+- pip install "pytest==4.6.9; python_version != '3.3'" "pytest==2.9.2; python_version == '3.3'" "typing; python_version < '3'"
+- &py_pkg_list pip list --format=columns || pip list
+script:
+- py.test
+- echo Checking whether installation flow is not broken...
+- pip uninstall --yes six || true
+- pip install --ignore-installed .
+- *py_pkg_list
+jobs:
+  fast_finish: true
+  include:
+  - python: 3.3
+    dist: trusty
+  - stage: upload new version of python package to PYPI (only for tagged commits)
+    python: *mainstream_python
+    install: skip
+    script: skip
+    deploy:
+      provider: pypi
+      on:
+        tags: true
+        all_branches: true
+        python: *mainstream_python
+      user: __token__
+      distributions: "sdist bdist_wheel"
+      password:
+        secure: "F83KFmQnpBcR/BD7tBjJcmchvvoxYjIB0EDmDKEM+Rq1SJUH0qtYZlMJ0H4S8sTeY4+h26Ssfg5+oe9SqS5AkEMLFVM2lDcFtIXNR9bIvsXjkKsdxIWZJJ+Vl7EmW+ND/oj9IWnHOvaPr6F1YQqOuP2LfrDsoZ+4wo4X+UCC8xCGCaAIliPIt6y7U3ENeCQJTwUc93eDMZrEROmWAwsxF54a13CIkbTWe+S3iEp949MaNBWx2f9XNi7Gidk2gKUKordK0MXiO7+DcrQdiCAtPryqqNKR/JjZ66P9eK1A2VWyk65/5E8+OJeexuSlHGg52HKoXU2BPIkzgcaSjt79WQKVKJzYi2iD0Bd/9/RKrnq8+GVd0yT5IJV5OhwcpT0ScPs/9pAZ1mSEufx1FtXN61ujs2VEuleSQAWBiNGXsRQNCzVxgfatkUTNMjB0jxUzNay5CFrMlo5AVWBcdByhUto3szV/lxLj7arM48GHXaf+5MXhaELU8L2pTpJoQ8Rdj+Tx5HbhJ+wWF6EyT919prB2/6fM4d/MHIuHfJkCasYZSvhamGnTBzxxH9Fv7l18FyrBXF+Rz65mXVkUlxFMICSMWRJWEb4I2KWK1bsxCFy+o38TMeije+1nbvKVRKbLMn6mbXfBb/wfLTNogHFXrlR5VcugcP079dqR9O3iV4M="
+
+cache:
+  pip: true
+after_failure:
+- echo "Here's a list of installed Python packages:"
+- *py_pkg_list

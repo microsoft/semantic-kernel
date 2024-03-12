@@ -1,0 +1,52 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Create a new composite index.
+    description: Create a new composite index.
+    examples: |
+      The following command creates a composite index with fields `user_id` (in descending order)
+      followed by `timestamp` (in descending order) in the `Events` collection group.
+
+        $ {command} --collection-group=Events \
+            --field-config=field-path=user-id,order=descending \
+            --field-config=field-path=timestamp,order=descending
+
+        $ {command} --database=(default) --collection-group=Events \
+            --field-config=field-path=user-id,order=descending \
+            --field-config=field-path=timestamp,order=descending
+
+  request:
+    collection: firestore.projects.databases.collectionGroups.indexes
+    display_resource_type: index
+    modify_request_hooks:
+    # Normally we would perform this validation when parsing the '--field-config' arg but then we
+    # would have to write a whole custom 'type' hook and we would miss out on the built-in
+    # declarative ArgDict support. It's easier and it involves less custom hook code to do it here
+    # (which still happens before the API request is made, so ultimately it's not that much
+    # different).
+    - googlecloudsdk.command_lib.firestore.util:ValidateFieldConfig
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.firestore.util:ExtractOperationMetadata
+
+  async:
+    collection: firestore.projects.databases.operations
+    api_version: v1
+    extract_resource_result: false
+
+  arguments:
+    resource:
+      help_text: Collection group of the index.
+      is_positional: false
+      is_parent_resource: true
+      spec: !REF googlecloudsdk.command_lib.firestore.resources:collection_group
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:field_config
+      release_tracks: [BETA, GA]
+      required: true
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:field_config_alpha
+      release_tracks: [ALPHA]
+      required: true
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:query_scope
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:api_scope

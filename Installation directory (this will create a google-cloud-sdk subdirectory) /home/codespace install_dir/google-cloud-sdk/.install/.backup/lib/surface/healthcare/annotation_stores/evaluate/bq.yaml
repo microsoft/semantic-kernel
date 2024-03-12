@@ -1,0 +1,57 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief:  Evaluate a Cloud Healthcare API Annotation store and report to BigQuery.
+    description: Evaluate Cloud Healthcare API Annotation store against a ground truth store and report the results to BigQuery.
+    examples: |
+      To evaluate the annotation-store 'eval-annotation-store' against a ground truth annotation-store
+      `projects/my-project/locations/my-location/datasets/test-dataset/annotationStores/golden-annotation-store`,
+      and report the metric to the BigQuery table `bqtable` in the BigQuery dataset `bqdataset`, run:
+
+        $ {command} eval-annotation-store --golden-store=projects/my-project/locations/my-location/datasets/test-dataset/annotationStores/golden-annotation-store --bq-table=bq://my-project.bqdataset.bqtable --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.annotationStores
+    method: evaluate
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API Annotation store to be evaluated.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:annotation_store
+
+
+    params:
+    - arg_name: golden-store
+      api_field: evaluateAnnotationStoreRequest.goldenStore
+      required: true
+      help_text: |
+        Ground truth AnnotationStore to compare against.
+    - arg_name: bq-table
+      api_field: evaluateAnnotationStoreRequest.bigqueryDestination.tableUri
+      required: true
+      help_text: |
+        BigQuery table where evaluation results are written.
+    - arg_name: write-disposition
+      api_field: evaluateAnnotationStoreRequest.bigqueryDestination.writeDisposition
+      help_text: |
+        Determines whether existing table in the destination dataset are overwritten or appended to.
+      type: str
+      choices:
+      - arg_value: write-empty
+        enum_value: WRITE_EMPTY
+        help_text: |
+          Only export data if the destination table is empty.
+      - arg_value: write-truncate
+        enum_value: WRITE_TRUNCATE
+        help_text: |
+          Erase all existing data in a table before writing the instances.
+      - arg_value: write-append
+        enum_value: WRITE_APPEND
+        help_text: |
+          Append data to the existing table.
+  async:
+    collection: healthcare.projects.locations.datasets.operations

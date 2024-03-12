@@ -1,0 +1,43 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Container node pool.
+  description: |
+    *{command}* exports the configuration for a Container node pool.
+
+    Node pool configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    node pools within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a node pool, run:
+
+      $ {command} my-node-pool
+
+    To export the configuration for a node pool to a file, run:
+
+      $ {command} my-node-pool --path=/path/to/dir/
+
+    To export the configuration for a node pool in Terraform
+    HCL format, run:
+
+      $ {command} my-node-pool --resource-format=terraform
+
+    To export the configurations for all node pools within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Node pool to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.container.clusters.resources:node_pool
+    # Inherited from node-pools command.
+    removed_flags: ['location']
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'location'

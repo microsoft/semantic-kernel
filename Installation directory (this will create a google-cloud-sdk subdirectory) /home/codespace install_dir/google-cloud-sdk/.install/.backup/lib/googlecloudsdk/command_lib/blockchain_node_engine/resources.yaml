@@ -1,0 +1,50 @@
+project:
+  name: project
+  collection: blockchainnodeengine.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: |
+      Name of the Cloud project to use.
+    property: core/project
+
+location:
+  name: location
+  collection: blockchainnodeengine.projects.locations
+  disable_auto_completers: false
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: |
+      Location of the blockchain node resource.
+    property: web3/location
+
+node:
+  name: node
+  collection: blockchainnodeengine.projects.locations.blockchainNodes
+  disable_auto_completers: false
+  request_id_field: blockchainNodeId
+  attributes:
+  - *project
+  - *location
+  - &node
+    parameter_name: blockchainNodesId
+    attribute_name: node_name
+    help: |
+      Name of the blockchain node resource.
+
+operation:
+  name: operation
+  collection: blockchainnodeengine.projects.locations.operations
+  disable_auto_completers: false
+  attributes:
+  - *project
+  - *location
+  - &operation
+    parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      Long running operation on a Blockchain Node Engine resource.

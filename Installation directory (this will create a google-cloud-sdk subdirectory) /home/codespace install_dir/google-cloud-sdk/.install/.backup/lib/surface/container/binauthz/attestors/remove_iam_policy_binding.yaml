@@ -1,0 +1,33 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Remove IAM policy binding of a Binary Authorization attestor.
+  description: |
+    Remove an IAM policy binding from the IAM policy of a Binary Authorization attestor. One binding consists of a
+    member, a role, and an optional condition.
+
+  examples: |
+    To remove an IAM policy binding for the role of `roles/binaryauthorization.attestorsEditor` for the user `test-user@gmail.com`
+    on attestor `my_attestor`, run:
+
+      $ {command} my_attestor --member='user:test-user@gmail.com' --role='roles/binaryauthorization.attestorsEditor'
+
+    To remove an IAM policy binding which expires at the end of the year 2018 for the role of
+    `roles/binaryauthorization.attestorsEditor` and the user `test-user@gmail.com` on attestor `my_attestor`, run:
+
+      $ {command} my_attestor --member='user:test-user@gmail.com' --role='roles/binaryauthorization.attestorsEditor' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: options_requestedPolicyVersion
+
+request:
+  collection: binaryauthorization.projects.attestors
+
+arguments:
+  resource:
+    help_text: The Binary Authorization attestor whose IAM policy to remove an IAM policy binding from.
+    spec: !REF googlecloudsdk.command_lib.container.resources:attestor

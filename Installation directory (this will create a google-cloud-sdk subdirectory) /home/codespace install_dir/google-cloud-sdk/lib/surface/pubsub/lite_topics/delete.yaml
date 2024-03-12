@@ -1,0 +1,26 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Delete a Pub/Sub Lite topic.
+  description: Delete a Pub/Sub Lite topic.
+  examples: |
+    To delete a Pub/Sub Lite topic, run:
+
+        $ {command} mytopic \
+            --location=us-central1-a
+
+request:
+  collection: pubsublite.admin.projects.locations.topics
+  method: delete
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+
+arguments:
+  resource:
+    help_text: Topic to delete.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_topic
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone

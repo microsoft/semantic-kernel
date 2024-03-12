@@ -1,0 +1,45 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 BareMetalIslandModeCidrConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- podAddressCidrBlocks
+- serviceAddressCidrBlocks
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  podAddressCidrBlocks:
+    description: |-
+      All pods in the cluster are assigned an RFC1918 IPv4 address from these
+      ranges. This field cannot be changed after creation.
+    type: array
+    items:
+      type: string
+  serviceAddressCidrBlocks:
+    description: |-
+      All services in the cluster are assigned an RFC1918 IPv4 address from
+      these ranges. This field is mutable after creation starting with
+      version 1.15.
+    type: array
+    items:
+      type: string

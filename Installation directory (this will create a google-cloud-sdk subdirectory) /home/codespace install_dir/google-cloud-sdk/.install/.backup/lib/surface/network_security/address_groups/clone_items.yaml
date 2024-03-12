@@ -1,0 +1,40 @@
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: |
+    Clone items from source address group.
+  description: |
+    Clone items from source address group.
+
+  examples: |
+    Clone items from source address group named ``other-address-group''.
+
+      $ {command} my-address-group --source=projects/other/locations/global/other-address-group
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:addressGroup
+    help_text: Name of the address group to be updated.
+  params:
+  - arg_name: source
+    api_field: cloneAddressGroupItemsRequest.sourceAddressGroup
+    help_text: Source address group to be cloned from.
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  method: cloneItems
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.network_security.util:FormatSourceAddressGroup
+  collection: networksecurity.projects.locations.addressGroups
+
+response:
+  modify_response_hooks:
+  - googlecloudsdk.command_lib.network_security.util:LogCloneItemsSuccess

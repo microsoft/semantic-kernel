@@ -1,0 +1,26 @@
+- release_tracks: [BETA, GA]
+  BETA:
+    deprecate:
+      is_removed: false
+      warning: |
+        This command has been deprecated.
+        Use `gcloud datastream streams delete` instead.
+  help_text:
+    brief: |
+      Delete a Datastream stream.
+    description: |
+      Deletes a stream.
+    examples: |
+      To delete a stream:
+
+          $ {command} STREAM --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.streams
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: |
+        Stream resource - Stream to delete.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:stream

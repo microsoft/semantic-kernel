@@ -1,0 +1,30 @@
+- release_tracks: [GA, ALPHA]
+
+  help_text:
+    brief: Delete an OS policy assignment
+    description: |
+      Delete an OS policy assignment
+      ## EXAMPLES
+
+      To delete an OS policy `my-assignment` in location `us-central1-a`:
+
+        $ {command} my-assignment --location=us-central1-a
+
+  request:
+    collection: osconfig.projects.locations.osPolicyAssignments
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  async:
+    collection: osconfig.projects.locations.osPolicyAssignments.operations
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: OS policy assignment to delete.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:os_policy_assignment

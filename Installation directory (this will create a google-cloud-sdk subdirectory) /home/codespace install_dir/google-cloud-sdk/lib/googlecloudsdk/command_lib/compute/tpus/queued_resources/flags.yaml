@@ -1,0 +1,294 @@
+# Copyright 2022 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+node_id:
+  arg_name: node-id
+  required: true
+  help_text: |
+    Unqualified node identifier used to identify the node in the project once provisioned.
+
+    To request a resource with multiple nodes, in place of `--node-id`, use `--node-count` to
+    specify the number of nodes and optionally use `--node-prefix` to specify the prefix for each
+    node.
+node_count:
+  arg_name: node-count
+  required: true
+  type: int
+  help_text: |
+    The number of nodes in a multislice provision, also used to generate the qualified name for
+    nodes in the provision. Value must be greater than 1.
+
+node_prefix:
+  arg_name: node-prefix
+  help_text: |
+    Node prefix used to generate the qualified name of each node the multislice node provision. If
+    not supplied, the queued resource id will be used as the prefix.
+
+    Must also specify `--node-count`.
+
+accelerator_type:
+  arg_name: accelerator-type
+  type: googlecloudsdk.command_lib.util.hooks.types:LowerCaseType
+  help_text: |
+    Accelerator type for the TPU.
+
+runtime_version:
+  arg_name: runtime-version
+  required: true
+  help_text: |
+    Runtime version for the TPU, such as `2.3`.
+
+best_effort:
+  arg_name: best-effort
+  type: bool
+  action: store_true
+  help_text: |
+    If provided, the Node requested here may be scheduled at the 'best effort' tier.
+
+spot:
+  arg_name: spot
+  type: bool
+  action: store_true
+  help_text: |
+    If provided, the Node requested here will be created as Spot VMs.
+
+guaranteed:
+  arg_name: guaranteed
+  type: bool
+  action: store_true
+  help_text: |
+    If provided, the Node requested here will only be scheduled at the 'guaranteed' tier.
+
+min_duration:
+  arg_name: min-duration
+  api_field: queuedResource.guaranteed.minDuration
+  help_text: |
+    The minimum period of time the Node is needed. If specified, the requested Node will only
+    be scheduled if there is sufficient capacity for the given duration.
+
+    If this flag is set the guaranteed flag is also set.
+
+reserved:
+  arg_name: reserved
+  type: bool
+  action: store_true
+  default: null
+  help_text: |
+    Specifies the request should be scheduled on reserved capacity.
+
+    If `--reservation-host-project`, `--reservation-host-folder`, or
+    `--reservation-host-organization` are present then this flag has no effect.
+
+valid_after_duration:
+  arg_name: valid-after-duration
+  type: googlecloudsdk.core.util.times:ParseDuration
+  processor: googlecloudsdk.core.util.times:FormatDurationForJson
+  api_field: queuedResource.queueingPolicy.validAfterDuration
+  help_text: |
+    A duration before which the TPU must not be provisioned, relative to the current time.
+    See $ gcloud topic datetimes for information on duration formats.
+
+valid_after_time:
+  arg_name: valid-after-time
+  type: googlecloudsdk.core.util.times:ParseDateTime
+  processor: googlecloudsdk.core.util.times:FormatDateTime
+  api_field: queuedResource.queueingPolicy.validAfterTime
+  help_text: |
+    An absolute time before which the TPU must not be provisioned.
+    See $ gcloud topic datetimes for information on duration formats.
+
+valid_until_duration:
+  arg_name: valid-until-duration
+  type: googlecloudsdk.core.util.times:ParseDuration
+  processor: googlecloudsdk.core.util.times:FormatDurationForJson
+  api_field: queuedResource.queueingPolicy.validUntilDuration
+  help_text: |
+    A duration after which the TPU must not be provisioned, relative to the current time.
+    See $ gcloud topic datetimes for information on duration formats.
+
+valid_until_time:
+  arg_name: valid-until-time
+  type: googlecloudsdk.core.util.times:ParseDateTime
+  processor: googlecloudsdk.core.util.times:FormatDateTime
+  api_field: queuedResource.queueingPolicy.validUntilTime
+  help_text: |
+    An absolute time after which resources must not be created.
+    See $ gcloud topic datetimes for information on duration formats.
+
+internal_ips:
+  arg_name: internal-ips
+  type: bool
+  action: store_true
+  default: false  # note that user-facing flag is inverse of API enable_external_ips flag
+  help_text: |
+    Indicates that the IP addresses for the node should be internal. The default is that external IP
+    addresses will be associated with the TPU workers.
+
+reservation_host_project:
+  arg_name: reservation-host-project
+  help_text: |
+    The project hosting the reservation that the TPU should use. Only one reservation host entity
+    may be specified.
+
+reservation_host_folder:
+  arg_name: reservation-host-folder
+  help_text: |
+    The folder hosting the reservation that the TPU should use. Only one reservation host entity
+    may be specified.
+
+reservation_host_organization:
+  arg_name: reservation-host-organization
+  help_text: |
+    The organization hosting the reservation that the TPU should use. Only one reservation host
+    entity may be specified.
+
+force:
+  arg_name: force
+  type: bool
+  help_text: |
+    If set to true, any nodes in this queued resource will also be deleted.
+    Otherwise, the request will only work if the queued resource has no nodes.
+
+network:
+  arg_name: network
+  help_text: |
+    Network that this TPU will be a part of.
+  default: 'default'
+
+subnetwork:
+  arg_name: subnetwork
+  help_text: |
+    Subnetwork that this TPU will be a part of.
+
+service_account:
+  arg_name: service-account
+  help_text: |
+    Email address of the service account. If empty, default Google Compute Engine service
+    account will be used.
+
+service_account_scopes:
+  arg_name: scopes
+  type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+  help_text: |
+    List of comma-separated scopes to be made available for the service account.
+
+tags:
+  arg_name: tags
+  type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+  required: false
+  help_text: |
+    Tags to apply to the TPU Node. Tags are used to identify valid sources or
+    targets for network firewalls. See https://cloud.google.com/vpc/docs/add-remove-network-tags for
+    more details.
+
+data_disks:
+  api_field: queuedResource.tpu.nodeSpec.node.dataDisks
+  arg_name: data-disk
+  type:
+    arg_dict:
+      flatten: false
+      spec:
+      - api_field: sourceDisk
+        arg_name: source
+        type: str
+        required: true
+      - api_field: mode
+        arg_name: mode
+        type: str
+        required: false
+        choices:
+        - arg_value: read-write
+          enum_value: READ_WRITE
+        - arg_value: read-only
+          enum_value: READ_ONLY
+  required: false
+  help_text: |
+    Additional data disks for the TPU VM.
+
+    This flag must be repeated to provide multiple data disks. For example:
+
+      $ {command} --data-disk source=projects/my-project/zones/us-central1-c/disks/my-disk,mode=read-only
+
+    The following keys are allowed:
+
+    *source*::: Specifies the full path to an existing disk. Required. The disk must be in the same zone.
+
+    *mode*::: Specifies the mode in which to attach this disk. Valid options are 'read-write',
+    'read-only'. If not specified, the default is 'read-write'.
+
+description:
+  arg_name: description
+  required: false
+  help_text: |
+    Text description of the TPU.
+
+labels:
+  arg_name: labels
+  metavar: KEY=VALUE
+  type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+  required: false
+  help_text: |
+    Resource labels to represent user-provided metadata. See
+    https://cloud.google.com/compute/docs/labeling-resources for details.
+
+range: &range
+  arg_name: range
+  help_text: |
+    CIDR range for the TPU.
+
+    The IP range that the TPU will select an IP address from.
+    Must be in CIDR notation and a `/29` range, for example
+    `192.168.0.0/29`. Errors will occur if the CIDR range has already been
+    used for a currently existing TPU, the CIDR range conflicts with any
+    networks in the user's provided network, or the provided network is
+    peered with another network that is using that CIDR range.
+
+enable_secure_boot:
+  arg_name: shielded-secure-boot
+  type: bool
+  default: false
+  required: false
+  help_text: |
+    Specifies that the TPU instances are created with secure boot enabled. This implicitly makes
+    them Shielded VM instances.
+
+autocheckpoint_enabled:
+  arg_name: autocheckpoint-enabled
+  api_field: queuedResource.tpu.nodeSpec.node.autocheckpointEnabled
+  type: bool
+  default: false
+  required: false
+  help_text: |
+    Specifies that the TPU node(s) are created with the Autocheckpoint feature enabled.
+
+boot_disk:
+  api_field: queuedResource.tpu.nodeSpec.node.bootDiskConfig
+  arg_name: boot-disk
+  required: false
+  metavar: KEY=VALUE
+  type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+  help_text: |
+    Specifies if the boot disk should be created in confidential-compute mode.
+
+      $ {command} \
+            --boot-disk confidential-compute=True,kms-key=<full_kms_key_name_here>
+
+    The following keys are allowed:
+
+    *confidential-compute*::: Create the boot disk in confidential compute mode,
+     CMEK layer is required and only applicable to HyperDisk series.
+
+    *kms-key*::: Specifies fully qualified Cloud KMS cryptokey name
+    which will be used to protect the disk. KMS cryptokey name format:
+      projects/<kms-project>/locations/<kms-location>/keyRings/<kms-keyring>/cryptoKeys/<key-name>

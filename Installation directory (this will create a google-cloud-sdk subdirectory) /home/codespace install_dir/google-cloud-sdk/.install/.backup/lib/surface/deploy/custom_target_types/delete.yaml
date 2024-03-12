@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Delete a custom target type.
+    description: Delete a custom target type for a specified region.
+    examples: |
+      The following command will delete custom target type `test-custom-target-type`, in region `us-central1`:
+
+        $ {command} test-custom-target-type --region=us-central1
+
+  request:
+    collection: clouddeploy.projects.locations.customTargetTypes
+    api_version: v1
+
+  async:
+    collection: clouddeploy.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the custom target type to delete.
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:custom_target_type
+      is_positional: true

@@ -1,0 +1,25 @@
+release_tracks: [GA]
+command_type: GENERIC
+help_text:
+  brief: Star a Data Catalog entry.
+  description: Star a Data Catalog entry.
+  examples: |-
+    To star the entry 'entry1' in the group 'group1', run:
+
+      $ {command} entry1 \
+          --entry-group=group1 --location=us-central1
+
+request:
+  api_version: v1
+  method: star
+  collection: datacatalog.projects.locations.entryGroups.entries
+
+arguments:
+  resource:
+    help_text: Entry to star.
+    spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+    is_positional: true
+
+response:
+  modify_response_hooks:
+  - googlecloudsdk.command_lib.data_catalog.entries.util:LogStarSuccess

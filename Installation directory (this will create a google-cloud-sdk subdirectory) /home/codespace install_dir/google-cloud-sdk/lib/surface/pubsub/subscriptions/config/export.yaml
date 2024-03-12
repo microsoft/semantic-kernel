@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Pub/Sub subscription.
+  description: |
+    *{command}* exports the configuration for a Pub/Sub subscription.
+
+    Subscription configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    subscriptions within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a subscription, run:
+
+      $ {command} my-subscription
+
+    To export the configuration for a subscription to a file, run:
+
+      $ {command} my-subscription --path=/path/to/dir/
+
+    To export the configuration for a subscription in Terraform
+    HCL format, run:
+
+      $ {command} my-subscription --resource-format=terraform
+
+    To export the configurations for all subscriptions within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Subscription to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:subscription

@@ -1,0 +1,59 @@
+- &GA
+  release_tracks: [GA]
+  help_text:
+    brief: View the list of all your Cloud DNS policies.
+    description: |
+      Displays the list of all Cloud DNS policies in a given project.
+      ## EXAMPLES
+
+      To see the list of all policies, run:
+
+        $ {command}
+
+      To see the list of first 10 policies, run:
+
+        $ {command} --limit=10
+
+  request:
+    collection: dns.policies
+    method: list
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The project you want to list policies for.
+      spec: !REF googlecloudsdk.command_lib.dns.resources:project
+
+
+  output:
+    format: |
+      table(name,
+            description,
+            enableInboundForwarding:label=FORWARDING,
+            enableLogging:label=LOGGING,
+            alternativeNameServerConfig.targetNameServers.extract(
+            ipv4Address).map().join(", ").list():label=ALTERNATE_NAME_SERVERS,
+            networks.firstof(networkUrl).map().scope().join(", "):label=NETWORKS
+      )
+
+- <<: *GA
+
+  release_tracks: [ALPHA, BETA]
+  request:
+    collection: dns.policies
+    method: list
+    api_version: v1beta2
+
+  output:
+    format: |
+      table(name,
+            description,
+            enableInboundForwarding:label=FORWARDING,
+            enableLogging:label=LOGGING,
+            alternativeNameServerConfig.targetNameServers.extract(
+            ipv4Address).map().join(", ").list():label=ALTERNATE_NAME_SERVERS,
+            networks.firstof(networkUrl).map().scope().join(", "):label=NETWORKS
+      )

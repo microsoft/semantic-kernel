@@ -1,0 +1,48 @@
+language: python
+sudo: false
+
+matrix:
+  include:
+  - python: 2.7
+    env: TOX_ENV=flake8
+  - python: 2.7
+    env: TOX_ENV=docs
+  - python: 2.7
+    env: TOX_ENV=gae
+  - python: 2.7
+    env: TOX_ENV=py27
+  - python: 3.4
+    env: TOX_ENV=py34
+  - python: 3.5
+    env: TOX_ENV=py35
+  - python: 2.7
+    env: TOX_ENV=system-tests
+  - python: 3.4
+    env: TOX_ENV=system-tests3
+  - python: 2.7
+    env: TOX_ENV=cover
+env:
+  global:
+  - GAE_PYTHONPATH=${HOME}/.cache/google_appengine
+cache:
+  directories:
+  - ${HOME}/.cache
+  - ${HOME}/.pyenv
+install:
+- ./scripts/install.sh
+script:
+- ./scripts/run.sh
+after_success:
+- if [[ "${TOX_ENV}" == "cover" ]]; then coveralls; fi
+notifications:
+  email: false
+
+deploy:
+  provider: pypi
+  user: gcloudpypi
+  distributions: sdist bdist_wheel
+  password:
+    secure: "C9ImNa5kbdnrQNfX9ww4PUtQIr3tN+nfxl7eDkP1B8Qr0QNYjrjov7x+DLImkKvmoJd3dxYtYIpLE9esObUHu0gKHYxqymNHtuAAyoBOUfPtmp0vIEse9brNKMtaey5Ngk7ZWz9EHKBBqRHxqgN+Giby+K9Ta3K3urJIq6urYhE="
+  on:
+    tags: true
+    repo: google/oauth2client

@@ -1,0 +1,81 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Restore a Dataproc Metastore service.
+    description: |
+      Restore a Dataproc Metastore service from the given backup or backup-location
+
+      If run asynchronously with `--async`, exits after printing
+      an operation name that can be used to poll the status of the
+      creation via:
+
+        {top_command} metastore operations describe
+    examples: |
+      To restore a Dataproc Metastore service with the name `my-service` from the backup
+      `my-backup` with a `FULL` restore type, run:
+
+          $ {command} my-service --backup=my-backup --restore-type=full
+
+      To restore a Dataproc Metastore service with the name `my-service` from the backup-location
+      `gs://gcs_bucket` with a `FULL` restore type, run:
+
+          $ {command} my-service --backup-location=gs://gcs_bucket --restore-type=full
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.backups.util:UpdateBackupV1Alpha
+    BETA:
+      api_version: v1beta
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.backups.util:UpdateBackupV1Beta
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.backups.util:UpdateBackupV1
+    collection: metastore.projects.locations.services
+    method: restore
+
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the Dataproc Metastore service
+        you want to restore.
+      spec: !REF googlecloudsdk.command_lib.metastore.resources:service
+    params:
+    - group:
+        help_text: |
+          The backup resource or the location of the backup artifacts to store from.
+        required: true
+        mutex: true
+        params:
+        - arg_name: backup
+          api_field: restoreServiceRequest.backup
+          help_text:  |
+            The backup resource to restore from.
+            This can be the backup's ID, fully-qualified URL, or relative name in the form
+            `projects/{project_id}/locations/{location_id}/services/{service_id}/backups/{backup_id}`.
+        - arg_name: backup-location
+          api_field: restoreServiceRequest.backupLocation
+          help_text:  |
+            The location of the backup artifacts to restore from.
+            This should be a Cloud Storage URI, contains backup avro files under "avro/",
+            backup_metastore.json and service.json, in the form `gs://<path_to_backup>`.
+    - arg_name: restore-type
+      api_field: restoreServiceRequest.restoreType
+      help_text:  |
+        The type of restore to perform.
+      default: metadata-only
+      choices:
+      - arg_value: full
+        enum_value: FULL
+        help_text:  |
+          The service's metadata and configuration are restored.
+      - arg_value: metadata-only
+        enum_value: METADATA_ONLY
+        help_text:  |
+          Only the service's metadata is restored.
+
+  async:
+    collection: metastore.projects.locations.operations

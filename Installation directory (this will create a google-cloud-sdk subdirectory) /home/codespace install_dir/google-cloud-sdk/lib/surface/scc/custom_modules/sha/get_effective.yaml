@@ -1,0 +1,64 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Get the details of a Security Health Analytics custom module with effective enablement state.
+    description: |
+      Get the details of a Security Health Analytics custom module. For inherited custom modules,
+      the get-effective command resolves INHERITED enablement states to ENABLED or DISABLED.
+      For example, if an inherited custom module is enabled at the ancestor level, then the
+      get-effective command displays the enablement state as ENABLED instead of INHERITED in a
+      child folder or project.
+    examples: |
+      To get the details of a Security Health Analytics custom module 123456 with its effective enablement state
+      from organization `123`, run:
+
+        $ {command} 123456 --organization=organizations/123
+
+      To get the details of a Security Health Analytics custom module 123456 with its effective enablement state
+      from folder `456`, run:
+
+        $ {command} 123456 --folder=folders/456
+
+      To get the details of a Security Health Analytics custom module 123456 with its effective enablement state
+      from project `789`, run:
+
+        $ {command} 123456 --project=projects/789
+
+  request:
+    collection: securitycenter.organizations.securityHealthAnalyticsSettings.effectiveCustomModules
+    disable_resource_check: true
+    api_version: v1
+    method: get
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.sha.request_hooks:GetEffectiveSecurityHealthAnalyticsCustomModuleReqHook
+
+  arguments:
+
+    params:
+    - arg_name: custom_module
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        ID or the full resource name of the effective Security Health Analytics custom module. If you specify the full resource name, you do not need to specify the --organization, --folder, or --project flags.
+
+    - group:
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: name
+          help_text: |
+            Organization from which to get the custom module details. Formatted as
+            `organizations/123` or just `123`.
+
+        - arg_name: folder
+          api_field: name
+          help_text: |
+            Folder from which to get the custom module details. Formatted as `folders/456`
+            or just `456`.
+
+        - arg_name: project
+          api_field: name
+          help_text: |
+            ID or number of the project from which to get the custom module details. Formatted as
+            `projects/789` or just `789`.

@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Undelete a service account for a project.
+    description: |
+      Undelete a service account for a project.
+
+      If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
+    examples: |
+      The following command undeletes a service account with unique id
+      `103271949540120710052`:
+
+        $ {command} 103271949540120710052
+
+  arguments:
+    params:
+    - arg_name: account_id
+      api_field: name
+      required: true
+      is_positional: true
+      help_text: |
+          The deleted service account's unique ID must be provided when using the undelete command.
+          Unique IDs are a 21 digit number, such as 103271949540120710052.
+      processor: googlecloudsdk.command_lib.iam.hooks:CreateFullServiceAccountNameFromId
+  request:
+    collection: iam.projects.serviceAccounts
+    disable_resource_check: true
+    method: undelete

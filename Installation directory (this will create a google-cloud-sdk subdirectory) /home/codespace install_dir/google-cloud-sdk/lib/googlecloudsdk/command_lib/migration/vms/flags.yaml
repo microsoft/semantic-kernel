@@ -1,0 +1,114 @@
+# Copyright 2018 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+source_file:
+  api_field: imageImport.cloudStorageUri
+  arg_name: source-file
+  required: true
+  help_text: |
+    The path to the Google Cloud Storage file from which the image should be imported.
+
+image_name:
+  api_field: imageImport.diskImageTargetDefaults.imageName
+  arg_name: image-name
+  help_text: |
+    The name of the image that will be imported to Google Compute Engine.
+    Default is the Image Import name.
+
+target_project:
+  api_field: imageImport.diskImageTargetDefaults.targetProject
+  arg_name: target-project
+  help_text: |
+    The target project resource path to which the image will be imported.
+    Default is the customer project.
+    To get a list of the target projects run the gcloud alpha migration vms target-projects list command.
+
+license_type:
+  api_field: imageImport.diskImageTargetDefaults.osAdaptationParameters.licenseType
+  arg_name: license-type
+  required: false
+  help_text: |
+    The license to use post migration.
+
+generalize:
+  api_field: imageImport.diskImageTargetDefaults.osAdaptationParameters.generalize
+  arg_name: generalize
+  type: bool
+  default: false
+  required: false
+  help_text: |
+    If true, generalize the imported image. Default false.
+    The generalization process enables co-existence of multiple VMs created from the same image.
+    For Windows, generalizing the image removes computer-specific information such as
+    installed drivers and the computer security identifier (SID).
+
+description:
+  api_field: imageImport.diskImageTargetDefaults.description
+  arg_name: description
+  required: false
+  help_text: |
+    A description of the image.
+
+family_name:
+  api_field: imageImport.diskImageTargetDefaults.familyName
+  arg_name: family-name
+  required: false
+  help_text: |
+    The name of the image family to which the new image belongs.
+
+labels:
+  api_field: imageImport.diskImageTargetDefaults.labels.additionalProperties
+  arg_name: labels
+  required: false
+  metavar: KEY=VALUE
+  type:
+    arg_dict:
+      flatten: true
+      spec:
+      - api_field: key
+      - api_field: value
+  help_text: |
+    A map of labels to associate with the image.
+
+additional_licenses:
+  api_field: imageImport.diskImageTargetDefaults.additionalLicenses
+  arg_name: additional-licenses
+  type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+  required: false
+  help_text: |
+    Comma-separated list of the additional licenses to assign to the image.
+
+skip_os_adaptation:
+  api_field: imageImport.diskImageTargetDefaults.dataDiskImageImport
+  arg_name: skip-os-adaptation
+  type: bool
+  action: store_true
+  default: null
+  processor: googlecloudsdk.command_lib.migration.vms.hooks:GetDataDiskImageImportTransform
+  help_text: |
+    If true, skip OS adaptation. Default false.
+
+single_region_storage:
+  api_field: imageImport.diskImageTargetDefaults.singleRegionStorage
+  arg_name: single-region-storage
+  type: bool
+  default: false
+  help_text: |
+    If true, the location of the imported image will be the region of the import job. Otherwise the closest multi-region is selected. Default is false.
+
+kms_key:
+  arg_name: kms-key
+  # api_fields are set in the hook as this sets two different fields.
+  help_text: |
+    Fully qualified identifier for the Cloud KMS (Key Management Service) cryptokey that will be used to protect the image.

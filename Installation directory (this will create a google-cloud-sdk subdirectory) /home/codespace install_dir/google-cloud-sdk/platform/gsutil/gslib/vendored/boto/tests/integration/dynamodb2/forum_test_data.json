@@ -1,0 +1,50 @@
+[
+    {
+        "thread": "Favorite chiptune band?",
+        "posted_by": "joe",
+        "posted_on": "2013-12-24T12:30:54",
+        "body": "Forum poll: What's your favorite chiptune band & why?"
+    },
+    {
+        "thread": "Favorite chiptune band?",
+        "posted_by": "jane",
+        "posted_on": "2013-12-24T12:35:40",
+        "body": "I'd definitely go with POWERLIFTER. Love the use of LSDJ & vocals."
+    },
+    {
+        "thread": "Favorite chiptune band?",
+        "posted_by": "joe",
+        "posted_on": "2013-12-24T13:45:30",
+        "body": "Hm, I hadn't heard of them before. Will give a listen.\n\nMy favorite is definitely D&D Sluggers so far."
+    },
+    {
+        "thread": "Favorite chiptune band?",
+        "posted_by": "joe",
+        "posted_on": "2013-12-24T14:15:14",
+        "body": "Oh man, POWERLIFTER is really good. Do they have any more albums than the first one?"
+    },
+    {
+        "thread": "Favorite chiptune band?",
+        "posted_by": "jane",
+        "posted_on": "2013-12-24T14:25:33",
+        "body": "Yeah, check out their site. The second album has been out for a bit & is just as good."
+    },
+    {
+        "thread": "Help with compression?",
+        "posted_by": "jane",
+        "posted_on": "2013-12-24T14:26:51",
+        "body": "I'm working on my latest & having some trouble. I've got compression on my drum track but I still can't keep the drum for muddying the bass line without losing clarity on the hats. :( Help?"
+    },
+    {
+        "thread": "Favorite chiptune band?",
+        "posted_by": "joe",
+        "posted_on": "2013-12-24T15:22:22",
+        "body": "Thanks for the tip! I'll have to check it out!"
+    },
+    {
+        "thread": "Help with compression?",
+        "posted_by": "joe",
+        "posted_on": "2013-12-24T15:26:06",
+        "body": "Have you tried using side-chaining the compression? That'll allow the bass' input to control the volume of the drums based on when it's playing."
+    }
+]

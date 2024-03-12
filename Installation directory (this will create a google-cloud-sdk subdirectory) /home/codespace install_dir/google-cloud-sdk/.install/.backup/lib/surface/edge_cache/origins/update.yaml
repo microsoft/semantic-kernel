@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Update an EdgeCacheOrigin resource.
+    description: |
+      Update an existing EdgeCacheOrigin resource.
+    examples: |
+      To update an EdgeCacheOrigin resource named 'my-origin', run:
+
+        $ {command} my-origin --origin-address=new-origin.example.com
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheOrigins
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+    method: patch
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the EdgeCacheOrigin resource to create.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.description
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.labels
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.failover_origin
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.max_attempts
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.origin_address
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.port
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.protocol
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.retry_conditions
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.response_timeout

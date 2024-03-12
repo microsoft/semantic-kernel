@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Describe a Dataproc GDC operation
+    description: Describe a Dataproc GDC operation
+    examples: |
+      To describe a Dataproc GDC operation named 'my-operation' in project `test-project` in `us-central1`, run:
+
+          $ {command} my-operation --project=test-project --location=us-central1
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    collection: dataprocgdc.projects.locations.operations
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        The Dataproc GDC operation to describe.
+      spec: !REF googlecloudsdk.command_lib.dataproc_gdc.resources:operation

@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="EUC-JP"?>
+<!--
+Source: http://aristrist.s57.xrea.com/mt/index.rdf
+Expect: EUC-JP
+-->
+<rdf:RDF
+xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+xmlns:dc="http://purl.org/dc/elements/1.1/"
+xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+xmlns:admin="http://webns.net/mvcb/"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:cc="http://web.resource.org/cc/"
+xmlns="http://purl.org/rss/1.0/">
+<channel rdf:about="http://aristrist.s57.xrea.com/mt/">
+<title>aristrist2k+5</title>
+<link>http://aristrist.s57.xrea.com/mt/</link>
+<description></description>
+<dc:language>ja</dc:language>
+<dc:creator></dc:creator>
+<dc:date>2006-01-02T19:27:50+09:00</dc:date>
+<admin:generatorAgent rdf:resource="http://www.movabletype.org/?v=2.661" />
+
+<items>
+<rdf:Seq><rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000935.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000934.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000896.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000932.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000931.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000930.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000929.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000926.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000925.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000924.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000923.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000922.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000921.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000920.html" />
+<rdf:li rdf:resource="http://aristrist.s57.xrea.com/mt/archives/000917.html" />
+</rdf:Seq>
+</items>
+</channel>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000935.html">
+<title>[一点突破]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000935.html</link>
+<description> 今日の出来事 昼前に起きる お笑いのビデオを観る お笑いの番組を観る らいちギターを弾く 未調整だとあまりに弦高が高いので近所の100円ショップで予め買っておいたサンドペーパーでブリッジの土台を削る ブリッジの土台… ギター何年弾いてんだ俺 名前がわからん(＾ω＾　) 出掛けていたオフクロが帰ってきて近所の温泉に行こうと言うので付き合う 久々の大浴場 サウナにも入ってみた 思わず 『うっ』 とか声でたw 晩飯食って再びギターに取り組む いい名前を思い付いたので命名 『来音(らいおん)丸』 ん〜　いい名前だw ギター調整第一段階終了 だんだん愛着が湧いてきました まだまだ弦高下げたいです てか下げなきゃウマく弾けまてん(´・ω・) ■ 浴場にて 髪を洗う俺のうしろで男たちが立ち話 『中学生みたいやな』(笑) 『それは短すぎるやろ』(笑) 髪の毛の話しね (´・ω・)ほっ ※ 『知らぬまに発売されてた第四十巻』(嬉)...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>今日の出来事</p>
+
+<p>昼前に起きる<br />
+お笑いのビデオを観る<br />
+お笑いの番組を観る</p>
+
+<p>らいちギターを弾く<br />
+未調整だとあまりに弦高が高いので近所の100円ショップで予め買っておいたサンドペーパーでブリッジの土台を削る</p>
+
+<p>ブリッジの土台…<br />
+ギター何年弾いてんだ俺<br />
+名前がわからん(＾ω＾　)</p>
+
+<p>出掛けていたオフクロが帰ってきて近所の温泉に行こうと言うので付き合う</p>
+
+<p>久々の大浴場<br />
+サウナにも入ってみた<br />
+思わず 『うっ』 とか声でたw</p>
+
+<p>晩飯食って再びギターに取り組む<br />
+いい名前を思い付いたので命名</p>
+
+<p>『来音(らいおん)丸』<br />
+ん〜　いい名前だw</p>
+
+<p>ギター調整第一段階終了<br />
+だんだん愛着が湧いてきました<br />
+まだまだ弦高下げたいです<br />
+てか下げなきゃウマく弾けまてん(´・ω・)</p>
+
+<p>■ 浴場にて<br />
+髪を洗う俺のうしろで男たちが立ち話<br />
+『中学生みたいやな』(笑)<br />
+『それは短すぎるやろ』(笑)</p>
+
+<p>髪の毛の話しね (´・ω・)ほっ</p>
+
+<p>※ 『知らぬまに発売されてた第四十巻』(嬉)<br />
+</div></p>
+
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1136197654.24-0.jpg" /></div>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2006-01-02T19:27:50+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000934.html">
+<title>[謹賀新年]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000934.html</link>
+<description> 僕の彼女の口癖は『いっちゃやだ』ということになっております おかげでまだ『イった』ことがありませんこんばんは某です 新年一発目からエロネタで始動ですあけましたおめでとうございます いやーそれにしても携帯繋がらなかったわー auとかdocomoの友人からは着信するのに コチラからは一向に送れなかったや(´・ω・) タイミング悪いだけか ぼだほんが弱いのか む〜ん(-へ-) なんかもう年末あれだけ気ぜわしく働いてたのに 二日も休むともうスッカリぐーたら男です 食べてTV観て寝て食べてTV観て寝て こんなんで今年の年末までに世界征服するという野望はかなうんでしょうか(-へ-) なんかちゃんちゃんこ着て壇上で演説とかしてそうな絵が浮かんできちまいましたなんとなく(＾ω＾　) そんなわけで 早速新年会行ってきます(゜∀゜)...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>僕の彼女の口癖は『いっちゃやだ』ということになっております<br />
+おかげでまだ『イった』ことがありませんこんばんは某です</p>
+
+<p>新年一発目からエロネタで始動ですあけましたおめでとうございます</p>
+
+<p>いやーそれにしても携帯繋がらなかったわー<br />
+auとかdocomoの友人からは着信するのに<br />
+コチラからは一向に送れなかったや(´・ω・)</p>
+
+<p>タイミング悪いだけか<br />
+ぼだほんが弱いのか<br />
+む〜ん(-へ-)</p>
+
+<p>なんかもう年末あれだけ気ぜわしく働いてたのに<br />
+二日も休むともうスッカリぐーたら男です<br />
+食べてTV観て寝て食べてTV観て寝て</p>
+
+<p>こんなんで今年の年末までに世界征服するという野望はかなうんでしょうか(-へ-)<br />
+なんかちゃんちゃんこ着て壇上で演説とかしてそうな絵が浮かんできちまいましたなんとなく(＾ω＾　)</p>
+
+<p>そんなわけで<br />
+早速新年会行ってきます(゜∀゜)<br />
+</div><br />
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1136106877.25-0.jpg" /></div></p>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2006-01-01T18:14:51+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000896.html">
+<title>[音個詞芯]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000896.html</link>
+<description>し氏にならってワタクシもここにライヴスケジュールをあげとくことにします。 日々の日記はこの下になります。 さぁて次回のライヴ予定は？ ２月４日（土）　フォークビレッジ（小倉） 『フォー・フォースメン・ライヴ』 　20：00 開演　チャージ：1,000円 出演：池田 洋介、某 風来尾、かわづ、しのみやまなぶ ※ 来年２月の しのみやまなぶ ソロ＆企画ライブツアー 『ハレタヒハフタリテヲツナイデ２』 の一環ライヴとなります。 場所は小倉北方にある老舗のライヴハウス −−−−−−−−−−−−−−−−　気になるライヴ　−−−−−−−−−−−−−−−− ■ 池田 洋介　ソロライヴ 2006年 一月七日(土)　会場：戸畑市民会館 中ホール(ウェル戸畑)　チケット：￥５００ (300枚限定) オープニングアクトに 川津 竜彦...</description>
+<content:encoded><![CDATA[<p><a href="http://2.suk2.tok2.com/user/miiya/" target="_blank">し氏</a>にならってワタクシもここにライヴスケジュールをあげとくことにします。<br />
+日々の日記はこの下になります。</p>
+
+<p>さぁて次回のライヴ予定は？</p>
+
+<p><font color="greenyellow">２月４日</font>（土）　<a href="http://members.jcom.home.ne.jp/folkvillage2/top.htm" target="_blank">フォークビレッジ</a>（小倉）<br />
+『フォー・フォースメン・ライヴ』 　20：00 開演　チャージ：1,000円</p>
+
+<p>出演：<font color="lightblue">池田 洋介、某 風来尾、かわづ、しのみやまなぶ</font><br />
+※ 来年２月の <a href="http://page.cafe.ocn.ne.jp/profile/miiya" target="_blank">しのみやまなぶ</a> ソロ＆企画ライブツアー<br />
+ 『ハレタヒハフタリテヲツナイデ２』 の一環ライヴとなります。<br />
+場所は小倉北方にある老舗のライヴハウス</p>
+
+<p>−−−−−−−−−−−−−−−−　気になるライヴ　−−−−−−−−−−−−−−−−</p>
+
+<p>■ <a href="http://ip.tosp.co.jp/i.asp?i=ikdayosuke#" target="_blank">池田 洋介</a>　ソロライヴ<br />
+2006年 一月七日(土)　会場：戸畑市民会館 中ホール(ウェル戸畑)　チケット：￥５００ (300枚限定)<br />
+オープニングアクトに <font color="lightblue">川津 竜彦</font><br />
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1134927770.63-0.jpg" /></div></p>]]></content:encoded>
+<dc:subject>Music</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-31T23:59:59+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000932.html">
+<title>[二零々五]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000932.html</link>
+<description>例年我社は12月に限り仕事の最終日に給料が貰えることになってるのであるが 今年は手違いでまだ貰えてないぞ(´・ω・) うっきー＃ 『こんな会社やめてやる!』(by 藤波辰爾) そんなわけで今夜は友人S氏宅で『フォーフォースメン』(要するに野郎ばっか4人w)でこじんまりと忘年会じみたことをしたのであるが 無一文フゥ━━━━━━━━━━━━!! (ぉぃ 運よく友人O氏が年末なのに○チンコで大勝ちしたので 全額おごりでした(＾ω＾　) あらがたしありがたし(^人^) 例年は とあるコテージで大勢呼んでワイワイ演るんですが 今年はS,O,K氏+俺でしっぽり駄弁りました 内容は終始エロネタ ちなみにS氏の母も同席w 我が友人ながらアホばっかですが 変に年取らないその感覚が大好きです(・∀・)b 死ぬまでボケとツッコミでよろしゅうお願いします。...</description>
+<content:encoded><![CDATA[<p>例年我社は12月に限り仕事の最終日に給料が貰えることになってるのであるが<br />
+今年は手違いでまだ貰えてないぞ(´・ω・)</p>
+
+<p>うっきー＃<br />
+『こんな会社やめてやる!』(by 藤波辰爾)</p>
+
+<p>そんなわけで今夜は友人S氏宅で『フォーフォースメン』(要するに野郎ばっか4人w)でこじんまりと忘年会じみたことをしたのであるが</p>
+
+<p>無一文フゥ━━━━━━━━━━━━!! (ぉぃ</p>
+
+<p>運よく友人O氏が年末なのに○チンコで大勝ちしたので<br />
+全額おごりでした(＾ω＾　)</p>
+
+<p>あらがたしありがたし(^人^)</p>
+
+<p>例年は とあるコテージで大勢呼んでワイワイ演るんですが<br />
+今年はS,O,K氏+俺でしっぽり駄弁りました</p>
+
+<p>内容は終始エロネタ<br />
+ちなみにS氏の母も同席w<br />
+我が友人ながらアホばっかですが<br />
+変に年取らないその感覚が大好きです(・∀・)b</p>
+
+<p>死ぬまでボケとツッコミでよろしゅうお願いします。</p>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-30T19:00:06+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000931.html">
+<title>[口先三途]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000931.html</link>
+<description> なんつーかアレだ 人様(世間一般)が休日に入っているのに働いているという事実が非常に腹立たしい 実に腹立たしい もうやってらんね 道路空いてるし とか思ってる奴 ある意味、正解です お前がやれ！ 日本の未来を変えろ！ 秋葉原から…　萌え〜 こんばんわ某 風来尾です。 もうね 12月とか大嫌い 天皇誕生日もキリスト生誕もボーナスも なんもかんも関係ねーくさ博多弁 忙しいばっかでいやんいやん とんでもない一日の終わりを過ごしておりますよもう でも普段孤独な仕事もみんなでワイワイやれば それもまた愉し(・∀・)ｂ...</description>
+<content:encoded><![CDATA[<p></p>
+
+<p>なんつーかアレだ<br />
+人様(世間一般)が休日に入っているのに働いているという事実が非常に腹立たしい<br />
+実に腹立たしい<br />
+もうやってらんね<br />
+道路空いてるし<br />
+とか思ってる奴</p>
+
+<p>ある意味、正解です</p>
+
+<p>お前がやれ！<br />
+日本の未来を変えろ！</p>
+
+<p>秋葉原から…　萌え〜</p>
+
+<p>こんばんわ某 風来尾です。</p>
+
+<p>もうね<br />
+12月とか大嫌い<br />
+天皇誕生日もキリスト生誕もボーナスも<br />
+なんもかんも関係ねーくさ博多弁</p>
+
+<p>忙しいばっかでいやんいやん<br />
+とんでもない一日の終わりを過ごしておりますよもう</p>
+
+<p>でも普段孤独な仕事もみんなでワイワイやれば<br />
+それもまた愉し(・∀・)ｂ</p>]]></content:encoded>
+<dc:subject>Imagine</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-29T23:59:42+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000930.html">
+<title>[御用納目]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000930.html</link>
+<description> やっぱ我々音楽を演る人間っつーのは 酒呑む時も音楽演ったり観たりしながら 他人の音楽のことをアレやコレや文句とか称賛言いあいながら オネーチャンにキャっキャっ言われながら そんな時間が永遠に続くかのような至福の勘違いを繰り返しつつ 楽しみたいもんですな 世間はそろそろ御用納めですが ワタシはまだまだおさまりません(T_T) ※ 『なぞの生物』 とペンで書いてありますｗ(休憩室にて)...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>やっぱ我々音楽を演る人間っつーのは<br />
+酒呑む時も音楽演ったり観たりしながら<br />
+他人の音楽のことをアレやコレや文句とか称賛言いあいながら<br />
+オネーチャンにキャっキャっ言われながら<br />
+そんな時間が永遠に続くかのような至福の勘違いを繰り返しつつ<br />
+楽しみたいもんですな</p>
+
+<p>世間はそろそろ御用納めですが<br />
+ワタシはまだまだおさまりません(T_T)</p>
+
+<p>※ 『なぞの生物』 とペンで書いてありますｗ(休憩室にて)<br />
+</div></p>
+
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135773659.8-0.jpg" /></div>]]></content:encoded>
+<dc:subject>Imagine</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-28T21:41:07+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000929.html">
+<title>[握古武士]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000929.html</link>
+<description> 30日に内輪でしっぽりと忘年会みたいなものをやる予定ですが どっかイイトコないですかねぇ(´・ω・) 毎年やってる忘年演会もついにワタシのテンションダウン持ち直さず 今年は開催を断念してしまいました(´・ω・) まあ少しずつですが前向きにテンション上げていきたいと思います。 ※ 『イグアナ酒(スピリッツ)』(たーぼ氏差し入れ)　強烈…...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>30日に内輪でしっぽりと忘年会みたいなものをやる予定ですが<br />
+どっかイイトコないですかねぇ(´・ω・)</p>
+
+<p>毎年やってる忘年演会もついにワタシのテンションダウン持ち直さず<br />
+今年は開催を断念してしまいました(´・ω・)</p>
+
+<p>まあ少しずつですが前向きにテンション上げていきたいと思います。</p>
+
+<p></p>
+
+<p>※ 『イグアナ酒(スピリッツ)』(たーぼ氏差し入れ)　強烈…<br />
+</div></p>
+
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135690165.04-0.jpg" /></div>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-27T22:29:31+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000926.html">
+<title>[皹倶楽部]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000926.html</link>
+<description> 毎年この季節になるとアカギレが酷くてギターの練習が辛いっスね 携帯の親指メール打つのも痛いっス 昨日のカンターレ祭はマスターのギターを借りたのですが マーチンのギターかと思っていたら マスター自作のギターでした 普段、弦高を極限までおとしてるオラには些か弾きにくかったですが なかなか良いギターですた オラのギターは現在フレットの一部に極端なクセが付いてしまって 特定の場所を押さえると音が歪んじゃってるんですが 今度マスターにちょいといじってもらおうかと思っております。 ギターベストにしとかないと 自分にもお客さんにもストレスになるしね（＾ω＾　） ※ 『怪しい年末大掃除人とマスター』...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>毎年この季節になるとアカギレが酷くてギターの練習が辛いっスね<br />
+携帯の親指メール打つのも痛いっス</p>
+
+<p>昨日のカンターレ祭はマスターのギターを借りたのですが<br />
+マーチンのギターかと思っていたら<br />
+マスター自作のギターでした</p>
+
+<p>普段、弦高を極限までおとしてるオラには些か弾きにくかったですが<br />
+なかなか良いギターですた</p>
+
+<p>オラのギターは現在フレットの一部に極端なクセが付いてしまって<br />
+特定の場所を押さえると音が歪んじゃってるんですが<br />
+今度マスターにちょいといじってもらおうかと思っております。</p>
+
+<p><br />
+ギターベストにしとかないと<br />
+自分にもお客さんにもストレスになるしね（＾ω＾　）</p>
+
+<p><br />
+※ 『怪しい年末大掃除人とマスター』<br />
+</div></p>
+
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135605768.0-0.jpg" /></div>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-26T23:02:53+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000925.html">
+<title>[九里澄汁]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000925.html</link>
+<description> 昨夜深夜 窓の外がシャンシャンいうので 『あ、サンタクロースだトナカイだ!』 って勢いよく窓を開けたら 『上々台風(しゃんしゃんたいふーん)』の皆さんでしためりーくりすませました某です 張り切って仕事しとります そう今日は日曜日 昼飯に『セルフうどん』食べました すうどんで90円 !Σ(￣□￣； なのにウマい! これはお得だw と、思っていたらどうやら聞き間違えて190円でした... 千円札で払ったのですが、おつりが810円しかありますん（　＾ω＾） 夜はM-1ｸﾞﾗﾝﾌﾟﾘに引っかかりながらも 『(現)カンターレ・ラスト祭り』 へ 久しぶりの藤本夫妻やコーヘーさんやゴンの目に会えて楽しかった 呑む気で行ってた俺も急遽出番があったので 今年の歌い収めに２曲演らせてもらった 最後は 『うたごえとライヴの店』カンターレらしく その場に居る人全員で 『うたごえ』 をｗ 久しぶりに 『翼をください』 とか歌ったよ（　＾ω＾） ※ 『変なサンタクロース』...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>昨夜深夜<br />
+窓の外がシャンシャンいうので<br />
+『あ、サンタクロースだトナカイだ!』<br />
+って勢いよく窓を開けたら</p>
+
+<p>『上々台風(しゃんしゃんたいふーん)』の皆さんでしためりーくりすませました某です</p>
+
+<p>張り切って仕事しとります<br />
+そう今日は日曜日</p>
+
+<p>昼飯に『セルフうどん』食べました<br />
+すうどんで90円 !Σ(￣□￣；<br />
+なのにウマい!<br />
+これはお得だw</p>
+
+<p>と、思っていたらどうやら聞き間違えて190円でした...<br />
+千円札で払ったのですが、おつりが810円しかありますん（　＾ω＾）</p>
+
+<p>夜はM-1ｸﾞﾗﾝﾌﾟﾘに引っかかりながらも 『(現)カンターレ・ラスト祭り』 へ<br />
+久しぶりの<font color="lightblue">藤本</font>夫妻や<font color="lightblue">コーヘーさん</font>や<font color="lightblue">ゴンの目</font>に会えて楽しかった</p>
+
+<p>呑む気で行ってた俺も急遽出番があったので<br />
+今年の歌い収めに２曲演らせてもらった</p>
+
+<p>最後は 『うたごえとライヴの店』カンターレらしく<br />
+その場に居る人全員で 『うたごえ』 をｗ<br />
+久しぶりに 『翼をください』 とか歌ったよ（　＾ω＾）</p>
+
+<p>※ 『変なサンタクロース』<br />
+</div><br />
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135481823.68-0.jpg" /></div></p>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-25T12:37:07+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000924.html">
+<title>[自己搬入]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000924.html</link>
+<description> トナカイのメスをサンタに連れていかれました 今夜も独身な某ですこんばんたぬき(−Q−) 知り合いの韓国のおばちゃんから本場のキムチをいただきました。 匂いは強烈ですがめっちゃウマいですよ(・∀・)b 毎年この時期に漬けるらしく、昨年もいただいたのですが 老体のタッパーに移してたので、冷蔵庫の中がキムチ臭に占領されてしまいました(´・ω・) キムコが死にましたw 今年は若いタッパーなので大丈夫です。 ところで 『タッパー』 って総称でなくて商品名ですよね 『ウォークマン』 とか 『セロテープ』 みたいな ※ 『キスとボーズ』...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>トナカイのメスをサンタに連れていかれました<br />
+今夜も独身な某ですこんばんたぬき(−Q−)</p>
+
+<p>知り合いの韓国のおばちゃんから本場のキムチをいただきました。</p>
+
+<p>匂いは強烈ですがめっちゃウマいですよ(・∀・)b</p>
+
+<p>毎年この時期に漬けるらしく、昨年もいただいたのですが<br />
+老体のタッパーに移してたので、冷蔵庫の中がキムチ臭に占領されてしまいました(´・ω・)</p>
+
+<p>キムコが死にましたw</p>
+
+<p>今年は若いタッパーなので大丈夫です。</p>
+
+<p><br />
+ところで 『<a href="http://www.tupperware.co.jp/company/index-twbrand.html" target="_blank">タッパー</a>』 って総称でなくて商品名ですよね<br />
+『ウォークマン』 とか 『セロテープ』 みたいな</p>
+
+<p><br />
+※ 『キスとボーズ』<br />
+</div><br />
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135442182.85-0.jpg" /></div></p>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-24T23:59:27+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000923.html">
+<title>[裸舞定額]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000923.html</link>
+<description> ずっと欝陶しい天気が続いていますが 来週は結構いい感じの予報ですね おかげで日曜日もお仕事ですよこりゃ (・∀・;) ブサイクでも年末は人並みに忙しい某ですこんばんわ なんかうちの瓦斯代が異様に高い気がするんですが 気のせいでしょうか? もしかしたら 天井裏に誰か住んでいてひそかにうちのガスを引いているとかじゃないでしょうか そういえば うちは鉄筋コンクリートな建物なんですが 上の階の住人が時折ドタバタとうるさいときがあるのです しかし、あれ実は天井裏の住人がやってたりするんではないでしょうか そうなると もしかしたらワタシの生活も覗かれている可能性がありますね !Σ(￣□￣； 今夜から一人ランバダは控えることにします (´・ω・) ※ 『灯油ころがし』...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>ずっと欝陶しい天気が続いていますが<br />
+来週は結構いい感じの予報ですね<br />
+おかげで日曜日もお仕事ですよこりゃ (・∀・;)<br />
+ブサイクでも年末は人並みに忙しい某ですこんばんわ</p>
+
+<p>なんかうちの瓦斯代が異様に高い気がするんですが<br />
+気のせいでしょうか?<br />
+もしかしたら<br />
+天井裏に誰か住んでいてひそかにうちのガスを引いているとかじゃないでしょうか</p>
+
+<p>そういえば<br />
+うちは鉄筋コンクリートな建物なんですが<br />
+上の階の住人が時折ドタバタとうるさいときがあるのです<br />
+しかし、あれ実は天井裏の住人がやってたりするんではないでしょうか</p>
+
+<p>そうなると<br />
+もしかしたらワタシの生活も覗かれている可能性がありますね</p>
+
+<p><br />
+!Σ(￣□￣；</p>
+
+<p><br />
+今夜から一人ランバダは控えることにします (´・ω・)</p>
+
+<p><br />
+※ 『灯油ころがし』<br />
+</div><br />
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135336192.68-0.jpg" /></div></p>]]></content:encoded>
+<dc:subject>Imagine</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-23T20:09:54+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000922.html">
+<title>[天神弖呂]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000922.html</link>
+<description> 『天神でテロが起きますよ』とか暇な大学生が通報して人騒がせ… お疲れ様です(´・ω・) なんというかもう 寒すぎて思考回路が停車中です かろうじて 『IWGPプレゼント係』 の応募に間に合いましたｗ いよいよ2006年の足音がリアルに聞こえてきました 今日買った 『おいしい牛乳』 の賞味期限が `06．01．01 でしたです ※ これもなかなかイケますな...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>『天神でテロが起きますよ』とか暇な大学生が通報して人騒がせ…<br />
+お疲れ様です(´・ω・)</p>
+
+<p>なんというかもう<br />
+寒すぎて思考回路が停車中です</p>
+
+<p>かろうじて 『IWGPプレゼント係』 の応募に間に合いましたｗ</p>
+
+<p>いよいよ2006年の足音がリアルに聞こえてきました<br />
+今日買った 『おいしい牛乳』 の賞味期限が `06．01．01 でしたです</p>
+
+<p>※ これもなかなかイケますな<br />
+</div><br />
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135253896.42-0.jpg" /></div></p>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-22T21:18:17+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000921.html">
+<title>[嘘殻出誠]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000921.html</link>
+<description> もうすぐクリスマスですね 今年はまた一人ですかそうですか (○&apos;ω&apos;○) ベルトほすいな パンツほすいな ブーツほすいな さいふほすいな サンタさんよろしく (ﾉД`) つーか楽天とかbiddersとかって 結構お買い得品あるんやね ※ なんか昔の車...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>もうすぐクリスマスですね<br />
+今年はまた一人ですかそうですか (○'ω'○)</p>
+
+<p>ベルトほすいな<br />
+パンツほすいな<br />
+ブーツほすいな<br />
+さいふほすいな</p>
+
+<p>サンタさんよろしく (ﾉД`)</p>
+
+<p>つーか楽天とかbiddersとかって<br />
+結構お買い得品あるんやね</p>
+
+<p>※ なんか昔の車<br />
+</div></p>
+
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135164793.89-0.jpg" /></div>]]></content:encoded>
+<dc:subject>Item</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-21T20:33:16+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000920.html">
+<title>[貰物裾分]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000920.html</link>
+<description> 先日のカンターレ観戦時に洋介親瓶から年明け早々に行われる彼のソロライヴのチケットを当日出張の可能性もあって現地に行けないかも知れないので応援の意味も込めて泣くなく生活費を削ってなどと冗談を言ったりしながらいろんなこと言うたりしながらもさらりと買ってのけた某ですこんばんわ (一枚500円お買い得ｗ そんな親瓶(通称)のライヴチケットには今ならなんとデモテープ20分、が付いてますたありがとう でも親瓶？ もしかしたらイマドキの娘たちなどはカセットデッキとか持ってないかも…　よ？（＾ω＾；） ましてやオシャレなテレコなんて… (古！ｗ しかしまあ話はそんなことではないのです 親瓶の歌が聴きたい奴はカセットデッキだろうがテレコだろうが買え！ つーことで (テレコは売ってないとおもうよ… そう、我が家のデッキのことですよ 俺んちにはまだカセットテープの聞けるコンポがあるのですがね？ そいつがですよ そんな親瓶からせっかくいただいた貴重なリアル音源をですな？ 食らい込みやがりますた　(-へ-) なんかテープ挿入してリモコンのスイッチ押してさあさあ、とか待っていたんですが 『かちゃ』… 『かちゃっ』… とかいうだけで一向に始まりません そのうちに 『ふ』っと動くのをやめ ただじっと静けさの中に溶け込んだまま俺にしばしの沈黙をくれました… そこで チョップですよ 気合いを込めて斜め45°から健介ばりのチョップ一閃！ ．．．動きだしました 　ヽ(´ー｀)ノみごと！ 今の世の中 スパルタ精神が枯渇しています この先世界が停まることなくデジタル化していこうとも 俺はこのチョップ一つで渡っていくつもりです！ はぁ〜　あチョップ！チョップ！チョップ!! 『こいコラーっ!!』 (by 橋本元年) ※ どうやら工事が始まったようです (KBC)...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>先日のカンターレ観戦時に<a href="http://ip.tosp.co.jp/i.asp?i=ikdayosuke" target="_blank">洋介親瓶</a>から年明け早々に行われる彼のソロライヴのチケットを当日出張の可能性もあって現地に行けないかも知れないので応援の意味も込めて泣くなく生活費を削ってなどと冗談を言ったりしながらいろんなこと言うたりしながらもさらりと買ってのけた某ですこんばんわ<br />
+ (一枚500円お買い得ｗ</p>
+
+<p>そんな親瓶(通称)のライヴチケットには今ならなんとデモテープ20分、が付いてますたありがとう</p>
+
+<p>でも親瓶？<br />
+もしかしたらイマドキの娘たちなどはカセットデッキとか持ってないかも…　よ？（＾ω＾；）<br />
+ましてやオシャレなテレコなんて… (古！ｗ</p>
+
+<p><br />
+しかしまあ話はそんなことではないのです<br />
+親瓶の歌が聴きたい奴はカセットデッキだろうがテレコだろうが買え！<br />
+つーことで (テレコは売ってないとおもうよ…</p>
+
+<p>そう、我が家のデッキのことですよ<br />
+俺んちにはまだカセットテープの聞けるコンポがあるのですがね？</p>
+
+<p>そいつがですよ</p>
+
+<p>そんな親瓶からせっかくいただいた貴重なリアル音源をですな？</p>
+
+<p><br />
+食らい込みやがりますた　(-へ-)</p>
+
+<p><br />
+なんかテープ挿入してリモコンのスイッチ押してさあさあ、とか待っていたんですが</p>
+
+<p>『かちゃ』… 『かちゃっ』…<br />
+とかいうだけで一向に始まりません</p>
+
+<p>そのうちに 『ふ』っと動くのをやめ<br />
+ただじっと静けさの中に溶け込んだまま俺にしばしの沈黙をくれました…</p>
+
+<p><br />
+そこで</p>
+
+<p>チョップですよ</p>
+
+<p>気合いを込めて斜め45°から<a href="http://sportsnavi.yahoo.co.jp/fight/other/live/200507/18/a09.html" target="_blank">健介</a>ばりのチョップ一閃！</p>
+
+<p><br />
+．．．動きだしました 　ヽ(´ー｀)ノみごと！</p>
+
+<p><br />
+今の世の中<br />
+スパルタ精神が枯渇しています<br />
+この先世界が停まることなくデジタル化していこうとも<br />
+俺はこのチョップ一つで渡っていくつもりです！</p>
+
+<p>はぁ〜　あチョップ！チョップ！チョップ!!</p>
+
+<p>『こいコラーっ!!』 (by 橋本元年)</p>
+
+<p><br />
+※ どうやら工事が始まったようです (KBC)<br />
+</div><br />
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135084328.19-0.jpg" /></div></p>]]></content:encoded>
+<dc:subject>Diary</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-20T22:12:09+09:00</dc:date>
+</item>
+<item rdf:about="http://aristrist.s57.xrea.com/mt/archives/000917.html">
+<title>[桃栗三年]</title>
+<link>http://aristrist.s57.xrea.com/mt/archives/000917.html</link>
+<description> 今日もスーパーで一円足りなかった主婦 風来尾ですこんばんわ(T_T) 思いもかけず家に宅配便がやってきたりするのって嬉しくないですか？ たとえ自分で注文したものが届いたとしたって嬉しいのに 家族や友人から、もしくは懸賞に当たったりなど 突然宅配便の兄ちゃんがきて荷物を届けたりしてくれたら もうワクワクします。 そんな彼等は 平成のサンタクロース と呼んでもいいんではないでしょうかｗ 『あんた』と呼べる関係が好きです とても親密になれた気がするのです 世の中にはそう呼ばれるのが嫌いな人もいるでしょうが ワタシは好きなのです 特に自分より年上の友人をそう呼べる(呼ばせてもらえる)のは喜びです その人の器の大きさも感じることができます 誰でもそう呼べる関係であるわけではありません ワタシが敬愛する人でなければそんな呼び方はしないでしょうし また敬愛していてもその呼び方がしっくりこない人もいます ワタシはこれからもそう呼ばせてもらえる もしくは呼んでもらえる友人を一人でも多く持ちたいと思います。 『あんたサイコーだよ！』 ※ 『お菓子も売ってるぅーｗ』 ↑一番下段にキットカット＆チップスター...</description>
+<content:encoded><![CDATA[<div class="caption">
+
+<p>今日もスーパーで一円足りなかった主婦 風来尾ですこんばんわ(T_T)</p>
+
+<p><br />
+思いもかけず家に宅配便がやってきたりするのって嬉しくないですか？<br />
+たとえ自分で注文したものが届いたとしたって嬉しいのに<br />
+家族や友人から、もしくは懸賞に当たったりなど<br />
+突然宅配便の兄ちゃんがきて荷物を届けたりしてくれたら<br />
+もうワクワクします。</p>
+
+<p>そんな彼等は<br />
+平成のサンタクロース と呼んでもいいんではないでしょうかｗ</p>
+
+<p><br />
+『あんた』と呼べる関係が好きです<br />
+とても親密になれた気がするのです<br />
+世の中にはそう呼ばれるのが嫌いな人もいるでしょうが<br />
+ワタシは好きなのです</p>
+
+<p>特に自分より年上の友人をそう呼べる(呼ばせてもらえる)のは喜びです<br />
+その人の器の大きさも感じることができます</p>
+
+<p>誰でもそう呼べる関係であるわけではありません<br />
+ワタシが敬愛する人でなければそんな呼び方はしないでしょうし<br />
+また敬愛していてもその呼び方がしっくりこない人もいます</p>
+
+<p>ワタシはこれからもそう呼ばせてもらえる<br />
+もしくは呼んでもらえる友人を一人でも多く持ちたいと思います。</p>
+
+<p>『あんたサイコーだよ！』</p>
+
+<p><br />
+※ 『お菓子も売ってるぅーｗ』</div></p>
+
+<div class="photo"><img src="http://aristrist.s57.xrea.com/mt/images/blog-photo-1135004928.8-0.jpg" /></div>↑一番下段にキットカット＆チップスター]]></content:encoded>
+<dc:subject>Imagine</dc:subject>
+<dc:creator>aristrist</dc:creator>
+<dc:date>2005-12-19T23:58:13+09:00</dc:date>
+</item>
+
+</rdf:RDF>

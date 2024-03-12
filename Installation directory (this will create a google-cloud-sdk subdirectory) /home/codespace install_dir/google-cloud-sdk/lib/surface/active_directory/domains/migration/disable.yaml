@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: |
+      Disable domain migration permissions on a Managed Microsoft AD domain.
+    description: |
+      Disable domain migration permissions on a Managed Microsoft AD domain.
+
+      This command can fail for the following reasons:
+        * The specified domain doesn't exist.
+        * The specified domain is either being created or updated.
+        * The active account doesn't have permission to disable migration permissions on the specified domain.
+
+    examples: |
+      The following command disables migration permissions on the domain
+      `my-domain.com` in project `my-project`.
+
+      $ {command} my-domain.com --project=my-project --async
+
+  async:
+    collection: managedidentities.projects.locations.global.operations
+
+  request:
+    collection: managedidentities.projects.locations.global.domains
+    method: disableMigration
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the Managed Microsoft AD domain on which you want to disable migration permissions.
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:domain

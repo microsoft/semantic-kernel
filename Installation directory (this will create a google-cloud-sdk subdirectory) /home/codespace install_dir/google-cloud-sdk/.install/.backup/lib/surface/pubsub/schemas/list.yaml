@@ -1,0 +1,47 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List Pub/Sub schemas.
+    description: |
+      List Pub/Sub schemas.
+    examples: |
+      To list the schemas, run:
+
+        $ {command}
+
+  request:
+    collection: pubsub.projects.schemas
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Pub/Sub project to list all contained Pubsub schemas.
+      spec: !REF googlecloudsdk.command_lib.pubsub.resources:project
+    params:
+    - arg_name: view
+      api_field: view
+      help_text: |
+        There are two possible views, 'basic' and 'full', default is 'basic'
+      choices:
+      - enum_value: BASIC
+        arg_value: basic
+        help_text: |
+          Include the name and type of the schema, but not the definition.
+      - enum_value: FULL
+        arg_value: full
+        help_text: |
+          Include all Schema object fields.
+      default: basic
+
+  output:
+    format: |
+      table(
+        name.basename(),
+        type,
+        revisionId,
+        revisionCreateTime:label=CREATE_TIME,
+        definition:optional
+      )

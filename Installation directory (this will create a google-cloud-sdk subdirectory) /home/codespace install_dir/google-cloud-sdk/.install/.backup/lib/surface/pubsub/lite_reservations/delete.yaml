@@ -1,0 +1,20 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Delete a Pub/Sub Lite reservation.
+  description: Delete a Pub/Sub Lite reservation.
+  examples: |
+    To delete a Pub/Sub Lite reservation, run:
+
+        $ {command} myreservation \
+            --location=us-central1
+
+request:
+  collection: pubsublite.admin.projects.locations.reservations
+  method: delete
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+
+arguments:
+  resource:
+    help_text: Reservation to delete.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_reservation

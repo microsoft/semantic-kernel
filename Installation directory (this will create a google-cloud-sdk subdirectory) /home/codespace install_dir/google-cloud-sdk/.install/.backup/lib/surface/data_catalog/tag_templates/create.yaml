@@ -1,0 +1,76 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Create a Data Catalog tag template.
+    description: Create a Data Catalog tag template.
+
+    examples: |
+      Create a string tag template with a required string field:
+
+        $ {command} TEMPLATE --field=id=ID,display-name=DISPLAY,type=string,required=TRUE
+
+      Create an enum tag template with an optional enum field with values 'A' and 'B':
+
+        $ {command} TEMPLATE --field=id=ID,display-name=DISPLAY,type='enum(A|B)'
+
+      Create a tag template with a optional string field and a required enum field with
+      values 'A' and 'B':
+
+        $ {command} TEMPLATE \
+            --field=id=ID1,display-name=DISPLAY1,type=string \
+            --field=id=ID2,display-name=DISPLAY2,type='enum(A|B)',required=TRUE
+
+  request:
+    api_version: v1
+    collection: datacatalog.projects.locations.tagTemplates
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.tag_templates.util:UpdateCreateTagTemplateRequestWithInputV1
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.data_catalog.tag_templates.flags:AddCreateTagTemplateFlags
+    resource:
+      help_text: Tag template to create.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag_template
+
+    params:
+    - api_field: googleCloudDatacatalogV1TagTemplate.displayName
+      arg_name: display-name
+      help_text: Human-readable name for the tag template.
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Create a Data Catalog tag template.
+    description: Create a Data Catalog tag template.
+
+    examples: |
+      Create a string tag template with a required string field:
+
+        $ {command} TEMPLATE --field=id=ID,display-name=DISPLAY,type=string,required=TRUE
+
+      Create an enum tag template with an optional enum field with values 'A' and 'B':
+
+        $ {command} TEMPLATE --field=id=ID,display-name=DISPLAY,type='enum(A|B)'
+
+      Create a tag template with a optional string field and a required enum field with
+      values 'A' and 'B':
+
+        $ {command} TEMPLATE \
+            --field=id=ID1,display-name=DISPLAY1,type=string \
+            --field=id=ID2,display-name=DISPLAY2,type='enum(A|B)',required=TRUE
+
+  request:
+    collection: datacatalog.projects.locations.tagTemplates
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.tag_templates.util:UpdateCreateTagTemplateRequestWithInput
+
+  arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.data_catalog.tag_templates.flags:AddCreateTagTemplateFlags
+    resource:
+      help_text: Tag template to create.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag_template
+
+    params:
+    - api_field: googleCloudDatacatalogV1beta1TagTemplate.displayName
+      arg_name: display-name
+      help_text: Human-readable name for the tag template.

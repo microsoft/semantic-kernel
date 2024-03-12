@@ -1,0 +1,42 @@
+project:
+  name: project
+  collection: container.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project name.
+    property: core/project
+
+location:
+  name: location
+  collection: container.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location name
+
+cluster:
+  name: cluster
+  collection: container.projects.locations.clusters
+  attributes:
+  - *project
+  - *location
+  - &cluster
+    parameter_name: clustersId
+    attribute_name: cluster
+    help: The name of the cluster
+
+node_pool:
+  name: node pool
+  collection: container.projects.locations.clusters.nodePools
+  attributes:
+  - *project
+  - *location
+  - *cluster
+  - &node_pool
+    parameter_name: nodePoolsId
+    attribute_name: node_pool
+    help: The name of the node pool

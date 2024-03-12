@@ -1,0 +1,16 @@
+- help_text:
+    brief: Show details about the configuration of a project.
+    description: Show details about the configuration of a project.
+    examples: |
+      To show the current configuration of the current project run:
+
+        $ {command}
+
+  request:
+    collection: sourcerepo.projects
+    method: getConfig
+
+  arguments:
+    resource:
+      help_text: The project.
+      spec: !REF googlecloudsdk.command_lib.source.resources:project

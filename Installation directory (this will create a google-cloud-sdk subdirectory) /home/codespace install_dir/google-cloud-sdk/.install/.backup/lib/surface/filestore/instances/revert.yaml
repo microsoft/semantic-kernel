@@ -1,0 +1,44 @@
+- release_tracks: [BETA, GA]
+  GA:
+    hidden: true
+  help_text:
+    brief: Revert a Filestore instance.
+    description: |
+      Revert a Filestore instance to the target snapshot.
+
+      This command can fail for the following reasons:
+        * The target snapshot does not exist.
+        * The active account does not have permission to revert the instance.
+        * The service tier of the instance does not support the operation.
+    examples: |
+      To revert an instance with the name ``my-instance'' that's located in
+      ``us-central1'' to the target snapshot named ``my-snapshot'' , run:
+
+        $ {command} my-instance --target-snapshot=my-snapshot --location=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.filestore.resources:instance_with_generic_location
+      help_text: |
+        Arguments and flags that specify the Filestore instance to revert.
+    params:
+    - arg_name: target-snapshot
+      required: true
+      api_field: revertInstanceRequest.targetSnapshotId
+      help_text: |
+        Name of the Filestore snapshot to revert to.
+
+  request:
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    collection: file.projects.locations.instances
+    method: revert
+
+  async:
+    collection: file.projects.locations.operations
+
+  input:
+    confirmation_prompt: |
+      You are about to override existing data in [{__name__}].

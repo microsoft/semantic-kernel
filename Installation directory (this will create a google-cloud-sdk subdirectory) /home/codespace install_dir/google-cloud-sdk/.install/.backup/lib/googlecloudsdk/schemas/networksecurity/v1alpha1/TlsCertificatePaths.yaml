@@ -1,0 +1,38 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 TlsCertificatePaths export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  certificatePath:
+    description: |-
+      The path to the file that has the certificate. This is the public key when
+      used in identityProvisioning and is the CA validation certificate when
+      used for PeerValidation.
+    type: string
+  privateKeyPath:
+    description: |-
+      The path to the file that has the identity certificate. Not applicable
+      when attached to PeerValidation.
+    type: string

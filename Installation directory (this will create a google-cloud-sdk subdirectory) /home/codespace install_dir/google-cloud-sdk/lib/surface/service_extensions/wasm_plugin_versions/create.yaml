@@ -1,0 +1,44 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a `WasmPluginVersion` resource.
+    description: |
+      Create a new `WasmPluginVersion` resource.
+    examples: |
+      To create a `WasmPluginVersion` called `my-plugin-version`, run:
+
+        $ {command} my-plugin-version --wasm-plugin=my-plugin
+        --image=...-docker.pkg.dev/my-project/repository/container:tag
+
+  request:
+    collection: networkservices.projects.locations.wasmPlugins.versions
+    ALPHA:
+      api_version: v1alpha1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The ID of the `WasmPluginVersion` resource to create.
+      spec: !REF googlecloudsdk.command_lib.service_extensions.resources:wasmPluginVersion
+      is_positional: true
+    params:
+    - _REF_: googlecloudsdk.command_lib.service_extensions.flags:wasmPluginVersion.image
+    - group:
+        help_text: |
+          Configuration for the plugin, provided at runtime by the `on_configure` function
+          (Rust Proxy-Wasm SDK) or the `onConfigure` method (C++ Proxy-Wasm SDK).
+        mutex: true
+        params:
+        - arg_name: plugin-config
+          api_field: wasmPluginVersion.pluginConfigData
+          help_text: |
+            Plugin configuration in the textual format.
+        - arg_name: plugin-config-file
+          api_field: wasmPluginVersion.pluginConfigData
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:binary=True"
+          help_text: |
+            Path to a file containing the plugin configuration.
+        - _REF_: googlecloudsdk.command_lib.service_extensions.flags:wasmPluginVersion.pluginConfigUri
+    - _REF_: googlecloudsdk.command_lib.service_extensions.flags:wasmPluginVersion.description
+    - _REF_: googlecloudsdk.command_lib.service_extensions.flags:wasmPluginVersion.labels

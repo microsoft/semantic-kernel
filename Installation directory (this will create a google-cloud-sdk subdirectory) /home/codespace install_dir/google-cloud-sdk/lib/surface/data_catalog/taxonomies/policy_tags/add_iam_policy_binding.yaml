@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Add an IAM policy binding to a Data Catalog policy tag.
+    description: Add an IAM policy binding to a Data Catalog policy tag.
+
+    examples: |
+      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+      with policy tag 'POLICY_TAG' in location 'LOCATION' and taxonomy 'TAXONOMY', run:
+
+        $ {command} POLICY_TAG --location='LOCATION' --taxonomy='TAXONOMY' --member='user:test-user@gmail.com' --role='roles/editor'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  request:
+    collection: datacatalog.projects.locations.taxonomies.policyTags
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Policy tag for which to add an IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:policy_tag

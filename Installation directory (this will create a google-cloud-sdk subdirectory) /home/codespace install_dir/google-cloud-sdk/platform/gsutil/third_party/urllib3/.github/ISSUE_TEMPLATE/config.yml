@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://urllib3.readthedocs.io/en/latest/
+    about: Make sure you read the relevant docs
+  - name: ❓ Ask on StackOverflow
+    url: https://stackoverflow.com/questions/tagged/urllib3
+    about: Ask questions about usage in StackOverflow
+  - name: 💬 Ask the Community
+    url: https://discord.gg/CHEgCZN
+    about: Join urllib3's Discord server

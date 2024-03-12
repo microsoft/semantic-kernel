@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="big5" ?>
+<!--
+Source: http://www.digitalwall.com/rss20/rss_cht.xml
+Expect: Big5
+-->
+<rss version="2.0">
+<channel>
+<title>《個人．家庭．數位化 - 數位之牆》</title>
+<link>http://www.digitalwall.com/</link>
+<description>個人．家庭．數位化 - 數位之牆</description>
+<language>zh-tw</language>
+<webMaster>webmaster@digitalwall.com</webMaster>
+<pubDate>Sat, 17 Dec 2005 15:21:36 GMT</pubDate>
+<lastBuildDate>Sat, 17 Dec 2005 15:21:36 GMT</lastBuildDate>
+<docs>http://blogs.law.harvard.edu/tech/rss</docs>
+<ttl>720</ttl>
+<image>
+<title>《個人．家庭．數位化 - 數位之牆》</title>
+<width>88</width>
+<height>31</height>
+<link>http://www.digitalwall.com/</link>
+<url>http://www.digitalwall.com/images/digitalwall88x31.gif</url>
+</image>
+<item>
+<title>再談軟體與媒體的典範轉移</title>
+<link>http://www.digitalwall.com/scripts/display.asp?UID=321</link>
+<description>◎商業軟體轉型媒體
+
+1996年六月，筆者發表文章「軟體與媒體的典範轉移」，內容主要是
+觀察到當時的軟體產業在因應網路狂潮的情況下，開始傾向提供免費
+軟體衝刺安裝數量（Install Base），並轉而從廣告獲利。...</description>
+<author>webmaster@digitalwall.com</author>
+<category>數位內容</category>
+<guid>http://www.digitalwall.com/scripts/display.asp?UID=321</guid>
+<pubDate>Sat, 17 Dec 2005 15:21:36 GMT</pubDate>
+</item>
+</channel>
+</rss>

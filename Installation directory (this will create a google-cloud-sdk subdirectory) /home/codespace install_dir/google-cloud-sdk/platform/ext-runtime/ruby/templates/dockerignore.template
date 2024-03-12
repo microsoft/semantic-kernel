@@ -1,0 +1,5 @@
+.dockerignore
+Dockerfile
+.git
+.hg
+.svn

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="iso-8859-7"?>
+<!--
+Source: http://www.naftemporiki.gr/news/static/rss/news_spo.xml
+Expect: ISO-8859-7
+-->
+<rss version="2.0">
+<channel>
+<title>Η ΝΑΥΤΕΜΠΟΡΙΚΗ : ΑΘΛΗΤΙΚΑ</title>
+<link>http://www.naftemporiki.gr/</link>
+<description>Η ΝΑΥΤΕΜΠΟΡΙΚΗ : ΑΘΛΗΤΙΚΑ</description>
+<language>el</language>
+<copyright>Copyright 2006, Η ΝΑΥΤΕΜΠΟΡΙΚΗ - Π. ΑΘΑΝΑΣΙΑΔΗΣ &amp; ΣΙΑ Α.Ε.</copyright>
+<webMaster>webmaster@naftemporiki.gr</webMaster>
+<lastBuildDate>Wed, 4 Jan 2006 07:11:00 +0200</lastBuildDate>
+<ttl>10</ttl> 
+<docs>http://www.naftemporiki.gr/news/rss.asp</docs> 
+
+<image>
+<title>Η ΝΑΥΤΕΜΠΟΡΙΚΗ</title> 
+<width>120</width> 
+<height>24</height> 
+<link>http://www.naftemporiki.gr</link> 
+<url>http://www.naftemporiki.gr/_images/sources/naftlogo_120.gif</url> 
+</image>
+
+
+<item>
+<title>Πόλο: Ντέρμπι Εθνικού - Ολυμπιακού</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137197</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137197</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Εθνική: Ανακοίνωσε τα ονόματα ο Οτο</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137191</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137191</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Ανανεώσεις συμβολαίων στον Ολυμπιακό</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137188</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137188</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Τι θα δούμε στην ΤV</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137176</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137176</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Τορίνο: Υποδοχή ήρωα για τον Ζήση Βρύζα</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137192</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137192</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Στους κορυφαίους ο Βασσάρας</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137194</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137194</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Παναθηναϊκός: Στο τραπέζι μεταγραφικά - πειθαρχία</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137190</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137190</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Η ΑΕΚ διεκδικεί τον Καπετάνο</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137189</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137189</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Μεταγραφές - επεκτάσεις</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137193</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137193</link>
+<pubDate>Wed, 4 Jan 2006 07:00:00 +0200</pubDate>
+<description></description>
+<author>editors@naftemporiki.gr (Η ΝΑΥΤΕΜΠΟΡΙΚΗ)</author>
+</item>
+
+<item>
+<title>Υπέγραψε στη Ρεάλ Μαδρίτης ο Κασάνο</title>
+<guid isPermaLink="true">http://www.naftemporiki.gr/news/rssredir.asp?id=1137211</guid>
+<link>http://www.naftemporiki.gr/news/rssredir.asp?id=1137211</link>
+<pubDate>Tue, 3 Jan 2006 22:06:00 +0200</pubDate>
+<description></description>
+<author>editor@ana.gr (ΑΠΕ)</author>
+</item>
+
+
+
+</channel>
+</rss>
+
+

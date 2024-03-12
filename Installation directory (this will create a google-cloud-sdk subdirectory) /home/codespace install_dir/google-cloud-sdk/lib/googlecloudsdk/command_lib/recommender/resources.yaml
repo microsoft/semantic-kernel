@@ -1,0 +1,78 @@
+project:
+  name: project
+  collection: recommender.projects
+  request_id_field: projectsId
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The project ID.
+
+location:
+  name: location
+  collection: recommender.projects.locations
+  request_id_field: locationsId
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: The location ID.
+
+recommender:
+  name: recommender
+  collection: recommender.projects.locations.recommenders
+  request_id_field: recommendersId
+  attributes:
+  - *project
+  - *location
+  - &recommender
+    parameter_name: recommendersId
+    attribute_name: recommender
+    help: The recommender ID.
+
+recommendation:
+  name: recommendation
+  collection: recommender.projects.locations.recommenders.recommendations
+  request_id_field: recommendationsId
+  attributes:
+  - *project
+  - *location
+  - *recommender
+  - parameter_name: recommendationsId
+    attribute_name: recommendation
+    help: The recommendation ID.
+
+insight-type:
+  name: insight-type
+  collection: recommender.projects.locations.insightTypes
+  request_id_field: insightTypesId
+  attributes:
+  - *project
+  - *location
+  - &insight_type
+    parameter_name: insightTypesId
+    attribute_name: insight-type
+    help: The insight type.
+
+insight:
+  name: insight
+  collection: recommender.projects.locations.insightTypes.insights
+  request_id_field: insightsId
+  attributes:
+  - *project
+  - *location
+  - *insight_type
+  - parameter_name: insightsId
+    attribute_name: insight
+    help: The insight ID.
+
+rule:
+  name: rule
+  collection: recommender.projects.rules
+  request_id_field: rulesId
+  attributes:
+  - *project
+  - parameter_name: rulesId
+    attribute_name: rule
+    help: The rule ID.

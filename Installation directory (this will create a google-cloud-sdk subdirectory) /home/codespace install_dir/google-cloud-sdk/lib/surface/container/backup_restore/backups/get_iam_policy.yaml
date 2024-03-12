@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Get the IAM policy for a backup.
+    description: |
+      Display the IAM policy associated with a backup.
+
+      ## EXAMPLES
+
+      To display the IAM policy associated with a backup ``my-backup'' in backup plan ``my-backup-plan'' in project ``my-project'' in location ``us-central1'', run:
+
+        $ {command} my-backup --project=my-project --location=us-central1 --backup-plan=my-backup-plan
+
+  request:
+    collection: gkebackup.projects.locations.backupPlans.backups
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the backup for which to display IAM policy. The name may be provided either as a relative name,
+        e.g.
+        `projects/<project>/locations/<location>/backupPlans/<backupPlan>/backups/<backup>`
+        or as a single ID name (with the parent resources provided via options or through
+        properties), e.g.
+        `BACKUP --project=<project> --location=<location> --backup-plan=<backupPlan>`
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:backup

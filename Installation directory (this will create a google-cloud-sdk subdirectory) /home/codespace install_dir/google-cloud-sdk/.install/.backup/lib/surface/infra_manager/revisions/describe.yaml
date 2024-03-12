@@ -1,0 +1,14 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Describe revisions
+    description: Describe a revision
+    examples: |-
+      To describe the revision `r-0` under deployment `example-deployment` at location `us-central1`, run:
+
+      $ {command} projects/p1/locations/us-central1/deployments/example-deployment/revisions/r-0
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:revision
+      help_text: The revision to describe
+  request:
+    collection: config.projects.locations.deployments.revisions

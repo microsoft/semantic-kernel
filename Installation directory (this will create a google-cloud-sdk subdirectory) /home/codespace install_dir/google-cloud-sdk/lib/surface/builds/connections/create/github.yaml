@@ -1,0 +1,69 @@
+- help_text:
+    brief: Create a Cloud Build Connection of type GitHub.
+    description: |
+      Create a Cloud Build Connection of type GitHub (for github.com).
+
+      Connections for github.com can be created either by following an installation process (that
+      requires manual steps in a web browser) or by providing the properties of an already-installed
+      application (installation ID and a user token) as arguments to this command.
+
+    examples: |
+      To create a connection by following the installation process, provide only the connection name:
+
+        $ {command} myconn \
+          --project=myproj --region=us-central1
+
+      The command will print a URL to be opened in a web browser in order to authorize Cloud Build
+      (i.e. Cloud Build gets an OAuth token for the github account that you use). After doing this
+      authorization, you can get the connection's installation state with the describe command:
+
+        $ gcloud alpha builds connections describe myconn
+
+      The output will include a second link to install the Cloud Build GitHub App. After doing this,
+      the connection will be in installation state COMPLETE and repositories can be added to it (see
+      ``gcloud'' alpha builds repositories create).
+
+      --
+
+      To create a complete connection (e.g. based on an existing user token and installation),
+      provide both the authorizer secret token and the app installation id:
+
+        $ {command} myconn \
+          --project=myproj --region=us-central1 \
+          --authorizer-token-secret-version=projects/myproj/secrets/mytoken/versions/1 \
+          --app-installation-id=1234
+
+      Above command creates the connection in installation state COMPLETE, ready for adding
+      repositories.
+
+  command_type: CREATE
+  request:
+    collection: cloudbuild.projects.locations.connections
+    api_version: v2
+    # If no arguments are provided, create an empty connection.
+    static_fields:
+      "connection.githubConfig": {}
+
+  arguments:
+    resource:
+      help_text: Connection to create.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources_v2:connection
+    params:
+    - group:
+        help_text: Group of arguments for configuring a complete connnection.
+        # if app-installation-id is provided, authorizer-token has to be provided too.
+        params:
+        - api_field: connection.githubConfig.authorizerCredential.oauthTokenSecretVersion
+          arg_name: authorizer-token-secret-version
+          help_text: Secret containing the authorizer user's token.
+          required: true
+        - api_field: connection.githubConfig.appInstallationId
+          arg_name: app-installation-id
+          help_text: Installation ID of the Cloud Build GitHub App.
+
+  output:
+    # Print the installation instruction and link (if any) after creation.
+    format: 'csv[no-heading,separator="\\n"](installationState.stage,installationState.message,installationState.actionUri)'
+
+  async:
+    collection: cloudbuild.projects.locations.operations

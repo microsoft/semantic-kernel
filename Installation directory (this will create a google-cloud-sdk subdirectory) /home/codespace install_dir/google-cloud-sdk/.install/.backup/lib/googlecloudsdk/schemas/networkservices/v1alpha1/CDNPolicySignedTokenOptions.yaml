@@ -1,0 +1,47 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 CDNPolicySignedTokenOptions export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  allowedSignatureAlgorithms:
+    description: |-
+      The allowed signature algorithms to use. Defaults to using only ED25519.
+      You can specify up to 3 signature algorithms to use.
+    type: array
+    items:
+      type: string
+      enum:
+      - ED25519
+      - HMAC_SHA1
+      - HMAC_SHA_256
+      - SIGNATURE_ALGORITHM_UNSPECIFIED
+  tokenQueryParameter:
+    description: |-
+      The query parameter in which to find the token. The name must be 1-64
+      characters long and match the regular expression
+      `[a-zA-Z]([a-zA-Z0-9_-])*` which means the first character must be a
+      letter, and all following characters must be a dash, underscore,
+      letter or digit. Defaults to `edge-cache-token`.
+    type: string

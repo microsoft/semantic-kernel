@@ -1,0 +1,26 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List observability policies.
+  description: |
+    List all observability policies in the specified location of the current project.
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.observabilityPolicies
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: |
+      The project of the observability policies to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

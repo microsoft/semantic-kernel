@@ -1,0 +1,78 @@
+- release_tracks: [GA, BETA]
+  help_text:
+    brief: List Cloud TPUs
+    description: List Cloud TPUs
+    examples: |
+      The following command lists the status of TPUs in zone `us-central1-b`:
+
+        $ {command} --zone=us-central1-b
+
+  request:
+    collection: tpu.projects.locations.nodes
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        The compute/zone of the Cloud TPU.
+
+        If not specified, will use the value of the [compute/zone] property in the current
+        gcloud configuration. To find a list of compute zones available for Cloud TPUs in your
+        project, run `{parent_command} locations list`.
+
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:location
+      is_positional: false
+
+  output:
+    format: |
+      table(
+      name.basename(),
+      name.segment(-3):label=ZONE,
+      acceleratorType.basename():label=ACCELERATOR_TYPE,
+      network.basename():label=NETWORK,
+      cidrBlock:label=RANGE,
+      state:label=STATUS
+      )
+
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List Cloud TPUs
+    description: List Cloud TPUs
+    examples: |
+      The following command lists the status of TPUs in zone `us-central1-b`:
+
+        $ {command} --zone=us-central1-b
+
+  request:
+    collection: tpu.projects.locations.nodes
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        The compute/zone of the Cloud TPU.
+
+        If not specified, will use the value of the [compute/zone] property in the current
+        gcloud configuration. To find a list of compute zones available for Cloud TPUs in your
+        project, run `{parent_command} locations list`.
+
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:location
+      is_positional: false
+
+  output:
+    format: |
+      table(
+      name.basename(),
+      name.segment(-3):label=ZONE,
+      acceleratorType.basename():label=ACCELERATOR_TYPE,
+      network.basename():label=NETWORK,
+      cidrBlock:label=RANGE,
+      state:label=STATUS,
+      apiVersion:label=API_VERSION
+      )

@@ -1,0 +1,48 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Update a Data Catalog tag template.
+    description: Update a Data Catalog tag template.
+
+    examples: |
+      Update the display name of a tag template:
+
+        $ {command} TEMPLATE --display-name=DISPLAY
+
+  request:
+    api_version: v1
+    collection: datacatalog.projects.locations.tagTemplates
+
+  arguments:
+    resource:
+      help_text: Tag template to update.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag_template
+
+    params:
+    - api_field: googleCloudDatacatalogV1TagTemplate.displayName
+      arg_name: display-name
+      help_text: New human-readable name for the tag template.
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Update a Data Catalog tag template.
+    description: Update a Data Catalog tag template.
+
+    examples: |
+      Update the display name of a tag template:
+
+        $ {command} TEMPLATE --display-name=DISPLAY
+
+  request:
+    collection: datacatalog.projects.locations.tagTemplates
+
+  arguments:
+    resource:
+      help_text: Tag template to update.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag_template
+
+    params:
+    - api_field: googleCloudDatacatalogV1beta1TagTemplate.displayName
+      arg_name: display-name
+      help_text: New human-readable name for the tag template.

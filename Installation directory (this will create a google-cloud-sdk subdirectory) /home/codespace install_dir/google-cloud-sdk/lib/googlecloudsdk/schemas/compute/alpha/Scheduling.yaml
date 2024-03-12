@@ -1,0 +1,147 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute alpha Scheduling export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  automaticRestart:
+    description: |-
+      Specifies whether the instance should be automatically restarted if it is
+      terminated by Compute Engine (not terminated by a user). You can only set
+      the automatic restart option for standard instances. Preemptible instances
+      cannot be automatically restarted. By default, this is set to true so an
+      instance is automatically restarted if it is terminated by Compute Engine.
+    type: boolean
+  availabilityDomain:
+    description: |-
+      Specifies the availability domain (AD), which this instance should be
+      scheduled on. The AD belongs to the spread GroupPlacementPolicy resource
+      policy that has been assigned to the instance. Specify a value between
+      1-max count of availability domains in your GroupPlacementPolicy. See
+      go/placement-policy-extension for more details.
+    type: integer
+  currentCpus:
+    description: |-
+      Current number of vCPUs available for VM. 0 or unset means default vCPUs
+      of the current machine type.
+    type: integer
+  currentMemoryMb:
+    description: |-
+      Current amount of memory (in MB) available for VM. 0 or unset means
+      default amount of memory of the current machine type.
+    type: integer
+  hostErrorTimeoutSeconds:
+    description: |-
+      Specify the time in seconds for host error detection, the value must be
+      within the range of [90, 330] with the increment of 30, if unset, the
+      default behavior of host error recovery will be used.
+    type: integer
+  instanceTerminationAction:
+    description: Specifies the termination action for the instance.
+    type: string
+    enum:
+    - DELETE
+    - INSTANCE_TERMINATION_ACTION_UNSPECIFIED
+    - STOP
+  latencyTolerant:
+    description: |-
+      Defines whether the instance is tolerant of higher cpu latency. This can
+      only be set during instance creation, or when the instance is not
+      currently running. It must not be set if the preemptible option is also
+      set.
+    type: boolean
+  locationHint:
+    description: |-
+      An opaque location hint used to place the instance close to other
+      resources. This field is for use by internal tools that use the public
+      API.
+    type: string
+  maintenanceFreezeDurationHours:
+    description: |-
+      Specifies the number of hours after VM instance creation where the VM
+      won't be scheduled for maintenance.
+    type: integer
+  maintenanceInterval:
+    description: |-
+      For more information about maintenance intervals, see Setting maintenance
+      intervals.
+    type: string
+    enum:
+    - PERIODIC
+    - RECURRENT
+  maxRunDuration:
+    description: |-
+      Specifies the max run duration for the given instance. If specified, the
+      instance termination action will be performed at the end of the run
+      duration.
+    $ref: Duration.yaml
+  localSsdRecoveryTimeout:
+    description: |-
+      Specifies the maximum amount of time a Local Ssd Vm should wait while
+      recovery of the Local Ssd state is attempted. Its value should be in
+      between 0 and 168 hours with hour granularity and the default value being 1
+      hour.
+    $ref: Duration.yaml
+  minNodeCpus:
+    description: |-
+      The minimum number of virtual CPUs this instance will consume when running
+      on a sole-tenant node.
+    type: integer
+  nodeAffinities:
+    description: |-
+      A set of node affinity and anti-affinity configurations. Refer to
+      Configuring node affinity for more information. Overrides
+      reservationAffinity.
+    type: array
+    items:
+      $ref: SchedulingNodeAffinity.yaml
+  onHostMaintenance:
+    description: |-
+      Defines the maintenance behavior for this instance. For standard
+      instances, the default behavior is MIGRATE. For preemptible instances,
+      the default and only possible behavior is TERMINATE. For more
+      information, see Set VM availability policies.
+    type: string
+    enum:
+    - MIGRATE
+    - TERMINATE
+  preemptible:
+    description: |-
+      Defines whether the instance is preemptible. This can only be set
+      during instance creation or while the instance is stopped and
+      therefore, in a `TERMINATED` state. See Instance Life Cycle for more
+      information on the possible instance states.
+    type: boolean
+  provisioningModel:
+    description: Specifies the provisioning model of the instance.
+    type: string
+    enum:
+    - SPOT
+    - STANDARD
+  terminationTime:
+    description: |-
+      Specifies the timestamp, when the instance will be terminated, in
+      RFC3339 text format. If specified, the instance termination action
+      will be performed at the termination time.
+    type: string

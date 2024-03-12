@@ -1,0 +1,112 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 ExtensionChainExtension export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- name
+- service
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  authority:
+    description: |-
+      The `:authority` header in the gRPC request sent from Envoy to the
+      extension service. Required for Callout extensions.
+    type: string
+  failOpen:
+    description: |-
+      Determines how the proxy behaves if the call to the extension fails or
+      times out. When set to `TRUE`, request or response processing continues
+      without error. Any subsequent extensions in the extension chain are also
+      executed. When set to `FALSE` or the default setting of `FALSE` is used,
+      one of the following happens: * If response headers have not been
+      delivered to the downstream client, a generic 500 error is returned to the
+      client. The error response can be tailored by configuring a custom error
+      response in the load balancer. * If response headers have been delivered,
+      then the HTTP stream to the downstream client is reset.
+    type: boolean
+  forwardAttributes:
+    description: |-
+      List of the Envoy attributes to forward to the extension server. The
+      attributes provided here will be included as part of the
+      `ProcessingRequest.attributes` field (of type `map`), where the keys are
+      the attribute names. Refer to the [documentation](/service-
+      extensions/docs/cel-matcher-language-reference#attributes) for the names
+      of attributes that can be forwarded. If omitted, no attributes will be
+      sent. Each element is a string indicating the attribute name.
+    type: array
+    hidden: true
+    items:
+      type: string
+  forwardHeaders:
+    description: |-
+      List of the HTTP headers to forward to the extension (from the client
+      or backend). If omitted, all headers are sent. Each element is a
+      string indicating the header name.
+    type: array
+    items:
+      type: string
+  name:
+    description: |-
+      The name for this extension. The name is logged as part of the
+      HTTP request logs. The name must conform with RFC-1034, is
+      restricted to lower-cased letters, numbers and hyphens, and can
+      have a maximum length of 63 characters. Additionally, the first
+      character must be a letter and the last a letter or a number.
+    type: string
+  service:
+    description: |-
+      The reference to the service that runs the extension. Currently
+      only callout extensions are supported here. To configure a callout
+      extension, `service` must be a fully-qualified reference to a
+      [backend
+      service](https://cloud.google.com/compute/docs/reference/rest/v
+      1/backendServices) in the format:
+      `https://www.googleapis.com/compute/v1 /projects/{project}/regions
+      /{region}/backendServices/{backendService}` or `https://www.google
+      apis.com/compute/v1/projects/{project}/global/back
+      endServices/{backendService}`.
+    type: string
+  supportedEvents:
+    description: |-
+      A set of events during request or response processing for which
+      this extension is called. This field is required for the
+      `LbTrafficExtension` resource. It's not relevant for the
+      `LbRouteExtension` resource.
+    type: array
+    items:
+      type: string
+      enum:
+      - EVENT_TYPE_UNSPECIFIED
+      - REQUEST_BODY
+      - REQUEST_HEADERS
+      - REQUEST_TRAILERS
+      - RESPONSE_BODY
+      - RESPONSE_HEADERS
+      - RESPONSE_TRAILERS
+  timeout:
+    description: |-
+      Specifies the timeout for each individual message on the
+      stream. The timeout must be between 10-1000 milliseconds.
+      Required for Callout extensions.
+    type: string

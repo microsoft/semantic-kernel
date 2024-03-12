@@ -1,0 +1,52 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Rename an enum value in Data Catalog tag template enum field.
+    description: Rename an enum value in Data Catalog tag template enum field.
+
+    examples: |
+      Rename an enum value in tag template enum field:
+
+        $ {command} ENUM_VALUE --new-id="new-id"
+
+  request:
+    api_version: v1
+    collection: datacatalog.projects.locations.tagTemplates.fields.enumValues
+    method: rename
+
+  arguments:
+    resource:
+      help_text: Enum value to rename.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:enum_value
+
+    params:
+    - api_field: googleCloudDatacatalogV1RenameTagTemplateFieldEnumValueRequest.newEnumValueDisplayName
+      arg_name: new-id
+      required: true
+      help_text: New display name of the enum value.
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Rename an enum value in Data Catalog tag template enum field.
+    description: Rename an enum value in Data Catalog tag template enum field.
+
+    examples: |
+      Rename an enum value in tag template enum field:
+
+        $ {command} ENUM_VALUE --new-id="new-id"
+
+  request:
+    collection: datacatalog.projects.locations.tagTemplates.fields.enumValues
+    method: rename
+
+  arguments:
+    resource:
+      help_text: Enum value to rename.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:enum_value
+
+    params:
+    - api_field: googleCloudDatacatalogV1beta1RenameTagTemplateFieldEnumValueRequest.newEnumValueDisplayName
+      arg_name: new-id
+      required: true
+      help_text: New display name of the enum value.

@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Remove an IAM policy binding from a Cloud Healthcare API FHIR store.
+    description: |
+      Removes an IAM policy binding from a Cloud Healthcare API FHIR store.
+    examples: |
+      To remove an IAM policy binding for the role of 'roles/editor' for the user
+      'test-user@gmail.com' on the fhir store 'test-fhir-store', run:
+
+        $ {command} test-fhir-store --dataset=test-dataset --member='user:test-user@gmail.com' --role='roles/editor'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  request:
+    collection: healthcare.projects.locations.datasets.fhirStores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API FHIR store to remove an IAM policy binding from.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:fhir_store
+
+  iam:
+    enable_condition: true

@@ -1,0 +1,51 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: |
+      Initiate schema extension for a Managed Microsoft AD domain.
+    description: |
+      Initiate schema extension for a Managed Microsoft AD domain.
+
+      This command can fail for the following reasons:
+        * The specified domain doesn't exist.
+        * The specified domain is either being created or updated.
+        * The specified domain is under maintenance.
+        * The active account doesn't have permission to initiate schema extension on the specified domain.
+
+    examples: |
+      The following command initiates a schema extension for the domain
+      `my-domain.com` in project `my-project`, with description `Test Description`,
+      using the LDIF file `demo.ldif`
+
+      $ {command} my-domain.com --description="Test Description" --ldif-file=demo.ldf --project=my-project --async
+
+  async:
+    collection: managedidentities.projects.locations.global.operations
+
+  request:
+    collection: managedidentities.projects.locations.global.domains
+    method: extendSchema
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the Managed Microsoft AD domain for which you want to extend schema.
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:domain
+
+    params:
+    - arg_name: description
+      api_field: extendSchemaRequest.description
+      required: true
+      help_text: |
+        Description of schema change.
+    - arg_name: ldif-file
+      type: googlecloudsdk.calliope.arg_parsers:FileContents:binary=True
+      api_field: extendSchemaRequest.fileContents
+      required: true
+      help_text: |
+        Local LDIF file path that contains commands for schema extension. The file size can't be larger than 1 MB.

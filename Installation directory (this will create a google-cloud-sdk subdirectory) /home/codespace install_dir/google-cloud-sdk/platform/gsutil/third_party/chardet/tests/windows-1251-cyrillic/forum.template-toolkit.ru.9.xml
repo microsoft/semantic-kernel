@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<!--
+Source: http://forum.template-toolkit.ru/rss/forum_9.rss
+Expect: windows-1251
+-->
+<rss version="2.0">
+	<channel>
+		<title>Форумы Template Toolkit : Язык программирования Perl</title>
+		<link>http://forum.template-toolkit.ru/view_forum/forum_id-9.html?rss</link>
+		<description>Template Toolkit - быстрая, мощная и расширяемая система обработки шаблонов. На сайте работает форум, в котором обсуждаются вопросы использования библиотеки по работе с шаблонами. Темы, связанные с программированием в Perl</description>
+		<language>ru</language>
+		<copyright>Lobanov Igor</copyright>
+		<webMaster>Lobanov Igor &lt;webmaster@template-toolkit.ru&gt;</webMaster>
+		<pubDate>Sun,  4 Dec 2005 16:14:30 GMT</pubDate>
+		<lastBuildDate>Wed,  4 Jan 2006 02:29:01 GMT</lastBuildDate>
+		<managingEditor>Perl script, Template Toolkit</managingEditor>
+		<image>
+			<url>http://forum.template-toolkit.ru/images/tt2powered.gif</url>
+			<title>Template Toolkit - шаблоны в perl</title>
+			<link>http://forum.template-toolkit.ru/</link>
+			<width>88</width>
+			<height>31</height>
+		</image>
+		<docs>http://blogs.law.harvard.edu/tech/rss</docs>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-119.html?rss</guid>
+			<pubDate>Sun,  4 Dec 2005 16:09:31 GMT</pubDate>
+			<title>Бесплатный Perl-редактор</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-119.html?rss</link>
+			<description>Бесплатный Perl-редактор для Windows с множественными инструментами отладки скриптов.&lt;br /&gt;
+&lt;br /&gt;
+URL загрузки: &lt;br /&gt;
+http://www.perl-express.com/PeSetRussv245.exe&lt;br /&gt;
+Домашняя страница: &lt;br /&gt;
+http://www.perl-express.com/ru/
+			</description>
+			<author>mixail &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-119.html</comments>
+			<category>Другие темы, связанные с шаблонами и Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-9.rss">http://forum.template-toolkit.ru/view_topic/topic_id-119.html?rss</source>
+		</item>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-56.html?rss</guid>
+			<pubDate>Thu, 20 Jan 2005 10:34:47 GMT</pubDate>
+			<title>JAPH</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-56.html?rss</link>
+			<description>perl5.8&lt;br /&gt;&lt;div class="code"&gt;&lt;pre&gt;eval qq{#line $$ &amp;quot;just another perl hacker&amp;quot;\ndie};$@=~/j.+r/;print$&amp;amp;;&lt;/pre&gt;&lt;/div&gt;
+			</description>
+			<author>LIOL &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-56.html</comments>
+			<category>Другие темы, связанные с шаблонами и Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-9.rss">http://forum.template-toolkit.ru/view_topic/topic_id-56.html?rss</source>
+		</item>
+	</channel>
+</rss>

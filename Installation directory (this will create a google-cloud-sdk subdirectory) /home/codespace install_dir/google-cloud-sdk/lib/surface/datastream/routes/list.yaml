@@ -1,0 +1,41 @@
+- release_tracks: [BETA, GA]
+  BETA:
+    deprecate:
+      is_removed: false
+      warning: |
+        This command has been deprecated.
+        Use `gcloud datastream routes list` instead.
+  help_text:
+    brief: List Datastream routes.
+    description: |
+      List Datastream routes.
+    examples: |
+      To list the routes, run:
+
+        $ {command} --private-connection=pc --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.privateConnections.routes
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Datastream location to list all contained Datastream routes.
+      # The following should point to the parent resource argument definition
+      # under your surface's command_lib directory:
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:private_connection
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        createTime:label=CREATETIME,
+        destinationAddress:label=DESTINATIONADDRESS,
+        destinationPort:label=DESTINATIONPORT,
+        displayName:label=DISPLAYNAME,
+        labels:label=LABELS,
+        updateTime:label=UPDATETIME
+      )

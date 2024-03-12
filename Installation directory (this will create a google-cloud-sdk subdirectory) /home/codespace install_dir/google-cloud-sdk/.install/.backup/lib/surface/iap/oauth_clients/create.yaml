@@ -1,0 +1,36 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: |
+    Create a Cloud IAP OAuth client in the project.
+  description: |
+    *{command}* is used to create an OAuth client in the project to be used by Cloud IAP. To call
+    this command, the Cloud OAuth brand for the project must exist and be set for 'internal only'.
+    The new client is owned by Cloud IAP.
+  examples: |
+    To create a Cloud IAP OAuth client for the current project, run:
+
+        $ {command} BRAND --display_name=DISPLAY_NAME
+
+    To create a Cloud IAP OAuth client for the project PROJECT_ID, run:
+
+        $ {command} BRAND --display_name=DISPLAY_NAME --project=PROJECT_ID
+
+request:
+  collection: iap.projects.brands.identityAwareProxyClients
+  api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.iap.resources:brand
+    is_parent_resource: true
+    arg_name: brand
+    help_text: |
+      Name of the Cloud OAuth brand to create a Cloud IAP OAuth client under.
+  params:
+  - arg_name: display_name
+    api_field: identityAwareProxyClient.displayName
+    required: true
+    help_text: |
+      User friendly name for the Cloud IAP OAuth client.
+output:
+  format: yaml

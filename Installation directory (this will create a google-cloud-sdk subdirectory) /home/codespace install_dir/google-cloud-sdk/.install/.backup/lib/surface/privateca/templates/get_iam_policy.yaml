@@ -1,0 +1,27 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Get the IAM policy for a certificate template.
+    description: |
+     Gets the IAM policy for the given certificate template.
+
+      Returns an empty policy if the resource does not have a policy
+      set.
+    examples: |
+     To get the IAM policy for the certificate template 'mtls-template' with the location 'us-west1', run:
+
+       $ {command} mtls-template --location=us-west1
+
+  request:
+    collection: privateca.projects.locations.certificateTemplates
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The certificate template for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.privateca.resources:certificate_template
+
+  iam:
+    enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: List budgets.
+    description: List budgets for the account.
+    examples: |
+      To list all budgets under the account '123', run:
+
+        $ {command} --billing-account=123
+  request:
+    collection: billingbudgets.billingAccounts.budgets
+    ALPHA:
+      api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+  arguments:
+    resource:
+      help_text: List billing budgets associated with parent account.
+      spec: !REF googlecloudsdk.command_lib.billingbudgets.resources:billing-account

@@ -1,0 +1,32 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    List target associations.
+  description: |
+    List all target associations in the specified location of the current project.
+  examples: |
+      To list target associations in the current project, run:
+
+        $ {command} --location=us-central1
+
+request:
+  ALPHA:
+    api_version: v1alpha
+  collection: authztoolkit.projects.locations.targetAssociations
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.authz_toolkit.resources:location
+    help_text: |
+      The location of the target associations to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

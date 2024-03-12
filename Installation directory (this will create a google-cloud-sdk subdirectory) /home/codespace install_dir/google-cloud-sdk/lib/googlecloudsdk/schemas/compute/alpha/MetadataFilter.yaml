@@ -1,0 +1,46 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute alpha MetadataFilter export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  filterLabels:
+    description: |-
+      The list of label value pairs that must match labels in the provided
+      metadata based on filterMatchCriteria This list must not be empty and can
+      have at the most 64 entries.
+    type: array
+    items:
+      $ref: MetadataFilterLabelMatch.yaml
+  filterMatchCriteria:
+    description: |-
+      Specifies how individual filter label matches within the list of
+      filterLabels and contributes toward the overall metadataFilter match.
+      Supported values are: - MATCH_ANY: at least one of the filterLabels
+      must have a matching label in the provided metadata. -
+    type: string
+    enum:
+    - MATCH_ALL
+    - MATCH_ANY
+    - NOT_SET

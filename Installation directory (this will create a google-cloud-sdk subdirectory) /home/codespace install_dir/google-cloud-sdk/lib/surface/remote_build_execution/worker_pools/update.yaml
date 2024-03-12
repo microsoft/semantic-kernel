@@ -1,0 +1,225 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Update a Remote Build Execution worker pool.
+    description: |
+      Updates the configuration of a Remote Build Execution worker pool.  This can be used to
+      change the size of the worker pool, change the type of machine, or adjust the disk size of the
+      worker VMs.
+    examples: |
+      The following command adjusts the nubmer of workers to 50 in a pool called 'pool1' contained
+      in the instance 'default_instance':
+
+        $ {command} pool1 --instance=default_instance --worker-count=50
+
+      The following command adjusts the configuration of the workers within the pool, changing the
+      machine type to standard 4 core machines with 500 GB disks.
+
+        $ {command} pool1 --instance=default_instance --disk-size=500 --machine-type=n1-standard-4
+
+  request:
+    collection: remotebuildexecution.projects.instances.workerpools
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveDockerRootDiskConfig
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAcceleratorConfig
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAutoscale
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:UpdateLabels
+
+  async:
+    collection: remotebuildexecution.projects.operations
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.remote_build_execution.resources:workerpool
+      help_text: |
+        Arguments and flags specifying the worker pool to update.
+    params:
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.hostOs
+      arg_name: host-os
+      required: false
+      default: ubuntu
+      help_text: |
+        OS type of the worker pool.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.channel
+      arg_name: channel
+      required: false
+      default: current
+      help_text: |
+        The release channel of the worker pool.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.vmImage
+      arg_name: vm-image
+      required: false
+      help_text: |
+        The VM image used by RBE workers. This field should only be set when channel is set to manual.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerCount
+      arg_name: worker-count
+      required: false
+      help_text: |
+        Number of workers that should be in the worker pool.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.diskSizeGb
+      arg_name: disk-size
+      required: false
+      help_text: |
+        Size of the disk, in Gb, for each worker.  Defaults to 200Gb.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.diskType
+      arg_name: disk-type
+      required: false
+      choices:
+      - arg_value: pd-standard
+        enum_value: pd-standard
+        help_text: |
+          Standard persistent disk.
+      - arg_value: pd-ssd
+        enum_value: pd-ssd
+        help_text: |
+          SSD persistent disk.
+      help_text: |
+        Type of persistent disk the worker VMs will use. Default is pd-standard.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.machineType
+      arg_name: machine-type
+      required: false
+      help_text: |
+        The type of VM to use for each worker.  To get a list of valid machine types, use the
+        following command:
+
+        $ gcloud compute machine-types list
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.soleTenantNodeType
+      arg_name: sole-tenant-node-type
+      required: false
+      help_text: |
+        Type of sole-tenant node to be used for sole-tenancy.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.minCpuPlatform
+      arg_name: min-cpu-platform
+      required: false
+      help_text: |
+        Minimum CPU platform for the workers.  For more information see
+        https://cloud.google.com/compute/docs/cpu-platforms.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.reserved
+      arg_name: reserved
+      required: false
+      help_text: |
+        Determines the type of VM to use.  If set then reserved VMs are used, otherwise preemptable
+        VMs are used.
+    - group:
+        mutex: true
+        params:
+        - group:
+            help_text: |
+              Either all or none of docker-root-disk-image, docker-root-disk-type,
+              and docker-root-disk-size should be set.
+            params:
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.attachedDisks.dockerRootDisk.sourceImage
+              arg_name: docker-root-disk-image
+              required: true
+              help_text: The source image to use for the user-provided docker root disk.
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.attachedDisks.dockerRootDisk.diskType
+              arg_name: docker-root-disk-type
+              required: true
+              choices:
+              - arg_value: pd-standard
+                enum_value: pd-standard
+                help_text: |
+                  Standard persistent disk.
+              - arg_value: pd-ssd
+                enum_value: pd-ssd
+                help_text: |
+                  SSD persistent disk.
+              help_text: |
+                The disk type to use for the user-provided docker root disk. Must be one of
+                pd-ssd and pd-standard.
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.attachedDisks.dockerRootDisk.diskSizeGb
+              arg_name: docker-root-disk-size
+              required: true
+              help_text: Size of the user-provided docker root disk, in Gb.
+        - arg_name: clear-docker-root-disk-config
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Remove the user-provided disk for docker root from the VMs in the worker pool and
+            use the boot disk instead.
+    - group:
+        mutex: true
+        params:
+        - group:
+            help_text: Either both or none of accelerator-count and accelerator-type should be set.
+            params:
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.accelerator.acceleratorCount
+              arg_name: accelerator-count
+              required: true
+              help_text: Number of the guest accelerator cards attached to each VM in the pool.
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.accelerator.acceleratorType
+              arg_name: accelerator-type
+              required: true
+              help_text: |
+                Type of accelerator to attach to each VM in the pool, e.g.
+                'nvidia-tesla-k80' for nVidia Tesla K80. Run `gcloud compute accelerator-types list`
+                to learn about all available accelerator types.
+        - arg_name: clear-accelerator-config
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Remove all accelerators from the VMs in the worker pool.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.networkAccess
+      arg_name: network-access
+      required: false
+      choices:
+      - arg_value: public
+        enum_value: public
+        help_text: |
+          Workers can connect to the public internet.
+      - arg_value: private
+        enum_value: private
+        help_text: |
+          Workers can only connect to Google APIs and services.
+      - arg_value: restricted-private
+        enum_value: restricted-private
+        help_text: |
+          Workers can only connect to Google APIs that are
+          reachable through `restricted.googleapis.com` (`199.36.153.4/30`).
+      help_text: |
+        Level of network access available to the pool.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.maxConcurrentActions
+      arg_name: max-concurrent-actions
+      required: false
+      help_text: |
+        Maximum actions each worker VM can run concurrently.
+    - group:
+        mutex: true
+        params:
+        - group:
+            help_text: |
+                Either both or none of autoscale-min-size and autoscale-max-size should be set.
+            params:
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.autoscale.minSize
+              arg_name: autoscale-min-size
+              required: true
+              help_text: The minimal number of autoscale workers. Must be greater than 0.
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.autoscale.maxSize
+              arg_name: autoscale-max-size
+              required: true
+              help_text: |
+                The maximal number of autoscale workers. Must be equal to or greater than
+                autoscale-min-size.
+        - arg_name: clear-autoscale
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Remove the autoscale settings.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.zones
+      arg_name: zones
+      required: false
+      help_text: |
+        List of zones where the workers should be located. If empty, workers
+        will be located in all zones in the region.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.userServiceAccounts
+      arg_name: user-service-accounts
+      required: false
+      help_text: |
+        A chain of user service accounts, the last of which will be the service account that user
+        code running on workers will authenticate as. The VM's service account (typically
+        "service-<consumer-project-num>@remotebuildexecution.iam.gserviceaccount.com") should be
+        granted roles/iam.serviceAccountTokenCreator on the first user account in the chain, the
+        first user account in the chain should be granted roles/iam.serviceAccountTokenCreator on
+        the second user account in the chain, and so on. If user service account is empty then the
+        user code will use the VM's service account.
+    additional_arguments_hook: googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:AddLabelsFlags

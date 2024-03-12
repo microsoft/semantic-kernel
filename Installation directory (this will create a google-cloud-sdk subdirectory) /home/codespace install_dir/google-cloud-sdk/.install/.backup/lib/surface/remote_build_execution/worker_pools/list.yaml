@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      List worker pools in a project for a specified instance.
+    description: |
+      Lists all worker pools currently in a specified instance in a project.
+    examples: |
+      The following command lists all the worker pools in the instance 'default_instance':
+
+        $ {command} --instance=default_instance
+
+  request:
+    collection: remotebuildexecution.projects.instances.workerpools
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.remote_build_execution.resources:instance
+      help_text: |
+        Instance from which the worker pool list should be retrieved from.

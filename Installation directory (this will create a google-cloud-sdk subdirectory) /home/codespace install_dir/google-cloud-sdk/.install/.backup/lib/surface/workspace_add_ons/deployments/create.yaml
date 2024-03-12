@@ -1,0 +1,32 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Create a Google Workspace Add-ons deployment
+    description: Create a Google Workspace Add-ons deployment
+    examples: |
+      To create an deployment called `my-deployment` with the deployment file, run:
+
+        $ {command} my-deployment --deployment-file=my-deployment.json
+
+      To create an deployment called `my-deployment` with the deployment object, run:
+
+        $ {command} my-deployment --deployment-object=my-deployment-string
+  request:
+    collection: gsuiteaddons.projects.deployments
+    api_version: v1
+  arguments:
+    resource:
+      help_text: Google Workspace Add-ons deployment to create
+      spec: !REF googlecloudsdk.command_lib.workspace_add_ons.resources:deployment
+    params:
+    - group:
+        mutex: true
+        required: true
+        params:
+        - api_field: googleCloudGsuiteaddonsV1Deployment
+          arg_name: deployment-object
+          help_text: json string of the deploymentObject
+          processor: googlecloudsdk.command_lib.workspace_add_ons.util:LoadJsonString
+        - api_field: googleCloudGsuiteaddonsV1Deployment
+          arg_name: deployment-file
+          help_text: path to the deployment file
+          processor: googlecloudsdk.command_lib.workspace_add_ons.util:ParseJsonFileToDeployment

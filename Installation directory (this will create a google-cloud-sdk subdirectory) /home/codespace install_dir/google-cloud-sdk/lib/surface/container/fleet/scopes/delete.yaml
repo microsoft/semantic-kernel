@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Delete a fleet scope.
+    description: |
+      This command deletes a Fleet Scope resource .
+
+    examples: |
+      First retrieve the ID of the scope using the command below. The output of this command
+      lists all the fleet's scopes, with their unique IDs in the Names column:
+
+        $ {parent_command} list
+
+      Delete a scope from the active project's fleet:
+
+        $ {command} SCOPE_NAME
+
+  request:
+    collection: gkehub.projects.locations.scopes
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+
+  async:
+    collection: gkehub.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The fleet scope to delete.
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
+      arg_name: scope

@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Delete a Distributed Cloud Edge Network interconnect attachment.
+    description: |
+      Delete a Distributed Cloud Edge Network interconnect attachment.
+    examples: |
+      To delete an interconnect attachment called 'my-attachment' in edge zone 'us-central1-edge-den1', run:
+
+        $ {command} my-attachment --location=us-central1 --zone=us-central1-edge-den1
+
+  request:
+    collection: edgenetwork.projects.locations.zones.interconnectAttachments
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Distributed Cloud Edge Network interconnectAttachment to delete.
+      # The following should point to the resource argument definition under your
+      # surface's command_lib directory.:
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:attachment
+
+  async:
+    collection: edgenetwork.projects.locations.operations

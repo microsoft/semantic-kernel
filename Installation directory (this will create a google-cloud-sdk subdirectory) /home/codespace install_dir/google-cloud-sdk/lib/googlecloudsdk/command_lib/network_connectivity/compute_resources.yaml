@@ -1,0 +1,40 @@
+project:
+  name: project
+  collection: compute.projects
+  attributes:
+  - &project
+    parameter_name: project
+    attribute_name: project
+    help: The project ID.
+    property: core/project
+
+region:
+  name: region
+  collection: compute.regions
+  attributes:
+  - *project
+  - &region
+    parameter_name: region
+    attribute_name: region
+    help: The region ID.
+
+network:
+  name: network
+  collection: compute.networks
+  attributes:
+  - *project
+  - &network
+    parameter_name: network
+    attribute_name: network
+    help: The name of the Google Compute Engine network.
+
+subnetwork:
+  name: subnetwork
+  collection: compute.subnetworks
+  attributes:
+  - *project
+  - *region
+  - &subnetwork
+    parameter_name: subnetwork
+    attribute_name: subnetwork
+    help: The name of the subnetwork

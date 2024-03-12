@@ -1,0 +1,74 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief:  Update a Cloud Healthcare API HL7v2 store.
+    description: Update a Cloud Healthcare API HL7v2 store.
+    examples: |
+      To update the Cloud Pub/Sub topic on a HL7v2 store 'test-hl7v2-store', run:
+
+        $ {command} test-hl7v2-store --pubsub-topic=projects/my-project/topics/test-pubsub-topic --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.hl7V2Stores
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API HL7v2 store to update.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:hl7v2_store
+
+    params:
+    - api_field: hl7V2Store.notificationConfig.pubsubTopic
+      arg_name: pubsub-topic
+      help_text: |
+        Google Cloud Pub/Sub topic name to send updates to.
+
+        Note: A topic must be created before publishing or subscribing to it. For instructions
+        on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic
+
+- release_tracks: [GA]
+
+  help_text:
+    brief:  Update a Cloud Healthcare API HL7v2 store.
+    description: |
+      Update a Cloud Healthcare API HL7v2 store.
+    examples: |
+      To update the Cloud Pub/Sub topics on a HL7v2 store ``test-hl7v2-store'', run:
+
+        $ {command} test-hl7v2-store --notification-config=pubsub-topic=projects/my-project/topics/test-pubsub-topic1,filter="labels.priority=high" --notification-config=pubsub-topic=projects/my-project/topics/test-pubsub-topic2
+
+  request:
+    collection: healthcare.projects.locations.datasets.hl7V2Stores
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API HL7v2 store to update.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:hl7v2_store
+
+    params:
+    - api_field: hl7V2Store.notificationConfigs
+      arg_name: notification-config
+      help_text: |
+        A list of notification configs. Each configuration uses a filter to determine whether to
+        publish a message (both Ingest & Create) on the corresponding notification destination.
+        Only the message name is sent as part of the notification. Supplied by the client.
+
+        See https://cloud.google.com/appengine/docs/standard/python/search/query_strings for the
+        syntax of the filter.
+
+        Note: A topic must be created before publishing or subscribing to it. For instructions
+        on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic
+      type:
+        arg_dict:
+          flatten: false
+          spec:
+          - api_field: pubsubTopic
+            arg_name: pubsub-topic
+          - api_field: filter
+            arg_name: filter
+            required: false

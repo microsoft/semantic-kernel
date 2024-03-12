@@ -1,0 +1,45 @@
+release_tracks: [ALPHA]
+command_type: GENERIC
+help_text:
+  brief: Export the Dialogflow agent to a zip file.
+  description: |
+    Export the Dialogflow agent of the current project to a zip file. The zip file will contain
+    data on all intents and entity types of the agent.
+  examples: |
+    To export the agent of the current project to local file path/to/agent.zip:
+
+      $ {command} --destination="path/to/agent.zip"
+
+    To export the agent of the current project to agent.zip in Google Storage Bucket `mybucket`:
+
+      $ {command} --destination="gs://mybucket/agent.zip"
+
+arguments:
+  resource:
+    help_text: The agent to export.
+    spec: !REF googlecloudsdk.command_lib.dialogflow.resources:project
+    is_parent_resource: true
+  params:
+  - arg_name: destination
+    help_text: |
+      Path to a file or the URI to a Google Cloud Storage to save the agent to. Note: A URI must
+      start with "gs://".
+    required: true
+
+request:
+  collection: dialogflow.projects.agent
+  method: export
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.dialogflow.agent.hooks:SetAgentUri
+
+async:
+  collection: dialogflow.projects.operations
+  extract_resource_result: false
+
+response:
+  modify_response_hooks:
+  - googlecloudsdk.command_lib.dialogflow.agent.hooks:SaveAgentToFile
+  result_attribute: response
+
+output:
+  format: none

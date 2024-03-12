@@ -1,0 +1,20 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Describe a group.
+    description: |
+      Retrieve and display details about a group.
+    examples: |
+      To display details about a group named ``my-group'', run:
+
+        $ {command} my-group
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:group
+      help_text: |
+        Name of the group to describe.
+
+  request: &request
+    api_version: v1
+    collection: networkconnectivity.projects.locations.global.hubs.groups

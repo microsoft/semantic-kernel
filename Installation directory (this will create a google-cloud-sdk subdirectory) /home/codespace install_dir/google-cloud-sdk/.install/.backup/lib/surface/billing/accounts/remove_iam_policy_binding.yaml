@@ -1,0 +1,23 @@
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: Remove an IAM policy binding from a Cloud Billing account.
+  description: |
+    Remove an IAM policy binding to the IAM policy from a Cloud Billing
+    account. A binding consists of a member and a role.
+  examples: |
+    To remove someone@example.com as a Billing Account Administrator from billing account
+    123456-789876-543210, run:
+
+      $ {command} 123456-789876-543210 --member='user:someone@example.com' --role='roles/billing.admin'
+
+request:
+  collection: cloudbilling.billingAccounts
+
+arguments:
+  resource:
+    help_text: Name of the Cloud Billing account for which to remove the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.billing.resources:account
+
+iam:
+  enable_condition: false

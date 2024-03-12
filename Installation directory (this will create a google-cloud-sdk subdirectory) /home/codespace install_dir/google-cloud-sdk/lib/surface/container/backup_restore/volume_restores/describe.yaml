@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Describe a volume restore.
+    description: |
+      Describe a Backup for GKE volume restore.
+
+      ## EXAMPLES
+
+      To describe a volume restore ``my-volume-restore'' in project ``my-project'' in location ``us-central1'' under restore plan ``my-restore-plan'' under restore ``my-restore'', run:
+
+        $ {command} my-volume-restore --project=my-project --location=us-central1 --restore-plan=my-restore-plan --restore=my-restore
+
+  request:
+    collection: gkebackup.projects.locations.restorePlans.restores.volumeRestores
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the volume restore to describe. The name may be provided either as a relative name,
+        e.g.
+        `projects/<project>/locations/<location>/restorePlans/<restorePlan>/restores/<restores>/volumeRestores/<volumeRestore>`
+        or as a single ID name (with the parent resources provided via options or through
+        properties), e.g.
+        `VOLUME_RESTORE --project=<project> --location=<location> --restore-plan=<restore-plan> --restore=<restore>`.
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:volume_restore

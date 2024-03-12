@@ -1,0 +1,147 @@
+region:
+  name: region
+  collection: workstations.projects.locations
+  attributes:
+  - &region
+    parameter_name: locationsId
+    attribute_name: region
+    help: |
+      The name of the region of the {resource}.
+
+default_region:
+  name: region
+  collection: workstations.projects.locations
+  attributes:
+  - &default_region
+    parameter_name: locationsId
+    attribute_name: region
+    property: workstations/region
+    help: |
+      The name of the region of the {resource}.
+
+region_with_global_fallthrough:
+  name: region
+  collection: workstations.projects.locations
+  attributes:
+  - &region_with_global_fallthrough
+    parameter_name: locationsId
+    attribute_name: region
+    property: workstations/region
+    help: |
+      The name of the region of the {resource}.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all regions
+
+
+cluster:
+  name: cluster
+  collection: workstations.projects.locations.workstationClusters
+  request_id_field: workstationClusterId
+  attributes:
+  - *default_region
+  - &cluster
+    parameter_name: workstationClustersId
+    attribute_name: cluster
+    help: |
+      The name of the cluster containing the {resource}.
+
+default_cluster:
+  name: cluster
+  collection: workstations.projects.locations.workstationClusters
+  request_id_field: workstationClusterId
+  attributes:
+  - *default_region
+  - &default_cluster
+    parameter_name: workstationClustersId
+    attribute_name: cluster
+    property: workstations/cluster
+    help: |
+      The name of the cluster containing the {resource}.
+
+cluster_with_global_fallthrough:
+  name: cluster
+  collection: workstations.projects.locations.workstationClusters
+  request_id_field: workstationClusterId
+  attributes:
+  - *region_with_global_fallthrough
+  - &cluster_with_global_fallthrough
+    parameter_name: workstationClustersId
+    attribute_name: cluster
+    property: workstations/cluster
+    help: |
+      The name of the cluster containing the {resource}.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all clusters
+
+config:
+  name: config
+  collection: workstations.projects.locations.workstationClusters.workstationConfigs
+  request_id_field: workstationConfigId
+  attributes:
+  - *default_region
+  - *default_cluster
+  - &config
+    parameter_name: workstationConfigsId
+    attribute_name: config
+    help: |
+      The name of the config containing the {resource}.
+
+default_config:
+  name: config
+  collection: workstations.projects.locations.workstationClusters.workstationConfigs
+  request_id_field: workstationConfigId
+  attributes:
+  - *default_region
+  - *default_cluster
+  - &default_config
+    parameter_name: workstationConfigsId
+    attribute_name: config
+    property: workstations/config
+    help: |
+      The name of the config containing the {resource}.
+
+config_with_global_fallthrough:
+  name: config
+  collection: workstations.projects.locations.workstationClusters.workstationConfigs
+  request_id_field: workstationConfigId
+  attributes:
+  - *region_with_global_fallthrough
+  - *cluster_with_global_fallthrough
+  - &config_with_global_fallthrough
+    parameter_name: workstationConfigsId
+    attribute_name: config
+    property: workstations/config
+    help: |
+      The name of the config containing the {resource}.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all configs
+
+workstation:
+  name: workstation
+  collection: workstations.projects.locations.workstationClusters.workstationConfigs.workstations
+  request_id_field: workstationId
+  attributes:
+  - *default_region
+  - *default_cluster
+  - *default_config
+  - &workstation
+    parameter_name: workstationsId
+    attribute_name: workstation
+    help: |
+      The name of the workstation.
+
+operation:
+  name: operation
+  collection: workstations.projects.locations.operations
+  attributes:
+  - *region
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      The name of the Cloud Workstations operation.

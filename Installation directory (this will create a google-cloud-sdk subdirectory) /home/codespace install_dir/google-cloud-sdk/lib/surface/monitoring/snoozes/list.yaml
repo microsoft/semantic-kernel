@@ -1,0 +1,36 @@
+- help_text:
+    brief: List snoozes.
+    description: List snoozes.
+    examples: |
+      To order your results first by the snooze's display name and then the end time:
+
+        $ {command} --sort-by=display_name,interval.end_time
+
+      To order your results in reverse order, you can add '~' in front of the field name:
+
+        $ {command} --sort-by="~display_name"
+
+      To return results with expired snoozes only:
+
+        $ {command} --filter="interval.end_time<+PT1S"
+
+      To return results whose display name contain the word 'cloud':
+
+        $ {command} --filter="display_name:(cloud)"
+
+      More information can be found at
+      https://cloud.google.com/sdk/gcloud/reference/topic/filters
+
+  request:
+    collection: monitoring.projects.snoozes
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The Cloud Monitoring Workspace from which to list snoozes from.
+      spec: !REF googlecloudsdk.command_lib.monitoring.resources:project
+
+  output:
+    format: yaml

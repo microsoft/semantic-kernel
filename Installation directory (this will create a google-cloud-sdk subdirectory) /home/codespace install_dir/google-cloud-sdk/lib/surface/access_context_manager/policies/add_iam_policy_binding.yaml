@@ -1,0 +1,36 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Add IAM policy binding for an access policy.
+  description: |
+    Adds a policy binding to the IAM policy of an access policy. The binding consists of a role,
+    identity, and access policy.
+  examples: |
+    To add an IAM policy binding for the role of ``roles/notebooks.admin'' for the user 'test-user@gmail.com'
+    on the access policy 'accessPolicies/123', run:
+
+      $ {command} --member='user:test-user@gmail.com' --role='roles/notebooks.admin' accessPolicies/123
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+request:
+  collection: accesscontextmanager.accessPolicies
+  use_relative_name: true
+  ALPHA:
+    api_version: v1alpha
+    method: setIamPolicy
+  BETA:
+    api_version: v1
+    method: setIamPolicy
+  GA:
+    api_version: v1
+    method: setIamPolicy
+
+arguments:
+  resource:
+    help_text: The access policy to add the IAM binding.
+    spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy
+
+iam:
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

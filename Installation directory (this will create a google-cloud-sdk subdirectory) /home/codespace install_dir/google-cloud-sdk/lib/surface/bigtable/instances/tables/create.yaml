@@ -1,0 +1,82 @@
+- release_tracks: [GA, BETA, ALPHA]
+  help_text:
+    brief: Create a new Cloud Bigtable table.
+    description: Create a new Cloud Bigtable table.
+    examples: |
+      To create a table `my-table` in instance `my-instance` with a column family `my-family`, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family"
+
+      To create a table that has a column family named `my-instance`, a garbage collection policy
+      that lets data expire after 864,000 seconds, and initial table splits on row keys `car` and `key`, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family:maxage=864000s" --splits=car,key
+
+      To create a table `my-table` in instance `my-instance` that lets data in column family `my-family1`
+      expire after 10 days and keeps a maximum of 5 cells per column in column family `my-family-2` if the data is less than 5 days old, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family-1:maxage=10d,my-family-2:maxversions=5||maxage=5d"
+
+      To create a table `my-table` that has one column family `my-family` that lets data expire after 10 days, and to enable a change stream
+      for the table to be kept for 7 days, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family:maxage=10d" --change-stream-retention-period=7d
+
+      To create a deletion-protected table `my-table` in instance `my-instance` with a column family `my-family`, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family" --deletion-protection
+
+      To create a table `my-table` without deletion protection in instance `my-instance` with a column family `my-family`, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family" --no-deletion-protection
+
+      To create a table `my-table` with automated backup policy (retention_period=72h, frequency=24h) enabled in instance `my-instance` with a column family `my-family`, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family" --enable-automated-backup
+
+  request:
+    collection: bigtableadmin.projects.instances.tables
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.bigtable.tables:UpdateRequestWithInput
+
+  arguments:
+    resource:
+      help_text: Cloud Bigtable table to create.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
+
+    params:
+    - api_field: createTableRequest.table.columnFamilies
+      arg_name: column-families
+      required: true
+      type: "arg_list"
+      help_text: |
+        A double-quote (`"`) wrapped list of family name and corresponding garbage collection rules
+        concatenated by `:`, where the rules are optional. For example: \
+        `"family_1,family_2:maxage=5d&&maxversions=2,family_3:maxage=10d||maxversions=5"`
+      processor: googlecloudsdk.api_lib.bigtable.tables:ParseColumnFamilies
+    - api_field: createTableRequest.initialSplits
+      arg_name: splits
+      help_text: |
+        Row keys where the table should initially be split. For example: `car,key`
+      type: "arg_list"
+      processor: googlecloudsdk.api_lib.bigtable.tables:MakeSplits
+    - api_field: createTableRequest.table.changeStreamConfig.retentionPeriod
+      arg_name: change-stream-retention-period
+      help_text: |
+        The length of time to retain change stream data for the table, in the range of
+        [1 day, 7 days]. Acceptable units are days (d), hours (h), minutes (m), and seconds (s).
+        Passing in a value for this option enables a change stream for the table. Examples: `5d` or
+        `48h`.
+      processor: googlecloudsdk.api_lib.bigtable.tables:ConvertDurationToSeconds
+    - api_field: createTableRequest.table.deletionProtection
+      arg_name: deletion-protection
+      type: bool
+      help_text: |
+        Once specified, the table is deletion protected.
+    - api_field: createTableRequest.table.automatedBackupPolicy
+      arg_name: enable-automated-backup
+      action: store_true
+      help_text: |
+        Once set, enables the default automated backup policy (retention_period=72h, frequency=24h)
+        for the table.
+      processor: googlecloudsdk.api_lib.bigtable.tables:EnableDefaultAutomatedBackupPolicy

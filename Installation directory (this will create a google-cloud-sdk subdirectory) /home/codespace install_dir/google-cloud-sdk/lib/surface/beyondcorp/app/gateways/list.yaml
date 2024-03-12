@@ -1,0 +1,42 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: List Beyondcorp AppConnector Gateway resources.
+    description: List Beyondcorp AppConnector Gateway resources based on project and location.
+    examples: |
+      examples: |
+      To list all gateways in a project for location us-central1 in table form, run:
+
+        $ {command} --project=projectId \
+            --location=us-central1
+
+      To list all gateways in a project for location us-central1 in json form, run:
+
+        $ {command} --project=projectId \
+            --location=us-central1 \
+            --format=json(displayName, name, state, type, hostType, updateTime, labels)
+
+  request:
+    collection: beyondcorp.projects.locations.appGateways
+    BETA:
+      api_version: v1
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Beyondcorp gateway you want to list.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:location
+
+  output:
+    format: |
+        table(
+          name.basename():label=NAME,
+          displayName:label=DISPLAY_NAME,
+          state:label=GATEWAY_STATE,
+          type:label=GATEWAY_TYPE,
+          hostType:label=HOST_TYPE,
+          updateTime.date():label=UPDATE_TIME,
+          labels.list():label=LABELS
+        )

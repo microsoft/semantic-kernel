@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="windows-1255" ?> 
+<!--
+Source: http://infomed.co.il/rss/rss.xml
+Expect: windows-1255
+-->
+<rss version="2.0">
+<channel>
+<title>אינפומד - אתר הרפואה הישראלי</title>
+<link>http://www.infomed.co.il</link>
+<description />
+<language>he-IL</language>
+<pubDate>2006-01-04T13:53:35</pubDate>
+<lastBuildData>2006-01-04T13:53:35</lastBuildData>
+<image>
+<title>InfoMed - The Israeli Web Site</title>
+<url>http://www.infomed.co.il/images/infoMedForRss.jpg</url>
+</image>
+<item>
+   <language>he-IL</language>
+   <title>  פותחה מערכת אלקטרו- אופטית למיפוי של גידולים במוח במהלך הניתוח  </title>
+   <link>http://www.infomed.co.il/news/n_010406_1.htm</link>
+   <pubDate>2006-01-04T13:53:35</pubDate>
+     <description><div dir="rtl"> המערכת פיתוח של חברת IETMED מהחממה הטכנולוגית "יוזמות העמק" - פרטים נוספים בחדשה</div></description>
+   <category>חדשות רפואיות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>האם ניתן לקבל חיסון אנטי טטנוס בהנקה ?</title>
+   <link>http://www.infomed.co.il/questions/q_010406_1.htm</link>
+   <pubDate>2006-01-04T12:55:10</pubDate>
+     <description><div dir="rtl"> אין עדות לנזק לאם או לתינוק</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>על הטפיל Blastocystis hominis  .</title>
+   <link>http://www.infomed.co.il/questions/q_010406_2.htm</link>
+   <pubDate>2006-01-04T12:55:10</pubDate>
+     <description><div dir="rtl"> תשובה מפורטת על טפיל מערכת העיכול</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>הרזיה לנערה ללא סיכונים</title>
+   <link>http://www.infomed.co.il/questions/q_010406_3.htm</link>
+   <pubDate>2006-01-04T12:55:10</pubDate>
+     <description><div dir="rtl"> נערה שרוצה לרזות אך פוחדת להיהפך לאנורקסית</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>טיפול במתיחה או קרע באזור המפשעה</title>
+   <link>http://www.infomed.co.il/questions/q_010406_4.htm</link>
+   <pubDate>2006-01-04T12:55:10</pubDate>
+     <description><div dir="rtl"> תשובה מפורטת עם קישורים לתרגילים על קרע בשרירי אזור המפשעה</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>האם ניתן לטפל בכף רגל סוכרתית בעזרת פיזיותרפיה ?</title>
+   <link>http://www.infomed.co.il/questions/q_010406_5.htm</link>
+   <pubDate>2006-01-04T12:55:10</pubDate>
+     <description><div dir="rtl"> התשובה מפרטת את הנקודות בהן יכולה פיזיותרפיה לסייע</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>תרופות חדשות באתר</title>
+   <link>http://www.infomed.co.il/medIndex.asp</link>
+   <pubDate>2006-01-04T08:34:55</pubDate>
+     <description><div dir="rtl"> 3 תרופות חדשות נוספו לאינדקס התרופות: <br />
+     קמפטו (אירינוטקאן) לטיפול בסרטן גרורתי של המעי והחלחולת <br />
+     טראזודיל  (טראזודון) תרופה נוגדת דיכאון <br />
+     פלואורואוראציל תרופה נוגדת סרטן <br />
+    </div></description>
+   <category>אינדקס התרופות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>מיץ חמוציות כטיפול בדלקות בדרכי השתן</title>
+   <link>http://www.infomed.co.il/questions/q_010206_1.htm</link>
+   <pubDate>2006-01-02T10:43:39</pubDate>
+     <description><div dir="rtl"> דלקות בדרכי השתן מסוכנות לנשים בגיל ההריון. הם עלולות לגרום להפלות וללידה מוקדמת. מיץ חמוציות יכול לעזור במניעה</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>עד איזה שבוע בהריון רגיל ניתן לטוס לחו"ל ללא חשש?</title>
+   <link>http://www.infomed.co.il/questions/q_010206_2.htm</link>
+   <pubDate>2006-01-02T10:43:39</pubDate>
+     <description><div dir="rtl"> התשובה מפנה לתשובה מפורטת באינפומד, ולריכוז התשובות בנושא</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>כניסה להריון בגיל 60 .</title>
+   <link>http://www.infomed.co.il/questions/q_010206_3.htm</link>
+   <pubDate>2006-01-02T10:43:39</pubDate>
+     <description><div dir="rtl"> הסיכוי שואף לאפס</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>על ניתוח להחלפת ברך</title>
+   <link>http://www.infomed.co.il/questions/q_010206_4.htm</link>
+   <pubDate>2006-01-02T10:43:39</pubDate>
+     <description><div dir="rtl"> תשובה על הניתוח להחלפת הברך, סיכונים ויתרונות</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>מה המשמעות של בלוטת אינטרה ממארית תקינה בבדיקת הדמיה</title>
+   <link>http://www.infomed.co.il/questions/q_010106_1.htm</link>
+   <pubDate>2006-01-01T14:05:00</pubDate>
+     <description><div dir="rtl"> מדובר בקשרית לימפה בבית החזה, ובמקרה דנן התוצאות תקינות</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>בלט דיסק בבדיקת CT של עמוד השדרה</title>
+   <link>http://www.infomed.co.il/questions/q_010106_2.htm</link>
+   <pubDate>2006-01-01T14:05:00</pubDate>
+     <description><div dir="rtl"> נראה לפי תוצאות הבדיקה כי קיים לחץ קל על עצבי חוט השדרה</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>האם ריח רע יכול לנבוע מהתקן תוך רחמי</title>
+   <link>http://www.infomed.co.il/questions/q_010106_3.htm</link>
+   <pubDate>2006-01-01T14:05:00</pubDate>
+     <description><div dir="rtl"> בדרך כלל לא, התשובה מפנה לתשובה מפורטת באינפומד על ההתקן התוך רחמי</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>על המחלה אמלוגנסיס אימפרפקטה</title>
+   <link>http://www.infomed.co.il/questions/q_010106_4.htm</link>
+   <pubDate>2006-01-01T14:05:00</pubDate>
+     <description><div dir="rtl"> זו מחלה תורשתית הגורמת לשחיקת האמייל בשן. ממולצות דרכי הטיפול המקובלות</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>איחור במחזור של חודש ותוצאות בדיקות הריון שליליות</title>
+   <link>http://www.infomed.co.il/questions/q_010106_5.htm</link>
+   <pubDate>2006-01-01T14:05:00</pubDate>
+     <description><div dir="rtl"> השואלת גם סבלה מתת פעילות של בלוטת התריס. התשובה מציעה את הבדיקות שכדאי לעשות במקרה הנדון</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>עליה במקרי הרעלה מפאראצטאמול  </title>
+   <link>http://www.infomed.co.il/news/n_123105_1.htm</link>
+   <pubDate>2005-12-31T13:06:50</pubDate>
+     <description><div dir="rtl"> על פי מנהל התרופות האמריקאי כ- 56 אלף מקרים של הרעלת פאראצטאמול קורים מדי שנה. פירוט בחדשה</div></description>
+   <category>חדשות רפואיות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>מיפוי עצמות לאחר כאבי ברכיים</title>
+   <link>http://www.infomed.co.il/questions/q_123005_1.htm</link>
+   <pubDate>2005-12-30T17:29:42</pubDate>
+     <description><div dir="rtl"> על תוצאת מיפוי עצמות לאחר תלונות על כאבי ברכיים, והמלצות להמשך טיפול</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>על "קנאקים" בברכיים</title>
+   <link>http://www.infomed.co.il/questions/q_123005_2.htm</link>
+   <pubDate>2005-12-30T17:29:42</pubDate>
+     <description><div dir="rtl"> מה הסיבה לרעשים האלו שיש לפעמים בברכיים</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>טיפול בדלקת בגידים שבאיזור המפשעה</title>
+   <link>http://www.infomed.co.il/questions/q_123005_3.htm</link>
+   <pubDate>2005-12-30T17:29:42</pubDate>
+     <description><div dir="rtl"> זריקות סטרואידים יכולות לעזור, בנוסף לעיסוי ועוד. השאר בתשובה</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+<item>
+   <language>he-IL</language>
+   <title>על ניתוח ארתרוסקופיה</title>
+   <link>http://www.infomed.co.il/questions/q_123005_4.htm</link>
+   <pubDate>2005-12-30T17:29:42</pubDate>
+     <description><div dir="rtl"> על ניתוח ארתרוסקופיה ויתרונותיו</div></description>
+   <category>שאלות ותשובות</category>
+</item>
+</channel>
+</rss>
+
+
+ 

@@ -1,0 +1,61 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1beta1 ServiceLbPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- name
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  autoCapacityDrain:
+    description: |-
+      Configuration to automatically move traffic away for unhealthy IG/NEG for
+      the associated Backend Service.
+    $ref: ServiceLbPolicyAutoCapacityDrain.yaml
+  description:
+    description: |-
+      A free-text description of the resource. Max length 1024 characters.
+    type: string
+  failoverConfig:
+    description: Configuration related to health based failover.
+    $ref: ServiceLbPolicyFailoverConfig.yaml
+  labels:
+    description: Set of label tags associated with the ServiceLbPolicy resource.
+    $ref: LabelsValue.yaml
+  loadBalancingAlgorithm:
+    description: |-
+      The type of load balancing algorithm to be used. The default behavior is
+      WATERFALL_BY_REGION.
+    type: string
+    enum:
+    - LOAD_BALANCING_ALGORITHM_UNSPECIFIED
+    - SPRAY_TO_REGION
+    - SPRAY_TO_WORLD
+    - WATERFALL_BY_REGION
+    - WATERFALL_BY_ZONE
+  name:
+    description: |-
+      Name of the ServiceLbPolicy resource. It matches pattern `
+      projects/{project}/locations/{location}/serviceLbPolicies/{service_lb_po
+      licy_name}`.
+    type: string

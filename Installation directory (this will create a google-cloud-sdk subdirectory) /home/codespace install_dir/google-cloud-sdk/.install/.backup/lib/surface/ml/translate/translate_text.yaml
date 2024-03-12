@@ -1,0 +1,79 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Use the Google Cloud Translation API to translate between languages.
+    description: |
+      Translates input text and returns translated text.
+    examples: |
+      The following command translates 'What beautiful weather!' into French.
+
+        $ {command} --content='What beautiful weather!' --zone=us-central1 --target-language=fr-CA
+
+  request:
+    collection: translate.projects.locations
+    method: translateText
+    BETA:
+      api_version: v3
+    ALPHA:
+      api_version: v3beta1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.ml.translate.hooks:UpdateRequestTranslateText
+
+  arguments:
+    resource:
+      help_text: endpoint location
+      spec: !REF googlecloudsdk.command_lib.ml.translate.resources:project
+      override_resource_collection: true
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.ml.translate.flags:zone
+    - arg_name: model
+      help_text: |
+        The model type requested for this translation. The format depends on the model type:
+
+          for AutoML Translation models: model-id
+
+          for General (built-in) models: general/nmt or general/base
+
+        Authorization requires one or more of the following Google IAM permissions on the specified
+        resource model:
+
+          cloudtranslate.generalModels.predict
+
+          automl.models.predict
+
+        If missing, the system decides which google base model to use.
+
+        Usage:
+
+        AutoML models: '--model=TRL321456789'
+
+        General models: '--model=general/nmt'
+
+    - group:
+        mutex: true
+        required: true
+        help_text: Contents group.
+        params:
+        - arg_name: content
+          help_text: |
+            The content of the input in string format. We recommend that the content be less
+            than 30k codepoints.
+        - arg_name: content-file
+          help_text: |
+            Specify a local file path containing the text to be translated.
+    - arg_name: target-language
+      required: true
+      help_text: |
+        The BCP-47 language code to use for translation of the input text.
+    - arg_name: source-language
+      help_text: |
+        The BCP-47 language code of the input text if known, for example, 'en-US' or 'sr-Latn'. If
+        the source language isn't specified, the API attempts to identify the source language
+        automatically and returns the source language in the response.
+    - arg_name: glossary-config
+      help_text: |
+        Glossary to be applied. The glossary must be within the same region as the model.
+    - arg_name: mime-type
+      help_text: |
+        The format of the source text, for example, 'text/html', 'text/plain'. Defaults to
+        'text/html'.

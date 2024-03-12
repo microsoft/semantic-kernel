@@ -1,0 +1,59 @@
+- release_tracks: [ALPHA]
+
+  command_type: LIST
+
+  help_text:
+    brief: List the details of resident and descendant Event Threat Detection custom modules.
+    description: |
+      List the details of the resident and descendant Event Threat Detection custom modules for a
+      specified organization or folder. For a project, this command lists only the custom modules
+      that are created in the project. Modules created in a parent organization or folder are
+      excluded from the list. To list the resident custom modules and the modules that are inherited
+      from a parent organization and folder, use `gcloud scc custom-modules etd list`.
+    examples: |
+      To list resident and descendant Event Threat Detection custom modules for organization `123`, run:
+
+        $ {command} --organization=organizations/123
+
+      To list resident and descendant Event Threat Detection custom modules for folder `456`, run:
+
+        $ {command} --folder=folders/456
+
+      To list resident and descendant Event Threat Detection custom modules for project `789`, run:
+
+        $ {command} --project=projects/789
+
+  request:
+    collection: securitycenter.organizations.eventThreatDetectionSettings.customModules
+    disable_resource_check: true
+    api_version: v1
+    method: listDescendant
+    disable_pagination: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.custom_modules.etd.request_hooks:ListDescendantEventThreatDetectionCustomModulesReqHook
+
+  arguments:
+
+    params:
+    - group:
+        required: true
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: parent
+          help_text: |
+            Organization for listing the Event Threat Detection custom modules created at
+            the organization level and its child resources. Formatted as `organizations/123`
+            or just `123`.
+
+        - arg_name: folder
+          api_field: parent
+          help_text: |
+            Folder for listing the Event Threat Detection custom modules created at the current
+            folder level and its child resources. Formatted as `folders/456` or just `456`.
+
+        - arg_name: project
+          api_field: parent
+          help_text: |
+            ID or number of the project for listing the Event Threat Detection custom modules
+            at current project level. Formatted as `projects/789` or just `789`.

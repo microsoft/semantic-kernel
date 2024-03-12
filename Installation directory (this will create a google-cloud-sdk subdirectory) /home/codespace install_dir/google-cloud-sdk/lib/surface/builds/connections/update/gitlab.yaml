@@ -1,0 +1,47 @@
+- help_text:
+    brief: Update a Cloud Build Connection of type gitlab.com or GitLab Enterprise.
+    description: |
+      Update a Cloud Build Connection of type gitlab.com or GitLab Enterprise.
+
+    examples: |
+      To update the ssl_ca, provide the connection name and the ssl_ca file:
+
+        $ {command} my-gle-conn --region=us-west1
+          --ssl-ca-file=mycertificate.crt
+
+      To update the authorization token, provide the connection name and the new authorization token
+       secret version.
+
+        $ {command} my-gle-conn --region=us-west1
+          --authorizer-token-secret-version=projects/myproj/secrets/api-pat/versions/1
+
+  command_type: UPDATE
+  request:
+    collection: cloudbuild.projects.locations.connections
+    api_version: v2
+
+  arguments:
+    resource:
+      help_text: Connection to update.
+      spec: !REF googlecloudsdk.command_lib.cloudbuild.resources_v2:connection
+    params:
+    - api_field: connection.gitlabConfig.hostUri
+      arg_name: host-uri
+      help_text: URI of the GitLab instance.
+    - api_field: connection.gitlabConfig.authorizerCredential.userTokenSecretVersion
+      arg_name: authorizer-token-secret-version
+      help_text: Secret containing the api personal access token.
+    - api_field: connection.gitlabConfig.readAuthorizerCredential.userTokenSecretVersion
+      arg_name: read-authorizer-token-secret-version
+      help_text: Secret containing the read_repository personal access token. Required for GitLab
+       Enterprise versions older than 13.10.
+    - api_field: connection.gitlabConfig.serviceDirectoryConfig.service
+      arg_name: service-directory-service
+      help_text: Service Directory service resource to use for accessing the GitLab Enterprise
+        Server. Necessary only if the server has no public access from the internet.
+    - api_field: connection.gitlabConfig.sslCa
+      arg_name: ssl-ca-file
+      help_text: File containing the SSL_CA to be used.
+      processor: googlecloudsdk.core.util.files:ReadFileContents
+  async:
+    collection: cloudbuild.projects.locations.operations

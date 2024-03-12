@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Dataflow job.
+  description: |
+    *{command}* exports the configuration for a Dataflow job.
+
+    Job configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    jobs within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a job, run:
+
+      $ {command} my-job
+
+    To export the configuration for a job to a file, run:
+
+      $ {command} my-job --path=/path/to/dir/
+
+    To export the configuration for a job in Terraform
+    HCL format, run:
+
+      $ {command} my-job --resource-format=terraform
+
+    To export the configurations for all jobs within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Job to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.dataflow.resources:job

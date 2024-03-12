@@ -1,0 +1,76 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 UrlRedirect export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  hostRedirect:
+    description: |-
+      The host that is used in the redirect response instead of the one that was
+      supplied in the request. The value must be between 1 and 255 characters.
+    type: string
+  httpsRedirect:
+    description: |-
+      Determines whether the URL scheme in the redirected request is adjusted to
+      `HTTPS` or remains that of the request. If it is set to `true` and at
+      least one edge_ssl_certificates is set on the service, the URL scheme in
+      the redirected request is set to `HTTPS`. If it is set to `false`, the URL
+      scheme of the redirected request remains the same as that of the request.
+    type: boolean
+  pathRedirect:
+    description: |-
+      The path that is used in the redirect response instead of the one that was
+      supplied in the request. `path_redirect` cannot be supplied together with
+      prefix_redirect. Supply one alone or neither. If neither is supplied, the
+      path of the original request is used for the redirect. The path value must
+      be between 1 and 1024 characters.
+    type: string
+  prefixRedirect:
+    description: |-
+      The prefix that replaces the prefix_match specified in the RouteRule rule,
+      retaining the remaining portion of the URL before redirecting the request.
+      `prefix_redirect` cannot be supplied together with path_redirect. Supply
+      one alone or neither. If neither is supplied, the path of the original
+      request is used for the redirect. The prefix value must be between 1 and
+      1024 characters.
+    type: string
+  redirectResponseCode:
+    description: |-
+      The HTTP status code to use for this redirect action. For a list of
+      supported values, see RedirectResponseCode.
+    type: string
+    enum:
+    - FOUND
+    - MOVED_PERMANENTLY_DEFAULT
+    - PERMANENT_REDIRECT
+    - SEE_OTHER
+    - TEMPORARY_REDIRECT
+  stripQuery:
+    description: |-
+      Determines whether accompanying query portions of the original URL are
+      removed prior to redirecting the request. If it is set to `true`, the
+      accompanying query portion of the original URL is removed before
+      redirecting the request. If it is set to `false`, the query portion of the
+      original URL is retained. The default is `false`.
+    type: boolean

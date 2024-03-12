@@ -1,0 +1,14 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Describe resources
+    description: Describe a resource
+    examples: |-
+      To describe a resource `compute-resource` under revision `projects/p1/locations/us-central1/deployments/example-deployment/revisions/r-0`, run:
+
+      $ {command} projects/p1/locations/us-central1/deployments/example-deployment/revisions/r-0/resources/compute-resource
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:resource
+      help_text: The resource to describe
+  request:
+    collection: config.projects.locations.deployments.revisions.resources

@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      List job runs of a Dataplex task resource.
+    description: |
+      List Jobs runs of a Task under a specific project, location, lake and task.
+
+    examples: |
+      To list all the Dataplex job runs for a task `test-task` within lake `test-lake` in location
+      `us-central1`, run:
+
+        {command} --location=us-central1 --lake=test-lake --task=test-task
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.tasks.jobs
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Task to list the Jobs running the Task.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:task
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=JOB_ID,
+        state:label=JOB_STATUS,
+        service:label=SERVICE,
+        startTime:label=START_TIME,
+        endTime:label=END_TIME
+      )

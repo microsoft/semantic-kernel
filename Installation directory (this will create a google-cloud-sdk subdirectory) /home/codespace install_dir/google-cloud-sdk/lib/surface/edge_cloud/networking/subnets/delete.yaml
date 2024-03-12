@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Delete a Distributed Cloud Edge Network subnet.
+    description: |
+      Delete a Distributed Cloud Edge Network subnet.
+    examples: |
+      To delete a subnet called 'my-subnet' in the edge zone 'us-central1-edge-den1', run:
+
+        $ {command} my-subnet --location=us-central1 --zone=us-central1-edge-den1
+
+  request:
+    collection: edgenetwork.projects.locations.zones.subnets
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Distributed Cloud Edge Network subnet to delete.
+      # The following should point to the resource argument definition under your
+      # surface's command_lib directory.:
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:subnet
+
+  async:
+    collection: edgenetwork.projects.locations.operations

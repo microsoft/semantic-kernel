@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Delete a deploy policy.
+    description: Delete a deploy policy for a specified region.
+    examples: |
+      The following command will delete deploy policy `test-policy`, in region `us-central1`:
+
+        $ {command} test-policy --region=us-central1
+
+  request:
+    collection: clouddeploy.projects.locations.deployPolicies
+    api_version: v1
+
+  async:
+    collection: clouddeploy.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the deploy policy to delete.
+      spec: !REF googlecloudsdk.command_lib.deploy.resources:deploy_policy
+      is_positional: true

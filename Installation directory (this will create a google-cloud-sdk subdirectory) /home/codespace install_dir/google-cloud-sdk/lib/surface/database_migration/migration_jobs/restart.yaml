@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: |
+      Restart a Database Migration Service migration job.
+    description: |
+      Restart a Database Migration Service migration job.
+    examples: |
+      To restart a migration job:
+
+          $ {command} MIGRATION_JOB --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.migrationJobs
+    GA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha2
+    method: restart
+
+  arguments:
+    resource:
+      help_text: |
+        Migration job resource - Cloud Database Migration Service migration job to restart.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:migration_job
+
+    params:
+    - arg_name: skip-validation
+      release_tracks: [GA]
+      GA:
+        api_field: restartMigrationJobRequest.skipValidation
+      required: false
+      help_text: |
+        Restart the migration job without running prior configuration verification.

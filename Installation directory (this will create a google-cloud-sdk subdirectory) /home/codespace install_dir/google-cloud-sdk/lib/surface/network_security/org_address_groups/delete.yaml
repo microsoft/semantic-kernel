@@ -1,0 +1,29 @@
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: |
+    Delete address group.
+  description: |
+    Delete the specified address group.
+  examples: |
+    To delete an address group called 'my-address-group', run:
+
+      $ {command} my-address-group --location=global --organization=1234
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:orgAddressGroup
+    help_text: |
+      Name of the address group you want to delete.
+
+async:
+  collection: networksecurity.organizations.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networksecurity.organizations.locations.addressGroups

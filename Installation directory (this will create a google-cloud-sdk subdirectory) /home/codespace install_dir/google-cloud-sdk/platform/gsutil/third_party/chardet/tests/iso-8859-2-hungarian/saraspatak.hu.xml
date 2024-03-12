@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="iso-8859-2"?>
+<!--
+Source: http://www.sarospatak.hu/muvhaz/xml/rss.xml
+Expect: ISO-8859-2
+-->
+<!DOCTYPE rss PUBLIC " - //Netscape Communications//DTD RSS 0.91//EN"
+"http://p.moreover.com/xml_dtds/rss-0_91.dtd">
+<rss version="0.91">
+<channel>
+<title>A Művelődés Háza - Sárospatak</title>
+<link>http://www.sarospatak.hu/muvhaz/</link>
+<description>A Művelődés Háza havi programja</description>
+<language>hu</language>
+<copyright>Copyright 2003-2005 A Művelődés Háza - Sárospatak; http://www.sarospatak.hu/muvhaz/</copyright><item>
+<title>Sárospataki nyári programajánló - PATAKI NYÁR 2005</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php# </link>
+<description>
+<![CDATA[<a href="http://www.sarospatak.hu/muvhaz/patakinyar2005/" class="patakinyar"><img src="pic/mas/patakinyar2005.jpg" alt="Sárospataki nyári programajánló" align="center"  title="Sárospataki nyári programajánló" border="0" class="patakinyar" /></a>
+]]>
+</description>
+</item><item>
+<title>ILYEN MÉG NEM VOLT IV.</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#1</link>
+<description>
+<![CDATA[Vidám zenés műsor a Farkas Ferenc Művészeti Iskola szervezésében<br><br>- 17.00 órától
+]]>
+</description>
+</item><item>
+<title>CINEMA FILMKLUB</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#5</link>
+<description>
+<![CDATA[<em>Finnország:</em> A MÚLT NÉLKÜLI EMBER<br><br><img src="pic/mas/aprilis/multnelkuli.jpg" alt="[Illusztráció: A MÚLT NÉLKÜLI EMBER]" align="left" />R.: Aki Kaurismaki<br>Sz.: Markku Peltola, Kati Outinen<br><br>- 18.00 órától<br>Belépődíj 200 Ft<br><br><br><br>
+]]>
+</description>
+</item><item>
+<title>KOMOLYZENEI KLUB</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#8</link>
+<description>
+<![CDATA[LUDWIG VAN BEETHOVEN ÉS A SZIMFÓNIA<br><br><img src="pic/mas/aprilis/beethoven.jpg" alt="[Illusztráció: Beethoven]" align="left" />Vezetőnk és beszélgető partnerünk: <em>Magyar Kornél</em> a Bartók Rádió vezető szerkesztője<br>- 18.00 órától<br><br><br><br><br><br><br>
+]]>
+</description>
+</item><item>
+<title>A FARKAS FERENC MŰVÉSZETI ISKOLA</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#11</link>
+<description>
+<![CDATA[ELSŐS NÖVENDÉKEINEK HANGSZERES BEMUTATÓJA<br><br>- 10.40 órától
+]]>
+</description>
+</item><item>
+<title>FORRÓ VIZET A KOPASZRA!</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#12</link>
+<description>
+<![CDATA[Az ismert mese feldolgozása az <em>egri BABSZEM JANKÓ GYERMEKSZÍNHÁZ</em> előadásában<br><br>- 14.00 órától<br>Belépődíj: 250 Ft<br>
+]]>
+</description>
+</item><item>
+<title>A FARKAS FERENC MŰVÉSZETI ISKOLA</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#12</link>
+<description>
+<![CDATA[NÖVENDÉKEINEK HANGVERSENYE<br><br>- 17.00 órától
+]]>
+</description>
+</item><item>
+<title>SÁROSPATAKI KÖZOKTATÁSI ELLÁTÁSI KÖRZET SZAKMAI NAPJA</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#15</link>
+<description>
+<![CDATA[- 8.45 órától
+]]>
+</description>
+</item><item>
+<title>SZÍNHÁZI BÉRLETES ELŐADÁS</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#19</link>
+<description>
+<![CDATA[Huszka Jenő: LILI BÁRÓNŐ<br><em>operett</em><br> <em>Leblanc Győző Produkciós Iroda</em> szervezésében<br><br><img src="pic/mas/aprilis/lilibarono.jpg" alt="[Illusztráció: Lili bárónő]" align="left" />Huszka Jenő legközismertebb dalait hallhatják a Lili bárónőben. A primadonna és a bonviván, Lili és Illésházy László &#8211; akik egyébként élő személyek voltak &#8211; andalító dallamait ritmusos szubrett és táncoskomikus számok váltják fel. Ehhez jön még két idősödő vénlány rokon és Lili festékkereskedő apja, akik humoros jeleneteikkel fergeteges hangulatúvá teszik az előadást.<br><br>Főbb szerepekben: <em>Szóka Júlia, Leblanc Győző, Kovács Zsuzsa, Bozsó József</em><br><br>- 19.00 órakor  <br>Belépő: 1500 Ft, diák és nyugdíjas jegy:1000 Ft<br>
+]]>
+</description>
+</item><item>
+<title>MAGÁN MŰVÉSZETI ISKOLÁK V. NÉPTÁNC FESZTIVÁLJA</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#23</link>
+<description>
+<![CDATA[Fellépők:<br>- Zemplén Gyermekcsoport <em>Cigánd</em><br>- Rozmaring Gyermekcsoport <em>Mezőkövesd</em><br>- Gyöngyvirág Gyermekcsoport <em>Mezőkövesd</em><br>- Kutyaütők Gyermekcsoport   <em>Tiszaújváros</em><br>- Tiszavirág Gyermekssoport  <em>Tiszaújváros</em><br>- Dati Kisszinvavölgyi Táncműhely <em>Miskolc</em><br>- Borockás Gyermekcsoport <em>Tiszaújváros</em><br>- Bokréta Művészeti Iskola S<em>átoraljaújhely</em><br>- Sárospataki Táncművészeti Iskola csoportjai<br><br>Rendező: <em>Sárospataki Táncművészeti Iskola</em><br><br>- 14.00 órától
+]]>
+</description>
+</item><item>
+<title>MAGYARORSZÁG 1000 ÉVE TÉRKÉPEKEN</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#24</link>
+<description>
+<![CDATA[A Művelődés Háza és a Zempléni Településszövetség közös szervezésében <br><strong>MAGYARORSZÁG 1000 ÉVE TÉRKÉPEKEN</strong> c. kiállítás<br>A Művelődés Háza Galériájában 16.00 órától <br><br>Köszöntőt mond: Dr. <strong>Kupa Mihály</strong>, ZTSZ örökös tiszteletbeli elnöke<br><br>A kiállítást megnyitja: Dr. <strong>Mihalik József </strong>mérnök-alezredes<br><br>
+]]>
+</description>
+</item><item>
+<title>A HELY, AHOL ÉLÜNK SOROZAT</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php#27</link>
+<description>
+<![CDATA[<strong>ZEMPLÉN NÉPRAJZI ÉRTÉKEI</strong><br><br>Ea.: <em>Darmos István</em> néprajzkutató<br><br>E területen változatos néprajzi értékekről beszélhetünk, akár a szellemi műveltséget, akár a tárgyalkotó népművészetet, akár a társadalom-néprajzi kérdéseket vizsgáljuk. Vannak olyan területek, amelyekkel kutatóink kevésbé foglalkoztak. Ezekről a kérdésekről és a felhalmozódott tudás hasznosításáról lesz szó.<br><br>- Belépődíj: 300 Ft<br><br>- 18.00 órától
+]]>
+</description>
+</item><item>
+<title>KIRÁNDULÁS KÁRPÁTALJÁRA</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php# </link>
+<description>
+<![CDATA[( Munkács, Beregszász, Vereckei-hágó, Huszt, Szolyva, Nevickei vár )<br><br>A Művelődés Háza szervezésében <strong>május 27-29</strong>-ig. <br>Irányár: 21.900 Ft<br><br>Jelentkezni lehet: <em>Stumpf Gábor</em> népművelőnél
+]]>
+</description>
+</item><item>
+<title>TÁBOROZÁSI FELHÍVÁS</title>
+<link>http://www.sarospatak.hu/muvhaz/index.php# </link>
+<description>
+<![CDATA[A Művelődés Háza <em>2005. június 20-24.</em> között rendezi a <br>PATAKI FAZEKAS KISINASOK TÁBORÁT <br>Sárospatakon a kispataki Alkotóházban. <br><br>Kérjük részvételi szándékát <strong>június 1</strong>-ig jelezze.<br>Érdeklődés és felvilágosítás <em>Kovácsné Géczi  Julianna</em> népművelőnél.<br><br>A Művelődés Háza <em>2005. augusztus 8-12.</em> között rendezi a<br>NÉPI JÁTSZÓHÁZVEZETŐK III. TOVÁBBKÉPZŐ TÁBORÁT <br>Sárospatakon a kispataki Alkotóházban. <br><br>Kérjük részvételi szándékát  <strong>július 20</strong>-ig jelezze.<br><br>Érdeklődés és felvilágosítás <em>Kovácsné Géczi Julianna</em> népművelőnél.<br>
+]]>
+</description>
+</item></channel></rss>

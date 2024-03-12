@@ -1,0 +1,10 @@
+include CHANGELOG.rst
+include LICENSE
+include MANIFEST.in
+include README.rst
+include tox.ini
+
+recursive-include docs *
+prune docs/_build
+
+recursive-include tests *.py

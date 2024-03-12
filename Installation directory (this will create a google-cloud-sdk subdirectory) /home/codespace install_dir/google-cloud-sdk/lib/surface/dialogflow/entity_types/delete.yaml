@@ -1,0 +1,17 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: Delete a Dialogflow entity type.
+  description: Delete a Dialogflow entity type.
+  examples: |
+    To delete an entity type:
+
+      $ {command} 12345678-1234-1234-1234-1234567890ab
+
+arguments:
+  resource:
+    help_text: Entity type to delete.
+    spec: !REF googlecloudsdk.command_lib.dialogflow.resources:entityType
+
+request:
+  collection: dialogflow.projects.agent.entityTypes

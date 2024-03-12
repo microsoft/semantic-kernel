@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    description: Get the details of a reCAPTCHA Firewall Policy.
+    brief: Describe reCAPTCHA Firewall Policy.
+    examples: |
+        To get details on a reCAPTCHA firewall policy, run:
+
+          $ {command} policy-id
+
+  request:
+    collection: recaptchaenterprise.projects.firewallpolicies
+
+  arguments:
+    resource:
+      help_text: The reCAPTCHA firewall policy to describe.
+      spec: !REF googlecloudsdk.command_lib.recaptcha.resources:firewall_policies

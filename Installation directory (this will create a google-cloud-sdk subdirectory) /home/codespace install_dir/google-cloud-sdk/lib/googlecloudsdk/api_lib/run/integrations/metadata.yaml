@@ -1,0 +1,258 @@
+integrations:
+- integration_type: custom-domains
+  resource_type: router
+  singleton_name: custom-domains
+  required_field: domains
+  visible: true
+  service_type: ingress
+  label: Custom Domains
+  product: Cloud Load Balancer
+  description: Configure custom domains for Cloud Run services with Google Cloud Load Balancer.
+  example_command: |-
+    Create the integration to add the first domain mapping:
+      $ gcloud {track} run integrations create --type=custom-domains --parameters='set-mapping=example.com/*:[SERVICE]'
+    Update the integration to add subsequent mappings:
+      $ gcloud {track} run integrations update custom-domains --parameters='set-mapping=anotherexample.com/*:[SERVICE]'
+  example_yaml: |
+
+    apiVersion: runapps.googleapis.com/v1alpha1
+    resources:
+    - id: router/custom-domains
+      subresources:
+        - id: domain/example-com
+          config:
+            domain: example.com
+          bindings:
+          - target: service/[SERVICE]
+            config:
+              paths: ["/*"]
+  parameters:
+  - name: set-mapping
+    description: 'Set a route mapping from a path to a service. Format: set-mapping=[DOMAIN]/[PATH]:[SERVICE]'
+    required: true
+    data_type: domain-path-service
+  - name: remove-mapping
+    description: 'Remove a route mapping. Format: remove-mapping=[DOMAIN]/[PATH]'
+    data_type: domain-path
+    create_allowed: false
+  - name: remove-domain
+    description: To remove a domain an all of its route mappings.
+    data_type: domain
+    create_allowed: false
+  update_exclusive_groups:
+  - params:
+    - set-mapping
+    - remove-mapping
+    - remove-domain
+  disable_service_flags: true
+  required_apis:
+  - compute.googleapis.com
+
+- integration_type: redis
+  resource_type: redis
+  label: 'Redis'
+  product: Cloud Memorystore
+  description: Configure a Redis instance (Cloud Memorystore) and connect it to a Cloud Run Service.
+  example_command: |-
+    $ gcloud {track} run integrations create --service=[SERVICE] --type=redis --parameters=memory-size-gb=2
+  example_yaml: |
+
+    apiVersion: runapps.googleapis.com/v1alpha1
+    resources:
+    - id: redis/redis-1
+      config:
+        memorySizeGb: 2
+    - id: service/[SERVICE]
+      bindings:
+      - target: redis/redis-1
+  service_type: backing
+  visible: true
+  eta_in_min: 10
+  cta: >-
+    To connect to the Redis instance utilize the environment variables REDISHOST and REDISPORT.
+    These have been added to the Cloud Run service for you.
+  parameters:
+  - name: memory-size-gb
+    config_name: memorySizeGb
+    label: Capacity (GB)
+    description: Memory capacity of the Redis instance.
+    data_type: int
+    default: 1
+  - name: tier
+    label: Service Tier
+    description: >
+      The service tier of the instance. Supported options include BASIC for standalone
+      instance and STANDARD_HA for highly available primary/replica instances.
+    data_type: string
+    hidden: true
+  - name: version
+    label: Version
+    description: >
+      The version of Redis software. If not provided, latest supported version will be used.
+      Supported values include: REDIS_6_X, REDIS_5_0, REDIS_4_0 and REDIS_3_2.
+    data_type: string
+    update_allowed: false
+    hidden: true
+  required_apis:
+  - redis.googleapis.com
+  - vpcaccess.googleapis.com
+
+- integration_type: firestore
+  resource_type: firestore
+  label: 'Firestore'
+  product: Firestore
+  description: Configure a Firestore database and connect it to a Cloud Run Service.
+  example_command: |-
+    $ gcloud {track} run integrations create --service=[SERVICE] --type=firestore
+  service_type: backing
+  visible: true
+  eta_in_min: 5
+  cta: >-
+    To connect to the Firestore Database utilize the environment variables FIRESTORE_DB_NAME.
+    These have been added to the Cloud Run service for you.
+  parameters: []
+  required_apis:
+  - firestore.googleapis.com
+
+- integration_type: cloudsql
+  resource_type: cloudsql
+  label: Cloud SQL
+  product: Cloud SQL
+  description: Configure a CloudSQL database instance and connect it to a Cloud Run Service.
+  example_command: |-
+    $ gcloud {track} run integrations create --service=[SERVICE] --type=cloudsql --parameters=version=MYSQL_8_0
+  example_yaml: |
+
+    apiVersion: runapps.googleapis.com/v1alpha1
+    resources:
+    - id: cloudsql/cloudsql-1
+      config:
+        version: POSTGRES_11
+    - id: service/[SERVICE]
+      bindings:
+      - target: cloudsql/cloudsql-1
+  service_type: backing
+  visible: false
+  eta_in_min: 15
+  cta: >-
+    To connect to the CloudSQL instance utilize the environment variables DB_NAME, INSTANCE_HOST,
+    DB_USER, and DB_PASS. These have been added to the Cloud Run service for you.
+  parameters:
+  - name: version
+    label: Database Version
+    description: >-
+      The version of CloudSQL software. For example: MYSQL_8_0, POSTGRES_14, or SQLSERVER_2019_STANDARD.
+      See https://cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/SqlDatabaseVersion for more details.
+    data_type: string
+    update_allowed: false
+    required: true
+  required_apis:
+  - sqladmin.googleapis.com
+  - cloudresourcemanager.googleapis.com
+  - secretmanager.googleapis.com
+
+- integration_type: firebase-hosting
+  resource_type: firebase-hosting
+  label: Firebase Hosting
+  product: Firebase Hosting
+  description: Configure custom domains for Cloud Run services with Firebase Hosting.
+  example_command: |-
+    $ gcloud {track} run integrations create --service=[SERVICE] --type=firebase-hosting --parameters=site-id=examplesite
+  example_yaml: |
+
+    apiVersion: runapps.googleapis.com/v1alpha1
+    resources:
+    - id: firebase-hosting/firebase-hosting-1
+      config:
+        siteId: examplesite
+      bindings:
+      - target: service/cowsay
+  service_type: ingress
+  visible: true
+  eta_in_min: 5
+  cta: |-
+    To configure free custom domain mappings for this site, visit the Firebase console at https://console.firebase.google.com/project/%%project%%/hosting/sites/%%config.siteId%%
+    To make this site publicly available, make sure the Cloud Run service has ingress configured to allow 'All' traffic. Learn more at https://cloud.google.com/run/docs/securing/ingress
+  parameters:
+  - name: site-id
+    config_name: siteId
+    label: Subdomain (Site ID)
+    description: 'The name of the Firebase Hosting site, which is the sub-domain of the default firebase domains created.'
+    data_type: string
+    update_allowed: true
+    required: true
+  required_apis:
+  - firebasehosting.googleapis.com
+
+- integration_type: service
+  resource_type: service
+  label: Cloud Run Service
+  product: Cloud Run Service
+  description: Configure a Cloud Run service.
+  example_command: ""
+  example_yaml: |
+
+    apiVersion: runapps.googleapis.com/v1alpha1
+    resources:
+    - id: service/myapp
+      config:
+        containers:
+        - image: us-docker.pkg.dev/cloudrun/container/hello
+  service_type: workload
+  visible: true
+  eta_in_min: 5
+  parameters:
+  - name: image
+    label: Container Image
+    description: 'The container image to use to deploy the Cloud Run service.'
+    data_type: string
+    update_allowed: true
+    required: false
+  required_apis:
+  - run.googleapis.com
+
+- integration_type: job
+  resource_type: job
+  label: Cloud Run Job
+  product: Cloud Run Job
+  description: Configure a Cloud Run job.
+  example_command: ""
+  example_yaml: |
+
+    apiVersion: runapps.googleapis.com/v1alpha1
+    resources:
+    - id: job/myjob
+      config:
+        containers:
+        - image: us-docker.pkg.dev/cloudrun/container/job
+  service_type: workload
+  visible: false
+  eta_in_min: 5
+  parameters:
+  - name: image
+    label: Container Image
+    description: 'The container image to use to deploy the Cloud Run job.'
+    data_type: string
+    update_allowed: true
+    required: false
+  required_apis:
+  - run.googleapis.com
+
+- integration_type: vertex-genai
+  resource_type: vertex-genai
+  label: Vertex AI - Generative AI
+  product: Vertex AI - Generative AI
+  description: Configure access to Gemini, PaLM, Codey and more of Google's large generative models from your Cloud Run workloads
+  example_command: |-
+    $ gcloud {track} run integrations create --service=[SERVICE] --type=vertex-genai
+  example_yaml: |
+
+    apiVersion: runapps.googleapis.com/v1alpha1
+    resources:
+    - id: vertex-genai/gemini
+  service_type: backing
+  visible: false
+  eta_in_min: 5
+  parameters: []
+  required_apis:
+  - aiplatform.googleapis.com

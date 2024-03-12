@@ -1,0 +1,6 @@
+{
+  "cert_provider_command":[
+    "/opt/google/endpoint-verification/bin/SecureConnectHelper",
+    "--print_certificate"],
+  "device_resource_ids":["11111111-1111-1111"]
+}

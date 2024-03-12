@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Enable an IAM service account.
+    description: |
+      Enable an IAM service account.
+
+      If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
+    examples: |
+      To enable a service account from your project, run:
+
+        $ {command} my-iam-account@my-project.iam.gserviceaccount.com
+
+  arguments:
+    resource:
+      help_text: The IAM service account to enable.
+      spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:EnableIamAccountConfirmation
+
+  output:
+    format: none
+
+  request:
+    collection: iam.projects.serviceAccounts
+    method: enable

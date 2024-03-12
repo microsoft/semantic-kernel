@@ -1,0 +1,68 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: clouddeploy v1 Target export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- name
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  annotations:
+    description: |-
+      User annotations. These attributes can only be set and used by the user,
+      and not by Cloud Deploy. See https://google.aip.dev/128#annotations for
+      more details such as format and size limitations.
+    $ref: AnnotationsValue.yaml
+  approvalRequired:
+    description: Whether or not the `Target` requires approval.
+    type: boolean
+  deployServiceAccount:
+    description: |-
+      Service account used to deploy a `Rollout`. If unset, the compute service
+      account will be used.
+    type: string
+  description:
+    description: Description of the `Target`. Max length is 255 characters.
+    type: string
+  etag:
+    description: |-
+      This checksum is computed by the server based on the value of other
+      fields, and may be sent on update and delete requests to ensure the client
+      has an up-to-date value before proceeding.
+    type: string
+  gkeCluster:
+    description: A GKECluster attribute.
+    $ref: GKECluster.yaml
+  labels:
+    description: |-
+      Labels are attributes that can be set and used by both the user and by
+      Cloud Deploy. Labels must meet the following constraints: Each resource is
+      limited to 64 labels. Keys must conform to the regexp: a-zA-Z{0,62} Values
+      must conform to the regexp: [a-zA-Z0-9_-]{0,63} Both keys and values are
+      additionally constrained to be <= 128 bytes in size.
+    $ref: LabelsValue.yaml
+  name:
+    description: |-
+      Name of the `Target`. Format is projects/{project}/locations/{location}/
+      deliveryPipelines/{deliveryPipeline}/targets/a-z{0,62}.
+    type: string

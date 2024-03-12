@@ -1,0 +1,33 @@
+release_tracks: [ALPHA, BETA]
+
+help_text:
+  brief: |
+    List Security Profile groups.
+  description: |
+    List all Security Profile Groups in the specified location.
+  examples: |
+    To list Security Profile Groups in specifed location, run:
+
+      $ {command} --location=global
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networksecurity.organizations.locations.securityProfileGroups
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:orgLocation
+    help_text: |
+      The location of Security Profile Groups to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+    table(
+       name.basename():label=NAME
+     )

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="iso-8859-2"?>
+<!--
+Source: http://shamalt.uw.hu/rss/index.php?m=v
+Expect: ISO-8859-2
+-->
+<rss version="2.0">
+ <channel>
+  <title>sHaMaLt bLOG - Verziótörténet</title>
+  <link>http://shamalt.uw.hu/index.php</link>
+  <description>Verziótörténet</description>
+  <language>hu</language>
+  <generator>Nox v2.2</generator>
+  <copyright>Copyright 2003-2006, sHaMaLt</copyright>
+  <webMaster>shamalt@shamalt.tk (sHaMaLt)</webMaster>
+  <image>
+   <url>http://shamalt.uw.hu/pic/rss_wap_blog.gif</url>
+   <title>sHaMaLt bLOG</title>
+   <link>http://shamalt.uw.hu/index.php</link>
+  </image>
+  <ttl>5</ttl>
+  <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_54</link>
+   <description>&lt;acronym title="HyperText Markup Language"&gt;HTML&lt;/acronym&gt; elemek és bejegyzéscím a komment &lt;acronym title="Really Simple Syndication"&gt;RSS&lt;/acronym&gt;-ben.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_54</guid>
+   <pubDate>Sun, 25 Dec 2005 00:00:00 +0100</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_53</link>
+   <description>A hozzászólás gomb disabled-dé válik megnyomás után. (Problémákat okozott, kiiktatva.)</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_53</guid>
+   <pubDate>Thu, 03 Nov 2005 00:00:00 +0100</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_52</link>
+   <description>Rövid cím a bejegyzés-linkeknél.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_52</guid>
+   <pubDate>Sat, 29 Oct 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_51</link>
+   <description>Időgép. (Az aktuális dátumhoz képest 1 vagy 2 évvel, illetve egy hónappal régebben keletkezett bejegyzés.)</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_51</guid>
+   <pubDate>Fri, 28 Oct 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_50</link>
+   <description>Sitemap és gyorsítások a kódon.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_50</guid>
+   <pubDate>Sun, 23 Oct 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_49</link>
+   <description>Időrend szerinti vagy fordított rendezési lehetőség, illetve permalink a hozzászólásoknál, valamint directory tag hozzáadása a kategóriáknál.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_49</guid>
+   <pubDate>Fri, 14 Oct 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_48</link>
+   <description>Tagek (category tag, bookmark) hozzáadása, és némi bugfix a hozzászólásoknál (a JavaScriptes linkeket nem alakítja át).</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_48</guid>
+   <pubDate>Sun, 02 Oct 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_47</link>
+   <description>Felesleges &lt;acronym title="Structured Query Language"&gt;SQL&lt;/acronym&gt; queryk kigyomlálása, gyorsabb motor.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_47</guid>
+   <pubDate>Sun, 02 Oct 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_46</link>
+   <description>Havi nézet helyett mindig a legújabb x bejegyzés megjelenítése a főoldalon, lapozással.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_46</guid>
+   <pubDate>Sat, 01 Oct 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_45</link>
+   <description>A kommentelésnél már használhatók bizonyos &lt;acronym title="HyperText Markup Language"&gt;HTML&lt;/acronym&gt; tagek.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_45</guid>
+   <pubDate>Fri, 30 Sep 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_44</link>
+   <description>Komment archívum.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_44</guid>
+   <pubDate>Sat, 24 Sep 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_43</link>
+   <description>Acronym kezelés bug kijavítva, némi gyorsítás a kódon.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_43</guid>
+   <pubDate>Mon, 19 Sep 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_42</link>
+   <description>A hozzászólásoknál kisebb hibajavítások: a hozzászóló &lt;acronym title="Internet Protocol Number"&gt;IP&lt;/acronym&gt; címét már helyesen menti el, illetve két hozzászólás között mostantól legalább 20 másodpercnek el kell telnie. Meg persze spamvédelem a trackbackhez.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_42</guid>
+   <pubDate>Mon, 05 Sep 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_41</link>
+   <description>Kisebb bugok javítgatása. (Bejegyzések, archívum, kategóriák és verziótörténet megjelenítése, &lt;acronym title="Really Simple Syndication"&gt;RSS&lt;/acronym&gt; autodiscovery, &lt;title&gt; helyes kiírása.)</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_41</guid>
+   <pubDate>Thu, 25 Aug 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.2</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_40</link>
+   <description>Állapot bevezetése a bejegyzéseknél (publikálható vagy sem), ehhez kapcsolódóan pedig a motor átírása számos helyen.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_40</guid>
+   <pubDate>Tue, 23 Aug 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.1</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_39</link>
+   <description>Új mezők az &lt;acronym title="Really Simple Syndication"&gt;RSS&lt;/acronym&gt; feednél: webMaster, ttl, docs.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_39</guid>
+   <pubDate>Sun, 21 Aug 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.1</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_38</link>
+   <description>Apróbb változtatások a motorban a régi bejegyzések miatt, illetve rendezés id helyett dátum alapján.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_38</guid>
+   <pubDate>Sun, 14 Aug 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.1</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_37</link>
+   <description>Hozzászólások száma a bejegyzés címe mellett a &lt;acronym title="Wireless Application Protocol"&gt;WAP&lt;/acronym&gt;hoz és az &lt;acronym title="Really Simple Syndication"&gt;RSS&lt;/acronym&gt;hez. Persze kikapcsolható.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_37</guid>
+   <pubDate>Sat, 13 Aug 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.1</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_36</link>
+   <description>Az &lt;acronym title="Really Simple Syndication"&gt;RSS&lt;/acronym&gt; feed bővítése új mezőkkel: guid, category, comments. És az elmaradhatatlan bugfixek.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_36</guid>
+   <pubDate>Thu, 04 Aug 2005 00:00:00 +0200</pubDate>
+  </item>
+  <item>
+   <title>2.1</title>
+   <link>http://shamalt.uw.hu/index.php?v#vh_35</link>
+   <description>Ajánló &lt;acronym title="Really Simple Syndication"&gt;RSS&lt;/acronym&gt; feeddel (öt véletlenszerű bejegyzés), illetve kisebb bugfixek.</description>
+   <guid isPermaLink="true">http://shamalt.uw.hu/index.php?v#vh_35</guid>
+   <pubDate>Sun, 24 Jul 2005 00:00:00 +0200</pubDate>
+  </item>
+ </channel>
+</rss>

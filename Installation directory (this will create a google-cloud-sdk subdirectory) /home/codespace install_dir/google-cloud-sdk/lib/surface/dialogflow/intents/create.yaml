@@ -1,0 +1,45 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Create a Dialogflow entity type for the agent of the current project.
+  description: |
+    Create a Dialogflow intent for the agent of the current project.
+  examples: |
+    To create an intent with a training phrase and a response:
+
+      $ {command} --display-name="test-intent" --priority=1 --training-phrases="example query"
+        --responses="example response"
+
+arguments:
+  resource:
+    help_text: The agent to create the entity type under.
+    spec: !REF googlecloudsdk.command_lib.dialogflow.resources:agent
+    is_parent_resource: true
+  params:
+  - arg_name: display-name
+    api_field: googleCloudDialogflowV2Intent.displayName
+    required: true
+    help_text: Human-readable name for the intent.
+  - _COMMON_: flags.priority
+  - _COMMON_: flags.is_fallback
+  - _COMMON_: flags.training_phrases
+  - _COMMON_: flags.responses
+  - _COMMON_: flags.ml_enabled
+  - arg_name: other-properties
+    type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+    metavar: KEY=VALUE
+    help_text: |
+      Map containing other properties to set on the intent.
+
+      For more information on available properties, see:
+      https://cloud.google.com/dialogflow-enterprise/docs/reference/rest/v2/projects.agent.intents
+
+      To set complex types, specify this flag with `--flags-file`. For more information, see
+      `gcloud topics flags-file`.
+
+      Other flags take precedence over properties specified here.
+
+request:
+  collection: dialogflow.projects.agent.intents
+  display_resource_type: intent
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.dialogflow.intents.hooks:AddOtherPropertiesToRequest

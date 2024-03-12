@@ -1,0 +1,24 @@
+- help_text:
+    brief: List uptime check server ips.
+    description: List uptime check egress ips.
+    examples: |
+      To see all uptime check servers ips:
+
+        $ {command}
+
+      More information can be found at
+      https://cloud.google.com/monitoring/uptime-checks/using-uptime-checks
+
+  request:
+    method: list
+    collection: monitoring.uptimeCheckIps
+
+  response:
+    id_field: ipAddress
+
+  arguments:
+    params:
+      []
+
+  output:
+    format: yaml

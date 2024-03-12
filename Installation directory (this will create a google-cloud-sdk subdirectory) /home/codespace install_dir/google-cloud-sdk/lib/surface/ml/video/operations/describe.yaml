@@ -1,0 +1,22 @@
+- release_tracks: []
+
+  help_text:
+    brief: Get description of a long-running video analysis operation.
+    description: |
+      Get information about a long-running video analysis operation.
+    examples: |-
+      To get information about a long-running operation with name 'projects/my-project/locations/us-east1/operations/123', run the following command:
+
+        $ {command} projects/my-project/locations/us-east1/operations/123
+
+  request:
+    collection: videointelligence.projects.locations.operations
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The ID of the operation to describe.
+      spec: !REF googlecloudsdk.command_lib.ml.video.resources:operation
+
+  output:
+    format: json

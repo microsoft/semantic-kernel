@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Describe a product set.
+    description: Describe a product set.
+    examples: |-
+      To describe 'my-product-set' in location 'us-east1', run:
+
+        $ {command} my-product-set --location=us-east1
+
+  request:
+    collection: vision.projects.locations.productSets
+
+  arguments:
+    resource:
+      help_text: Product set to describe.
+      spec: !REF googlecloudsdk.command_lib.ml.vision.resources:product_set

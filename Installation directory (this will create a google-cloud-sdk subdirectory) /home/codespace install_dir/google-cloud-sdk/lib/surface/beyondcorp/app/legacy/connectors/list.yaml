@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      List Beyondcorp legacy connector Resources.
+    description: |
+      List Beyondcorp legacy connector resources based on project and location.
+
+    examples: |
+      To list all legacy connectors in a project for location us-central1 in table form, run:
+
+        $ {command} --project=projectId \
+            --location=us-central1
+
+      To list all legacy connectors in a project for location us-central1 in json form, run:
+
+        $ {command} --project=projectId \
+            --location=us-central1 \
+            --format=json(displayName, name, state, principalInfo.serviceAccount.email,createTime,updateTime,labels)
+
+  request:
+    collection: beyondcorp.projects.locations.connectors
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Beyondcorp connector you want to list.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:location
+
+  output:
+    format: |
+        table(
+          name.basename():label=NAME,
+          displayName:label=DISPLAY_NAME,
+          state:label=CONNECTOR_STATE,
+          principalInfo.serviceAccount.email:label=MEMBER,
+          createTime.date():label=CREATE_TIME,
+          updateTime.date():label=UPDATE_TIME,
+          labels.list():label=LABELS
+        )

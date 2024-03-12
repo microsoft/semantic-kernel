@@ -1,0 +1,52 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Returns a list of supported languages for translation.
+    description: |
+      List supported languages for translation.
+    examples: |
+      The following command lists supported languages.
+
+        $ {command} --zone=global
+
+  request:
+    collection: translate.projects.locations
+    method: getSupportedLanguages
+    BETA:
+      api_version: v3
+    ALPHA:
+      api_version: v3beta1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.ml.translate.hooks:UpdateRequestGetSupportedLanguages
+
+  arguments:
+    resource:
+      help_text: endpoint location
+      spec: !REF googlecloudsdk.command_lib.ml.translate.resources:project
+      override_resource_collection: true
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.ml.translate.flags:zone
+    - api_field: displayLanguageCode
+      arg_name: display-language-code
+      help_text: |
+        The language to use to return localized, human-readable name of supported languages.
+        If missing, then display names aren't returned in the response.
+    - api_field: model
+      arg_name: model
+      help_text: |
+        Get supported languages of specified model.
+
+        Authorization requires one or more of the following Google IAM permissions on the specified
+        resource model:
+
+          cloudtranslate.generalModels.get
+
+          automl.models.get
+
+        Defaults to 'general/base'.
+
+        Usage:
+
+          AutoML models: '--model=TRL321456789'
+
+          General models: '--model=general/nmt'

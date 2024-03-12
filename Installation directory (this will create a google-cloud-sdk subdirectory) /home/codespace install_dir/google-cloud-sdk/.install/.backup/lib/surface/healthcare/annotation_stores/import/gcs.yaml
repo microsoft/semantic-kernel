@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief:  Import Annotation records from Google Cloud Storage into a Cloud Healthcare API Annotation store.
+    description: Import Annotation records from Google Cloud Storage into a Cloud Healthcare API Annotation store.
+    examples: |
+      To import the Annotation records from the existing bucket 'testGcsBucket' in the folder 'someFolder' into the Annotation store 'test-annotation-store', run:
+
+        $ {command} test-annotation-store --gcs-uri=gs://testGcsBucket/someFolder --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.annotationStores
+    method: import
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API Annotation store into which the data is imported.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:annotation_store
+
+    params:
+    - arg_name: gcs-uri
+      api_field: importAnnotationsRequest.gcsSource.uri
+      required: true
+      help_text: |
+        Cloud Storage source data locations. Each Cloud Storage object
+        is a text file that contains exactly one JSON structure
+        conforming to the Annotation proto.
+
+  async:
+    collection: healthcare.projects.locations.datasets.operations

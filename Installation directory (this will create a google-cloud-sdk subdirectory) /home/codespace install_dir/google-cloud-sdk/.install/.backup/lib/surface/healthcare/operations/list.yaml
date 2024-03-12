@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: List Cloud Healthcare API operations.
+    description: List Cloud Healthcare API operations.
+    examples: |
+      To list the operations in the dataset 'test-dataset', run:
+
+        $ {command} --dataset=test-dataset
+
+  request:
+    collection: healthcare.projects.locations.datasets.operations
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Cloud Healthcare API dataset to list long-running operations for.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:dataset
+
+  output:
+    format: |
+      table(
+          name.scope("operations"):label=ID,
+          name.scope("locations").segment(0):label=LOCATION,
+          done:label=DONE
+      )

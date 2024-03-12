@@ -1,0 +1,20 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Get the IAM policy for a group resource.
+    description: |
+      Get the IAM policy of a group. If formatted as JSON, the output
+      can be edited and used as a policy file for *set-iam-policy*.
+    examples: |
+      To get the IAM policy for a group named ``my-group'' in the hub named ``my-hub'', run:
+
+        $ {command} my-group --hub="my-hub"
+
+  request: &request
+    collection: networkconnectivity.projects.locations.global.hubs.groups
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The group for which you want the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:group

@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Set the IAM policy binding for a KMS ekm connection.
+    description: |
+      Sets the IAM policy for the given ekm connection as defined in a JSON or YAML file.
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      the policy file format and contents.
+    examples: |
+      The following command will read an IAM policy defined in a JSON file
+      'policy.json' and set it for the ekm connection 'laplace' with the location 'global':
+
+        $ {command} laplace policy.json --location=global
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+  request:
+    collection: cloudkms.projects.locations.ekmConnections
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=setIamPolicyRequest.policy.version
+    - googlecloudsdk.command_lib.iam.hooks:AddVersionToUpdateMaskIfNotPresent:update_mask_path=setIamPolicyRequest.updateMask
+
+  arguments:
+    resource:
+      help_text: The ekm connection for which to set the IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.kms.resources:ekm_connection
+
+  iam:
+    policy_version: 3

@@ -1,0 +1,78 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta Permission export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  constraints:
+    description: Extra custom constraints. The constraints are ANDed together.
+    type: array
+    items:
+      $ref: PermissionConstraint.yaml
+  hosts:
+    description: |-
+      Used in Ingress or Egress Gateway cases to specify hosts that the
+      policy applies to. Exact match, prefix match, and suffix match are
+      supported.
+    type: array
+    items:
+      type: string
+  methods:
+    description: HTTP method.
+    type: array
+    items:
+      type: string
+  notHosts:
+    description: Negate of hosts. Specifies exclusions.
+    type: array
+    items:
+      type: string
+  notMethods:
+    description: Negate of methods. Specifies exclusions.
+    type: array
+    items:
+      type: string
+  notPaths:
+    description: Negate of paths. Specifies exclusions.
+    type: array
+    items:
+      type: string
+  notPorts:
+    description: Negate of ports. Specifies exclusions.
+    type: array
+    items:
+      type: string
+  paths:
+    description: |-
+      HTTP request paths or gRPC methods. Exact
+      match, prefix match, and suffix match are
+      supported.
+    type: array
+    items:
+      type: string
+  ports:
+    description: Port names or numbers.
+    type: array
+    items:
+      type: string

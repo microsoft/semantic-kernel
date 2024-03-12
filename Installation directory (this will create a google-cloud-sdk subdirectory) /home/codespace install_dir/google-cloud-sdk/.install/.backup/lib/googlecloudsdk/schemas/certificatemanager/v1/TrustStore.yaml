@@ -1,0 +1,42 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: certificatemanager v1 TrustStore export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  intermediateCas:
+    description: |-
+      Set of intermediate CA certificates used for the path building phase of
+      chain validation. The field is currently not supported if TrustConfig is
+      used for the workload certificate feature.
+    type: array
+    items:
+      $ref: IntermediateCA.yaml
+  trustAnchors:
+    description: |-
+      List of Trust Anchors to be used while performing validation against a
+      given TrustStore.
+    type: array
+    items:
+      $ref: TrustAnchor.yaml

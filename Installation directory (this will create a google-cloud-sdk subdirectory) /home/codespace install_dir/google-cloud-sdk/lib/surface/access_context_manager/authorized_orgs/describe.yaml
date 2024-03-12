@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Show details about an authorized organizations description.
+    description: |
+      Show details about an existing authorized organizations description.
+
+    examples: |
+      To get details about an existing authorized organizations description, run:
+
+        $ {command} my_authorized_orgs_desc_id
+
+  request:
+    collection: accesscontextmanager.accessPolicies.authorizedOrgsDescs
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
+    api_version: v1
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The authorized organizations description for which you want to show details.
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:authorized-orgs-desc

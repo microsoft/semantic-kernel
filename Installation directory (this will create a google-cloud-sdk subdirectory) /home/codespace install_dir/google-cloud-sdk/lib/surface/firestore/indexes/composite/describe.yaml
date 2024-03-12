@@ -1,0 +1,52 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Describe the given composite index.
+    description: Describe the given composite index.
+    examples: |
+      The following command describes the composite index with ID `3421ef`:
+
+        $ {command} 3421ef
+
+        $ {command} 3421ef --database=(default)
+
+  request:
+    collection: firestore.projects.databases.collectionGroups.indexes
+
+  arguments:
+    resource:
+      help_text: Index to describe.
+      spec: !REF googlecloudsdk.command_lib.firestore.resources:index
+      removed_flags:
+      - collection-group
+
+  output:
+    # This format string gets the field config table (fieldPath,order,arrayConfig) to show up as
+    # additional columns in the same row, as opposed to indented on the next line. Note that the
+    # double quotes are needed as opposed to a multi-line YAML string, since the latter escapes
+    # newline characters which we need to provide to .join() in order to get each field onto its
+    # own line.
+    #
+    # We could also use
+    # format: |
+    #   table[box](
+    #     name.basename(),
+    #     name.segment(-3):label=COLLECTION_GROUP,
+    #     queryScope,
+    #     state,
+    #     fields.slice(:-1):format="table(fieldPath,order,arrayConfig)")
+    # if we didn't care about the field config info showing up as columns in the existing row.
+    #
+    # Note fields.slice(:-1) is hiding the special __name__ field returned by the API, since the
+    # user shouldn't need to worry about that.
+    #
+    # TODO(b/120985936): Use an inline nested table when that's made possible
+    format: "table[all-box](\
+               name.basename(),\
+               name.segment(-3):label=COLLECTION_GROUP,\
+               queryScope,\
+               state,\
+               apiScope,\
+               fields.slice(:-1).*extract('fieldPath').*flatten().join('\n'):label=FIELD_PATHS,\
+               fields.slice(:-1).*extract('order').*flatten().join('\n'):label=ORDER,\
+               fields.slice(:-1).*extract('arrayConfig').*flatten().join('\n'):label=ARRAY_CONFIG)"
+    release_tracks: [BETA, GA]

@@ -1,0 +1,42 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute alpha ForwardingRuleServiceDirectoryRegistration export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  namespace:
+    description: |-
+      Service Directory namespace to register the forwarding rule under.
+    type: string
+  service:
+    description: |-
+      Service Directory service to register the forwarding rule under.
+    type: string
+  serviceDirectoryRegion:
+    description: |-
+      [Optional] Service Directory region to register this global forwarding
+      rule under. Default to "us-central1". Only used for PSC for Google APIs.
+      All PSC for Google APIs forwarding rules on the same network should use
+      the same Service Directory region.
+    type: string

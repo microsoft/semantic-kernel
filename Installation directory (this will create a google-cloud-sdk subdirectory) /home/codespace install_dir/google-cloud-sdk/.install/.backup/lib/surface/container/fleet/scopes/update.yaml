@@ -1,0 +1,98 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Update a scope.
+    description: Update an existing Fleet Scope.
+    examples: |
+      First retrieve the ID of the scope using the command below.
+
+        $ {parent_command} list
+
+      Update a scope.
+
+        $ {command} SCOPE_NAME
+
+  request:
+    collection: gkehub.projects.locations.scopes
+    # TODO(b/257544684): Remove this and restore modify_request_hooks once scope update IAM
+    # permission is ready.
+    # issue_request_hook: googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:HandleUpdateRequest
+    issue_request_hook: googlecloudsdk.command_lib.container.fleet.scopes.util:HandleNamespaceLabelsUpdateRequest
+    # modify_request_hooks:
+    # - googlecloudsdk.command_lib.container.fleet.scopes.util:CheckUpdateArguments
+    # - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:ValidateAsync
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.util:UpdateClusterUpgrade
+
+  # TODO(b/257544684): Restore this once scope update IAM permission is ready.
+  # async:
+  #   collection: gkehub.projects.locations.operations
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
+      help_text: fleet scope resource.
+      arg_name: scope
+
+    params:
+    - group:
+        help_text: |
+          Rollout Sequencing
+        params:
+        - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:default_upgrade_soaking
+        - group:
+            mutex: true
+            params:
+            - arg_name: remove-upgrade-soaking-overrides
+              type: bool
+              help_text: |
+                Removes soaking time overrides for all upgrades propagating through the current
+                scope. Consequently, all upgrades will follow the soak time configured by
+                `--default-upgrade-soaking` until new overrides are configured with
+                `--add_upgrade_soaking_override` and `--upgrade_selector`.
+
+                To remove all soaking time overrides configured for ``SCOPE_NAME'', run:
+
+                  $ {command} SCOPE_NAME --remove-upgrade-soaking-overrides
+            - group:
+                help_text: |
+                  Upgrade soaking override.
+
+                  Defines a specific soaking time override for a particular upgrade propagating
+                  through the current scope that supercedes the default soaking duration configured
+                  by `--default-upgrade-soaking`.
+
+                  To set an upgrade soaking override of 12 hours for the upgrade with name,
+                  `k8s_control_plane`, and version, `1.23.1-gke.1000`, run:
+
+                    $ {command} SCOPE_NAME \
+                      --add-upgrade-soaking-override=12h \
+                      --upgrade-selector=name="k8s_control_plane",version="1.23.1-gke.1000"
+                params:
+                - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:add_upgrade_soaking_override
+                - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upgrade_selector
+        - group:
+            mutex: true
+            params:
+            - !REF googlecloudsdk.command_lib.container.fleet.scopes.rollout_sequencing.flags:upstream_scope
+            - arg_name: reset-upstream-scope
+              type: bool
+              help_text: |
+                Clears the relationship between the current scope and its upstream scope in the
+                rollout sequence.
+
+                To remove the link between ``SCOPE_NAME'' and its upstream scope, run:
+
+                  $ {command} SCOPE_NAME --reset-upstream-scope
+    additional_arguments_hook: googlecloudsdk.command_lib.container.fleet.resources:UpdateScopeLabelsFlags
+    labels:
+      api_field: scope.labels
+
+  update:
+    read_modify_update: false

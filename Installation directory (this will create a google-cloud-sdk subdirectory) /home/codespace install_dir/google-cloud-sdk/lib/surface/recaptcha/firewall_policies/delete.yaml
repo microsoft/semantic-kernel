@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    description: Delete one or more reCAPTCHA Firewall Policies from a given cloud project.
+    brief: Delete one or more reCAPTCHA Firewall Policies.
+    examples: |
+        To delete a reCAPTCHA firewall policies, run:
+
+          $ {command} policy-id
+
+  request:
+    collection: recaptchaenterprise.projects.firewallpolicies
+
+  arguments:
+    resource:
+      help_text: The reCAPTCHA firewall policy to delete.
+      spec: !REF googlecloudsdk.command_lib.recaptcha.resources:firewall_policies

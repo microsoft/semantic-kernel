@@ -1,0 +1,31 @@
+- release_tracks: [GA]
+  help_text:
+    brief: List conversion workspaces.
+    description: List conversion workspaces.
+    examples: |
+      To list all conversion workspaces in a project and location `us-central1`, run:
+
+        $ {command} --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.conversionWorkspaces
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The region you want to list the conversion workspaces for.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:region
+
+  output:
+    format: |
+      table(
+        name.basename():label=CONVERSION_WORKSPACE_ID,
+        displayName,
+        name.scope('locations').segment(0):label=REGION,
+        source.engine:label=SOURCE,
+        destination.engine:label=DESTINATION,
+        createTime.date():label=CREATED
+      )

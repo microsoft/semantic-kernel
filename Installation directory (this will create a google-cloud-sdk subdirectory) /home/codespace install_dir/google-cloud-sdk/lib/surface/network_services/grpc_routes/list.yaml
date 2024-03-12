@@ -1,0 +1,33 @@
+release_tracks: [GA, ALPHA]
+
+help_text:
+  brief: |
+    List grpc routes.
+  description: |
+    List all grpc routes in the specified location of the current project.
+  examples: |
+      To list grpc routes in the current project, run:
+
+        $ {command} --location=global
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  GA:
+    api_version: v1
+  collection: networkservices.projects.locations.grpcRoutes
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: |
+      The project of the grpc routes to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

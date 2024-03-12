@@ -1,0 +1,25 @@
+- release_tracks: [GA]
+  help_text:
+    brief: List Terraform versions
+    description: List Terraform versions
+    examples: |-
+      To list all Terraform versions at location `us-central1`, run:
+
+      $ {command} --location=us-central1
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:location
+      help_text: Location to list Terraform versions
+  request:
+    collection: config.projects.locations.terraformVersions
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+      name.basename(),
+      state:sort=1,
+      supportTime,
+      deprecateTime,
+      obsoleteTime
+      )

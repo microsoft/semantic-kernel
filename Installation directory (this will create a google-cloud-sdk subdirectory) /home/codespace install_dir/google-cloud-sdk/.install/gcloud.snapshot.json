@@ -1,0 +1,30 @@
+{
+  "components": [
+    {
+      "dependencies": [
+        "core"
+      ],
+      "details": {
+        "description": "Default set of gcloud commands.",
+        "display_name": "Default set of gcloud commands"
+      },
+      "id": "gcloud",
+      "is_configuration": false,
+      "is_hidden": true,
+      "is_required": false,
+      "platform": {},
+      "platform_required": false,
+      "version": {
+        "build_number": 0,
+        "version_string": ""
+      }
+    }
+  ],
+  "revision": 20240308155052,
+  "schema_version": {
+    "no_update": false,
+    "url": "https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz",
+    "version": 3
+  },
+  "version": "468.0.0"
+}

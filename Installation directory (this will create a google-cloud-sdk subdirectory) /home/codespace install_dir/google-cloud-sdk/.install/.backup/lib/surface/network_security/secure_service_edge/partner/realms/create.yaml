@@ -1,0 +1,45 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Create a partner SSE realm.
+  description: |
+    Create a new partner realm which supports the specified customer realm.
+  examples: |
+    To create a partner realm named `my-realm` using the network `my-network`
+    and the pairing key `my-key`, run:
+
+      $ {command} my-realm --sse-pairing-key=my-key --partner-network=my-network
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:partnerSSERealm
+    help_text: |
+      The partner realm to be created.
+  params:
+  - arg_name: sse-pairing-key
+    required: true
+    api_field: partnerSSERealm.pairingKey
+    help_text: |
+      Customer-provided key which uniquely identifies an unpaired customer realm.
+  - arg_name: vpc-name
+    action:
+      deprecated:
+        removed: false
+        warn: Flag {flag_name} is deprecated. Use --partner-network instead.
+    api_field: partnerSSERealm.partnerNetwork
+    help_text: |
+      Partner VPC which will support the newly-created realm.
+  - arg_name: partner-network
+    api_field: partnerSSERealm.partnerNetwork
+    help_text: |
+      Partner network which will support the newly-created realm.
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.partnerSSERealms
+  method: create

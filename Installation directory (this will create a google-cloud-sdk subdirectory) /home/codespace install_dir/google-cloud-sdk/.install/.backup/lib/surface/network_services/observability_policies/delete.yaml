@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete observability policy.
+  description: |
+    Delete the specified observability policy.
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:observabilityPolicy
+    help_text: |
+      Name of the observability policy you want to delete.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.observabilityPolicies

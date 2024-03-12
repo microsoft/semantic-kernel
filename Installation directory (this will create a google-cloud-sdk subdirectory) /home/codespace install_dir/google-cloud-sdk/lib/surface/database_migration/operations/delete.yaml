@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, GA]
+  help_text:
+    brief: Delete a Database Migration Service operation.
+    description: Delete a Database Migration Service operation.
+    examples: |
+      To delete an operation.
+
+          $ {command} OPERATION --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.operations
+    GA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha2
+    method: delete
+
+  arguments:
+    resource:
+      help_text: |
+        Operation resource - Database Migration Service operation to delete.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:operation

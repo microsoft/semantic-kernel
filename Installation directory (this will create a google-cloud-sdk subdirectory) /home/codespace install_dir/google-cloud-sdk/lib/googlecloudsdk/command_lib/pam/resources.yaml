@@ -1,0 +1,110 @@
+project:
+  name: project
+  collection: privilegedaccessmanager.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: The name of the project
+
+folder:
+  name: folder
+  collection: privilegedaccessmanager.folders
+  attributes:
+  - &folder
+    parameter_name: foldersId
+    attribute_name: folder
+    help: The name of the folder
+
+organization:
+  name: organization
+  collection: privilegedaccessmanager.organizations
+  attributes:
+  - &organization
+    parameter_name: organizationsId
+    attribute_name: organization
+    help: The name of the organization
+
+location:
+  name: location
+  resources:
+  - name: location
+    collection: privilegedaccessmanager.projects.locations
+    attributes:
+    - *project
+    - &location
+      parameter_name: locationsId
+      attribute_name: location
+      help: The resource location
+    disable_auto_completers: true
+  - name: location
+    collection: privilegedaccessmanager.folders.locations
+    attributes:
+    - *folder
+    - *location
+    disable_auto_completers: true
+  - name: location
+    collection: privilegedaccessmanager.organizations.locations
+    attributes:
+    - *organization
+    - *location
+    disable_auto_completers: true
+
+entitlement:
+  name: entitlement
+  resources:
+  - name: entitlement
+    collection: privilegedaccessmanager.projects.locations.entitlements
+    attributes:
+    - *project
+    - *location
+    - &entitlement
+      parameter_name: entitlementsId
+      attribute_name: entitlement
+      help: The entitlement id
+    disable_auto_completers: true
+  - name: entitlement
+    collection: privilegedaccessmanager.folders.locations.entitlements
+    attributes:
+    - *folder
+    - *location
+    - *entitlement
+    disable_auto_completers: true
+  - name: entitlement
+    collection: privilegedaccessmanager.organizations.locations.entitlements
+    attributes:
+    - *organization
+    - *location
+    - *entitlement
+    disable_auto_completers: true
+
+grant:
+  name: grant
+  resources:
+  - name: grant
+    collection: privilegedaccessmanager.projects.locations.entitlements.grants
+    attributes:
+    - *project
+    - *location
+    - *entitlement
+    - &grant
+      parameter_name: grantsId
+      attribute_name: grant
+      help: The grant id
+    disable_auto_completers: true
+  - name: grant
+    collection: privilegedaccessmanager.folders.locations.entitlements.grants
+    attributes:
+    - *folder
+    - *location
+    - *entitlement
+    - *grant
+    disable_auto_completers: true
+  - name: grant
+    collection: privilegedaccessmanager.organizations.locations.entitlements.grants
+    attributes:
+    - *organization
+    - *location
+    - *entitlement
+    - *grant
+    disable_auto_completers: true

@@ -1,0 +1,40 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Updates the metadata of a Cloud Spanner a backup.
+    description: Updates the metadata of a Cloud Spanner a backup.
+    examples: |
+      To update the backup metadata with an exact expiration date, run:
+
+        $ {command} BACKUP_ID --instance=INSTANCE_NAME --expiration-date=2020-03-29T10:49:41Z
+
+      To update the backup metadata with a retention period, run:
+
+        $ {command} BACKUP_ID --instance=INSTANCE_NAME --retention-period=2w
+
+  request:
+    collection: spanner.projects.instances.backups
+    method: 'patch'
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.spanner.backups:ModifyUpdateMetadataRequest
+  arguments:
+    params:
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: expiration-date
+          api_field: backup.expireTime
+          help_text: |
+            Expiration time of the backup, must be at least 6 hours and at most 366 days from
+            the time of creation. See `$ gcloud topic datetimes` for information on
+            date/time formats.
+        - arg_name: retention-period
+          api_field: backup.expireTime
+          help_text: |
+            Retention period of the backup relative from now, must be at least 6 hours and at most
+            a year from the time of creation. See `$ gcloud topic datetimes` for information on
+            duration formats.
+    resource:
+      help_text: The Cloud Spanner backup to update.
+      spec: !REF googlecloudsdk.command_lib.spanner.resources:backup

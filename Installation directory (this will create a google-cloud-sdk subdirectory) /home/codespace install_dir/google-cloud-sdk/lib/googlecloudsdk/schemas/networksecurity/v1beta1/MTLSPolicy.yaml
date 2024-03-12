@@ -1,0 +1,52 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1beta1 MTLSPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  clientValidationCa:
+    description: |-
+      Defines the mechanism to obtain the Certificate Authority certificate to
+      validate the client certificate.
+    type: array
+    items:
+      $ref: ValidationCA.yaml
+  clientValidationMode:
+    description: |-
+      Specifies whether client connections proceed when a client presents an
+      invalid certificate or no certificate. Required if the policy is to be
+      used with the External HTTPS LB. For Traffic Director it must be
+      empty.
+    type: string
+    enum:
+    - ALLOW_INVALID_OR_MISSING_CLIENT_CERT
+    - CLIENT_VALIDATION_MODE_UNSPECIFIED
+    - REJECT_INVALID
+  clientValidationTrustConfig:
+    description: |-
+      Reference to the TrustConfig from certificatemanager.googleapis.com
+      namespace. If specified, the chain validation will be performed
+      against certificates configured in the given TrustConfig. Allowed only
+      if the policy is to be used with External HTTPS LB.
+    type: string

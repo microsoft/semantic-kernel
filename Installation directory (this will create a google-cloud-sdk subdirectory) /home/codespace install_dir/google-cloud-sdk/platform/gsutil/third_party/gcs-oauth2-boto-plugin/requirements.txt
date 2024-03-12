@@ -1,0 +1,11 @@
+rsa==4.7.2
+boto>=2.29.1
+google-reauth>=0.1.0
+httplib2>=0.18
+oauth2client>=2.2.0
+pyOpenSSL>=0.13
+retry_decorator>=1.0.0
+six>=1.6.1
+# Extra requirements only needed for testing, 'dev' label in setup.py.
+freezegun
+mock;python_version<"3.3"

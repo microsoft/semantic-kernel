@@ -1,0 +1,44 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 AWSV4Signature export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- accessKeyId
+- originRegion
+- secretAccessKeyVersion
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  accessKeyId:
+    description: The access key ID that your origin uses to identify the key.
+    type: string
+  originRegion:
+    description: The name of the AWS region that your origin is in.
+    type: string
+  secretAccessKeyVersion:
+    description: |-
+      The Secret Manager secret version of the secret access key used by your
+      origin. This is the resource name of the secret version in the format
+      `projects/*/secrets/*/versions/*` where the `*` values are replaced by the
+      project, the secret, and the version that you require.
+    type: string

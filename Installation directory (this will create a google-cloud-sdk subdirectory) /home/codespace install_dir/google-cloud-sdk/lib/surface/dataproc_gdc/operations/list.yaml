@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List Dataproc GDC operations.
+    description: |
+      List all Dataproc GDC operations in a location
+    examples: |
+      To list Dataproc GDC operations in project `test-project` in `us-central1`, run:
+
+        $ {command} --project=test-project --location=us-central1
+  request:
+    collection: dataprocgdc.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha1
+  response:
+    id_field: name
+  arguments:
+    resource:
+      help_text: The location of the instances.
+      spec: !REF googlecloudsdk.command_lib.dataproc_gdc.resources:location
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        metadata.target.basename():label=TARGET,
+        metadata.createTime:label=CREATE_TIME,
+        done:label=DONE
+      )

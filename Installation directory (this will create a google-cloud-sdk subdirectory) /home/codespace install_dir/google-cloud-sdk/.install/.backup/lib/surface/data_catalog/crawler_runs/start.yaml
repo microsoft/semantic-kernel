@@ -1,0 +1,14 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Start a Data Catalog crawler run.
+    description: Start a Data Catalog crawler run.
+
+  request:
+    collection: datacatalog.projects.crawlers
+    method: run
+    api_version: v1alpha3
+
+  arguments:
+    resource:
+      help_text: Crawler to run.
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:crawler

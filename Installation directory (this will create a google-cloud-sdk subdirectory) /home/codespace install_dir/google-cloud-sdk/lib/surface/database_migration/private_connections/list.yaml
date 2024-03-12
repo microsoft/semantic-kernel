@@ -1,0 +1,30 @@
+- release_tracks: [GA]
+  help_text:
+    brief: List private connections.
+    description: List private connections.
+    examples: |
+      To list all private connections in the current project and location 'us-central1', run:
+
+        $ {command} --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.privateConnections
+    api_version: v1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The region you want to list the private connections for.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:region
+
+  output:
+    format: |
+      table(
+        name.basename():label=PRIVATE_CONNECTION_ID,
+        displayName,
+        name.scope('locations').segment(0):label=REGION,
+        state:label=STATUS,
+        createTime.date():label=CREATED
+      )

@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Access Context Manager access policy.
+  description: |
+    *{command}* exports the configuration for a Access Context Manager access policy.
+
+    Access policy configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    access policies within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for an access policy, run:
+
+      $ {command} my-access-policy
+
+    To export the configuration for an access policy to a file, run:
+
+      $ {command} my-access-policy --path=/path/to/dir/
+
+    To export the configuration for an access policy in Terraform
+    HCL format, run:
+
+      $ {command} my-access-policy --resource-format=terraform
+
+    To export the configurations for all access policies within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Access policy to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy

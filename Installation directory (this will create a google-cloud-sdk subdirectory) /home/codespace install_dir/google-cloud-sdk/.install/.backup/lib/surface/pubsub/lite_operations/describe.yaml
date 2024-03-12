@@ -1,0 +1,23 @@
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Describe a Pub/Sub Lite operation.
+  description: Describe a Pub/Sub Lite operation.
+  examples: |
+    To describe a Pub/Sub Lite operation, run:
+
+        $ {command} operation-id --location=us-central1-a
+
+    Alternatively, specify the full operation name:
+
+        $ {command} projects/my-project/locations/us-central1-a/operations/operation-id
+
+request:
+  collection: pubsublite.admin.projects.locations.operations
+  method: get
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+
+arguments:
+  resource:
+    help_text: The Pub/Sub Lite operation to describe.
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_operation

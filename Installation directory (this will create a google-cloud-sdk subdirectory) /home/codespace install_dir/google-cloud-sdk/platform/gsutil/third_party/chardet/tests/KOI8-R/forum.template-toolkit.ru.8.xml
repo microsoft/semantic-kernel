@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="koi8-r" ?>
+<!--
+Source: http://forum.template-toolkit.ru/rss/forum_8.rss
+Expect: KOI8-R
+-->
+<rss version='2.0'>
+	<channel>
+		<title>Форумы Template Toolkit : Библиотеки для работы с шаблонами в Perl</title>
+		<link>http://forum.template-toolkit.ru/view_forum/forum_id-8.html?rss</link>
+		<description>Template Toolkit - быстрая, мощная и расширяемая система обработки шаблонов. На сайте работает форум, в котором обсуждаются вопросы использования библиотеки по работе с шаблонами. Text::Template, HTML::Template, Mason и другие библиотеки</description>
+		<language>ru</language>
+		<copyright>Lobanov Igor</copyright>
+		<webMaster>Lobanov Igor &lt;webmaster@template-toolkit.ru&gt;</webMaster>
+		<pubDate>Thu, 17 Mar 2005 12:03:32 GMT</pubDate>
+		<lastBuildDate>Wed,  4 Jan 2006 02:29:01 GMT</lastBuildDate>
+		<managingEditor>Perl script, Template Toolkit</managingEditor>
+		<image>
+			<url>http://forum.template-toolkit.ru/images/tt2powered.gif</url>
+			<title>Template Toolkit - шаблоны в perl</title>
+			<link>http://forum.template-toolkit.ru/</link>
+			<width>88</width>
+			<height>31</height>
+		</image>
+		<docs>http://blogs.law.harvard.edu/tech/rss</docs>
+		<item>
+			<guid isPermaLink="true">http://forum.template-toolkit.ru/view_topic/topic_id-53.html?rss</guid>
+			<pubDate>Tue, 28 Dec 2004 19:07:19 GMT</pubDate>
+			<title>Разделение кода, представления, и конфигурации</title>
+			<link>http://forum.template-toolkit.ru/view_topic/topic_id-53.html?rss</link>
+			<description>На &lt;a target=&quot;_blank&quot; href=&quot;http://www.theperlreview.com/&quot;&gt;Perl Review&lt;/a&gt; опубликована статья Брайана де Фоя (brian d foy) &amp;quot;Separating Code, Presentation, and Configuration&amp;quot;. Ниже приводится перевод статьи.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;Краткий обзор.&lt;/span&gt;&lt;br /&gt;&lt;br /&gt;Я взял программу из предыдущей статьи и разделил код, представление и конфигурацию, чтобы сделать программу более гибкой и легкой для поддержки.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;1. Введение.&lt;/span&gt;&lt;br /&gt;&lt;br /&gt;В последнем выпуске я представил программу, которую я использую для того, чтобы забирать и отображать Rich Site Summaries (RSS) с других веб-сайтов&lt;span style=&quot;font-weight:bold&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;. В коде я использовал литеральные величины, чтобы указать какие файлы загружать и как представлять данные, и обещал что в этом выпуске я это исправлю.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 1&lt;/span&gt; содержит программу, которую я представлял в предыдущем выпуске. В массиве &lt;span style=&quot;font-weight:bold&quot;&gt;@files&lt;/span&gt; хранятся файлы, которые необходимо загрузить, &lt;span style=&quot;font-weight:bold&quot;&gt;$base&lt;/span&gt; - каталог, где сохраняется вывод, и несколько выражений &lt;span style=&quot;font-weight:bold&quot;&gt;print&lt;/span&gt; создают HTML с подстановкой простых переменных (что предпочтительнее скажем чем использовать HTML-функции модуля CGI). Это негибкий и трудный для сопровождения код. Когда я захочу поменять список сайтов или вывод, я рискую сломать программу, если наберу что-то неправильно или сделаю другую ошибку.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 1: Загрузчик RSS с жесткопрописанными значениями.&lt;/span&gt;&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;1	#!/usr/bin/perl -w
+2	use strict;
+3
+4	use LWP::Simple;
+5	use XML::RSS;
+6
+7	my @files = qw(
+8	  http://use.perl.org/useperl.rss
+9	  http://search.cpan.org/rss/search.rss
+10	  http://jobs.perl.org/rss/standard.rss
+11	  http://www.perl.com/pace/perlnews.rdf
+12	  http://www.perlfoundation.org/perl-foundation.rdf
+13	  http://www.stonehenge.com/merlyn/UnixReview/ur.rss
+14	  http://www.stonehenge.com/merlyn/WebTechniques/wt.rss
+15	  http://www.stonehenge.com/merlyn/LinuxMag/lm.rss
+16	);
+17
+18	my $base = '/usr/home/comdog/TPR/rss-html';
+19
+20	foreach my $url ( @files )
+21	  {
+22	  my $file = $url;
+23
+24	  $file =~ s|.*/||;
+25
+26	  my $result = open my $fh, &amp;quot;&amp;gt; $base/$file.html&amp;quot;;
+27
+28	  unless( $result )
+29	    {
+30	    warn &amp;quot;Could not open [$file] for writing! $!&amp;quot;;
+31	    next;
+32	    }
+33
+34	  select $fh;
+35
+36	  my $rss = XML::RSS-&amp;gt;new();
+37	  my $data = get( $url );
+38	  $rss-&amp;gt;parse( $data );
+39
+40	  my $channel = $rss-&amp;gt;{channel};
+41	  my $image = $rss-&amp;gt;{image};
+42
+43	  print &amp;lt;&amp;lt;&amp;quot;HTML&amp;quot;;
+44	  &amp;lt;table cellpadding=1&amp;gt;&amp;lt;tr&amp;gt;&amp;lt;td bgcolor=&amp;quot;#000000&amp;quot;&amp;gt;
+45	  &amp;lt;table cellpadding=5&amp;gt;
+46	    &amp;lt;tr&amp;gt;&amp;lt;td bgcolor=&amp;quot;#aaaaaa&amp;quot; align=&amp;quot;center&amp;quot;&amp;gt;
+47	HTML
+48
+49	  if( $image-&amp;gt;{url} )
+50	    {
+51	    my $img = qq|&amp;lt;img src=&amp;quot;$$image{url}&amp;quot; alt=&amp;quot;$$channel{title}&amp;quot;&amp;gt;|;
+52	    print qq|&amp;lt;a href=&amp;quot;$$channel{link}&amp;quot;&amp;gt;$img&amp;lt;/a&amp;gt;&amp;lt;br&amp;gt;\n|;
+53	    }
+54	  else
+55	    {
+56	    print qq|&amp;lt;a href=&amp;quot;$$channel{link}&amp;quot;&amp;gt;$$channel{title}&amp;lt;/a&amp;gt;&amp;lt;br&amp;gt;\n|;
+57	    }
+58
+59	  print &amp;lt;&amp;lt;&amp;quot;HTML&amp;quot;;
+60	  &amp;lt;font size=&amp;quot;-1&amp;quot;&amp;gt;$$channel{description}&amp;lt;/font&amp;gt;
+61	  &amp;lt;/td&amp;gt;&amp;lt;/tr&amp;gt;
+62	  &amp;lt;tr&amp;gt;&amp;lt;td bgcolor=&amp;quot;#bbbbff&amp;quot; width=200&amp;gt;&amp;lt;font size=&amp;quot;-1&amp;quot;&amp;gt;
+63	HTML
+64
+65	  foreach my $item ( @{ $rss-&amp;gt;{items} } )
+66	    {
+67	    print qq|&amp;lt;b&amp;gt;&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;a href=&amp;quot;$$item{link}&amp;quot;&amp;gt;$$item{title}&amp;lt;/a&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;\n|;
+68	    }
+69
+70	  print &amp;lt;&amp;lt;&amp;quot;HTML&amp;quot;;
+71	    &amp;lt;/font&amp;gt;&amp;lt;/td&amp;gt;&amp;lt;/tr&amp;gt;
+72	  &amp;lt;/td&amp;gt;&amp;lt;/tr&amp;gt;&amp;lt;/table&amp;gt;
+73	  &amp;lt;/td&amp;gt;&amp;lt;/tr&amp;gt;&amp;lt;/table&amp;gt;
+74	HTML
+75
+76	  close $fh;
+77	  }&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;2. Отделение представления.&lt;/span&gt;&lt;br /&gt;&lt;br /&gt;Хороший дизайн не связывает себя с частным представлением данных. Моя программа должна забрать данные и сделать их доступными чему-то, что их представляет - то, что я работаю с RSS не должно иметь значения. Я могу захотеть производить HTML, TeX, простой текст, или даже какой-то формат, который не могу себе представить.&lt;br /&gt;&lt;br /&gt;Возможно кто-то захочет написать собственную систему для работы с шаблонами, но мне нравится модуль Text::Template Марка-Джейсона Доминуса (Mark-Jason Dominus). Он делает все что мне необходимо, не требует для своей работы дополнительных программ и написан полностью на Perl. У него простой интерфейс и мне не требуется изучать язык шаблонов, поскольку шаблоны используют Perl.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 2&lt;/span&gt; - это та же программа, только вместо внедренного HTML используется Text::Template. В строке 5 я импортирую метод fill_in_file(). В строке 13 указываю шаблон, который буду использовать. Весь HTML, используемый программой, теперь вынесен в файл шаблона, приведенный в &lt;span style=&quot;font-style:italic&quot;&gt;листинге 3&lt;/span&gt;.&lt;br /&gt;&lt;br /&gt;Модуль Text::Template может принимать данные как хеш. Ключи хеша становятся именами переменных в шаблоне, а значения - значениями переменных шаблона, а также определяют тип переменных. Если значение хеша простой скаляр, переменная шаблона скаляр. Если значение хеша - анонимный массив, переменная шаблона - массив, и так далее.&lt;br /&gt;&lt;br /&gt;Объект, создаваемый XML::RSS - анонимный хеш. Модуль предоставляет абстрактный интерфейс для создания, но не для доступа. Это отчасти именно то, что я должен передать моему шаблону. В шаблоне &lt;span style=&quot;font-weight:bold&quot;&gt;$rss-&amp;gt;channel&lt;/span&gt;, которая в качестве значения содержит анонимный хеш, становится &lt;span style=&quot;font-weight:bold&quot;&gt;%channel&lt;/span&gt;, а &lt;span style=&quot;font-weight:bold&quot;&gt;$rss-&amp;gt;items&lt;/span&gt;, содержащая анонимный массив становится &lt;span style=&quot;font-weight:bold&quot;&gt;@items&lt;/span&gt;.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 2: Использование шаблона.&lt;/span&gt;&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;1	#!/usr/bin/perl -w
+2	use strict;
+3
+4	use LWP::Simple;
+5	use Text::Template qw(fill_in_file);
+6	use XML::RSS;
+7
+8	my @files = qw(
+9	  http://use.perl.org/useperl.rss
+10	);
+11
+12	my $base = '.';
+13	my $template = 'rss-html.tmpl';
+14
+15	foreach my $url ( @files )
+16	  {
+17	  my $file = $url;
+18
+19	  $file =~ s|.*/||;
+20
+21	  my $result = open my $fh, &amp;quot;&amp;gt; $base/$file.html&amp;quot;;
+22
+23	  unless( $result )
+24	    {
+25	    warn &amp;quot;Could not open [$file] for writing! $!&amp;quot;;
+26	    next;
+27	    }
+28
+29	  my $rss = XML::RSS-&amp;gt;new();
+30	  my $data = get( $url );
+31	  $rss-&amp;gt;parse( $data );
+32
+33	  print fill_in_file( $template, HASH =&amp;gt; $rss );
+34	  close $fh;
+35	  }&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;&lt;br /&gt;Внутри шаблона Text::Template исполняет блоки кода, которые он находит между фигурными скобками. Он заменяет блок последним вычисленным выражением. Имена переменных - ключи хеша, ссылку на который я передал в качестве аргумента функции fill_in_file() в коде, приведенном в &lt;span style=&quot;font-style:italic&quot;&gt;листинге 2&lt;/span&gt;.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 3: HTML шаблон.&lt;/span&gt;&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;1	&amp;lt;table cellpadding=1&amp;gt;&amp;lt;tr&amp;gt;&amp;lt;td bgcolor=&amp;quot;#000000&amp;quot;&amp;gt;
+2	&amp;lt;table cellpadding=5&amp;gt;
+3	  &amp;lt;tr&amp;gt;
+4	    &amp;lt;td bgcolor=&amp;quot;#aaaaaa&amp;quot; align=&amp;quot;center&amp;quot;&amp;gt;
+5	    &amp;lt;a href=&amp;quot;{ $channel{link} }&amp;quot;&amp;gt;{
+6
+7	    $image ? qq|&amp;lt;img src=&amp;quot;$image&amp;quot; alt=&amp;quot;$channel{title}&amp;quot;&amp;gt;| : $channel{title}
+8
+9	    }&amp;lt;/a&amp;gt;&amp;lt;br&amp;gt;
+10
+11	    { $channel{description} }
+12	    &amp;lt;/td&amp;gt;
+13	  &amp;lt;/tr&amp;gt;
+14
+15	  &amp;lt;tr&amp;gt;
+16	    &amp;lt;td bgcolor=&amp;quot;#bbbbff&amp;quot; width=200&amp;gt;&amp;lt;font size=&amp;quot;-1&amp;quot;&amp;gt;
+17	{
+18	    my $str;
+19
+20	    foreach my $item ( @items )
+21	      {
+22	      $str .= qq|&amp;lt;b&amp;gt;&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;a href=&amp;quot;$$item{link}&amp;quot;&amp;gt;$$item{title}&amp;lt;/a&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;\n|;
+23	      }
+24
+25	    $str;
+26	}&amp;lt;/font&amp;gt;&amp;lt;/td&amp;gt;
+27	  &amp;lt;/tr&amp;gt;
+28	&amp;lt;/td&amp;gt;&amp;lt;/tr&amp;gt;&amp;lt;/table&amp;gt;
+29	&amp;lt;/td&amp;gt;&amp;lt;/tr&amp;gt;&amp;lt;/table&amp;gt;&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;&lt;br /&gt;Как только система шаблонов задейстована, я могу менять представление не меняя логику кода. Если я приму решение изменить вид представления данных, я поменяю только шаблон. Если мне вместо HTML требуется простой текст, я только изменю под новый формат шаблон, как это сделано в &lt;span style=&quot;font-style:italic&quot;&gt;листинге 4&lt;/span&gt;.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 4: Шаблон для обычного текста.&lt;/span&gt;&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;1	{ $channel{title} }
+2
+3	{ $channel{description} }
+4
+5	{
+6	my $str;
+7
+8	foreach my $item ( @items )
+9	  {
+10	  $str .= qq|* $$item{title}\n|;
+11	  }
+12
+13	$str;
+14	}&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;3. Отделение конфигурации.&lt;/span&gt;&lt;br /&gt;&lt;br /&gt;Хороший дизайн также позволяет адаптировать скрипт к различному окружению. В &lt;span style=&quot;font-style:italic&quot;&gt;листинге 1&lt;/span&gt; я жестко прописал значение директории для вывода, что делает мой скрипт хрупким - если моя домашняя директория поменяется, скрипт сломается. Кроме того &lt;span style=&quot;font-style:italic&quot;&gt;в листинге 2&lt;/span&gt; жестко прописано имя шаблона, несмотря на то что я могу менять представление, изменяя шаблон. Мне нужно иметь возможность давать каждому шаблону содержательное имя вместо использования одного и того же имени для разного содержимого.&lt;br /&gt;&lt;br /&gt;Многие свободно-доступные скрипты, которые я нашел в Интернет требуют, чтобы пользователь отредактировал верхнюю часть скрипта или включаемую библиотеку, которая содержит только конфигурационные данные. Такой подход требует, чтобы конечный пользователь знал основы языка программирования и правил скрипт - ошибка сломает скрипт. Плохие конфигурационные данные могут привести к неожиданным результатам, но они не поломают программу.&lt;br /&gt;&lt;br /&gt;Я могу указать текущие конфигурационные данные несколькими способами и покажу только один из них. Архив Comprehensive Perl Archive Network (CPAN)&lt;span style=&quot;font-weight:bold&quot;&gt;&lt;sup&gt;2&lt;/sup&gt;&lt;/span&gt; содержит несколько модулей для разбора конфигурационных файлов в различных форматах или аргументов командной строки. Дизайнеры должны выбирать подход, который удовлетворяет их нуждам.&lt;br /&gt;&lt;br /&gt;Когда я впервые начал отделять данные конфигурации от моих скриптов, я перебрал несколько модулей на CPAN и остановился на ConfigReader::Simple, который использует построчный формат ключ-значение. Я использовал его настолько часто, что начал отправлять мои изменения Беку Оберину (Bek Oberin), автору оригинальной версии, затем полностью взял на себя поддержку модуля.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 5&lt;/span&gt; адаптирует &lt;span style=&quot;font-style:italic&quot;&gt;листинг 2&lt;/span&gt; к использованию ConfigReader::Simple. Я создаю новый объект конфигурации, затем читаю значения из объекта. Модуль преобразует имена ключей конфигурации в имена методов для простого доступа (хотя для доступа к значениям ключей с экзотическими именами, которые не могут быть преобразованы в идентификаторы Perl приходится использовать метод get()). &lt;span style=&quot;font-style:italic&quot;&gt;Листинг 6&lt;/span&gt; содержит конфигурационный файл.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 5: Использование ConfigReader::Simple.&lt;/span&gt;&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;1	#!/usr/bin/perl -w
+2	use strict;
+3
+4	use ConfigReader::Simple;
+5	use LWP::Simple;
+6	use Text::Template qw(fill_in_file);
+7	use XML::RSS;
+8
+9	my $config = ConfigReader::Simple-&amp;gt;new( './rss.config' );
+10
+11	my $base = $config-&amp;gt;base;
+12	my $template = $config-&amp;gt;template;
+13	my $extension = $config-&amp;gt;extension;
+14
+15	my @files = split /\s+/, $config-&amp;gt;files;
+16
+17	foreach my $url ( @files )
+18	  {
+19	  my $file = $url;
+20
+21	  $file =~ s|.*/||;
+22
+23	  my $result = open my $fh, &amp;quot;&amp;gt; $base/$file.$extension&amp;quot;;
+24
+25	  unless( $result )
+26	    {
+27	    warn &amp;quot;Could not open [$file] for writing! $!&amp;quot;;
+28	    next;
+29	    }
+30
+31	  my $rss = XML::RSS-&amp;gt;new();
+32	  my $data = get( $url );
+33	  $rss-&amp;gt;parse( $data );
+34
+35	  print $fh fill_in_file( $template, HASH =&amp;gt; $rss );
+36	  close $fh;
+37	  }&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Листинг 6: Файл конфигурации.&lt;/span&gt;&lt;br /&gt;&lt;div class=&quot;code&quot;&gt;&lt;pre&gt;1	base .
+2	template rss-html.tmpl
+3	files http://use.perl.org/useperl.rss
+4	extension html&lt;/pre&gt;&lt;/div&gt;&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;4. Заключение.&lt;/span&gt;&lt;br /&gt;&lt;br /&gt;Я могу уменьшить размер моих программ, отделяя код от логики представления и конфигурационной информации. Это разделение делает программу более гибкой и простой в адаптации к новым окружениям. Шаблоны позволяют изменять вывод, а конфигурационные файлы управлять работой программы  без изменения кода. Text::Template и ConfigReader::Simple делают это настолько простым, насколько возможно.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;5. Ссылки&lt;/span&gt;&lt;br /&gt;&lt;br /&gt;Все модули, упоминаемые в этой статье, можно найти на Comprehensive Perl Archive Network (CPAN) - &lt;a target=&quot;_blank&quot; href=&quot;http://search.cpan.org&quot;&gt;http://search.cpan.org&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;6. Об авторе.&lt;/span&gt;&lt;br /&gt;&lt;br /&gt;Брайан де Фой (brian d foy) - издатель &lt;span style=&quot;font-style:italic&quot;&gt;The Perl Review&lt;/span&gt;.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;Примечания.&lt;/span&gt;&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt; &amp;quot;Simple RSS with Perl&amp;quot; by brian d foy, The Perl Review v0 i5, November 2002, &lt;a target=&quot;_blank&quot; href=&quot;http://www.theperlreview.com&quot;&gt;http://www.ThePerlReview.com&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;font-weight:bold&quot;&gt;&lt;sup&gt;2&lt;/sup&gt;&lt;/span&gt; &lt;a target=&quot;_blank&quot; href=&quot;http://search.cpan.org&quot;&gt;http://search.cpan.org&lt;/a&gt;&lt;br /&gt;&lt;br /&gt;&lt;a target=&quot;_blank&quot; href=&quot;http://www.theperlreview.com/Articles/v0i7/config.pdf&quot;&gt;оригинал статьи на Perl Review (PDF)&lt;/a&gt;
+			</description>
+			<author>Лобанов Игорь &lt;authors@template-toolkit.ru&gt;</author>
+			<comments>http://forum.template-toolkit.ru/view_topic/topic_id-53.html</comments>
+			<category>Другие темы, связанные с шаблонами и Perl</category>
+			<source url="http://forum.template-toolkit.ru/rss/forum_id-8.rss">http://forum.template-toolkit.ru/view_topic/topic_id-53.html?rss</source>
+		</item>
+	</channel>
+</rss>

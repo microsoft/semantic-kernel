@@ -1,0 +1,470 @@
+0.20.4
+
+  proxy: support proxy urls with ipv6 address
+  https://github.com/httplib2/httplib2/pull/217
+
+0.20.3
+
+  No changes in library. Tests compatible with Python3.10 and recent pytest.
+
+0.20.2
+
+  auth: support pyparsing v3 (AttributeError downcaseTokens)
+  https://github.com/httplib2/httplib2/issues/207
+
+  proxy: correct extraction of errno from pysocks ProxyConnectionError
+  https://github.com/httplib2/httplib2/pull/202
+
+0.20.1
+
+  No changes from 0.20.0, re-upload of broken py2 wheel.
+
+0.20.0
+
+  IMPORTANT cacerts: remove expired DST Root CA X3, add ISRG Root X1, X2
+  https://github.com/httplib2/httplib2/pull/200
+  https://github.com/httplib2/httplib2/issues/203
+
+  tls: accept min/max ssl.TLSVersion enum values
+  https://github.com/httplib2/httplib2/pull/191
+
+  setup(python_requires=...) may need setuptools update
+  https://github.com/httplib2/httplib2/pull/195
+
+0.19.1
+
+  auth header parsing performance optimizations; Thanks to Paul McGuire
+
+  Use mock from the standard library on Python>=3.3
+
+0.19.0
+
+  auth: parse headers using pyparsing instead of regexp
+  https://github.com/httplib2/httplib2/pull/182
+
+  auth: WSSE token needs to be string not bytes
+  https://github.com/httplib2/httplib2/pull/179
+
+0.18.1
+
+  explicit build-backend workaround for pip build isolation bug
+  "AttributeError: 'module' object has no attribute '__legacy__'" on pip install
+  https://github.com/httplib2/httplib2/issues/169
+
+0.18.0
+
+  IMPORTANT security vulnerability CWE-93 CRLF injection
+  Force %xx quote of space, CR, LF characters in uri.
+  Special thanks to Recar https://github.com/Ciyfly for discrete notification.
+  https://cwe.mitre.org/data/definitions/93.html
+
+0.17.4
+
+  Ship test suite in source dist
+  https://github.com/httplib2/httplib2/pull/168
+
+0.17.3
+
+  IronPython2.7: relative import iri2uri fixes ImportError
+  https://github.com/httplib2/httplib2/pull/163
+
+0.17.2
+
+  python3 + debug + IPv6 disabled: https raised
+  "IndexError: Replacement index 1 out of range for positional args tuple"
+  https://github.com/httplib2/httplib2/issues/161
+
+0.17.1
+
+  python3: no_proxy was not checked with https
+  https://github.com/httplib2/httplib2/issues/160
+
+0.17.0
+
+  feature: Http().redirect_codes set, works after follow(_all)_redirects check
+  This allows one line workaround for old gcloud library that uses 308
+  response without redirect semantics.
+  https://github.com/httplib2/httplib2/issues/156
+
+0.16.0
+
+  IMPORTANT cache invalidation change, fix 307 keep method, add 308 Redirects
+  https://github.com/httplib2/httplib2/issues/151
+
+  proxy: username/password as str compatible with pysocks
+  https://github.com/httplib2/httplib2/issues/154
+
+0.15.0
+
+  python2: regression in connect() error handling
+  https://github.com/httplib2/httplib2/pull/150
+
+  add support for password protected certificate files
+  https://github.com/httplib2/httplib2/pull/143
+
+  feature: Http.close() to clean persistent connections and sensitive data
+  https://github.com/httplib2/httplib2/pull/149
+
+0.14.0
+
+  Python3: PROXY_TYPE_SOCKS5 with str user/pass raised TypeError
+  https://github.com/httplib2/httplib2/pull/145
+
+0.13.1
+
+  Python3: Use no_proxy
+  https://github.com/httplib2/httplib2/pull/140
+
+0.13.0
+
+  Allow setting TLS max/min versions
+  https://github.com/httplib2/httplib2/pull/138
+
+0.12.3
+
+  No changes to library. Distribute py3 wheels.
+
+0.12.1
+
+  Catch socket timeouts and clear dead connection
+  https://github.com/httplib2/httplib2/issues/18
+  https://github.com/httplib2/httplib2/pull/111
+
+  Officially support Python 3.7 (package metadata)
+  https://github.com/httplib2/httplib2/issues/123
+
+0.12.0
+
+  Drop support for Python 3.3
+
+  ca_certs from environment HTTPLIB2_CA_CERTS or certifi
+  https://github.com/httplib2/httplib2/pull/117
+
+  PROXY_TYPE_HTTP with non-empty user/pass raised TypeError: bytes required
+  https://github.com/httplib2/httplib2/pull/115
+
+  Revert http:443->https workaround
+  https://github.com/httplib2/httplib2/issues/112
+
+  eliminate connection pool read race
+  https://github.com/httplib2/httplib2/pull/110
+
+  cache: stronger safename
+  https://github.com/httplib2/httplib2/pull/101
+
+0.11.3
+
+  No changes, just reupload of 0.11.2 after fixing automatic release conditions in Travis.
+
+0.11.2
+
+  proxy: py3 NameError basestring
+  https://github.com/httplib2/httplib2/pull/100
+
+0.11.1
+
+  Fix HTTP(S)ConnectionWithTimeout AttributeError proxy_info
+  https://github.com/httplib2/httplib2/pull/97
+
+0.11.0
+
+  Add DigiCert Global Root G2 serial 033af1e6a711a9a0bb2864b11d09fae5
+  https://github.com/httplib2/httplib2/pull/91
+
+  python3 proxy support
+  https://github.com/httplib2/httplib2/pull/90
+
+  If no_proxy environment value ends with comma then proxy is not used
+  https://github.com/httplib2/httplib2/issues/11
+
+  fix UnicodeDecodeError using socks5 proxy
+  https://github.com/httplib2/httplib2/pull/64
+
+  Respect NO_PROXY env var in proxy_info_from_url
+  https://github.com/httplib2/httplib2/pull/58
+
+  NO_PROXY=bar was matching foobar (suffix without dot delimiter)
+  New behavior matches curl/wget:
+  - no_proxy=foo.bar will only skip proxy for exact hostname match
+  - no_proxy=.wild.card will skip proxy for any.subdomains.wild.card
+  https://github.com/httplib2/httplib2/issues/94
+
+  Bugfix for Content-Encoding: deflate
+  https://stackoverflow.com/a/22311297
+
+0.10.3
+
+  Fix certificate validation on Python<=2.7.8 without ssl.CertificateError
+  https://github.com/httplib2/httplib2/issues/45
+
+0.10.2
+
+  Just a reupload of 0.10.1, which was broken for Python3
+  because wheel distribution doesn't play well with our 2/3 split code base.
+  https://github.com/httplib2/httplib2/issues/43
+
+0.10.1
+
+  This is the first release by new httplib2 team. See post by Joe
+  https://bitworking.org/news/2016/03/an_update_on_httplib2
+
+  Remove VeriSign Class 3 CA from trusted certs
+  https://googleonlinesecurity.blogspot.com/2015/12/proactive-measures-in-digital.html
+
+  Add IdenTrust DST Root CA X3
+  https://github.com/httplib2/httplib2/pull/26
+
+  Support for specifying the SSL protocol version (Python v2)
+  https://github.com/jcgregorio/httplib2/issues/329
+
+  On App Engine use urlfetch's default deadline if None is passed.
+
+  Fix TypeError on AppEngine “__init__() got an unexpected keyword argument 'ssl_version’”
+  https://github.com/httplib2/httplib2/pull/12
+
+  Send SNI data for SSL connections on Python 2.7.9+
+  Verify the server hostname if certificate validation is enabled
+  https://github.com/httplib2/httplib2/pull/13
+
+  Add proxy_headers argument to ProxyInfo constructor
+  https://github.com/httplib2/httplib2/pull/21
+
+  Make disable_ssl_certificate_validation work with Python 3.5.
+  https://github.com/httplib2/httplib2/pull/15
+
+  Fix socket error handling
+  https://github.com/httplib2/httplib2/commit/eb7468561714a5b700d5a3d8fa1a8794de02b9ef
+  https://github.com/httplib2/httplib2/commit/e7f6e622047107e701ee70e7ec586717d97b0cbb
+
+0.9.2
+
+  Fixes in this release:
+
+   https://github.com/jcgregorio/httplib2/pull/313
+
+    Fix incorrect ResponseNotReady exceptions, retry on transient errors.
+
+0.9.1
+
+  Fixes in this release:
+
+    https://github.com/jcgregorio/httplib2/pull/296
+
+        There was a problem with headers when a binary string is passed (like
+        b'Authorization').
+
+    https://github.com/jcgregorio/httplib2/pull/276
+
+        Default to doing DNS resolution through a proxy server if present.
+
+0.9
+  Heartbleed
+
+0.8
+  More fixes for the App Engine support.
+
+  Added a new feature that allows you to supply your own provider for the
+  CA_CERTS file. Just create a module named ca_certs_locater that has a method
+  get() that returns the file location of the CA_CERTS file.
+
+  Lots of clean up of the code formatting to make it more consistent.
+
+0.7.7
+   More fixes for App Engine, now less likely to swallow important exceptions.
+   Adding proxy_info_from_* methods to Python3. Reviewed in https://codereview.appspot.com/6588078/.
+   Added GeoTrust cert
+   Make httplib2.Http() instances pickleable. Reviewed in https://codereview.appspot.com/6506074/
+
+   The following issues have been fixed:
+
+   229 python3 httplib2 clobbers multiple headers of same key
+   230 Expose meaningful exception for App Engine URLFetch ResponseTooLargeError
+   231 Expose App Engine URLFetch DeadlineExceededError for debugging purposes
+
+0.7.6
+   Fixes for App Engine 2.7.
+
+0.7.5
+   Keys are lowercase in a Response object, regardless of how Response object is constructed.
+   Add control so that Authorization: headers aren't forwarded on a 3xx response by default.
+   Set the reason correctly when running on App Engine. Patch from Alain Vongsouvanh. Reviewed in http://codereview.appspot.com/6422051/
+   Fix proxy socks for SSL connections. Fixes issue #199.
+   You can now set httplib2.RETRIES to the number of retries before a request
+     is considered to fail It is set to a default of 2 to mimic the traditional
+     behavior of httplib2.
+
+   The following issues have been addressed:
+
+     223 HEAD requests fail calling the close() method of ResponseDict instance.
+     222 Can't disable cert validation in appengine
+     204 Credentials can leak in HTTP redirects
+     210 Different API between Python 2 and Python 3 version breaks wsgi_intercept
+     214 ValueError on malformated cache entries
+     204 Credentials can leak in HTTP redirects
+
+
+0.7.3
+    ProxyInfo objects now can construct themselves from environment
+    variables commonly-used in Unix environments. By default, the Http
+    class will construct a ProxyInfo instance based on these environment
+    variables. To achieve the previous behavior, where environment
+    variables are ignored, pass proxy_info=None to Http().
+
+    The following issues have been addressed:
+
+    Issue 159: automatic detection of proxy configuration.
+    Issue 179: Allow unicode in proxy hostname.
+    Issue 194: Added support for setuptools.
+    Fixes for HTTP CONNECT proxies.
+
+0.7.1
+    Fix failure to install cacerts.txt for 2.x installs.
+
+0.7.0
+    The two major changes in this release are SSL Certificate
+    checking and App Engine support. By default the certificates
+    of an HTTPS connection are checked, but that can be disabled
+    via disable_ssl_certificate_validation. The second change
+    is that on App Engine there is a new connection object
+    that utilizes the urlfetch capabilities on App Engine, including
+    setting timeouts and validating certificates.
+
+    The following issues have been addressed:
+
+    Fixes issue 72. Always lowercase authorization header.
+    Fix issue 47. Redirects that become a GET should not have a body.
+    Fixes issue 19. Set Content-location on redirected HEAD requests
+    Fixes issue 139. Redirect with a GET on 302 regardless of the originating method.
+    Fixes issue 138. Handle unicode in headers when writing and retrieving cache entries. Who says headers have to be ASCII!
+    Add certificate validation. Work initially started by Christoph Kern.
+    Set a version number. Fixes issue # 135.
+    Sync to latest version of socks.py
+    Add gzip to the user-agent, in case we are making a request to an app engine project: http://code.google.com/appengine/kb/general.html#compression
+    Uses a custom httplib shim on App Engine to wrap urlfetch, as opposed
+    Add default support for optimistic concurrency on PATCH requests
+    Fixes issue 126. IPv6 under various conditions would fail.
+    Fixes issue 131. Handle socket.timeout's that occur during send.
+    proxy support: degrade gracefully when socket.socket is unavailable
+
+
+0.6.0
+
+   The following issues have been addressed:
+
+    #51 - Failure to handle server legitimately closing connection before request body is fully sent
+    #77 - Duplicated caching test
+    #65 - Transform _normalize_headers into a method of Http class
+    #45 - Vary header
+    #73 - All files in Mercurial are executable
+    #81 - Have a useful .hgignore
+    #78 - Add release tags to the Mercurial repository
+    #67 - HEAD requests cause next request to be retried
+
+   Mostly bug fixes, the big enhancement is the addition of proper Vary: header
+   handling. Thanks to Chris Dent for that change.
+
+   The other big change is the build process for distributions so that both python2 and python3
+   are included in the same .tar.gz/.zip file.
+
+0.5.0
+
+   Added Python 3 support
+
+   Fixed the following bugs:
+
+      #12 - Cache-Control: only-if-cached incorrectly does request if item not in cache
+      #39 - Deprecation warnings in Python 2.6
+      #54 - Http.request fails accessing Google account via http proxy
+      #56 - Block on response.read() for HEAD requests.
+      #57 - Timeout ignore for Python 2.6
+      #58 - Fixed parsing of Cache-Control: header to make it more robust
+
+  Also fixed a deprecation warning that appeared between Python 3.0 and 3.1.
+
+0.4.0
+
+   Added support for proxies if the Socksipy module is installed.
+
+   Fixed bug with some HEAD responses having content-length set to
+   zero incorrectly.
+
+   Fixed most except's to catch a specific exception.
+
+   Added 'connection_type' parameter to Http.request().
+
+   The default for 'force_exception_to_status_code' was changed to False. Defaulting
+   to True was causing quite a bit of confusion.
+
+
+0.3.0
+   Calling Http.request() with a relative URI, as opposed to an absolute URI,
+   will now throw a specific exception.
+
+   Http() now has an additional optional parameter for the socket timeout.
+
+   Exceptions can now be forced into responses. That is, instead of
+   throwing an exception, a good httlib2.Response object is returned
+   that describe the error with an appropriate status code.
+
+   Many improvements to the file cache:
+
+     1.  The names in the cache are now much less
+         opaque, which should help with debugging.
+
+     2.  The disk cache is now Apache mod_asis compatible.
+
+     3.  A Content-Location: header is supplied and stored in the
+         cache which points to the original requested URI.
+
+   User supplied If-* headers now override httplib2 supplied
+   versions.
+
+   IRIs are now fully supported. Note that they MUST be passed in
+   as unicode objects.
+
+   Http.add_credentials() now takes an optional domain to restrict
+   the credentials to being only used on that domain.
+
+   Added Http.add_certificate() which allows setting
+   a key and cert for SSL connections.
+
+   Many other bugs fixed.
+
+
+0.2.0
+   Added support for Google Auth.
+
+   Added experimental support for HMACDigest.
+
+   Added support for a pluggable caching system. Now supports
+   the old system of using the file system and now memcached.
+
+   Added httplib2.debuglevel which turns on debugging.
+
+   Change Response._previous to Response.previous.
+
+   Added Http.follow_all_redirects which forces
+   httplib2 to follow all redirects, as opposed to
+   following only the safe redirects. This makes the
+   GData protocol easier to use.
+
+   All known bugs fixed to date.
+
+0.1.1
+
+    Fixed several bugs raised by James Antill:
+    1. HEAD didn't get an Accept: header added like GET.
+    2. HEAD requests did not use the cache.
+    3. GET requests with Range: headers would erroneously return a full cached response.
+    4. Subsequent requests to resources that had timed out would raise an exception.
+    And one feature request for 'method' to default to GET.
+
+    Xavier Verges Farrero supplied what I needed to make the
+    library work with Python 2.3.
+
+    I added distutils based setup.py.
+
+0.1 Rev 86
+
+    Initial Release
+

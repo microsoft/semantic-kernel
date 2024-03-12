@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Remove an IAM policy binding to a Cloud Healthcare API dataset.
+    description: |
+      Remove an IAM policy binding to a Cloud Healthcare API dataset.
+    examples: |
+      To remove an IAM policy binding for the role of 'roles/editor' for the user
+      'test-user@gmail.com' on the dataset 'test-dataset', run:
+
+        $ {command} test-dataset --member='user:test-user@gmail.com' --role='roles/editor'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  request:
+    collection: healthcare.projects.locations.datasets
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: Cloud Healthcare API dataset to remove an IAM policy binding from.
+      spec: !REF googlecloudsdk.command_lib.healthcare.resources:dataset
+
+  iam:
+    enable_condition: true

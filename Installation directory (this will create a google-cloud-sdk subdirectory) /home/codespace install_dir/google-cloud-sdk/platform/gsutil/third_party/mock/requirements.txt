@@ -1,0 +1,6 @@
+funcsigs>=1;python_version<"3.3"
+# For runtime needs this is correct. For setup_requires needs, 1.2.0 is needed
+# but setuptools can't cope with conflicts in setup_requires, so thats
+# unversioned.
+pbr>=0.11
+six>=1.9

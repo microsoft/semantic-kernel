@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "View the disks that are in a storage pool."
+    description: "View the disks that are in a given storage pool."
+    examples: |
+      The following command retrieves all disks belonging to a storage pool and lists them:
+
+        $ {command} my-storage-pool
+
+  request:
+    collection: compute.storagePools
+    api_version: alpha
+    method: listDisks
+    disable_pagination: true
+
+  arguments:
+    resource:
+      help_text: Name of the storage pool you want to inspect.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:storage_pool
+
+  output:
+    flatten:
+    - "items"
+    format: |
+      table(
+        items.name,
+        items.status,
+        items.provisionedIops,
+        items.provisionedThroughput,
+        items.sizeGb,
+        items.usedBytes.size(units_in="b", units_out="gb"):label=USED_GB)

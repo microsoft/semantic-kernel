@@ -1,0 +1,74 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta CacheKeyPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  includeHost:
+    description: If true, requests to different hosts will be cached separately.
+    type: boolean
+  includeHttpHeaders:
+    description: |-
+      Allows HTTP request headers (by name) to be used in the cache key.
+    type: array
+    items:
+      type: string
+  includeNamedCookies:
+    description: |-
+      Allows HTTP cookies (by name) to be used in the cache key. The
+      name=value pair will be used in the cache key Cloud CDN generates.
+    type: array
+    items:
+      type: string
+  includeProtocol:
+    description: |-
+      If true, http and https requests will be cached separately.
+    type: boolean
+  includeQueryString:
+    description: |-
+      If true, include query string parameters in the cache key
+      according to query_string_whitelist and query_string_blacklist. If
+      neither is set, the entire query string will be included. If
+      false, the query string will be excluded from the cache key
+      entirely.
+    type: boolean
+  queryStringBlacklist:
+    description: |-
+      Names of query string parameters to exclude in cache keys. All
+      other parameters will be included. Either specify
+      query_string_whitelist or query_string_blacklist, not both. '&'
+      and '=' will be percent encoded and not treated as delimiters.
+    type: array
+    items:
+      type: string
+  queryStringWhitelist:
+    description: |-
+      Names of query string parameters to include in cache keys. All
+      other parameters will be excluded. Either specify
+      query_string_whitelist or query_string_blacklist, not both.
+      '&' and '=' will be percent encoded and not treated as
+      delimiters.
+    type: array
+    items:
+      type: string

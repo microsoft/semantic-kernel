@@ -1,0 +1,23 @@
+- release_tracks: [BETA, GA]
+  BETA:
+    deprecate:
+      is_removed: false
+      warning: |
+        This command has been deprecated.
+        Use `gcloud datastream connection_profiles describe` instead.
+  help_text:
+    brief: Show details about a Datastream connection profile.
+    description: Show details about a connection profile.
+    examples: |
+      To show details about a connection profile, run:
+
+        $ {command} my-connection-profile --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.connectionProfiles
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The connection profile you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:connection_profile

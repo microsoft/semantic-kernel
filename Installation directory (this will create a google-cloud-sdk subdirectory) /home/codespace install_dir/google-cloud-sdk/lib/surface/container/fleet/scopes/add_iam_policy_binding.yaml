@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Add IAM policy binding to a Fleet Scope.
+    description: |
+      Add an IAM policy binding to the IAM policy of a Fleet Scope. One binding consists of a member,
+      and a role.
+
+    examples: |
+      To add an IAM policy binding for the role of 'roles/gkehub.scopeUser' for the user 'test-user@gmail.com'
+      with scope 'my-scope', run:
+
+        $ {command} my-scope --member='user:test-user@gmail.com' --role='roles/gkehub.scopeUser'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  request:
+    collection: gkehub.projects.locations.scopes
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The scope for which to add IAM policy binding to.
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:scope
+      arg_name: scope
+      removed_flags: ['location']
+
+  iam:
+    enable_condition: false

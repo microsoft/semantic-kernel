@@ -1,0 +1,26 @@
+#!wing
+#!version=4.0
+##################################################################
+# Wing IDE project file                                          #
+##################################################################
+[project attributes]
+proj.directory-list = [{'dirloc': loc('.'),
+                        'excludes': [u'latex',
+                                     u'.hg',
+                                     u'.tox',
+                                     u'dist',
+                                     u'htmlcov',
+                                     u'extendmock.py',
+                                     u'__pycache__',
+                                     u'html',
+                                     u'build',
+                                     u'mock.egg-info',
+                                     u'tests/__pycache__',
+                                     u'.hgignore',
+                                     u'.hgtags'],
+                        'filter': '*',
+                        'include_hidden': 0,
+                        'recursive': 1,
+                        'watch_for_changes': 1}]
+proj.file-type = 'shared'
+testing.auto-test-file-specs = ('test*.py',)

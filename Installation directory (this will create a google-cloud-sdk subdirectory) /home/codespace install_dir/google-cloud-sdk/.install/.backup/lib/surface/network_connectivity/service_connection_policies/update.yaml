@@ -1,0 +1,53 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Update a service connection policy.
+    description: Update a Service Connection Policy with the given name.
+    examples: |
+      Update a Service Connection Policy with name `my-service-conn-policy` in region `us-central1`.
+
+        $ {command} my-service-conn-policy --region=us-central1 --psc-connection-limit=5 --subnets=my-subnet
+
+  arguments:
+    params:
+    - arg_name: service_connection_policy
+      resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:serviceConnectionPolicy
+      help_text: Name of the Service Connection Policy to be updated.
+    - arg_name: description
+      api_field: serviceConnectionPolicy.description
+      help_text: Description of the Service Connection Policy to be updated.
+    - arg_name: labels
+      api_field: serviceConnectionPolicy.labels.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+    - group:
+        required: true
+        params:
+        - arg_name: subnets
+          required: true
+          is_positional: false
+          resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.compute_resources:subnetwork
+          resource_method_params:
+            serviceConnectionPolicy.pscConfig.subnetworks: "{__relative_name__}"
+          help_text: Subnetwork to use for IP address management.
+          repeated: true
+        - arg_name: psc-connection-limit
+          type: int
+          api_field: serviceConnectionPolicy.pscConfig.limit
+          help_text: Max number of PSC connections for this policy.
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request: &request
+    GA:
+      api_version: v1
+    method: patch
+    collection: networkconnectivity.projects.locations.serviceConnectionPolicies

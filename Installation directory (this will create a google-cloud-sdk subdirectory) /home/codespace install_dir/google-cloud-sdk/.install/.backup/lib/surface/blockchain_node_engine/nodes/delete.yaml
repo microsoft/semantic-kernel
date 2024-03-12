@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Delete a Blockchain Node Engine node.
+    description: |
+      Delete a Blockchain Node Engine node.
+
+      This command can fail for the following reasons:
+        * The blockchain node specified does not exist.
+        * The active account does not have permission to delete the given
+          blockchain node.
+    examples: |
+      To delete a blockchain node with the name `my-node` in your default region,
+      run:
+
+        $ {command} my-node
+
+  request:
+    collection: blockchainnodeengine.projects.locations.blockchainNodes
+    ALPHA:
+      api_version: v1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.blockchain_node_engine.resources:node
+      help_text: |
+        Name of the blockchain node you want to delete.
+
+  async:
+    collection: blockchainnodeengine.projects.locations.operations
+    request_issued_message: |-
+      Delete request issued for blockchain node [{__name__}].
+
+  input:
+    confirmation_prompt: |
+      You are about to delete blockchain node [{__name__}] in [{locationsId}].

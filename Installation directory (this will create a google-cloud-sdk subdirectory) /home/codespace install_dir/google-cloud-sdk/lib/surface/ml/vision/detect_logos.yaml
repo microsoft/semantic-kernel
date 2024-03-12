@@ -1,0 +1,54 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Detect popular product logos within an image.
+    description: |
+      Detect popular product logos within an image.
+    examples: |
+      To detect product logos in an image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: LOGO_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.max_results_field
+
+  output:
+    format: json
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Detect popular product logos within an image.
+    description: |
+      Detect popular product logos within an image.
+    examples: |
+      To detect product logos in an image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: LOGO_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.max_results_field
+    - _COMMON_: args.model_field
+
+  output:
+    format: json

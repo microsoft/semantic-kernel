@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Set the IAM policy for a job.
+    description: |
+      This command replaces the existing IAM policy for a job, given a job
+      and a file encoded in JSON or YAML that contains the IAM policy. If the
+      given policy file specifies an "etag" value, then the replacement will
+      succeed only if the policy already in place matches that etag. (An etag
+      obtain via `get-iam-policy` will prevent the replacement if the policy
+      for the job has been subsequently updated.) A policy file that does not
+      contain an etag value will replace any existing policy for the job.
+    examples: |
+      The following command will read an IAM policy defined in a JSON file
+      'policy.json' and set it for a job with identifier
+      'my-job'
+
+        $ {command} --region=us-central1 my-job policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+
+  request:
+    collection: run.projects.locations.jobs
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.run.platforms:ValidatePlatformIsManaged
+
+  arguments:
+    resource:
+      help_text: The job for which to set the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.run.resources:job
+      # The --region flag is specified at the group level, so don't try to add it here
+      removed_flags: ['region']
+      command_level_fallthroughs:
+        region:
+        - arg_name: 'region'

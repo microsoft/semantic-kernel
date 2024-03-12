@@ -1,0 +1,56 @@
+- release_tracks: [GA]
+
+  help_text:
+    brief: Detect broad sets of categories within an image.
+    description: |
+      Label Detection detects categories in an image, ranging from modes of
+      transportation to animals.
+    examples: |
+      To detect categories in an image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: LABEL_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.max_results_field
+
+  output:
+    format: json
+
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Detect broad sets of categories within an image.
+    description: |
+      Label Detection detects categories in an image, ranging from modes of
+      transportation to animals.
+    examples: |
+      To detect categories in an image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
+  request:
+    _COMMON_: request
+    static_fields:
+      requests.features.type: LABEL_DETECTION
+
+  response:
+    _COMMON_: response
+
+  arguments:
+    params:
+    - _COMMON_: args.image_field
+    - _COMMON_: args.max_results_field
+    - _COMMON_: args.model_field
+
+  output:
+    format: json

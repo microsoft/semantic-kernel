@@ -1,0 +1,17 @@
+- release_tracks: [GA]
+  help_text:
+    brief: Show details about a database migration conversion workspace.
+    description: Show details about a conversion workspace.
+    examples: |
+      To show details about a conversion workspace, run:
+
+        $ {command} my-conversion-workspace --region=us-central1
+
+  request:
+    collection: datamigration.projects.locations.conversionWorkspaces
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The conversion workspace you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.database_migration.resources:conversion_workspace

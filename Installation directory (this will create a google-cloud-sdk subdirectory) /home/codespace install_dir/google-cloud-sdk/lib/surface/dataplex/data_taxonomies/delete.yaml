@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Delete a Dataplex Data Taxonomy.
+    description: |
+      Delete a Dataplex Data Taxonomy.
+
+    examples: |
+      To Delete Data Taxonomy `test-taxonomy` in project `test-dataplex` at location `us-central1`, run:
+
+          $ {command} test-taxonomy --location=us-central1 --project=test-dataplex
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataTaxonomies
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Data Taxonomy you want to delete.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_taxonomy
+    params:
+    - arg_name: etag
+      api_field: etag
+      help_text: |
+        etag value for particular Data Taxonomy.
+  async:
+    collection: dataplex.projects.locations.operations

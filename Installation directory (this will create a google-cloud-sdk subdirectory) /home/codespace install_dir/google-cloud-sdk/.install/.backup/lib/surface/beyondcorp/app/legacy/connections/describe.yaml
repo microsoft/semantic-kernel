@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Describe a single legacy Connection
+    description: Describe a single legacy Connection.
+    examples: |
+      To describe a legacy connection ``my-connection'' run:
+
+      $ {command} my-connection --project={project} --location=us-central1
+
+      To describe a legacy connection ``my-connection'' in a project for location us-central1 in table form, run:
+
+        $ {command} my-connection --project={project} \
+            --location=us-central1 \
+            --format=table(displayName, name.basename(), state, applicationEndpoint.host, applicationEndpoint.port, updateTime, labels)
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.connections
+
+  arguments:
+    resource:
+      help_text: The Beyondcorp connector you want to get details about.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connection
+
+  output:
+    format: json

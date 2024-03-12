@@ -1,0 +1,788 @@
+# Copyright 2020 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+oauth_client:
+  client_type:
+    api_field: oauthClient.clientType
+    arg_name: client-type
+    help_text: |-
+      The type of OAuth client.
+    choices:
+    - arg_value: confidential-client
+      enum_value: CONFIDENTIAL_CLIENT
+    - arg_value: public-client
+      enum_value: PUBLIC_CLIENT
+  description:
+    api_field: oauthClient.description
+    arg_name: description
+    help_text: |-
+      A description of the OAuth client. Cannot exceed 256 characters.
+  display_name:
+    api_field: oauthClient.displayName
+    arg_name: display-name
+    help_text: |-
+      A display name for the OAuth client. Cannot exceed 32 characters.
+  disabled:
+    api_field: oauthClient.disabled
+    arg_name: disabled
+    help_text: |-
+      Disables the OAuth client. You cannot use a disabled OAuth client for login. Include `--no-disabled` to enable a disabled OAuth client.
+  allowed_grant_types:
+    api_field: oauthClient.allowedGrantTypes
+    type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+    arg_name: allowed-grant-types
+    help_text: |-
+      A list of OAuth grant types that are allowed for the OAuth client.
+
+      The following grant types are currently supported:
+
+      * `authorization-code-grant`
+
+      * `refresh-token-grant`
+  allowed_scopes:
+    api_field: oauthClient.allowedScopes
+    arg_name: allowed-scopes
+    help_text: |-
+      A list of scopes that the OAuth client is allowed to request during OAuth flows.
+
+      The following scopes are currently supported:
+
+      * `https://www.googleapis.com/auth/cloud-platform`: View, edit, configure, and delete your
+                                                          Google Cloud data and view the email
+                                                          address for your Google Account.
+
+      * `openid`: Associate you with your personal info on Google Cloud.
+
+      * `email`: View your Google Cloud Account email address.
+  allowed_redirect_uris:
+    api_field: oauthClient.allowedRedirectUris
+    arg_name: allowed-redirect-uris
+    help_text: |-
+      A list of redirect uris that is allowed for redirecting when the authorization is completed.
+
+oauth_client_credential:
+  display_name:
+    api_field: oauthClientCredential.displayName
+    arg_name: display-name
+    help_text: |-
+      A display name for the OAuth client credential. Cannot exceed 32 characters.
+  disabled:
+    api_field: oauthClientCredential.disabled
+    arg_name: disabled
+    help_text: |-
+      Disables the OAuth client credential. You cannot use a disabled OAuth client credential for
+      OAuth. Include `--no-disabled` to enable a disabled OAuth client credential.
+
+workload_identity_pool:
+  display_name:
+    api_field: workloadIdentityPool.displayName
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPool.displayName
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPool.displayName
+    arg_name: display-name
+    help_text: |-
+      A display name for the pool. Cannot exceed 32 characters.
+  description:
+    api_field: workloadIdentityPool.description
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPool.description
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPool.description
+    arg_name: description
+    help_text: |-
+      A description of the pool. Cannot exceed 256 characters.
+  disabled:
+    api_field: workloadIdentityPool.disabled
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPool.disabled
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPool.disabled
+    arg_name: disabled
+    help_text: |-
+      Whether the pool is disabled. You cannot use a disabled pool to exchange tokens, or use
+      existing tokens to access resources. If the pool is re-enabled, existing tokens grant access
+      again.
+  session_duration:
+    api_field: workloadIdentityPool.sessionDuration
+    arg_name: session-duration
+    type: googlecloudsdk.core.util.times:ParseDuration
+    processor: googlecloudsdk.core.util.times:FormatDurationForJson
+    help_text: |-
+      Overrides the lifespan of access tokens issued issued for identities in this pool. If not set,
+      the lifespan of issued access tokens is computed based on the type of identity provider:
+
+      - For AWS, the default access token lifespan is equal to 15
+        minutes.
+      - For OIDC providers, including Microsoft Azure, the default access token lifespan is equal to
+        the remaining lifespan of the exchanged OIDC ID token, with a maximum lifespan
+        of 1 hour.
+      - For SAML providers, the lifetime of the token is the minimum of session_duration
+        and the SessionNotOnOrAfter claim in the SAML assertion. If
+        session_duration is not set and the SAML assertion does not contain a
+        SessionNotOnOrAfter claim, it defaults to 1 hour.
+
+        If set, session duration must be between 2 minutes and 12 hours.
+        Organization administrators can further reduce the maximum
+        session_duration value using the iam-workloadIdentitySessionDuration
+        Resource Setting.
+  mode:
+    api_field: workloadIdentityPool.mode
+    arg_name: mode
+    help_text: |-
+      The mode of the pool.
+
+workload_identity_pool_provider:
+  display_name:
+    api_field: workloadIdentityPoolProvider.displayName
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.displayName
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.displayName
+    arg_name: display-name
+    help_text: |-
+      A display name for the provider. Cannot exceed 32 characters.
+  description:
+    api_field: workloadIdentityPoolProvider.description
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.description
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.description
+    arg_name: description
+    required: false
+    help_text: |-
+      A description for the provider. Cannot exceed 256 characters.
+  disabled:
+    api_field: workloadIdentityPoolProvider.disabled
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.disabled
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.disabled
+    arg_name: disabled
+    help_text: |-
+      Whether the provider is disabled. You cannot use a disabled provider to exchange tokens.
+      However, existing tokens still grant access.
+  attribute_mapping:
+    api_field: workloadIdentityPoolProvider.attributeMapping
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.attributeMapping
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.attributeMapping
+    arg_name: attribute-mapping
+    metavar: KEY=VALUE
+    type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+    help_text: |-
+      Maps attributes from authentication credentials issued by an external
+      identity provider to Google Cloud attributes, such as `subject` and
+      `segment`.
+
+      Each key must be a string specifying the Google Cloud IAM attribute to
+      map to.
+
+      The following keys are supported:
+
+      * `google.subject`: The principal IAM is authenticating. You can reference
+                          this value in IAM bindings. This is also the
+                          subject that appears in Cloud Logging logs.
+                          Cannot exceed 127 bytes.
+
+      * `google.groups`: Groups the external identity belongs to. You can grant
+                         groups access to resources using an IAM `principalSet`
+                         binding; access applies to all members of the group.
+
+      You can also provide custom attributes by specifying
+      `attribute.{custom_attribute}`, where `{custom_attribute}` is the name of
+      the custom attribute to be mapped. You can define a maximum of 50 custom
+      attributes. The maximum length of a mapped attribute key is
+      100 characters, and the key may only contain the characters `[a-z_0-9]`.
+
+      You can reference these attributes in IAM policies to define fine-grained
+      access for a workload to Google Cloud resources. For example:
+
+      * `google.subject`: `principal://iam.googleapis.com/projects/{project}/locations/{location}/workloadIdentityPools/{pool}/subject/{value}`
+
+      * `google.groups`: `principalSet://iam.googleapis.com/projects/{project}/locations/{location}/workloadIdentityPools/{pool}/group/{value}`
+
+      * `attribute.{custom_attribute}`: `principalSet://iam.googleapis.com/projects/{project}/locations/{location}/workloadIdentityPools/{pool}/attribute.{custom_attribute}/{value}`
+
+      Each value must be a [Common Expression Language]
+      (https://opensource.google/projects/cel) function that maps an
+      identity provider credential to the normalized attribute specified by the
+      corresponding map key.
+
+      You can use the `assertion` keyword in the expression to access a JSON
+      representation of the authentication credential issued by the provider.
+
+      The maximum length of an attribute mapping expression is 2048 characters.
+      When evaluated, the total size of all mapped attributes must not exceed
+      8KB.
+
+      For AWS providers, the following rules apply:
+
+      - If no attribute mapping is defined, the following default mapping
+        applies:
+
+        ```
+        {
+          "google.subject":"assertion.arn",
+          "attribute.aws_role":
+              "assertion.arn.contains('assumed-role')"
+              " ? assertion.arn.extract('{account_arn}assumed-role/')"
+              "   + 'assumed-role/'"
+              "   + assertion.arn.extract('assumed-role/{role_name}/')"
+              " : assertion.arn",
+        }
+        ```
+
+      - If any custom attribute mappings are defined, they must include a mapping
+        to the `google.subject` attribute.
+
+
+      For OIDC providers, the following rules apply:
+
+      - Custom attribute mappings must be defined, and must include a mapping to
+        the `google.subject` attribute. For example, the following maps the
+        `sub` claim of the incoming credential to the `subject` attribute on
+        a Google token.
+
+        ```
+        {"google.subject": "assertion.sub"}
+        ```
+  attribute_condition:
+    api_field: workloadIdentityPoolProvider.attributeCondition
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.attributeCondition
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.attributeCondition
+    arg_name: attribute-condition
+    help_text: |-
+      [A Common Expression Language](https://opensource.google/projects/cel)
+      expression, in plain text, to restrict what otherwise valid authentication
+      credentials issued by the provider should not be accepted.
+
+      The expression must output a boolean representing whether to allow the
+      federation.
+
+      The following keywords may be referenced in the expressions:
+
+      * `assertion`: JSON representing the authentication credential issued by
+                     the provider.
+      * `google`: The Google attributes mapped from the assertion in the
+                  `attribute_mappings`.
+      * `attribute`: The custom attributes mapped from the assertion in the
+                     `attribute_mappings`.
+
+      The maximum length of the attribute condition expression is 4096
+      characters. If unspecified, all valid authentication credential are
+      accepted.
+
+      The following example shows how to only allow credentials with a mapped
+      `google.groups` value of `admins`:
+
+      ```
+      "'admins' in google.groups"
+      ```
+  aws_account_id:
+    api_field: workloadIdentityPoolProvider.aws.accountId
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.aws.accountId
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.aws.accountId
+    arg_name: account-id
+    help_text: |-
+      The AWS account ID.
+  oidc_issuer_uri:
+    api_field: workloadIdentityPoolProvider.oidc.issuerUri
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.oidc.issuerUri
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.oidc.issuerUri
+    arg_name: issuer-uri
+    help_text: |-
+      The OIDC issuer URL.
+
+  oidc_jwks_json_path:
+    api_field: workloadIdentityPoolProvider.oidc.jwksJson
+    type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.oidc.jwksJson
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.oidc.jwksJson
+    arg_name: jwk-json-path
+    help_text: |-
+      Optional file containing jwk public keys. The file format must follow
+      [jwk specifications](https://www.rfc-editor.org/rfc/rfc7517#section-4). Example file format:
+      ```
+      {
+        "keys": [
+           {
+                "kty": "RSA/EC",
+                "alg": "<algorithm>",
+                "use": "sig",
+                "kid": "<key-id>",
+                "n": "",
+                "e": "",
+                "x": "",
+                "y": "",
+                "crv": ""
+           }
+        ]
+      }
+      ```
+
+  oidc_allowed_audiences:
+    api_field: workloadIdentityPoolProvider.oidc.allowedAudiences
+    ALPHA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.oidc.allowedAudiences
+    BETA:
+      api_field: googleIamV1betaWorkloadIdentityPoolProvider.oidc.allowedAudiences
+    arg_name: allowed-audiences
+    help_text: |-
+      Acceptable values for the `aud` field (audience) in the OIDC token. Token
+      exchange requests are rejected if the token audience does not match one
+      of the configured values. Each audience may be at most 256 characters. A
+      maximum of 10 audiences may be configured.
+
+      If this list is empty, the OIDC token audience must be equal to
+      the full canonical resource name of the workload identity pool provider,
+      with or without the HTTPS prefix. For example:
+
+      ```
+      //iam.googleapis.com/projects/<project-number>/locations/<location>/workloadIdentityPools/<pool-id>/providers/<provider-id>
+      https://iam.googleapis.com/projects/<project-number>/locations/<location>/workloadIdentityPools/<pool-id>/providers/<provider-id>
+      ```
+  saml_idp_metadata_path:
+    api_field: workloadIdentityPoolProvider.saml.idpMetadataXml
+    type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+    arg_name: idp-metadata-path
+    help_text: |-
+      XML file with configuration metadata for the SAML identity provider. The metadata file must
+      follow the
+      [SAML 2.0 metadata specification](https://www.oasis-open.org/committees/download.php/35391/sstc-saml-metadata-errata-2.0-wd-04-diff.pdf).
+  trust_store_config_path:
+    api_field: workloadIdentityPoolProvider.x509.trustStore
+    type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
+    processor: googlecloudsdk.command_lib.iam.iam_util:ParseYamlToTrustStore
+    arg_name: trust-store-config-path
+    help_text: |-
+      YAML file with configuration metadata for the X.509 identity provider.
+      Example file format:
+      ```
+      trustStore:
+        trustAnchors:
+        - pemCertificate: "-----BEGIN CERTIFICATE-----
+        <certificate>
+        -----END CERTIFICATE-----"
+        intermediateCas:
+        - pemCertificate: "-----BEGIN CERTIFICATE-----
+        <certificate>
+        -----END CERTIFICATE-----"
+      ```
+
+workload_identity_pool_provider_key:
+  use:
+    api_field: workloadIdentityPoolProviderKey.use
+    arg_name: use
+    required: true
+    help_text: |-
+      The purpose of the key.
+  spec:
+    api_field: workloadIdentityPoolProviderKey.keyData.keySpec
+    arg_name: spec
+    required: true
+    help_text: |-
+      The specifications for the key.
+
+workload_identity_pool_namespace:
+  description:
+    api_field: workloadIdentityPoolNamespace.description
+    arg_name: description
+    help_text: |-
+      A description of the namespace.
+  disabled:
+    api_field: workloadIdentityPoolNamespace.disabled
+    arg_name: disabled
+    help_text: |-
+      Whether the namespace is disabled. If disabled, credentials may no longer be issued for
+      identities in this namespace. Existing credentials may continue to be accepted until they
+      expire.
+
+workload_identity_pool_managed_identity:
+  description:
+    api_field: workloadIdentityPoolManagedIdentity.description
+    arg_name: description
+    help_text: |-
+      A description of the managed identity.
+  disabled:
+    api_field: workloadIdentityPoolManagedIdentity.disabled
+    arg_name: disabled
+    help_text: |-
+      Whether the managed identity is disabled. If disabled, credentials may no longer be issued for
+      this identity. Existing credentials may continue to be accepted until they expire.
+
+workforce_pool:
+  parent:
+    api_field: workforcePool.parent
+    arg_name: organization
+    required: true
+    help_text: The parent resource name.
+  display_name:
+    api_field: workforcePool.displayName
+    arg_name: display-name
+    help_text: A display name for the workforce pool. Cannot exceed 32 characters in length.
+  description:
+    api_field: workforcePool.description
+    arg_name: description
+    help_text: A description for the workforce pool. Cannot exceed 256 characters in length.
+  session_duration:
+    api_field: workforcePool.sessionDuration
+    arg_name: session-duration
+    help_text: |-
+      How long the Google Cloud access tokens, console sign-in sessions, and gcloud sign-in sessions
+      from this workforce pool are valid. Must be greater than 15 minutes (900s) and less than 12
+      hours (43200s). If not configured, minted credentials will have a default duration of one
+      hour (3600s).
+  disabled:
+    api_field: workforcePool.disabled
+    arg_name: disabled
+    help_text: |-
+      Disables the workforce pool. You cannot use a disabled workforce pool to
+      perform new token exchanges or sign-ins using any provider in the workforce pool. Specify
+      `--no-disabled` to enable a disabled pool.
+  disable_programmatic_signin:
+    api_field: workforcePool.accessRestrictions.disableProgrammaticSignin
+    arg_name: disable-programmatic-signin
+    help_text: |-
+      Disables the programmatic sign-in for workforce pool users. Specify
+       `--no-disable-security-token-exchange` to enable programmatic sign-in. For more
+      information, refer to Obtain short-lived tokens for workforce identity federation at
+      https://cloud.google.com/iam/docs/workforce-obtaining-short-lived-credentials
+
+workforce_pool_provider:
+  display_name:
+    api_field: workforcePoolProvider.displayName
+    arg_name: display-name
+    help_text: |-
+      A display name for the workforce pool provider. Cannot exceed 32 characters in length.
+  description:
+    api_field: workforcePoolProvider.description
+    arg_name: description
+    help_text: |-
+      A description for the workforce pool provider. Cannot exceed 256 characters in length.
+  disabled:
+    api_field: workforcePoolProvider.disabled
+    arg_name: disabled
+    help_text: |-
+      Disables the workforce pool provider. You cannot use a disabled provider to perform
+      new token exchanges or sign-ins. However, existing tokens still grant access. Specify
+      `--no-disabled` to enable a disabled pool.
+  attribute_mapping:
+    api_field: workforcePoolProvider.attributeMapping
+    arg_name: attribute-mapping
+    metavar: KEY=VALUE
+    type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+    help_text: |-
+      Maps claims from the authentication credentials issued by the Identity Provider into Google
+      Cloud IAM attributes, e.g. subject, segment.
+
+      Each key must be a string specifying the Google Cloud IAM attribute to be produced.
+
+      The following predefined keys are currently supported:
+
+      * `google.subject`: required field that indicates the principal that is being authenticated to
+                          IAM, and will be logged in all API accesses for which Cloud Audit Logging
+                          is configured.
+
+      * `google.groups`: optional field that indicates asserted groups that the user should be
+                         considered to belong to. You can create IAM bindings using the groups
+                         attribute and access to a resource will be granted if any of the groups
+                         asserted here match a group in the respective binding.
+
+      * `google.display_name`: optional field that overrides the name of the user. If not set,
+                               `google.subject` will be displayed instead. This attribute cannot be
+                               used in IAM policies. The maximum length of this field is 100
+                               characters.
+
+      * `google.profile_photo`: optional fields that may be set to a valid URL specifying the user's
+                                thumbnail photo. When set, the image will be visible as the user's
+                                profile picture. If not set, a generic user icon will be displayed
+                                instead. This attribute cannot be used in IAM policies.
+
+      Custom attributes can also be mapped by specifying `attribute.{custom_attribute}`, replacing
+      `{custom_attribute}` with the name of the custom attribute to be mapped. A maximum of 50
+      custom attribute mappings can be defined. The maximum length of a mapped attribute key is 2048
+      characters and may only contain the characters [a-z0-9_].
+
+      These attributes can then be referenced in IAM policies to define fine-grained access for the
+      workforce pool to Google Cloud resources by specifying:
+
+      * `google.subject`: `principal://iam.googleapis.com/locations/global/workforcePools/{pool}/subject/{value}`
+
+      * `google.groups`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/group/{value}`
+
+      * `attribute.{custom_attribute}`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/attribute.{custom_attribute}/{value}`
+
+      Each value must be a [Common Expression Language](https://opensource.google/projects/cel)
+      function that maps an Identity Provider credential to the normalized attribute specified by
+      the corresponding map key.
+
+      The following keywords may be referenced in the expressions:
+
+      * `assertion`: JSON representing the authentication credential issued by the Identity
+                     Provider.
+
+      The maximum length of an attribute mapping expression is 2048 characters. When evaluated, the
+      total size of all mapped attributes must not exceed 8KB.
+
+      Example: Map the `sub` claim of the incoming credential to the
+               `subject` Google Cloud IAM attribute.
+
+               ```
+               {"google.subject": "assertion.sub"}
+               ```
+  attribute_condition:
+    api_field: workforcePoolProvider.attributeCondition
+    arg_name: attribute-condition
+    help_text: |-
+      A [Common Expression Language](https://opensource.google/projects/cel) expression, in plain
+      text, to restrict which otherwise valid authentication credentials issued by the provider
+      should be accepted.
+
+      The expression must output a boolean representing whether to allow the federation.
+
+      The following keywords may be referenced in the expressions:
+
+      * `assertion`: JSON representing the authentication credential issued by the Provider.
+      * `google`: The Google attributes mapped from the assertion in the `attribute_mappings`.
+                  `google.profile_photo` and `google.display_name` are not supported.
+      * `attribute`: The custom attributes mapped from the assertion in the `attribute_mappings`.
+
+      The maximum length of the attribute condition expression is 4096 characters. If unspecified,
+      all valid authentication credential will be accepted.
+
+      Example: Only allow credentials with a mapped `google.groups` value of `admins`.
+
+               ```
+               "'admins' in google.groups"
+               ```
+  oidc_issuer_uri:
+    api_field: workforcePoolProvider.oidc.issuerUri
+    arg_name: issuer-uri
+    help_text: |-
+      The OIDC issuer URI. Must be a valid URI using the 'https' scheme.
+  oidc_client_id:
+    api_field: workforcePoolProvider.oidc.clientId
+    arg_name: client-id
+    help_text: |-
+      The OIDC client ID. This must match the audience claim of the JWT issued by the identity
+      provider.
+  oidc_client_secret_value: &oidc_client_secret_value
+    api_field: workforcePoolProvider.oidc.clientSecret.value.plainText
+    arg_name: client-secret-value
+    help_text: |-
+      The OIDC client secret. Required to enable Authorization Code flow for web sign-in.
+  oidc_clearable_client_secret:
+    group:
+      mutex: true
+      params:
+      - arg_name: clear-client-secret
+        api_field: workforcePoolProvider.oidc.clientSecret
+        action: store_true
+        processor: googlecloudsdk.command_lib.iam.hooks:ClearFlag
+        help_text: |-
+          Clear the OIDC client secret.
+      - *oidc_client_secret_value
+  oidc_web_sso_response_type:
+    api_field: workforcePoolProvider.oidc.webSsoConfig.responseType
+    arg_name: web-sso-response-type
+    help_text: |-
+      Response Type to request for in the OIDC Authorization Request for web sign-in.
+      Use `code` to select the [authorization code flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth)
+      Use `id-token` to select the [implicit flow](https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth).
+  oidc_web_sso_assertion_claims_behavior:
+    api_field: workforcePoolProvider.oidc.webSsoConfig.assertionClaimsBehavior
+    arg_name: web-sso-assertion-claims-behavior
+    help_text: |-
+      The behavior for how OIDC Claims are included in the `assertion` object used for attribute mapping and attribute condition.
+      Use `merge-user-info-over-id-token-claims` to merge the UserInfo Endpoint Claims with ID Token
+      Claims, preferring UserInfo Claim Values for the same Claim Name. Currently this option is only
+      available for Authorization Code flow.
+      Use `only-id-token-claims` to include only ID token claims.
+  oidc_web_sso_additional_scopes:
+    api_field: workforcePoolProvider.oidc.webSsoConfig.additionalScopes
+    arg_name: web-sso-additional-scopes
+    help_text: |-
+      Additional scopes to request for the OIDC authentication on
+      top of scopes requested by default. By default, the `openid`, `profile`
+      and `email` scopes that are supported by the identity provider are
+      requested.
+
+      Each additional scope may be at most 256
+      characters. A maximum of 10 additional scopes may be configured.
+  oidc_web_sso_group:
+    group:
+      required: true
+      params:
+      - api_field: workforcePoolProvider.oidc.webSsoConfig.responseType
+        arg_name: web-sso-response-type
+        required: true
+        help_text: |-
+          Response Type to request for in the OIDC Authorization Request for web sign-in.
+
+          Use `code` to select the [authorization code flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth)
+
+          Use `id-token` to select the [implicit flow](https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth).
+      - api_field: workforcePoolProvider.oidc.webSsoConfig.assertionClaimsBehavior
+        arg_name: web-sso-assertion-claims-behavior
+        required: true
+        help_text: |-
+          The behavior for how OIDC Claims are included in the `assertion` object used for attribute mapping and attribute condition.
+
+          Use `merge-user-info-over-id-token-claims` to merge the UserInfo Endpoint Claims with ID Token
+          Claims, preferring UserInfo Claim Values for the same Claim Name. Currently this option is only
+          available for Authorization Code flow.
+
+          Use `only-id-token-claims` to include only ID token claims.
+      - api_field: workforcePoolProvider.oidc.webSsoConfig.additionalScopes
+        arg_name: web-sso-additional-scopes
+        help_text: |-
+          Additional scopes to request for the OIDC authentication on
+          top of scopes requested by default. By default, the `openid`, `profile`
+          and `email` scopes that are supported by the identity provider are
+          requested.
+
+          Each additional scope may be at most 256
+          characters. A maximum of 10 additional scopes may be configured.
+  oidc_jwks_json_path:
+    api_field: workforcePoolProvider.oidc.jwksJson
+    type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+    arg_name: jwk-json-path
+    help_text: |-
+      Optional file containing JSON Web Key (JWK) public keys. The file format must follow
+      [JWK specifications](https://www.rfc-editor.org/rfc/rfc7517#section-4). Example file format:
+      ```
+      {
+        "keys": [
+           {
+                "kty": "RSA/EC",
+                "alg": "<algorithm>",
+                "use": "sig",
+                "kid": "<key-id>",
+                "n": "",
+                "e": "",
+                "x": "",
+                "y": "",
+                "crv": ""
+           }
+        ]
+      }
+      ```
+  saml_idp_metadata_path:
+    api_field: workforcePoolProvider.saml.idpMetadataXml
+    type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+    arg_name: idp-metadata-path
+    help_text: |-
+      XML file with configuration metadata for the SAML identity provider. The metadata file must
+      follow the
+      [SAML 2.0 metadata specification](https://www.oasis-open.org/committees/download.php/35391/sstc-saml-metadata-errata-2.0-wd-04-diff.pdf).
+
+  extra_attributes_issuer_uri: &extra_attributes_issuer_uri
+    api_field: workforcePoolProvider.extraAttributesOauth2Client.issuerUri
+    arg_name: extra-attributes-issuer-uri
+    hidden: true
+    help_text: |-
+       The OIDC identity provider's issuer URI. Must be a valid URI using the 'https' scheme.
+       Required to get the OIDC discovery document.
+
+  extra_attributes_client_id: &extra_attributes_client_id
+    api_field: workforcePoolProvider.extraAttributesOauth2Client.clientId
+    arg_name: extra-attributes-client-id
+    hidden: true
+    help_text: |-
+       The OAuth 2.0 client ID for retrieving extra attributes from the identity provider. Required
+       to get the Access Token using client credentials grant flow.
+
+  extra_attributes_client_secret_value: &extra_attributes_client_secret_value
+    api_field: workforcePoolProvider.extraAttributesOauth2Client.clientSecret.value.plainText
+    arg_name: extra-attributes-client-secret-value
+    hidden: true
+    help_text: |-
+        The OAuth 2.0 client secret for retrieving extra attributes from the identity provider.
+        Required to get the Access Token using client credentials grant flow.
+
+  extra_attributes_type: &extra_attributes_type
+    api_field: workforcePoolProvider.extraAttributesOauth2Client.attributesType
+    arg_name: extra-attributes-type
+    hidden: true
+    help_text: |-
+        Represents the identity provider and type of claims that should be fetched.
+
+  extra_attributes_filter: &extra_attributes_filter
+    api_field: workforcePoolProvider.extraAttributesOauth2Client.queryParameters.filter
+    arg_name: extra-attributes-filter
+    hidden: true
+    help_text: |-
+        The OData filter used to request specific groups for users from the authorization server.
+        By default all the groups associated with the user are fetched. See
+        https://learn.microsoft.com/en-us/graph/filter-query-parameter for more details.
+
+  create_extra_attributes_group:
+    group:
+      hidden: true
+      params:
+      - <<: *extra_attributes_issuer_uri
+        required: true
+      - <<: *extra_attributes_client_id
+        required: true
+      - <<: *extra_attributes_client_secret_value
+        required: true
+      - <<: *extra_attributes_type
+        required: true
+      - <<: *extra_attributes_filter
+
+  update_extra_attributes_group: &update_extra_attributes_group
+    group:
+      hidden: true
+      params:
+      - *extra_attributes_issuer_uri
+      - *extra_attributes_client_id
+      - *extra_attributes_client_secret_value
+      - *extra_attributes_type
+      - *extra_attributes_filter
+
+  clearable_extra_attributes_group:
+    group:
+      mutex: true
+      hidden: true
+      params:
+      - arg_name: clear-extra-attributes-config
+        api_field: workforcePoolProvider.extraAttributesOauth2Client
+        action: store_true
+        hidden: true
+        processor: googlecloudsdk.command_lib.iam.hooks:ClearFlag
+        help_text: |-
+          Clear the extra attributes configuration
+      - *update_extra_attributes_group
+
+workforce_pool_provider_key:
+  use:
+    api_field: workforcePoolProviderKey.use
+    arg_name: use
+    required: true
+    help_text: The purpose of the key.
+  spec:
+    api_field: workforcePoolProviderKey.keyData.keySpec
+    arg_name: spec
+    required: true
+    help_text: The specifications for the key.

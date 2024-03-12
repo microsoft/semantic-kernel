@@ -1,0 +1,20 @@
+The Google Cloud CLI and its source code are licensed under Apache
+License v. 2.0 (the "License"), unless otherwise specified by an alternate
+license file.
+
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Note that if you use the Google Cloud CLI with any Google Cloud Platform
+products, your use is additionally going to be governed by the license agreement
+or terms of service, as applicable, of the underlying Google Cloud Platform
+product with which you are using the Google Cloud CLI. For example, if you are
+using the Google Cloud CLI with Google App Engine, your use would additionally
+be governed by the Google App Engine Terms of Service.
+
+This also means that if you were to create works that call Google APIs, you
+would still need to agree to the terms of service (usually, Google's
+Developer Terms of Service at https://developers.google.com/terms) for those
+APIs separately, as this code does not grant you any special rights to use
+the services.

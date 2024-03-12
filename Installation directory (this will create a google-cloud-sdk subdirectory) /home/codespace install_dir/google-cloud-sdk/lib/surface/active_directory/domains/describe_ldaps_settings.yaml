@@ -1,0 +1,32 @@
+- release_tracks: [GA, BETA, ALPHA]
+
+  help_text:
+    brief: |
+      Describe the LDAPS settings of a Managed Microsoft AD domain.
+    description: |
+      Describe the Lightweight Directory Access Protocol over TLS/SSL (LDAPS) settings of a Managed Microsoft AD domain.
+
+      This command can fail for the following reasons:
+        * The domain specified does not exist.
+        * The active account does not have permission to view LDAPS settings for the domain.
+    examples: |
+      The following command shows the LDAPS settings for an AD domain with the name
+      `my-domain.com`.
+
+        $ {command} my-domain.com
+
+  request: &request
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    collection: managedidentities.projects.locations.global.domains
+    method: getLdapssettings
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:domain
+      help_text: |
+        Name of the Managed Microsoft AD domain you want to describe.

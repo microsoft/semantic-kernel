@@ -1,0 +1,40 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute alpha BackendServiceCdnPolicyNegativeCachingPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  code:
+    description: |-
+      The HTTP status code to define a TTL against. Only HTTP status codes 300,
+      301, 302, 307, 308, 404, 405, 410, 421, 451 and 501 are can be specified
+      as values, and you cannot specify a status code more than once.
+    type: integer
+  ttl:
+    description: |-
+      The TTL (in seconds) for which to cache responses with the corresponding
+      status code. The maximum allowed value is 1800s (30 minutes), noting that
+      infrequently accessed objects may be evicted from the cache before the
+      defined TTL.
+    type: integer

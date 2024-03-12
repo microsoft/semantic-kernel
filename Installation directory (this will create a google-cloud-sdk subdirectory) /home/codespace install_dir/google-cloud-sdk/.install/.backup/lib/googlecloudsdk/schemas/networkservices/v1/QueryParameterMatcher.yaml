@@ -1,0 +1,49 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1 QueryParameterMatcher export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- name
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  exactMatch:
+    description: |-
+      The QueryParameterMatcher matches if the value of the parameter exactly
+      matches the contents of `exact_match`. The match value must be between 1
+      and 64 characters long (inclusive). Only one of present_match or
+      `exact_match` must be set.
+    type: string
+  name:
+    description: |-
+      The name of the query parameter to match. The query parameter must exist
+      in the request; if it doesn't, the request match fails. The name must be
+      specified and be between 1 and 32 characters long (inclusive).
+    type: string
+  presentMatch:
+    description: |-
+      Specifies that the QueryParameterMatcher matches if the request contains
+      the query parameter. The match can succeed as long as the request contains
+      the query parameter, regardless of whether the parameter has a value or
+      not. Only one of `present_match` or exact_match must be set.
+    type: boolean

@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Delete a notification channel.
+    description: |
+      Delete a notification channel.
+
+      ## EXAMPLES
+      The following command will delete channel `projects/12345/notificationChannels/67890`, but
+      only if the channel is not actively referenced by existing alerting policies:
+
+        $ {command} "projects/12345/notificationChannels/67890"
+
+      The following command will delete channel `projects/12345/notificationChannels/67890`, even
+      if the channel is still actively referenced by alerting policies; if an existing policy
+      references the channel, it will be modified as a side-effect to remove the channel.
+
+        $ {command} "projects/12345/notificationChannels/67890" --force
+
+  request:
+    collection: monitoring.projects.notificationChannels
+
+  arguments:
+    resource:
+      help_text: The notification channel to delete.
+      spec: !REF googlecloudsdk.command_lib.monitoring.resources:notification_channel
+    params:
+    - arg_name: force
+      api_field: force
+      action: store_true
+      help_text: If true, the notification channel will be deleted regardless of its
+        use in alerting policies (the policies will be updated to remove the channel).

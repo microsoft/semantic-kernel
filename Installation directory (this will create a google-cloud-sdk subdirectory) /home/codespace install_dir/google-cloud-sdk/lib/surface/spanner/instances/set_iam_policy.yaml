@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Set the IAM policy for a Cloud Spanner instance.
+    description: |
+      Set the IAM policy for a Cloud Spanner instance given a instance ID and
+      a file encoded in JSON or YAML that contains the IAM policy.
+    examples: |
+      The following command reads an IAM policy defined in a JSON file
+      `policy.json` and sets it for a spanner instance with the ID
+      `example-instance`:
+
+        $ {command} example-instance policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+  request:
+    collection: spanner.projects.instances
+
+  arguments:
+    resource:
+      help_text: The Spanner instance to set the IAM policy for.
+      spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
+
+  iam:
+    policy_version: 3

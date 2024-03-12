@@ -1,0 +1,50 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: datastream v1 OracleProfile export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- databaseService
+- hostname
+- password
+- username
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  connectionAttributes:
+    description: Connection string attributes
+    $ref: ConnectionAttributesValue.yaml
+  databaseService:
+    description: Database for the Oracle connection.
+    type: string
+  hostname:
+    description: Hostname for the Oracle connection.
+    type: string
+  password:
+    description: Password for the Oracle connection.
+    type: string
+  port:
+    description: Port for the Oracle connection, default value is 1521.
+    type: integer
+  username:
+    description: Username for the Oracle connection.
+    type: string

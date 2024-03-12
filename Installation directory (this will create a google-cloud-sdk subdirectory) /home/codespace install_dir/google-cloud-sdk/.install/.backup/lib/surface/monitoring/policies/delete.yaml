@@ -1,0 +1,11 @@
+- help_text:
+    brief: Delete a Cloud Monitoring alerting policy.
+    description: Delete a Monitoring alerting policy.
+
+  request:
+    collection: monitoring.projects.alertPolicies
+
+  arguments:
+    resource:
+      help_text: The alerting policy to delete.
+      spec: !REF googlecloudsdk.command_lib.monitoring.resources:policy

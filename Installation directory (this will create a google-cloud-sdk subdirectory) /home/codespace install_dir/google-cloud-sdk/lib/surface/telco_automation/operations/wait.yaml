@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Poll long-running telco automation operation until it completes.
+    description: |
+      Poll a long-running telco automation operation until it completes. When
+      the operation is complete, this command will display the results of the
+      analysis.
+    examples: |
+      To poll a long-running telco automation operation named `test-operation` in region `us-central1` until it completes, run the following:
+
+        $ {command} test-operation --location=us-central1
+
+  request:
+    collection: telcoautomation.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: ID for the operation to poll until complete.
+      spec: !REF googlecloudsdk.command_lib.telco_automation.resources:operation
+
+  async:
+    collection: telcoautomation.projects.locations.operations
+    result_attribute: response

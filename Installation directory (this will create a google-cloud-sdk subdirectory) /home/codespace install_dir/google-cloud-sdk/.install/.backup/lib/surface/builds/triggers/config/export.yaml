@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for a Cloud Build trigger.
+  description: |
+    *{command}* exports the configuration for a Cloud Build trigger.
+
+    Trigger configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all
+    triggers within the project.
+
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
+  examples: |
+    To export the configuration for a trigger, run:
+
+      $ {command} my-trigger
+
+    To export the configuration for a trigger to a file, run:
+
+      $ {command} my-trigger --path=/path/to/dir/
+
+    To export the configuration for a trigger in Terraform
+    HCL format, run:
+
+      $ {command} my-trigger --resource-format=terraform
+
+    To export the configurations for all triggers within a
+    project, run:
+
+      $ {command} --all
+arguments:
+  resource:
+    help_text: Trigger to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:trigger

@@ -1,0 +1,58 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Update the TTL configuration of the given field.
+    description: |
+      Update the TTL configuration of the given field.
+
+      This enables or disables using a field as the TTL field for its collection group or kind. Note
+      that only one field can be the TTL field for a collection group.
+    examples: |
+      The following command sets the `expiry` field of the `Events` collection group (kind) to be
+      the TTL field:
+
+        $ {command} expiry \
+            --collection-group=Events \
+            --enable-ttl
+
+      The following command disables the `expiry` field so it is no longer the TTL for the `Events`
+      collection group (kind):
+
+        $ {command} expiry \
+            --collection-group=Events \
+            --disable-ttl
+
+  request:
+    collection: firestore.projects.databases.collectionGroups.fields
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.firestore.util:UpdateFieldRequestTtls
+
+  output:
+    format: yaml(name, ttlConfig)
+
+  async:
+    collection: firestore.projects.databases.operations
+    api_version: v1
+
+  update:
+    read_modify_update: false
+
+  arguments:
+    resource:
+      help_text: Field to update.
+      # The field is strictly required for TTLs, so we use 'field'.
+      spec: !REF googlecloudsdk.command_lib.firestore.resources:field
+
+    params:
+    # Define --enable-ttl and --disable-ttl as an arg group, required and mutually exclusive.
+    - group:
+        required: true
+        mutex: true
+        params:
+        - help_text: Set to enable this field as the TTL for its collection group.
+          arg_name: "enable-ttl"
+          action: store_true
+          type: bool
+        - help_text: Set to make this field no longer the TTL for its collection group.
+          arg_name: "disable-ttl"
+          action: store_true
+          type: bool

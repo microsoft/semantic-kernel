@@ -1,0 +1,37 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: gkeonprem v1 BareMetalVipConfig export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  controlPlaneVip:
+    description: |-
+      The VIP which you previously set aside for the Kubernetes API of this bare
+      metal user cluster.
+    type: string
+  ingressVip:
+    description: |-
+      The VIP which you previously set aside for ingress traffic into this bare
+      metal user cluster.
+    type: string

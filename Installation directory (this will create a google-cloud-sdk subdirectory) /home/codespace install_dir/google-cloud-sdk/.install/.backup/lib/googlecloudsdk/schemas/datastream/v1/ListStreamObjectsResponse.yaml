@@ -1,0 +1,36 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: datastream v1 ListStreamObjectsResponse export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  nextPageToken:
+    description: |-
+      A token, which can be sent as `page_token` to retrieve the next page.
+    type: string
+  streamObjects:
+    description: List of stream objects.
+    type: array
+    items:
+      $ref: StreamObject.yaml

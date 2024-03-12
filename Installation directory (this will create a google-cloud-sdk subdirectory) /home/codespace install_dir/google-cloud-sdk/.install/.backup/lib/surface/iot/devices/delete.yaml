@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a device.
+    description: Delete a device.
+    examples: |
+     To delete a device from device registry 'my-registry', run:
+
+       $ {command} my-device --region=us-central1 --registry=my-registry
+
+  request:
+    collection: cloudiot.projects.locations.registries.devices
+
+  arguments:
+    resource:
+      help_text: The device you want to delete.
+      spec: !REF googlecloudsdk.command_lib.iot.resources:device

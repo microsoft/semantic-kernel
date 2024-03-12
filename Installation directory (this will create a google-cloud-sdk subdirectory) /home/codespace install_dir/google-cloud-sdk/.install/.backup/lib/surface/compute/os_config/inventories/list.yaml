@@ -1,0 +1,67 @@
+- release_tracks: [GA, ALPHA]
+
+  help_text:
+    brief: List inventory data for all Compute Engine VM instances in a specified location.
+    description: |
+      List inventory data for all Compute Engine VM instances in a specified location.
+
+      The default page size is 25. To modify this, use the `--page-size` flag.
+    examples: |
+      To list the inventory of VMs in `my-project` and location `us-central1-a`, run:
+
+        $ {command} --project=my-project --location=us-central1-a
+
+  request:
+    collection: osconfig.projects.locations.instances.inventories
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
+    disable_resource_check: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.os_config.inventories.declarative:SetParentOnListRequestHook
+    - googlecloudsdk.command_lib.compute.os_config.declarative:SetDefaultPageSizeRequestHook:default_page_size=25
+
+  response:
+    id_field: name
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.compute.os_config.inventories.declarative:CreateTableViewResponseHook
+
+  arguments:
+    params:
+    - arg_name: location
+      help_text: |
+        Location of the Compute Engine VM instances to list. If not specified, the property
+        `compute/zone` is used. For details on setting properties,
+        see: https://cloud.google.com/sdk/docs/properties
+    - api_field: view
+      help_text: |
+        Specifies what information should be included in the
+        output. If unspecified, the default view is `basic`.
+      choices:
+      - arg_value: basic
+        enum_value: BASIC
+        help_text: Output is limited to operating system details.
+      - arg_value: full
+        enum_value: FULL
+        help_text: Output includes operating system details and package information.
+  output:
+    format: |
+      multi(
+        basic:format="table(
+           instance_id,
+           instance_name,
+           os,
+           osconfig_agent_version,
+           update_time.date('%Y-%m-%dT%H:%M:%SZ')
+         )",
+        full:format="table(
+           instance_id,
+           instance_name,
+           os,
+           installed_packages,
+           available_packages,
+           osconfig_agent_version,
+           update_time.date('%Y-%m-%dT%H:%M:%SZ')
+         )"
+      )
