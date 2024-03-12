@@ -23,7 +23,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     ExtraBody,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
 from semantic_kernel.kernel import Kernel
 
@@ -596,7 +596,7 @@ async def test_azure_chat_completion_bad_request_non_content_filter(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
-async def test_azure_chat_completion_handles_bad_request_error(mock_create, chat_history: ChatHistory) -> None:
+async def test_azure_chat_completion_no_kernel_provided_throws_error(mock_create, chat_history: ChatHistory) -> None:
     deployment_name = "test_deployment"
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
@@ -616,5 +616,8 @@ async def test_azure_chat_completion_handles_bad_request_error(mock_create, chat
         api_version=api_version,
     )
 
-    with pytest.raises(ServiceResponseException, match="service failed to complete the prompt"):
+    with pytest.raises(
+        ServiceInvalidExecutionSettingsError,
+        match="The kernel argument and arguments are required for OpenAI tool calling.",
+    ):
         await azure_chat_completion.complete_chat(chat_history, complete_prompt_execution_settings)

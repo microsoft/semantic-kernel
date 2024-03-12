@@ -69,7 +69,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         tool_call_behavior = self._get_tool_call_behavior(settings)
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if tool_call_behavior.auto_invoke_kernel_functions and kernel and arguments is None:
+        if tool_call_behavior.auto_invoke_kernel_functions and (kernel is None or arguments is None):
             raise ServiceInvalidExecutionSettingsError(
                 "The kernel argument and arguments are required for OpenAI tool calling."
             )
@@ -104,7 +104,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         tool_call_behavior = self._get_tool_call_behavior(settings)
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if tool_call_behavior.auto_invoke_kernel_functions and kernel and arguments is None:
+        if tool_call_behavior.auto_invoke_kernel_functions and (kernel is None or arguments is None):
             raise ServiceInvalidExecutionSettingsError(
                 "The kernel argument and arguments are required for OpenAI tool calling."
             )
