@@ -285,13 +285,17 @@ def register_openapi_plugin(
                 query_params=(
                     json.loads(query_params)
                     if isinstance(query_params, str)
-                    else query_params if query_params else None
+                    else query_params
+                    if query_params
+                    else None
                 ),
                 headers=json.loads(headers) if isinstance(headers, str) else headers if headers else None,
                 request_body=(
                     json.loads(request_body)
                     if isinstance(request_body, str)
-                    else request_body if request_body else None
+                    else request_body
+                    if request_body
+                    else None
                 ),
             )
             return response
