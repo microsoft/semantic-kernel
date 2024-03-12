@@ -435,7 +435,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
             return new GeminiChatCompletionClient(
                 httpClient: httpClient ?? this._httpClient,
                 modelId: modelId,
-                bearerKey: bearerKey,
+                bearerKeyProvider: () => bearerKey,
                 location: "fake-location",
                 projectId: "fake-project-id");
         }

@@ -48,7 +48,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: modelId,
-            bearerKey: bearerKey,
+            bearerKeyProvider: () => bearerKey,
             location: location,
             projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAITextEmbeddingGenerationService)));
