@@ -79,7 +79,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 if not endpoint:
                     raise ServiceInitializationError("Please provide either base_url or endpoint")
                 async_client = AsyncAzureOpenAI(
-                    azure_endpoint=str(endpoint),
+                    azure_endpoint=str(endpoint).rstrip("/"),
                     azure_deployment=deployment_name,
                     api_version=api_version,
                     api_key=api_key,
