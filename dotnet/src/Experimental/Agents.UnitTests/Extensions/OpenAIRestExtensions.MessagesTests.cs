@@ -37,7 +37,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
     [Fact]
     public async Task CreateMessageModelAsync()
     {
-        await this._restContext.CreateUserTextMessageAsync(TestThreadId, TestContent).ConfigureAwait(true);
+        await this._restContext.CreateUserTextMessageAsync(TestThreadId, TestContent, fileIds: null).ConfigureAwait(true);
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, this._restContext.GetMessagesUrl(TestThreadId));
     }

@@ -60,6 +60,7 @@ public sealed class Example75_AgentTools : BaseTest
             await ChatAsync(
                 defaultAgent,
                 codeInterpreterAgent,
+                fileId: null,
                 "What is the solution to `3x + 2 = 14`?",
                 "What is the fibinacci sequence until 101?");
         }
@@ -75,6 +76,10 @@ public sealed class Example75_AgentTools : BaseTest
     [Fact]
     public async Task RunRetrievalToolAsync()
     {
+        // Set to "true" to pass fileId via thread invocation.
+        // Set to "false" to associate fileId with agent definition.
+        const bool PassFileOnRequest = false;
+
         this.WriteLine("======== Using Retrieval tool ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
@@ -91,6 +96,7 @@ public sealed class Example75_AgentTools : BaseTest
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         var fileId = result.Id;
+        this.WriteLine($"! {fileId}");
 
         var defaultAgent =
             Track(
@@ -102,14 +108,20 @@ public sealed class Example75_AgentTools : BaseTest
             Track(
                 await new AgentBuilder()
                     .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                    .WithRetrieval(fileId)
+                    .WithRetrieval()
                     .BuildAsync());
+
+        if (!PassFileOnRequest)
+        {
+            await retrievalAgent.AddFileAsync(fileId);
+        }
 
         try
         {
             await ChatAsync(
                 defaultAgent,
                 retrievalAgent,
+                PassFileOnRequest ? fileId : null,
                 "Where did sam go?",
                 "When does the flight leave Seattle?",
                 "What is the hotel contact info at the destination?");
@@ -127,8 +139,15 @@ public sealed class Example75_AgentTools : BaseTest
     private async Task ChatAsync(
         IAgent defaultAgent,
         IAgent enabledAgent,
+        string? fileId = null,
         params string[] questions)
     {
+        string[]? fileIds = null;
+        if (fileId != null)
+        {
+            fileIds = new string[] { fileId };
+        }
+
         foreach (var question in questions)
         {
             this.WriteLine("\nDEFAULT AGENT:");
@@ -140,7 +159,7 @@ public sealed class Example75_AgentTools : BaseTest
 
         async Task InvokeAgentAsync(IAgent agent, string question)
         {
-            await foreach (var message in agent.InvokeAsync(question))
+            await foreach (var message in agent.InvokeAsync(question, null, fileIds))
             {
                 string content = message.Content;
                 foreach (var annotation in message.Annotations)

@@ -1,52 +1,62 @@
 name: Python Test Coverage
 
 on: 
-  pull_request_target:    
+  pull_request_target:
+    branches: ["main", "feature*"]
     paths:
       - "python/**"
 
 jobs:
   python-tests-coverage:
-    runs-on: ubuntu-latest
-    continue-on-error: true
+    name: Create Test Coverage Messages
+    runs-on: ${{ matrix.os }}
     permissions:
       pull-requests: write
       contents: read
+      actions: read
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Wait for unit tests to succeed
+        uses: lewagon/wait-on-check-action@v1.3.3
         with:
-          python-version: "3.8"
-          cache: "poetry"
-      - name: Install dependencies
-        run: cd python && poetry install --without chromadb --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
-      - name: Test with pytest
-        run: cd python && poetry run pytest -q --show-capture=no --disable-warnings --tb=no --junitxml=pytest.xml  --cov=semantic_kernel --cov-report="xml:coverage.xml":term-missing:skip-covered ./tests/unit
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'Python Unit Tests (${{ matrix.python-version}}, ${{ matrix.os }})'
+          repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          wait-interval: 10
+      - uses: actions/checkout@v4
+      - name: Download coverage
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          workflow: python-unit-tests.yml
+          search_artifacts: true
+          if_no_artifact_found: warn
+      - name: Download pytest
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          workflow: python-unit-tests.yml
+          search_artifacts: true
+          if_no_artifact_found: warn
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
-          github-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
-          pytest-coverage-path: python/coverage.xml
-          junitxml-path: python/pytest.xml
-          report-only-changed-files: true
-          title: "Python Unit Test Coverage Report"
-          badge-title: "Python Test Coverage"
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          pytest-coverage-path: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
           coverage-path-prefix: "python/"
+          title: "Python ${{ matrix.python-version }} Test Coverage Report"
+          badge-title: "Py${{ matrix.python-version }} Test Coverage"
+          report-only-changed-files: true
+          junitxml-title: "Python ${{ matrix.python-version }} Unit Test Overview"
+          junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           default-branch: "main"
-      - name: Check the output coverage
-        run: |
-          echo "Coverage Percantage - ${{ steps.coverageComment.outputs.coverage }}"
-          echo "Coverage Color - ${{ steps.coverageComment.outputs.color }}"
-          echo "Coverage Html - ${{ steps.coverageComment.outputs.coverageHtml }}"
-          echo "Summary Report - ${{ steps.coverageComment.outputs.summaryReport }}"
-          echo "Coverage Warnings - ${{ steps.coverageComment.outputs.warnings }}"
-          echo "Coverage Errors - ${{ steps.coverageComment.outputs.errors }}"
-          echo "Coverage Failures - ${{ steps.coverageComment.outputs.failures }}"
-          echo "Coverage Skipped - ${{ steps.coverageComment.outputs.skipped }}"
-          echo "Coverage Tests - ${{ steps.coverageComment.outputs.tests }}"
-          echo "Coverage Time - ${{ steps.coverageComment.outputs.time }}"
-          echo "Not Success Test Info - ${{ steps.coverageComment.outputs.notSuccessTestInfo }}"
+          unique-id-for-comment: python-${{ matrix.python-version }}
+          
+          
+          
