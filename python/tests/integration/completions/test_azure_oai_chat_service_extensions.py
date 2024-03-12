@@ -14,6 +14,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     ExtraBody,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -119,7 +120,7 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
         )
         kernel.add_service(chat_service)
 
-        prompt = "{{$input}}"
+        prompt = "{{$chat_history}}{{$input}}"
 
         exec_settings = PromptExecutionSettings(
             service_id="chat-gpt-extensions",
@@ -155,7 +156,9 @@ async def test_azure_e2e_chat_completion_with_extensions(
         memory_store,
     ) = await create_with_data_chat_function
 
-    arguments = KernelArguments(input="who are Emily and David?")
+    chat_history = ChatHistory()
+    chat_history.add_user_message("A story about Emily and David...")
+    arguments = KernelArguments(input="who are Emily and David?", chat_history=chat_history)
 
     # TODO: get streaming working for this test
     use_streaming = False
