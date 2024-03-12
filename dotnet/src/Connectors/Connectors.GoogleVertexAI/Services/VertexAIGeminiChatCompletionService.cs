@@ -37,7 +37,10 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         string projectId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : this(modelId, () => bearerKey, location, projectId, httpClient, loggerFactory) { }
+        : this(modelId, () => bearerKey, location, projectId, httpClient, loggerFactory)
+    {
+        Verify.NotNullOrWhiteSpace(bearerKey);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VertexAIGeminiChatCompletionService"/> class.
