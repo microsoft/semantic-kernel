@@ -11,7 +11,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Extensions;
 
 /// <summary>
-/// Unit tests for <see cref="VertexAIServiceCollectionExtensions"/> class.
+/// Unit tests for <see cref="VertexAIServiceCollectionExtensions"/> and <see cref="VertexAIKernelBuilderExtensions"/> classes.
 /// </summary>
 public sealed class VertexAIServiceCollectionExtensionsTests
 {
