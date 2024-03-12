@@ -78,26 +78,26 @@ Proposed renaming:
 
 ## Naming comparison
 
-| AI Provider  | Audio conversion    | Interface            | Implementation                      |
-| -----------  | ------------------- | -------------------- | ----------------------------------- |
-| Microsoft    | Text-to-speech      | ITextToSpeechService | MicrosoftTextToSpeechService        |
-| Microsoft    | Speech-to-text      | ISpeechToTextService | MicrosoftSpeechToTextService        |
-| Microsoft    | Speech translation  | ISpeechToTextService | MicrosoftSpeechTranslationService   |
-| OpenAI       | Text-to-speech      | ITextToSpeechService | OpenAITextToSpeechService           |
-| OpenAI       | Audio transcription | ISpeechToTextService | OpenAIAudioTranscriptionService     |
-| OpenAI       | Audio translation   | ISpeechToTextService | OpenAIAudioTranslationService       |
-| Google       | Speech-to-text      | ISpeechToTextService | GoogleSpeechToTextService           |
-| Google       | Text-to-speech      | ITextToSpeechService | GoogleTextToSpeechService           |
-| Amazon       | Text-to-speech      | ITextToSpeechService | AmazonTextToSpeechService           |
-| Amazon       | Transcription       | ISpeechToTextService | AmazonAudioTranscriptionService     |
-| Meta         | Text-to-sound       | ITextToAudioService  | MetaTextToSoundService              |
-| Meta         | Text-to-music       | ITextToAudioService  | MetaTextToMusicService              |
-| Hugging Face | Text-to-speech      | ITextToSpeechService | HuggingFaceTextToSpeechService      |
-| Hugging Face | Text-to-audio       | ITextToAudioService  | HuggingFaceTextToAudioService       |
-| Hugging Face | Audio-to-audio      | IAudioToAudioService | HuggingFaceAudioToAudioService      |
-| Hugging Face | Speech recognition  | ISpeechToTextService | HuggingFaceSpeechRecognitionService |
-| AssemblyAI   | Transcription       | ISpeechToTextService | AssemblyAIAudioTranscriptionService |
+| AI Provider  | Audio conversion    | Proposed Interface         | Proposed Implementation             |
+| ------------ | ------------------- | -------------------------- | ----------------------------------- |
+| Microsoft    | Text-to-speech      | ITextToSpeechService       | MicrosoftTextToSpeechService        |
+| Microsoft    | Speech-to-text      | IAudioTranscriptionService | MicrosoftSpeechToTextService        |
+| Microsoft    | Speech translation  | IAudioTranslationService   | MicrosoftSpeechTranslationService   |
+| OpenAI       | Text-to-speech      | ITextToSpeechService       | OpenAITextToSpeechService           |
+| OpenAI       | Audio transcription | IAudioTranscriptionService | OpenAIAudioTranscriptionService     |
+| OpenAI       | Audio translation   | IAudioTranslationService   | OpenAIAudioTranslationService       |
+| Google       | Speech-to-text      | IAudioTranscriptionService | GoogleSpeechToTextService           |
+| Google       | Text-to-speech      | ITextToSpeechService       | GoogleTextToSpeechService           |
+| Amazon       | Text-to-speech      | ITextToSpeechService       | AmazonTextToSpeechService           |
+| Amazon       | Transcription       | IAudioTranscriptionService | AmazonAudioTranscriptionService     |
+| Meta         | Text-to-sound       | TBD                        | TBD                                 |
+| Meta         | Text-to-music       | ITextToMusicService        | MetaTextToMusicService              |
+| Hugging Face | Text-to-speech      | ITextToSpeechService       | HuggingFaceTextToSpeechService      |
+| Hugging Face | Text-to-audio       | TBD                        | TBD                                 |
+| Hugging Face | Audio-to-audio      | TBD                        | TBD                                 |
+| Hugging Face | Speech recognition  | IAudioTranscriptionService | HuggingFaceSpeechRecognitionService |
+| AssemblyAI   | Transcription       | IAudioTranscriptionService | AssemblyAIAudioTranscriptionService |
 
 ## Decision Outcome
 
-TBD.
+Rename already existing audio connectors to follow provided naming in `Naming comparison` table and use the same naming for future audio abstractions and implementations.
