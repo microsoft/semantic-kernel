@@ -77,7 +77,7 @@ mypy = ">=1.8.0"
 optional = true
 
 [tool.poetry.group.unit-tests.dependencies]
-azure-search-documents = {version = "11.4.0b9", allow-prereleases = true}
+azure-search-documents = {version = "11.6.0b1", allow-prereleases = true}
 azure-core = "^1.28.0"
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
@@ -121,11 +121,11 @@ chromadb = ["chromadb"]
 milvus = ["pymilvus", "milvus"]
 weaviate = ["weaviate-client"]
 pinecone = ["pinecone-client"]
-postgres = ["psycopg-pool", "psycopg", "psycopg-binary"]
+postgres = ["psycopg"]
 redis = ["redis"]
 azure = ["azure-search-documents", "azure-core", "azure-identity"]
 usearch = ["usearch", "pyarrow"]
-all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg-pool", "psycopg", "psycopg-binary", "redis", "azure-search-documents", "azure-core", "azure-identity", "usearch", "pyarrow"]
+all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "usearch", "pyarrow"]
 
 [tool.ruff]
 lint.select = ["E", "F", "I"]
