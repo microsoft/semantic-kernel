@@ -129,14 +129,17 @@ class OpenAIFunction {
             this.properties = Collections.unmodifiableMap(properties);
         }
 
+        @SuppressWarnings("UnusedMethod")
         public String getType() {
             return type;
         }
 
+        @SuppressWarnings("UnusedMethod")
         public List<String> getRequired() {
             return required;
         }
 
+        @SuppressWarnings("UnusedMethod")
         public Map<String, JsonNode> getProperties() {
             return properties;
         }

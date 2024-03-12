@@ -131,10 +131,13 @@ public class InputVariable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null || obj.getClass() != getClass())
+        }
+
+        if (!getClass().isInstance(obj)) {
             return false;
+        }
 
         InputVariable other = (InputVariable) obj;
         if (!Objects.equals(name, other.name))

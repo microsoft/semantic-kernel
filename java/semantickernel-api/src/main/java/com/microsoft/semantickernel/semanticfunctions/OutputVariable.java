@@ -69,9 +69,9 @@ public class OutputVariable {
         if (this == obj) {
             return true;
         }
-        if (obj == null || getClass() != obj.getClass()) {
+        if (!getClass().isInstance(obj))
             return false;
-        }
+
         OutputVariable that = (OutputVariable) obj;
         if (!Objects.equals(type, that.type))
             return false;

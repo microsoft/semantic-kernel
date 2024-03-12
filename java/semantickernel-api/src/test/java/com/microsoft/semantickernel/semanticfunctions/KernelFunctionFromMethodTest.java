@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import reactor.core.publisher.Mono;
 
 public class KernelFunctionFromMethodTest {
 
@@ -52,7 +53,7 @@ public class KernelFunctionFromMethodTest {
             .withDescription(description)
             .withInputParameters(parameters)
             .withOutputVariable(returnParameter)
-            .withPromptTemplate((kernel, args, context) -> null)
+            .withPromptTemplate((kernel, args, context) -> Mono.empty())
             .build();
         assertEquals(functionName, result.getName());
         assertEquals(pluginName, result.getPluginName());

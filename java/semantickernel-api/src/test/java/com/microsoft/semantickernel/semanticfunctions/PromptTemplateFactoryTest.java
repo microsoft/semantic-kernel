@@ -16,13 +16,14 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
+import javax.annotation.Nullable;
 
 @SuppressWarnings("DoubleBraceInitialization")
 public class PromptTemplateFactoryTest {
 
     @DefineKernelFunction(name = "function", description = "a function")
     public String function(
-        @KernelFunctionParameter(name = "input", description = "the input", type = String.class) String input) {
+        @Nullable @KernelFunctionParameter(name = "input", description = "the input", type = String.class) String input) {
         return String.format("plugin function received: %s", input);
     }
 

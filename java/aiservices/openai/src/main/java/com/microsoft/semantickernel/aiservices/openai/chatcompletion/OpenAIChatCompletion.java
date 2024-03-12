@@ -229,8 +229,14 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         try {
             OpenAIFunctionToolCall openAIFunctionToolCall = extractOpenAIFunctionToolCall(toolCall);
+            String pluginName = openAIFunctionToolCall.getPluginName();
+            if (pluginName == null || pluginName.isEmpty()) {
+                return Mono.error(
+                    new SKException("Plugin name is required for function tool call"));
+            }
+
             KernelFunction<?> function = kernel.getFunction(
-                openAIFunctionToolCall.getPluginName(),
+                pluginName,
                 openAIFunctionToolCall.getFunctionName());
 
             return function
@@ -243,6 +249,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
     }
 
+    @SuppressWarnings("StringSplitter")
     private OpenAIFunctionToolCall extractOpenAIFunctionToolCall(
         ChatCompletionsFunctionToolCall toolCall) throws JsonProcessingException {
 

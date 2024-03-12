@@ -334,7 +334,7 @@ public class PromptTemplateConfig {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!getClass().isInstance(obj)) {
             return false;
         }
         final PromptTemplateConfig other = (PromptTemplateConfig) obj;

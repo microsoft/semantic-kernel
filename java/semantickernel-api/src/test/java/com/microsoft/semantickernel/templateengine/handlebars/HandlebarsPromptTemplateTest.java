@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.templateengine.handlebars;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +41,7 @@ public class HandlebarsPromptTemplateTest {
         @DefineKernelFunction(name = "upper", description = "Converts a string to upper case.")
         public String upper(
             @KernelFunctionParameter(name = "input", required = true, description = "The string to convert to upper case", type = String.class) String input) {
-            return input.toUpperCase();
+            return input.toUpperCase(Locale.ROOT);
         }
 
         @DefineKernelFunction(name = "concat", description = "Concatenate the second string to the first string.")

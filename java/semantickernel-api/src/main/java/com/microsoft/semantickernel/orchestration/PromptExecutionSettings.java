@@ -316,7 +316,7 @@ public class PromptExecutionSettings {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (obj == null || getClass() != obj.getClass())
+        if (!getClass().isInstance(obj))
             return false;
 
         PromptExecutionSettings other = (PromptExecutionSettings) obj;

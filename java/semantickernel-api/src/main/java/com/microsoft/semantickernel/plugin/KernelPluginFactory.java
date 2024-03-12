@@ -158,10 +158,10 @@ public class KernelPluginFactory {
      */
     @Nullable
     private static Class<?> getCommonTypeAlias(Method method, String className) {
-        Class<?> returnType = COMMON_CLASS_NAMES.getOrDefault(className, null);
+        Class<?> returnType = COMMON_CLASS_NAMES.get(className);
 
         if (returnType != null && !returnType.isAssignableFrom(method.getReturnType())) {
-            returnType = BOXED_FROM_PRIMATIVE.getOrDefault(returnType, null);
+            returnType = BOXED_FROM_PRIMATIVE.get(returnType);
         }
 
         return returnType;
