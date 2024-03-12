@@ -39,6 +39,7 @@ jobs:
         run: echo "NOT python file"
 
   python-merge-gate:
+    name: Python Pre-Merge Integration Tests
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
@@ -62,13 +63,13 @@ jobs:
         run: |
           export HNSWLIB_NO_NATIVE=1
           python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install
+          cd python && poetry install --with tests
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
           cd python
-          poetry install
+          poetry install --with tests
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -127,13 +128,13 @@ jobs:
         run: |
           export HNSWLIB_NO_NATIVE=1
           python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install
+          cd python && poetry install --with tests
 
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install
+          cd python && poetry install --with tests
 
       - name: Run Integration Tests
         id: run_tests
