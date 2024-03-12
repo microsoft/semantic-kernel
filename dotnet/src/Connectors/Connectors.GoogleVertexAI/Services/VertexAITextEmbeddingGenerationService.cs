@@ -37,9 +37,27 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
         string projectId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
+        : this(modelId, () => bearerKey, location, projectId, httpClient, loggerFactory) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VertexAITextEmbeddingGenerationService"/> class.
+    /// </summary>
+    /// <param name="modelId">The model identifier.</param>
+    /// <param name="bearerKeyProvider">The Bearer Key provider for authentication.</param>
+    /// <param name="location">The location to process the request.</param>
+    /// <param name="projectId">Your Project Id.</param>
+    /// <param name="httpClient">The optional HTTP client.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public VertexAITextEmbeddingGenerationService(
+        string modelId,
+        Func<string> bearerKeyProvider,
+        string location,
+        string projectId,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(bearerKey);
+        Verify.NotNull(bearerKeyProvider);
         Verify.NotNullOrWhiteSpace(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
@@ -48,7 +66,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: modelId,
-            bearerKeyProvider: () => bearerKey,
+            bearerKeyProvider: bearerKeyProvider,
             location: location,
             projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAITextEmbeddingGenerationService)));

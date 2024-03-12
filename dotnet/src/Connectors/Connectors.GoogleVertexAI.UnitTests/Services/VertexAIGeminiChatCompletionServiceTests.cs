@@ -9,11 +9,22 @@ namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Services;
 public sealed class VertexAIGeminiChatCompletionServiceTests
 {
     [Fact]
-    public void AttributesShouldContainModelId()
+    public void AttributesShouldContainModelIdBearerAsString()
     {
         // Arrange & Act
         string model = "fake-model";
         var service = new VertexAIGeminiChatCompletionService(model, "key", "location", "project");
+
+        // Assert
+        Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    [Fact]
+    public void AttributesShouldContainModelIdBearerAsFunc()
+    {
+        // Arrange & Act
+        string model = "fake-model";
+        var service = new VertexAIGeminiChatCompletionService(model, () => "key", "location", "project");
 
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);
