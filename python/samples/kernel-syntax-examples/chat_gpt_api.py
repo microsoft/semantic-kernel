@@ -11,10 +11,6 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-# import os
-# from dotenv import load_dotenv
-# load_dotenv('var.env')
-# api_key = os.getenv("OPENAI_API_KEY")
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
