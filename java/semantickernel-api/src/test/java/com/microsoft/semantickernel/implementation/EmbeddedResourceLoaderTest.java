@@ -49,10 +49,8 @@ public class EmbeddedResourceLoaderTest {
             EmbeddedResourceLoader.class,
             withSettings().defaultAnswer(CALLS_REAL_METHODS))) {
 
-            InputStream inputStream = new ByteArrayInputStream(
-                "file content".getBytes(StandardCharsets.UTF_8));
-            mocked.when(() -> EmbeddedResourceLoader.getResourceAsStream(any(String.class),
-                any(Class.class))).thenReturn(inputStream);
+            mocked.when(() -> EmbeddedResourceLoader.getResourceAsStream(any(String.class), any(Class.class)))
+                    .thenReturn("file content");
 
             String result = EmbeddedResourceLoader.readFile("existent.txt",
                 EmbeddedResourceLoaderTest.class);

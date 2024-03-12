@@ -51,12 +51,7 @@ public class EmbeddedResourceLoader {
                 type -> {
                     switch (type) {
                         case CLASSPATH:
-                            try (InputStream inputStream = getResourceAsStream(fileName, clazz)) {
-                                return readInputStream(fileName, inputStream);
-                            } catch (Exception e) {
-                                // IGNORE
-                            }
-                            break;
+                            return getResourceAsStream(fileName, clazz);
                         case CLASSPATH_ROOT:
                             try (InputStream inputStream = Thread.currentThread()
                                 .getContextClassLoader()
@@ -67,12 +62,7 @@ public class EmbeddedResourceLoader {
                             }
                             break;
                         case FILESYSTEM:
-                            try {
-                                return readFileFromFileSystem(fileName);
-                            } catch (IOException e) {
-                                // IGNORE
-                            }
-                            break;
+                            return readFileFromFileSystem(fileName);
                         default:
                     }
                     return null;
@@ -87,17 +77,24 @@ public class EmbeddedResourceLoader {
         throw new FileNotFoundException("Could not find file " + fileName);
     }
 
-    static InputStream getResourceAsStream(String fileName, Class<?> clazz) {
-        return clazz.getResourceAsStream(fileName);
+    static String getResourceAsStream(String fileName, Class<?> clazz) {
+        try (InputStream inputStream = clazz.getResourceAsStream(fileName)) {
+            return readInputStream(fileName, inputStream);
+        } catch (Exception e) {
+            // IGNORE
+        }
+        return null;
     }
 
-    static String readFileFromFileSystem(String fileName) throws IOException {
+    static String readFileFromFileSystem(String fileName) {
         File file = new File(fileName);
         if (file.exists()) {
-            InputStream inputStream = Files.newInputStream(file.toPath());
-            return readInputStream(fileName, inputStream);
+            try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+                return readInputStream(fileName, inputStream);
+            } catch (IOException e) {
+                // IGNORE
+            }
         }
-
         return null;
     }
 
