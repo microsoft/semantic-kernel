@@ -112,9 +112,10 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 f"The OpenAI service `{self.service_id}` is not available. Please configure the AI service."
             ) from exc
 
-        prompt_execution_settings: OpenAIChatPromptExecutionSettings = (
-            self.options.execution_settings
-            or chat_completion.get_prompt_execution_settings_class()(service_id=self.service_id)
+        prompt_execution_settings: (
+            OpenAIChatPromptExecutionSettings
+        ) = self.options.execution_settings or chat_completion.get_prompt_execution_settings_class()(
+            service_id=self.service_id
         )
 
         # Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
