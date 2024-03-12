@@ -42,9 +42,7 @@ class KernelFunctionFromPrompt(KernelFunction):
     def __init__(
         self,
         function_name: str,
-        plugin_name: Optional[
-            str
-        ] = None,  # TODO @jmj: Note in PR that plugin_name is optional in KernelFunctionMetadata's constructor
+        plugin_name: Optional[str] = None,
         description: Optional[str] = None,
         prompt: Optional[str] = None,
         template_format: Optional[str] = "semantic-kernel",

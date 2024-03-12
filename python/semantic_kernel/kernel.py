@@ -6,7 +6,7 @@ import inspect
 import logging
 import os
 from copy import copy
-from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, AsyncIterable, Callable, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
 
@@ -520,6 +520,100 @@ class Kernel(KernelBaseModel):
 
         return {}
 
+    # TODO @jmj - Do we want to be able to create and register multiple plugins given a directory path?
+    def register_plugins_from_path(self, path: str) -> List[KernelPlugin]:
+        plugins: List[KernelPlugin] = self.create_plugins_from_path(path)
+        for plugin in plugins:
+            self.add_plugin(plugin.name, plugin.functions, plugin)
+        return plugins
+
+    # TODO @jmj - Do we want to be able to create multiple plugins given a directory path without registering them to the Kernel?
+    def create_plugins_from_path(self, path: str) -> List[KernelPlugin]:
+        absolute_path: str = os.path.abspath(path)
+
+        YAML_FILE_GLOB_PATH = f"{absolute_path}/**/*.yaml"
+
+        if os.path.isdir(absolute_path):
+            yaml_file_paths: Iterator[str] = glob.iglob(YAML_FILE_GLOB_PATH, recursive=False)
+        else:
+            raise PluginInitializationError(f"Path does not exist or is not a supported file type: {absolute_path}")
+
+        plugins: List[KernelPlugin] = []
+        for yaml_file_path in yaml_file_paths:
+            try:
+                plugin = self.create_plugin_from_path(yaml_file_path, None)
+                plugins.append(plugin)
+            except Exception as exception:
+                raise PluginInitializationError("Error occurred while importing plugin from directory.") from exception
+        return plugins
+
+    # TODO @jmj - Do we want to be able to create register a single plugin given a directory path?
+    def register_plugin_from_path(self, path: str, plugin_name: Optional[str] = None) -> KernelPlugin:
+        kernel_plugin: KernelPlugin = self.create_plugin_from_path(path, plugin_name)
+
+        self.add_plugin(kernel_plugin.name, [], kernel_plugin)
+        return kernel_plugin
+
+    # TODO @jmj - Do we want to be able to create a single plugin given a directory path without registering it to the Kernel?
+    def create_plugin_from_path(self, path: str, plugin_name: Optional[str]) -> KernelPlugin:
+        if not path or len(path) == 0:
+            raise PluginInitializationError("Path cannot be empty or null.")
+
+        absolute_path: str = os.path.abspath(path)
+
+        if not plugin_name:
+            plugin_name = os.path.basename(os.path.dirname(absolute_path))
+
+        # TODO @jmj - Should we also allow for ".yml" files?
+        # TODO @jmj - Should we also allow for recursive search?
+        if os.path.isfile(absolute_path):
+            if not absolute_path.endswith(".yaml"):
+                raise PluginInitializationError(f"Path is not a supported file type: {absolute_path}")
+            yaml_file_paths: List[str] = list([absolute_path])
+        elif os.path.isdir(absolute_path):
+            YAML_FILE_GLOB_PATH = f"{absolute_path}/**/*.yaml"
+            yaml_file_paths: List[str] = glob.glob(YAML_FILE_GLOB_PATH, recursive=False)
+        else:
+            raise PluginInitializationError(f"Path does not exist or is not a supported file type: {absolute_path}")
+
+        # Validate the plugin's name (extracted from the directory name).
+        validate_plugin_name(plugin_name)
+
+        if len(yaml_file_paths) == 0:
+            raise PluginInitializationError(f"Resolve YAML file for path: {absolute_path}")
+
+        try:
+            functions: List[KernelFunction] = []
+            for yaml_file_path in yaml_file_paths:
+                try:
+                    function = self.create_kernel_function_from_path(yaml_file_path)
+                    functions.append(function)
+                except Exception as exception:
+                    raise PluginInitializationError(
+                        f"Error occurred while importing plugin from directory: {os.path.basename(absolute_path)}"
+                    ) from exception
+            plugin = KernelPlugin(name=plugin_name, functions=functions)
+        except Exception as exception:
+            raise PluginInitializationError(
+                "Error occurred while loading KernelFunctions into KernelPlugin."
+            ) from exception
+
+        return plugin
+
+    # TODO @jmj - Do we want creating a single plugin given a directory path to be part of the public interface or for this to be hidden as an implementation detail?
+    def create_kernel_function_from_path(self, path: str) -> KernelFunction:
+        absolute_path = os.path.abspath(path)
+        try:
+            with open(absolute_path, "r") as yaml_file:
+                yaml_content = yaml_file.read()
+            function: KernelFunction = self.create_function_from_prompt_yaml(yaml_content)
+        except Exception as exception:
+            raise PluginInitializationError(
+                "Error occurred while loading KernelFunctions into KernelPlugin."
+            ) from exception
+
+        return function
+
     def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         """
         Import a plugin from a directory containing prompt templates.
@@ -653,8 +747,53 @@ class Kernel(KernelBaseModel):
             KernelFunction: The created KernelFunction object.
         """
 
-        function = KernelFunction.from_prompt_yaml(text)
-        return function
+        import yaml
+
+        try:
+            yaml_data: Dict[str, Any] = yaml.safe_load(text)
+
+            prompt_template_config = PromptTemplateConfig(
+                name=yaml_data["name"],
+                description=yaml_data["description"],
+                template=yaml_data["template"],
+                template_format=yaml_data.get("template_format", "semantic-kernel"),
+                input_variables=yaml_data.get("input_variables", []),
+                execution_settings=yaml_data.get("execution_settings", {}),
+            )
+
+            prompt_execution_settings: Dict[str, PromptExecutionSettings] = kwargs.get(
+                "execution_settings", prompt_template_config.execution_settings
+            )
+
+            # TODO @jmj - The user that serializes the KernelFunction into YAML might not know the service_id ahead of time.
+            # Ask in the PR if we should fall back to resolving the service_id from the service type if the service_id is 'default'
+            # and there is not a 'default' service explicitly registered.
+
+            # TODO @jmj - If we want to do this kind of automatic resolution it should probably happen when the KernelFunction is invoked, not when it is deserialized.
+            # A user could choose to deserialize their KernelFunctions before they have added services to the Kernel.
+
+            # if len(prompt_execution_settings) == 1 and "default" in prompt_execution_settings:
+            #     if self.services.get("default"):
+            #         service: ALL_SERVICE_TYPES = self.get_service("default")
+            #     else:
+            #         service: ALL_SERVICE_TYPES = self.get_service(
+            #             service_id=None,
+            #             type=Union[TextCompletionClientBase, ChatCompletionClientBase],
+            #         )
+
+            #     prompt_execution_settings[service.service_id] = prompt_execution_settings["default"]
+            #     del prompt_execution_settings["default"]
+
+            return KernelFunctionFromPrompt(
+                function_name=prompt_template_config.name,
+                description=prompt_template_config.description,
+                template_format="semantic-kernel",
+                prompt=yaml_data["template"],
+                prompt_template_config=prompt_template_config,
+                prompt_execution_settings=prompt_execution_settings,
+            )
+        except Exception as exception:
+            raise FunctionInitializationError("Error occurred while initializing from YAML.") from exception
 
     def register_function_from_method(
         self,
@@ -768,4 +907,5 @@ class Kernel(KernelBaseModel):
         """Removes the services from the Kernel, does not delete them."""
         self.services.clear()
 
+    # endregion
     # endregion
