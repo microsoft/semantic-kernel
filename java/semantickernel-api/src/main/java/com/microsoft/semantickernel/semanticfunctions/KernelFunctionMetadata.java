@@ -103,7 +103,6 @@ public class KernelFunctionMetadata<T> {
     public int hashCode() {
         return Objects.hash(name, pluginName, description, parameters, returnParameter);
     }
-        
 
     @Override
     public boolean equals(Object obj) {
@@ -111,7 +110,7 @@ public class KernelFunctionMetadata<T> {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-            
+
         KernelFunctionMetadata<?> other = (KernelFunctionMetadata<?>) obj;
         if (!Objects.equals(name, other.name))
             return false;
@@ -124,5 +123,4 @@ public class KernelFunctionMetadata<T> {
         return Objects.equals(returnParameter, other.returnParameter);
     }
 
-    
 }

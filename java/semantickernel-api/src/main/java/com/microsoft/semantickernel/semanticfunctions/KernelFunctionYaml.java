@@ -31,9 +31,10 @@ public class KernelFunctionYaml {
     public static <T> KernelFunction<T> fromPromptYaml(
         String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory) throws IOException {
-        try (InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))) {
+        try (InputStream targetStream = new ByteArrayInputStream(
+            yaml.getBytes(StandardCharsets.UTF_8))) {
             return fromYaml(targetStream, promptTemplateFactory);
-        } 
+        }
     }
 
     /**

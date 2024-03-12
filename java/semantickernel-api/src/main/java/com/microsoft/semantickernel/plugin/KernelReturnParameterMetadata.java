@@ -60,12 +60,11 @@ public class KernelReturnParameterMetadata<T> {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        
+
         KernelReturnParameterMetadata<?> other = (KernelReturnParameterMetadata<?>) obj;
         if (!Objects.equals(description, other.description))
             return false;
         return Objects.equals(parameterType, other.parameterType);
     }
 
-    
 }

@@ -307,7 +307,8 @@ public class PromptExecutionSettings {
 
     @Override
     public int hashCode() {
-        return Objects.hash(serviceId, modelId, temperature, topP, presencePenalty, frequencyPenalty,
+        return Objects.hash(serviceId, modelId, temperature, topP, presencePenalty,
+            frequencyPenalty,
             maxTokens, bestOf, resultsPerPrompt, user, stopSequences, tokenSelectionBiases);
     }
 

@@ -101,7 +101,7 @@ public class KernelParameterMetadata<T> {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        
+
         KernelParameterMetadata<?> other = (KernelParameterMetadata<?>) obj;
         if (!Objects.equals(name, other.name))
             return false;
@@ -114,5 +114,4 @@ public class KernelParameterMetadata<T> {
         return Objects.equals(parameterType, other.parameterType);
     }
 
-    
 }

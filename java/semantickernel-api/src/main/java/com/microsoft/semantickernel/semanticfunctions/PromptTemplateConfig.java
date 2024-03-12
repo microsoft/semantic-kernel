@@ -307,7 +307,9 @@ public class PromptTemplateConfig {
      *
      * @return The schema version of the prompt template config.
      */
-    public int getSchema() { return schema; }
+    public int getSchema() {
+        return schema;
+    }
 
     /**
      * Create a builder for a prompt template config which is a clone of the current object.
@@ -320,7 +322,8 @@ public class PromptTemplateConfig {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, template, templateFormat, description, inputVariables, outputVariable, executionSettings);
+        return Objects.hash(name, template, templateFormat, description, inputVariables,
+            outputVariable, executionSettings);
     }
 
     @Override
@@ -346,7 +349,7 @@ public class PromptTemplateConfig {
         }
         if (!Objects.equals(this.templateFormat, other.templateFormat)) {
             return false;
-        }   
+        }
         if (!Objects.equals(this.inputVariables, other.inputVariables)) {
             return false;
         }

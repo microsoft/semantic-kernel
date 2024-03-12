@@ -137,16 +137,15 @@ public class InputVariable {
             return false;
 
         InputVariable other = (InputVariable) obj;
-        if (!Objects.equals(name, other.name)) 
+        if (!Objects.equals(name, other.name))
             return false;
-        if (!Objects.equals(type, other.type)) 
+        if (!Objects.equals(type, other.type))
             return false;
-        if (!Objects.equals(description, other.description)) 
+        if (!Objects.equals(description, other.description))
             return false;
-        if (!Objects.equals(defaultValue, other.defaultValue)) 
+        if (!Objects.equals(defaultValue, other.defaultValue))
             return false;
-       return isRequired == other.isRequired;
+        return isRequired == other.isRequired;
     }
 
-    
 }
