@@ -45,21 +45,21 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model to use to counting tokens</param>
-    /// <param name="bearerKey">Bearer key used for authentication</param>
+    /// <param name="bearerKeyProvider">Bearer key provider used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiTokenCounterClient(
         HttpClient httpClient,
         string modelId,
-        string bearerKey,
+        Func<string> bearerKeyProvider,
         string location,
         string projectId,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
             logger: logger,
-            bearerKey: bearerKey)
+            bearerKeyProvider: bearerKeyProvider)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(location);

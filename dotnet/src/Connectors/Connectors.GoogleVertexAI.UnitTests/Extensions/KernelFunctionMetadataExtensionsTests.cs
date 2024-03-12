@@ -12,6 +12,9 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Extensions;
 
+/// <summary>
+/// Unit tests for <see cref="GeminiKernelFunctionMetadataExtensions"/> class.
+/// </summary>
 public sealed class KernelFunctionMetadataExtensionsTests
 {
     [Fact]

@@ -10,6 +10,9 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Extensions;
 
+/// <summary>
+/// Unit tests for <see cref="GoogleAIServiceCollectionExtensions"/> and <see cref="GoogleAIKernelBuilderExtensions"/> classes.
+/// </summary>
 public sealed class GoogleAIServiceCollectionExtensionsTests
 {
     [Fact]

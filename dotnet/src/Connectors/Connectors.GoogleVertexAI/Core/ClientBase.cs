@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 internal abstract class ClientBase
 {
-    private readonly string? _bearerKey;
+    private readonly Func<string>? _bearerKeyProvider;
 
     protected HttpClient HttpClient { get; }
     protected ILogger Logger { get; }
@@ -22,11 +22,11 @@ internal abstract class ClientBase
     protected ClientBase(
         HttpClient httpClient,
         ILogger? logger,
-        string bearerKey)
+        Func<string> bearerKeyProvider)
         : this(httpClient, logger)
     {
-        Verify.NotNullOrWhiteSpace(bearerKey);
-        this._bearerKey = bearerKey;
+        Verify.NotNull(bearerKeyProvider);
+        this._bearerKeyProvider = bearerKeyProvider;
     }
 
     protected ClientBase(
@@ -96,10 +96,10 @@ internal abstract class ClientBase
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase)));
 
-        if (this._bearerKey is not null)
+        if (this._bearerKeyProvider?.Invoke() is { } bearerKey)
         {
             httpRequestMessage.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", this._bearerKey);
+                new AuthenticationHeaderValue("Bearer", bearerKey);
         }
 
         return httpRequestMessage;

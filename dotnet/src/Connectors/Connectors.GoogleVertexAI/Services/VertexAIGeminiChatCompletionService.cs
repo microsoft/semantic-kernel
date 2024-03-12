@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -36,9 +37,30 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         string projectId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
+        : this(modelId, () => bearerKey, location, projectId, httpClient, loggerFactory)
+    {
+        Verify.NotNullOrWhiteSpace(bearerKey);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VertexAIGeminiChatCompletionService"/> class.
+    /// </summary>
+    /// <param name="modelId">The Gemini model for the chat completion service.</param>
+    /// <param name="bearerKeyProvider">The Bearer Key provider for authentication.</param>
+    /// <param name="location">The region to process the request</param>
+    /// <param name="projectId">Your project ID</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public VertexAIGeminiChatCompletionService(
+        string modelId,
+        Func<string> bearerKeyProvider,
+        string location,
+        string projectId,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(bearerKey);
+        Verify.NotNull(bearerKeyProvider);
         Verify.NotNullOrWhiteSpace(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
@@ -47,7 +69,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: modelId,
-            bearerKey: bearerKey,
+            bearerKeyProvider: bearerKeyProvider,
             location: location,
             projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiChatCompletionService)));
