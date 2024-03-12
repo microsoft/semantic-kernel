@@ -1,3 +1,0 @@
---extra-index-url https://azuremlsdktestpypi.azureedge.net/promptflow/
-promptflow-sdk[builtins]
-semantic-kernel==0.3.12.dev0
