@@ -56,7 +56,7 @@ public class KernelHooksTest {
                 .withTemperature(0.4)
                 .withTopP(1)
                 .build())
-            .withOutputVariable(new OutputVariable("result", "java.lang.String"))
+            .withOutputVariable(new OutputVariable("java.lang.String", "result"))
             .build();
 
         AtomicBoolean preHookTriggered = new AtomicBoolean(false);

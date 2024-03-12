@@ -371,7 +371,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         @Override
         public FromPromptBuilder<T> withOutputVariable(@Nullable String description, String type) {
-            return this.withOutputVariable(new OutputVariable(description, type));
+            return this.withOutputVariable(new OutputVariable(type, description));
         }
 
         @Override

@@ -4,6 +4,9 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.exceptions.SKException;
+
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 /**
@@ -120,4 +123,30 @@ public class InputVariable {
                     ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
         }
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type, description, defaultValue, isRequired);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || obj.getClass() != getClass())
+            return false;
+
+        InputVariable other = (InputVariable) obj;
+        if (!Objects.equals(name, other.name)) 
+            return false;
+        if (!Objects.equals(type, other.type)) 
+            return false;
+        if (!Objects.equals(description, other.description)) 
+            return false;
+        if (!Objects.equals(defaultValue, other.defaultValue)) 
+            return false;
+       return isRequired == other.isRequired;
+    }
+
+    
 }

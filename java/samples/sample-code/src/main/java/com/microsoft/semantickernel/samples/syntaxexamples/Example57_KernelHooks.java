@@ -95,7 +95,7 @@ public class Example57_KernelHooks {
                 .withTemperature(0.4)
                 .withTopP(1)
                 .build())
-            .withOutputVariable(new OutputVariable("result", "java.lang.String"))
+            .withOutputVariable(new OutputVariable("java.lang.String", "result"))
             .build();
 
         FunctionInvokingHook preHook = event -> {

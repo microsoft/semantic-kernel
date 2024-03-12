@@ -62,7 +62,7 @@ public class Example58_ConfigureExecutionSettings {
                         .withMaxTokens(60)
                         .withTemperature(0.7)
                         .build())
-                .withOutputVariable(new OutputVariable("result", "java.lang.String"))
+                .withOutputVariable(new OutputVariable("java.lang.String", "result"))
                 .build())
             .block();
 

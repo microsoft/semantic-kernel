@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.plugin;
 
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import java.util.Objects;
 
 /**
  * Metadata for a return parameter of a {@link KernelFunction}.
@@ -46,4 +48,24 @@ public class KernelReturnParameterMetadata<T> {
     public Class<T> getParameterType() {
         return parameterType;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(description, parameterType);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        
+        KernelReturnParameterMetadata<?> other = (KernelReturnParameterMetadata<?>) obj;
+        if (!Objects.equals(description, other.description))
+            return false;
+        return Objects.equals(parameterType, other.parameterType);
+    }
+
+    
 }

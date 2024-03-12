@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -29,49 +30,49 @@ public class PromptExecutionSettings {
      * {@link Builder#withMaxTokens(int) max_tokens} is not provided.
      * Defaults to {@code 256}
      */
-    public static final Integer DEFAULT_MAX_TOKENS = 256;
+    public static final int DEFAULT_MAX_TOKENS = 256;
 
     /**
      * The default for {@link #getTemperature()} if 
      * {@link Builder#withTemperature(double) temperature} is not provided.
      * Defaults to {@code 1.0}
      */
-    public static final Double DEFAULT_TEMPERATURE = 1.0;
+    public static final double DEFAULT_TEMPERATURE = 1.0;
 
     /**
      * The default for {@link #getTopP()} if 
      * {@link Builder#withTopP(double) top_p} is not provided.
      * Defaults to {@code 1.0}
      */
-    public static final Double DEFAULT_TOP_P = 1.0;
+    public static final double DEFAULT_TOP_P = 1.0;
 
     /**
      * The default for {@link #getPresencePenalty()} if 
      * {@link Builder#withPresencePenalty(double) presence_penalty} is not provided.
      * Defaults to {@code 0.0}
      */
-    public static final Double DEFAULT_PRESENCE_PENALTY = 0.0;
+    public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
 
     /**
      * The default for {@link #getFrequencyPenalty()} if 
      * {@link Builder#withMaxTokens(doulbe) frequency_penalty} is not provided.
      * Defaults to {@code 0.0}
      */
-    public static final Double DEFAULT_FREQUENCY_PENALTY = 0.0;
+    public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
 
     /**
      * The default for {@link #getBestOf()} if 
      * {@link Builder#withBestOf(int) best_of} is not provided.
      * Defaults to {@code 1}
      */
-    public static final Integer DEFAULT_BEST_OF = 1;
+    public static final int DEFAULT_BEST_OF = 1;
 
     /**
      * The default for {@link #getResultsPerPrompt()} if 
      * {@link Builder#withResultsPerPrompt(int) results per prompt (n)} is not provided.
      * Defaults to {@code 1}
      */
-    public static final Integer DEFAULT_RESULTS_PER_PROMPT = 1;
+    public static final int DEFAULT_RESULTS_PER_PROMPT = 1;
 
     // 
     // Keys used as both @JsonProperty names and keys to the Builder's value map.
@@ -99,7 +100,6 @@ public class PromptExecutionSettings {
     private final int bestOf;
     private final int resultsPerPrompt;
     private final String user;
-    @Nullable
     private final List<String> stopSequences;
     private final Map<Integer, Integer> tokenSelectionBiases;
 
@@ -133,8 +133,8 @@ public class PromptExecutionSettings {
         @JsonProperty(USER) String user,
         @Nullable @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
         @Nullable @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
-        this.serviceId = serviceId;
-        this.modelId = modelId;
+        this.serviceId = serviceId != null ? serviceId : DEFAULT_SERVICE_ID;
+        this.modelId = modelId != null ? modelId : "";
         this.temperature = clamp(temperature, 0d, 2d, DEFAULT_TEMPERATURE);
         this.topP = clamp(topP, 0d, 1d, DEFAULT_TOP_P);
         this.presencePenalty = clamp(presencePenalty, -2d, 2d, DEFAULT_PRESENCE_PENALTY);
@@ -143,7 +143,7 @@ public class PromptExecutionSettings {
         this.resultsPerPrompt = clamp(resultsPerPrompt, 1, Integer.MAX_VALUE,
             DEFAULT_RESULTS_PER_PROMPT);
         this.bestOf = clamp(bestOf, 1, Integer.MAX_VALUE, DEFAULT_BEST_OF);
-        this.user = user;
+        this.user = user != null ? user : "";
         this.stopSequences = stopSequences != null ? new ArrayList<>(stopSequences)
             : Collections.emptyList();
         this.tokenSelectionBiases = tokenSelectionBiases != null
@@ -289,12 +289,8 @@ public class PromptExecutionSettings {
      * @return The stop sequences to use for prompt execution.
      */
     @JsonProperty(STOP_SEQUENCES)
-    @Nullable
     public List<String> getStopSequences() {
-        if (stopSequences != null) {
-            return Collections.unmodifiableList(stopSequences);
-        }
-        return null;
+        return Collections.unmodifiableList(stopSequences);
     }
 
     /**
@@ -305,12 +301,48 @@ public class PromptExecutionSettings {
      * @return The token selection biases to use for prompt execution.
      */
     @JsonProperty(TOKEN_SELECTION_BIASES)
-    @Nullable
     public Map<Integer, Integer> getTokenSelectionBiases() {
-        if (tokenSelectionBiases != null) {
-            return Collections.unmodifiableMap(tokenSelectionBiases);
-        }
-        return null;
+        return Collections.unmodifiableMap(tokenSelectionBiases);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serviceId, modelId, temperature, topP, presencePenalty, frequencyPenalty,
+            maxTokens, bestOf, resultsPerPrompt, user, stopSequences, tokenSelectionBiases);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+
+        PromptExecutionSettings other = (PromptExecutionSettings) obj;
+
+        if (!Objects.equals(serviceId, other.serviceId))
+            return false;
+        if (!Objects.equals(modelId, other.modelId))
+            return false;
+        if (Double.compare(temperature, other.temperature) != 0)
+            return false;
+        if (Double.compare(topP, other.topP) != 0)
+            return false;
+        if (Double.compare(presencePenalty, other.presencePenalty) != 0)
+            return false;
+        if (Double.compare(frequencyPenalty, other.frequencyPenalty) != 0)
+            return false;
+        if (maxTokens != other.maxTokens)
+            return false;
+        if (bestOf != other.bestOf)
+            return false;
+        if (resultsPerPrompt != other.resultsPerPrompt)
+            return false;
+        if (!Objects.equals(user, other.user))
+            return false;
+        if (!Objects.equals(stopSequences, other.stopSequences))
+            return false;
+        return Objects.equals(tokenSelectionBiases, other.tokenSelectionBiases);
     }
 
     /**
@@ -484,7 +516,7 @@ public class PromptExecutionSettings {
         @SuppressWarnings("unchecked")
         public PromptExecutionSettings build() {
             return new PromptExecutionSettings(
-                (String) settings.getOrDefault(SERVICE_ID, ""),
+                (String) settings.getOrDefault(SERVICE_ID, DEFAULT_SERVICE_ID),
                 (String) settings.getOrDefault(MODEL_ID, ""),
                 (Double) settings.getOrDefault(TEMPERATURE, DEFAULT_TEMPERATURE),
                 (Double) settings.getOrDefault(TOP_P, DEFAULT_TOP_P),
