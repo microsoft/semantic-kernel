@@ -33,6 +33,7 @@ motor = "^3.3.2"
 defusedxml = "^0.7.1"
 
 # Optional dependencies
+ipykernel = { version = "^6.21.1", optional = true}
 google-generativeai = { version = ">=0.1", markers = "python_version >= '3.9'", optional = true}
 grpcio-status = { version = "^1.53.0", markers = "python_version >= '3.9'", optional = true}
 transformers = { version = "^4.28.1", optional = true}
@@ -125,7 +126,8 @@ postgres = ["psycopg"]
 redis = ["redis"]
 azure = ["azure-search-documents", "azure-core", "azure-identity"]
 usearch = ["usearch", "pyarrow"]
-all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "usearch", "pyarrow"]
+notebooks = ["ipykernel"]
+all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "usearch", "pyarrow", "ipykernel"]
 
 [tool.ruff]
 lint.select = ["E", "F", "I"]
