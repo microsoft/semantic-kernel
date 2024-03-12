@@ -290,7 +290,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             () -> Mono.fromCallable(
                 () -> {
                     try {
-                        if (method.getReturnType().getName().equals("void")
+                        if (method.getReturnType().equals(void.class)
                             || method.getReturnType()
                                 .equals(Void.class)) {
                             method.invoke(instance, args.toArray());
