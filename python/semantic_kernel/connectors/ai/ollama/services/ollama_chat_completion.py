@@ -2,21 +2,15 @@
 
 import json
 import logging
-from typing import AsyncIterable, List, Optional
+from typing import Any, AsyncIterable, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
-    OllamaChatPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -45,6 +39,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
+        **kwargs: Any,
     ) -> List[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -53,6 +48,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
                 that can be rendered into a set of messages, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
+            kwargs {Dict[str, Any]} -- The optional arguments.
 
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
@@ -76,6 +72,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
+        **kwargs: Any,
     ) -> AsyncIterable[List[StreamingChatMessageContent]]:
         """
         Streams a text completion using a Ollama model.
@@ -85,6 +82,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
                 that can be rendered into a set of messages, from system, user, assistant and function.
             settings {OllamaChatPromptExecutionSettings} -- Request settings.
+            kwargs {Dict[str, Any]} -- The optional arguments.
 
         Yields:
             List[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.

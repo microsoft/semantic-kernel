@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -49,7 +50,7 @@ public sealed class Example79_OpenAIFiles : BaseTest
         WriteLine("SOURCE:");
         WriteLine($"# Name: {fileReference.FileName}");
         WriteLine("# Content:");
-        WriteLine(await fileContent.GetContentAsync());
+        WriteLine(Encoding.UTF8.GetString((await fileContent.GetContentAsync()).Span));
 
         try
         {
