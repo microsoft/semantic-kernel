@@ -80,23 +80,23 @@ Proposed renaming:
 
 | AI Provider  | Audio conversion    | Proposed Interface         | Proposed Implementation             |
 | ------------ | ------------------- | -------------------------- | ----------------------------------- |
-| Microsoft    | Text-to-speech      | ITextToSpeechService       | MicrosoftTextToSpeechService        |
 | Microsoft    | Speech-to-text      | IAudioTranscriptionService | MicrosoftSpeechToTextService        |
-| Microsoft    | Speech translation  | IAudioTranslationService   | MicrosoftSpeechTranslationService   |
-| OpenAI       | Text-to-speech      | ITextToSpeechService       | OpenAITextToSpeechService           |
-| OpenAI       | Audio transcription | IAudioTranscriptionService | OpenAIAudioTranscriptionService     |
-| OpenAI       | Audio translation   | IAudioTranslationService   | OpenAIAudioTranslationService       |
-| Google       | Speech-to-text      | IAudioTranscriptionService | GoogleSpeechToTextService           |
-| Google       | Text-to-speech      | ITextToSpeechService       | GoogleTextToSpeechService           |
-| Amazon       | Text-to-speech      | ITextToSpeechService       | AmazonTextToSpeechService           |
-| Amazon       | Transcription       | IAudioTranscriptionService | AmazonAudioTranscriptionService     |
-| Meta         | Text-to-sound       | TBD                        | TBD                                 |
-| Meta         | Text-to-music       | ITextToMusicService        | MetaTextToMusicService              |
-| Hugging Face | Text-to-speech      | ITextToSpeechService       | HuggingFaceTextToSpeechService      |
-| Hugging Face | Text-to-audio       | TBD                        | TBD                                 |
-| Hugging Face | Audio-to-audio      | TBD                        | TBD                                 |
 | Hugging Face | Speech recognition  | IAudioTranscriptionService | HuggingFaceSpeechRecognitionService |
 | AssemblyAI   | Transcription       | IAudioTranscriptionService | AssemblyAIAudioTranscriptionService |
+| OpenAI       | Audio transcription | IAudioTranscriptionService | OpenAIAudioTranscriptionService     |
+| Google       | Speech-to-text      | IAudioTranscriptionService | GoogleSpeechToTextService           |
+| Amazon       | Transcription       | IAudioTranscriptionService | AmazonAudioTranscriptionService     |
+| Microsoft    | Speech translation  | IAudioTranslationService   | MicrosoftSpeechTranslationService   |
+| OpenAI       | Audio translation   | IAudioTranslationService   | OpenAIAudioTranslationService       |
+| Meta         | Text-to-music       | ITextToMusicService        | MetaTextToMusicService              |
+| Microsoft    | Text-to-speech      | ITextToSpeechService       | MicrosoftTextToSpeechService        |
+| OpenAI       | Text-to-speech      | ITextToSpeechService       | OpenAITextToSpeechService           |
+| Google       | Text-to-speech      | ITextToSpeechService       | GoogleTextToSpeechService           |
+| Amazon       | Text-to-speech      | ITextToSpeechService       | AmazonTextToSpeechService           |
+| Hugging Face | Text-to-speech      | ITextToSpeechService       | HuggingFaceTextToSpeechService      |
+| Meta         | Text-to-sound       | TBD                        | TBD                                 |
+| Hugging Face | Text-to-audio       | TBD                        | TBD                                 |
+| Hugging Face | Audio-to-audio      | TBD                        | TBD                                 |
 
 ## Decision Outcome
 
