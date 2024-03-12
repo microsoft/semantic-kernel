@@ -23,12 +23,9 @@ internal abstract class ClientBase
         HttpClient httpClient,
         ILogger? logger,
         string bearerKey)
+        : this(httpClient, logger)
     {
-        Verify.NotNull(httpClient);
         Verify.NotNullOrWhiteSpace(bearerKey);
-
-        this.HttpClient = httpClient;
-        this.Logger = logger ?? NullLogger.Instance;
         this._bearerKey = bearerKey;
     }
 

@@ -32,7 +32,7 @@ public abstract class TestsBase
             this.GoogleAIGetGeminiModel(),
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
-            model: this.VertexAIGetGeminiModel(),
+            modelId: this.VertexAIGetGeminiModel(),
             bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),
@@ -45,7 +45,7 @@ public abstract class TestsBase
             this.GoogleAIGetGeminiVisionModel(),
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
-            model: this.VertexAIGetGeminiVisionModel(),
+            modelId: this.VertexAIGetGeminiVisionModel(),
             bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),
@@ -58,7 +58,7 @@ public abstract class TestsBase
             this.GoogleAIGetGeminiModel(),
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAIGeminiTextGenerationService(
-            model: this.VertexAIGetGeminiModel(),
+            modelId: this.VertexAIGetGeminiModel(),
             bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),
@@ -71,7 +71,7 @@ public abstract class TestsBase
             this.GoogleAIGetEmbeddingModel(),
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAITextEmbeddingGenerationService(
-            model: this.VertexAIGetEmbeddingModel(),
+            modelId: this.VertexAIGetEmbeddingModel(),
             bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),

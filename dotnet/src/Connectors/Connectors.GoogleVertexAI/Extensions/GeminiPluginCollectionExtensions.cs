@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
-namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods for <see cref="IReadOnlyKernelPluginCollection"/>.
