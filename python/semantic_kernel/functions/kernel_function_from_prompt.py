@@ -180,7 +180,6 @@ through prompt_template_config or in the prompt_template."
             service, ChatCompletionClientBase
         ):
             kwargs["kernel"] = kernel
-            kwargs["arguments"] = arguments
 
         try:
             completions = await service.complete_chat(
@@ -247,7 +246,6 @@ through prompt_template_config or in the prompt_template."
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
-                arguments=arguments,
             ):
                 yield content
             return
@@ -269,7 +267,6 @@ through prompt_template_config or in the prompt_template."
         service: ChatCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
-        arguments: KernelArguments,
     ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
         """Handles the chat service call."""
 
@@ -279,7 +276,6 @@ through prompt_template_config or in the prompt_template."
             service, ChatCompletionClientBase
         ):
             kwargs["kernel"] = kernel
-            kwargs["arguments"] = arguments
 
         chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
         try:
