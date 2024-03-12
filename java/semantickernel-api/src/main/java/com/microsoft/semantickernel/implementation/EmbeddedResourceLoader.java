@@ -104,10 +104,13 @@ public class EmbeddedResourceLoader {
             throw new FileNotFoundException("File not found: " + fileName);
         }
 
-        return new BufferedReader(
-            new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))
-            .lines()
-            .collect(Collectors.joining("\n"));
+        try (BufferedReader bf = new BufferedReader(
+            new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
+            return bf.lines().collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            // IGNORE
+        }
+        return null;
     }
 
     /**
