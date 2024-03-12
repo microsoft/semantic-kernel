@@ -16,7 +16,7 @@ repos:
       - id: mixed-line-ending
         files: \.py$
   - repo: https://github.com/psf/black
-    rev: 24.2.0
+    rev: 23.12.1
     hooks:
       - id: black
         files: \.py$

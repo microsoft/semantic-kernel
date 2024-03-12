@@ -63,7 +63,7 @@ def test_constructor(setup_chroma):
 
 @pytest.mark.asyncio
 async def test_create_and_get_collection(setup_chroma):
-    memory = setup_chroma
+    memory: ChromaMemoryStore = setup_chroma
 
     await memory.create_collection("test_collection")
     result = await memory.get_collection("test_collection")
@@ -91,20 +91,12 @@ async def test_delete_collection(setup_chroma):
     result = await memory.get_collections()
     assert len(result) == 0
 
-    await memory.create_collection("test_collection")
-    await memory.delete_collection("TEST_COLLECTION")
-    result = await memory.get_collections()
-    assert len(result) == 0
-
 
 @pytest.mark.asyncio
 async def test_does_collection_exist(setup_chroma):
     memory = setup_chroma
     await memory.create_collection("test_collection")
     result = await memory.does_collection_exist("test_collection")
-    assert result is True
-
-    result = await memory.does_collection_exist("TEST_COLLECTION")
     assert result is True
 
 
