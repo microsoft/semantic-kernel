@@ -51,7 +51,11 @@ async def setup_chat_with_memory(
         },
     )
 
-    chat_func = kernel.create_function_from_prompt(prompt_template_config=prompt_template_config)
+    chat_func = kernel.create_function_from_prompt(
+        function_name="chat_with_memory",
+        plugin_name="TextMemoryPlugin",
+        prompt_template_config=prompt_template_config,
+    )
 
     return chat_func
 
