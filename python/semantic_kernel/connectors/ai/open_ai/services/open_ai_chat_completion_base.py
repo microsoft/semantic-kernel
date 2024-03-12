@@ -336,9 +336,15 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if tool_call.function is None:
                 continue
             logger.info(f"Calling {tool_call.function.name} function with args: {tool_call.function.arguments}")
-            func_result = await kernel.invoke(
-                **tool_call.function.split_name_dict(), arguments=tool_call.function.to_kernel_arguments()
-            )
+            try:
+                func_result = await kernel.invoke(
+                    **tool_call.function.split_name_dict(), arguments=tool_call.function.to_kernel_arguments()
+                )
+            except Exception as exc:
+                logger.exception(f"Error occurred while invoking function {tool_call.function.name}")
+                raise ServiceInvalidResponseError(
+                    f"Error occurred while invoking function {tool_call.function.name}"
+                ) from exc
             msg = OpenAIChatMessageContent(
                 role=ChatRole.TOOL,
                 content=str(func_result),

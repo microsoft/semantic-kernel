@@ -12,7 +12,7 @@
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.4" />
     <PackageVersion Include="Markdig" Version="0.34.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
-    <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.1" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="4.1.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.5" />
@@ -43,7 +43,7 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.2.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
@@ -67,14 +67,14 @@
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="[3.32.3, )" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.13" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.13" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.14" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.14" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.60.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.61.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="13.7.1" />
+    <PackageVersion Include="YamlDotNet" Version="15.1.2" />
     <!-- Memory stores -->
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.11.0" />
