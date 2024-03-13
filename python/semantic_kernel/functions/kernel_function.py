@@ -156,7 +156,7 @@ class KernelFunction(KernelBaseModel):
         Args:
             kernel (Kernel): The kernel
             arguments (KernelArguments): The Kernel arguments
-            kwargs (Dict[str, Any]): Additional keyword arguments that will be
+            kwargs (Any): Additional keyword arguments that will be
                 added to the KernelArguments.
 
         Returns:
@@ -192,7 +192,7 @@ class KernelFunction(KernelBaseModel):
         Args:
             kernel (Kernel): The kernel
             arguments (KernelArguments): The Kernel arguments
-            kwargs (Dict[str, Any]): Additional keyword arguments that will be
+            kwargs (Any): Additional keyword arguments that will be
                 added to the KernelArguments.
 
         Yields:

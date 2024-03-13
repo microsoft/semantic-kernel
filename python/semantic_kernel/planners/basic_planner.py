@@ -152,7 +152,7 @@ class BasicPlanner:
         available_functions_string = ""
         for name in list(all_functions_descriptions_dict.keys()):
             available_functions_string += name + "\n"
-            description = all_functions_descriptions_dict[name]
+            description = all_functions_descriptions_dict[name] or ""
             available_functions_string += "description: " + description + "\n"
             available_functions_string += "args:\n"
 
