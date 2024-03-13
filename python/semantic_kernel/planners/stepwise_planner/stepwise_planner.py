@@ -316,7 +316,7 @@ class StepwisePlanner:
     async def invoke_action(self, action_name: str, action_variables: Dict[str, str]) -> str:
         available_functions = self.get_available_functions()
         target_function = next(
-            (f for f in available_functions if self.to_fully_qualified_name(f) == action_name),
+            (f for f in available_functions if f.fully_qualified_name == action_name),
             None,
         )
 
@@ -394,9 +394,6 @@ class StepwisePlanner:
         function_description = function.description.strip()
 
         if is_null_or_empty(inputs):
-            return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs: None\n"
+            return f"{function.fully_qualified_name}: {function_description}\n  inputs: None\n"
 
-        return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs:\n{inputs}\n"
-
-    def to_fully_qualified_name(self, function: KernelFunctionMetadata):
-        return f"{function.plugin_name}.{function.name}"
+        return f"{function.fully_qualified_name}: {function_description}\n  inputs:\n{inputs}\n"

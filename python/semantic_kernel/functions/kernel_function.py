@@ -103,6 +103,10 @@ class KernelFunction(KernelBaseModel):
         return self.metadata.plugin_name or ""
 
     @property
+    def fully_qualified_name(self) -> str:
+        return self.metadata.fully_qualified_name
+
+    @property
     def description(self) -> Optional[str]:
         return self.metadata.description
 
