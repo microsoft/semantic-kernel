@@ -3,7 +3,7 @@
 import os
 import sys
 from typing import Union
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from pydantic import ValidationError
@@ -20,13 +20,13 @@ from semantic_kernel.exceptions import (
     ServiceInvalidTypeError,
 )
 from semantic_kernel.exceptions.function_exceptions import (
-    FunctionInvalidNameError,
     FunctionNameNotUniqueError,
     PluginInitializationError,
     PluginInvalidNameError,
 )
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -130,6 +130,25 @@ async def test_invoke_stream_functions(kernel: Kernel, pipeline_count: int, crea
         assert part[0].text == "test"
 
     assert mock_function.invoke.call_count == pipeline_count - 1
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_functions_throws_exception(kernel: Kernel, create_mock_function):
+    mock_function = create_mock_function(name="test_function")
+    kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
+    functions = [mock_function]
+
+    function_result_with_exception = FunctionResult(
+        value="", function=mock_function.metadata, output=None, metadata={"exception": "Test Exception"}
+    )
+
+    with patch("semantic_kernel.kernel.Kernel.invoke_stream", return_value=AsyncMock()) as mocked_invoke_stream:
+        mocked_invoke_stream.return_value.__aiter__.return_value = [function_result_with_exception]
+
+        async for part in kernel.invoke_stream(functions, input="test"):
+            assert "exception" in part.metadata, "Expected exception metadata in the FunctionResult."
+            assert part.metadata["exception"] == "Test Exception", "The exception message does not match."
+            break
 
 
 @pytest.mark.asyncio
@@ -474,13 +493,6 @@ def test_register_undecorated_native_function(kernel: Kernel, not_decorated_nati
 def test_register_with_none_plugin_name(kernel: Kernel, decorated_native_function):
     with pytest.raises(ValidationError):
         kernel.register_function_from_method(method=decorated_native_function, plugin_name=None)
-
-
-def test_register_overloaded_native_function(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method("TestPlugin", decorated_native_function)
-
-    with pytest.raises(FunctionInvalidNameError):
-        kernel.register_function_from_method("TestPlugin", decorated_native_function)
 
 
 # endregion

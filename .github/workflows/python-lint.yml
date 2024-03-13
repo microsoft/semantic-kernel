@@ -23,8 +23,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
-          cache-dependency-path: "python/pyproject.toml"
-      - name: Install SemanticKernel
+      - name: Install Semantic Kernel
         run: cd python && poetry install --no-ansi
       - name: Run lint
         run: cd python && poetry run ruff check .
@@ -44,8 +43,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
-          cache-dependency-path: "python/pyproject.toml"
-      - name: Install SemanticKernel
+      - name: Install Semantic Kernel
         run: cd python && poetry install --no-ansi
       - name: Run lint
         run: cd python && poetry run black --check .
