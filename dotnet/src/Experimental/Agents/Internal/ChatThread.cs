@@ -50,15 +50,11 @@ internal sealed class ChatThread : IAgentThread
     }
 
     /// <inheritdoc/>
-    public async Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
+    public async Task<IChatMessage> AddUserMessageAsync(string message, IEnumerable<string>? fileIds = null, CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
-        var messageModel =
-            await this._restContext.CreateUserTextMessageAsync(
-                this.Id,
-                message,
-                cancellationToken).ConfigureAwait(false);
+        var messageModel = await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds, cancellationToken).ConfigureAwait(false);
 
         return new ChatMessage(messageModel);
     }
@@ -66,17 +62,17 @@ internal sealed class ChatThread : IAgentThread
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(agent, string.Empty, arguments, cancellationToken);
+        return this.InvokeAsync(agent, string.Empty, arguments, null, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, KernelArguments? arguments = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, KernelArguments? arguments = null, IEnumerable<string>? fileIds = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
         if (!string.IsNullOrWhiteSpace(userMessage))
         {
-            yield return await this.AddUserMessageAsync(userMessage, cancellationToken).ConfigureAwait(false);
+            yield return await this.AddUserMessageAsync(userMessage, fileIds, cancellationToken).ConfigureAwait(false);
         }
 
         // Finalize prompt / agent instructions using provided parameters.

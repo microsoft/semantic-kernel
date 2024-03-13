@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Copy of metadata associated with a memory entry.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class MemoryQueryResult
 {
     /// <summary>

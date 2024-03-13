@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example86_ChatHistorySerialization : BaseTest
+public class Example87_ChatHistorySerialization : BaseTest
 {
     /// <summary>
     /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
@@ -29,9 +29,9 @@ public class Example86_ChatHistorySerialization : BaseTest
             new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
             new ImageContent(new Uri("https://fake-random-test-host:123")),
             new BinaryContent(new BinaryData(data)),
-            #pragma warning disable SKEXP0005
+            #pragma warning disable SKEXP0001
             new AudioContent(new BinaryData(data))
-            #pragma warning restore SKEXP0005
+            #pragma warning restore SKEXP0001
         };
 
         var chatHistory = new ChatHistory(new[] { message });
@@ -89,7 +89,7 @@ public class Example86_ChatHistorySerialization : BaseTest
         WriteLine($"Custom content: {(deserializedMessage.Items![1]! as CustomContent)!.Content}");
     }
 
-    public Example86_ChatHistorySerialization(ITestOutputHelper output) : base(output)
+    public Example87_ChatHistorySerialization(ITestOutputHelper output) : base(output)
     {
     }
 
