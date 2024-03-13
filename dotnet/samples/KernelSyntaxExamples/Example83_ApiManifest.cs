@@ -56,7 +56,7 @@ public class Example83_ApiManifest : BaseTest
 
     private async Task AddApiManifestPluginsAsync(Kernel kernel, params string[] pluginNames)
     {
-#pragma warning disable SKEXP0053
+#pragma warning disable SKEXP0050
         if (TestConfiguration.MSGraph.Scopes == null)
         {
             throw new InvalidOperationException("Missing Scopes configuration for Microsoft Graph API.");
@@ -69,7 +69,7 @@ public class Example83_ApiManifest : BaseTest
                         TestConfiguration.MSGraph.TenantId,
                         TestConfiguration.MSGraph.Scopes.ToArray(),
                         TestConfiguration.MSGraph.RedirectUri).ConfigureAwait(false);
-#pragma warning restore SKEXP0053
+#pragma warning restore SKEXP0050
 
         BearerAuthenticationProviderWithCancellationToken authenticationProvider = new(() => Task.FromResult(token));
 
@@ -77,7 +77,7 @@ public class Example83_ApiManifest : BaseTest
         {
             try
             {
-#pragma warning disable SKEXP0042
+#pragma warning disable SKEXP0040
 #pragma warning disable SKEXP0043
                 KernelPlugin plugin =
                 await kernel.ImportPluginFromApiManifestAsync(
@@ -87,7 +87,7 @@ public class Example83_ApiManifest : BaseTest
                     , serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0")))
                     .ConfigureAwait(false);
                 this.WriteLine($">> {pluginName} is created.");
-#pragma warning restore SKEXP0042
+#pragma warning restore SKEXP0040
 #pragma warning restore SKEXP0043
             }
             catch (Exception ex)

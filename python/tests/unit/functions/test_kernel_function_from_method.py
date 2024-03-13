@@ -2,9 +2,6 @@
 import sys
 from typing import AsyncIterable, Iterable, Optional, Union
 
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
-from semantic_kernel.kernel_pydantic import KernelBaseModel
-
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -13,11 +10,12 @@ else:
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.exceptions import FunctionInitializationError
+from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 def test_init_native_function_with_input_description():
@@ -142,7 +140,7 @@ async def test_invoke_non_async():
     assert result.value == ""
 
     async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
-        assert isinstance(partial_result.metadata["error"], NotImplementedError)
+        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
 
 
 @pytest.mark.asyncio
@@ -157,7 +155,7 @@ async def test_invoke_async():
     assert result.value == ""
 
     async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
-        assert isinstance(partial_result.metadata["error"], NotImplementedError)
+        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
 
 
 @pytest.mark.asyncio
@@ -227,7 +225,7 @@ async def test_required_param_not_supplied():
     func = KernelFunction.from_method(my_function, "test")
 
     result = await func.invoke(kernel=None, arguments=KernelArguments())
-    assert isinstance(result.metadata["error"], FunctionExecutionException)
+    assert isinstance(result.metadata["exception"], FunctionExecutionException)
 
 
 @pytest.mark.asyncio

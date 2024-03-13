@@ -139,7 +139,7 @@ def test_init_prompt_execution_settings_dict():
 
 
 @pytest.mark.asyncio
-async def test_invoke():
+async def test_invoke_chat_stream():
     kernel = Kernel()
     kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
     function = KernelFunctionFromPrompt(
@@ -148,6 +148,8 @@ async def test_invoke():
         prompt="test",
         prompt_execution_settings=PromptExecutionSettings(service_id="test"),
     )
+
+    # This part remains unchanged - for synchronous mocking example
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat"
     ) as mock:
@@ -181,7 +183,7 @@ async def test_invoke_exception():
     ) as mock:
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
-        assert isinstance(result.metadata["error"], Exception)
+        assert isinstance(result.metadata["exception"], Exception)
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat_stream",
@@ -191,7 +193,7 @@ async def test_invoke_exception():
             StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})
         ]
         async for result in function.invoke_stream(kernel=kernel):
-            assert isinstance(result.metadata["error"], Exception)
+            assert isinstance(result.metadata["exception"], Exception)
 
 
 @pytest.mark.asyncio
@@ -235,7 +237,7 @@ async def test_invoke_exception_text():
     ) as mock:
         mock.return_value = [TextContent(text="test", metadata={})]
         result = await function.invoke(kernel=kernel)
-        assert isinstance(result.metadata["error"], Exception)
+        assert isinstance(result.metadata["exception"], Exception)
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.complete_stream",
@@ -243,7 +245,7 @@ async def test_invoke_exception_text():
     ) as mock:
         mock.__iter__.return_value = []
         async for result in function.invoke_stream(kernel=kernel):
-            assert isinstance(result.metadata["error"], Exception)
+            assert isinstance(result.metadata["exception"], Exception)
 
 
 @pytest.mark.asyncio
