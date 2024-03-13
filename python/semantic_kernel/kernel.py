@@ -683,7 +683,7 @@ class Kernel(KernelBaseModel):
                 "kernel_function argument must be decorated with @kernel_function",
             )
 
-        function = KernelFunction.from_method(
+        function = KernelFunctionFromMethod(
             method=method,
             plugin_name=plugin_name,
         )

@@ -9,7 +9,6 @@ from semantic_kernel.exceptions import CodeBlockRenderException, TemplateRenderE
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
@@ -21,7 +20,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelPromptTemplate(PromptTemplateBase):
-    prompt_template_config: PromptTemplateConfig
     _blocks: List[Block] = PrivateAttr(default_factory=list)
 
     def model_post_init(self, __context: Any) -> None:
