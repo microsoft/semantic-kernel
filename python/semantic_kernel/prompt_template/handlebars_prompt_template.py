@@ -68,5 +68,5 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
                 f"Error rendering prompt template: {self.prompt_template_config.template} with arguments: {arguments}"
             )
             raise HandlebarsTemplateRenderException(
-                f"Error rendering prompt template: {self.prompt_template_config.template} with arguments: {arguments}: error: {exc}"
+                f"Error rendering prompt template: {self.prompt_template_config.template} with arguments: {arguments}: error: {exc}"  # noqa: E501
             ) from exc

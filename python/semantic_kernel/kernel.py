@@ -40,6 +40,7 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
@@ -370,7 +371,7 @@ class Kernel(KernelBaseModel):
         plugin_name: str,
         prompt: str,
         arguments: Optional[KernelArguments] = None,
-        template_format: Optional[str] = None,
+        template_format: str = "semantic-kernel",
         **kwargs: Any,
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """
@@ -620,8 +621,8 @@ class Kernel(KernelBaseModel):
         prompt_execution_settings: Optional[
             Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
         ] = None,
-        template_format: Optional[str] = None,
-        prompt_template: Optional[KernelPromptTemplate] = None,
+        template_format: str = "semantic-kernel",
+        prompt_template: Optional[PromptTemplateBase] = None,
         **kwargs: Any,
     ) -> KernelFunction:
         """
@@ -637,7 +638,7 @@ class Kernel(KernelBaseModel):
             Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
         ]): The execution settings, will be parsed into a dict.
             template_format (Optional[str]): The format of the prompt template
-            prompt_template (Optional[KernelPromptTemplate]): The prompt template
+            prompt_template (Optional[PromptTemplateBase]): The prompt template
             kwargs (Any): Additional arguments
 
         Returns:

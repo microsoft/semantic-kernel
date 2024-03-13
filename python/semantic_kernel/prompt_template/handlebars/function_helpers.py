@@ -21,7 +21,7 @@ def create_helper_from_function(
         arguments.update(kwargs)
 
         logger.debug(
-            f"Invoking function {function.metadata.fully_qualified_name} with args: {args} and kwargs: {kwargs} and this: {this}."
+            f"Invoking function {function.metadata.fully_qualified_name} with args: {args} and kwargs: {kwargs} and this: {this}."  # noqa: E501
         )
         return asyncio.run(function.invoke(kernel=kernel, arguments=arguments))
 
