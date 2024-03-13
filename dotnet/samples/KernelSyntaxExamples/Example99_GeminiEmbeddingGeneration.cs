@@ -92,8 +92,9 @@ public sealed class Example99_GeminiEmbeddingGeneration : BaseTest
         //         modelId: TestConfiguration.VertexAI.Gemini.ModelId,
         //         bearerKeyProvider: () =>
         //         {
-        //             // This is just example, in production you should use google sdk to generate token
-        //             // Keep in mind this delegate will be called on every request, so it should be fast
+        //             // This is just example, in production we recommend using Google SDK to your BearerKey token.
+        //             // This delegate will be called on every request,
+        //             // when providing the token consider using caching strategy and refresh token logic when it is expired or close to expiration.
         //             return GetBearerKey();
         //         },
         //         location: TestConfiguration.VertexAI.Location,
@@ -102,8 +103,9 @@ public sealed class Example99_GeminiEmbeddingGeneration : BaseTest
         //         modelId: embeddingModelId,
         //         bearerKeyProvider: () =>
         //         {
-        //             // This is just example, in production you should use google sdk to generate token
-        //             // Keep in mind this delegate will be called on every request, so it should be fast
+        //             // This is just example, in production we recommend using Google SDK to your BearerKey token.
+        //             // This delegate will be called on every request,
+        //             // when providing the token consider using caching strategy and refresh token logic when it is expired or close to expiration.
         //             return GetBearerKey();
         //         },
         //         location: geminiLocation,
