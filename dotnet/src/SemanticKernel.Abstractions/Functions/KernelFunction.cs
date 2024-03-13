@@ -380,9 +380,14 @@ public abstract class KernelFunction
     }
 
     /// <summary>
-    /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance.
-    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
+    /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance
+    /// but the <see cref="KernelFunctionMetadata"/> has the plugin name set.
     /// </summary>
+    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
+    /// <remarks>
+    /// This method should only be used to create a new instance of a <see cref="KernelFunction"/> when adding
+    /// a function to a <see cref="KernelPlugin"/>.
+    /// </remarks>
     public abstract KernelFunction CreateForPlugin(string pluginName);
 
     /// <summary>

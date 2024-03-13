@@ -149,9 +149,11 @@ public class KernelPluginTests
         Assert.Equal(1, plugin2.FunctionCount);
 
         Assert.True(plugin1.TryGetFunction(func1.Name, out KernelFunction? pluginFunc1));
+        Assert.NotEqual(func1, pluginFunc1);
         Assert.Equal(plugin1.Name, pluginFunc1.PluginName);
 
         Assert.True(plugin2.TryGetFunction(func1.Name, out KernelFunction? pluginFunc2));
+        Assert.NotEqual(func1, pluginFunc2);
         Assert.Equal(plugin2.Name, pluginFunc2.PluginName);
     }
 }
