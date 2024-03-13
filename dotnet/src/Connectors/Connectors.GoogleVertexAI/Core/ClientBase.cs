@@ -16,8 +16,9 @@ internal abstract class ClientBase
 {
     private readonly Func<string>? _bearerKeyProvider;
 
+    private readonly ILogger _logger;
+
     protected HttpClient HttpClient { get; }
-    protected ILogger Logger { get; }
 
     protected ClientBase(
         HttpClient httpClient,
@@ -36,7 +37,7 @@ internal abstract class ClientBase
         Verify.NotNull(httpClient);
 
         this.HttpClient = httpClient;
-        this.Logger = logger ?? NullLogger.Instance;
+        this._logger = logger ?? NullLogger.Instance;
     }
 
     protected static void ValidateMaxTokens(int? maxTokens)
@@ -72,13 +73,7 @@ internal abstract class ClientBase
     {
         try
         {
-            T? deserializedResponse = JsonSerializer.Deserialize<T>(body);
-            if (deserializedResponse is null)
-            {
-                throw new JsonException("Response is null");
-            }
-
-            return deserializedResponse;
+            return JsonSerializer.Deserialize<T>(body) ?? throw new JsonException("Response is null");
         }
         catch (JsonException exc)
         {
@@ -103,5 +98,15 @@ internal abstract class ClientBase
         }
 
         return httpRequestMessage;
+    }
+
+    protected void Log(LogLevel logLevel, string? message, params object[] args)
+    {
+        if (this._logger.IsEnabled(logLevel))
+        {
+#pragma warning disable CA2254 // Template should be a constant string.
+            this._logger.Log(logLevel, message, args);
+#pragma warning restore CA2254
+        }
     }
 }

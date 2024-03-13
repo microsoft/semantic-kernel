@@ -124,7 +124,7 @@ public sealed class Example99_GeminiEmbeddingGeneration : BaseTest
 
         var generatedEmbeddings = await embeddingGenerator.GenerateEmbeddingAsync("My name is Andrea");
         this.WriteLine($"Generated Embeddings count: {generatedEmbeddings.Length}, " +
-                       $"First five: {string.Join(", ", generatedEmbeddings[..5].ToArray())}...");
+                       $"First five: {string.Join(", ", generatedEmbeddings[..5])}...");
         this.WriteLine();
     }
 
@@ -250,9 +250,7 @@ Question: {{$input}}
 Answer:
 ";
 
-        var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new GeminiPromptExecutionSettings() { MaxTokens = 1000 });
-
-        result = await kernel.InvokeAsync(aboutMeOracle, new()
+        result = await kernel.InvokePromptAsync(RecallFunctionDefinition, new(new GeminiPromptExecutionSettings { MaxTokens = 1000 })
         {
             [TextMemoryPlugin.InputParam] = "Where are my family from?",
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,

@@ -51,12 +51,10 @@ public sealed class Example94_GeminiGetModelResult : BaseTest
         //         location: TestConfiguration.VertexAI.Location,
         //         projectId: TestConfiguration.VertexAI.ProjectId)
 
-        // Create function
-        const string FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
-        KernelFunction myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
+        string prompt = "Hi, give me 5 book suggestions about: travel";
 
         // Invoke function through kernel
-        FunctionResult result = await kernel.InvokeAsync(myFunction, new() { ["input"] = "travel" });
+        FunctionResult result = await kernel.InvokePromptAsync(prompt);
 
         // Display results
         var geminiMetadata = result.Metadata as GeminiMetadata;

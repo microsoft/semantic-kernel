@@ -86,24 +86,7 @@ public sealed class Example95_GeminiTextGeneration : BaseTest
     private async Task RunSampleAsync(Kernel kernel)
     {
         await SimplePromptAsync(kernel);
-        await FunctionFromPromptAsync(kernel);
         await StreamingTextAsync(kernel);
-        await StreamingFunctionFromPromptAsync(kernel);
-    }
-
-    private async Task StreamingFunctionFromPromptAsync(Kernel kernel)
-    {
-        this.WriteLine("======== Streaming Function From Prompt ========");
-
-        string prompt = "Describe what is GIT and why it is useful. Use simple words. Description should be long.";
-        var function = kernel.CreateFunctionFromPrompt(prompt);
-        await foreach (string text in kernel.InvokeStreamingAsync<string>(function,
-                           new KernelArguments(new GeminiPromptExecutionSettings() { MaxTokens = 600 })))
-        {
-            this.Write(text);
-        }
-
-        this.WriteLine("");
     }
 
     private async Task StreamingTextAsync(Kernel kernel)
@@ -122,30 +105,6 @@ Write the story in Spanish.";
         }
 
         this.WriteLine("");
-    }
-
-    private async Task FunctionFromPromptAsync(Kernel kernel)
-    {
-        this.WriteLine("======== Function From Prompt ========");
-
-        // Function defined using few-shot design pattern
-        string promptTemplate = @"
-Generate a creative reason or excuse for the given event.
-Be creative and be funny. Let your imagination run wild.
-
-Event: I am running late.
-Excuse: I was being held ransom by giraffe gangsters.
-
-Event: I haven't been to the gym for a year
-Excuse: I've been too busy training my pet dragon.
-
-Event: {{$input}}
-";
-
-        var function = kernel.CreateFunctionFromPrompt(promptTemplate);
-        string? response = await kernel.InvokeAsync<string>(function,
-            new KernelArguments() { ["Input"] = "sorry I forgot your birthday" });
-        this.WriteLine(response);
     }
 
     private async Task SimplePromptAsync(Kernel kernel)
