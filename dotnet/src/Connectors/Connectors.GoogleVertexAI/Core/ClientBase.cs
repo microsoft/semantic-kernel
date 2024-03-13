@@ -72,13 +72,7 @@ internal abstract class ClientBase
     {
         try
         {
-            T? deserializedResponse = JsonSerializer.Deserialize<T>(body);
-            if (deserializedResponse is null)
-            {
-                throw new JsonException("Response is null");
-            }
-
-            return deserializedResponse;
+            return JsonSerializer.Deserialize<T>(body) ?? throw new JsonException("Response is null");
         }
         catch (JsonException exc)
         {
