@@ -219,7 +219,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override KernelFunction CloneForPlugin(string pluginName)
+    public override KernelFunction CreateForPlugin(string pluginName)
     {
         return new KernelFunctionFromPrompt(
             this._promptTemplate,

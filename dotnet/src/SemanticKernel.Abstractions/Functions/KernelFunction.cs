@@ -380,6 +380,12 @@ public abstract class KernelFunction
     }
 
     /// <summary>
+    /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance.
+    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
+    /// </summary>
+    public abstract KernelFunction CreateForPlugin(string pluginName);
+
+    /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -401,12 +407,6 @@ public abstract class KernelFunction
     protected abstract IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance.
-    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
-    /// </summary>
-    public abstract KernelFunction CloneForPlugin(string pluginName);
 
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
     private static void HandleException(

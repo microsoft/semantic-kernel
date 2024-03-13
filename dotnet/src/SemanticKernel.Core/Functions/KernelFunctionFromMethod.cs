@@ -126,7 +126,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override KernelFunction CloneForPlugin(string pluginName)
+    public override KernelFunction CreateForPlugin(string pluginName)
     {
         return new KernelFunctionFromMethod(
             this._function,
