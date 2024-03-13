@@ -24,7 +24,11 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.finish_reason import FinishReason
-from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceInvalidResponseError
+from semantic_kernel.exceptions import (
+    FunctionCallInvalidArgumentsException,
+    ServiceInvalidExecutionSettingsError,
+    ServiceInvalidResponseError,
+)
 from semantic_kernel.utils.chat import store_results
 
 if TYPE_CHECKING:
@@ -353,9 +357,16 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         for tool_call in result.tool_calls:
             if tool_call.function is None:
                 continue
+            try:
+                func_args = tool_call.function.parse_arguments()
+                args_cloned.update(func_args)
+            except FunctionCallInvalidArgumentsException as exc:
+                logger.exception(f"Received invalid arguments for function {tool_call.function.name}: {exc}")
+                raise ServiceInvalidResponseError(
+                    f"Received invalid arguments for function {tool_call.function.name}"
+                ) from exc
             logger.info(f"Calling {tool_call.function.name} function with args: {tool_call.function.arguments}")
             try:
-                args_cloned.update(tool_call.function.parse_arguments())
                 func_result = await kernel.invoke(**tool_call.function.split_name_dict(), arguments=args_cloned)
             except Exception as exc:
                 logger.exception(f"Error occurred while invoking function {tool_call.function.name}")

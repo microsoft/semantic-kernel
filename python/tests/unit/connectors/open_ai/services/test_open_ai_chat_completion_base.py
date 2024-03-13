@@ -13,6 +13,10 @@ from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_messa
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.exceptions import (
+    FunctionCallInvalidArgumentsException,
+    ServiceInvalidResponseError,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
@@ -135,6 +139,44 @@ async def test_process_tool_calls():
     )
 
     chat_history_mock.add_message.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_process_tool_calls_with_malformed_arguments():
+    tool_call_mock = MagicMock()
+    tool_call_mock.function.parse_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
+
+    tool_call_mock.function.name = "test_function"
+    tool_call_mock.function.arguments = "Not a valid JSON string"
+    tool_call_mock.id = "test_id"
+
+    result_mock = MagicMock(spec=OpenAIChatMessageContent)
+    result_mock.tool_calls = [tool_call_mock]
+
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    kernel_mock = MagicMock(spec=Kernel)
+
+    arguments = KernelArguments()
+
+    chat_completion_base = OpenAIChatCompletionBase(
+        ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
+    )
+
+    with patch(
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.logger", autospec=True
+    ) as logger_mock, pytest.raises(ServiceInvalidResponseError) as exc_info:
+        await chat_completion_base._process_tool_calls(result_mock, kernel_mock, chat_history_mock, arguments)
+
+    exception_call_args = logger_mock.exception.call_args[0]
+    assert any(
+        "Received invalid arguments for function" in arg for arg in exception_call_args
+    ), "Expected log message not found"
+
+    assert "Received invalid arguments for function" in str(exc_info.value)
+
+    kernel_mock.invoke.assert_not_called()
+    chat_history_mock.add_message.assert_not_called()
 
 
 @pytest.mark.parametrize(
