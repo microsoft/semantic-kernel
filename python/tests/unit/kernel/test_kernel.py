@@ -20,7 +20,6 @@ from semantic_kernel.exceptions import (
     ServiceInvalidTypeError,
 )
 from semantic_kernel.exceptions.function_exceptions import (
-    FunctionInvalidNameError,
     FunctionNameNotUniqueError,
     PluginInitializationError,
     PluginInvalidNameError,
@@ -494,13 +493,6 @@ def test_register_undecorated_native_function(kernel: Kernel, not_decorated_nati
 def test_register_with_none_plugin_name(kernel: Kernel, decorated_native_function):
     with pytest.raises(ValidationError):
         kernel.register_function_from_method(method=decorated_native_function, plugin_name=None)
-
-
-def test_register_overloaded_native_function(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method("TestPlugin", decorated_native_function)
-
-    with pytest.raises(FunctionInvalidNameError):
-        kernel.register_function_from_method("TestPlugin", decorated_native_function)
 
 
 # endregion

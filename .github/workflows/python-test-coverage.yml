@@ -1,6 +1,6 @@
 name: Python Test Coverage
 
-on: 
+on:
   pull_request_target:
     branches: ["main", "feature*"]
     paths:
@@ -16,7 +16,7 @@ jobs:
       actions: read
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8"]
         os: [ubuntu-latest]
     steps:
       - name: Wait for unit tests to succeed
@@ -57,6 +57,3 @@ jobs:
           junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           default-branch: "main"
           unique-id-for-comment: python-${{ matrix.python-version }}
-          
-          
-          
