@@ -13,14 +13,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from numpy import ndarray
-from usearch.index import (
-    BatchMatches,
-    CompiledMetric,
-    Index,
-    Matches,
-    MetricKind,
-    ScalarKind,
-)
+from usearch.index import BatchMatches, CompiledMetric, Index, Matches, MetricKind, ScalarKind
 
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
@@ -127,7 +120,6 @@ class USearchMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         persist_directory: Optional[os.PathLike] = None,
-        **kwargs,
     ) -> None:
         """
         Create a USearchMemoryStore instance.
@@ -144,8 +136,6 @@ class USearchMemoryStore(MemoryStoreBase):
             persist_directory (Optional[os.PathLike], default=None): Directory for loading and saving collections.
             If None, collections are not loaded nor saved.
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         self._persist_directory = Path(persist_directory) if persist_directory is not None else None
 
         self._collections: Dict[str, _USearchCollection] = {}
@@ -213,13 +203,13 @@ class USearchMemoryStore(MemoryStoreBase):
         )
 
         embeddings_index = Index(
-            path=embeddings_index_path,
             ndim=ndim,
             metric=metric,
             dtype=dtype,
             connectivity=connectivity,
             expansion_add=expansion_add,
             expansion_search=expansion_search,
+            path=embeddings_index_path,
             view=view,
         )
 
@@ -357,7 +347,6 @@ class USearchMemoryStore(MemoryStoreBase):
             copy=copy,
             threads=threads,
             log=log,
-            batch_size=batch_size,
         )
 
         # Update embeddings_table
@@ -406,7 +395,7 @@ class USearchMemoryStore(MemoryStoreBase):
         labels = [ucollection.embeddings_id_to_label[key] for key in keys if key in ucollection.embeddings_id_to_label]
         if not labels:
             return []
-        vectors = ucollection.embeddings_index.get_vectors(labels, dtype) if with_embeddings else None
+        vectors = ucollection.embeddings_index.get(labels, dtype) if with_embeddings else None
 
         return pyarrow_table_to_memoryrecords(ucollection.embeddings_data_table.take(pa.array(labels)), vectors)
 
@@ -511,11 +500,10 @@ class USearchMemoryStore(MemoryStoreBase):
 
         result: Union[Matches, BatchMatches] = ucollection.embeddings_index.search(
             vectors=embedding,
-            k=limit,
+            count=limit,
             threads=threads,
             exact=exact,
             log=log,
-            batch_size=batch_size,
         )
 
         assert isinstance(result, Matches)
@@ -525,7 +513,7 @@ class USearchMemoryStore(MemoryStoreBase):
 
         filtered_vectors: Optional[np.ndarray] = None
         if with_embeddings:
-            filtered_vectors = ucollection.embeddings_index.get_vectors(filtered_labels)
+            filtered_vectors = ucollection.embeddings_index.get(filtered_labels)
 
         return [
             (mem_rec, relevance_score[index].item())
