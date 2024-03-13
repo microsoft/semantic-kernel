@@ -48,20 +48,40 @@ public class OpenAIFunctionToolCall {
         }
     }
 
+    /**
+     * Gets the ID of the tool call.
+     *
+     * @return The ID of the tool call.
+     */
     @Nullable
     public String getId() {
         return id;
     }
 
+    /**
+     * Gets the name of the plugin with which this function is associated, if any.
+     *
+     * @return The name of the plugin with which this function is associated, if any.
+     */
     @Nullable
     public String getPluginName() {
         return pluginName;
     }
 
+    /**
+     * Gets the name of the function.
+     *
+     * @return The name of the function.
+     */
     public String getFunctionName() {
         return functionName;
     }
 
+    /**
+     * Gets a name/value collection of the arguments to the function, if any.
+     *
+     * @return A name/value collection of the arguments to the function, if any.
+     */
     @Nullable
     public KernelFunctionArguments getArguments() {
         if (arguments == null) {
