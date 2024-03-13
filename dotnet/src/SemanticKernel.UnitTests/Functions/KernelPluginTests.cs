@@ -136,4 +136,24 @@ public class KernelPluginTests
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((string)null!));
         Assert.Throws<ArgumentNullException>(() => plugin.Contains((KernelFunction)null!));
     }
+
+    [Fact]
+    public void ItCanAddSameFunctionToTwoPlugins()
+    {
+        var kernel = new Kernel();
+        KernelFunction func1 = KernelFunctionFactory.CreateFromMethod(() => "Return1", "Function1");
+
+        KernelPlugin plugin1 = KernelPluginFactory.CreateFromFunctions("Plugin1", "Description", new[] { func1 });
+        Assert.Equal(1, plugin1.FunctionCount);
+        KernelPlugin plugin2 = KernelPluginFactory.CreateFromFunctions("Plugin1", "Description", new[] { func1 });
+        Assert.Equal(1, plugin2.FunctionCount);
+
+        KernelFunction? pluginFunc1;
+        Assert.True(plugin1.TryGetFunction(func1.Name, out pluginFunc1));
+        Assert.Equal(plugin1.Name, pluginFunc1.PluginName);
+
+        KernelFunction? pluginFunc2;
+        Assert.True(plugin2.TryGetFunction(func1.Name, out pluginFunc2));
+        Assert.Equal(plugin2.Name, pluginFunc2.PluginName);
+    }
 }

@@ -221,18 +221,15 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <inheritdoc/>
     public override KernelFunction CloneForPlugin(string pluginName)
     {
-        var promptConfig = new PromptTemplateConfig
-        {
-            Name = this.Name,
-            Description = this.Description,
-            InputVariables = this._inputVariables,
-            ExecutionSettings = this.ExecutionSettings.ToDictionary(kv => kv.Key, kv => kv.Value),
-        };
-
         return new KernelFunctionFromPrompt(
             this._promptTemplate,
-            promptConfig,
+            this.Name,
             pluginName,
+            this.Description,
+            this.Metadata.Parameters,
+            this.Metadata.ReturnParameter,
+            this.ExecutionSettings.ToDictionary(kv => kv.Key, kv => kv.Value),
+            this._inputVariables,
             this._logger);
     }
 
@@ -245,26 +242,39 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
         ILogger logger) : this(
-            template, promptConfig, null, logger)
+            template,
+            promptConfig.Name ?? CreateRandomFunctionName(),
+            null,
+            promptConfig.Description ?? string.Empty,
+            promptConfig.GetKernelParametersMetadata(),
+            promptConfig.GetKernelReturnParameterMetadata(),
+            promptConfig.ExecutionSettings,
+            promptConfig.InputVariables,
+            logger)
     {
     }
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
-        PromptTemplateConfig promptConfig,
+        string functionName,
         string? pluginName,
+        string description,
+        IReadOnlyList<KernelParameterMetadata> parameters,
+        KernelReturnParameterMetadata? returnParameter,
+        Dictionary<string, PromptExecutionSettings> executionSettings,
+        List<InputVariable> inputVariables,
         ILogger logger) : base(
-            promptConfig.Name ?? CreateRandomFunctionName(),
+            functionName ?? CreateRandomFunctionName(),
             pluginName,
-            promptConfig.Description ?? string.Empty,
-            promptConfig.GetKernelParametersMetadata(),
-            promptConfig.GetKernelReturnParameterMetadata(),
-            promptConfig.ExecutionSettings)
+            description ?? string.Empty,
+            parameters,
+            returnParameter,
+            executionSettings)
     {
         this._logger = logger;
 
         this._promptTemplate = template;
-        this._inputVariables = promptConfig.InputVariables.Select(iv => new InputVariable(iv)).ToList();
+        this._inputVariables = inputVariables.Select(iv => new InputVariable(iv)).ToList();
     }
 
     #region private
