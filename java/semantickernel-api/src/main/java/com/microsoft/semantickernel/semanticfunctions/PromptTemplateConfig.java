@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 /**
@@ -208,11 +206,7 @@ public class PromptTemplateConfig {
         }
         return inputVariables
             .stream()
-            .map(inputVariable -> new KernelParameterMetadata<>(
-                inputVariable.getName(),
-                inputVariable.getDescription(),
-                inputVariable.getTypeClass(),
-                inputVariable.getDefaultValue(), inputVariable.isRequired()))
+            .map(KernelParameterMetadata::build)
             .collect(Collectors.toList());
     }
 

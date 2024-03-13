@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
@@ -16,7 +10,12 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import javax.annotation.Nullable;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("DoubleBraceInitialization")
 public class PromptTemplateFactoryTest {
@@ -41,7 +40,9 @@ public class PromptTemplateFactoryTest {
 
         Method method = PromptTemplateFactoryTest.class.getMethod("function", String.class);
         List<KernelParameterMetadata<?>> parameters = Arrays.asList(
-            new KernelParameterMetadata<>("input", "the input", String.class, "borked", true));
+            KernelParameterMetadata.build(
+                new InputVariable("input", String.class.getName(), "the input", "borked",
+                    true)));
         KernelReturnParameterMetadata<String> returnParameter = new KernelReturnParameterMetadata<>(
             "the output", String.class);
         KernelFunction<?> function = KernelFunctionFromMethod.create(

@@ -23,8 +23,8 @@ public class KernelFunctionFromMethodTest {
         String pluginName = "test-plugin";
         String functionName = "concat";
         String description = "concatenate two strings";
-        List<KernelParameterMetadata<?>> parameters = Arrays.asList(new KernelParameterMetadata<>(
-            "string1", "first string to concatenate", String.class, null, true));
+        List<KernelParameterMetadata<?>> parameters = Arrays.asList(KernelParameterMetadata.build(
+            "string1", String.class, "first string to concatenate", null, true));
         KernelReturnParameterMetadata<String> returnParameter = new KernelReturnParameterMetadata<>(
             "concatenated strings", String.class);
         KernelFunction<?> result = KernelFunctionFromMethod.create(method, "test", pluginName,

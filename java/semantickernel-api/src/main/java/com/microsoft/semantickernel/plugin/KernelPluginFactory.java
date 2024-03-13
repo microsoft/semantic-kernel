@@ -204,10 +204,10 @@ public class KernelPluginFactory {
                 KernelFunctionParameter annotation = parameter.getAnnotation(
                     KernelFunctionParameter.class);
 
-                return new KernelParameterMetadata<>(
+                return KernelParameterMetadata.build(
                     annotation.name(),
-                    annotation.description(),
                     annotation.type(),
+                    annotation.description(),
                     annotation.defaultValue(),
                     annotation.required());
             }).collect(Collectors.toList());

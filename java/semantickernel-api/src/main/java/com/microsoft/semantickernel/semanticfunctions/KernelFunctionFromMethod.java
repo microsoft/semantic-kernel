@@ -553,10 +553,10 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             type = annotation.type();
         }
 
-        return new KernelParameterMetadata<>(
+        return KernelParameterMetadata.build(
             name,
-            description,
             type,
+            description,
             defaultValue,
             isRequired);
     }

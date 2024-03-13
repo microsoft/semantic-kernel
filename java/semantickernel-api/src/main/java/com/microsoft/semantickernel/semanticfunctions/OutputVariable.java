@@ -4,9 +4,7 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.exceptions.SKException;
-
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 /**
@@ -21,6 +19,7 @@ public class OutputVariable {
 
     /**
      * Constructor.
+     *
      * @param type        The type of the output variable.
      * @param description The description of the output variable.
      */
@@ -52,7 +51,16 @@ public class OutputVariable {
      */
     public Class<?> getType() {
         try {
-            return this.getClass().getClassLoader().loadClass(type);
+            Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(type);
+            if (clazz == null) {
+                // Seems that in tests specifically we need to use the class loader of the class itself
+                clazz = this.getClass().getClassLoader().loadClass(type);
+            }
+            if (clazz == null) {
+                throw new SKException("Requested output type could not be found: " + type
+                    + ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
+            }
+            return clazz;
         } catch (ClassNotFoundException e) {
             throw new SKException("Requested output type could not be found: " + type
                 + ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
@@ -69,12 +77,14 @@ public class OutputVariable {
         if (this == obj) {
             return true;
         }
-        if (!getClass().isInstance(obj))
+        if (!getClass().isInstance(obj)) {
             return false;
+        }
 
         OutputVariable that = (OutputVariable) obj;
-        if (!Objects.equals(type, that.type))
+        if (!Objects.equals(type, that.type)) {
             return false;
+        }
         return Objects.equals(description, that.description);
     }
 }

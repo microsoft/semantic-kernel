@@ -4,9 +4,7 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.exceptions.SKException;
-
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 /**
@@ -14,26 +12,13 @@ import javax.annotation.Nullable;
  */
 public class InputVariable {
 
-    private String name;
-    private String type;
+    private final String name;
     @Nullable
-    private String description;
+    private final String description;
     @Nullable
-    private String defaultValue;
-    private boolean isRequired;
-
-    /**
-     * Creates a new instance of {@link InputVariable}.
-     *
-     * @param name the name of the input variable
-     */
-    public InputVariable(String name) {
-        this.name = name;
-        this.type = String.class.getName();
-        this.description = null;
-        this.defaultValue = null;
-        this.isRequired = true;
-    }
+    private final String defaultValue;
+    private final boolean isRequired;
+    private final String type;
 
     /**
      * Creates a new instance of {@link InputVariable}.
@@ -52,14 +37,26 @@ public class InputVariable {
         @JsonProperty("default") @Nullable String defaultValue,
         @JsonProperty("is_required") boolean isRequired) {
         this.name = name;
-
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.isRequired = isRequired;
         if (type == null) {
             type = "java.lang.String";
         }
         this.type = type;
-        this.description = description;
-        this.defaultValue = defaultValue;
-        this.isRequired = isRequired;
+    }
+
+    /**
+     * Creates a new instance of {@link InputVariable}.
+     *
+     * @param name the name of the input variable
+     */
+    public InputVariable(String name) {
+        this.name = name;
+        this.type = String.class.getName();
+        this.description = null;
+        this.defaultValue = null;
+        this.isRequired = true;
     }
 
     /**
@@ -69,15 +66,6 @@ public class InputVariable {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * Gets the type of the input variable.
-     *
-     * @return the type of the input variable
-     */
-    public String getType() {
-        return type;
     }
 
     /**
@@ -110,13 +98,33 @@ public class InputVariable {
     }
 
     /**
+     * Gets the type of the input variable.
+     *
+     * @return the type of the input variable
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
      * Gets the class of the type of the input variable.
      *
      * @return the class of the type of the input variable
      */
     public Class<?> getTypeClass() {
         try {
-            return Thread.currentThread().getContextClassLoader().loadClass(type);
+            Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(type);
+            if (clazz == null) {
+                // Seems that in tests specifically we need to use the class loader of the class itself
+                clazz = this.getClass().getClassLoader().loadClass(type);
+            }
+            if (clazz == null) {
+                throw new SKException(
+                    "Could not load class for type: " + type + " for input variable " + name +
+                        ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
+            }
+            return clazz;
+
         } catch (ClassNotFoundException e) {
             throw new SKException(
                 "Could not load class for type: " + type + " for input variable " + name +
@@ -140,14 +148,18 @@ public class InputVariable {
         }
 
         InputVariable other = (InputVariable) obj;
-        if (!Objects.equals(name, other.name))
+        if (!Objects.equals(name, other.name)) {
             return false;
-        if (!Objects.equals(type, other.type))
+        }
+        if (!Objects.equals(type, other.type)) {
             return false;
-        if (!Objects.equals(description, other.description))
+        }
+        if (!Objects.equals(description, other.description)) {
             return false;
-        if (!Objects.equals(defaultValue, other.defaultValue))
+        }
+        if (!Objects.equals(defaultValue, other.defaultValue)) {
             return false;
+        }
         return isRequired == other.isRequired;
     }
 

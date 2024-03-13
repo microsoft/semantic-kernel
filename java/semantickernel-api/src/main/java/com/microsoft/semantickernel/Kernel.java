@@ -41,6 +41,7 @@ public class Kernel {
 
     // Only present so we can create a builder in copy method
     private final AIServiceCollection services;
+
     @Nullable
     private final Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
 
@@ -55,6 +56,7 @@ public class Kernel {
      * @param globalKernelHooks       The global hooks to be used throughout the kernel. If
      *                                {@code null}, an empty collection will be used.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public Kernel(
         AIServiceCollection services,
         @Nullable Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
