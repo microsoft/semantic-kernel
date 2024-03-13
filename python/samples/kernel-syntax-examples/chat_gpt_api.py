@@ -23,13 +23,14 @@ flowery prose.
 
 kernel = sk.Kernel()
 
+service_id = "chat-gpt"
 api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_service(
     sk_oai.OpenAIChatCompletion(
-        service_id="chat-gpt", ai_model_id="gpt-3.5-turbo", api_key=api_key)
+        service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key)
 )
-service_id = "chat-gpt"
-settings = kernel.get_prompt_execution_settings_from_service_id("chat-gpt", ChatCompletionClientBase)
+
+settings = kernel.get_prompt_execution_settings_from_service_id(service_id, ChatCompletionClientBase)
 settings.max_tokens = 2000
 settings.temperature = 0.7
 settings.top_p = 0.8
