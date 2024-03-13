@@ -592,16 +592,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         s_totalTokensCounter.Add(metadata.TotalTokenCount);
     }
 
-    private void Log(LogLevel logLevel, string? message, params object[] args)
-    {
-        if (this.Logger.IsEnabled(logLevel))
-        {
-#pragma warning disable CA2254 // Template should be a constant string.
-            this.Logger.Log(logLevel, message, args);
-#pragma warning restore CA2254
-        }
-    }
-
     private sealed class ChatCompletionState
     {
         internal ChatHistory ChatHistory { get; set; } = null!;
