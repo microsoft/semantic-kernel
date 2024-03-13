@@ -1,14 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-
-import org.junit.jupiter.api.Test;
-
 import static java.util.stream.Collectors.joining;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -22,6 +15,10 @@ import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunction
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import org.junit.jupiter.api.Test;
 
 /**
  *

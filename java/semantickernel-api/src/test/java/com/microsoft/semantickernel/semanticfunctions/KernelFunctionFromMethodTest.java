@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import reactor.core.publisher.Mono;
 
 public class KernelFunctionFromMethodTest {
@@ -23,9 +21,9 @@ public class KernelFunctionFromMethodTest {
         String pluginName = "test-plugin";
         String functionName = "concat";
         String description = "concatenate two strings";
-        List<KernelParameterMetadata<?>> parameters = Arrays.asList(KernelParameterMetadata.build(
+        List<KernelInputVariable> parameters = Collections.singletonList(KernelInputVariable.build(
             "string1", String.class, "first string to concatenate", null, true));
-        KernelReturnParameterMetadata<String> returnParameter = new KernelReturnParameterMetadata<>(
+        KernelOutputVariable<String> returnParameter = new KernelOutputVariable<>(
             "concatenated strings", String.class);
         KernelFunction<?> result = KernelFunctionFromMethod.create(method, "test", pluginName,
             functionName, description, parameters, returnParameter);
@@ -33,7 +31,7 @@ public class KernelFunctionFromMethodTest {
         assertEquals(pluginName, result.getPluginName());
         assertEquals(description, result.getDescription());
         assertEquals(parameters, result.getMetadata().getParameters());
-        assertEquals(returnParameter, result.getMetadata().getReturnParameter());
+        assertEquals(returnParameter, result.getMetadata().getOutputVariableType());
     }
 
     /**
@@ -44,11 +42,12 @@ public class KernelFunctionFromMethodTest {
         String pluginName = null;
         String functionName = "concat";
         String description = "concatenate two strings";
-        List<InputVariable> parameters = Arrays.asList(new InputVariable("string1",
-            "java.lang.String", "first string to concatenate", null, true));
-        OutputVariable returnParameter = new OutputVariable("java.lang.String",
+        List<KernelInputVariable> parameters = Collections
+            .singletonList(new KernelInputVariable("string1",
+                "java.lang.String", "first string to concatenate", null, true));
+        KernelOutputVariable<?> returnParameter = new KernelOutputVariable<>("java.lang.String",
             "concatenated strings");
-        KernelFunction<String> result = new KernelFunctionFromPrompt.Builder<String>()
+        KernelFunction<String> result = new KernelFunctionFromPrompt.Builder()
             .withName(functionName)
             .withDescription(description)
             .withInputParameters(parameters)
@@ -67,22 +66,16 @@ public class KernelFunctionFromMethodTest {
                 result.getMetadata().getParameters().get(i).getDescription());
             assertEquals(parameters.get(i).getName(),
                 result.getMetadata().getParameters().get(i).getName());
-            // TODO: InputVariable.getType() returns a String, but KernelParameterMetadata.getType() returns a Class<?>
-            //      This feels like it's broken, especially since OuputVariable.getType() returns a Class<?>
-            //      Until this is fixed, we can compare the class names
-            // assertEquals(parameters.get(i).getType(), result.getMetadata().getParameters().get(i).getType());
             assertEquals(parameters.get(i).getType(),
-                result.getMetadata().getParameters().get(i).getType().getName());
+                result.getMetadata().getParameters().get(i).getType());
             assertEquals(parameters.get(i).isRequired(),
                 result.getMetadata().getParameters().get(i).isRequired());
         }
-        // TODO: This assert fails because getReturnParameter is a KernelReturnParameterMetadata, not an OutputVariable
-        //       This feels like it's broken. Until this is fixed, we can compare the types
-        // assertEquals(returnParameter, result.getMetadata().getReturnParameter());
+        assertEquals(returnParameter, result.getMetadata().getOutputVariableType());
         assertEquals(returnParameter.getType(),
-            result.getMetadata().getReturnParameter().getParameterType());
+            result.getMetadata().getOutputVariableType().getType());
         assertEquals(returnParameter.getDescription(),
-            result.getMetadata().getReturnParameter().getDescription());
+            result.getMetadata().getOutputVariableType().getDescription());
     }
 
     /**

@@ -11,8 +11,8 @@ import com.microsoft.semantickernel.implementation.templateengine.tokenizer.bloc
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.TextRendering;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.VarBlock;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelInputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
@@ -110,7 +110,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
             promptTemplateConfig
                 .getInputVariables()
                 .stream()
-                .map(InputVariable::getName)
+                .map(KernelInputVariable::getName)
                 .collect(Collectors.toList()));
 
         PromptTemplateConfig.Builder promptTemplateConfigBuilder = promptTemplateConfig.copy();
@@ -126,7 +126,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
             if (!Verify.isNullOrEmpty(name) && !seen.contains(name)) {
                 seen.add(name);
-                promptTemplateConfigBuilder.addInputVariable(new InputVariable(name));
+                promptTemplateConfigBuilder.addInputVariable(new KernelInputVariable(name));
             }
         });
 

@@ -19,14 +19,13 @@ import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
 import com.microsoft.semantickernel.hooks.KernelHooks;
-import com.microsoft.semantickernel.hooks.PostChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
+import com.microsoft.semantickernel.semanticfunctions.KernelOutputVariable;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +94,7 @@ public class Example57_KernelHooks {
                 .withTemperature(0.4)
                 .withTopP(1)
                 .build())
-            .withOutputVariable(new OutputVariable("java.lang.String", "result"))
+            .withOutputVariable(new KernelOutputVariable<>("result", String.class))
             .build();
 
         FunctionInvokingHook preHook = event -> {

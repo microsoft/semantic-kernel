@@ -7,11 +7,11 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -39,11 +39,10 @@ public class PromptTemplateFactoryTest {
     private void executeTest(String templateFormat) throws Exception {
 
         Method method = PromptTemplateFactoryTest.class.getMethod("function", String.class);
-        List<KernelParameterMetadata<?>> parameters = Arrays.asList(
-            KernelParameterMetadata.build(
-                new InputVariable("input", String.class.getName(), "the input", "borked",
-                    true)));
-        KernelReturnParameterMetadata<String> returnParameter = new KernelReturnParameterMetadata<>(
+        List<KernelInputVariable> parameters = Collections.singletonList(
+            new KernelInputVariable("input", String.class.getName(), "the input", "borked",
+                true));
+        KernelOutputVariable<String> returnParameter = new KernelOutputVariable<>(
             "the output", String.class);
         KernelFunction<?> function = KernelFunctionFromMethod.create(
             method,
@@ -70,10 +69,12 @@ public class PromptTemplateFactoryTest {
         String template = "semantic-kernel".equals(templateFormat)
             ? "A template for testing: {{plugin.function $input}}"
             : "A template for testing: {{plugin-function input}}";
-        List<InputVariable> inputVariables = Arrays.asList(
-            new InputVariable("input", "java.lang.String", "a description", "input from config",
+        List<KernelInputVariable> kernelInputVariables = Arrays.asList(
+            new KernelInputVariable("input", "java.lang.String", "a description",
+                "input from config",
                 true));
-        OutputVariable outputVariable = new OutputVariable("java.lang.String", "a description");
+        KernelOutputVariable kernelOutputVariable = new KernelOutputVariable("java.lang.String",
+            "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {
             {
                 put("default", PromptExecutionSettings.builder().build());
@@ -85,8 +86,8 @@ public class PromptTemplateFactoryTest {
             .withTemplate(template)
             .withTemplateFormat(templateFormat)
             .withDescription(description)
-            .withInputVariables(inputVariables)
-            .withOutputVariable(outputVariable)
+            .withInputVariables(kernelInputVariables)
+            .withOutputVariable(kernelOutputVariable)
             .withExecutionSettings(executionSettings)
             .build();
 

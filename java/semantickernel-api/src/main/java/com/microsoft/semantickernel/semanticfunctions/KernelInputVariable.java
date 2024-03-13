@@ -3,14 +3,14 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
  * Metadata for an input variable of a {@link KernelFunction}.
  */
-public class InputVariable {
+public class KernelInputVariable {
 
     private final String name;
     @Nullable
@@ -21,7 +21,7 @@ public class InputVariable {
     private final String type;
 
     /**
-     * Creates a new instance of {@link InputVariable}.
+     * Creates a new instance of {@link KernelInputVariable}.
      *
      * @param name         the name of the input variable
      * @param type         the type of the input variable
@@ -30,7 +30,7 @@ public class InputVariable {
      * @param isRequired   whether the input variable is required
      */
     @JsonCreator
-    public InputVariable(
+    public KernelInputVariable(
         @JsonProperty("name") String name,
         @JsonProperty("type") String type,
         @JsonProperty("description") @Nullable String description,
@@ -47,16 +47,35 @@ public class InputVariable {
     }
 
     /**
-     * Creates a new instance of {@link InputVariable}.
+     * Creates a new instance of {@link KernelInputVariable}.
      *
      * @param name the name of the input variable
      */
-    public InputVariable(String name) {
+    public KernelInputVariable(String name) {
         this.name = name;
         this.type = String.class.getName();
         this.description = null;
         this.defaultValue = null;
         this.isRequired = true;
+    }
+
+    /**
+     * Creates a new instance of {@link KernelInputVariable}.
+     *
+     * @param name         the name of the input variable
+     * @param type         the type of the input variable
+     * @param description  the description of the input variable
+     * @param defaultValue the default value of the input variable
+     * @param required     whether the input variable is required
+     * @return a new instance of {@link KernelInputVariable}
+     */
+    public static KernelInputVariable build(
+        String name,
+        Class<?> type,
+        @Nullable String description,
+        @Nullable String defaultValue,
+        boolean required) {
+        return new KernelInputVariable(name, type.getName(), description, defaultValue, required);
     }
 
     /**
@@ -112,24 +131,7 @@ public class InputVariable {
      * @return the class of the type of the input variable
      */
     public Class<?> getTypeClass() {
-        try {
-            Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(type);
-            if (clazz == null) {
-                // Seems that in tests specifically we need to use the class loader of the class itself
-                clazz = this.getClass().getClassLoader().loadClass(type);
-            }
-            if (clazz == null) {
-                throw new SKException(
-                    "Could not load class for type: " + type + " for input variable " + name +
-                        ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
-            }
-            return clazz;
-
-        } catch (ClassNotFoundException e) {
-            throw new SKException(
-                "Could not load class for type: " + type + " for input variable " + name +
-                    ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
-        }
+        return KernelPluginFactory.getTypeForName(type);
     }
 
     @Override
@@ -147,7 +149,7 @@ public class InputVariable {
             return false;
         }
 
-        InputVariable other = (InputVariable) obj;
+        KernelInputVariable other = (KernelInputVariable) obj;
         if (!Objects.equals(name, other.name)) {
             return false;
         }

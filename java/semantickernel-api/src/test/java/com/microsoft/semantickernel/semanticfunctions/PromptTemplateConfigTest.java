@@ -3,13 +3,11 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
-
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 
 @SuppressWarnings("DoubleBraceInitialization")
 public class PromptTemplateConfigTest {
@@ -19,9 +17,11 @@ public class PromptTemplateConfigTest {
         String name = "a name";
         String description = "a description";
         String template = "A template for testing {{plugin.function input}}";
-        List<InputVariable> inputVariables = Arrays.asList(
-            new InputVariable("input", "java.lang.String", "a description", "default value", true));
-        OutputVariable outputVariable = new OutputVariable("java.lang.String", "a description");
+        List<KernelInputVariable> kernelInputVariables = Arrays.asList(
+            new KernelInputVariable("input", "java.lang.String", "a description", "default value",
+                true));
+        KernelOutputVariable kernelOutputVariable = new KernelOutputVariable("java.lang.String",
+            "a description");
 
         PromptTemplateConfig expected = new PromptTemplateConfig(
             PromptTemplateConfig.CURRENT_SCHEMA,
@@ -29,8 +29,8 @@ public class PromptTemplateConfigTest {
             template,
             "semantic-kernel",
             description,
-            inputVariables,
-            outputVariable,
+            kernelInputVariables,
+            kernelOutputVariable,
             new HashMap<String, PromptExecutionSettings>() {
                 {
                     put("default", PromptExecutionSettings.builder().build());
@@ -41,8 +41,8 @@ public class PromptTemplateConfigTest {
             .withName(name)
             .withDescription(description)
             .withTemplate(template)
-            .withInputVariables(inputVariables)
-            .withOutputVariable(outputVariable)
+            .withInputVariables(kernelInputVariables)
+            .withOutputVariable(kernelOutputVariable)
             .withExecutionSettings(new HashMap<String, PromptExecutionSettings>() {
                 {
                     put("default", PromptExecutionSettings.builder().build());
@@ -59,9 +59,11 @@ public class PromptTemplateConfigTest {
         String description = "a description";
         String template = "A template for testing {{plugin.function input}}";
         String templateFormat = "semantic-kernel";
-        List<InputVariable> inputVariables = Arrays.asList(
-            new InputVariable("input", "java.lang.String", "a description", "default value", true));
-        OutputVariable outputVariable = new OutputVariable("java.lang.String", "a description");
+        List<KernelInputVariable> kernelInputVariables = Arrays.asList(
+            new KernelInputVariable("input", "java.lang.String", "a description", "default value",
+                true));
+        KernelOutputVariable kernelOutputVariable = new KernelOutputVariable("java.lang.String",
+            "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {
             {
                 put("default", PromptExecutionSettings.builder().build());
@@ -73,8 +75,8 @@ public class PromptTemplateConfigTest {
             .withTemplate(template)
             .withTemplateFormat(templateFormat)
             .withDescription(description)
-            .withInputVariables(inputVariables)
-            .withOutputVariable(outputVariable)
+            .withInputVariables(kernelInputVariables)
+            .withOutputVariable(kernelOutputVariable)
             .withExecutionSettings(executionSettings)
             .build();
 
@@ -83,8 +85,8 @@ public class PromptTemplateConfigTest {
         assertEquals(template, config.getTemplate());
         assertEquals(templateFormat, config.getTemplateFormat());
         assertEquals(description, config.getDescription());
-        assertEquals(inputVariables, config.getInputVariables());
-        assertEquals(outputVariable, config.getOutputVariable());
+        assertEquals(kernelInputVariables, config.getInputVariables());
+        assertEquals(kernelOutputVariable, config.getOutputVariable());
         assertEquals(executionSettings, config.getExecutionSettings());
 
     }
@@ -96,9 +98,11 @@ public class PromptTemplateConfigTest {
         String description = "a description";
         String template = "A template for testing {{plugin.function input}}";
         String templateFormat = "semantic-kernel";
-        List<InputVariable> inputVariables = Arrays.asList(
-            new InputVariable("input", "java.lang.String", "a description", "default value", true));
-        OutputVariable outputVariable = new OutputVariable("java.lang.String", "a description");
+        List<KernelInputVariable> kernelInputVariables = Arrays.asList(
+            new KernelInputVariable("input", "java.lang.String", "a description", "default value",
+                true));
+        KernelOutputVariable kernelOutputVariable = new KernelOutputVariable("java.lang.String",
+            "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {
             {
                 put("default", PromptExecutionSettings.builder().build());
@@ -110,8 +114,8 @@ public class PromptTemplateConfigTest {
             .withTemplate(template)
             .withTemplateFormat(templateFormat)
             .withDescription(description)
-            .withInputVariables(inputVariables)
-            .withOutputVariable(outputVariable)
+            .withInputVariables(kernelInputVariables)
+            .withOutputVariable(kernelOutputVariable)
             .withExecutionSettings(executionSettings)
             .build();
 

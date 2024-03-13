@@ -10,7 +10,7 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatC
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
+import com.microsoft.semantickernel.semanticfunctions.KernelOutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 
@@ -62,7 +62,7 @@ public class Example58_ConfigureExecutionSettings {
                         .withMaxTokens(60)
                         .withTemperature(0.7)
                         .build())
-                .withOutputVariable(new OutputVariable("java.lang.String", "result"))
+                .withOutputVariable(new KernelOutputVariable<>("result", String.class))
                 .build())
             .block();
 
@@ -97,7 +97,7 @@ public class Example58_ConfigureExecutionSettings {
             .createFromPrompt(promptConfig)
             .build();
 
-        result = kernel.invokeAsync(func).block();
-        System.out.println(result.getResult());
+        var result2 = kernel.invokeAsync(func).block();
+        System.out.println(result2.getResult());
     }
 }

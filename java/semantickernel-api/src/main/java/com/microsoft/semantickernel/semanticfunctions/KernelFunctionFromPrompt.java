@@ -81,6 +81,17 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         return new Builder<>();
     }
 
+    /**
+     * Creates a new instance of {@link Builder}.
+     *
+     * @param returnType The type of the return value of the function
+     * @param <T>        The type of the return value of the function
+     * @return a new instance of {@link Builder}
+     */
+    public static <T> Builder<T> builder(Class<T> returnType) {
+        return new Builder<>();
+    }
+
     private Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelFunctionArguments argumentsIn,
@@ -105,7 +116,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         ContextVariableType<T> variableType = contextVariableType != null
             ? contextVariableType
             : context.getContextVariableTypes().getVariableTypeForClass(
-                (Class<T>) this.getMetadata().getReturnParameter().getParameterType());
+                (Class<T>) this.getMetadata().getOutputVariableType().getType());
 
         return this.template
             .renderAsync(kernel, arguments, context)
@@ -278,12 +289,12 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable
         private String description;
         @Nullable
-        private List<InputVariable> inputVariables;
+        private List<KernelInputVariable> kernelInputVariables;
         @Nullable
         private String template;
         private String templateFormat = PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
         @Nullable
-        private OutputVariable outputVariable;
+        private KernelOutputVariable<?> kernelOutputVariable;
         @Nullable
         private PromptTemplateFactory promptTemplateFactory;
         @Nullable
@@ -297,11 +308,11 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         @Override
         public FromPromptBuilder<T> withInputParameters(
-            @Nullable List<InputVariable> inputVariables) {
-            if (inputVariables != null) {
-                this.inputVariables = new ArrayList<>(inputVariables);
+            @Nullable List<KernelInputVariable> kernelInputVariables) {
+            if (kernelInputVariables != null) {
+                this.kernelInputVariables = new ArrayList<>(kernelInputVariables);
             } else {
-                this.inputVariables = null;
+                this.kernelInputVariables = null;
             }
             return this;
         }
@@ -364,14 +375,15 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         }
 
         @Override
-        public FromPromptBuilder<T> withOutputVariable(@Nullable OutputVariable outputVariable) {
-            this.outputVariable = outputVariable;
-            return this;
+        public <U> FromPromptBuilder<U> withOutputVariable(
+            @Nullable KernelOutputVariable<U> kernelOutputVariable) {
+            this.kernelOutputVariable = kernelOutputVariable;
+            return (FromPromptBuilder<U>) this;
         }
 
         @Override
         public FromPromptBuilder<T> withOutputVariable(@Nullable String description, String type) {
-            return this.withOutputVariable(new OutputVariable(type, description));
+            return this.withOutputVariable(new KernelOutputVariable(type, description));
         }
 
         @Override
@@ -418,8 +430,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 template,
                 templateFormat,
                 description,
-                inputVariables,
-                outputVariable,
+                kernelInputVariables,
+                kernelOutputVariable,
                 executionSettings);
 
             PromptTemplate temp;
