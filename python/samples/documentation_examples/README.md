@@ -11,7 +11,7 @@ This project contains a collection of examples used in documentation on [learn.m
 The samples can be configured with a `.env` file in the project which holds api keys and other secrets and configurations.
 
 Make sure you have an
-[Open AI API Key](https://openai.com/api/) or
+[Open AI API Key](https://openai.com/product/) or
 [Azure Open AI service key](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
 
 Copy the `.env.example` file to a new file named `.env`. Then, copy those keys into the `.env` file:
@@ -37,6 +37,7 @@ _Note: if running the examples with VSCode, it will look for your .env file at t
 
 To run the console application within Visual Studio Code, just hit `F5`.
 Otherwise the sample can be run via the command line:
+
 ```
 python.exe <absolute_path_to_sk_code>/python/samples/documentation_examples/planner.py
 ```

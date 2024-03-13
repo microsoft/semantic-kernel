@@ -140,7 +140,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     public IList<IFunctionFilter> FunctionFilters =>
         this._functionFilters ??
         Interlocked.CompareExchange(ref this._functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
@@ -149,7 +149,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     public IList<IPromptFilter> PromptFilters =>
         this._promptFilters ??
         Interlocked.CompareExchange(ref this._promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
@@ -281,7 +281,7 @@ public sealed class Kernel
 
     #region Internal Filtering
 
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingContext? context = null;
@@ -299,7 +299,7 @@ public sealed class Kernel
         return context;
     }
 
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedContext? context = null;
@@ -317,7 +317,7 @@ public sealed class Kernel
         return context;
     }
 
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
     {
         PromptRenderingContext? context = null;
@@ -335,7 +335,7 @@ public sealed class Kernel
         return context;
     }
 
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
         PromptRenderedContext? context = null;

@@ -4,6 +4,7 @@
 QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
 The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
+
 import asyncio
 import logging
 import uuid
@@ -326,7 +327,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             )
 
             if existing_record:
-                pointId = str(existing_record[0].id)
+                pointId = str(existing_record.id)
             else:
                 pointId = str(uuid.uuid4())
 

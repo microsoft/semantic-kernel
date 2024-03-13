@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.SemanticKernel;
@@ -11,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example86_ChatHistorySerialization : BaseTest
+public class Example87_ChatHistorySerialization : BaseTest
 {
     /// <summary>
     /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
@@ -28,9 +29,9 @@ public class Example86_ChatHistorySerialization : BaseTest
             new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
             new ImageContent(new Uri("https://fake-random-test-host:123")),
             new BinaryContent(new BinaryData(data)),
-            #pragma warning disable SKEXP0005
+            #pragma warning disable SKEXP0001
             new AudioContent(new BinaryData(data))
-            #pragma warning restore SKEXP0005
+            #pragma warning restore SKEXP0001
         };
 
         var chatHistory = new ChatHistory(new[] { message });
@@ -48,9 +49,9 @@ public class Example86_ChatHistorySerialization : BaseTest
 
         WriteLine($"Image content: {(deserializedMessage.Items![1]! as ImageContent)!.Uri}");
 
-        WriteLine($"Binary content: {(deserializedMessage.Items![2]! as BinaryContent)!.Content}");
+        WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Content!.Value.Span)}");
 
-        WriteLine($"Audio content: {(deserializedMessage.Items![3]! as AudioContent)!.Data}");
+        WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
     }
 
     /// <summary>
@@ -88,7 +89,7 @@ public class Example86_ChatHistorySerialization : BaseTest
         WriteLine($"Custom content: {(deserializedMessage.Items![1]! as CustomContent)!.Content}");
     }
 
-    public Example86_ChatHistorySerialization(ITestOutputHelper output) : base(output)
+    public Example87_ChatHistorySerialization(ITestOutputHelper output) : base(output)
     {
     }
 
