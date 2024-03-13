@@ -26,6 +26,11 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public static IServiceCollection AddVertexAIGeminiTextGeneration(
         this IServiceCollection services,
         string modelId,
@@ -94,6 +99,11 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public static IServiceCollection AddVertexAIGeminiChatCompletion(
         this IServiceCollection services,
         string modelId,
@@ -164,6 +174,11 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public static IServiceCollection AddVertexAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,

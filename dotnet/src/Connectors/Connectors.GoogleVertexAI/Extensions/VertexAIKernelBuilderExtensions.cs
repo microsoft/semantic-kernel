@@ -28,6 +28,11 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public static IKernelBuilder AddVertexAIGeminiTextGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -102,6 +107,11 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public static IKernelBuilder AddVertexAIGeminiChatCompletion(
         this IKernelBuilder builder,
         string modelId,
@@ -176,6 +186,11 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
