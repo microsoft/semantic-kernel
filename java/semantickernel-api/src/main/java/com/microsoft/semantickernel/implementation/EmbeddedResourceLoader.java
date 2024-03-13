@@ -51,12 +51,7 @@ public class EmbeddedResourceLoader {
                 type -> {
                     switch (type) {
                         case CLASSPATH:
-                            try (InputStream inputStream = clazz.getResourceAsStream(fileName)) {
-                                return readInputStream(fileName, inputStream);
-                            } catch (Exception e) {
-                                // IGNORE
-                            }
-                            break;
+                            return getResourceAsStream(fileName, clazz);
                         case CLASSPATH_ROOT:
                             try (InputStream inputStream = Thread.currentThread()
                                 .getContextClassLoader()
@@ -67,16 +62,7 @@ public class EmbeddedResourceLoader {
                             }
                             break;
                         case FILESYSTEM:
-                            File file = new File(fileName);
-                            if (file.exists()) {
-                                try (
-                                    InputStream inputStream = Files.newInputStream(file.toPath())) {
-                                    return readInputStream(fileName, inputStream);
-                                } catch (IOException e) {
-                                    // IGNORE
-                                }
-                            }
-                            break;
+                            return readFileFromFileSystem(fileName);
                         default:
                     }
                     return null;
@@ -91,16 +77,40 @@ public class EmbeddedResourceLoader {
         throw new FileNotFoundException("Could not find file " + fileName);
     }
 
+    static String getResourceAsStream(String fileName, Class<?> clazz) {
+        try (InputStream inputStream = clazz.getResourceAsStream(fileName)) {
+            return readInputStream(fileName, inputStream);
+        } catch (Exception e) {
+            // IGNORE
+        }
+        return null;
+    }
+
+    static String readFileFromFileSystem(String fileName) {
+        File file = new File(fileName);
+        if (file.exists()) {
+            try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+                return readInputStream(fileName, inputStream);
+            } catch (IOException e) {
+                // IGNORE
+            }
+        }
+        return null;
+    }
+
     private static String readInputStream(String fileName, InputStream inputStream)
         throws FileNotFoundException {
         if (inputStream == null) {
             throw new FileNotFoundException("File not found: " + fileName);
         }
 
-        return new BufferedReader(
-            new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))
-            .lines()
-            .collect(Collectors.joining("\n"));
+        try (BufferedReader bf = new BufferedReader(
+            new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
+            return bf.lines().collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            // IGNORE
+        }
+        return null;
     }
 
     /**

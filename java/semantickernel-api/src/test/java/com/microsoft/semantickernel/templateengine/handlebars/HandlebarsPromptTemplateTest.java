@@ -1,27 +1,4 @@
-/*
- * The MIT License
- *
- * Copyright 2024 davidgrieve.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
 import java.util.Arrays;
@@ -54,24 +31,23 @@ public class HandlebarsPromptTemplateTest {
     public HandlebarsPromptTemplateTest() {
     }
 
-    public static void main(String[] args) { new HandlebarsPromptTemplateTest().testRenderAsync(); }
+    public static void main(String[] args) {
+        new HandlebarsPromptTemplateTest().testRenderAsync();
+    }
 
     public static class StringFunctions {
 
         @DefineKernelFunction(name = "upper", description = "Converts a string to upper case.")
         public String upper(
-            @KernelFunctionParameter(name = "input", required = true, description = "The string to convert to upper case", type = String.class) 
-            String input) {
-                return input.toUpperCase();
+            @KernelFunctionParameter(name = "input", required = true, description = "The string to convert to upper case", type = String.class) String input) {
+            return input.toUpperCase();
         }
 
         @DefineKernelFunction(name = "concat", description = "Concatenate the second string to the first string.")
         public String concat(
-            @KernelFunctionParameter(name = "input", required = true, description = "The string to which the second string is concatenated.", type = String.class) 
-            String first, 
-            @KernelFunctionParameter(name = "suffix", required = true, description = "The string which is concatenated to the first string.", type = String.class) 
-            String suffix) {
-                return first.concat(suffix);
+            @KernelFunctionParameter(name = "input", required = true, description = "The string to which the second string is concatenated.", type = String.class) String first,
+            @KernelFunctionParameter(name = "suffix", required = true, description = "The string which is concatenated to the first string.", type = String.class) String suffix) {
+            return first.concat(suffix);
         }
 
     }
@@ -88,39 +64,33 @@ public class HandlebarsPromptTemplateTest {
             new ChatHistory(
                 Arrays.asList(
                     new ChatMessageContent<String>(AuthorRole.SYSTEM, "a"),
-                    new ChatMessageContent<String>(AuthorRole.USER, "b")
-                )
-            ), 
+                    new ChatMessageContent<String>(AuthorRole.USER, "b"))),
             new ChatHistory(
                 Arrays.asList(
                     new ChatMessageContent<String>(AuthorRole.SYSTEM, "c"),
-                    new ChatMessageContent<String>(AuthorRole.USER, "d")
-                )
-            )
-        );
+                    new ChatMessageContent<String>(AuthorRole.USER, "d"))));
 
         KernelPlugin kernelPlugin = KernelPluginFactory.createFromObject(
             new StringFunctions(),
-            "string"
-        );
+            "string");
 
         Kernel kernel = Kernel.builder()
             .withPlugin(kernelPlugin)
             .build();
 
         PromptTemplateConfig promptTemplate = PromptTemplateConfig.builder()
-        .withTemplate(
+            .withTemplate(
                 "{{choices.[0]}}\n" +
-                "{{choices}}\n" +
-                "{{#each history}}\n" +
-                "    {{#each this}}\n" +
-                "        {{string-upper content}}\n" +
-                "    {{/each}}\n" +
-                "{{/each}}\n" +
-                "Hello World")
-                // "{{string-concat input suffix}}") TODO - this is not working
+                    "{{choices}}\n" +
+                    "{{#each history}}\n" +
+                    "    {{#each this}}\n" +
+                    "        {{string-upper content}}\n" +
+                    "    {{/each}}\n" +
+                    "{{/each}}\n" +
+                    "Hello World")
+            // "{{string-concat input suffix}}") TODO - this is not working
             .withTemplateFormat("handlebars")
-        .build();
+            .build();
 
         HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
 
@@ -130,15 +100,15 @@ public class HandlebarsPromptTemplateTest {
             .withVariable("choices", choices)
             .withVariable("history", history)
             .withVariable("kernelPlugins", Arrays.asList(kernelPlugin))
-            .build();       
-            
+            .build();
+
         // Return from renderAsync is normalized to remove empty lines and leading/trailing whitespace
         String expResult = "CHOICE-A [CHOICE-A, CHOICE-B] <messages> A B </messages> <messages> C D </messages> Hello World";
 
         String result = instance.renderAsync(kernel, arguments, null).block();
         assertNotNull(result);
 
-        String normalizedResult = 
+        String normalizedResult =
             // split result into lines
             Arrays.stream(result.split("\\r?\\n|\\r"))
                 // remove leading and trailing whitespace
