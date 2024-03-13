@@ -361,10 +361,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 func_args = tool_call.function.parse_arguments()
                 args_cloned.update(func_args)
             except FunctionCallInvalidArgumentsException as exc:
-                logger.exception(f"Received invalid arguments for function {tool_call.function.name}: {exc}")
-                raise ServiceInvalidResponseError(
-                    f"Received invalid arguments for function {tool_call.function.name}"
-                ) from exc
+                logger.exception(
+                    f"Received invalid arguments for function {tool_call.function.name}: {exc}. Trying tool call again."
+                )
+                msg = OpenAIChatMessageContent(
+                    role=ChatRole.TOOL,
+                    content="The tool call arguments are malformed, please try again.",
+                    tool_call_id=tool_call.id,
+                    metadata={"function_name": tool_call.function.name},
+                )
+                chat_history.add_message(message=msg)
+                continue
             logger.info(f"Calling {tool_call.function.name} function with args: {tool_call.function.arguments}")
             try:
                 func_result = await kernel.invoke(**tool_call.function.split_name_dict(), arguments=args_cloned)
