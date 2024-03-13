@@ -264,8 +264,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
     private async Task ProcessFunctionsAsync(ChatCompletionState state, CancellationToken cancellationToken)
     {
-        this.Logger.LogDebug("Tool requests: {Requests}", state.LastMessage!.ToolCalls!.Count);
-        this.Logger.LogTrace("Function call requests: {FunctionCall}",
+        this.Log(LogLevel.Debug, "Tool requests: {Requests}", state.LastMessage!.ToolCalls!.Count);
+        this.Log(LogLevel.Trace, "Function call requests: {FunctionCall}",
             string.Join(", ", state.LastMessage.ToolCalls.Select(ftc => ftc.ToString())));
 
         // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
@@ -281,7 +281,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
         {
             // Don't add any tools as we've reached the maximum attempts limit.
-            this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.",
+            this.Log(LogLevel.Debug, "Maximum use ({MaximumUse}) reached; removing the tools.",
                 state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
         }
         else
@@ -295,7 +295,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
         {
             state.AutoInvoke = false;
-            this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.",
+            this.Log(LogLevel.Debug, "Maximum auto-invoke ({MaximumAutoInvoke}) reached.",
                 state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
         }
     }
@@ -376,7 +376,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
     {
         if (errorMessage is not null)
         {
-            this.Logger.LogDebug("Failed to handle tool request ({ToolName}). {Error}", tool.FullyQualifiedName, errorMessage);
+            this.Log(LogLevel.Debug, "Failed to handle tool request ({ToolName}). {Error}", tool.FullyQualifiedName, errorMessage);
         }
 
         var message = new GeminiChatMessageContent(AuthorRole.Tool,
@@ -576,11 +576,12 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
     {
         if (metadata.TotalTokenCount <= 0)
         {
-            this.Logger.LogDebug("Gemini usage information is not available.");
+            this.Log(LogLevel.Debug, "Gemini usage information is not available.");
             return;
         }
 
-        this.Logger.LogDebug(
+        this.Log(
+            LogLevel.Debug,
             "Gemini usage metadata: Candidates tokens: {CandidatesTokens}, Prompt tokens: {PromptTokens}, Total tokens: {TotalTokens}",
             metadata.CandidatesTokenCount,
             metadata.PromptTokenCount,
@@ -589,6 +590,16 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         s_promptTokensCounter.Add(metadata.PromptTokenCount);
         s_completionTokensCounter.Add(metadata.CandidatesTokenCount);
         s_totalTokensCounter.Add(metadata.TotalTokenCount);
+    }
+
+    private void Log(LogLevel logLevel, string? message, params object[] args)
+    {
+        if (this.Logger.IsEnabled(logLevel))
+        {
+#pragma warning disable CA2254 // Template should be a constant string.
+            this.Logger.Log(logLevel, message, args);
+#pragma warning restore CA2254
+        }
     }
 
     private sealed class ChatCompletionState
