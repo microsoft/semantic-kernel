@@ -239,7 +239,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
             item.Role == AuthorRole.Tool &&
             item.CalledToolResult is not null &&
             item.CalledToolResult.FullyQualifiedName == this._timePluginNow.FullyQualifiedName &&
-            DateTime.TryParse(item.CalledToolResult.FunctionResult.ToString(), out _));
+            DateTime.TryParse(item.CalledToolResult.FunctionResult.ToString(), provider: new DateTimeFormatInfo(), DateTimeStyles.AssumeLocal, out _));
         Assert.Single(contents);
     }
 
