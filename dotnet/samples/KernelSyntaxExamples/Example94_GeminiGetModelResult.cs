@@ -51,7 +51,7 @@ public sealed class Example94_GeminiGetModelResult : BaseTest
         //         location: TestConfiguration.VertexAI.Location,
         //         projectId: TestConfiguration.VertexAI.ProjectId)
 
-        const string prompt = "Hi, give me 5 book suggestions about: travel";
+        string prompt = "Hi, give me 5 book suggestions about: travel";
 
         // Invoke function through kernel
         FunctionResult result = await kernel.InvokePromptAsync(prompt);
