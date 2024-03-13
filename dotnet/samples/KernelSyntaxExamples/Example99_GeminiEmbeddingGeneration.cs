@@ -93,6 +93,7 @@ public sealed class Example99_GeminiEmbeddingGeneration : BaseTest
         //         bearerKeyProvider: () =>
         //         {
         //             // This is just example, in production you should use google sdk to generate token
+        //             // Keep in mind this delegate will be called on every request, so it should be fast
         //             return GetBearerKey();
         //         },
         //         location: TestConfiguration.VertexAI.Location,
@@ -102,6 +103,7 @@ public sealed class Example99_GeminiEmbeddingGeneration : BaseTest
         //         bearerKeyProvider: () =>
         //         {
         //             // This is just example, in production you should use google sdk to generate token
+        //             // Keep in mind this delegate will be called on every request, so it should be fast
         //             return GetBearerKey();
         //         },
         //         location: geminiLocation,

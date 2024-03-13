@@ -73,6 +73,7 @@ public sealed class Example95_GeminiTextGeneration : BaseTest
         //         bearerKeyProvider: () =>
         //         {
         //             // This is just example, in production you should use google sdk to generate token
+        //             // Keep in mind this delegate will be called on every request, so it should be fast
         //             return GetBearerKey();
         //         },
         //         location: TestConfiguration.VertexAI.Location,
