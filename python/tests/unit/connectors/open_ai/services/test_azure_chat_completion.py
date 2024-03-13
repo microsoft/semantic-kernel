@@ -617,6 +617,7 @@ async def test_azure_chat_completion_no_kernel_provided_throws_error(mock_create
     )
 
     with pytest.raises(
-        ServiceInvalidExecutionSettingsError, match="The kernel argument is required for OpenAI tool calling"
+        ServiceInvalidExecutionSettingsError,
+        match="The kernel argument and arguments are required for OpenAI tool calling.",
     ):
         await azure_chat_completion.complete_chat(chat_history, complete_prompt_execution_settings)
