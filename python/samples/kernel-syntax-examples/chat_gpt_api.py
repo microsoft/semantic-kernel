@@ -29,8 +29,7 @@ kernel.add_service(
         service_id="chat-gpt", ai_model_id="gpt-3.5-turbo", api_key=api_key)
 )
 service_id = "chat-gpt"
-settings = kernel.get_service(
-    service_id).get_prompt_execution_settings_class()(service_id=service_id)
+settings = kernel.get_prompt_execution_settings_from_service_id("chat-gpt", ChatCompletionClientBase)
 settings.max_tokens = 2000
 settings.temperature = 0.7
 settings.top_p = 0.8
