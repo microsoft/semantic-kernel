@@ -51,6 +51,11 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
     /// <param name="projectId">Your Project Id.</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public VertexAITextEmbeddingGenerationService(
         string modelId,
         Func<string> bearerKeyProvider,

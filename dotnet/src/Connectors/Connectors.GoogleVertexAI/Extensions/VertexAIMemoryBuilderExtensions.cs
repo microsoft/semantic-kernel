@@ -23,6 +23,11 @@ public static class VertexAIMemoryBuilderExtensions
     /// <param name="projectId">Your project ID</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated memory builder.</returns>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public static MemoryBuilder WithVertexAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,

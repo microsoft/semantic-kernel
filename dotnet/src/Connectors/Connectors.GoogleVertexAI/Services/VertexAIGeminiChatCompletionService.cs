@@ -51,6 +51,11 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
     /// <param name="projectId">Your project ID</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    /// <remarks>
+    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
     public VertexAIGeminiChatCompletionService(
         string modelId,
         Func<string> bearerKeyProvider,
