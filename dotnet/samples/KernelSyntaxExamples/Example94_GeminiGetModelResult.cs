@@ -43,7 +43,7 @@ public sealed class Example94_GeminiGetModelResult : BaseTest
         //         modelId: TestConfiguration.VertexAI.Gemini.ModelId,
         //         bearerKeyProvider: () =>
         //         {
-        //             // This is just example, in production we recommend using Google SDK to your BearerKey token.
+        //             // This is just example, in production we recommend using Google SDK to generate your BearerKey token.
         //             // This delegate will be called on every request,
         //             // when providing the token consider using caching strategy and refresh token logic when it is expired or close to expiration.
         //             return GetBearerKey();
