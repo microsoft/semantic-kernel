@@ -105,8 +105,7 @@ class SequentialPlanner:
         if isinstance(plan_result, FunctionResult) and "exception" in plan_result.metadata:
             raise PlannerCreatePlanError(
                 f"Error creating plan for goal: {plan_result.metadata['exception']}",
-                plan_result.metadata["exception"],
-            )
+            ) from plan_result.metadata["exception"]
 
         plan_result_string = str(plan_result).strip()
 
