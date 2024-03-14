@@ -30,7 +30,6 @@
                 }
             },
             "presentation": {
-                "reveal": "silent",
                 "panel": "shared"
             }
         },
