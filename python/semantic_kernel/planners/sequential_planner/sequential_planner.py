@@ -105,20 +105,17 @@ class SequentialPlanner:
         if isinstance(plan_result, FunctionResult) and "exception" in plan_result.metadata:
             raise PlannerCreatePlanError(
                 f"Error creating plan for goal: {plan_result.metadata['exception']}",
-                plan_result.metadata["exception"],
-            )
+            ) from plan_result.metadata["exception"]
 
         plan_result_string = str(plan_result).strip()
 
         try:
-            get_plugin_function = self.config.get_plugin_function or SequentialPlanParser.get_plugin_function(
-                self._kernel
-            )
             plan = SequentialPlanParser.to_plan_from_xml(
-                plan_result_string,
-                goal,
-                get_plugin_function,
-                self.config.allow_missing_functions,
+                xml_string=plan_result_string,
+                goal=goal,
+                kernel=self._kernel,
+                get_plugin_function=self.config.get_plugin_function,
+                allow_missing_functions=self.config.allow_missing_functions,
             )
 
             if len(plan._steps) == 0:
