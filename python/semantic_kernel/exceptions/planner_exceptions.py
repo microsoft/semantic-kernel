@@ -12,19 +12,19 @@ class PlannerExecutionException(PlannerException):
     pass
 
 
-class PlannerInvalidGoalError(KernelException):
+class PlannerInvalidGoalError(PlannerException):
     pass
 
 
-class PlannerInvalidPlanError(KernelException):
+class PlannerInvalidPlanError(PlannerException):
     pass
 
 
-class PlannerInvalidConfigurationError(KernelException):
+class PlannerInvalidConfigurationError(PlannerException):
     pass
 
 
-class PlannerCreatePlanError(KernelException):
+class PlannerCreatePlanError(PlannerException):
     pass
 
 

@@ -79,6 +79,14 @@ class TemplateRenderException(BlockRenderException):
     pass
 
 
+class HandlebarsTemplateSyntaxError(BlockSyntaxError):
+    pass
+
+
+class HandlebarsTemplateRenderException(BlockRenderException):
+    pass
+
+
 __all__ = [
     "BlockException",
     "BlockSyntaxError",
@@ -93,4 +101,6 @@ __all__ = [
     "CodeBlockRenderException",
     "TemplateSyntaxError",
     "TemplateRenderException",
+    "HandlebarsTemplateSyntaxError",
+    "HandlebarsTemplateRenderException",
 ]

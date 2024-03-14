@@ -3,26 +3,33 @@
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from pydantic import PrivateAttr
+from pydantic import PrivateAttr, field_validator
 
 from semantic_kernel.exceptions import CodeBlockRenderException, TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
+    from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelPromptTemplate(PromptTemplateBase):
-    prompt_template_config: PromptTemplateConfig
     _blocks: List[Block] = PrivateAttr(default_factory=list)
+
+    @field_validator("prompt_template_config")
+    @classmethod
+    def validate_template_format(cls, v: "PromptTemplateConfig") -> "PromptTemplateConfig":
+        if v.template_format != KERNEL_TEMPLATE_FORMAT_NAME:
+            raise ValueError(f"Invalid prompt template format: {v.template_format}. Expected: semantic-kernel")
+        return v
 
     def model_post_init(self, __context: Any) -> None:
         self._blocks = self.extract_blocks()
