@@ -114,7 +114,7 @@ class SequentialPlanParser:
 
     @staticmethod
     def get_plugin_function_names(plugin_function_name: str) -> Tuple[str, str]:
-        plugin_function_name_parts = plugin_function_name.split(".")
+        plugin_function_name_parts = plugin_function_name.split("-")
         plugin_name = plugin_function_name_parts[0] if len(plugin_function_name_parts) > 0 else ""
         function_name = plugin_function_name_parts[1] if len(plugin_function_name_parts) > 1 else plugin_function_name
         return plugin_name, function_name

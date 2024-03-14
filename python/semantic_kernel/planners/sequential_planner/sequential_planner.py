@@ -102,10 +102,10 @@ class SequentialPlanner:
 
         plan_result = await self._function_flow_function.invoke(self._kernel, self._arguments)
 
-        if isinstance(plan_result, FunctionResult) and "error" in plan_result.metadata:
+        if isinstance(plan_result, FunctionResult) and "exception" in plan_result.metadata:
             raise PlannerCreatePlanError(
-                f"Error creating plan for goal: {plan_result.metadata['error']}",
-                plan_result.metadata["error"],
+                f"Error creating plan for goal: {plan_result.metadata['exception']}",
+                plan_result.metadata["exception"],
             )
 
         plan_result_string = str(plan_result).strip()
