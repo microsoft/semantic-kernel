@@ -13,21 +13,21 @@ namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core;
 public sealed class StreamJsonParserTests
 {
     [Fact]
-    public void ParseWhenStreamIsEmptyReturnsEmptyEnumerable()
+    public async Task ParseWhenStreamIsEmptyReturnsEmptyEnumerableAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
         var stream = new MemoryStream();
 
         // Act
-        var result = parser.ParseAsync(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Empty(result);
     }
 
     [Fact]
-    public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObject()
+    public async Task ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -36,14 +36,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.ParseAsync(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWhenStreamContainsArrayWithOnlyOneObjectReturnsEnumerableWithOneObject()
+    public async Task ParseWhenStreamContainsArrayWithOnlyOneObjectReturnsEnumerableWithOneObjectAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -52,14 +52,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{input}]");
 
         // Act
-        var result = parser.ParseAsync(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWhenStreamContainsArrayOfTwoObjectsReturnsEnumerableWithTwoObjects()
+    public async Task ParseWhenStreamContainsArrayOfTwoObjectsReturnsEnumerableWithTwoObjectsAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -69,7 +69,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{firstInput},{secondInput}]");
 
         // Act
-        var result = parser.ParseAsync(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Collection(result,
@@ -78,7 +78,7 @@ public sealed class StreamJsonParserTests
     }
 
     [Fact]
-    public void ParseWhenStreamContainsArrayOfTwoObjectsWithNestedObjectsReturnsEnumerableWithTwoObjects()
+    public async Task ParseWhenStreamContainsArrayOfTwoObjectsWithNestedObjectsReturnsEnumerableWithTwoObjectsAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -88,7 +88,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{firstInput},{secondInput}]");
 
         // Act
-        var result = parser.ParseAsync(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Collection(result,
@@ -97,7 +97,7 @@ public sealed class StreamJsonParserTests
     }
 
     [Fact]
-    public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedQuotes()
+    public async Task ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedQuotesAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -106,14 +106,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.ParseAsync(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslash()
+    public async Task ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslashAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -122,14 +122,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.ParseAsync(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslashAndQuotes()
+    public async Task ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslashAndQuotesAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -138,7 +138,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.ParseAsync(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
