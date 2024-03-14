@@ -26,7 +26,7 @@ public interface IAgentThread
     Task<IChatMessage> AddUserMessageAsync(string message, IEnumerable<string>? fileIds = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieve thread messages in decending order (most recent first).
+    /// Retrieve thread messages in descending order (most recent first).
     /// </summary>
     /// <param name="count">The maximum number of messages requested</param>
     /// <param name="lastMessageId">The identifier of the last message retrieved</param>
