@@ -54,7 +54,7 @@ partial class FormMain
         this.textBox1.Multiline = true;
         this.textBox1.Name = "textBox1";
         this.textBox1.Size = new Size(306, 421);
-        this.textBox1.TabIndex = 1;
+        this.textBox1.TabIndex = 4;
         this.textBox1.Text = "Click in any of the images to generate an AI description";
         // 
         // lblImageDescription
@@ -65,7 +65,7 @@ partial class FormMain
         this.lblImageDescription.Location = new Point(756, 112);
         this.lblImageDescription.Name = "lblImageDescription";
         this.lblImageDescription.Size = new Size(220, 30);
-        this.lblImageDescription.TabIndex = 2;
+        this.lblImageDescription.TabIndex = 5;
         this.lblImageDescription.Text = "Generated Description";
         this.lblImageDescription.TextAlign = ContentAlignment.MiddleCenter;
         // 
@@ -82,7 +82,7 @@ partial class FormMain
         this.lblImagesFolder.Location = new Point(12, 14);
         this.lblImagesFolder.Name = "lblImagesFolder";
         this.lblImagesFolder.Size = new Size(250, 30);
-        this.lblImagesFolder.TabIndex = 3;
+        this.lblImagesFolder.TabIndex = 1;
         this.lblImagesFolder.Text = "Images folder: -- Select --";
         this.lblImagesFolder.TextAlign = ContentAlignment.MiddleCenter;
         // 
@@ -93,7 +93,7 @@ partial class FormMain
         this.btRefresh.Location = new Point(934, 12);
         this.btRefresh.Name = "btRefresh";
         this.btRefresh.Size = new Size(133, 27);
-        this.btRefresh.TabIndex = 4;
+        this.btRefresh.TabIndex = 3;
         this.btRefresh.Text = "Refresh Images";
         this.btRefresh.UseVisualStyleBackColor = true;
         this.btRefresh.Click += this.btRefresh_Click;
@@ -105,7 +105,7 @@ partial class FormMain
         this.button1.Location = new Point(795, 12);
         this.button1.Name = "button1";
         this.button1.Size = new Size(133, 27);
-        this.button1.TabIndex = 5;
+        this.button1.TabIndex = 2;
         this.button1.Text = "Change Folder";
         this.button1.UseVisualStyleBackColor = true;
         this.button1.Click += this.btChangeFolder_Click;

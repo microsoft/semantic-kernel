@@ -22,16 +22,26 @@ public partial class FormMain : Form
     {
         this.InitializeComponent();
         this._kernel = Kernel.CreateBuilder()
-                        .AddHuggingFaceImageToText("Salesforce/blip-image-captioning-base")
-                        .Build();
+            .AddHuggingFaceImageToText("Salesforce/blip-image-captioning-base")
+            .Build();
 
         this._imageToTextService = this._kernel.GetRequiredService<IImageToTextService>();
     }
 
+    /// <summary>
+    /// Main form load event.
+    /// </summary>
+    /// <param name="sender">The form main.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     private void FormMain_Load(object sender, EventArgs e)
     {
         this.ChangeFolder();
+        this.Focus();
     }
+
+    /// <summary>
+    /// Changes the folder and refreshes the images.
+    /// </summary>
     private void ChangeFolder()
     {
         if (this.folderBrowserDialog1.ShowDialog() == DialogResult.OK)
@@ -51,6 +61,9 @@ public partial class FormMain : Form
         }
     }
 
+    /// <summary>
+    /// Refreshes the images in the flow layout panel.
+    /// </summary>
     private void RefreshImages()
     {
         var imageDirectory = this.folderBrowserDialog1.SelectedPath;
@@ -77,6 +90,11 @@ public partial class FormMain : Form
         }
     }
 
+    /// <summary>
+    ///  Handles the Click event of the PictureBox control.
+    /// </summary>
+    /// <param name="sender">The picture box.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
 #pragma warning disable VSTHRD100 // Avoid async void methods
     private async void PictureBoxOnClickAsync(object? sender, EventArgs e)
     {
@@ -97,6 +115,10 @@ public partial class FormMain : Form
     }
 #pragma warning restore VSTHRD100 // Avoid async void methods
 
+    /// <summary>
+    /// Updates the description in the text box.
+    /// </summary>
+    /// <param name="description">The description.</param>
     private void UpdateImageDescription(string description)
     {
         // Ensure the following UI update is executed on the UI thread
@@ -113,12 +135,22 @@ public partial class FormMain : Form
         }
     }
 
+    /// <summary>
+    /// Creates an <see cref="ImageContent"/> from a <see cref="PictureBox"/>.
+    /// </summary>
+    /// <param name="pictureBox">The target <see cref="PictureBox"/>.</param>
+    /// <returns>Returns a <see cref="ImageContent"/>.</returns>
     private static ImageContent CreateImageContentFromPictureBox(PictureBox pictureBox)
         => new(ConvertImageToReadOnlyMemory(pictureBox.Image))
         {
             MimeType = GetMimeType(pictureBox.Tag?.ToString()!)
         };
 
+    /// <summary>
+    /// Converts an <see cref="Image"/> to a <see cref="ReadOnlyMemory{T}"/>.
+    /// </summary>
+    /// <param name="image">The target <see cref="Image"/>.</param>
+    /// <returns>Returns image binary array.</returns>
     private static ReadOnlyMemory<byte> ConvertImageToReadOnlyMemory(Image image)
     {
         using var memoryStream = new MemoryStream();
@@ -139,6 +171,11 @@ public partial class FormMain : Form
         this.RefreshImages();
     }
 
+    /// <summary>
+    /// Gets the MIME type of the specific image file extension
+    /// </summary>
+    /// <param name="fileName">The file name with extension</param>
+    /// <returns>The MIME type of the specific image file extension</returns>
     private static string GetMimeType(string fileName)
     {
         return Path.GetExtension(fileName) switch
@@ -154,6 +191,11 @@ public partial class FormMain : Form
         };
     }
 
+    /// <summary>
+    /// Handles the Change Folder button click event.
+    /// </summary>
+    /// <param name="sender">The clicked button.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     private void btChangeFolder_Click(object sender, EventArgs e)
     {
         this.ChangeFolder();
