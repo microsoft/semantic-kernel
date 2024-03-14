@@ -78,13 +78,6 @@
     <Compile Remove="RepoUtils\PlanExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Resources\Agents\ParrotAgent.yaml" />
-    <None Remove="Resources\Agents\ToolAgent.yaml" />
-    <None Remove="Resources\GenerateStory.yaml" />
-    <None Remove="Resources\GenerateStoryHandlebars.yaml" />
-    <None Remove="Resources\travelinfo.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Plugins\ApiManifestPlugins\**\apimanifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
