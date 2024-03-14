@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-//#define DISABLEHOST // Comment line to enable
+#define DISABLEHOST // Comment line to enable
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
@@ -81,7 +81,7 @@ public sealed class ThreadHarness
         var thread = await ChatThread.GetAsync(context, threadId);
 
         int index = 0;
-        string? messageId = "msg_21s2LMMq0KkFhf2Ahg27urbs";
+        string? messageId = null;
         while (messageId != null || index == 0)
         {
             var messages = await thread.GetMessagesAsync(count: 100, lastMessageId: messageId).ConfigureAwait(true);
