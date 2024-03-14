@@ -39,15 +39,24 @@ def test_init_fail():
         )
 
 
+def test_init_template_validation_fail():
+    with pytest.raises(ValueError):
+        HandlebarsPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(
+                name="test", description="test", template="{{(input)}}", template_format="semantic-kernel"
+            )
+        )
+
+
 def test_config_without_prompt():
-    config = PromptTemplateConfig(name="test", description="test")
+    config = PromptTemplateConfig(name="test", description="test", template_format="handlebars")
     template = HandlebarsPromptTemplate(prompt_template_config=config)
     assert template._template_compiler is None
 
 
 @mark.asyncio
 async def test_render_without_prompt(kernel: Kernel):
-    config = PromptTemplateConfig(name="test", description="test")
+    config = PromptTemplateConfig(name="test", description="test", template_format="handlebars")
     template = HandlebarsPromptTemplate(prompt_template_config=config)
     rendered = await template.render(kernel, None)
     assert rendered == ""
