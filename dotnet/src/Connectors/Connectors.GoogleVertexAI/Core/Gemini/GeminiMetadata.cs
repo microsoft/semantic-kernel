@@ -22,8 +22,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public GeminiFinishReason? FinishReason
     {
-        get => this.GetValueFromDictionary() as GeminiFinishReason?;
-        internal init => this.SetValueInDictionary(value);
+        get => this.GetValueFromDictionary(nameof(this.FinishReason)) as GeminiFinishReason?;
+        internal init => this.SetValueInDictionary(value, nameof(this.FinishReason));
     }
 
     /// <summary>
@@ -31,8 +31,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int Index
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
-        internal init => this.SetValueInDictionary(value);
+        get => (this.GetValueFromDictionary(nameof(this.Index)) as int?) ?? 0;
+        internal init => this.SetValueInDictionary(value, nameof(this.Index));
     }
 
     /// <summary>
@@ -40,8 +40,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int PromptTokenCount
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
-        internal init => this.SetValueInDictionary(value);
+        get => (this.GetValueFromDictionary(nameof(this.PromptTokenCount)) as int?) ?? 0;
+        internal init => this.SetValueInDictionary(value, nameof(this.PromptTokenCount));
     }
 
     /// <summary>
@@ -49,8 +49,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int CurrentCandidateTokenCount
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
-        internal init => this.SetValueInDictionary(value);
+        get => (this.GetValueFromDictionary(nameof(this.CurrentCandidateTokenCount)) as int?) ?? 0;
+        internal init => this.SetValueInDictionary(value, nameof(this.CurrentCandidateTokenCount));
     }
 
     /// <summary>
@@ -58,8 +58,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int CandidatesTokenCount
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
-        internal init => this.SetValueInDictionary(value);
+        get => (this.GetValueFromDictionary(nameof(this.CandidatesTokenCount)) as int?) ?? 0;
+        internal init => this.SetValueInDictionary(value, nameof(this.CandidatesTokenCount));
     }
 
     /// <summary>
@@ -67,8 +67,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public int TotalTokenCount
     {
-        get => (this.GetValueFromDictionary() as int?) ?? 0;
-        internal init => this.SetValueInDictionary(value);
+        get => (this.GetValueFromDictionary(nameof(this.TotalTokenCount)) as int?) ?? 0;
+        internal init => this.SetValueInDictionary(value, nameof(this.TotalTokenCount));
     }
 
     /// <summary>
@@ -76,8 +76,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public string? PromptFeedbackBlockReason
     {
-        get => this.GetValueFromDictionary() as string;
-        internal init => this.SetValueInDictionary(value);
+        get => this.GetValueFromDictionary(nameof(this.PromptFeedbackBlockReason)) as string;
+        internal init => this.SetValueInDictionary(value, nameof(this.PromptFeedbackBlockReason));
     }
 
     /// <summary>
@@ -85,8 +85,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public IReadOnlyList<GeminiSafetyRating>? PromptFeedbackSafetyRatings
     {
-        get => this.GetValueFromDictionary() as IReadOnlyList<GeminiSafetyRating>;
-        internal init => this.SetValueInDictionary(value);
+        get => this.GetValueFromDictionary(nameof(this.PromptFeedbackSafetyRatings)) as IReadOnlyList<GeminiSafetyRating>;
+        internal init => this.SetValueInDictionary(value, nameof(this.PromptFeedbackSafetyRatings));
     }
 
     /// <summary>
@@ -94,8 +94,8 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
     /// </summary>
     public IReadOnlyList<GeminiSafetyRating>? ResponseSafetyRatings
     {
-        get => this.GetValueFromDictionary() as IReadOnlyList<GeminiSafetyRating>;
-        internal init => this.SetValueInDictionary(value);
+        get => this.GetValueFromDictionary(nameof(this.ResponseSafetyRatings)) as IReadOnlyList<GeminiSafetyRating>;
+        internal init => this.SetValueInDictionary(value, nameof(this.ResponseSafetyRatings));
     }
 
     /// <summary>
@@ -109,9 +109,9 @@ public sealed class GeminiMetadata : ReadOnlyDictionary<string, object?>
         _ => new GeminiMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
     };
 
-    private void SetValueInDictionary(object? value, [CallerMemberName] string propertyName = "")
+    private void SetValueInDictionary(object? value, string propertyName)
         => this.Dictionary[propertyName] = value;
 
-    private object? GetValueFromDictionary([CallerMemberName] string propertyName = "")
+    private object? GetValueFromDictionary(string propertyName)
         => this.Dictionary.TryGetValue(propertyName, out var value) ? value : null;
 }
