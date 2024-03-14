@@ -39,10 +39,10 @@ public class PromptTemplateFactoryTest {
     private void executeTest(String templateFormat) throws Exception {
 
         Method method = PromptTemplateFactoryTest.class.getMethod("function", String.class);
-        List<KernelInputVariable> parameters = Collections.singletonList(
-            new KernelInputVariable("input", String.class.getName(), "the input", "borked",
+        List<InputVariable> parameters = Collections.singletonList(
+            new InputVariable("input", String.class.getName(), "the input", "borked",
                 true));
-        KernelOutputVariable<String> returnParameter = new KernelOutputVariable<>(
+        OutputVariable<String> returnParameter = new OutputVariable<>(
             "the output", String.class);
         KernelFunction<?> function = KernelFunctionFromMethod.create(
             method,
@@ -69,11 +69,11 @@ public class PromptTemplateFactoryTest {
         String template = "semantic-kernel".equals(templateFormat)
             ? "A template for testing: {{plugin.function $input}}"
             : "A template for testing: {{plugin-function input}}";
-        List<KernelInputVariable> kernelInputVariables = Arrays.asList(
-            new KernelInputVariable("input", "java.lang.String", "a description",
+        List<InputVariable> inputVariables = Arrays.asList(
+            new InputVariable("input", "java.lang.String", "a description",
                 "input from config",
                 true));
-        KernelOutputVariable kernelOutputVariable = new KernelOutputVariable("java.lang.String",
+        OutputVariable outputVariable = new OutputVariable("java.lang.String",
             "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {
             {
@@ -86,8 +86,8 @@ public class PromptTemplateFactoryTest {
             .withTemplate(template)
             .withTemplateFormat(templateFormat)
             .withDescription(description)
-            .withInputVariables(kernelInputVariables)
-            .withOutputVariable(kernelOutputVariable)
+            .withInputVariables(inputVariables)
+            .withOutputVariable(outputVariable)
             .withExecutionSettings(executionSettings)
             .build();
 

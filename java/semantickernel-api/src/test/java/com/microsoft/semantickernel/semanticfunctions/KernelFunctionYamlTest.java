@@ -50,13 +50,13 @@ public class KernelFunctionYamlTest {
             .withTemplateFormat(templateFormat)
             .withDescription("A function that generates a story about a topic.")
             .withInputParameters(Arrays.asList(
-                new KernelInputVariable(
+                new InputVariable(
                     "topic",
                     "java.lang.String",
                     "The topic of the story.",
                     null,
                     true),
-                new KernelInputVariable(
+                new InputVariable(
                     "length",
                     "java.lang.String",
                     "The number of sentences in the story.",

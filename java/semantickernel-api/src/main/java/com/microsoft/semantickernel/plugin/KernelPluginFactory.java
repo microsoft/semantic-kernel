@@ -8,8 +8,8 @@ import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader.ResourceLocation;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.KernelInputVariable;
-import com.microsoft.semantickernel.semanticfunctions.KernelOutputVariable;
+import com.microsoft.semantickernel.semanticfunctions.InputVariable;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -93,7 +93,7 @@ public class KernelPluginFactory {
             .map(method -> {
                 DefineKernelFunction annotation = method.getAnnotation(DefineKernelFunction.class);
                 Class<?> returnType = getReturnType(annotation, method);
-                KernelOutputVariable<?> kernelReturnParameterMetadata = new KernelOutputVariable<>(
+                OutputVariable<?> kernelReturnParameterMetadata = new OutputVariable<>(
                     annotation.returnDescription(),
                     returnType);
 
@@ -239,14 +239,14 @@ public class KernelPluginFactory {
         return new KernelPlugin(pluginName, description, funcs);
     }
 
-    private static List<KernelInputVariable> getParameters(Method method) {
+    private static List<InputVariable> getParameters(Method method) {
         return Arrays.stream(method.getParameters())
             .filter(parameter -> parameter.isAnnotationPresent(KernelFunctionParameter.class))
             .map(parameter -> {
                 KernelFunctionParameter annotation = parameter.getAnnotation(
                     KernelFunctionParameter.class);
 
-                return KernelInputVariable.build(
+                return InputVariable.build(
                     annotation.name(),
                     annotation.type(),
                     annotation.description(),

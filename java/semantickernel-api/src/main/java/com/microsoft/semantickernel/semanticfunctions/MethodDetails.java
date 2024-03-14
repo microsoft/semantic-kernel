@@ -16,8 +16,8 @@ public class MethodDetails {
     @Nullable
     private final String description;
     private final ImplementationFunc<?> function;
-    private final List<KernelInputVariable> parameters;
-    private final KernelOutputVariable<?> returnParameter;
+    private final List<InputVariable> parameters;
+    private final OutputVariable<?> returnParameter;
 
     /**
      * Constructor.
@@ -32,8 +32,8 @@ public class MethodDetails {
         String name,
         @Nullable String description,
         ImplementationFunc<?> function,
-        List<KernelInputVariable> parameters,
-        KernelOutputVariable<?> returnParameter) {
+        List<InputVariable> parameters,
+        OutputVariable<?> returnParameter) {
         this.name = name;
         this.description = description;
         this.function = function;
@@ -74,7 +74,7 @@ public class MethodDetails {
      *
      * @return The parameters of the method.
      */
-    public List<KernelInputVariable> getParameters() {
+    public List<InputVariable> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
@@ -83,7 +83,7 @@ public class MethodDetails {
      *
      * @return The return parameter of the method.
      */
-    public KernelOutputVariable<?> getReturnParameter() {
+    public OutputVariable<?> getReturnParameter() {
         return returnParameter;
     }
 }

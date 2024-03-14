@@ -45,9 +45,9 @@ public class PromptTemplateConfig {
     private final String templateFormat;
     @Nullable
     private final String description;
-    private final List<KernelInputVariable> kernelInputVariables;
+    private final List<InputVariable> inputVariables;
     @Nullable
-    private final KernelOutputVariable kernelOutputVariable;
+    private final OutputVariable outputVariable;
     private final Map<String, PromptExecutionSettings> executionSettings;
 
     /**
@@ -63,7 +63,7 @@ public class PromptTemplateConfig {
             SEMANTIC_KERNEL_TEMPLATE_FORMAT,
             "",
             Collections.emptyList(),
-            new KernelOutputVariable(String.class.getName(), "out"),
+            new OutputVariable(String.class.getName(), "out"),
             Collections.emptyMap());
     }
 
@@ -75,8 +75,8 @@ public class PromptTemplateConfig {
      * @param template          Template string
      * @param templateFormat    Template format
      * @param description       Description of the template
-     * @param kernelInputVariables    Input variables
-     * @param kernelOutputVariable    Output variable
+     * @param inputVariables    Input variables
+     * @param outputVariable    Output variable
      * @param executionSettings Execution settings
      */
     @JsonCreator
@@ -86,8 +86,8 @@ public class PromptTemplateConfig {
         @Nullable @JsonProperty("template") String template,
         @Nullable @JsonProperty(value = "template_format", defaultValue = SEMANTIC_KERNEL_TEMPLATE_FORMAT) String templateFormat,
         @Nullable @JsonProperty("description") String description,
-        @Nullable @JsonProperty("input_variables") List<KernelInputVariable> kernelInputVariables,
-        @Nullable @JsonProperty("output_variable") KernelOutputVariable kernelOutputVariable,
+        @Nullable @JsonProperty("input_variables") List<InputVariable> inputVariables,
+        @Nullable @JsonProperty("output_variable") OutputVariable outputVariable,
         @Nullable @JsonProperty("execution_settings") Map<String, PromptExecutionSettings> executionSettings) {
         this.schema = schema;
         this.name = name;
@@ -97,14 +97,14 @@ public class PromptTemplateConfig {
         }
         this.templateFormat = templateFormat;
         this.description = description;
-        if (kernelInputVariables == null) {
-            this.kernelInputVariables = new ArrayList<>();
+        if (inputVariables == null) {
+            this.inputVariables = new ArrayList<>();
         } else {
-            this.kernelInputVariables = new ArrayList<>(kernelInputVariables);
+            this.inputVariables = new ArrayList<>(inputVariables);
         }
-        this.kernelOutputVariable = kernelOutputVariable != null
-            ? kernelOutputVariable
-            : new KernelOutputVariable(String.class.getName(), "out");
+        this.outputVariable = outputVariable != null
+            ? outputVariable
+            : new OutputVariable(String.class.getName(), "out");
         if (executionSettings == null) {
             this.executionSettings = new HashMap<>();
         } else {
@@ -119,8 +119,8 @@ public class PromptTemplateConfig {
      * @param template          Template string
      * @param templateFormat    Template format
      * @param description       Description of the template
-     * @param kernelInputVariables    Input variables
-     * @param kernelOutputVariable    Output variable
+     * @param inputVariables    Input variables
+     * @param outputVariable    Output variable
      * @param executionSettings Execution settings
      */
     protected PromptTemplateConfig(
@@ -128,8 +128,8 @@ public class PromptTemplateConfig {
         @Nullable String template,
         @Nullable String templateFormat,
         @Nullable String description,
-        @Nullable List<KernelInputVariable> kernelInputVariables,
-        @Nullable KernelOutputVariable kernelOutputVariable,
+        @Nullable List<InputVariable> inputVariables,
+        @Nullable OutputVariable outputVariable,
         @Nullable Map<String, PromptExecutionSettings> executionSettings) {
         this(
             CURRENT_SCHEMA,
@@ -137,8 +137,8 @@ public class PromptTemplateConfig {
             template,
             templateFormat,
             description,
-            kernelInputVariables,
-            kernelOutputVariable,
+            inputVariables,
+            outputVariable,
             executionSettings);
     }
 
@@ -153,8 +153,8 @@ public class PromptTemplateConfig {
             promptTemplate.template,
             promptTemplate.templateFormat,
             promptTemplate.description,
-            promptTemplate.kernelInputVariables,
-            promptTemplate.kernelOutputVariable,
+            promptTemplate.inputVariables,
+            promptTemplate.outputVariable,
             promptTemplate.executionSettings);
     }
 
@@ -198,11 +198,11 @@ public class PromptTemplateConfig {
      *
      * @return The parameters metadata.
      */
-    public List<KernelInputVariable> getKernelParametersMetadata() {
-        if (kernelInputVariables == null) {
+    public List<InputVariable> getKernelParametersMetadata() {
+        if (inputVariables == null) {
             return Collections.emptyList();
         }
-        return Collections.unmodifiableList(kernelInputVariables);
+        return Collections.unmodifiableList(inputVariables);
     }
 
     /**
@@ -210,14 +210,14 @@ public class PromptTemplateConfig {
      *
      * @return The return parameter metadata.
      */
-    public KernelOutputVariable<?> getKernelReturnParameterMetadata() {
-        if (kernelOutputVariable == null) {
-            return new KernelOutputVariable<>("", String.class);
+    public OutputVariable<?> getKernelReturnParameterMetadata() {
+        if (outputVariable == null) {
+            return new OutputVariable<>("", String.class);
         }
 
-        return new KernelOutputVariable<>(
-            kernelOutputVariable.getDescription(),
-            kernelOutputVariable.getType());
+        return new OutputVariable<>(
+            outputVariable.getDescription(),
+            outputVariable.getType());
     }
 
     /**
@@ -255,8 +255,8 @@ public class PromptTemplateConfig {
      *
      * @return The input variables of the prompt template config.
      */
-    public List<KernelInputVariable> getInputVariables() {
-        return Collections.unmodifiableList(kernelInputVariables);
+    public List<InputVariable> getInputVariables() {
+        return Collections.unmodifiableList(inputVariables);
     }
 
     /**
@@ -265,8 +265,8 @@ public class PromptTemplateConfig {
      * @return The output variable of the prompt template config.
      */
     @Nullable
-    public KernelOutputVariable getOutputVariable() {
-        return kernelOutputVariable;
+    public OutputVariable getOutputVariable() {
+        return outputVariable;
     }
 
     /**
@@ -311,8 +311,8 @@ public class PromptTemplateConfig {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, template, templateFormat, description, kernelInputVariables,
-            kernelOutputVariable, executionSettings);
+        return Objects.hash(name, template, templateFormat, description, inputVariables,
+            outputVariable, executionSettings);
     }
 
     @Override
@@ -339,10 +339,10 @@ public class PromptTemplateConfig {
         if (!Objects.equals(this.templateFormat, other.templateFormat)) {
             return false;
         }
-        if (!Objects.equals(this.kernelInputVariables, other.kernelInputVariables)) {
+        if (!Objects.equals(this.inputVariables, other.inputVariables)) {
             return false;
         }
-        if (!Objects.equals(this.kernelOutputVariable, other.kernelOutputVariable)) {
+        if (!Objects.equals(this.outputVariable, other.outputVariable)) {
             return false;
         }
         return Objects.equals(this.executionSettings, other.executionSettings);
@@ -360,9 +360,9 @@ public class PromptTemplateConfig {
         private String templateFormat = SEMANTIC_KERNEL_TEMPLATE_FORMAT;
         @Nullable
         private String description = null;
-        private List<KernelInputVariable> kernelInputVariables = new ArrayList<>();
+        private List<InputVariable> inputVariables = new ArrayList<>();
         @Nullable
-        private KernelOutputVariable kernelOutputVariable;
+        private OutputVariable outputVariable;
         private Map<String, PromptExecutionSettings> executionSettings = new HashMap<>();
 
         private Builder() {
@@ -373,8 +373,8 @@ public class PromptTemplateConfig {
             this.template = promptTemplateConfig.template;
             this.templateFormat = promptTemplateConfig.templateFormat;
             this.description = promptTemplateConfig.description;
-            this.kernelInputVariables = new ArrayList<>(promptTemplateConfig.kernelInputVariables);
-            this.kernelOutputVariable = promptTemplateConfig.kernelOutputVariable;
+            this.inputVariables = new ArrayList<>(promptTemplateConfig.inputVariables);
+            this.outputVariable = promptTemplateConfig.outputVariable;
             this.executionSettings = new HashMap<>(promptTemplateConfig.executionSettings);
         }
 
@@ -392,11 +392,11 @@ public class PromptTemplateConfig {
         /**
          * Add an input variable to the prompt template config.
          *
-         * @param kernelInputVariable The input variable to add.
+         * @param inputVariable The input variable to add.
          * @return {@code this} prompt template config.
          */
-        public Builder addInputVariable(KernelInputVariable kernelInputVariable) {
-            kernelInputVariables.add(kernelInputVariable);
+        public Builder addInputVariable(InputVariable inputVariable) {
+            inputVariables.add(inputVariable);
             return this;
         }
 
@@ -436,22 +436,22 @@ public class PromptTemplateConfig {
         /**
          * Set the inputVariables of the prompt template config.
          *
-         * @param kernelInputVariables The input variables of the prompt template config.
+         * @param inputVariables The input variables of the prompt template config.
          * @return {@code this} prompt template config.
          */
-        public Builder withInputVariables(List<KernelInputVariable> kernelInputVariables) {
-            this.kernelInputVariables = new ArrayList<>(kernelInputVariables);
+        public Builder withInputVariables(List<InputVariable> inputVariables) {
+            this.inputVariables = new ArrayList<>(inputVariables);
             return this;
         }
 
         /**
          * Set the output variable of the prompt template config.
          *
-         * @param kernelOutputVariable The output variable of the prompt template config.
+         * @param outputVariable The output variable of the prompt template config.
          * @return {@code this} prompt template config.
          */
-        public Builder withOutputVariable(KernelOutputVariable<?> kernelOutputVariable) {
-            this.kernelOutputVariable = kernelOutputVariable;
+        public Builder withOutputVariable(OutputVariable<?> outputVariable) {
+            this.outputVariable = outputVariable;
             return this;
         }
 
@@ -478,8 +478,8 @@ public class PromptTemplateConfig {
                 template,
                 templateFormat,
                 description,
-                kernelInputVariables,
-                kernelOutputVariable,
+                inputVariables,
+                outputVariable,
                 executionSettings);
         }
     }

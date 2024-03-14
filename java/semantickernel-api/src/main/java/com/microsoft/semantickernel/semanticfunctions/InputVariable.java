@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 /**
  * Metadata for an input variable of a {@link KernelFunction}.
  */
-public class KernelInputVariable {
+public class InputVariable {
 
     private final String name;
     @Nullable
@@ -21,7 +21,7 @@ public class KernelInputVariable {
     private final String type;
 
     /**
-     * Creates a new instance of {@link KernelInputVariable}.
+     * Creates a new instance of {@link InputVariable}.
      *
      * @param name         the name of the input variable
      * @param type         the type of the input variable
@@ -30,7 +30,7 @@ public class KernelInputVariable {
      * @param isRequired   whether the input variable is required
      */
     @JsonCreator
-    public KernelInputVariable(
+    public InputVariable(
         @JsonProperty("name") String name,
         @JsonProperty("type") String type,
         @JsonProperty("description") @Nullable String description,
@@ -47,11 +47,11 @@ public class KernelInputVariable {
     }
 
     /**
-     * Creates a new instance of {@link KernelInputVariable}.
+     * Creates a new instance of {@link InputVariable}.
      *
      * @param name the name of the input variable
      */
-    public KernelInputVariable(String name) {
+    public InputVariable(String name) {
         this.name = name;
         this.type = String.class.getName();
         this.description = null;
@@ -60,22 +60,22 @@ public class KernelInputVariable {
     }
 
     /**
-     * Creates a new instance of {@link KernelInputVariable}.
+     * Creates a new instance of {@link InputVariable}.
      *
      * @param name         the name of the input variable
      * @param type         the type of the input variable
      * @param description  the description of the input variable
      * @param defaultValue the default value of the input variable
      * @param required     whether the input variable is required
-     * @return a new instance of {@link KernelInputVariable}
+     * @return a new instance of {@link InputVariable}
      */
-    public static KernelInputVariable build(
+    public static InputVariable build(
         String name,
         Class<?> type,
         @Nullable String description,
         @Nullable String defaultValue,
         boolean required) {
-        return new KernelInputVariable(name, type.getName(), description, defaultValue, required);
+        return new InputVariable(name, type.getName(), description, defaultValue, required);
     }
 
     /**
@@ -149,7 +149,7 @@ public class KernelInputVariable {
             return false;
         }
 
-        KernelInputVariable other = (KernelInputVariable) obj;
+        InputVariable other = (InputVariable) obj;
         if (!Objects.equals(name, other.name)) {
             return false;
         }

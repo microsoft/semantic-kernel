@@ -17,10 +17,10 @@ public class PromptTemplateConfigTest {
         String name = "a name";
         String description = "a description";
         String template = "A template for testing {{plugin.function input}}";
-        List<KernelInputVariable> kernelInputVariables = Arrays.asList(
-            new KernelInputVariable("input", "java.lang.String", "a description", "default value",
+        List<InputVariable> inputVariables = Arrays.asList(
+            new InputVariable("input", "java.lang.String", "a description", "default value",
                 true));
-        KernelOutputVariable kernelOutputVariable = new KernelOutputVariable("java.lang.String",
+        OutputVariable outputVariable = new OutputVariable("java.lang.String",
             "a description");
 
         PromptTemplateConfig expected = new PromptTemplateConfig(
@@ -29,8 +29,8 @@ public class PromptTemplateConfigTest {
             template,
             "semantic-kernel",
             description,
-            kernelInputVariables,
-            kernelOutputVariable,
+            inputVariables,
+            outputVariable,
             new HashMap<String, PromptExecutionSettings>() {
                 {
                     put("default", PromptExecutionSettings.builder().build());
@@ -41,8 +41,8 @@ public class PromptTemplateConfigTest {
             .withName(name)
             .withDescription(description)
             .withTemplate(template)
-            .withInputVariables(kernelInputVariables)
-            .withOutputVariable(kernelOutputVariable)
+            .withInputVariables(inputVariables)
+            .withOutputVariable(outputVariable)
             .withExecutionSettings(new HashMap<String, PromptExecutionSettings>() {
                 {
                     put("default", PromptExecutionSettings.builder().build());
@@ -59,10 +59,10 @@ public class PromptTemplateConfigTest {
         String description = "a description";
         String template = "A template for testing {{plugin.function input}}";
         String templateFormat = "semantic-kernel";
-        List<KernelInputVariable> kernelInputVariables = Arrays.asList(
-            new KernelInputVariable("input", "java.lang.String", "a description", "default value",
+        List<InputVariable> inputVariables = Arrays.asList(
+            new InputVariable("input", "java.lang.String", "a description", "default value",
                 true));
-        KernelOutputVariable kernelOutputVariable = new KernelOutputVariable("java.lang.String",
+        OutputVariable outputVariable = new OutputVariable("java.lang.String",
             "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {
             {
@@ -75,8 +75,8 @@ public class PromptTemplateConfigTest {
             .withTemplate(template)
             .withTemplateFormat(templateFormat)
             .withDescription(description)
-            .withInputVariables(kernelInputVariables)
-            .withOutputVariable(kernelOutputVariable)
+            .withInputVariables(inputVariables)
+            .withOutputVariable(outputVariable)
             .withExecutionSettings(executionSettings)
             .build();
 
@@ -85,8 +85,8 @@ public class PromptTemplateConfigTest {
         assertEquals(template, config.getTemplate());
         assertEquals(templateFormat, config.getTemplateFormat());
         assertEquals(description, config.getDescription());
-        assertEquals(kernelInputVariables, config.getInputVariables());
-        assertEquals(kernelOutputVariable, config.getOutputVariable());
+        assertEquals(inputVariables, config.getInputVariables());
+        assertEquals(outputVariable, config.getOutputVariable());
         assertEquals(executionSettings, config.getExecutionSettings());
 
     }
@@ -98,10 +98,10 @@ public class PromptTemplateConfigTest {
         String description = "a description";
         String template = "A template for testing {{plugin.function input}}";
         String templateFormat = "semantic-kernel";
-        List<KernelInputVariable> kernelInputVariables = Arrays.asList(
-            new KernelInputVariable("input", "java.lang.String", "a description", "default value",
+        List<InputVariable> inputVariables = Arrays.asList(
+            new InputVariable("input", "java.lang.String", "a description", "default value",
                 true));
-        KernelOutputVariable kernelOutputVariable = new KernelOutputVariable("java.lang.String",
+        OutputVariable outputVariable = new OutputVariable("java.lang.String",
             "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {
             {
@@ -114,8 +114,8 @@ public class PromptTemplateConfigTest {
             .withTemplate(template)
             .withTemplateFormat(templateFormat)
             .withDescription(description)
-            .withInputVariables(kernelInputVariables)
-            .withOutputVariable(kernelOutputVariable)
+            .withInputVariables(inputVariables)
+            .withOutputVariable(outputVariable)
             .withExecutionSettings(executionSettings)
             .build();
 

@@ -265,11 +265,11 @@ public abstract class KernelFunction<T> {
         /**
          * Set the input parameters for the function.
          *
-         * @param kernelInputVariables The input parameters for the function
+         * @param inputVariables The input parameters for the function
          * @return The builder
          */
         FromPromptBuilder<T> withInputParameters(
-            @Nullable List<KernelInputVariable> kernelInputVariables);
+            @Nullable List<InputVariable> inputVariables);
 
         /**
          * Set the prompt template for the function.
@@ -332,12 +332,12 @@ public abstract class KernelFunction<T> {
         /**
          * Set the output variable for the function.
          *
-         * @param kernelOutputVariable The output variable for the function
+         * @param outputVariable The output variable for the function
          * @param <U>                  The type of the output variable
          * @return The builder
          */
         <U> FromPromptBuilder<U> withOutputVariable(
-            @Nullable KernelOutputVariable<U> kernelOutputVariable);
+            @Nullable OutputVariable<U> outputVariable);
 
         /**
          * Set the output variable for the function.

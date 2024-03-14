@@ -289,12 +289,12 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable
         private String description;
         @Nullable
-        private List<KernelInputVariable> kernelInputVariables;
+        private List<InputVariable> inputVariables;
         @Nullable
         private String template;
         private String templateFormat = PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
         @Nullable
-        private KernelOutputVariable<?> kernelOutputVariable;
+        private OutputVariable<?> outputVariable;
         @Nullable
         private PromptTemplateFactory promptTemplateFactory;
         @Nullable
@@ -308,11 +308,11 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         @Override
         public FromPromptBuilder<T> withInputParameters(
-            @Nullable List<KernelInputVariable> kernelInputVariables) {
-            if (kernelInputVariables != null) {
-                this.kernelInputVariables = new ArrayList<>(kernelInputVariables);
+            @Nullable List<InputVariable> inputVariables) {
+            if (inputVariables != null) {
+                this.inputVariables = new ArrayList<>(inputVariables);
             } else {
-                this.kernelInputVariables = null;
+                this.inputVariables = null;
             }
             return this;
         }
@@ -376,14 +376,14 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         @Override
         public <U> FromPromptBuilder<U> withOutputVariable(
-            @Nullable KernelOutputVariable<U> kernelOutputVariable) {
-            this.kernelOutputVariable = kernelOutputVariable;
+            @Nullable OutputVariable<U> outputVariable) {
+            this.outputVariable = outputVariable;
             return (FromPromptBuilder<U>) this;
         }
 
         @Override
         public FromPromptBuilder<T> withOutputVariable(@Nullable String description, String type) {
-            return this.withOutputVariable(new KernelOutputVariable(type, description));
+            return this.withOutputVariable(new OutputVariable(type, description));
         }
 
         @Override
@@ -430,8 +430,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 template,
                 templateFormat,
                 description,
-                kernelInputVariables,
-                kernelOutputVariable,
+                inputVariables,
+                outputVariable,
                 executionSettings);
 
             PromptTemplate temp;

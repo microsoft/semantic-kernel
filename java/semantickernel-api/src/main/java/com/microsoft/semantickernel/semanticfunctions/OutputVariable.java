@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -11,7 +10,7 @@ import javax.annotation.Nullable;
 /**
  * Metadata for an output variable of a kernel function.
  */
-public class KernelOutputVariable<T> {
+public class OutputVariable<T> {
 
     @Nullable
     private final String description;
@@ -25,7 +24,7 @@ public class KernelOutputVariable<T> {
      * @param description The description of the output variable.
      */
     @JsonCreator
-    public KernelOutputVariable(
+    public OutputVariable(
         @Nullable @JsonProperty(value = "type", defaultValue = "java.lang.String") String type,
         @Nullable @JsonProperty("description") String description) {
         this.description = description;
@@ -41,7 +40,7 @@ public class KernelOutputVariable<T> {
      * @param type        The type of the output variable.
      * @param description The description of the output variable.
      */
-    public KernelOutputVariable(
+    public OutputVariable(
         @Nullable String description,
         Class<T> type) {
         this.description = description;
@@ -81,7 +80,7 @@ public class KernelOutputVariable<T> {
             return false;
         }
 
-        KernelOutputVariable that = (KernelOutputVariable) obj;
+        OutputVariable that = (OutputVariable) obj;
         if (!Objects.equals(type, that.type)) {
             return false;
         }

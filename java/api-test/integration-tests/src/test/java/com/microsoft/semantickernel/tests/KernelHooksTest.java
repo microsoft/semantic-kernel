@@ -14,7 +14,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.KernelOutputVariable;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Assertions;
@@ -56,7 +56,7 @@ public class KernelHooksTest {
                 .withTemperature(0.4)
                 .withTopP(1)
                 .build())
-            .withOutputVariable(new KernelOutputVariable<>("result", String.class))
+            .withOutputVariable(new OutputVariable<>("result", String.class))
             .build();
 
         AtomicBoolean preHookTriggered = new AtomicBoolean(false);

@@ -19,8 +19,8 @@ public class KernelFunctionMetadata<T> {
     private final String pluginName;
     @Nullable
     private final String description;
-    private final List<KernelInputVariable> parameters;
-    private final KernelOutputVariable<T> returnParameterType;
+    private final List<InputVariable> parameters;
+    private final OutputVariable<T> returnParameterType;
 
     /**
      * Create a new instance of KernelFunctionMetadata.
@@ -35,8 +35,8 @@ public class KernelFunctionMetadata<T> {
         @Nullable String pluginName,
         String name,
         @Nullable String description,
-        @Nullable List<KernelInputVariable> parameters,
-        KernelOutputVariable<T> returnParameterType) {
+        @Nullable List<InputVariable> parameters,
+        OutputVariable<T> returnParameterType) {
         this.pluginName = pluginName;
         this.name = name;
         this.description = description;
@@ -73,7 +73,7 @@ public class KernelFunctionMetadata<T> {
      *
      * @return The parameters of the function.
      */
-    public List<KernelInputVariable> getParameters() {
+    public List<InputVariable> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
@@ -92,7 +92,7 @@ public class KernelFunctionMetadata<T> {
      *
      * @return The return parameter of the function.
      */
-    public KernelOutputVariable<T> getOutputVariableType() {
+    public OutputVariable<T> getOutputVariableType() {
         return returnParameterType;
     }
 
