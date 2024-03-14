@@ -93,7 +93,6 @@
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Agents\ParrotAgent.yaml" />
-    <EmbeddedResource Include="Resources\Agents\ToolAgent.yaml" />
+    <EmbeddedResource Include="Resources\Agents\*" />
   </ItemGroup>
 </Project>
