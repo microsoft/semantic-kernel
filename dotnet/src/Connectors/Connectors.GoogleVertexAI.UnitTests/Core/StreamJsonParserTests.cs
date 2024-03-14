@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Xunit;
 
@@ -19,7 +20,7 @@ public sealed class StreamJsonParserTests
         var stream = new MemoryStream();
 
         // Act
-        var result = parser.Parse(stream);
+        var result = parser.ParseAsync(stream);
 
         // Assert
         Assert.Empty(result);
@@ -35,7 +36,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.Parse(stream);
+        var result = parser.ParseAsync(stream);
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
@@ -51,7 +52,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{input}]");
 
         // Act
-        var result = parser.Parse(stream);
+        var result = parser.ParseAsync(stream);
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
@@ -68,7 +69,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{firstInput},{secondInput}]");
 
         // Act
-        var result = parser.Parse(stream);
+        var result = parser.ParseAsync(stream);
 
         // Assert
         Assert.Collection(result,
@@ -87,7 +88,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{firstInput},{secondInput}]");
 
         // Act
-        var result = parser.Parse(stream);
+        var result = parser.ParseAsync(stream);
 
         // Assert
         Assert.Collection(result,
@@ -105,7 +106,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.Parse(stream);
+        var result = parser.ParseAsync(stream);
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
@@ -121,7 +122,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.Parse(stream);
+        var result = parser.ParseAsync(stream);
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
@@ -137,14 +138,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.Parse(stream);
+        var result = parser.ParseAsync(stream);
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWithJsonValidationWhenStreamContainsInvalidJsonThrowsJsonException()
+    public async Task ParseWithJsonValidationWhenStreamContainsInvalidJsonThrowsJsonExceptionAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -154,14 +155,14 @@ public sealed class StreamJsonParserTests
 
         // Act
         // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-        void Act() => parser.Parse(stream, validateJson: true).ToList();
+        async Task Act() => await parser.ParseAsync(stream, validateJson: true).ToListAsync();
 
         // Assert
-        Assert.ThrowsAny<JsonException>(Act);
+        await Assert.ThrowsAnyAsync<JsonException>(Act);
     }
 
     [Fact]
-    public void ParseWithoutJsonValidationWhenStreamContainsInvalidJsonDoesntThrow()
+    public async Task ParseWithoutJsonValidationWhenStreamContainsInvalidJsonDoesntThrowAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -169,11 +170,9 @@ public sealed class StreamJsonParserTests
         string input = """{"foo":,"bar"}""";
         WriteToStream(stream, input);
 
-        // Act
-        var exception = Record.Exception(() => parser.Parse(stream, validateJson: false).ToList());
-
-        // Assert
-        Assert.Null(exception);
+        // Act & Assert
+        await parser.ParseAsync(stream, validateJson: false).ToListAsync();
+        // We don't need to use Assert here, because we are testing that the method doesn't throw
     }
 
     private static void WriteToStream(Stream stream, string input)

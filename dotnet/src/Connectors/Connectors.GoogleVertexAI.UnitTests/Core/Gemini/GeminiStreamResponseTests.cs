@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Xunit;
 
@@ -17,19 +18,19 @@ public sealed class GeminiStreamResponseTests
     private const string StreamTestDataFilePath = "./TestData/chat_stream_response.json";
 
     [Fact]
-    public void SerializationShouldPopulateAllProperties()
+    public async Task SerializationShouldPopulateAllPropertiesAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
         var stream = new MemoryStream();
-        var streamExample = File.ReadAllText(StreamTestDataFilePath);
+        var streamExample = await File.ReadAllTextAsync(StreamTestDataFilePath);
         var sampleResponses = JsonSerializer.Deserialize<List<GeminiResponse>>(streamExample)!;
 
         WriteToStream(stream, streamExample);
 
         // Act
-        var jsonChunks = parser.Parse(stream);
-        var responses = jsonChunks.Select(json => JsonSerializer.Deserialize<GeminiResponse>(json)).ToList();
+        var jsonChunks = await parser.ParseAsync(stream).ToListAsync();
+        var responses = jsonChunks.Select(json => JsonSerializer.Deserialize<GeminiResponse>(json));
 
         // Assert
         // Uses all because Equivalent ignores order
