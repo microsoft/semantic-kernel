@@ -4,11 +4,11 @@ import logging
 from typing import Dict, List, Optional, TypeVar, Union
 
 from pydantic import Field, field_validator
-from typing_extensions import Literal
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.input_variable import InputVariable
 
 PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
@@ -20,7 +20,7 @@ class PromptTemplateConfig(KernelBaseModel):
     name: Optional[str] = ""
     description: Optional[str] = ""
     template: Optional[str] = None
-    template_format: Optional[Union[Literal["semantic-kernel"], Literal["handlebars"]]] = "semantic-kernel"
+    template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME
     input_variables: List[InputVariable] = Field(default_factory=list)
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
@@ -89,7 +89,7 @@ class PromptTemplateConfig(KernelBaseModel):
         name: str,
         description: str,
         template: str,
-        template_format: Literal["semantic-kernel"] = "semantic-kernel",
+        template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         input_variables: List[InputVariable] = [],
         execution_settings: Dict[str, PromptExecutionSettings] = {},
     ) -> "PromptTemplateConfig":

@@ -6,7 +6,7 @@ import inspect
 import logging
 import os
 from copy import copy
-from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, AsyncIterable, Callable, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
 
@@ -32,14 +32,18 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.const import (
+    HANDLEBARS_TEMPLATE_FORMAT_NAME,
+    KERNEL_TEMPLATE_FORMAT_NAME,
+    TEMPLATE_FORMAT_TYPES,
+)
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
@@ -371,7 +375,9 @@ class Kernel(KernelBaseModel):
         plugin_name: str,
         prompt: str,
         arguments: Optional[KernelArguments] = None,
-        template_format: str = "semantic-kernel",
+        template_format: Literal[
+            KERNEL_TEMPLATE_FORMAT_NAME, HANDLEBARS_TEMPLATE_FORMAT_NAME
+        ] = KERNEL_TEMPLATE_FORMAT_NAME,
         **kwargs: Any,
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
         """
@@ -584,14 +590,16 @@ class Kernel(KernelBaseModel):
                 prompt = prompt_file.read()
                 prompt_template_config.template = prompt
 
-            kernel_prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
+            prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                prompt_template_config=prompt_template_config
+            )
 
             functions += [
                 self.create_function_from_prompt(
                     plugin_name=plugin_directory_name,
-                    prompt_template=kernel_prompt_template,
+                    prompt_template=prompt_template,
                     prompt_template_config=prompt_template_config,
-                    template_format="semantic-kernel",
+                    template_format=prompt_template_config.template_format,
                     function_name=function_name,
                     description=prompt_template_config.description,
                 )
@@ -621,7 +629,7 @@ class Kernel(KernelBaseModel):
         prompt_execution_settings: Optional[
             Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
         ] = None,
-        template_format: str = "semantic-kernel",
+        template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: Optional[PromptTemplateBase] = None,
         **kwargs: Any,
     ) -> KernelFunction:
