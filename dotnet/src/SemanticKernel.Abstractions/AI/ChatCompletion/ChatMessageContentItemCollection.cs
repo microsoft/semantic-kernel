@@ -22,6 +22,14 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
+    /// </summary>
+    public ChatMessageContentItemCollection(IReadOnlyList<KernelContent> items)
+    {
+        this._items = new(items);
+    }
+
+    /// <summary>
     /// Gets or sets the content item at the specified index in the collection.
     /// </summary>
     /// <param name="index">The index of the content item to get or set.</param>
