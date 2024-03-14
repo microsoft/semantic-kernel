@@ -14,14 +14,6 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="RepoUtils\PlanExtensions.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Resources\GenerateStory.yaml" />
-    <None Remove="Resources\GenerateStoryHandlebars.yaml" />
-    <None Remove="Resources\travelinfo.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
@@ -83,13 +75,25 @@
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <Compile Remove="RepoUtils\PlanExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\Agents\ParrotAgent.yaml" />
+    <None Remove="Resources\Agents\ToolAgent.yaml" />
+    <None Remove="Resources\GenerateStory.yaml" />
+    <None Remove="Resources\GenerateStoryHandlebars.yaml" />
+    <None Remove="Resources\travelinfo.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Plugins\ApiManifestPlugins\**\apimanifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Agents\ParrotAgent.yaml" />
+    <EmbeddedResource Include="Resources\Agents\ToolAgent.yaml" />
   </ItemGroup>
 </Project>
