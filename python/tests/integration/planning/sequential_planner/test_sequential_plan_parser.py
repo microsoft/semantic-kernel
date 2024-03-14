@@ -4,9 +4,7 @@ import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
-    SequentialPlanParser,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
 from tests.integration.fakes.email_plugin_fake import EmailPluginFake
 from tests.integration.fakes.summarize_plugin_fake import SummarizePluginFake
 from tests.integration.fakes.writer_plugin_fake import WriterPluginFake
@@ -32,10 +30,10 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
 
     plan_string = """
 <plan>
-    <function.SummarizePlugin.Summarize/>
-    <function.WriterPlugin.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function.email.GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
-    <function.email.SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function.SummarizePlugin-Summarize/>
+    <function.WriterPlugin-Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
+    <function.email-GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
+    <function.email-SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>
 """
     goal = "Summarize an input, translate to french, and e-mail to John Doe"

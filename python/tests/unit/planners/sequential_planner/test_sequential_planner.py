@@ -72,10 +72,10 @@ async def test_it_can_create_plan(goal):
 
     plan_string = """
 <plan>
-    <function.SummarizePlugin.Summarize/>
-    <function.WriterPlugin.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function.email.GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
-    <function.email.SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function.SummarizePlugin-Summarize/>
+    <function.WriterPlugin-Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
+    <function.email-GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
+    <function.email-SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>"""
 
     mock_function_flow_function = Mock(spec=KernelFunction)

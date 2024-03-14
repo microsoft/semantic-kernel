@@ -70,11 +70,11 @@ def test_can_call_to_plan_from_xml():
     kernel = create_kernel_and_functions_mock(functions)
 
     plan_string = """<plan>
-    <function.SummarizePlugin.Summarize/>
-    <function.WriterPlugin.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function.get_email.GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" \
+    <function.SummarizePlugin-Summarize/>
+    <function.WriterPlugin-Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
+    <function.get_email-GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" \
         appendToResult="PLAN_RESULT"/>
-    <function.send_email.SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function.send_email-SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>"""
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
@@ -125,7 +125,7 @@ def test_can_create_plan_with_text_nodes():
     plan_text = """
         <goal>Test the functionFlowRunner</goal>
         <plan>
-        <function.MockPlugin.Echo input="Hello World" />
+        <function.MockPlugin-Echo input="Hello World" />
         This is some text
         </plan>"""
     functions = [
@@ -154,16 +154,16 @@ def test_can_create_plan_with_text_nodes():
         (
             """
         <plan>
-        <function.MockPlugin.Echo input="Hello World" />
-        <function.MockPlugin.DoesNotExist input="Hello World" />
+        <function.MockPlugin-Echo input="Hello World" />
+        <function.MockPlugin-DoesNotExist input="Hello World" />
         </plan>""",
             True,
         ),
         (
             """
         <plan>
-        <function.MockPlugin.Echo input="Hello World" />
-        <function.MockPlugin.DoesNotExist input="Hello World" />
+        <function.MockPlugin-Echo input="Hello World" />
+        <function.MockPlugin-DoesNotExist input="Hello World" />
         </plan>""",
             False,
         ),
@@ -194,7 +194,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
 
         assert plan._steps[1].plugin_name == plan.__class__.__name__
         assert plan._steps[1].name.startswith("plan_")
-        assert plan._steps[1].description == "MockPlugin.DoesNotExist"
+        assert plan._steps[1].description == "MockPlugin-DoesNotExist"
     else:
         with pytest.raises(PlannerInvalidPlanError):
             SequentialPlanParser.to_plan_from_xml(
@@ -210,19 +210,19 @@ def test_can_create_plan_with_other_text():
     goal_text = "Test the functionFlowRunner"
     plan_text1 = """Possible result: <goal>Test the functionFlowRunner</goal>
         <plan>
-        <function.MockPlugin.Echo input="Hello World" />
+        <function.MockPlugin-Echo input="Hello World" />
         This is some text
         </plan>"""
     plan_text2 = """
         <plan>
-        <function.MockPlugin.Echo input="Hello World" />
+        <function.MockPlugin-Echo input="Hello World" />
         This is some text
         </plan>
 
         plan end"""
     plan_text3 = """
         <plan>
-        <function.MockPlugin.Echo input="Hello World" />
+        <function.MockPlugin-Echo input="Hello World" />
         This is some text
         </plan>
 
@@ -272,20 +272,20 @@ def test_can_create_plan_with_other_text():
 @pytest.mark.parametrize(
     "plan_text",
     [
-        """<plan> <function.CodeSearch.codesearchresults_post organization="MyOrg" project="Proj" \
+        """<plan> <function.CodeSearch-codesearchresults_post organization="MyOrg" project="Proj" \
             api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" \
                 payload="{&quot;searchText&quot;:&quot;test&quot;,&quot;$top&quot;:3,&quot;filters&quot;\
                     :{&quot;Repository/Project&quot;:[&quot;Proj&quot;],&quot;Repository/Repository&quot;\
                         :[&quot;Repo&quot;]}}" content_type="application/json" appendToResult=\
                             "RESULT__TOP_THREE_RESULTS" /> </plan>""",
         """<plan>
-  <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" \
+  <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
     api_version="7.1-preview.1" payload="{&quot;searchText&quot;: &quot;MySearchText&quot;, \
         &quot;filters&quot;: {&quot;pathFilters&quot;: [&quot;MyRepo&quot;]} }" \
             setContextVariable="SEARCH_RESULTS"/>
 </plan><!-- END -->""",
         """<plan>
-  <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" \
+  <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
     api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" \
         payload="{ 'searchText': 'MySearchText', 'filters': { 'Project': ['MyProject'], \
             'Repository': ['MyRepo'] }, 'top': 3, 'skip': 0 }" content_type="application/json" \
@@ -324,9 +324,9 @@ def test_can_create_plan_with_ignored_nodes():
     # Arrange
     goal_text = "Test the functionFlowRunner"
     plan_text = """<plan>
-        <function.MockPlugin.Echo input="Hello World" />
+        <function.MockPlugin-Echo input="Hello World" />
         <tag>Some other tag</tag>
-        <function.MockPlugin.Echo />
+        <function.MockPlugin-Echo />
         </plan>"""
     functions = [
         ("Echo", "MockPlugin", "Echo an input", True, "Mock Echo Result"),
