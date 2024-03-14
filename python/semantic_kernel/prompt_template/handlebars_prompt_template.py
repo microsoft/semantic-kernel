@@ -22,9 +22,18 @@ logger: logging.Logger = logging.getLogger(__name__)
 class HandlebarsPromptTemplate(PromptTemplateBase):
     """Create a Handlebars prompt template.
 
-    Args:
-        PromptTemplateConfig:
+    Handlebars are parsed as a whole and therefore do not have variables that can be extracted,
+    also with handlebars there is no distinction in syntax between a variable and a value,
+    a value that is encountered is tried to resolve with the arguments and the functions,
+    if not found, the literal value is returned.
 
+    Args:
+        PromptTemplateConfig: The prompt template configuration
+            This is checked if the template format is 'handlebars'
+
+    Raises:
+        ValueError: If the template format is not 'handlebars'
+        HandlebarsTemplateSyntaxError: If the handlebars template has a syntax error
     """
 
     _template_compiler: Any = PrivateAttr()
