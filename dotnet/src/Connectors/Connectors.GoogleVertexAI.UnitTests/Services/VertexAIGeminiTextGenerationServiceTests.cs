@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
@@ -24,7 +25,7 @@ public sealed class VertexAIGeminiTextGenerationServiceTests
     {
         // Arrange & Act
         string model = "fake-model";
-        var service = new VertexAIGeminiTextGenerationService(model, () => "key", "location", "project");
+        var service = new VertexAIGeminiTextGenerationService(model, () => Task.FromResult("key"), "location", "project");
 
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);

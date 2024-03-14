@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -22,21 +23,21 @@ public static class VertexAIKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
-    /// <param name="bearerKeyProvider">The Bearer Key provider for authentication.</param>
+    /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
     /// <remarks>
-    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// This <paramref name="bearerTokenProvider"/> will be called on every request,
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
     public static IKernelBuilder AddVertexAIGeminiTextGeneration(
         this IKernelBuilder builder,
         string modelId,
-        Func<string> bearerKeyProvider,
+        Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
         string? serviceId = null,
@@ -44,14 +45,14 @@ public static class VertexAIKernelBuilderExtensions
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
-        Verify.NotNull(bearerKeyProvider);
+        Verify.NotNull(bearerTokenProvider);
         Verify.NotNull(location);
         Verify.NotNull(projectId);
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new VertexAIGeminiTextGenerationService(
                 modelId: modelId,
-                bearerKeyProvider: bearerKeyProvider,
+                bearerTokenProvider: bearerTokenProvider,
                 location: location,
                 projectId: projectId,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
@@ -101,21 +102,21 @@ public static class VertexAIKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
-    /// <param name="bearerKeyProvider">The Bearer Key provider for authentication.</param>
+    /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
     /// <remarks>
-    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// This <paramref name="bearerTokenProvider"/> will be called on every request,
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
     public static IKernelBuilder AddVertexAIGeminiChatCompletion(
         this IKernelBuilder builder,
         string modelId,
-        Func<string> bearerKeyProvider,
+        Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
         string? serviceId = null,
@@ -123,14 +124,14 @@ public static class VertexAIKernelBuilderExtensions
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
-        Verify.NotNull(bearerKeyProvider);
+        Verify.NotNull(bearerTokenProvider);
         Verify.NotNull(location);
         Verify.NotNull(projectId);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new VertexAIGeminiChatCompletionService(
                 modelId: modelId,
-                bearerKeyProvider: bearerKeyProvider,
+                bearerTokenProvider: bearerTokenProvider,
                 location: location,
                 projectId: projectId,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
@@ -180,21 +181,21 @@ public static class VertexAIKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
-    /// <param name="bearerKeyProvider">The Bearer Key provider for authentication.</param>
+    /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
     /// <remarks>
-    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// This <paramref name="bearerTokenProvider"/> will be called on every request,
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
-        Func<string> bearerKeyProvider,
+        Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
         string? serviceId = null,
@@ -202,14 +203,14 @@ public static class VertexAIKernelBuilderExtensions
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
-        Verify.NotNull(bearerKeyProvider);
+        Verify.NotNull(bearerTokenProvider);
         Verify.NotNull(location);
         Verify.NotNull(projectId);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new VertexAITextEmbeddingGenerationService(
                 modelId: modelId,
-                bearerKeyProvider: bearerKeyProvider,
+                bearerTokenProvider: bearerTokenProvider,
                 location: location,
                 projectId: projectId,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),

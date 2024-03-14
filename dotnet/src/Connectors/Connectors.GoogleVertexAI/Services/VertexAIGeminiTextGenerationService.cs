@@ -37,7 +37,7 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
         string projectId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : this(modelId, () => bearerKey, location, projectId, httpClient, loggerFactory)
+        : this(modelId, () => Task.FromResult(bearerKey), location, projectId, httpClient, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(bearerKey);
     }
@@ -46,26 +46,26 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
     /// Initializes a new instance of the <see cref="VertexAIGeminiTextGenerationService"/> class.
     /// </summary>
     /// <param name="modelId">The model identifier.</param>
-    /// <param name="bearerKeyProvider">The Bearer Key provider for authentication.</param>
+    /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The region to process the request.</param>
     /// <param name="projectId">Your Project Id.</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     /// <remarks>
-    /// This <paramref name="bearerKeyProvider"/> will be called on every request,
+    /// This <paramref name="bearerTokenProvider"/> will be called on every request,
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
     public VertexAIGeminiTextGenerationService(
         string modelId,
-        Func<string> bearerKeyProvider,
+        Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNull(bearerKeyProvider);
+        Verify.NotNull(bearerTokenProvider);
         Verify.NotNullOrWhiteSpace(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
@@ -74,7 +74,7 @@ public sealed class VertexAIGeminiTextGenerationService : ITextGenerationService
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: modelId,
-            bearerKeyProvider: bearerKeyProvider,
+            bearerTokenProvider: bearerTokenProvider,
             location: location,
             projectId: projectId,
             logger: loggerFactory?.CreateLogger(typeof(VertexAIGeminiTextGenerationService))));

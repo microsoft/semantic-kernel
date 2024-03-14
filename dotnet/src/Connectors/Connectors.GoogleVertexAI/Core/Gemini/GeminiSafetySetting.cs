@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -122,16 +119,6 @@ public readonly struct GeminiSafetyCategory : IEquatable<GeminiSafetyCategory>
     }
 
     /// <summary>
-    /// An enumerable collection of GeminiSafetyCategory.
-    /// </summary>
-    public static IEnumerable<GeminiSafetyCategory> GetAll() =>
-        typeof(GeminiSafetyCategory).GetFields(BindingFlags.Public |
-                                               BindingFlags.Static |
-                                               BindingFlags.DeclaredOnly)
-            .Select(f => f.GetValue(null))
-            .Cast<GeminiSafetyCategory>();
-
-    /// <summary>
     /// Represents the equality operator for comparing two instances of <see cref="GeminiSafetyCategory"/>.
     /// </summary>
     /// <param name="left">The left <see cref="GeminiSafetyCategory"/> instance to compare.</param>
@@ -211,16 +198,6 @@ public readonly struct GeminiSafetyThreshold : IEquatable<GeminiSafetyThreshold>
         Verify.NotNullOrWhiteSpace(label, nameof(label));
         this.Label = label;
     }
-
-    /// <summary>
-    /// An enumerable collection of GeminiSafetyCategory.
-    /// </summary>
-    public static IEnumerable<GeminiSafetyThreshold> GetAll() =>
-        typeof(GeminiSafetyThreshold).GetFields(BindingFlags.Public |
-                                                BindingFlags.Static |
-                                                BindingFlags.DeclaredOnly)
-            .Select(f => f.GetValue(null))
-            .Cast<GeminiSafetyThreshold>();
 
     /// <summary>
     /// Determines whether two GeminiSafetyThreshold objects are equal.

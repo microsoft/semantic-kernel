@@ -54,7 +54,7 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         Verify.NotNullOrEmpty(data);
 
         var geminiRequest = this.GetEmbeddingRequest(data);
-        using var httpRequestMessage = this.CreateHttpRequest(geminiRequest, this._embeddingEndpoint);
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);

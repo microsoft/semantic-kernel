@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 internal abstract class ClientBase
 {
-    private readonly Func<string>? _bearerKeyProvider;
+    private readonly Func<Task<string>>? _bearerTokenProvider;
 
     private readonly ILogger _logger;
 
@@ -23,11 +23,11 @@ internal abstract class ClientBase
     protected ClientBase(
         HttpClient httpClient,
         ILogger? logger,
-        Func<string> bearerKeyProvider)
+        Func<Task<string>> bearerTokenProvider)
         : this(httpClient, logger)
     {
-        Verify.NotNull(bearerKeyProvider);
-        this._bearerKeyProvider = bearerKeyProvider;
+        Verify.NotNull(bearerTokenProvider);
+        this._bearerTokenProvider = bearerTokenProvider;
     }
 
     protected ClientBase(
@@ -84,14 +84,14 @@ internal abstract class ClientBase
         }
     }
 
-    protected HttpRequestMessage CreateHttpRequest(object requestData, Uri endpoint)
+    protected async Task<HttpRequestMessage> CreateHttpRequestAsync(object requestData, Uri endpoint)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase)));
 
-        if (this._bearerKeyProvider?.Invoke() is { } bearerKey)
+        if (this._bearerTokenProvider != null && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
         {
             httpRequestMessage.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", bearerKey);

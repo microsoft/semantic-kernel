@@ -123,7 +123,7 @@ public sealed class GeminiCountingTokensTests : IDisposable
             return new GeminiTokenCounterClient(
                 httpClient: this._httpClient,
                 modelId: modelId,
-                bearerKeyProvider: () => bearerKey,
+                bearerTokenProvider: () => Task.FromResult(bearerKey),
                 location: "fake-location",
                 projectId: "fake-project-id");
         }

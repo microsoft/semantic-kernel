@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 using Xunit;
 
@@ -12,21 +13,21 @@ namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core;
 public sealed class StreamJsonParserTests
 {
     [Fact]
-    public void ParseWhenStreamIsEmptyReturnsEmptyEnumerable()
+    public async Task ParseWhenStreamIsEmptyReturnsEmptyEnumerableAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
         var stream = new MemoryStream();
 
         // Act
-        var result = parser.Parse(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Empty(result);
     }
 
     [Fact]
-    public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObject()
+    public async Task ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -35,14 +36,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.Parse(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWhenStreamContainsArrayWithOnlyOneObjectReturnsEnumerableWithOneObject()
+    public async Task ParseWhenStreamContainsArrayWithOnlyOneObjectReturnsEnumerableWithOneObjectAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -51,14 +52,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{input}]");
 
         // Act
-        var result = parser.Parse(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWhenStreamContainsArrayOfTwoObjectsReturnsEnumerableWithTwoObjects()
+    public async Task ParseWhenStreamContainsArrayOfTwoObjectsReturnsEnumerableWithTwoObjectsAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -68,7 +69,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{firstInput},{secondInput}]");
 
         // Act
-        var result = parser.Parse(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Collection(result,
@@ -77,7 +78,7 @@ public sealed class StreamJsonParserTests
     }
 
     [Fact]
-    public void ParseWhenStreamContainsArrayOfTwoObjectsWithNestedObjectsReturnsEnumerableWithTwoObjects()
+    public async Task ParseWhenStreamContainsArrayOfTwoObjectsWithNestedObjectsReturnsEnumerableWithTwoObjectsAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -87,7 +88,7 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, $"[{firstInput},{secondInput}]");
 
         // Act
-        var result = parser.Parse(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Collection(result,
@@ -96,7 +97,7 @@ public sealed class StreamJsonParserTests
     }
 
     [Fact]
-    public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedQuotes()
+    public async Task ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedQuotesAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -105,14 +106,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.Parse(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslash()
+    public async Task ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslashAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -121,14 +122,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.Parse(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslashAndQuotes()
+    public async Task ParseWhenStreamContainsOneObjectReturnsEnumerableWithOneObjectWithEscapedBackslashAndQuotesAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -137,14 +138,14 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        var result = parser.Parse(stream);
+        var result = await parser.ParseAsync(stream).ToListAsync();
 
         // Assert
         Assert.Single(result, json => input.Equals(json, StringComparison.Ordinal));
     }
 
     [Fact]
-    public void ParseWithJsonValidationWhenStreamContainsInvalidJsonThrowsJsonException()
+    public async Task ParseWithJsonValidationWhenStreamContainsInvalidJsonThrowsJsonExceptionAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -154,14 +155,14 @@ public sealed class StreamJsonParserTests
 
         // Act
         // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-        void Act() => parser.Parse(stream, validateJson: true).ToList();
+        async Task Act() => await parser.ParseAsync(stream, validateJson: true).ToListAsync();
 
         // Assert
-        Assert.ThrowsAny<JsonException>(Act);
+        await Assert.ThrowsAnyAsync<JsonException>(Act);
     }
 
     [Fact]
-    public void ParseWithoutJsonValidationWhenStreamContainsInvalidJsonDoesntThrow()
+    public async Task ParseWithoutJsonValidationWhenStreamContainsInvalidJsonDoesntThrowAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
@@ -169,11 +170,9 @@ public sealed class StreamJsonParserTests
         string input = """{"foo":,"bar"}""";
         WriteToStream(stream, input);
 
-        // Act
-        var exception = Record.Exception(() => parser.Parse(stream, validateJson: false).ToList());
-
-        // Assert
-        Assert.Null(exception);
+        // Act & Assert
+        await parser.ParseAsync(stream, validateJson: false).ToListAsync();
+        // We don't need to use Assert here, because we are testing that the method doesn't throw
     }
 
     private static void WriteToStream(Stream stream, string input)

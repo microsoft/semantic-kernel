@@ -45,21 +45,21 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model to use to counting tokens</param>
-    /// <param name="bearerKeyProvider">Bearer key provider used for authentication</param>
+    /// <param name="bearerTokenProvider">Bearer key provider used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiTokenCounterClient(
         HttpClient httpClient,
         string modelId,
-        Func<string> bearerKeyProvider,
+        Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
             logger: logger,
-            bearerKeyProvider: bearerKeyProvider)
+            bearerTokenProvider: bearerTokenProvider)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(location);
@@ -84,7 +84,7 @@ internal sealed class GeminiTokenCounterClient : ClientBase
         Verify.NotNullOrWhiteSpace(prompt);
 
         var geminiRequest = CreateGeminiRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.CreateHttpRequest(geminiRequest, this._tokenCountingEndpoint);
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._tokenCountingEndpoint).ConfigureAwait(false);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);

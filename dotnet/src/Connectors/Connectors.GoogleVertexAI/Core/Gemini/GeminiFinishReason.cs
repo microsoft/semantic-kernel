@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -41,7 +38,7 @@ public readonly struct GeminiFinishReason : IEquatable<GeminiFinishReason>
     public static GeminiFinishReason Recitation { get; } = new("RECITATION");
 
     /// <summary>
-    /// 	Unknown reason.
+    /// Unknown reason.
     /// </summary>
     public static GeminiFinishReason Other { get; } = new("OTHER");
 
@@ -60,16 +57,6 @@ public readonly struct GeminiFinishReason : IEquatable<GeminiFinishReason>
         Verify.NotNullOrWhiteSpace(label, nameof(label));
         this.Label = label;
     }
-
-    /// <summary>
-    /// An enumerable collection of GeminiFinishReason.
-    /// </summary>
-    public static IEnumerable<GeminiFinishReason> GetAll() =>
-        typeof(GeminiFinishReason).GetFields(BindingFlags.Public |
-                                             BindingFlags.Static |
-                                             BindingFlags.DeclaredOnly)
-            .Select(f => f.GetValue(null))
-            .Cast<GeminiFinishReason>();
 
     /// <summary>
     /// Represents the equality operator for comparing two instances of <see cref="GeminiFinishReason"/>.

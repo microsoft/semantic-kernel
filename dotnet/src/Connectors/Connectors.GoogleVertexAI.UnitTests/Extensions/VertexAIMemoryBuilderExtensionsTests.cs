@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
@@ -38,7 +39,7 @@ public sealed class VertexAIMemoryBuilderExtensionsTests
 
         // Act
         var memory = builder
-            .WithVertexAITextEmbeddingGeneration("fake-model", () => "fake-bearer-key", "fake-location", "fake-project")
+            .WithVertexAITextEmbeddingGeneration("fake-model", () => Task.FromResult("fake-bearer-key"), "fake-location", "fake-project")
             .WithMemoryStore(this._mockMemoryStore.Object)
             .Build();
 

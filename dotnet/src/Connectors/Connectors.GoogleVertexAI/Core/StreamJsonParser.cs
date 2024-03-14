@@ -3,8 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
@@ -13,26 +16,36 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 /// </summary>
 internal sealed class StreamJsonParser
 {
+    private readonly char[] _buffer = new char[1];
+
     /// <summary>
     /// Parses a Stream containing JSON data and yields the individual JSON objects.
     /// </summary>
     /// <param name="stream">The Stream containing the JSON data.</param>
     /// <param name="validateJson">Set to true to enable JSON validation. Default is false.</param>
+    /// <param name="ct">The cancellation token.</param>
     /// <returns>An enumerable collection of string representing the individual JSON objects.</returns>
-    public IEnumerable<string> Parse(Stream stream, bool validateJson = false)
+    public async IAsyncEnumerable<string> ParseAsync(
+        Stream stream,
+        bool validateJson = false,
+        [EnumeratorCancellation] CancellationToken ct = default)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        while (ExtractNextJsonObject(reader, validateJson) is { } json)
+        while (await this.ExtractNextJsonStringAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
         {
             yield return json;
         }
     }
 
-    private static string? ExtractNextJsonObject(TextReader reader, bool validateJson)
+    private async Task<string?> ExtractNextJsonStringAsync(
+        TextReader reader,
+        bool validateJson,
+        CancellationToken ct)
     {
         JsonParserState state = new();
-        while ((state.CharacterInt = reader.Read()) != -1)
+        while (!ct.IsCancellationRequested && await reader.ReadAsync(this._buffer, 0, 1).ConfigureAwait(false) > 0)
         {
+            state.CurrentCharacter = this._buffer[0];
             if (IsEscapedCharacterInsideQuotes(state))
             {
                 continue;
@@ -104,8 +117,7 @@ internal sealed class StreamJsonParser
         public bool InsideQuotes { get; set; }
         public bool IsEscaping { get; set; }
         public bool IsCompleteJson { get; private set; }
-        public int CharacterInt { get; set; }
-        public char CurrentCharacter => (char)this.CharacterInt;
+        public char CurrentCharacter { get; set; }
 
         public void AppendToJsonObject()
         {

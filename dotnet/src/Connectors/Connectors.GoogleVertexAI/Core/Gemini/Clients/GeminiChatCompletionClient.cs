@@ -110,21 +110,21 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
-    /// <param name="bearerKeyProvider">Bearer key provider used for authentication</param>
+    /// <param name="bearerTokenProvider">Bearer key provider used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiChatCompletionClient(
         HttpClient httpClient,
         string modelId,
-        Func<string> bearerKeyProvider,
+        Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
             logger: logger,
-            bearerKeyProvider: bearerKeyProvider)
+            bearerTokenProvider: bearerTokenProvider)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(location);
@@ -185,13 +185,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            using var httpRequestMessage = this.CreateHttpRequest(state.GeminiRequest, this._chatStreamingEndpoint);
+            using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
             using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
                 .ConfigureAwait(false);
             using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
                 .ConfigureAwait(false);
 
-            foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCalling(state, responseStream))
+            await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken))
             {
                 yield return messageContent;
             }
@@ -230,35 +230,50 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         };
     }
 
-    private IEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsOrPopulateStateForToolCalling(
+    private async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(
         ChatCompletionState state,
-        Stream responseStream)
+        Stream responseStream,
+        [EnumeratorCancellation] CancellationToken ct)
     {
-        using var chatResponsesEnumerator = this.ProcessChatResponseStream(responseStream).GetEnumerator();
-        while (chatResponsesEnumerator.MoveNext())
+        IAsyncEnumerator<GeminiChatMessageContent>? chatResponsesEnumerator = null;
+        try
         {
-            var messageContent = chatResponsesEnumerator.Current!;
-            if (state.AutoInvoke && messageContent.ToolCalls is not null)
+            var chatResponsesEnumerable = this.ProcessChatResponseStreamAsync(responseStream, ct: ct);
+            chatResponsesEnumerator = chatResponsesEnumerable.GetAsyncEnumerator(ct);
+            while (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
             {
-                if (chatResponsesEnumerator.MoveNext())
+                var messageContent = chatResponsesEnumerator.Current!;
+                if (state.AutoInvoke && messageContent.ToolCalls is not null)
                 {
-                    // We disable auto-invoke because we have more than one message in the stream.
-                    // This scenario should not happen but I leave it as a precaution
-                    state.AutoInvoke = false;
-                    chatResponsesEnumerator.Reset();
-                    continue;
+                    if (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        // We disable auto-invoke because we have more than one message in the stream.
+                        // This scenario should not happen but I leave it as a precaution
+                        state.AutoInvoke = false;
+                        await chatResponsesEnumerator.DisposeAsync().ConfigureAwait(false);
+                        // We need to reset the enumerator
+                        chatResponsesEnumerator = chatResponsesEnumerable.GetAsyncEnumerator(ct);
+                        continue;
+                    }
+
+                    // If function call was returned there is no more data in stream
+                    state.LastMessage = messageContent;
+                    yield break;
                 }
 
-                // If function call was returned there is no more data in stream
-                state.LastMessage = messageContent;
-                yield break;
+                // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-invoke is already false
+                state.AutoInvoke = false;
+
+                // If we don't want to attempt to invoke any functions, just return the result.
+                yield return this.GetStreamingChatContentFromChatContent(messageContent);
             }
-
-            // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-invoke is already false
-            state.AutoInvoke = false;
-
-            // If we don't want to attempt to invoke any functions, just return the result.
-            yield return this.GetStreamingChatContentFromChatContent(messageContent);
+        }
+        finally
+        {
+            if (chatResponsesEnumerator != null)
+            {
+                await chatResponsesEnumerator.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 
@@ -354,7 +369,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         GeminiRequest geminiRequest,
         CancellationToken cancellationToken)
     {
-        using var httpRequestMessage = this.CreateHttpRequest(geminiRequest, endpoint);
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, endpoint).ConfigureAwait(false);
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
         var geminiResponse = DeserializeResponse<GeminiResponse>(body);
@@ -455,13 +470,28 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         }
     }
 
-    private IEnumerable<GeminiChatMessageContent> ProcessChatResponseStream(Stream responseStream)
-        => from geminiResponse in this.ParseResponseStream(responseStream)
-           from chatMessageContent in this.ProcessChatResponse(geminiResponse)
-           select chatMessageContent;
+    private async IAsyncEnumerable<GeminiChatMessageContent> ProcessChatResponseStreamAsync(
+        Stream responseStream,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        await foreach (var response in this.ParseResponseStreamAsync(responseStream, ct: ct))
+        {
+            foreach (var messageContent in this.ProcessChatResponse(response))
+            {
+                yield return messageContent;
+            }
+        }
+    }
 
-    private IEnumerable<GeminiResponse> ParseResponseStream(Stream responseStream)
-        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<GeminiResponse>);
+    private async IAsyncEnumerable<GeminiResponse> ParseResponseStreamAsync(
+        Stream responseStream,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, ct: ct))
+        {
+            yield return DeserializeResponse<GeminiResponse>(json);
+        }
+    }
 
     private List<GeminiChatMessageContent> ProcessChatResponse(GeminiResponse geminiResponse)
     {

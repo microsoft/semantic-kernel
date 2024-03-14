@@ -254,7 +254,6 @@ public sealed class GeminiRequestTests
 
         // Act
         var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
-
         // Assert
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[0].Role, c.Role),
