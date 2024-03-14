@@ -21,8 +21,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class Jinja2PromptTemplate(PromptTemplateBase):
     """
-    Creates and renders Jinja2 prompt templates to text. 
-    
+    Creates and renders Jinja2 prompt templates to text.
+
     Jinja2 templates support advanced features such as variable substitution, control structures,
     and inheritance, making it possible to dynamically generate text based on input arguments
     and predefined functions. This class leverages Jinja2's flexibility to render prompts that
