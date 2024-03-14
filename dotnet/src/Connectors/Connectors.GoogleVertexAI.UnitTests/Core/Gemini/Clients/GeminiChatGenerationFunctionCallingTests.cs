@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -277,8 +278,13 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         {
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
-        executionSettings.ToolCallBehavior.MaximumUseAttempts = 100;
-        executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts = 10;
+        // used reflection to simplify the test
+        typeof(ToolCallBehavior)
+            .GetField($"<{nameof(ToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(executionSettings.ToolCallBehavior, 100);
+        typeof(ToolCallBehavior)
+            .GetField($"<{nameof(ToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(executionSettings.ToolCallBehavior, 10);
 
         // Act
         await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
@@ -313,8 +319,13 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         {
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
-        executionSettings.ToolCallBehavior.MaximumUseAttempts = 1;
-        executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts = 1;
+        // used reflection to simplify the test
+        typeof(ToolCallBehavior)
+            .GetField($"<{nameof(ToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(executionSettings.ToolCallBehavior, 1);
+        typeof(ToolCallBehavior)
+            .GetField($"<{nameof(ToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(executionSettings.ToolCallBehavior, 1);
 
         // Act
         await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
@@ -342,8 +353,13 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         {
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
-        executionSettings.ToolCallBehavior.MaximumUseAttempts = 100;
-        executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts = 1;
+        // used reflection to simplify the test
+        typeof(ToolCallBehavior)
+            .GetField($"<{nameof(ToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(executionSettings.ToolCallBehavior, 100);
+        typeof(ToolCallBehavior)
+            .GetField($"<{nameof(ToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(executionSettings.ToolCallBehavior, 1);
 
         // Act
         var messages =
