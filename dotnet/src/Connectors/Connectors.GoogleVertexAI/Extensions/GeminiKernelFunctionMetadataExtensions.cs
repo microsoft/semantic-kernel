@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
 
 /// <summary>
 /// Extensions for <see cref="KernelFunctionMetadata"/> specific to the Gemini connector.
