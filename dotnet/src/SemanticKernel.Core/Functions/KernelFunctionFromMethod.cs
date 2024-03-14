@@ -126,8 +126,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override KernelFunction CreateForPlugin(string pluginName)
+    public override KernelFunction Clone(string pluginName)
     {
+        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+
         return new KernelFunctionFromMethod(
             this._function,
             this.Name,

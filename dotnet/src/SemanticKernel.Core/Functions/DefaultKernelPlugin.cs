@@ -31,7 +31,7 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
             {
                 Verify.NotNull(f, nameof(functions));
 
-                var cloned = f.CreateForPlugin(name);
+                var cloned = f.Clone(name);
                 this._functions.Add(cloned.Name, cloned);
             }
         }

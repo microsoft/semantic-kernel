@@ -388,7 +388,7 @@ public abstract class KernelFunction
     /// This method should only be used to create a new instance of a <see cref="KernelFunction"/> when adding
     /// a function to a <see cref="KernelPlugin"/>.
     /// </remarks>
-    public abstract KernelFunction CreateForPlugin(string pluginName);
+    public abstract KernelFunction Clone(string pluginName);
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.

@@ -219,8 +219,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override KernelFunction CreateForPlugin(string pluginName)
+    public override KernelFunction Clone(string pluginName)
     {
+        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+
         return new KernelFunctionFromPrompt(
             this._promptTemplate,
             this.Name,
@@ -228,7 +230,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this.Description,
             this.Metadata.Parameters,
             this.Metadata.ReturnParameter,
-            this.ExecutionSettings.ToDictionary(kv => kv.Key, kv => kv.Value),
+            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings.ToDictionary(kv => kv.Key, kv => kv.Value),
             this._inputVariables,
             this._logger);
     }

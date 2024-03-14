@@ -53,7 +53,7 @@ public class Example69_MutableKernelPlugin : BaseTest
                 {
                     ArgumentNullException.ThrowIfNull(f);
 
-                    var cloned = f.CreateForPlugin(name);
+                    var cloned = f.Clone(name);
                     this._functions.Add(cloned.Name, cloned);
                 }
             }
@@ -75,7 +75,7 @@ public class Example69_MutableKernelPlugin : BaseTest
         {
             ArgumentNullException.ThrowIfNull(function);
 
-            var cloned = function.CreateForPlugin(this.Name);
+            var cloned = function.Clone(this.Name);
             this._functions.Add(cloned.Name, cloned);
         }
 
