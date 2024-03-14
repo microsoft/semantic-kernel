@@ -1,4 +1,6 @@
-﻿namespace HuggingFaceImageTextDemo;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace HuggingFaceImageTextDemo;
 
 partial class FormMain
 {

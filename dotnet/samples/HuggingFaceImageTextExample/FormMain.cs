@@ -1,6 +1,8 @@
-﻿using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ImageToText;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Drawing.Imaging;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ImageToText;
 
 namespace HuggingFaceImageTextDemo;
 
