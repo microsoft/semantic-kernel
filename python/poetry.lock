@@ -2174,23 +2174,6 @@ referencing = ">=0.28.0,<0.32.0"
 requests = ">=2.31.0,<3.0.0"
 
 [[package]]
-name = "jsonschema-spec"
-version = "0.2.4"
-description = "JSONSchema Spec with object-oriented paths"
-optional = false
-python-versions = ">=3.8.0,<4.0.0"
-files = [
-    {file = "jsonschema_spec-0.2.4-py3-none-any.whl", hash = "sha256:e6dcf7056734ec6854f7888da6c08ce6c421f28aeeddce96bb90de0fb6d711ef"},
-    {file = "jsonschema_spec-0.2.4.tar.gz", hash = "sha256:873e396ad1ba6edf9f52d6174c110d4fafb7b5f5894744246a53fe75e5251ec2"},
-]
-
-[package.dependencies]
-pathable = ">=0.4.1,<0.5.0"
-PyYAML = ">=5.1"
-referencing = ">=0.28.0,<0.31.0"
-requests = ">=2.31.0,<3.0.0"
-
-[[package]]
 name = "jsonschema-specifications"
 version = "2023.7.1"
 description = "The JSON Schema meta-schemas and vocabularies, exposed as a Registry"
@@ -3188,20 +3171,19 @@ datalib = ["numpy (>=1)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)"]
 
 [[package]]
 name = "openapi-core"
-version = "0.18.2"
+version = "0.19.0"
 description = "client-side and server-side support for the OpenAPI Specification v3"
 optional = false
 python-versions = ">=3.8.0,<4.0.0"
 files = [
-    {file = "openapi_core-0.18.2-py3-none-any.whl", hash = "sha256:ec13d366766d564450de60374f59feb0b5ccb447aed642cdf0f1ecfcc6fbe80a"},
-    {file = "openapi_core-0.18.2.tar.gz", hash = "sha256:d4cc50f3ee03ae46313c83e97c6fbfe7e7ae9686741135eb0e4ed49e9d8ff08a"},
+    {file = "openapi_core-0.19.0-py3-none-any.whl", hash = "sha256:fd313562eae5af549ee3351b3248358a72b1dfb655b6626f86ca4d4ee72d95de"},
+    {file = "openapi_core-0.19.0.tar.gz", hash = "sha256:9c0a157ca8e21a1205f95e0495557a45ad2a33bc8f0f9002406d671420b0920a"},
 ]
 
 [package.dependencies]
-asgiref = ">=3.6.0,<4.0.0"
 isodate = "*"
 jsonschema = ">=4.18.0,<5.0.0"
-jsonschema-spec = ">=0.2.3,<0.3.0"
+jsonschema-path = ">=0.3.1,<0.4.0"
 more-itertools = "*"
 openapi-schema-validator = ">=0.6.0,<0.7.0"
 openapi-spec-validator = ">=0.7.1,<0.8.0"
@@ -3212,9 +3194,10 @@ werkzeug = "*"
 aiohttp = ["aiohttp (>=3.0)", "multidict (>=6.0.4,<7.0.0)"]
 django = ["django (>=3.0)"]
 falcon = ["falcon (>=3.0)"]
+fastapi = ["fastapi (>=0.108.0,<0.109.0)"]
 flask = ["flask"]
 requests = ["requests"]
-starlette = ["starlette (>=0.26.1,<0.32.0)"]
+starlette = ["aioitertools (>=0.11.0,<0.12.0)", "starlette (>=0.26.1,<0.38.0)"]
 
 [[package]]
 name = "openapi-schema-validator"
@@ -4280,6 +4263,19 @@ files = [
 pyasn1 = ">=0.4.6,<0.6.0"
 
 [[package]]
+name = "pybars4"
+version = "0.9.13"
+description = "Handlebars.js templating for Python 3"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pybars4-0.9.13.tar.gz", hash = "sha256:425817da20d4ad320bc9b8e77a60cab1bb9d3c677df3dce224925c3310fcd635"},
+]
+
+[package.dependencies]
+PyMeta3 = ">=0.5.1"
+
+[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
@@ -4475,6 +4471,16 @@ crypto = ["cryptography (>=3.4.0)"]
 dev = ["coverage[toml] (==5.0.4)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=6.0.0,<7.0.0)", "sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme", "zope.interface"]
 docs = ["sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
+
+[[package]]
+name = "pymeta3"
+version = "0.5.1"
+description = "Pattern-matching language based on OMeta for Python 3 and 2"
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyMeta3-0.5.1.tar.gz", hash = "sha256:18bda326d9a9bbf587bfc0ee0bc96864964d78b067288bcf55d4d98681d05bcb"},
+]
 
 [[package]]
 name = "pymilvus"
@@ -6882,4 +6888,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8,<3.13"
-content-hash = "ee0275332b5e81dcaa673d259d5f3b9a521270bfa507edf2692728da0294000f"
+content-hash = "b4d8b1c34c3b5e9ee3dd9c9ae613e2e596a99a30f8d67e39baeae250a2eb0b9a"
