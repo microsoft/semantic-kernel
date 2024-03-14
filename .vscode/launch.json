@@ -15,6 +15,7 @@
         /*"example0"*/
       ],
       "cwd": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples",
+      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
       "stopAtEntry": false
     },
@@ -25,7 +26,6 @@
     },
     {
       "cwd": "${workspaceFolder}/python",
-      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "name": "Python: Test Module",
       "type": "python",
       "request": "launch",
