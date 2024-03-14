@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#define DISABLEHOST // Comment line to enable
+//#define DISABLEHOST // Comment line to enable
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
@@ -67,5 +67,33 @@ public sealed class ThreadHarness
         await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
 
         await Assert.ThrowsAsync<HttpOperationException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Verify retrieval of thread messages
+    /// </summary>
+    [Fact(Skip = SkipReason)]
+    public async Task GetThreadAsync()
+    {
+        var threadId = "<your thread-id>";
+
+        var context = new OpenAIRestContext(AgentBuilder.OpenAIBaseUrl, TestConfig.OpenAIApiKey);
+        var thread = await ChatThread.GetAsync(context, threadId);
+
+        int index = 0;
+        string? messageId = "msg_21s2LMMq0KkFhf2Ahg27urbs";
+        while (messageId != null || index == 0)
+        {
+            var messages = await thread.GetMessagesAsync(count: 100, lastMessageId: messageId).ConfigureAwait(true);
+            foreach (var message in messages)
+            {
+                ++index;
+                this._output.WriteLine($"#{index:000} [{message.Id}] {message.Role} [{message.AgentId ?? "n/a"}]");
+
+                this._output.WriteLine(message.Content);
+            }
+
+            messageId = messages.Count > 0 ? messages[messages.Count - 1].Id : null;
+        }
     }
 }
