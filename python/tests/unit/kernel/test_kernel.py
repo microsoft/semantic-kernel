@@ -355,9 +355,11 @@ def test_prompt_plugin_can_be_imported(kernel: Kernel):
     plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
 
     assert plugin is not None
-    assert len(plugin.functions) == 1
+    assert len(plugin.functions) == 2
     func = plugin.functions["TestFunction"]
     assert func is not None
+    func_handlebars = plugin.functions["TestFunctionHandlebars"]
+    assert func_handlebars is not None
 
 
 def test_prompt_plugin_not_found(kernel: Kernel):
