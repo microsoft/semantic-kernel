@@ -31,13 +31,13 @@ internal sealed class StreamJsonParser
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        while (await this.ExtractNextJsonObjectAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
+        while (await this.ExtractNextJsonStringAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
         {
             yield return json;
         }
     }
 
-    private async Task<string?> ExtractNextJsonObjectAsync(
+    private async Task<string?> ExtractNextJsonStringAsync(
         TextReader reader,
         bool validateJson,
         CancellationToken ct)
