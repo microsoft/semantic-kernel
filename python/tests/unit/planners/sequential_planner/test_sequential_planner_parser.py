@@ -79,9 +79,9 @@ def test_can_call_to_plan_from_xml():
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
     plan = SequentialPlanParser.to_plan_from_xml(
-        plan_string,
-        goal,
-        SequentialPlanParser.get_plugin_function(kernel),
+        xml_string=plan_string,
+        goal=goal,
+        kernel=kernel,
     )
 
     assert plan is not None
@@ -112,11 +112,7 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
 
     # Act and Assert
     with pytest.raises(PlannerInvalidPlanError):
-        SequentialPlanParser.to_plan_from_xml(
-            "<someTag>",
-            "Solve the equation x^2 = 2.",
-            SequentialPlanParser.get_plugin_function(kernel),
-        )
+        SequentialPlanParser.to_plan_from_xml("<someTag>", "Solve the equation x^2 = 2.", kernel)
 
 
 def test_can_create_plan_with_text_nodes():
@@ -137,7 +133,7 @@ def test_can_create_plan_with_text_nodes():
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel),
+        kernel,
     )
 
     # Assert
@@ -178,10 +174,10 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
     # Act and Assert
     if allow_missing_functions:
         plan = SequentialPlanParser.to_plan_from_xml(
-            plan_text,
-            "",
-            SequentialPlanParser.get_plugin_function(kernel),
-            allow_missing_functions,
+            xml_string=plan_text,
+            goal="",
+            kernel=kernel,
+            allow_missing_functions=allow_missing_functions,
         )
 
         # Assert
@@ -200,8 +196,7 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
             SequentialPlanParser.to_plan_from_xml(
                 plan_text,
                 "",
-                SequentialPlanParser.get_plugin_function(kernel),
-                allow_missing_functions,
+                kernel,
             )
 
 
@@ -236,17 +231,17 @@ def test_can_create_plan_with_other_text():
     plan1 = SequentialPlanParser.to_plan_from_xml(
         plan_text1,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel),
+        kernel,
     )
     plan2 = SequentialPlanParser.to_plan_from_xml(
         plan_text2,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel),
+        kernel,
     )
     plan3 = SequentialPlanParser.to_plan_from_xml(
         plan_text3,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel),
+        kernel,
     )
 
     # Assert
@@ -310,7 +305,7 @@ def test_can_create_plan_with_open_api_plugin(plan_text):
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         "",
-        SequentialPlanParser.get_plugin_function(kernel),
+        kernel,
     )
 
     # Assert
@@ -337,7 +332,7 @@ def test_can_create_plan_with_ignored_nodes():
     plan = SequentialPlanParser.to_plan_from_xml(
         plan_text,
         goal_text,
-        SequentialPlanParser.get_plugin_function(kernel),
+        kernel,
     )
 
     # Assert

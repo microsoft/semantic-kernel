@@ -38,11 +38,7 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
 """
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
-    plan = SequentialPlanParser.to_plan_from_xml(
-        plan_string,
-        goal,
-        SequentialPlanParser.get_plugin_function(kernel),
-    )
+    plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
 
     assert plan is not None
     assert plan.description == "Summarize an input, translate to french, and e-mail to John Doe"
