@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -121,8 +118,6 @@ public readonly struct GeminiSafetyCategory : IEquatable<GeminiSafetyCategory>
         this.Label = label;
     }
 
-
-
     /// <summary>
     /// Represents the equality operator for comparing two instances of <see cref="GeminiSafetyCategory"/>.
     /// </summary>
@@ -203,8 +198,6 @@ public readonly struct GeminiSafetyThreshold : IEquatable<GeminiSafetyThreshold>
         Verify.NotNullOrWhiteSpace(label, nameof(label));
         this.Label = label;
     }
-
-
 
     /// <summary>
     /// Determines whether two GeminiSafetyThreshold objects are equal.
