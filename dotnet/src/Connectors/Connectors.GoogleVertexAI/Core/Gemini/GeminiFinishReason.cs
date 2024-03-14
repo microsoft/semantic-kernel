@@ -61,15 +61,6 @@ public readonly struct GeminiFinishReason : IEquatable<GeminiFinishReason>
         this.Label = label;
     }
 
-    /// <summary>
-    /// An enumerable collection of GeminiFinishReason.
-    /// </summary>
-    public static IEnumerable<GeminiFinishReason> GetAll() =>
-        typeof(GeminiFinishReason).GetFields(BindingFlags.Public |
-                                             BindingFlags.Static |
-                                             BindingFlags.DeclaredOnly)
-            .Select(f => f.GetValue(null))
-            .Cast<GeminiFinishReason>();
 
     /// <summary>
     /// Represents the equality operator for comparing two instances of <see cref="GeminiFinishReason"/>.

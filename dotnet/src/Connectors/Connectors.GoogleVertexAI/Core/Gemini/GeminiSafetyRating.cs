@@ -80,15 +80,7 @@ public readonly struct GeminiSafetyProbability : IEquatable<GeminiSafetyProbabil
         this.Label = label;
     }
 
-    /// <summary>
-    /// An enumerable collection of GeminiSafetyProbability.
-    /// </summary>
-    public static IEnumerable<GeminiSafetyProbability> GetAll() =>
-        typeof(GeminiSafetyProbability).GetFields(BindingFlags.Public |
-                                                  BindingFlags.Static |
-                                                  BindingFlags.DeclaredOnly)
-            .Select(f => f.GetValue(null))
-            .Cast<GeminiSafetyProbability>();
+
 
     /// <summary>
     /// Represents the equality operator for comparing two instances of <see cref="GeminiSafetyProbability"/>.

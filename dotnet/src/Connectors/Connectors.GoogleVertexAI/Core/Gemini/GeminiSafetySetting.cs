@@ -121,15 +121,7 @@ public readonly struct GeminiSafetyCategory : IEquatable<GeminiSafetyCategory>
         this.Label = label;
     }
 
-    /// <summary>
-    /// An enumerable collection of GeminiSafetyCategory.
-    /// </summary>
-    public static IEnumerable<GeminiSafetyCategory> GetAll() =>
-        typeof(GeminiSafetyCategory).GetFields(BindingFlags.Public |
-                                               BindingFlags.Static |
-                                               BindingFlags.DeclaredOnly)
-            .Select(f => f.GetValue(null))
-            .Cast<GeminiSafetyCategory>();
+
 
     /// <summary>
     /// Represents the equality operator for comparing two instances of <see cref="GeminiSafetyCategory"/>.
@@ -212,15 +204,7 @@ public readonly struct GeminiSafetyThreshold : IEquatable<GeminiSafetyThreshold>
         this.Label = label;
     }
 
-    /// <summary>
-    /// An enumerable collection of GeminiSafetyCategory.
-    /// </summary>
-    public static IEnumerable<GeminiSafetyThreshold> GetAll() =>
-        typeof(GeminiSafetyThreshold).GetFields(BindingFlags.Public |
-                                                BindingFlags.Static |
-                                                BindingFlags.DeclaredOnly)
-            .Select(f => f.GetValue(null))
-            .Cast<GeminiSafetyThreshold>();
+
 
     /// <summary>
     /// Determines whether two GeminiSafetyThreshold objects are equal.
