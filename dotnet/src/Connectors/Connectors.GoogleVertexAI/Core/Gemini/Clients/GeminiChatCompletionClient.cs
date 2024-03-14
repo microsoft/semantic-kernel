@@ -110,21 +110,21 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
-    /// <param name="bearerKeyProvider">Bearer key provider used for authentication</param>
+    /// <param name="bearerTokenProvider">Bearer key provider used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiChatCompletionClient(
         HttpClient httpClient,
         string modelId,
-        Func<string> bearerKeyProvider,
+        Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
             logger: logger,
-            bearerKeyProvider: bearerKeyProvider)
+            bearerTokenProvider: bearerTokenProvider)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(location);
@@ -185,7 +185,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            using var httpRequestMessage = this.CreateHttpRequest(state.GeminiRequest, this._chatStreamingEndpoint);
+            using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
             using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
                 .ConfigureAwait(false);
             using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
@@ -369,7 +369,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         GeminiRequest geminiRequest,
         CancellationToken cancellationToken)
     {
-        using var httpRequestMessage = this.CreateHttpRequest(geminiRequest, endpoint);
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, endpoint).ConfigureAwait(false);
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
         var geminiResponse = DeserializeResponse<GeminiResponse>(body);
