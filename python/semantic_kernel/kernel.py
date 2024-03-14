@@ -619,6 +619,14 @@ class Kernel(KernelBaseModel):
             raise KernelFunctionNotFoundError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
         return self.plugins[plugin_name][function_name]
 
+    def func_from_fully_qualified_function_name(self, fully_qualified_function_name: str) -> KernelFunction:
+        plugin_name, function_name = fully_qualified_function_name.split("-", maxsplit=1)
+        if plugin_name not in self.plugins:
+            raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
+        if function_name not in self.plugins[plugin_name]:
+            raise KernelFunctionNotFoundError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
+        return self.plugins[plugin_name][function_name]
+
     def create_function_from_prompt(
         self,
         function_name: str,
