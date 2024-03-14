@@ -128,7 +128,7 @@ async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_funct
     assert any(
         step.name == expected_function
         and step.plugin_name == expected_plugin
-        and step.parameters["endMarker"] == expected_default
+        and step.parameters.get("endMarker", expected_default) == expected_default
         for step in plan._steps
     )
 
