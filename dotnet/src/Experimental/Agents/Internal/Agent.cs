@@ -134,7 +134,7 @@ internal sealed class Agent : IAgent
             (this._model.Tools.Any(t => string.Equals(t.Type, ToolRetrieval, StringComparison.OrdinalIgnoreCase)) ? AgentCapability.Retrieval : AgentCapability.None) |
             (this._model.Tools.Any(t => string.Equals(t.Type, ToolCodeInterpreter, StringComparison.OrdinalIgnoreCase)) ? AgentCapability.CodeInterpreter : AgentCapability.None);
 
-        this._tools = [.. this._model.Tools, .. this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)))];
+        this._tools = this._model.Tools.Concat(this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)))).ToArray();
     }
 
     public AgentPlugin AsPlugin() => this._agentPlugin ??= this.DefinePlugin();
