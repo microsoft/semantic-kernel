@@ -4,7 +4,7 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
 
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingKernelContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata

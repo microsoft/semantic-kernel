@@ -1,13 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import Optional
+from typing import Any
 
+from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
     OpenAIStreamingChatMessageContent,
 )
 from semantic_kernel.exceptions import ContentAdditionException
 
 
-class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
+class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent, AzureChatMessageContent):
     """This is the class for Azure OpenAI streaming chat message response content.
 
     The end-user will have to either do something directly or gather them and combine them into a
@@ -33,15 +34,15 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
         __add__: Combines two StreamingChatMessageContent instances.
     """
 
-    tool_message: Optional[str] = None
-
-    def __add__(self, other: "AzureStreamingChatMessageContent") -> "AzureStreamingChatMessageContent":
+    def __add__(self, other: Any) -> "AzureStreamingChatMessageContent":
         """When combining two AzureOpenAIStreamingChatMessageContent instances,
         the content fields are combined, as well as the arguments of the function or tool calls.
 
         The inner_content of the first one is used, ai_model_id and encoding should be the same,
         if role is set, they should be the same.
         """
+        if not isinstance(other, AzureStreamingChatMessageContent):
+            return self
         if self.choice_index != other.choice_index:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:

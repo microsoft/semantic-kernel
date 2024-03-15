@@ -3,6 +3,7 @@
 
 import pytest
 
+from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -185,14 +186,7 @@ def test_serialize():  # ignore: E501
     assert json_str is not None
     assert (
         json_str
-        == '{\n    "messages": [\n        {\n            \
-"inner_content": null,\n            "ai_model_id": null,\n            \
-"metadata": {},\n            "role": "system",\n            \
-"content": "a test system prompt",\n            "encoding": null\n        },\
-\n        {\n            "inner_content": null,\n            \
-"ai_model_id": null,\n            "metadata": {},\n            \
-"role": "user",\n            "content": "Message",\n            \
-"encoding": null\n        }\n    ]\n}'
+        == '{\n    "messages": [\n        {\n            "inner_content": null,\n            "ai_model_id": null,\n            "metadata": {},\n            "type": "ChatMessageContent",\n            "role": "system",\n            "content": "a test system prompt",\n            "encoding": null\n        },\n        {\n            "inner_content": null,\n            "ai_model_id": null,\n            "metadata": {},\n            "type": "ChatMessageContent",\n            "role": "user",\n            "content": "Message",\n            "encoding": null\n        }\n    ],\n    "message_type": "ChatMessageContent"\n}'  # noqa: E501
     )
 
 
@@ -277,6 +271,64 @@ async def test_template(chat_history: ChatHistory):
     assert chat_history_2.messages[0].role == ChatRole.SYSTEM
     assert chat_history_2.messages[1].content == "I am an AI assistant"
     assert chat_history_2.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_2.messages[2].content == "What can you do?"
+    assert chat_history_2.messages[2].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_chat_history_with_message_type():
+    chat_history = ChatHistory(message_type="OpenAIChatMessageContent")
+    chat_history.add_assistant_message("I am an AI assistant")
+
+    template = "system stuff{{$chat_history}}{{$input}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
+    )
+    assert (
+        rendered
+        == 'system stuff<message role="assistant" type="OpenAIChatMessageContent">I am an AI assistant</message>What can you do?'
+    )
+
+    chat_history_2 = ChatHistory.from_rendered_prompt(rendered, message_type="OpenAIChatMessageContent")
+    assert chat_history_2.messages[0].type == "OpenAIChatMessageContent"
+    assert chat_history_2.messages[0].content == "system stuff"
+    assert chat_history_2.messages[0].role == ChatRole.SYSTEM
+    assert chat_history_2.messages[1].type == "OpenAIChatMessageContent"
+    assert chat_history_2.messages[1].content == "I am an AI assistant"
+    assert chat_history_2.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_2.messages[2].type == "OpenAIChatMessageContent"
+    assert chat_history_2.messages[2].content == "What can you do?"
+    assert chat_history_2.messages[2].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_chat_history_with_message_type_differs():
+    chat_history = ChatHistory(message_type="OpenAIChatMessageContent")
+    chat_history.add_message(AzureChatMessageContent(content="I am an AI assistant", role="assistant"))
+
+    template = "system stuff{{$chat_history}}{{$input}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
+    )
+    assert (
+        rendered
+        == 'system stuff<message role="assistant" type="AzureChatMessageContent">I am an AI assistant</message>What can you do?'
+    )
+
+    chat_history_2 = ChatHistory.from_rendered_prompt(rendered, message_type="OpenAIChatMessageContent")
+    assert chat_history_2.messages[0].type == "OpenAIChatMessageContent"
+    assert chat_history_2.messages[0].content == "system stuff"
+    assert chat_history_2.messages[0].role == ChatRole.SYSTEM
+    assert chat_history_2.messages[1].type == "AzureChatMessageContent"
+    assert chat_history_2.messages[1].content == "I am an AI assistant"
+    assert chat_history_2.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_2.messages[2].type == "OpenAIChatMessageContent"
     assert chat_history_2.messages[2].content == "What can you do?"
     assert chat_history_2.messages[2].role == ChatRole.USER
 
@@ -420,7 +472,7 @@ async def test_history_openai_cmc(chat_history: ChatHistory):
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history),
     )
-    chat_history1 = ChatHistory.from_rendered_prompt(rendered, chat_message_content_type=OpenAIChatMessageContent)
+    chat_history1 = ChatHistory.from_rendered_prompt(rendered)
 
     assert chat_history1.messages[0].role == ChatRole.ASSISTANT
     assert chat_history1.messages[0].function_call.name == "test-test"
