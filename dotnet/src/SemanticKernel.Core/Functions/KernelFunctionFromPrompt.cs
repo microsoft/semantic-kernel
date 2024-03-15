@@ -137,18 +137,27 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             throw new OperationCanceledException("A prompt filter requested cancellation after prompt rendering.");
         }
 
-        if (result.AIService is IChatCompletionService chatCompletion)
+        if (result.AIService is IChatCompletionService chatCompletion && ChatPromptParser.TryParse(result.RenderedPrompt, out var chatHistory))
         {
-            var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var chatContent = await chatCompletion.GetChatMessageContentAsync(chatHistory, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
             return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
         }
 
         if (result.AIService is ITextGenerationService textGeneration)
         {
-            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var textContent = await textGeneration.GetTextContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
             return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
+        }
+
+        if (result.AIService is IChatCompletionService fallbackChatCompletion)
+        {
+            var simpleChatHistory = new ChatHistory();
+            simpleChatHistory.AddUserMessage(result.RenderedPrompt);
+            var chatContent = await fallbackChatCompletion.GetChatMessageContentAsync(simpleChatHistory, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
+            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
         }
 
         // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
@@ -179,13 +188,22 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
 
-        if (result.AIService is IChatCompletionService chatCompletion)
+        // If the service supports chat completion and the prompt contains a chat, use chat completion.
+        if (result.AIService is IChatCompletionService chatCompletion && ChatPromptParser.TryParse(result.RenderedPrompt, out var chatHistory))
         {
-            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
+            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, result.ExecutionSettings, kernel, cancellationToken);
         }
+        // If the service supports text generation, it should take precedence, because the user implemented the interface on purpose.
         else if (result.AIService is ITextGenerationService textGeneration)
         {
-            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
+            asyncReference = textGeneration.GetStreamingTextContentsAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
+        }
+        // Fallback to chat completion with a simple chat history containing a single message.
+        else if (result.AIService is IChatCompletionService fallbackChatCompletion)
+        {
+            var simpleChatHistory = new ChatHistory();
+            simpleChatHistory.AddUserMessage(result.RenderedPrompt);
+            asyncReference = fallbackChatCompletion.GetStreamingChatMessageContentsAsync(simpleChatHistory, result.ExecutionSettings, kernel, cancellationToken);
         }
         else
         {
