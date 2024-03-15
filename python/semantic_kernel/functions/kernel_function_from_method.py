@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Opti
 
 from pydantic import ValidationError
 
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingKernelContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments

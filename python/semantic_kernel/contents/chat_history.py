@@ -1,17 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Dict, Final, Iterator, List, Optional, Type, Union
-from xml.etree import ElementTree
+from typing import TYPE_CHECKING, Any, Dict, Final, Iterator, List, Literal, Optional, Union
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET
 
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.chat_message_content_base import ChatMessageContentBase
 from semantic_kernel.contents.chat_role import ChatRole
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+if TYPE_CHECKING:
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,10 @@ class ChatHistory(KernelBaseModel):
         messages (List[ChatMessageContent]): The list of chat messages in the history.
     """
 
-    messages: List[ChatMessageContent]
+    messages: List["ChatMessageContent"]
+    message_type: Literal["ChatMessageContent", "OpenAIChatMessageContent", "AzureChatMessageContent"] = (
+        "ChatMessageContent"
+    )
 
     def __init__(self, **data: Any):
         """
@@ -55,10 +60,19 @@ class ChatHistory(KernelBaseModel):
         initialization and then discarded. The rest of the keyword arguments are passed to the superclass
         constructor and handled according to the Pydantic model's behavior.
         """
+        from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent  # noqa: F401
+        from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent  # noqa: F401
+        from semantic_kernel.contents.chat_message_content import ChatMessageContent  # noqa: F401
+
+        ChatMessageContentBase.model_rebuild()
+
         system_message_content = data.pop("system_message", None)
+        message_type = data.get("message_type", "ChatMessageContent")
 
         if system_message_content:
-            system_message = ChatMessageContent(role=ChatRole.SYSTEM, content=system_message_content)
+            system_message = ChatMessageContentBase(
+                role=ChatRole.SYSTEM, content=system_message_content, type=message_type
+            ).root
 
             if "messages" in data:
                 data["messages"] = [system_message] + data["messages"]
@@ -68,21 +82,23 @@ class ChatHistory(KernelBaseModel):
             data["messages"] = []
         super().__init__(**data)
 
-    def add_system_message(self, content: str) -> None:
+    def add_system_message(self, content: str, **kwargs: Any) -> None:
         """Add a system message to the chat history."""
-        self.add_message(message=self._prepare_for_add(ChatRole.SYSTEM, content))
+        self.add_message(message=self._prepare_for_add(ChatRole.SYSTEM, content, **kwargs))
 
-    def add_user_message(self, content: str) -> None:
+    def add_user_message(self, content: str, **kwargs: Any) -> None:
         """Add a user message to the chat history."""
-        self.add_message(message=self._prepare_for_add(ChatRole.USER, content))
+        self.add_message(message=self._prepare_for_add(ChatRole.USER, content, **kwargs))
 
-    def add_assistant_message(self, content: str) -> None:
+    def add_assistant_message(self, content: str, **kwargs: Any) -> None:
         """Add an assistant message to the chat history."""
-        self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content))
+        self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content, **kwargs))
 
-    def add_tool_message(self, content: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> None:
+    def add_tool_message(
+        self, content: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None, **kwargs: Any
+    ) -> None:
         """Add a tool message to the chat history."""
-        self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content), metadata=metadata)
+        self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content, **kwargs), metadata=metadata)
 
     def add_message(
         self,
@@ -101,7 +117,7 @@ class ChatHistory(KernelBaseModel):
             encoding (Optional[str]): The encoding of the message. Required if 'message' is a dict.
             metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
         """
-        if isinstance(message, ChatMessageContent) or isinstance(message, StreamingChatMessageContent):
+        if isinstance(message, ChatMessageContent):
             self.messages.append(message)
             return
         if "role" not in message:
@@ -110,11 +126,15 @@ class ChatHistory(KernelBaseModel):
             message["encoding"] = encoding
         if metadata:
             message["metadata"] = metadata
-        self.messages.append(ChatMessageContent(**message))
+        if "type" not in message:
+            message["type"] = self.message_type
+        self.messages.append(ChatMessageContentBase(**message).root)
 
-    def _prepare_for_add(self, role: ChatRole, content: str) -> Dict[str, str]:
+    def _prepare_for_add(self, role: ChatRole, content: Optional[str], **kwargs: Any) -> Dict[str, str]:
         """Prepare a message to be added to the history."""
-        return {"role": role, "content": content}
+        kwargs["role"] = role
+        kwargs["content"] = content
+        return kwargs
 
     def remove_message(self, message: ChatMessageContent) -> bool:
         """Remove a message from the history.
@@ -162,7 +182,7 @@ class ChatHistory(KernelBaseModel):
         chat_history_xml = Element(ROOT_KEY_HISTORY)
         for message in self.messages:
             chat_history_xml.append(message.to_element(root_key=ROOT_KEY_MESSAGE))
-        return ElementTree.tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
+        return ET.tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
     def __iter__(self) -> Iterator[ChatMessageContent]:
         """Return an iterator over the messages in the history."""
@@ -176,9 +196,7 @@ class ChatHistory(KernelBaseModel):
         return self.messages == other.messages
 
     @classmethod
-    def from_rendered_prompt(
-        cls, rendered_prompt: str, chat_message_content_type: Type[ChatMessageContent] = ChatMessageContent
-    ) -> "ChatHistory":
+    def from_rendered_prompt(cls, rendered_prompt: str, message_type: str = "ChatMessageContent") -> "ChatHistory":
         """
         Create a ChatHistory instance from a rendered prompt.
 
@@ -188,23 +206,23 @@ class ChatHistory(KernelBaseModel):
         Returns:
             ChatHistory: The ChatHistory instance created from the rendered prompt.
         """
-        messages: List[chat_message_content_type] = []
+        messages: List[ChatMessageContent] = []
         prompt = rendered_prompt.strip()
         try:
             xml_prompt = ET.fromstring(f"<prompt>{prompt}</prompt>")
         except ET.ParseError as e:
             logger.error(f"Error parsing XML of prompt: {e}")
-            return cls(messages=[chat_message_content_type(role=ChatRole.USER, content=prompt)])
+            return cls(messages=[ChatMessageContentBase(role=ChatRole.USER, content=prompt)])
         if xml_prompt.text and xml_prompt.text.strip():
-            messages.append(chat_message_content_type(role=ChatRole.SYSTEM, content=xml_prompt.text.strip()))
+            messages.append(ChatMessageContentBase(role=ChatRole.SYSTEM, content=xml_prompt.text.strip()))
         for item in xml_prompt:
             if item.tag == ROOT_KEY_MESSAGE:
-                messages.append(chat_message_content_type.from_element(item))
+                messages.append(ChatMessageContentBase.from_element(item))
             elif item.tag == ROOT_KEY_HISTORY:
                 for message in item:
-                    messages.append(chat_message_content_type.from_element(message))
+                    messages.append(ChatMessageContentBase.from_element(message))
             if item.tail and item.tail.strip():
-                messages.append(chat_message_content_type(role=ChatRole.USER, content=item.tail.strip()))
+                messages.append(ChatMessageContentBase(role=ChatRole.USER, content=item.tail.strip()))
         if len(messages) == 1 and messages[0].role == ChatRole.SYSTEM:
             messages[0].role = ChatRole.USER
         return cls(messages=messages)

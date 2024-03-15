@@ -1,18 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 from typing import Optional
-from xml.etree.ElementTree import Element
 
-from defusedxml import ElementTree
-
-from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.finish_reason import FinishReason
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import ContentAdditionException
 
 
-class StreamingChatMessageContent(StreamingKernelContent):
+class StreamingChatMessageContent(StreamingContentMixin, ChatMessageContent):
     """This is the base class for streaming chat message response content.
 
     All Chat Completion Services should return a instance of this class as streaming response,
@@ -37,13 +33,7 @@ class StreamingChatMessageContent(StreamingKernelContent):
         __add__: Combines two StreamingChatMessageContent instances.
     """
 
-    role: Optional[ChatRole] = ChatRole.ASSISTANT
-    content: Optional[str] = None
-    encoding: Optional[str] = None
     finish_reason: Optional[FinishReason] = None
-
-    def __str__(self) -> str:
-        return self.content or ""
 
     def __bytes__(self) -> bytes:
         return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
@@ -72,31 +62,3 @@ class StreamingChatMessageContent(StreamingKernelContent):
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )
-
-    def to_prompt(self, root_key: str) -> str:
-        """Convert the ChatMessageContent to a prompt.
-
-        Returns:
-            str - The prompt from the ChatMessageContent.
-        """
-
-        root = Element(root_key)
-        root.set("role", self.role.value)
-        root.set("metadata", json.dumps(self.metadata))
-        root.text = self.content or ""
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
-
-    @classmethod
-    def from_element(cls, element: Element) -> "StreamingChatMessageContent":
-        """Create a new instance of ChatMessageContent from a prompt.
-
-        Args:
-            prompt: str - The prompt to create the ChatMessageContent from.
-
-        Returns:
-            ChatMessageContent - The new instance of ChatMessageContent.
-        """
-        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
-        if metadata := element.get("metadata"):
-            args["metadata"] = json.loads(metadata)
-        return cls(**args)

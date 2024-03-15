@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
-import json
-from typing import Optional
+from enum import Enum
+from typing import Literal, Optional
 from xml.etree.ElementTree import Element
 
 from defusedxml import ElementTree
 
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class ChatMessageContent(KernelContent):
@@ -29,6 +30,7 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
+    type: Literal["ChatMessageContent"] = "ChatMessageContent"
     role: ChatRole
     content: Optional[str] = None
     encoding: Optional[str] = None
@@ -46,7 +48,20 @@ class ChatMessageContent(KernelContent):
             Element - The XML Element representing the ChatMessageContent.
         """
         root = Element(root_key)
-        root.set("role", self.role.value)
+        for field in self.model_fields_set:
+            value = getattr(self, field)
+            if value is None:
+                continue
+            if isinstance(value, Enum):
+                value = value.value
+            if isinstance(value, KernelBaseModel):
+                value = value.model_dump_json(exclude_none=True)
+            if isinstance(value, list):
+                if isinstance(value[0], KernelBaseModel):
+                    value = "|".join([val.model_dump_json(exclude_none=True) for val in value])
+                else:
+                    value = "|".join(value)
+            root.set(field, value)
         root.text = self.content or ""
         return root
 
@@ -59,18 +74,3 @@ class ChatMessageContent(KernelContent):
 
         root = self.to_element(root_key)
         return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
-
-    @classmethod
-    def from_element(cls, element: Element) -> "ChatMessageContent":
-        """Create a new instance of ChatMessageContent from a prompt.
-
-        Args:
-            prompt: str - The prompt to create the ChatMessageContent from.
-
-        Returns:
-            ChatMessageContent - The new instance of ChatMessageContent.
-        """
-        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
-        if metadata := element.get("metadata"):
-            args["metadata"] = json.loads(metadata)
-        return cls(**args)
