@@ -782,7 +782,9 @@ public sealed class TextChunkerTests
 
     private static TokenCounter GPT4TokenCounter => (string input) =>
     {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         var tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
         return tokenizer.CountTokens(input);
     };
 
