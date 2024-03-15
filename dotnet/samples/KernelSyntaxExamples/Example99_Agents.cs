@@ -333,7 +333,7 @@ public class Example99_Agents : BaseTest
 
         var nexus = new AgentChat();
 
-        await ChatAsync(nexus, agent1, input); // $$$ USER PROXY
+        await ChatAsync(nexus, agent1, input);
         await ChatAsync(nexus, agent2);
 
         await WriteHistoryAsync(nexus);

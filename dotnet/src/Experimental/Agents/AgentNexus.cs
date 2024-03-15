@@ -84,7 +84,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
 
         if (input.TryGetContent(out var content))
         {
-            this.History.AddUserMessage(content, input!.Name); // $$$ 
+            this.History.AddUserMessage(content, input!.Name);
             yield return input!;
         }
 

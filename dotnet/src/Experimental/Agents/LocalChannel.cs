@@ -14,12 +14,12 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 public class LocalChannel<TAgent> : AgentChannel<TAgent> where TAgent : Agent
 {
     /// <summary>
-    /// $$$
+    /// Delegate for calling into an agent with locally managed chat-history.
     /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="chat"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="chat">The nexus history at the point the channel is created.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     public delegate IAsyncEnumerable<ChatMessageContent> AgentInvocationAsync(TAgent agent, ChatHistory chat, CancellationToken cancellationToken);
 
     private readonly ChatHistory _chat;

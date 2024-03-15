@@ -38,7 +38,7 @@ public class NexusExecutionSettings
     public CompletionCriteriaCallback? CompletionCriteria { get; set; }
 
     /// <summary>
-    /// $$$
+    /// The strategy for selecting the next agent.
     /// </summary>
     public SelectionStrategy? SelectionStrategy { get; set; }
 }

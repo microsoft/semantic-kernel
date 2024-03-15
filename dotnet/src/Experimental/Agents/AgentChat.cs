@@ -128,7 +128,7 @@ public sealed class AgentChat : AgentNexus
     /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="input">Optional user input.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
         string? input = null,
@@ -142,7 +142,7 @@ public sealed class AgentChat : AgentNexus
     /// <param name="input">Optional user input.</param>
     /// <param name="isJoining">Optional flag to control if agent is joining the nexus.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
         ChatMessageContent? input = null,
@@ -172,7 +172,7 @@ public sealed class AgentChat : AgentNexus
     }
 
     /// <summary>
-    /// $$$
+    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>

@@ -51,11 +51,11 @@ public sealed class NexusAgent : Agent<LocalChannel<NexusAgent>>
     }
 
     /// <summary>
-    /// $$$
+    /// Initializes a new instance of the <see cref="KernelAgent"/> class.
     /// </summary>
-    /// <param name="invocationCallback"></param>
-    /// <param name="description"></param>
-    /// <param name="name"></param>
+    /// <param name="invocationCallback">Callback for invoking a nexus.</param>
+    /// <param name="description">The agent description (optional)</param>
+    /// <param name="name">The agent name</param>
     public NexusAgent(
         NexusInvocationCallback invocationCallback,
         string? description = null,
