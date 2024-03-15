@@ -202,7 +202,7 @@ public final class CodeBlock extends Block implements CodeRendering {
                 ContextVariable
                     .convert(
                         firstPositionalInputValue,
-                        functionMetadata.getParameters().get(0).getType(),
+                        functionMetadata.getParameters().get(0).getTypeClass(),
                         context == null ? null : context.getContextVariableTypes()));
             namedArgsStartIndex++;
         }

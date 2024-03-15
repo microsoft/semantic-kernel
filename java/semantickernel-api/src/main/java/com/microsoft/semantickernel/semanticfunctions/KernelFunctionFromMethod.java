@@ -16,7 +16,6 @@ import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -54,8 +53,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         @Nullable String pluginName,
         String functionName,
         @Nullable String description,
-        @Nullable List<KernelParameterMetadata<?>> parameters,
-        KernelReturnParameterMetadata<?> returnParameter) {
+        @Nullable List<InputVariable> parameters,
+        OutputVariable<?> returnParameter) {
         super(
             new KernelFunctionMetadata<>(
                 pluginName,
@@ -87,8 +86,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         @Nullable String pluginName,
         @Nullable String functionName,
         @Nullable String description,
-        @Nullable List<KernelParameterMetadata<?>> parameters,
-        @Nullable KernelReturnParameterMetadata<?> returnParameter) {
+        @Nullable List<InputVariable> parameters,
+        @Nullable OutputVariable<?> returnParameter) {
 
         MethodDetails methodDetails = getMethodDetails(functionName, method, target);
 
@@ -137,7 +136,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             description,
             getFunction(method, target),
             getParameters(method),
-            new KernelReturnParameterMetadata<>(
+            new OutputVariable<>(
                 returnDescription,
                 method.getReturnType()));
     }
@@ -203,8 +202,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
                         Class<?> returnParameterType = function
                             .getMetadata()
-                            .getReturnParameter()
-                            .getParameterType();
+                            .getOutputVariableType()
+                            .getType();
 
                         // If the function has a return type that has a ContextVariableType<T>, use it.
                         ContextVariableType<T> contextVariableType = getContextVariableType(
@@ -290,7 +289,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             () -> Mono.fromCallable(
                 () -> {
                     try {
-                        if (method.getReturnType().getName().equals("void")
+                        if (method.getReturnType().equals(void.class)
                             || method.getReturnType()
                                 .equals(Void.class)) {
                             method.invoke(instance, args.toArray());
@@ -340,6 +339,18 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         String variableName = getGetVariableName(parameter);
 
         ContextVariable<?> arg = context == null ? null : context.get(variableName);
+
+        // If there is 1 argument use "input" or the only argument
+        if (arg == null && method.getParameters().length == 1) {
+            if (context != null) {
+                if (context.containsKey(KernelFunctionArguments.MAIN_KEY)) {
+                    arg = context.get(KernelFunctionArguments.MAIN_KEY);
+                } else if (context.size() == 1) {
+                    arg = context.values().iterator().next();
+                }
+            }
+        }
+
         if (arg == null) {
             KernelFunctionParameter annotation = parameter
                 .getAnnotation(KernelFunctionParameter.class);
@@ -451,6 +462,13 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                         + arg);
             }
         }
+
+        if (value == null && type.equals(String.class) && arg != null) {
+            ContextVariableTypeConverter c = arg.getType().getConverter();
+
+            value = c.toPromptString(arg.getValue());
+        }
+
         return value;
     }
 
@@ -509,14 +527,14 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             + " was invoked with a required context variable missing and no default value.";
     }
 
-    private static List<KernelParameterMetadata<?>> getParameters(Method method) {
+    private static List<InputVariable> getParameters(Method method) {
         return Arrays.stream(method
             .getParameters())
             .map(KernelFunctionFromMethod::toKernelParameterMetadata)
             .collect(Collectors.toList());
     }
 
-    private static KernelParameterMetadata<?> toKernelParameterMetadata(Parameter parameter) {
+    private static InputVariable toKernelParameterMetadata(Parameter parameter) {
         KernelFunctionParameter annotation = parameter.getAnnotation(
             KernelFunctionParameter.class);
 
@@ -534,10 +552,10 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             type = annotation.type();
         }
 
-        return new KernelParameterMetadata<>(
+        return InputVariable.build(
             name,
-            description,
             type,
+            description,
             defaultValue,
             isRequired);
     }
@@ -623,9 +641,9 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         @Nullable
         private String description;
         @Nullable
-        private List<KernelParameterMetadata<?>> parameters;
+        private List<InputVariable> parameters;
         @Nullable
-        private KernelReturnParameterMetadata<?> returnParameter;
+        private OutputVariable<?> returnParameter;
 
         /**
          * Sets the method to use to build the function.
@@ -689,7 +707,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
          * @param parameters the parameters to use
          * @return this instance of the {@link Builder} class
          */
-        public Builder<T> withParameters(List<KernelParameterMetadata<?>> parameters) {
+        public Builder<T> withParameters(List<InputVariable> parameters) {
             this.parameters = new ArrayList<>(parameters);
             return this;
         }
@@ -700,7 +718,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
          * @param returnParameter the return parameter to use
          * @return this instance of the {@link Builder} class
          */
-        public Builder<T> withReturnParameter(KernelReturnParameterMetadata<?> returnParameter) {
+        public Builder<T> withReturnParameter(OutputVariable<?> returnParameter) {
             this.returnParameter = returnParameter;
             return this;
         }

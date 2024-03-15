@@ -3,16 +3,14 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.exceptions.SKException;
-
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 /**
  * Metadata for an output variable of a kernel function.
  */
-public class OutputVariable {
+public class OutputVariable<T> {
 
     @Nullable
     private final String description;
@@ -21,6 +19,7 @@ public class OutputVariable {
 
     /**
      * Constructor.
+     *
      * @param type        The type of the output variable.
      * @param description The description of the output variable.
      */
@@ -33,6 +32,19 @@ public class OutputVariable {
             type = "java.lang.String";
         }
         this.type = type;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param type        The type of the output variable.
+     * @param description The description of the output variable.
+     */
+    public OutputVariable(
+        @Nullable String description,
+        Class<T> type) {
+        this.description = description;
+        this.type = type.getName();
     }
 
     /**
@@ -51,12 +63,7 @@ public class OutputVariable {
      * @return The type of the output variable.
      */
     public Class<?> getType() {
-        try {
-            return this.getClass().getClassLoader().loadClass(type);
-        } catch (ClassNotFoundException e) {
-            throw new SKException("Requested output type could not be found: " + type
-                + ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
-        }
+        return KernelPluginFactory.getTypeForName(type);
     }
 
     @Override
@@ -69,12 +76,14 @@ public class OutputVariable {
         if (this == obj) {
             return true;
         }
-        if (obj == null || getClass() != obj.getClass()) {
+        if (!getClass().isInstance(obj)) {
             return false;
         }
+
         OutputVariable that = (OutputVariable) obj;
-        if (!Objects.equals(type, that.type))
+        if (!Objects.equals(type, that.type)) {
             return false;
+        }
         return Objects.equals(description, that.description);
     }
 }

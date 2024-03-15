@@ -47,7 +47,7 @@ public class KernelHooksTest {
         // Initialize prompt
         String functionPrompt = "Write a random paragraph about: {{$input}}.";
 
-        KernelFunction<String> excuseFunction = KernelFunctionFromPrompt.<String>builder()
+        KernelFunction<String> excuseFunction = KernelFunctionFromPrompt.builder()
             .withTemplate(functionPrompt)
             .withName("Excuse")
             .withDefaultExecutionSettings(PromptExecutionSettings
@@ -56,7 +56,7 @@ public class KernelHooksTest {
                 .withTemperature(0.4)
                 .withTopP(1)
                 .build())
-            .withOutputVariable(new OutputVariable("java.lang.String", "result"))
+            .withOutputVariable(new OutputVariable<>("result", String.class))
             .build();
 
         AtomicBoolean preHookTriggered = new AtomicBoolean(false);

@@ -8,16 +8,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 /**
@@ -202,18 +198,11 @@ public class PromptTemplateConfig {
      *
      * @return The parameters metadata.
      */
-    public List<KernelParameterMetadata<?>> getKernelParametersMetadata() {
+    public List<InputVariable> getKernelParametersMetadata() {
         if (inputVariables == null) {
             return Collections.emptyList();
         }
-        return inputVariables
-            .stream()
-            .map(inputVariable -> new KernelParameterMetadata<>(
-                inputVariable.getName(),
-                inputVariable.getDescription(),
-                inputVariable.getTypeClass(),
-                inputVariable.getDefaultValue(), inputVariable.isRequired()))
-            .collect(Collectors.toList());
+        return Collections.unmodifiableList(inputVariables);
     }
 
     /**
@@ -221,12 +210,12 @@ public class PromptTemplateConfig {
      *
      * @return The return parameter metadata.
      */
-    public KernelReturnParameterMetadata<?> getKernelReturnParameterMetadata() {
+    public OutputVariable<?> getKernelReturnParameterMetadata() {
         if (outputVariable == null) {
-            return new KernelReturnParameterMetadata<>("", String.class);
+            return new OutputVariable<>("", String.class);
         }
 
-        return new KernelReturnParameterMetadata<>(
+        return new OutputVariable<>(
             outputVariable.getDescription(),
             outputVariable.getType());
     }
@@ -307,7 +296,9 @@ public class PromptTemplateConfig {
      *
      * @return The schema version of the prompt template config.
      */
-    public int getSchema() { return schema; }
+    public int getSchema() {
+        return schema;
+    }
 
     /**
      * Create a builder for a prompt template config which is a clone of the current object.
@@ -320,7 +311,8 @@ public class PromptTemplateConfig {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, template, templateFormat, description, inputVariables, outputVariable, executionSettings);
+        return Objects.hash(name, template, templateFormat, description, inputVariables,
+            outputVariable, executionSettings);
     }
 
     @Override
@@ -331,7 +323,7 @@ public class PromptTemplateConfig {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!getClass().isInstance(obj)) {
             return false;
         }
         final PromptTemplateConfig other = (PromptTemplateConfig) obj;
@@ -346,7 +338,7 @@ public class PromptTemplateConfig {
         }
         if (!Objects.equals(this.templateFormat, other.templateFormat)) {
             return false;
-        }   
+        }
         if (!Objects.equals(this.inputVariables, other.inputVariables)) {
             return false;
         }
@@ -458,7 +450,7 @@ public class PromptTemplateConfig {
          * @param outputVariable The output variable of the prompt template config.
          * @return {@code this} prompt template config.
          */
-        public Builder withOutputVariable(OutputVariable outputVariable) {
+        public Builder withOutputVariable(OutputVariable<?> outputVariable) {
             this.outputVariable = outputVariable;
             return this;
         }

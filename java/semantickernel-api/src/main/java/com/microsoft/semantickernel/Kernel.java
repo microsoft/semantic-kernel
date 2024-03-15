@@ -1,14 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -24,8 +16,13 @@ import com.microsoft.semantickernel.services.AIServiceSelection;
 import com.microsoft.semantickernel.services.AIServiceSelector;
 import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 
 /**
  * Provides state for use throughout a Semantic Kernel workload.
@@ -41,6 +38,7 @@ public class Kernel {
 
     // Only present so we can create a builder in copy method
     private final AIServiceCollection services;
+
     @Nullable
     private final Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
 
@@ -55,6 +53,7 @@ public class Kernel {
      * @param globalKernelHooks       The global hooks to be used throughout the kernel. If
      *                                {@code null}, an empty collection will be used.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public Kernel(
         AIServiceCollection services,
         @Nullable Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,

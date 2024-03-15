@@ -1,10 +1,11 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
 
 public class PromptExecutionSettingsTest {
 
@@ -16,10 +17,13 @@ public class PromptExecutionSettingsTest {
         assertEquals(PromptExecutionSettings.DEFAULT_MAX_TOKENS, settings.getMaxTokens());
         assertEquals(PromptExecutionSettings.DEFAULT_TEMPERATURE, settings.getTemperature());
         assertEquals(PromptExecutionSettings.DEFAULT_TOP_P, settings.getTopP());
-        assertEquals(PromptExecutionSettings.DEFAULT_PRESENCE_PENALTY, settings.getPresencePenalty());
-        assertEquals(PromptExecutionSettings.DEFAULT_FREQUENCY_PENALTY, settings.getFrequencyPenalty());
+        assertEquals(PromptExecutionSettings.DEFAULT_PRESENCE_PENALTY,
+            settings.getPresencePenalty());
+        assertEquals(PromptExecutionSettings.DEFAULT_FREQUENCY_PENALTY,
+            settings.getFrequencyPenalty());
         assertEquals(PromptExecutionSettings.DEFAULT_BEST_OF, settings.getBestOf());
-        assertEquals(PromptExecutionSettings.DEFAULT_RESULTS_PER_PROMPT, settings.getResultsPerPrompt());
+        assertEquals(PromptExecutionSettings.DEFAULT_RESULTS_PER_PROMPT,
+            settings.getResultsPerPrompt());
         assertEquals("", settings.getModelId());
         assertEquals("", settings.getUser());
         assertTrue(settings.getStopSequences().isEmpty());
@@ -40,17 +44,17 @@ public class PromptExecutionSettingsTest {
         String user = "custom-user";
 
         PromptExecutionSettings settings = new PromptExecutionSettings.Builder()
-                .withServiceId(serviceId)
-                .withMaxTokens(maxTokens)
-                .withTemperature(temperature)
-                .withTopP(topP)
-                .withPresencePenalty(presencePenalty)
-                .withFrequencyPenalty(frequencyPenalty)
-                .withBestOf(bestOf)
-                .withResultsPerPrompt(resultsPerPrompt)
-                .withModelId(modelId)
-                .withUser(user)
-                .build();
+            .withServiceId(serviceId)
+            .withMaxTokens(maxTokens)
+            .withTemperature(temperature)
+            .withTopP(topP)
+            .withPresencePenalty(presencePenalty)
+            .withFrequencyPenalty(frequencyPenalty)
+            .withBestOf(bestOf)
+            .withResultsPerPrompt(resultsPerPrompt)
+            .withModelId(modelId)
+            .withUser(user)
+            .build();
 
         assertEquals(serviceId, settings.getServiceId());
         assertEquals(maxTokens, settings.getMaxTokens());
@@ -80,7 +84,8 @@ public class PromptExecutionSettingsTest {
             + "\"model_id\":\"custom-model\","
             + "\"user\":\"custom-user\""
             + "}";
-        PromptExecutionSettings settings = new ObjectMapper().readValue(json, PromptExecutionSettings.class);
+        PromptExecutionSettings settings = new ObjectMapper().readValue(json,
+            PromptExecutionSettings.class);
 
         assertEquals("custom-service", settings.getServiceId());
         assertEquals(512, settings.getMaxTokens());
@@ -110,7 +115,8 @@ public class PromptExecutionSettingsTest {
             + "\"model_id\":\"custom-model\","
             + "\"user\":\"custom-user\""
             + "}";
-        PromptExecutionSettings settingsFromJson = new ObjectMapper().readValue(json, PromptExecutionSettings.class);
+        PromptExecutionSettings settingsFromJson = new ObjectMapper().readValue(json,
+            PromptExecutionSettings.class);
 
         PromptExecutionSettings settingsFromBuilder = PromptExecutionSettings.builder()
             .withServiceId("custom-service")

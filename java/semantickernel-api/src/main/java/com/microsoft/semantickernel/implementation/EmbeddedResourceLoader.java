@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /**
  * Utility class for loading resources from the classpath or filesystem.
@@ -77,6 +78,8 @@ public class EmbeddedResourceLoader {
         throw new FileNotFoundException("Could not find file " + fileName);
     }
 
+    @Nullable
+    // visible for testing
     static String getResourceAsStream(String fileName, Class<?> clazz) {
         try (InputStream inputStream = clazz.getResourceAsStream(fileName)) {
             return readInputStream(fileName, inputStream);
@@ -86,6 +89,8 @@ public class EmbeddedResourceLoader {
         return null;
     }
 
+    @Nullable
+    // visible for testing
     static String readFileFromFileSystem(String fileName) {
         File file = new File(fileName);
         if (file.exists()) {
@@ -98,6 +103,8 @@ public class EmbeddedResourceLoader {
         return null;
     }
 
+    @Nullable
+    // visible for testing
     private static String readInputStream(String fileName, InputStream inputStream)
         throws FileNotFoundException {
         if (inputStream == null) {

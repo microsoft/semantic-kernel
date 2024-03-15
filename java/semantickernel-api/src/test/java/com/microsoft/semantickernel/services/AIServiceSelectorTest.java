@@ -1,18 +1,19 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import org.junit.jupiter.api.Test;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import org.junit.jupiter.api.Test;
 
 public class AIServiceSelectorTest {
-    
+
     @Test
     public void testReturnsRequestedType() {
 
@@ -27,7 +28,7 @@ public class AIServiceSelectorTest {
                 return "a-service";
             }
         };
-        
+
         AIService bService = new AIService() {
             @Override
             public String getModelId() {
@@ -43,8 +44,8 @@ public class AIServiceSelectorTest {
         AIServiceSelection<?> expected = new AIServiceSelection<>(aService, null);
 
         Kernel kernel = Kernel.builder()
-            .withAIService((Class<AIService>)aService.getClass(), aService)
-            .withAIService((Class<AIService>)bService.getClass(), bService)
+            .withAIService((Class<AIService>) aService.getClass(), aService)
+            .withAIService((Class<AIService>) bService.getClass(), bService)
             .build();
 
         AIServiceSelector selector = kernel.getServiceSelector();
@@ -52,11 +53,12 @@ public class AIServiceSelectorTest {
         AIServiceSelection<?> actual = selector.trySelectAIService(aService.getClass(), null, null);
         assertNotNull(actual);
         assertNull(actual.getSettings());
-        assertEquals(expected.getService(), actual.getService());        
+        assertEquals(expected.getService(), actual.getService());
     }
 
     // used to test that the selector returns the requested super type
-    interface TestService extends AIService{}
+    interface TestService extends AIService {
+    }
 
     @Test
     public void testReturnsRequestedSuperType() {
@@ -72,7 +74,7 @@ public class AIServiceSelectorTest {
                 return "a-service";
             }
         };
-        
+
         AIService bService = new AIService() {
             @Override
             public String getModelId() {
@@ -86,18 +88,18 @@ public class AIServiceSelectorTest {
         };
 
         AIServiceSelection<?> expected = new AIServiceSelection<>(aService, null);
-       
+
         Kernel kernel = Kernel.builder()
-            .withAIService((Class<AIService>)aService.getClass(), aService)
-            .withAIService((Class<AIService>)bService.getClass(), bService)
+            .withAIService((Class<AIService>) aService.getClass(), aService)
+            .withAIService((Class<AIService>) bService.getClass(), bService)
             .build();
-        
+
         AIServiceSelector selector = kernel.getServiceSelector();
 
         AIServiceSelection<?> actual = selector.trySelectAIService(TestService.class, null, null);
         assertNotNull(actual);
         assertNull(actual.getSettings());
-        assertEquals(expected.getService(), actual.getService());        
+        assertEquals(expected.getService(), actual.getService());
     }
 
     @Test
@@ -114,7 +116,7 @@ public class AIServiceSelectorTest {
                 return "a-service";
             }
         };
-        
+
         AIService bService = new AIService() {
             @Override
             public String getModelId() {
@@ -127,7 +129,8 @@ public class AIServiceSelectorTest {
             }
         };
 
-        PromptExecutionSettings settings = PromptExecutionSettings.builder().withServiceId("a-service").build();
+        PromptExecutionSettings settings = PromptExecutionSettings.builder()
+            .withServiceId("a-service").build();
         AIServiceSelection<?> expected = new AIServiceSelection<>(aService, settings);
 
         PromptTemplateConfig promptTemplateConfig = PromptTemplateConfig.defaultTemplateBuilder()
@@ -137,22 +140,21 @@ public class AIServiceSelectorTest {
         KernelFunction<?> function = KernelFunction.createFromPrompt(promptTemplateConfig)
             .withDefaultExecutionSettings(settings)
             .build();
-       
+
         Kernel kernel = Kernel.builder()
-            .withAIService((Class<AIService>)aService.getClass(), aService)
-            .withAIService((Class<AIService>)bService.getClass(), bService)
+            .withAIService((Class<AIService>) aService.getClass(), aService)
+            .withAIService((Class<AIService>) bService.getClass(), bService)
             .build();
-        
+
         AIServiceSelector selector = kernel.getServiceSelector();
 
         // AIService could match aService or bService. Selector should use function to refine the selection. 
         AIServiceSelection<?> actual = selector.trySelectAIService(AIService.class, function, null);
         assertNotNull(actual);
         assertEquals(expected.getSettings(), actual.getSettings());
-        assertEquals(expected.getService(), actual.getService());        
+        assertEquals(expected.getService(), actual.getService());
 
     }
-
 
     @Test
     public void testReturnsUsingKernelFunctionArguments() {
@@ -168,7 +170,7 @@ public class AIServiceSelectorTest {
                 return "a-service";
             }
         };
-        
+
         AIService bService = new AIService() {
             @Override
             public String getModelId() {
@@ -184,20 +186,21 @@ public class AIServiceSelectorTest {
         AIServiceSelection<?> expected = new AIServiceSelection<>(aService, null);
 
         KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
-       
+
         Kernel kernel = Kernel.builder()
-            .withAIService((Class<AIService>)aService.getClass(), aService)
-            .withAIService((Class<AIService>)bService.getClass(), bService)
+            .withAIService((Class<AIService>) aService.getClass(), aService)
+            .withAIService((Class<AIService>) bService.getClass(), bService)
             .build();
-        
+
         AIServiceSelector selector = kernel.getServiceSelector();
 
         // arguments are not used in the current implementation
         // Could select either aService or bService.
-        AIServiceSelection<?> actual = selector.trySelectAIService(AIService.class, null, arguments);
+        AIServiceSelection<?> actual = selector.trySelectAIService(AIService.class, null,
+            arguments);
         assertNotNull(actual);
         assertNull(actual.getSettings());
-        assertNotNull(expected.getService());        
+        assertNotNull(expected.getService());
     }
 
 }

@@ -262,6 +262,21 @@ public class Example09_FunctionTypes {
                     .build())
             .withTypeConverter(new DateTimeContextVariableTypeConverter())
             .block();
+
+        var result10 = kernel
+            .invokeAsync(plugin.get("WithPrimativeReturnType"))
+            .block();
+        System.out.println(result10.getResult());
+
+        var result11 = kernel
+            .invokeAsync(plugin.get("WithBoxedPrimativeReturnType"))
+            .block();
+        System.out.println(result11.getResult());
+
+        var result12 = kernel
+            .invokeAsync(plugin.get("AsyncWithBoxedPrimativeReturnType"))
+            .block();
+        System.out.println(result12.getResult());
         /*
          * TODO: support FunctionResult
          * kernel
@@ -482,6 +497,21 @@ public class Example09_FunctionTypes {
             System.out.println(
                 "Running {nameof(this.MultipleComplexInputsWithVoidResult)} -> input: [x = {" + x
                     + "}, y = {" + y + "}]");
+        }
+
+        @DefineKernelFunction(name = "WithPrimativeReturnType", returnType = "int")
+        public int WithPrimativeReturnType() {
+            return 1;
+        }
+
+        @DefineKernelFunction(name = "WithBoxedPrimativeReturnType", returnType = "int")
+        public Integer WithBoxedPrimativeReturnType() {
+            return Integer.valueOf(1);
+        }
+
+        @DefineKernelFunction(name = "AsyncWithBoxedPrimativeReturnType", returnType = "int")
+        public Mono<Integer> AsyncWithBoxedPrimativeReturnType() {
+            return Mono.just(Integer.valueOf(1));
         }
 
         /*

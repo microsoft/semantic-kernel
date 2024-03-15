@@ -8,8 +8,6 @@ import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.ValueResolver;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.contextvariables.ContextVariableType;
-import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
@@ -269,19 +267,12 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
     private static Helper<Object> functionInvokeHelper(Kernel kernel,
         KernelFunction<?> kernelFunction) {
         return (context, options) -> {
-
-            ContextVariableType converter = ContextVariableTypes
-                .getGlobalVariableTypeForClass(
-                    context.getClass());
-
-            String promptString = converter.getConverter().toPromptString(context);
-
             // TODO Figure out if possible to do async render
             return kernelFunction
                 .invokeAsync(kernel)
                 .withArguments(
                     KernelFunctionArguments.builder()
-                        .withInput(promptString)
+                        .withInput(context)
                         .build())
                 .block()
                 .getResult();

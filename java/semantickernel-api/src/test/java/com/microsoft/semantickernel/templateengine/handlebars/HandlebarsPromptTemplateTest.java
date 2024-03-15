@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
 import static java.util.stream.Collectors.joining;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -21,6 +15,10 @@ import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunction
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -40,7 +38,7 @@ public class HandlebarsPromptTemplateTest {
         @DefineKernelFunction(name = "upper", description = "Converts a string to upper case.")
         public String upper(
             @KernelFunctionParameter(name = "input", required = true, description = "The string to convert to upper case", type = String.class) String input) {
-            return input.toUpperCase();
+            return input.toUpperCase(Locale.ROOT);
         }
 
         @DefineKernelFunction(name = "concat", description = "Concatenate the second string to the first string.")

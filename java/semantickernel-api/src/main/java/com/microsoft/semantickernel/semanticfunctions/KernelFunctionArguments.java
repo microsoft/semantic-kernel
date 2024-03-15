@@ -197,6 +197,15 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
     }
 
     /**
+     * Create a copy of the current instance
+     *
+     * @return copy of the current instance
+     */
+    public KernelFunctionArguments copy() {
+        return new KernelFunctionArguments(variables);
+    }
+
+    /**
      * Builder for ContextVariables
      */
     public static class Builder implements SemanticKernelBuilder<KernelFunctionArguments> {
@@ -208,7 +217,6 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
          */
         public Builder() {
             variables = new HashMap<>();
-            this.variables.put(MAIN_KEY, ContextVariable.of(""));
         }
 
         /**
