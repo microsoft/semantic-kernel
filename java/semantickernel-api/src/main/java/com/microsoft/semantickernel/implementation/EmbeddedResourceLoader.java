@@ -67,9 +67,7 @@ public class EmbeddedResourceLoader {
                             try (InputStream inputStream = Thread.currentThread()
                                 .getContextClassLoader()
                                 .getResourceAsStream(fileName)) {
-                                if (inputStream != null && inputStream.available() != 0) {
-                                    return readInputStream(fileName, inputStream);
-                                }
+                                return readInputStream(fileName, inputStream);
                             } catch (IOException e) {
                                 // IGNORE
                             }
