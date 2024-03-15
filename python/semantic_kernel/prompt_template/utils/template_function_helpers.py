@@ -38,7 +38,7 @@ def create_template_helper_from_function(
             this = None
             actual_args = args
 
-        if this:
+        if this is not None:
             logger.debug(f"Handlebars context with `this`: {this}")
         else:
             logger.debug("Jinja2 context or Handlebars context without `this`")
