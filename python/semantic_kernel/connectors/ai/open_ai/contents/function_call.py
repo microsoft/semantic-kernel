@@ -1,4 +1,5 @@
 """Class to hold chat messages."""
+
 import json
 from typing import Any, Dict, List, Optional
 
@@ -15,18 +16,12 @@ class FunctionCall(KernelBaseModel):
 
     name: Optional[str] = None
     arguments: Optional[str] = None
-    # TODO: check if needed
-    id: Optional[str] = None
 
     def __add__(self, other: Optional["FunctionCall"]) -> "FunctionCall":
         """Add two function calls together, combines the arguments, ignores the name."""
         if not other:
             return self
-        return FunctionCall(
-            name=self.name or other.name,
-            arguments=(self.arguments or "") + (other.arguments or ""),
-            id=self.id or other.id,
-        )
+        return FunctionCall(name=self.name or other.name, arguments=(self.arguments or "") + (other.arguments or ""))
 
     def parse_arguments(self) -> Optional[Dict[str, Any]]:
         """Parse the arguments into a dictionary."""

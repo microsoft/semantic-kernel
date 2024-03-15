@@ -56,6 +56,7 @@ internal sealed class Agent : IAgent
     public IEnumerable<string> FileIds => this._fileIds.AsEnumerable();
 
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+
     private static readonly Dictionary<string, IPromptTemplateFactory> s_templateFactories =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -231,9 +232,7 @@ internal sealed class Agent : IAgent
         var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
-
-            var messages = await thread.InvokeAsync(this, input, arguments, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            var messages = await thread.InvokeAsync(this, input, arguments, fileIds: null, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
             var response =
                 new AgentResponse
                 {

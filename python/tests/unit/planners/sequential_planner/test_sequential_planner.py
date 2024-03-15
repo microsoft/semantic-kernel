@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -29,14 +29,8 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("goal", ["Write a poem or joke and send it in an e-mail to Kai."])
-async def test_it_can_create_plan(goal):
+async def test_it_can_create_plan(goal, kernel: Kernel):
     # Arrange
-    kernel = Mock(spec=Kernel)
-    kernel.prompt_template_engine = Mock()
-
-    memory = Mock(spec=SemanticTextMemoryBase)
-    kernel.memory = memory
-
     input = [
         ("SendEmail", "email", "Send an e-mail", False),
         ("GetEmailAddress", "email", "Get an e-mail address", False),
@@ -72,10 +66,10 @@ async def test_it_can_create_plan(goal):
 
     plan_string = """
 <plan>
-    <function.SummarizePlugin.Summarize/>
-    <function.WriterPlugin.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function.email.GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
-    <function.email.SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function.SummarizePlugin-Summarize/>
+    <function.WriterPlugin-Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
+    <function.email-GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
+    <function.email-SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>"""
 
     mock_function_flow_function = Mock(spec=KernelFunction)
@@ -86,20 +80,19 @@ async def test_it_can_create_plan(goal):
         value=plan_string,
         metadata={},
     )
-    kernel.create_function_from_prompt.return_value = mock_function_flow_function
+    with patch("semantic_kernel.kernel.Kernel.create_function_from_prompt", return_value=mock_function_flow_function):
+        planner = SequentialPlanner(kernel, service_id="test")
 
-    planner = SequentialPlanner(kernel, service_id="test")
+        # Act
+        plan = await planner.create_plan(goal)
 
-    # Act
-    plan = await planner.create_plan(goal)
-
-    # Assert
-    assert plan.description == goal
-    assert any(step.name in expected_functions and step.plugin_name in expected_plugins for step in plan._steps)
-    for expected_function in expected_functions:
-        assert any(step.name == expected_function for step in plan._steps)
-    for expectedPlugin in expected_plugins:
-        assert any(step.plugin_name == expectedPlugin for step in plan._steps)
+        # Assert
+        assert plan.description == goal
+        assert any(step.name in expected_functions and step.plugin_name in expected_plugins for step in plan._steps)
+        for expected_function in expected_functions:
+            assert any(step.name == expected_function for step in plan._steps)
+        for expectedPlugin in expected_plugins:
+            assert any(step.plugin_name == expectedPlugin for step in plan._steps)
 
 
 @pytest.mark.asyncio
