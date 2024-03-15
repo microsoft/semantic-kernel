@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
+using static Microsoft.SemanticKernel.Text.TextChunker;
 
 namespace SemanticKernel.UnitTests.Text;
 
@@ -774,6 +776,27 @@ public sealed class TextChunkerTests
         };
 
         var result = TextChunker.SplitPlainTextParagraphs(input, 100, 40, chunkHeader: ChunkHeader, tokenCounter: (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
+
+    private static TokenCounter GPT4TokenCounter => (string input) =>
+    {
+        var tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
+        return tokenizer.CountTokens(input);
+    };
+
+    [Fact]
+    public void CanSplitParagraphsWithIdeographicPunctuationAndGptTokenCounter()
+    {
+        const string Input = "田中の猫はかわいいですね。日本語上手。";
+        var expected = new[]
+        {
+            "田中の猫はかわいいですね。",
+            "日本語上手。"
+        };
+
+        var result = TextChunker.SplitPlainTextLines(Input, 16, GPT4TokenCounter);
 
         Assert.Equal(expected, result);
     }
