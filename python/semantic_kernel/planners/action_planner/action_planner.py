@@ -114,7 +114,7 @@ class ActionPlanner:
             raise PlannerInvalidPlanError(f"No valid plan has been generated. Plan is:  {generated_plan_raw_str}")
 
         generated_plan_str = generated_plan_str.group()
-        generated_plan_str = generated_plan_str.replace('""', '"')
+        # generated_plan_str = generated_plan_str.replace('""', '"')
 
         try:
             generated_plan = json.loads(generated_plan_str)
