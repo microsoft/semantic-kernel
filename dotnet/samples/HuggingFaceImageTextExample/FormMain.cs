@@ -143,21 +143,25 @@ public partial class FormMain : Form
     /// <param name="pictureBox">The target <see cref="PictureBox"/>.</param>
     /// <returns>Returns a <see cref="ImageContent"/>.</returns>
     private static ImageContent CreateImageContentFromPictureBox(PictureBox pictureBox)
-        => new(ConvertImageToReadOnlyMemory(pictureBox.Image))
+        => new(ConvertImageToReadOnlyMemory(pictureBox))
         {
             MimeType = GetMimeType(pictureBox.Tag?.ToString()!)
         };
 
     /// <summary>
-    /// Converts an <see cref="Image"/> to a <see cref="ReadOnlyMemory{T}"/>.
+    /// Gets the image binary array from a <see cref="PictureBox"/>.
     /// </summary>
-    /// <param name="image">The target <see cref="Image"/>.</param>
+    /// <param name="pictureBox">The target <see cref="PictureBox"/>.</param>
     /// <returns>Returns image binary array.</returns>
-    private static ReadOnlyMemory<byte> ConvertImageToReadOnlyMemory(Image image)
+    private static ReadOnlyMemory<byte> ConvertImageToReadOnlyMemory(PictureBox pictureBox)
     {
+        var image = pictureBox.Image;
+        var fileName = pictureBox.Tag.ToString()!;
+
         using var memoryStream = new MemoryStream();
+
         // Save the image to the MemoryStream, using PNG format for example
-        image.Save(memoryStream, ImageFormat.Jpeg);
+        image.Save(memoryStream, GetImageFormat(fileName));
 
         // Optionally, reset the position of the MemoryStream to the beginning
         memoryStream.Position = 0;
@@ -189,7 +193,22 @@ public partial class FormMain : Form
             ".tiff" => "image/tiff",
             ".ico" => "image/x-icon",
             ".svg" => "image/svg+xml",
-            _ => "application/octet-stream"
+            _ => throw new NotSupportedException("Unsupported image format.")
+        };
+    }
+
+    private static ImageFormat GetImageFormat(string fileName)
+    {
+        return Path.GetExtension(fileName) switch
+        {
+            ".jpg" or ".jpeg" => ImageFormat.Jpeg,
+            ".png" => ImageFormat.Png,
+            ".gif" => ImageFormat.Gif,
+            ".bmp" => ImageFormat.Bmp,
+            ".tiff" => ImageFormat.Tiff,
+            ".ico" => ImageFormat.Icon,
+            ".svg" => ImageFormat.MemoryBmp,
+            _ => throw new NotSupportedException("Unsupported image format.")
         };
     }
 
