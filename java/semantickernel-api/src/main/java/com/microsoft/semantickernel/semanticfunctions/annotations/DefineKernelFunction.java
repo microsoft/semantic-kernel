@@ -33,7 +33,8 @@ public @interface DefineKernelFunction {
     /**
      * The fully qualified class name of the return value of the function, for example,
      * "java.lang.String". If this parameter is not provided, the model will attempt to infer the
-     * return type from the method signature.
+     * return type from the method signature. For async methods provide the return from the async
+     * method, i.e. if the method returns a Mono&lt;String&gt; then the returnType should be "java.lang.String".
      *
      * @return the fully qualified class name of the return value of the function
      */

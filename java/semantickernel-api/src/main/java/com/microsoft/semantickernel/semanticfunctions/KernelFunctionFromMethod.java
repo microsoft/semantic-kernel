@@ -91,7 +91,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
         MethodDetails methodDetails = getMethodDetails(functionName, method, target);
 
-        if (description == null) {
+        if (description == null || description.isEmpty()) {
             description = methodDetails.getDescription();
         }
 
@@ -123,11 +123,15 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         String description = null;
         String returnDescription = null;
         if (annotation != null) {
-            description = annotation.description();
-            returnDescription = annotation.returnDescription();
+            if (!annotation.description().isEmpty()) {
+                description = annotation.description();
+            }
+            if (!annotation.returnDescription().isEmpty()) {
+                returnDescription = annotation.returnDescription();
+            }
         }
 
-        if (functionName == null) {
+        if (functionName == null || functionName.isEmpty()) {
             functionName = method.getName();
         }
 
