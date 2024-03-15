@@ -32,6 +32,7 @@ pydantic = "^2"
 motor = "^3.3.2"
 defusedxml = "^0.7.1"
 pybars4 = "^0.9.13"
+jinja2 = "^3.1.3"
 
 # Optional dependencies
 ipykernel = { version = "^6.21.1", optional = true}
