@@ -40,7 +40,6 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import (
-    HANDLEBARS_TEMPLATE_FORMAT_NAME,
     KERNEL_TEMPLATE_FORMAT_NAME,
     TEMPLATE_FORMAT_TYPES,
 )
@@ -376,7 +375,9 @@ class Kernel(KernelBaseModel):
         prompt: str,
         arguments: Optional[KernelArguments] = None,
         template_format: Literal[
-            KERNEL_TEMPLATE_FORMAT_NAME, HANDLEBARS_TEMPLATE_FORMAT_NAME
+            "semantic-kernel",
+            "handlebars",
+            "jinja2",
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
         **kwargs: Any,
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:

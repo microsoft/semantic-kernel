@@ -11,7 +11,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import JINJA2_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.prompt_template.utils import JINJA2_SYSTEM_HELPERS, create_jinja2_helper_from_function
+from semantic_kernel.prompt_template.utils import JINJA2_SYSTEM_HELPERS, create_template_helper_from_function
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
@@ -84,8 +84,11 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         for plugin in kernel.plugins:
             helpers.update(
                 {
-                    function.fully_qualified_name.replace("-", "_"): create_jinja2_helper_from_function(
-                        function, kernel, arguments
+                    function.fully_qualified_name.replace("-", "_"): create_template_helper_from_function(
+                        function,
+                        kernel,
+                        arguments,
+                        self.prompt_template_config.template_format,
                     )
                     for function in plugin.functions.values()
                 }

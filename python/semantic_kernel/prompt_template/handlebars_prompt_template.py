@@ -10,7 +10,7 @@ from semantic_kernel.exceptions import HandlebarsTemplateRenderException, Handle
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import HANDLEBARS_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.utils import HANDLEBAR_SYSTEM_HELPERS, create_handlebars_helper_from_function
+from semantic_kernel.prompt_template.utils import HANDLEBAR_SYSTEM_HELPERS, create_template_helper_from_function
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
@@ -78,7 +78,9 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
         for plugin in kernel.plugins:
             helpers.update(
                 {
-                    function.fully_qualified_name: create_handlebars_helper_from_function(function, kernel, arguments)
+                    function.fully_qualified_name: create_template_helper_from_function(
+                        function, kernel, arguments, self.prompt_template_config.template_format
+                    )
                     for function in plugin.functions.values()
                 }
             )
