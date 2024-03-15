@@ -9,24 +9,32 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// Base class for agents.
 /// </summary>
 /// <typeparam name="TChannel">The type of <see cref="AgentChannel"/> appropriate for the agent type.</typeparam>
-public abstract class KernelAgent<TChannel> : KernelAgent
-        where TChannel : AgentChannel
+/// <remarks>
+/// Initializes a new instance of the <see cref="KernelAgent"/> class.
+/// </remarks>
+/// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+public abstract class KernelAgent<TChannel>(Kernel kernel)
+                        : KernelAgent(kernel)
+                            where TChannel : AgentChannel
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelAgent"/> class.
+    /// The type of channel associated with the agent, should one be required.
     /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    protected KernelAgent(Kernel kernel)
-        : base(typeof(TChannel), kernel)
-    {
-        // Nothing to do...
-    }
+    /// <remarks>
+    /// Each implementation of <see cref="KernelAgent"/> must be associated
+    /// with a corresponding <see cref="AgentChannel"/>.
+    /// </remarks>
+    public override Type ChannelType => typeof(TChannel);
 }
 
 /// <summary>
 /// Base class for agents.
 /// </summary>
-public abstract class KernelAgent
+/// <remarks>
+/// Initializes a new instance of the <see cref="KernelAgent"/> class.
+/// </remarks>
+/// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+public abstract class KernelAgent(Kernel kernel)
 {
     /// <summary>
     /// The description of the agent (optional)
@@ -39,11 +47,6 @@ public abstract class KernelAgent
     public abstract string Id { get; }
 
     /// <summary>
-    /// The instructions of the agent (optional)
-    /// </summary>
-    public abstract string? Instructions { get; }
-
-    /// <summary>
     /// The name of the agent (optional)
     /// </summary>
     public abstract string? Name { get; }
@@ -51,27 +54,16 @@ public abstract class KernelAgent
     /// <summary>
     /// The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.
     /// </summary>
-    public Kernel Kernel { get; }
+    public Kernel Kernel { get; } = kernel;
 
     /// <summary>
-    /// The type of channel associated with the agent.
+    /// The type of channel associated with the agent, should one be required.
     /// </summary>
     /// <remarks>
     /// Each implementation of <see cref="KernelAgent"/> must be associated
     /// with a corresponding <see cref="AgentChannel"/>.
     /// </remarks>
-    internal Type ChannelType { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="KernelAgent"/> class.
-    /// </summary>
-    /// <param name="channelType">The type of <see cref="AgentChannel"/> appropriate for the agent type.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    protected KernelAgent(Type channelType, Kernel kernel)
-    {
-        this.Kernel = kernel;
-        this.ChannelType = channelType;
-    }
+    public abstract Type ChannelType { get; }
 
     /// <summary>
     /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.

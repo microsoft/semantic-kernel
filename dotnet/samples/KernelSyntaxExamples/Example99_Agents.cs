@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -46,6 +47,29 @@ public class Example99_Agents : BaseTest
         var agent2 = CreateChatAgent("Pessimistic", "Respond with extreme skeptism...don't be polite.");
 
         await RunDualAgentAsync(agent1, agent2, "I think I'm going to do something really important today!");
+    }
+
+    /// <summary>
+    /// Demonstrate single chat agent.
+    /// </summary>
+    [Fact]
+    public async Task RunChatNexusAgentsAsync()
+    {
+        WriteLine("======== Run:Nexus Agent ========");
+
+        var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
+        var agent2 = CreateChatAgent("Pessimistic", "Respond with extreme skeptism...don't be polite.");
+        var nexus = new AgentChat(agent1, agent2)
+        {
+            ExecutionSettings = new()
+            {
+                SelectionStrategy = new SequentialSelectionStrategy(),
+                MaximumIterations = 4,
+            }
+        };
+        var agentX = new NexusAgent(nexus);
+
+        await ChatAsync(agentX, "I think I'm going to do something really important today!");
     }
 
     /// <summary>
@@ -214,7 +238,7 @@ public class Example99_Agents : BaseTest
             new NexusExecutionSettings
             {
                 MaximumIterations = 6,
-                CompletionCriteria = new ExpressionCompletionStrategy("Oh really?"), // Terminate on pessimistic phrase.
+                CompletionCriteria = new ExpressionCompletionStrategy("really"), // Terminate on pessimistic phrase.
             },
             agent1,
             agent2);
@@ -260,18 +284,20 @@ public class Example99_Agents : BaseTest
             input: null,
             new NexusExecutionSettings
             {
+                MaximumIterations = 9,
                 CompletionCriteria =
                     new SemanticCompletionStrategy(
                         agent1.Kernel.GetRequiredService<IChatCompletionService>(),
                         "Someone correctly guesses the number."),
+                SelectionStrategy =
+                    new SemanticSelectionStrategy(
+                        agent1.Kernel.GetRequiredService<IChatCompletionService>(),
+                        "Your job is to only state the name of the player whose turn is next without explanation.  You are not a player.  There are three player: Player1, Player2, and Player3.  Pick anyone to start.  Only respond with the player name.  Players start by taking turns to introduce themselves. After all players has introduced themselves, one player thinks of a number from 1 to 10.  The other players take turns guessing what the number is.  The player who knows the number replies with: too low, too high, or you got it.",
+                        new OpenAIPromptExecutionSettings
+                        {
+                            Temperature = 0,
+                        })
             },
-            new SemanticSelectionStrategy(
-                agent1.Kernel.GetRequiredService<IChatCompletionService>(),
-                "Your job is to only state the name of the player whose turn is next without explanation.  You are not a player.  There are three player: Player1, Player2, and Player3.  Pick anyone to start.  Only respond with the player name.  Players start by taking turns to introduce themselves. After all players has introduced themselves, one player thinks of a number from 1 to 10.  The other players take turns guessing what the number is.  The player who knows the number replies with: too low, too high, or you got it.",
-                new OpenAIPromptExecutionSettings
-                {
-                    Temperature = 0,
-                }),
             agent1,
             agent2,
             agent3);
@@ -302,7 +328,7 @@ public class Example99_Agents : BaseTest
         WriteAgent(agent1);
         WriteAgent(agent2);
 
-        var nexus = new ManualNexus();
+        var nexus = new AgentChat();
 
         await InvokeAgentAsync(nexus, agent1, input); // $$$ USER PROXY
         await InvokeAgentAsync(nexus, agent2);
@@ -312,29 +338,22 @@ public class Example99_Agents : BaseTest
         await WriteHistoryAsync(nexus, agent2);
     }
 
-    private Task RunStrategyAsync(
-        string? input,
-        NexusExecutionSettings settings,
-        params KernelAgent[] agents)
-    {
-        return RunStrategyAsync(input, settings, selectionStrategy: null, agents);
-    }
-
     private async Task RunStrategyAsync(
         string? input,
         NexusExecutionSettings settings,
-        SelectionStrategy? selectionStrategy,
         params KernelAgent[] agents)
     {
+        settings.SelectionStrategy ??= new SequentialSelectionStrategy();
+
         this.WriteLine("[TEST]");
         foreach (var agent in agents)
         {
             WriteAgent(agent);
         }
 
-        var nexus = new StrategyNexus(selectionStrategy ?? new SequentialSelectionStrategy(), agents);
+        var nexus = new AgentChat(agents) { ExecutionSettings = settings };
 
-        await InvokeAgentAsync(nexus, input, settings); // $$$ USER PROXY
+        await WriteContentAsync(nexus.InvokeAsync(input));
 
         await WriteHistoryAsync(nexus);
         foreach (var agent in agents)
@@ -353,7 +372,7 @@ public class Example99_Agents : BaseTest
         this.WriteLine("[TEST]");
         WriteAgent(agent);
 
-        var nexus = new ManualNexus();
+        var nexus = new AgentChat();
 
         // Process each user message and agent response.
         foreach (var message in messages)
@@ -367,47 +386,11 @@ public class Example99_Agents : BaseTest
         return nexus;
     }
 
-    private async Task InvokeAgentAsync(ManualNexus nexus, KernelAgent agent, string? message = null)
+    private Task InvokeAgentAsync(AgentChat nexus, KernelAgent agent, string? message = null)
     {
-        await foreach (var content in nexus.InvokeAsync(agent, message))
-        {
-            this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
-        }
+        return WriteContentAsync(nexus.InvokeAsync(agent, message));
     }
 
-    private async Task InvokeAgentAsync(StrategyNexus nexus, string? message = null, NexusExecutionSettings? settings = null)
-    {
-        await foreach (var content in nexus.InvokeAsync(message, settings))
-        {
-            this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
-        }
-    }
-
-    private Kernel CreateKernel(KernelPlugin? plugin = null)
-    {
-        var builder = Kernel.CreateBuilder();
-
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
-        {
-            builder.AddOpenAIChatCompletion(
-                TestConfiguration.OpenAI.ChatModelId,
-                TestConfiguration.OpenAI.ApiKey);
-        }
-        else
-        {
-            builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey);
-        }
-
-        if (plugin != null)
-        {
-            builder.Plugins.Add(plugin);
-        }
-
-        return builder.Build();
-    }
 
     private string GetApiKey()
     {
@@ -424,7 +407,14 @@ public class Example99_Agents : BaseTest
         this.WriteLine($"[{agent.GetType().Name}:{agent.Id}:{agent.Name ?? "*"}]");
     }
 
-    private async Task WriteHistoryAsync(AgentNexus nexus, KernelAgent? agent = null)
+    private async Task WriteContentAsync(IAsyncEnumerable<ChatMessageContent> messages)
+    {
+        await foreach (var content in messages)
+        {
+            this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
+        }
+    }
+    private Task WriteHistoryAsync(AgentNexus nexus, KernelAgent? agent = null)
     {
         if (agent == null)
         {
@@ -436,10 +426,7 @@ public class Example99_Agents : BaseTest
             this.WriteAgent(agent);
         }
 
-        await foreach (var message in nexus.GetHistoryAsync(agent))
-        {
-            this.WriteLine($"# {message.Role} - {message.Name ?? "*"}: '{message.Content}'");
-        }
+        return WriteContentAsync(nexus.GetHistoryAsync(agent));
     }
 
     private async Task<GptAgent> CreateGptAgentAsync(
@@ -472,6 +459,32 @@ public class Example99_Agents : BaseTest
                 description: null,
                 name,
                 new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions });
+    }
+
+    private Kernel CreateKernel(KernelPlugin? plugin = null)
+    {
+        var builder = Kernel.CreateBuilder();
+
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
+        {
+            builder.AddOpenAIChatCompletion(
+                TestConfiguration.OpenAI.ChatModelId,
+                TestConfiguration.OpenAI.ApiKey);
+        }
+        else
+        {
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
+        }
+
+        if (plugin != null)
+        {
+            builder.Plugins.Add(plugin);
+        }
+
+        return builder.Build();
     }
 
     public Example99_Agents(ITestOutputHelper output) : base(output)

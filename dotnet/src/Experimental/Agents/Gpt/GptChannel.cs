@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Gpt;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="GptAgent"/>.
 /// </summary>
-public sealed class GptChannel : AgentChannel
+public sealed class GptChannel : AgentChannel<GptAgent>
 {
     private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan s_pollingBackoff = TimeSpan.FromSeconds(1);
@@ -32,7 +32,7 @@ public sealed class GptChannel : AgentChannel
     private readonly AssistantsClient _client;
     private readonly string _threadId;
     private readonly Dictionary<string, ToolDefinition[]> _agentTools;
-    private readonly Dictionary<string, string> _agentNames;
+    private readonly Dictionary<string, string> _agentNames; // $$$ WHY ???
 
     /// <inheritdoc/>
     public override async Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
@@ -45,7 +45,7 @@ public sealed class GptChannel : AgentChannel
             }
 
             string? actorLabel = null;
-            if (message.Role == AuthorRole.Assistant)
+            if (message.Role == AuthorRole.Assistant) // $$$ NEEDED ???
             {
                 actorLabel = $"{message.Name ?? message.Role.Label}: ";
             }
@@ -61,22 +61,16 @@ public sealed class GptChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(KernelAgent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
+    protected override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(GptAgent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (agent is not GptAgent gptAgent)
+        if (input.TryGetContent(out var content))
         {
-            throw new AgentException($"Invalid agent channel: {nameof(GptChannel)}/{agent.GetType().Name}");
-        }
-
-        if (input != null)
-        {
-            var userMessage = await this._client.CreateMessageAsync(this._threadId, MessageRole.User, input.Content, fileIds: null, metadata: null, cancellationToken).ConfigureAwait(false);
-            yield return input;
+            await this._client.CreateMessageAsync(this._threadId, MessageRole.User, content, fileIds: null, metadata: null, cancellationToken).ConfigureAwait(false);
         }
 
         if (!this._agentTools.TryGetValue(agent.Id, out var tools))
         {
-            tools = [.. gptAgent.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
+            tools = [.. agent.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
             this._agentTools.Add(agent.Id, tools);
         }
 
@@ -119,7 +113,7 @@ public sealed class GptChannel : AgentChannel
 
                 await this._client.SubmitToolOutputsToRunAsync(run, results, cancellationToken).ConfigureAwait(false);
 
-                // Refresh run as it goes back into pending state after posting function results.
+                // Refresh run as it goes back into pending state after posting function results. // $$$ PENDING MISNOMER
                 await PollRunStatus(force: true).ConfigureAwait(false);
 
                 steps = await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -159,9 +153,9 @@ public sealed class GptChannel : AgentChannel
                 {
                     var role = new AuthorRole(message.Role.ToString());
 
-                    foreach (var content in message.ContentItems)
+                    foreach (var itemContent in message.ContentItems)
                     {
-                        if (content is MessageTextContent contentMessage)
+                        if (itemContent is MessageTextContent contentMessage)
                         {
                             var textContent = contentMessage.Text.Trim();
                             if (!string.IsNullOrWhiteSpace(textContent))
@@ -174,7 +168,7 @@ public sealed class GptChannel : AgentChannel
                             }
                         }
 
-                        if (content is MessageImageFileContent contentImage)
+                        if (itemContent is MessageImageFileContent contentImage)
                         {
                             yield return new ChatMessageContent(role, contentImage.FileId, name: agent.Name) // $$$ FILEID
                             {
@@ -193,8 +187,7 @@ public sealed class GptChannel : AgentChannel
         {
             int count = 0;
 
-            // Ignore model status when forced.
-            while (force || s_pollingStates.Contains(run.Status))
+            do
             {
                 if (!force)
                 {
@@ -214,6 +207,7 @@ public sealed class GptChannel : AgentChannel
                     // Retry anyway..
                 }
             }
+            while (s_pollingStates.Contains(run.Status));
         }
 
         IEnumerable<Task<ToolOutput>> ExecuteStep(RunStep step, CancellationToken cancellationToken)

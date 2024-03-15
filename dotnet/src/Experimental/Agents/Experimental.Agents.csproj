@@ -16,6 +16,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="C:\Users\crickman\source\repos\semantic-kernel2\dotnet\src\InternalUtilities\src\Linq\AsyncEnumerable.cs" />
+    <Compile Remove="Chat\ChatChannel.cs" />
+    <Compile Remove="NexusChannel.cs" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Agents.UnitTests" />

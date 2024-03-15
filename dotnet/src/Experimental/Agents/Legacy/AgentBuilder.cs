@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// <summary>
 /// Fluent builder for initializing an <see cref="IAgent"/> instance.
 /// </summary>
-public partial class AgentBuilder
+public class AgentBuilder
 {
     internal const string OpenAIBaseUrl = "https://api.openai.com/v1";
 
@@ -36,9 +36,9 @@ public partial class AgentBuilder
     public AgentBuilder()
     {
         this._model = new AssistantModel();
-        this._plugins = new KernelPluginCollection();
+        this._fileIds = [];
+        this._plugins = [];
         this._tools = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        this._fileIds = new List<string>();
     }
 
     /// <summary>

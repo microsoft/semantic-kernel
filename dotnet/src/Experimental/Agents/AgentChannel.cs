@@ -2,8 +2,42 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
+
+/// <summary>
+/// $$$
+/// </summary>
+/// <typeparam name="TAgent"></typeparam>
+public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : KernelAgent
+{
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        KernelAgent agent,
+        ChatMessageContent? input = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (agent is not TAgent castAgent)
+        {
+            throw new AgentException($"Invalid agent channel: {typeof(TAgent).Name}/{agent.GetType().Name}");
+        }
+
+        return this.InvokeAsync(castAgent, input, cancellationToken);
+    }
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="input"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        TAgent agent,
+        ChatMessageContent? input = null,
+        CancellationToken cancellationToken = default);
+}
 
 /// <summary>
 /// Manages communication protocol for a particular <see cref="KernelAgent"/> implementation.

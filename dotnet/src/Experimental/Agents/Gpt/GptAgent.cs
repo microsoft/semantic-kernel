@@ -26,8 +26,10 @@ public sealed class GptAgent : KernelAgent<GptChannel>
     /// <inheritdoc/>
     public override string Id => this._assistant.Id;
 
-    /// <inheritdoc/>
-    public override string? Instructions => this._assistant.Instructions;
+    /// <summary>
+    /// The instructions of the agent (optional)
+    /// </summary>
+    public string? Instructions { get; }
 
     /// <inheritdoc/>
     public override string? Name => this._assistant.Name;

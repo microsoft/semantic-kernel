@@ -129,6 +129,7 @@ public class ChatMessageContent : KernelContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// <param name="name">Name of the author of the message</param>
     public ChatMessageContent(
         AuthorRole role,
         string? content,

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 
 /// <summary>
-/// Base strategy class for defining completion criteria for a <see cref="StrategyNexus"/>.
+/// Base strategy class for defining completion criteria for a <see cref="AgentChat"/>.
 /// </summary>
 public abstract class CompletionStrategy
 {

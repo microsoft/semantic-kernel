@@ -622,7 +622,7 @@ internal abstract class ClientCore
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
 
-                static void AddResponseMessage(
+                static void AddResponseMessage( // $$$
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
                     string? result, string? errorMessage, ILogger logger)
                 {
@@ -760,7 +760,7 @@ internal abstract class ClientCore
     /// <param name="text">Optional chat instructions for the AI service</param>
     /// <param name="executionSettings">Execution settings</param>
     /// <returns>Chat object</returns>
-    internal static ChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
+    internal static ChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null) // $$$
     {
         var chat = new ChatHistory();
 
@@ -918,7 +918,7 @@ internal abstract class ClientCore
         return options;
     }
 
-    private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, ChatCompletionsFunctionToolCall[]? tools)
+    private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, ChatCompletionsFunctionToolCall[]? tools) // $$$
     {
         if (chatRole == ChatRole.User)
         {
@@ -946,7 +946,7 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static ChatRequestMessage GetRequestMessage(ChatMessageContent message)
+    private static ChatRequestMessage GetRequestMessage(ChatMessageContent message) // $$$
     {
         if (message.Role == AuthorRole.System)
         {
@@ -1017,7 +1017,7 @@ internal abstract class ClientCore
         throw new NotSupportedException($"Role {message.Role} is not supported.");
     }
 
-    private static ChatRequestMessage GetRequestMessage(ChatResponseMessage message)
+    private static ChatRequestMessage GetRequestMessage(ChatResponseMessage message) // $$$
     {
         if (message.Role == ChatRole.System)
         {

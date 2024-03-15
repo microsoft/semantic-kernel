@@ -32,7 +32,7 @@ public sealed class SemanticSelectionStrategy : SelectionStrategy
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent> NextAgentAsync(CancellationToken cancellationToken)
+    public override async Task<KernelAgent?> NextAgentAsync(CancellationToken cancellationToken)
     {
         var chat = new ChatHistory(this._instructions);
 
@@ -47,7 +47,7 @@ public sealed class SemanticSelectionStrategy : SelectionStrategy
 
         var agentName = messages[0].Content;
 
-        var agent = this.Nexus.Agents.Where(a => (a.Name ?? a.Id).Equals(agentName, StringComparison.OrdinalIgnoreCase)).First(); // $$$ FAILURE
+        var agent = this.Nexus.Agents.Where(a => (a.Name ?? a.Id).Equals(agentName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault(); // $$$ FAILURE
 
         return agent;
     }

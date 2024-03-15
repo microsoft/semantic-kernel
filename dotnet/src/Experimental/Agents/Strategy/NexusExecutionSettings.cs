@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 public delegate Task<bool> CompletionCriteriaCallback(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken);
 
 /// <summary>
-/// Settings that affect behavior of <see cref="StrategyNexus"/>.
+/// Settings that affect behavior of <see cref="AgentChat"/>.
 /// </summary>
 public class NexusExecutionSettings
 {
@@ -36,4 +36,9 @@ public class NexusExecutionSettings
     /// See <see cref="CompletionStrategy"/>.
     /// </remarks>
     public CompletionCriteriaCallback? CompletionCriteria { get; set; }
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    public SelectionStrategy? SelectionStrategy { get; set; }
 }

@@ -12,7 +12,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     private int _index = 0;
 
     /// <inheritdoc/>
-    public override Task<KernelAgent> NextAgentAsync(CancellationToken cancellationToken)
+    public override Task<KernelAgent?> NextAgentAsync(CancellationToken cancellationToken)
     {
         var agent = this.Nexus.Agents[this._index];
 
@@ -23,6 +23,6 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
             this._index = 0;
         }
 
-        return Task.FromResult(agent);
+        return Task.FromResult<KernelAgent?>(agent);
     }
 }

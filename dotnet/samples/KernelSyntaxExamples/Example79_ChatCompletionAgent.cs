@@ -29,7 +29,7 @@ public class Example79_ChatCompletionAgent : BaseTest
                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
            .Build();
-
+        kernel.Plugins.AddFromFunctions("myyamlprompt", new KernelFunction[] { KernelFunctionYaml.FromPromptYaml("yaml") });
         var agent = new ChatCompletionAgent(
             kernel,
             instructions: "You act as a professional financial adviser. However, clients may not know the terminology, so please provide a simple explanation.",

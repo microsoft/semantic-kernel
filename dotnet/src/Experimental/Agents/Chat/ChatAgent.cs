@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -12,7 +14,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Chat;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
-public sealed class ChatAgent : KernelAgent<ChatChannel>
+public sealed class ChatAgent : KernelAgent<LocalChannel<ChatAgent>>
 {
     private readonly PromptExecutionSettings? _executionSettings;
 
@@ -22,8 +24,10 @@ public sealed class ChatAgent : KernelAgent<ChatChannel>
     /// <inheritdoc/>
     public override string Id { get; }
 
-    /// <inheritdoc/>
-    public override string? Instructions { get; }
+    /// <summary>
+    /// The instructions of the agent (optional)
+    /// </summary>
+    public string? Instructions { get; }
 
     /// <inheritdoc/>
     public override string? Name { get; }
@@ -31,7 +35,31 @@ public sealed class ChatAgent : KernelAgent<ChatChannel>
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new ChatChannel(nexus.History, this._executionSettings));
+        return Task.FromResult<AgentChannel>(new LocalChannel<ChatAgent>(nexus, ChatAgent.InvokeAsync));
+    }
+
+    private static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatAgent agent, ChatHistory chat, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(agent.Instructions))
+        {
+            chat.AddMessage(AuthorRole.System, agent.Instructions!, name: agent.Name);
+        }
+
+        var chatCompletionService = agent.Kernel.GetRequiredService<IChatCompletionService>();
+
+        var messages =
+            await chatCompletionService.GetChatMessageContentsAsync(
+                chat,
+                agent._executionSettings,
+                agent.Kernel,
+                cancellationToken).ConfigureAwait(false);
+
+        foreach (var message in messages)
+        {
+            message.Source = new AgentMessageSource(agent.Id).ToJson();
+
+            yield return message;
+        }
     }
 
     /// <summary>

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
+using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -46,7 +47,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     {
         if (agent == null)
         {
-            return this.History.Reverse().ToAsyncEnumerable();
+            return this.History.Reverse().ToAsyncEnumerable(); // $$$ PERF
         }
 
         if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))
@@ -67,7 +68,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
         KernelAgent agent,
         ChatMessageContent? input = null,
-        /*KernelArguments $$$ TODO: TEMPLATING,*/
+        /*KernelArguments $$$ TODO: TEMPLATING/CONTEXT,*/
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Verify only a single operation is active
@@ -80,6 +81,12 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
 
         // Manifest the required channel
         var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
+
+        if (input.TryGetContent(out var content))
+        {
+            this.History.AddUserMessage(content, input!.Name); // $$$ 
+            yield return input!;
+        }
 
         // Invoke agent & process response
         await foreach (var message in channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false))
