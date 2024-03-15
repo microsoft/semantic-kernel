@@ -571,7 +571,7 @@ def gpt4_token_counter(input_text):
     return len(tokenizer.encode(input_text))
 
 
-def test_can_split_paragraphs_with_ideographic_punctuation_and_gpt_token_counter():
+def test_can_split_paragraphs_with_ideographic_punctuation_and_gpt4_token_counter():
     input_text = "田中の猫はかわいいですね。日本語上手。"
     expected = ["田中の猫はかわいいですね。", "日本語上手。"]
 

@@ -52,7 +52,7 @@ def _token_counter(text: str) -> int:
 
     TODO: chunking methods should be configurable to allow for different
           tokenization strategies depending on the model to be called.
-          For now, we use an extremely rough estimate.
+          For now we use an extremely rough estimate.
     """
     return len(text) // 4
 
