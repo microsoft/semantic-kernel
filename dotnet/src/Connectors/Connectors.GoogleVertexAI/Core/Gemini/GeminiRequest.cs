@@ -28,7 +28,7 @@ internal sealed class GeminiRequest
 
     public void AddFunction(GeminiFunction function)
     {
-        // NOTE: Currently gemini only supports one tool i.e. function calling.
+        // NOTE: Currently Gemini only supports one tool i.e. function calling.
         this.Tools ??= new List<GeminiTool>();
         if (this.Tools.Count == 0)
         {

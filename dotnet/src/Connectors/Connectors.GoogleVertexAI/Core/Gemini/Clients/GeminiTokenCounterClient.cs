@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
-/// Represents a client for token counting gemini model.
+/// Represents a client for token counting Gemini model.
 /// </summary>
 internal sealed class GeminiTokenCounterClient : ClientBase
 {
@@ -18,7 +18,7 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     private readonly Uri _tokenCountingEndpoint;
 
     /// <summary>
-    /// Represents a client for token counting gemini via GoogleAI.
+    /// Represents a client for token counting Gemini via GoogleAI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model to use to counting tokens</param>
@@ -41,7 +41,7 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     }
 
     /// <summary>
-    /// Represents a client for token counting gemini via VertexAI.
+    /// Represents a client for token counting Gemini via VertexAI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model to use to counting tokens</param>

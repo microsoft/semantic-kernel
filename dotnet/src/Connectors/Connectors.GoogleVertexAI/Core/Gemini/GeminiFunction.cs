@@ -101,7 +101,7 @@ public sealed class GeminiFunction
     }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
-    /// <remarks>Default is <c>_</c><br/> It can't be <c>-</c>, because gemini truncates the plugin name if a dash is used</remarks>
+    /// <remarks>Default is <c>_</c><br/> It can't be <c>-</c>, because Gemini truncates the plugin name if a dash is used</remarks>
     public static string NameSeparator { get; set; } = "_";
 
     /// <summary>Gets the name of the plugin with which the function is associated, if any.</summary>

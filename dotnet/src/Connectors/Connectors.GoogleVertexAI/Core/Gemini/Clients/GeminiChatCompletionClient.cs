@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
-/// Represents a client for interacting with the chat completion gemini model.
+/// Represents a client for interacting with the chat completion Gemini model.
 /// </summary>
 internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionClient
 {
@@ -81,7 +81,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             description: "Number of tokens used");
 
     /// <summary>
-    /// Represents a client for interacting with the chat completion gemini model via GoogleAI.
+    /// Represents a client for interacting with the chat completion Gemini model via GoogleAI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
@@ -106,7 +106,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
     }
 
     /// <summary>
-    /// Represents a client for interacting with the chat completion gemini model via VertexAI.
+    /// Represents a client for interacting with the chat completion Gemini model via VertexAI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>

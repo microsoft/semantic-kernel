@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
-/// Internal class for parsing a stream of jsons into separate json objects.
+/// Internal class for parsing a stream of text which contains a series of discrete JSON strings into en enumerable containing each separate JSON string.
 /// </summary>
 internal sealed class StreamJsonParser
 {
