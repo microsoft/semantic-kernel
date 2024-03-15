@@ -5,14 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with local <see cref="ChatHistory"/>.
 /// </summary>
-public class LocalChannel<TAgent> : AgentChannel<TAgent> where TAgent : KernelAgent
+public class LocalChannel<TAgent> : AgentChannel<TAgent> where TAgent : Agent
 {
     /// <summary>
     /// $$$

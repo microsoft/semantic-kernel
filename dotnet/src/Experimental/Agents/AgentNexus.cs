@@ -43,7 +43,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     /// <param name="agent">An optional agent, if requesting an agent history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The message history</returns>
-    public IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(KernelAgent? agent = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(Agent? agent = null, CancellationToken cancellationToken = default)
     {
         if (agent == null)
         {
@@ -59,14 +59,14 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     }
 
     /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="input">Optional user input.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchornous enumeration of messages.</returns>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
-        KernelAgent agent,
+        Agent agent,
         ChatMessageContent? input = null,
         /*KernelArguments $$$ TODO: TEMPLATING/CONTEXT,*/
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -107,7 +107,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
         }
     }
 
-    private async Task<AgentChannel> GetChannelAsync(KernelAgent agent, CancellationToken cancellationToken)
+    private async Task<AgentChannel> GetChannelAsync(Agent agent, CancellationToken cancellationToken)
     {
         // $$$ TODO: BETTER KEY THAN TYPE (DIFFERENT APIKEYS / ENDPOINTS / TENENTS OF SAME TYPE)
         if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))

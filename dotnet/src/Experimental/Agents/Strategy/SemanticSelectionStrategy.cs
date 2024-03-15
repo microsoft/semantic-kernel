@@ -32,7 +32,7 @@ public sealed class SemanticSelectionStrategy : SelectionStrategy
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> NextAgentAsync(CancellationToken cancellationToken)
+    public override async Task<Agent?> NextAgentAsync(CancellationToken cancellationToken)
     {
         var chat = new ChatHistory(this._instructions);
 

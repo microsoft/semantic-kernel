@@ -50,29 +50,6 @@ public class Example99_Agents : BaseTest
     }
 
     /// <summary>
-    /// Demonstrate single chat agent.
-    /// </summary>
-    [Fact]
-    public async Task RunChatNexusAgentsAsync()
-    {
-        WriteLine("======== Run:Nexus Agent ========");
-
-        var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
-        var agent2 = CreateChatAgent("Pessimistic", "Respond with extreme skeptism...don't be polite.");
-        var nexus = new AgentChat(agent1, agent2)
-        {
-            ExecutionSettings = new()
-            {
-                SelectionStrategy = new SequentialSelectionStrategy(),
-                MaximumIterations = 4,
-            }
-        };
-        var agentX = new NexusAgent(nexus);
-
-        await ChatAsync(agentX, "I think I'm going to do something really important today!");
-    }
-
-    /// <summary>
     /// Demonstrate tooled chat agent.
     /// </summary>
     [Fact]
@@ -303,6 +280,32 @@ public class Example99_Agents : BaseTest
             agent3);
     }
 
+    /// <summary>
+    /// Demonstrate single chat agent.
+    /// </summary>
+    [Fact]
+    public async Task RunChatNexusAgentsAsync()
+    {
+        WriteLine("======== Run:Nexus Agent ========");
+
+        var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
+        var agent2 = CreateChatAgent("Pessimistic", "Respond with extreme skeptism...don't be polite.");
+        var agent3 = CreateChatAgent("Summarizer", "Summarize the conversation.");
+        var nexus = new AgentChat(agent1, agent2)
+        {
+            ExecutionSettings = new()
+            {
+                SelectionStrategy = new SequentialSelectionStrategy(),
+                MaximumIterations = 4,
+            }
+        };
+        var agentX = new NexusAgent(nexus);
+
+        var chat = new AgentChat();
+        await ChatAsync(chat, agentX, "I think I'm going to do something really important today!");
+        await ChatAsync(chat, agent3);
+    }
+
     private async Task RunSingleAgentAsync(KernelAgent agent)
     {
         await ChatAsync(
@@ -330,8 +333,8 @@ public class Example99_Agents : BaseTest
 
         var nexus = new AgentChat();
 
-        await InvokeAgentAsync(nexus, agent1, input); // $$$ USER PROXY
-        await InvokeAgentAsync(nexus, agent2);
+        await ChatAsync(nexus, agent1, input); // $$$ USER PROXY
+        await ChatAsync(nexus, agent2);
 
         await WriteHistoryAsync(nexus);
         await WriteHistoryAsync(nexus, agent1);
@@ -366,7 +369,7 @@ public class Example99_Agents : BaseTest
     /// Common chat loop.
     /// </summary>
     private async Task<AgentNexus> ChatAsync(
-        KernelAgent agent,
+        Agent agent,
         params string[] messages)
     {
         this.WriteLine("[TEST]");
@@ -377,7 +380,7 @@ public class Example99_Agents : BaseTest
         // Process each user message and agent response.
         foreach (var message in messages)
         {
-            await InvokeAgentAsync(nexus, agent, message);
+            await ChatAsync(nexus, agent, message);
         }
 
         await WriteHistoryAsync(nexus);
@@ -386,11 +389,10 @@ public class Example99_Agents : BaseTest
         return nexus;
     }
 
-    private Task InvokeAgentAsync(AgentChat nexus, KernelAgent agent, string? message = null)
+    private Task ChatAsync(AgentChat nexus, Agent agent, string? message = null)
     {
         return WriteContentAsync(nexus.InvokeAsync(agent, message));
     }
-
 
     private string GetApiKey()
     {
@@ -402,7 +404,7 @@ public class Example99_Agents : BaseTest
         return TestConfiguration.AzureOpenAI.ApiKey;
     }
 
-    private void WriteAgent(KernelAgent agent)
+    private void WriteAgent(Agent agent)
     {
         this.WriteLine($"[{agent.GetType().Name}:{agent.Id}:{agent.Name ?? "*"}]");
     }
@@ -414,7 +416,7 @@ public class Example99_Agents : BaseTest
             this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
         }
     }
-    private Task WriteHistoryAsync(AgentNexus nexus, KernelAgent? agent = null)
+    private Task WriteHistoryAsync(AgentNexus nexus, Agent? agent = null)
     {
         if (agent == null)
         {

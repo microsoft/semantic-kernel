@@ -67,7 +67,7 @@ public class AgentBuilder
         this._model.FileIds.AddRange(this._fileIds.Distinct(StringComparer.OrdinalIgnoreCase));
 
         return
-            await Agent.CreateAsync(
+            await Internal.Agent.CreateAsync(
                 new OpenAIRestContext(this._endpoint!, this._apiKey!, this._version, this._httpClientProvider),
                 this._model,
                 this._config,
@@ -98,7 +98,7 @@ public class AgentBuilder
         var restContext = new OpenAIRestContext(this._endpoint!, this._apiKey!, this._version, this._httpClientProvider);
         var model = await restContext.GetAssistantModelAsync(agentId, cancellationToken).ConfigureAwait(false);
 
-        return new Agent(model, this._config, restContext, this._plugins);
+        return new Internal.Agent(model, this._config, restContext, this._plugins);
     }
 
     /// <summary>
@@ -239,7 +239,7 @@ public class AgentBuilder
     /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
     public AgentBuilder WithCodeInterpreter()
     {
-        this._tools.Add(Agent.ToolCodeInterpreter);
+        this._tools.Add(Internal.Agent.ToolCodeInterpreter);
 
         return this;
     }
@@ -251,7 +251,7 @@ public class AgentBuilder
     /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
     public AgentBuilder WithRetrieval(params string[] fileIds)
     {
-        this._tools.Add(Agent.ToolRetrieval);
+        this._tools.Add(Internal.Agent.ToolRetrieval);
 
         return this.WithFiles(fileIds);
     }

@@ -7,14 +7,14 @@ using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
-/// $$$
+/// Manages communication protocol for a particular <see cref="KernelAgent"/> implementation.
 /// </summary>
-/// <typeparam name="TAgent"></typeparam>
-public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : KernelAgent
+/// <typeparam name="TAgent">The agent type for this channel</typeparam>
+public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
 {
     /// <inheritdoc/>
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        KernelAgent agent,
+        Agent agent,
         ChatMessageContent? input = null,
         CancellationToken cancellationToken = default)
     {
@@ -27,12 +27,12 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : KernelA
     }
 
     /// <summary>
-    /// $$$
+    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="input"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="input">Optional user input.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     protected abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         TAgent agent,
         ChatMessageContent? input = null,
@@ -57,16 +57,16 @@ public abstract class AgentChannel
     /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="input">Optional user input.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchornous enumeration of messages.</returns>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        KernelAgent agent,
-        ChatMessageContent? input = null, // $$$ USER PROXY
+        Agent agent,
+        ChatMessageContent? input = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieve the message history specific to this channel.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     public abstract IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken);
 }

@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents.Chat;
-
 #pragma warning disable IDE0290 // Use primary constructor
 
+namespace Microsoft.SemanticKernel.Experimental.Agents.Chat;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>

@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 public abstract class SelectionStrategy
 {
     /// <summary>
-    /// $$$
+    /// Default (empty) selection strategy that will no select an agent.
     /// </summary>
     public static SelectionStrategy None { get; } = new NoSelection();
 
@@ -30,7 +30,7 @@ public abstract class SelectionStrategy
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The next agent for processing.</returns>
-    public abstract Task<KernelAgent?> NextAgentAsync(CancellationToken cancellationToken);
+    public abstract Task<Agent?> NextAgentAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Bind the nexus to this strategy.
@@ -47,6 +47,6 @@ public abstract class SelectionStrategy
 
     private class NoSelection : SelectionStrategy
     {
-        public override Task<KernelAgent?> NextAgentAsync(CancellationToken cancellationToken) => Task.FromResult<KernelAgent?>(null);
+        public override Task<Agent?> NextAgentAsync(CancellationToken cancellationToken) => Task.FromResult(default(Agent?));
     }
 }

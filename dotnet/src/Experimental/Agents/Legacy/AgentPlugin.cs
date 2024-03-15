@@ -3,7 +3,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -21,7 +20,7 @@ public abstract class AgentPlugin : KernelPlugin
         // No specialization...
     }
 
-    internal abstract Agent Agent { get; }
+    internal abstract Microsoft.SemanticKernel.Experimental.Agents.Internal.Agent Agent { get; }
 
     /// <summary>
     /// Invoke plugin with user input
