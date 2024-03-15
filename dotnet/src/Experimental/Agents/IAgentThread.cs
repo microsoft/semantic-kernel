@@ -26,6 +26,15 @@ public interface IAgentThread
     Task<IChatMessage> AddUserMessageAsync(string message, IEnumerable<string>? fileIds = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieve thread messages in descending order (most recent first).
+    /// </summary>
+    /// <param name="count">The maximum number of messages requested</param>
+    /// <param name="lastMessageId">The identifier of the last message retrieved</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An list of <see cref="IChatMessage"/>.</returns>
+    Task<IReadOnlyList<IChatMessage>> GetMessagesAsync(int? count = null, string? lastMessageId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Advance the thread with the specified agent.
     /// </summary>
     /// <param name="agent">An agent instance.</param>
