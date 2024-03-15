@@ -6,11 +6,12 @@ import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader.ResourceLocation;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
-import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
@@ -97,21 +98,32 @@ public class KernelPluginFactory {
                     annotation.returnDescription(),
                     returnType);
 
-                return KernelFunction
+                KernelFunctionFromMethod.Builder<Object> builder = KernelFunction
                     .createFromMethod(method, target)
-                    .withPluginName(pluginName)
-                    .withFunctionName(annotation.name())
-                    .withDescription(annotation.description())
                     .withParameters(getParameters(method))
-                    .withReturnParameter(kernelReturnParameterMetadata)
-                    .build();
+                    .withReturnParameter(kernelReturnParameterMetadata);
+
+                if (pluginName != null && !pluginName.isEmpty()) {
+                    builder = builder.withPluginName(pluginName);
+                }
+
+                if (annotation.name() != null && !annotation.name().isEmpty()) {
+                    builder = builder.withFunctionName(annotation.name());
+                }
+
+                if (annotation.description() != null && !annotation.description().isEmpty()) {
+                    builder = builder.withDescription(annotation.description());
+                }
+
+                return builder.build();
+
             }).collect(ArrayList::new, (list, it) -> list.add(it), (a, b) -> a.addAll(b));
 
         return createFromFunctions(pluginName, methods);
     }
 
     private static Class<?> getReturnType(DefineKernelFunction annotation, Method method) {
-        Class<?> returnType;
+        Class<?> returnType = null;
         if (annotation.returnType().isEmpty()) {
             returnType = method.getReturnType();
 
@@ -126,17 +138,22 @@ public class KernelPluginFactory {
                 // primarily meant to handle void
                 return method.getReturnType();
             }
+
             try {
                 returnType = Thread.currentThread().getContextClassLoader()
                     .loadClass(annotation.returnType());
             } catch (ClassNotFoundException e) {
-                returnType = getCommonTypeAlias(method, className);
+                // ignore
+            }
 
-                if (returnType == null) {
-                    throw new SKException("Could not find return type " + annotation.returnType()
-                        + "  is not found on method " + method.getDeclaringClass().getName() + "."
-                        + method.getName());
-                }
+            if (returnType == null) {
+                returnType = getCommonTypeAlias(method, className);
+            }
+
+            if (returnType == null) {
+                throw new SKException("Could not find return type " + annotation.returnType()
+                    + "  is not found on method " + method.getDeclaringClass().getName() + "."
+                    + method.getName());
             }
 
             if (!Publisher.class.isAssignableFrom(method.getReturnType())
@@ -145,7 +162,6 @@ public class KernelPluginFactory {
                     "Return type " + returnType.getName() + " is not assignable from "
                         + method.getReturnType());
             }
-
         }
 
         return returnType;
@@ -167,6 +183,10 @@ public class KernelPluginFactory {
             returnType = COMMON_CLASS_NAMES.get(className);
         }
 
+        if (returnType != null && Publisher.class.isAssignableFrom(method.getReturnType())) {
+            return returnType;
+        }
+
         if (returnType != null && !returnType.isAssignableFrom(method.getReturnType())) {
             returnType = BOXED_FROM_PRIMATIVE.get(returnType);
         }
@@ -182,6 +202,10 @@ public class KernelPluginFactory {
      */
     public static Class<?> getTypeForName(String className) {
         Class<?> clazz = PRIMATIVE_CLASS_NAMES.get(className);
+
+        if (clazz == null) {
+            clazz = COMMON_CLASS_NAMES.get(className);
+        }
 
         if (clazz != null) {
             return clazz;
@@ -265,8 +289,10 @@ public class KernelPluginFactory {
      * @param promptTemplateFactory The factory to use for creating prompt templates.
      * @return The imported plugin.
      */
-    public static KernelPlugin importPluginFromDirectory(Path parentDirectory,
-        String pluginDirectoryName, PromptTemplateFactory promptTemplateFactory) {
+    public static KernelPlugin importPluginFromDirectory(
+        Path parentDirectory,
+        String pluginDirectoryName,
+        @Nullable PromptTemplateFactory promptTemplateFactory) {
 
         // Verify.ValidSkillName(pluginDirectoryName);
         File pluginDir = new File(parentDirectory.toFile(), pluginDirectoryName);
@@ -312,7 +338,7 @@ public class KernelPluginFactory {
     }
 
     private static KernelFunction<?> getKernelFunction(
-        PromptTemplateFactory promptTemplateFactory,
+        @Nullable PromptTemplateFactory promptTemplateFactory,
         File configPath,
         File promptPath)
         throws IOException {
@@ -334,7 +360,7 @@ public class KernelPluginFactory {
 
     @SuppressWarnings("unchecked")
     private static <T> KernelFunction<T> getKernelFunction(
-        PromptTemplateFactory promptTemplateFactory,
+        @Nullable PromptTemplateFactory promptTemplateFactory,
         PromptTemplateConfig config,
         String template) {
         PromptTemplate promptTemplate;
@@ -361,6 +387,26 @@ public class KernelPluginFactory {
     }
 
     /**
+     * @param parentDirectory       The parent directory containing the plugin directories.
+     * @param pluginDirectoryName   The name of the plugin directory.
+     * @param functionName          The name of the function to import.
+     * @param promptTemplateFactory The factory to use for creating prompt templates.
+     * @return The imported plugin.
+     * @see KernelPluginFactory#importPluginFromResourcesDirectory(String, String, String,
+     * PromptTemplateFactory, Class)
+     */
+    @Nullable
+    public static KernelPlugin importPluginFromResourcesDirectory(
+        String parentDirectory,
+        String pluginDirectoryName,
+        String functionName,
+        @Nullable PromptTemplateFactory promptTemplateFactory) {
+        return importPluginFromResourcesDirectory(parentDirectory, pluginDirectoryName,
+            functionName,
+            promptTemplateFactory, null);
+    }
+
+    /**
      * Imports a plugin from a resource directory, which may be on the classpath or filesystem. The
      * directory should contain subdirectories, each of which contains a prompt template and a
      * configuration file. The configuration file should be named "config.json" and the prompt
@@ -370,7 +416,8 @@ public class KernelPluginFactory {
      * @param pluginDirectoryName   The name of the plugin directory.
      * @param functionName          The name of the function to import.
      * @param promptTemplateFactory The factory to use for creating prompt templates.
-     * @param clazz                 The class to use for loading resources.
+     * @param clazz                 The class to use for loading resources. If null, the classloader
+     *                              will be used.
      * @return The imported plugin.
      */
     @Nullable
@@ -378,8 +425,8 @@ public class KernelPluginFactory {
         String parentDirectory,
         String pluginDirectoryName,
         String functionName,
-        PromptTemplateFactory promptTemplateFactory,
-        Class<?> clazz) {
+        @Nullable PromptTemplateFactory promptTemplateFactory,
+        @Nullable Class<?> clazz) {
 
         String template = getTemplatePrompt(parentDirectory, pluginDirectoryName, functionName,
             clazz);
@@ -409,7 +456,7 @@ public class KernelPluginFactory {
         String pluginDirectory,
         String pluginName,
         String functionName,
-        Class<?> clazz) {
+        @Nullable Class<?> clazz) {
         String promptFileName = pluginDirectory + File.separator + pluginName + File.separator
             + functionName
             + File.separator + PROMPT_FILE;
@@ -423,8 +470,13 @@ public class KernelPluginFactory {
         }
     }
 
-    private static String getFileContents(String file, Class<?> clazz)
+    private static String getFileContents(String file, @Nullable Class<?> clazz)
         throws FileNotFoundException {
+        if (clazz == null) {
+            return EmbeddedResourceLoader.readFile(file, null, ResourceLocation.CLASSPATH_ROOT,
+                ResourceLocation.FILESYSTEM);
+        }
+
         return EmbeddedResourceLoader.readFile(file, clazz, ResourceLocation.CLASSPATH_ROOT,
             ResourceLocation.CLASSPATH, ResourceLocation.FILESYSTEM);
     }
@@ -433,7 +485,7 @@ public class KernelPluginFactory {
     private static PromptTemplateConfig getPromptTemplateConfig(
         String pluginDirectory,
         String pluginName, String functionName,
-        Class<?> clazz) {
+        @Nullable Class<?> clazz) {
         String configFileName = pluginDirectory + File.separator + pluginName + File.separator
             + functionName
             + File.separator + CONFIG_FILE;

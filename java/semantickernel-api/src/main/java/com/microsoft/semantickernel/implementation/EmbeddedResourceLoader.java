@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.implementation;
 
+import com.microsoft.semantickernel.exceptions.SKException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,11 +15,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for loading resources from the classpath or filesystem.
  */
 public class EmbeddedResourceLoader {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddedResourceLoader.class);
 
     /**
      * Loads a file to a string from the classpath using getResourceAsStream
@@ -41,7 +46,8 @@ public class EmbeddedResourceLoader {
      * @return File content
      * @throws FileNotFoundException Error in case the file doesn't exist
      */
-    public static String readFile(String fileName, Class<?> clazz, ResourceLocation... locations)
+    public static String readFile(String fileName, @Nullable Class<?> clazz,
+        ResourceLocation... locations)
         throws FileNotFoundException {
 
         List<ResourceLocation> locationsList = Arrays.stream(locations)
@@ -52,6 +58,10 @@ public class EmbeddedResourceLoader {
                 type -> {
                     switch (type) {
                         case CLASSPATH:
+                            if (clazz == null) {
+                                throw new SKException(
+                                    "Resource location CLASSPATH requires a class");
+                            }
                             return getResourceAsStream(fileName, clazz);
                         case CLASSPATH_ROOT:
                             try (InputStream inputStream = Thread.currentThread()
@@ -116,6 +126,7 @@ public class EmbeddedResourceLoader {
             return bf.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {
             // IGNORE
+            LOGGER.trace("Failed to load file: " + fileName, e);
         }
         return null;
     }
