@@ -26,7 +26,7 @@ var service = this._kernel.GetRequiredService<IImageToTextService>();
 Once one of the images is selected, the binary data of the image is retrieved and sent to the ImageToText Service. The service then returns the descriptive text of the image. The following code snippet demonstrates how to use the ImageToText Service to retrieve the descriptive text of an image:
 
 ```csharp
-// Get the binary content of an JPEG image:
+// Get the binary content of a JPEG image:
 var imageBinary = File.ReadAllBytes("path/to/file.jpg");
 
 // Prepare the image to be sent to the LLM
