@@ -38,7 +38,9 @@
             "type": "shell",
             "command": "poetry",
             "args": [
-                "install"
+                "install",
+                "--extras",
+                "all"
             ],
             "presentation": {
                 "reveal": "silent",
