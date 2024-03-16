@@ -12,10 +12,12 @@ from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterM
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import (
     HANDLEBARS_TEMPLATE_FORMAT_NAME,
+    JINJA2_TEMPLATE_FORMAT_NAME,
     KERNEL_TEMPLATE_FORMAT_NAME,
     TEMPLATE_FORMAT_TYPES,
 )
 from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate
+from semantic_kernel.prompt_template.jinja2_prompt_template import Jinja2PromptTemplate
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 
 if TYPE_CHECKING:
@@ -32,6 +34,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 TEMPLATE_FORMAT_MAP = {
     KERNEL_TEMPLATE_FORMAT_NAME: KernelPromptTemplate,
     HANDLEBARS_TEMPLATE_FORMAT_NAME: HandlebarsPromptTemplate,
+    JINJA2_TEMPLATE_FORMAT_NAME: Jinja2PromptTemplate,
 }
 
 
