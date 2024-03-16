@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 #pragma warning disable IDE0290 // Use primary constructor
 
-namespace Microsoft.SemanticKernel.Experimental.Agents.Chat;
+namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
@@ -34,7 +34,7 @@ public sealed class ChatAgent : KernelAgent<LocalChannel<ChatAgent>>
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new LocalChannel<ChatAgent>(nexus, ChatAgent.InvokeAsync));
+        return Task.FromResult<AgentChannel>(new LocalChannel<ChatAgent>(nexus, InvokeAsync));
     }
 
     private static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatAgent agent, ChatHistory chat, [EnumeratorCancellation] CancellationToken cancellationToken)

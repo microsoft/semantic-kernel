@@ -18,10 +18,10 @@ public abstract class Agent<TChannel> : Agent where TChannel : AgentChannel
     /// The type of channel associated with the agent, should one be required.
     /// </summary>
     /// <remarks>
-    /// Each implementation of <see cref="KernelAgent"/> must be associated
+    /// Each implementation of <see cref="Agent"/> must be associated
     /// with a corresponding <see cref="AgentChannel"/>.
     /// </remarks>
-    public override Type ChannelType => typeof(TChannel);
+    protected internal override Type ChannelType => typeof(TChannel);
 }
 
 /// <summary>
@@ -54,7 +54,7 @@ public abstract class Agent
     /// Each implementation of <see cref="Agent"/> must be associated
     /// with a corresponding <see cref="AgentChannel"/>.
     /// </remarks>
-    public abstract Type ChannelType { get; }
+    protected internal abstract Type ChannelType { get; }
 
     /// <summary>
     /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.

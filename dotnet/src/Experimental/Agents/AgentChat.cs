@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Agents.Agents;
 using Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
@@ -184,7 +185,7 @@ public sealed class AgentChat : AgentNexus
     /// Initializes a new instance of the <see cref="AgentChat"/> class.
     /// </summary>
     /// <param name="agents">The agents initially participating in the nexus.</param>
-    public AgentChat(params KernelAgent[] agents)
+    public AgentChat(params Agent[] agents)
     {
         this._agents = [.. agents];
         this._agentIds = [.. this._agents.Select(a => a.Id)];

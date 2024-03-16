@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
-/// Manages communication protocol for a particular <see cref="KernelAgent"/> implementation.
+/// Manages communication protocol for a particular <see cref="Agent"/> implementation.
 /// </summary>
 /// <typeparam name="TAgent">The agent type for this channel</typeparam>
 public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
@@ -27,7 +27,7 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
     }
 
     /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="input">Optional user input.</param>
@@ -40,7 +40,7 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
 }
 
 /// <summary>
-/// Manages communication protocol for a particular <see cref="KernelAgent"/> implementation.
+/// Manages communication protocol for a particular <see cref="Agent"/> implementation.
 /// </summary>
 public abstract class AgentChannel
 {
@@ -52,7 +52,7 @@ public abstract class AgentChannel
     public abstract Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="input">Optional user input.</param>

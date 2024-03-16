@@ -35,4 +35,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Agents.UnitTests" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Chat\" />
+    <Folder Include="Gpt\" />
+  </ItemGroup>
 </Project>

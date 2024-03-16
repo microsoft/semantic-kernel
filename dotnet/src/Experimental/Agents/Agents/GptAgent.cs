@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents.Gpt;
+namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.

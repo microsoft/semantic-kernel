@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with local <see cref="ChatHistory"/>.

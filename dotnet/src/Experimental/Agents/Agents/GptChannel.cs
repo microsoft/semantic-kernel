@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents.Gpt;
+namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="GptAgent"/>.

@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents.Chat;
+namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
 /// Represent an agent that is built around the SK ChatCompletion API and leverages the API's capabilities.

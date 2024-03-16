@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
 /// <summary>
 /// Base class for agents.
@@ -22,7 +22,7 @@ public abstract class KernelAgent<TChannel>(Kernel kernel)
     /// Each implementation of <see cref="KernelAgent"/> must be associated
     /// with a corresponding <see cref="AgentChannel"/>.
     /// </remarks>
-    public override Type ChannelType => typeof(TChannel);
+    protected internal override Type ChannelType => typeof(TChannel);
 }
 
 /// <summary>

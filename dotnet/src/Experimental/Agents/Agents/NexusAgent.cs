@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
 #pragma warning disable IDE0290 // Use primary constructor
 
@@ -37,7 +37,7 @@ public sealed class NexusAgent : Agent<LocalChannel<NexusAgent>>
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new LocalChannel<NexusAgent>(nexus, NexusAgent.InvokeAsync));
+        return Task.FromResult<AgentChannel>(new LocalChannel<NexusAgent>(nexus, InvokeAsync));
     }
 
     private static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(NexusAgent agent, ChatHistory chat, [EnumeratorCancellation] CancellationToken cancellationToken)
