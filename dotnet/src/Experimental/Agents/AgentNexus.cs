@@ -30,6 +30,7 @@ public record AgentMessageSource(string AgentId, string? MessageId = null)
 public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
 {
     private readonly Dictionary<Type, AgentChannel> _agentChannels;
+    private int _isActive;
 
     /// <summary>
     /// The primary nexus history.
@@ -72,8 +73,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Verify only a single operation is active
-        int isActive = 0;
-        int wasActive = Interlocked.CompareExchange(ref isActive, 1, 0);
+        int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
         if (wasActive > 0)
         {
             throw new AgentException("Unable to proceed while another agent is active.");
@@ -97,6 +97,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
             // Yield message to caller
             yield return message;
 
+            // $$$ BACKGROUND QUEUE W/ RETRY | ANY AGENT W/ CHANNEL QUEUED BLOCKS
             // Broadcast message to other channels (in parallel)
             var tasks =
                 this._agentChannels.Values
@@ -105,6 +106,8 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
+
+        Interlocked.Exchange(ref this._isActive, 0);
     }
 
     private async Task<AgentChannel> GetChannelAsync(Agent agent, CancellationToken cancellationToken)

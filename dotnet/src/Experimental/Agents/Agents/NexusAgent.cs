@@ -49,8 +49,6 @@ public sealed class NexusAgent : Agent
         {
             yield return message;
         }
-
-        // $$$ SUMMARIZE ???
     }
 
     /// <summary>
