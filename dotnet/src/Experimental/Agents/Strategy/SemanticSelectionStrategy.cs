@@ -47,7 +47,7 @@ public sealed class SemanticSelectionStrategy : SelectionStrategy
 
         var agentName = messages[0].Content;
 
-        var agent = this.Nexus.Agents.Where(a => (a.Name ?? a.Id).Equals(agentName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault(); // $$$ FAILURE
+        var agent = this.Nexus.Agents.Where(a => (a.Name ?? a.Id).Equals(agentName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault(); // $$$ BETTER MATCHER
 
         return agent;
     }

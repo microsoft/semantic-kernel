@@ -11,7 +11,8 @@ using Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
-/// Strategy based agent turn-taking. $$$
+/// A an <see cref="AgentNexus"/> that supports multiple interactions
+/// between a set of agents.
 /// </summary>
 public sealed class AgentChat : AgentNexus
 {
