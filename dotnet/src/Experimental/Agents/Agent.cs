@@ -8,25 +8,6 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// <summary>
 /// Base class for agents.
 /// </summary>
-/// <typeparam name="TChannel">The type of <see cref="AgentChannel"/> appropriate for the agent type.</typeparam>
-/// <remarks>
-/// Initializes a new instance of the <see cref="Agent"/> class.
-/// </remarks>
-public abstract class Agent<TChannel> : Agent where TChannel : AgentChannel
-{
-    /// <summary>
-    /// The type of channel associated with the agent, should one be required.
-    /// </summary>
-    /// <remarks>
-    /// Each implementation of <see cref="Agent"/> must be associated
-    /// with a corresponding <see cref="AgentChannel"/>.
-    /// </remarks>
-    protected internal override Type ChannelType => typeof(TChannel);
-}
-
-/// <summary>
-/// Base class for agents.
-/// </summary>
 /// <remarks>
 /// Initializes a new instance of the <see cref="Agent"/> class.
 /// </remarks>

@@ -21,7 +21,7 @@ public delegate IAsyncEnumerable<ChatMessageContent> NexusInvocationCallback(Can
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
-public sealed class NexusAgent : Agent<LocalChannel<NexusAgent>>
+public sealed class NexusAgent : Agent
 {
     private readonly NexusInvocationCallback _invocationCallback;
 
@@ -33,6 +33,9 @@ public sealed class NexusAgent : Agent<LocalChannel<NexusAgent>>
 
     /// <inheritdoc/>
     public override string? Name { get; }
+
+    /// <inheritdoc/>
+    protected internal override Type ChannelType => typeof(LocalChannel<NexusAgent>);
 
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)

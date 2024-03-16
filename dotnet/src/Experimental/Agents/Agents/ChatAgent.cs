@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
-public sealed class ChatAgent : KernelAgent<LocalChannel<ChatAgent>>
+public sealed class ChatAgent : KernelAgent
 {
     private readonly PromptExecutionSettings? _executionSettings;
 
@@ -30,6 +30,9 @@ public sealed class ChatAgent : KernelAgent<LocalChannel<ChatAgent>>
 
     /// <inheritdoc/>
     public override string? Name { get; }
+
+    /// <inheritdoc/>
+    protected internal override Type ChannelType => typeof(LocalChannel<ChatAgent>);
 
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
