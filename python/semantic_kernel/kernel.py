@@ -677,7 +677,7 @@ class Kernel(KernelBaseModel):
         return self.plugins[plugin_name][function_name]
 
     def func_from_fully_qualified_function_name(self, fully_qualified_function_name: str) -> KernelFunction:
-        plugin_name, function_name = fully_qualified_function_name.split("-", maxsplit=1)
+        plugin_name, function_name = fully_qualified_function_name.split("-")
         if plugin_name not in self.plugins:
             raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
         if function_name not in self.plugins[plugin_name]:

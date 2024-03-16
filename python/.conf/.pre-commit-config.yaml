@@ -29,9 +29,17 @@ repos:
         args: [ --fix, --exit-non-zero-on-fix ]
   - repo: local
     hooks:
+    - id: mypy
+      name: mypy
+      entry: poetry -C python/ run python -m mypy --config-file=python/pyproject.toml python
+      language: system
+      types: [python]
+      pass_filenames: false
+  - repo: local
+    hooks:
     - id: tests
       name: tests
-      entry: poetry -C python run coverage run -m pytest python/tests/unit
+      entry: poetry -C python/ run coverage run -m pytest python/tests/unit
       language: system
       types: [python]
       pass_filenames: false
