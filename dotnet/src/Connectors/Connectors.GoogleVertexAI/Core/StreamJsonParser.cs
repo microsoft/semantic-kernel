@@ -78,7 +78,7 @@ internal sealed class StreamJsonParser
 
                 if (this._isCompleteJson)
                 {
-                    this._lastLine = i + 1 < line.Length) ? line.Substring(i + 1) : null;
+                    this._lastLine = i + 1 < line.Length ? line.Substring(i + 1) : null;
                     return this.GetJsonString(validateJson);
                 }
 
