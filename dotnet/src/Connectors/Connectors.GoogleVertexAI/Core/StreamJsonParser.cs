@@ -32,7 +32,7 @@ internal sealed class StreamJsonParser
     /// Parses a Stream containing JSON data and yields the individual JSON objects.
     /// </summary>
     /// <param name="stream">The Stream containing the JSON data.</param>
-    /// <param name="validateJson">Set to true to enable JSON validation. Default is false.</param>
+    /// <param name="validateJson">Set to true to enable checking json chunks are well-formed. Default is false.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>An enumerable collection of string representing the individual JSON objects.</returns>
     /// <remarks>Stream will be disposed after parsing.</remarks>
