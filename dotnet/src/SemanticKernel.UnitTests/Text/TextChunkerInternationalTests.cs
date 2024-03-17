@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
@@ -11,6 +12,8 @@ public sealed class TextChunkerInternationalTests
     public class StatefulTokenCounter
     {
         private int _callCount = 0;
+        private IDictionary<string, int> _callStats;
+
         private readonly Tokenizer _tokenizer;
 
         public StatefulTokenCounter()
@@ -18,10 +21,19 @@ public sealed class TextChunkerInternationalTests
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             this._tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+            this._callStats = new Dictionary<string, int>();
         }
         public int Count(string input)
         {
             this._callCount++;
+            if (this._callStats.TryGetValue(input, out int value))
+            {
+                this._callStats[input] = ++value;
+            }
+            else
+            {
+                this._callStats[input] = 1;
+            }
             return this._tokenizer.CountTokens(input);
         }
 
