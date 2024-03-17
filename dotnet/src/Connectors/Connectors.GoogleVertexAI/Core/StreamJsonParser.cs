@@ -16,8 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 /// </summary>
 internal sealed class StreamJsonParser
 {
-    private readonly char[] _buffer = new char[1];
-
     /// <summary>
     /// Parses a Stream containing JSON data and yields the individual JSON objects.
     /// </summary>
@@ -43,9 +41,8 @@ internal sealed class StreamJsonParser
         CancellationToken ct)
     {
         JsonParserState state = new();
-        while (!ct.IsCancellationRequested && await reader.ReadAsync(this._buffer, 0, 1).ConfigureAwait(false) > 0)
+        while (!ct.IsCancellationRequested && await reader.ReadAsync(state.Buffer, 0, 1).ConfigureAwait(false) > 0)
         {
-            state.CurrentCharacter = this._buffer[0];
             if (IsEscapedCharacterInsideQuotes(state))
             {
                 continue;
@@ -117,7 +114,8 @@ internal sealed class StreamJsonParser
         public bool InsideQuotes { get; set; }
         public bool IsEscaping { get; set; }
         public bool IsCompleteJson { get; private set; }
-        public char CurrentCharacter { get; set; }
+        public char CurrentCharacter => this.Buffer[0];
+        public char[] Buffer { get; } = new char[1];
 
         public void AppendToJsonObject()
         {
