@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 /// Internal class for parsing a stream of text which contains a series of discrete JSON strings into en enumerable containing each separate JSON string.
 /// </summary>
 /// <remarks>
-/// Parser class is not thread-safe.
+/// This class is not thread-safe.
 /// </remarks>
 internal sealed class StreamJsonParser
 {
