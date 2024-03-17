@@ -48,7 +48,7 @@ internal sealed class StreamJsonParser
         private char CurrentCharacter => this._buffer[0];
 
         internal async Task<string?> ExtractNextChunkAsync(
-            TextReader reader,
+            StreamReader reader,
             bool validateJson,
             CancellationToken ct)
         {
