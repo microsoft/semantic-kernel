@@ -140,43 +140,6 @@ line-length = 120
 [tool.black]
 line-length = 120
 
-[tool.mypy]
-python_version = 3.11
-ignore_missing_imports = true
-exclude = "python/(samples|notebooks|tests)/"
-
-[[tool.mypy.overrides]]
-module = 'semantic_kernel'
-no_implicit_reexport = true
-
-[[tool.mypy.overrides]]
-module = 'semantic_kernel.connectors.*'
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = 'semantic_kernel.planners.*'
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = 'semantic_kernel.memory.*'
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = 'semantic_kernel.reliability.*'
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = 'semantic_kernel.text.*'
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = 'semantic_kernel.utils.*'
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = 'semantic_kernel.core_plugins.*'
-ignore_errors = true
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
