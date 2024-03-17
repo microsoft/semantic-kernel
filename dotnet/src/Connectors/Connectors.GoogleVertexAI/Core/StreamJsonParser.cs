@@ -42,6 +42,7 @@ internal sealed class StreamJsonParser
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
+        this._lastLine = null;
         while (await this.ExtractNextChunkAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
         {
             yield return json;
