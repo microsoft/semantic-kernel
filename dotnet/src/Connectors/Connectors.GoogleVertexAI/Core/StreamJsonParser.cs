@@ -14,8 +14,20 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 /// <summary>
 /// Internal class for parsing a stream of text which contains a series of discrete JSON strings into en enumerable containing each separate JSON string.
 /// </summary>
+/// <remarks>
+/// Parser class is not thread-safe.
+/// </remarks>
 internal sealed class StreamJsonParser
 {
+    private readonly StringBuilder _jsonBuilder = new();
+
+    private int _bracketsCount;
+    private bool _insideQuotes;
+    private bool _isEscaping;
+    private bool _isCompleteJson;
+    private char _currentCharacter;
+    private string? _lastLine;
+
     /// <summary>
     /// Parses a Stream containing JSON data and yields the individual JSON objects.
     /// </summary>
@@ -23,38 +35,41 @@ internal sealed class StreamJsonParser
     /// <param name="validateJson">Set to true to enable JSON validation. Default is false.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>An enumerable collection of string representing the individual JSON objects.</returns>
-    /// <remarks>Stream will be disposed after parsing.</remarks>
+    /// <remarks>
+    /// Stream will be disposed after parsing.<br/>
+    /// Parse is not thread-safe.
+    /// </remarks>
     public async IAsyncEnumerable<string> ParseAsync(
         Stream stream,
         bool validateJson = false,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        while (await new SingleChunkParser().ExtractNextChunkAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
+        while (await this.ExtractNextChunkAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
         {
             yield return json;
         }
     }
 
-    private sealed class SingleChunkParser
+    private async Task<string?> ExtractNextChunkAsync(
+        StreamReader reader,
+        bool validateJson,
+        CancellationToken ct)
     {
-        private readonly StringBuilder _jsonBuilder = new();
-        private readonly char[] _buffer = new char[1];
-
-        private int _bracketsCount;
-        private bool _insideQuotes;
-        private bool _isEscaping;
-        private bool _isCompleteJson;
-
-        private char CurrentCharacter => this._buffer[0];
-
-        internal async Task<string?> ExtractNextChunkAsync(
-            StreamReader reader,
-            bool validateJson,
-            CancellationToken ct)
+        this.ResetState();
+        string? line;
+        while (!ct.IsCancellationRequested && ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null || this._lastLine != null))
         {
-            while (!ct.IsCancellationRequested && await reader.ReadAsync(this._buffer, 0, 1).ConfigureAwait(false) > 0)
+            if (this._lastLine != null)
             {
+                line = this._lastLine + line;
+                this._lastLine = null;
+            }
+
+            for (int i = 0; i < line!.Length; i++)
+            {
+                this._currentCharacter = line[i];
+
                 if (this.IsEscapedCharacterInsideQuotes())
                 {
                     continue;
@@ -65,92 +80,107 @@ internal sealed class StreamJsonParser
 
                 if (this._isCompleteJson)
                 {
+                    if (i + 1 < line.Length)
+                    {
+                        this._lastLine = line.Substring(i + 1);
+                    }
+
                     return this.GetJsonString(validateJson);
                 }
 
                 this.ResetEscapeFlag();
                 this.AppendToJsonObject();
             }
-
-            return null;
         }
 
-        private void AppendToJsonObject()
+        return null;
+    }
+
+    private void ResetState()
+    {
+        this._jsonBuilder.Clear();
+        this._bracketsCount = 0;
+        this._insideQuotes = false;
+        this._isEscaping = false;
+        this._isCompleteJson = false;
+        this._currentCharacter = default;
+    }
+
+    private void AppendToJsonObject()
+    {
+        if (this._bracketsCount > 0 && !this._isCompleteJson)
         {
-            if (this._bracketsCount > 0 && !this._isCompleteJson)
-            {
-                this._jsonBuilder.Append(this.CurrentCharacter);
-            }
+            this._jsonBuilder.Append(this._currentCharacter);
         }
+    }
 
-        private string GetJsonString(bool validateJson)
+    private string GetJsonString(bool validateJson)
+    {
+        if (!this._isCompleteJson)
         {
-            if (!this._isCompleteJson)
-            {
-                throw new InvalidOperationException("Cannot get JSON string when JSON is not complete.");
-            }
-
-            var json = this._jsonBuilder.ToString();
-            if (validateJson)
-            {
-                _ = JsonNode.Parse(json);
-            }
-
-            return json;
+            throw new InvalidOperationException("Cannot get JSON string when JSON is not complete.");
         }
 
-        private void MarkJsonAsComplete(bool appendCurrentCharacter)
+        var json = this._jsonBuilder.ToString();
+        if (validateJson)
         {
-            this._isCompleteJson = true;
-            if (appendCurrentCharacter)
-            {
-                this._jsonBuilder.Append(this.CurrentCharacter);
-            }
+            _ = JsonNode.Parse(json);
         }
 
-        private void ResetEscapeFlag() => this._isEscaping = false;
+        return json;
+    }
 
-        private void HandleCurrentCharacterOutsideQuotes()
+    private void MarkJsonAsComplete(bool appendCurrentCharacter)
+    {
+        this._isCompleteJson = true;
+        if (appendCurrentCharacter)
         {
-            if (this._insideQuotes)
-            {
-                return;
-            }
-
-            switch (this.CurrentCharacter)
-            {
-                case '{':
-                    this._bracketsCount++;
-                    break;
-                case '}':
-                    this._bracketsCount--;
-                    if (this._bracketsCount == 0)
-                    {
-                        this.MarkJsonAsComplete(appendCurrentCharacter: true);
-                    }
-
-                    break;
-            }
+            this._jsonBuilder.Append(this._currentCharacter);
         }
+    }
 
-        private void DetermineIfQuoteStartOrEnd()
+    private void ResetEscapeFlag() => this._isEscaping = false;
+
+    private void HandleCurrentCharacterOutsideQuotes()
+    {
+        if (this._insideQuotes)
         {
-            if (this is { CurrentCharacter: '\"', _isEscaping: false })
-            {
-                this._insideQuotes = !this._insideQuotes;
-            }
+            return;
         }
 
-        private bool IsEscapedCharacterInsideQuotes()
+        switch (this._currentCharacter)
         {
-            if (this is { CurrentCharacter: '\\', _isEscaping: false, _insideQuotes: true })
-            {
-                this._isEscaping = true;
-                this.AppendToJsonObject();
-                return true;
-            }
+            case '{':
+                this._bracketsCount++;
+                break;
+            case '}':
+                this._bracketsCount--;
+                if (this._bracketsCount == 0)
+                {
+                    this.MarkJsonAsComplete(appendCurrentCharacter: true);
+                }
 
-            return false;
+                break;
         }
+    }
+
+    private void DetermineIfQuoteStartOrEnd()
+    {
+        if (this is { _currentCharacter: '\"', _isEscaping: false })
+        {
+            this._insideQuotes = !this._insideQuotes;
+        }
+    }
+
+    private bool IsEscapedCharacterInsideQuotes()
+    {
+        if (this is { _currentCharacter: '\\', _isEscaping: false, _insideQuotes: true })
+        {
+            this._isEscaping = true;
+            this.AppendToJsonObject();
+            return true;
+        }
+
+        return false;
     }
 }
