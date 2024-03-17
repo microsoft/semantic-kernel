@@ -7,7 +7,7 @@ import inspect
 import logging
 import os
 from copy import copy
-from typing import Any, AsyncIterable, Callable, Literal, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, AsyncIterable, Callable, Literal, Type, TypeVar
 
 import yaml
 from pydantic import Field, field_validator
@@ -55,7 +55,7 @@ from semantic_kernel.utils.validation import validate_plugin_name
 
 T = TypeVar("T")
 
-ALL_SERVICE_TYPES = Union[TextCompletionClientBase, ChatCompletionClientBase, EmbeddingGeneratorBase]
+ALL_SERVICE_TYPES = TextCompletionClientBase | ChatCompletionClientBase | EmbeddingGeneratorBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class Kernel(KernelBaseModel):
     semantic/native functions, and manage plugins, memory, and AI services.
 
     Attributes:
-        plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
+        plugins (KernelPluginCollection | None): The collection of plugins to be used by the kernel
         services (dict[str, AIServiceClientBase]): The services to be used by the kernel
         retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
         function_invoking_handlers (dict): The function invoking handlers
@@ -88,23 +88,20 @@ class Kernel(KernelBaseModel):
 
     def __init__(
         self,
-        plugins: Optional[KernelPluginCollection] = None,
-        services: Optional[
-            Union[AIServiceClientBase, list[AIServiceClientBase], dict[str, AIServiceClientBase]]
-        ] = None,
-        ai_service_selector: Optional[AIServiceSelector] = None,
+        plugins: KernelPluginCollection | None = None,
+        services: AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None = None,
+        ai_service_selector: AIServiceSelector | None = None,
         **kwargs: Any,
     ) -> None:
         """
         Initialize a new instance of the Kernel class.
 
         Args:
-            plugins (Optional[KernelPluginCollection]): The collection of plugins to be used by the kernel
-            services (
-                Optional[Union[AIServiceClientBase, list[AIServiceClientBase], dict[str, AIServiceClientBase]]]):
+            plugins (KernelPluginCollection | None): The collection of plugins to be used by the kernel
+            services (AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None:
                 The services to be used by the kernel,
                 will be rewritten to a dict with service_id as key
-            ai_service_selector (Optional[AIServiceSelector]): The AI service selector to be used by the kernel,
+            ai_service_selector (AIServiceSelector | None): The AI service selector to be used by the kernel,
                 default is based on order of execution settings.
             **kwargs (Any): Additional fields to be passed to the Kernel model,
                 these are limited to retry_mechanism and function_invoking_handlers
@@ -126,9 +123,7 @@ class Kernel(KernelBaseModel):
     @classmethod
     def rewrite_services(
         cls,
-        services: Optional[
-            Union[AIServiceClientBase, list[AIServiceClientBase], dict[str, AIServiceClientBase]]
-        ] = None,
+        services: AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None = None,
     ) -> dict[str, AIServiceClientBase]:
         """Rewrite services to a dictionary."""
         if not services:
@@ -144,26 +139,26 @@ class Kernel(KernelBaseModel):
 
     async def invoke_stream(
         self,
-        functions: Optional[Union[KernelFunction, list[KernelFunction]]] = None,
-        arguments: Optional[KernelArguments] = None,
-        function_name: Optional[str] = None,
-        plugin_name: Optional[str] = None,
-        return_function_results: Optional[bool] = False,
+        functions: KernelFunction | list[KernelFunction] | None = None,
+        arguments: KernelArguments | None = None,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
+        return_function_results: bool | None = False,
         **kwargs: Any,
-    ) -> AsyncIterable[Union[list["StreamingKernelContent"], list[FunctionResult]]]:
+    ) -> AsyncIterable[list["StreamingKernelContent"] | list[FunctionResult]]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
         When multiple functions are provided only the last one is streamed, the rest is executed as a pipeline.
 
         Arguments:
-            functions (Union[KernelFunction, list[KernelFunction]]): The function or functions to execute,
+            functions (KernelFunction | list[KernelFunction]): The function or functions to execute,
             this value has precedence when supplying both this and using function_name and plugin_name,
             if this is none, function_name and plugin_name are used and cannot be None.
             arguments (KernelArguments): The arguments to pass to the function(s), optional
-            function_name (Optional[str]): The name of the function to execute
-            plugin_name (Optional[str]): The name of the plugin to execute
-            return_function_results (Optional[bool]): If True, the function results are returned in addition to
+            function_name (str | None): The name of the function to execute
+            plugin_name (str | None): The name of the plugin to execute
+            return_function_results (bool | None): If True, the function results are returned in addition to
                 the streaming content, otherwise only the streaming content is returned.
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
@@ -172,11 +167,11 @@ class Kernel(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        results: list[FunctionResult] = []
         if not functions:
             if not function_name or not plugin_name:
                 raise KernelFunctionNotFoundError("No function(s) or function- and plugin-name provided")
             functions = [self.func(plugin_name, function_name)]
+        results: list[FunctionResult] = []
         if isinstance(functions, KernelFunction):
             stream_function = functions
             pipeline_step = 0
@@ -185,10 +180,13 @@ class Kernel(KernelBaseModel):
             if len(functions) > 1:
                 pipeline_functions = functions[:-1]
                 # run pipeline functions
-                results = await self.invoke(functions=pipeline_functions, arguments=arguments)
-                # if invoke is called with one function, the result is not a list.
-                if isinstance(results, FunctionResult):
-                    results = [results]
+                result = await self.invoke(functions=pipeline_functions, arguments=arguments)
+                # if function was cancelled, the result is None, otherwise can be one or more.
+                if result:
+                    if isinstance(result, FunctionResult):
+                        results.append(result)
+                    else:
+                        results.extend(result)
             pipeline_step = len(functions) - 1
         while True:
             function_invoking_args = self.on_function_invoking(stream_function.metadata, arguments)
@@ -269,27 +267,27 @@ class Kernel(KernelBaseModel):
 
     async def invoke(
         self,
-        functions: Optional[Union[KernelFunction, list[KernelFunction]]] = None,
-        arguments: Optional[KernelArguments] = None,
-        function_name: Optional[str] = None,
-        plugin_name: Optional[str] = None,
+        functions: KernelFunction | list[KernelFunction] | None = None,
+        arguments: KernelArguments | None = None,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
         **kwargs: Any,
-    ) -> Optional[Union[FunctionResult, list[FunctionResult]]]:
+    ) -> FunctionResult | list[FunctionResult] | None:
         """Execute one or more functions.
 
         When multiple functions are passed the FunctionResult of each is put into a list.
 
         Arguments:
-            functions (Union[KernelFunction, list[KernelFunction]]): The function or functions to execute,
+            functions (KernelFunction | list[KernelFunction]): The function or functions to execute,
             this value has precedence when supplying both this and using function_name and plugin_name,
             if this is none, function_name and plugin_name are used and cannot be None.
             arguments (KernelArguments): The arguments to pass to the function(s), optional
-            function_name (Optional[str]): The name of the function to execute
-            plugin_name (Optional[str]): The name of the plugin to execute
+            function_name (str | None): The name of the function to execute
+            plugin_name (str | None): The name of the plugin to execute
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
-            Optional[Union[FunctionResult, list[FunctionResult]]]: The result of the function(s)
+            FunctionResult | list[FunctionResult] | None: The result of the function(s)
 
         """
         if arguments is None:
@@ -375,14 +373,14 @@ class Kernel(KernelBaseModel):
         function_name: str,
         plugin_name: str,
         prompt: str,
-        arguments: Optional[KernelArguments] = None,
+        arguments: KernelArguments | None = None,
         template_format: Literal[
             "semantic-kernel",
             "handlebars",
             "jinja2",
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
         **kwargs: Any,
-    ) -> Optional[Union[FunctionResult, list[FunctionResult]]]:
+    ) -> FunctionResult | list[FunctionResult] | None:
         """
         Invoke a function from the provided prompt
 
@@ -390,12 +388,12 @@ class Kernel(KernelBaseModel):
             function_name (str): The name of the function
             plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
-            arguments (Optional[KernelArguments]): The arguments to pass to the function(s), optional
-            template_format (Optional[str]): The format of the prompt template
+            arguments (KernelArguments | None): The arguments to pass to the function(s), optional
+            template_format (str | None): The format of the prompt template
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
-            Optional[Union[FunctionResult, list[FunctionResult]]]: The result of the function(s)
+            FunctionResult | list[FunctionResult] | None: The result of the function(s)
         """
         if not arguments:
             arguments = KernelArguments(**kwargs)
@@ -417,8 +415,8 @@ class Kernel(KernelBaseModel):
         self,
         kernel_function_metadata: KernelFunctionMetadata,
         arguments: KernelArguments,
-        function_result: Optional[FunctionResult] = None,
-        exception: Optional[Exception] = None,
+        function_result: FunctionResult | None = None,
+        exception: Exception | None = None,
     ) -> FunctionInvokedEventArgs:
         # TODO: include logic that uses function_result
         args = FunctionInvokedEventArgs(
@@ -462,9 +460,7 @@ class Kernel(KernelBaseModel):
     # endregion
     # region Plugins
 
-    def add_plugin(
-        self, plugin_name: str, functions: list[KernelFunction], plugin: Optional[KernelPlugin] = None
-    ) -> None:
+    def add_plugin(self, plugin_name: str, functions: list[KernelFunction], plugin: KernelPlugin | None = None) -> None:
         """
         Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
         it uses that instance instead of creating a new KernelPlugin.
@@ -472,7 +468,7 @@ class Kernel(KernelBaseModel):
         Args:
             plugin_name (str): The name of the plugin
             functions (list[KernelFunction]): The functions to add to the plugin
-            plugin (Optional[KernelPlugin]): An optional pre-defined plugin instance
+            plugin (KernelPlugin | None): An optional pre-defined plugin instance
         """
         if plugin is None:
             # If no plugin instance is provided, create a new KernelPlugin
@@ -483,7 +479,7 @@ class Kernel(KernelBaseModel):
         else:
             self.plugins.add(plugin)
 
-    def import_plugin_from_object(self, plugin_instance: Union[Any, dict[str, Any]], plugin_name: str) -> KernelPlugin:
+    def import_plugin_from_object(self, plugin_instance: Any | dict[str, Any], plugin_name: str) -> KernelPlugin:
         """
         Creates a plugin that wraps the specified target object and imports it into the kernel's plugin collection
 
@@ -689,14 +685,14 @@ class Kernel(KernelBaseModel):
         self,
         function_name: str,
         plugin_name: str,
-        description: Optional[str] = None,
-        prompt: Optional[str] = None,
-        prompt_template_config: Optional[PromptTemplateConfig] = None,
-        prompt_execution_settings: Optional[
-            Union[PromptExecutionSettings, list[PromptExecutionSettings], dict[str, PromptExecutionSettings]]
-        ] = None,
+        description: str | None = None,
+        prompt: str | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        prompt_execution_settings: (
+            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+        ) = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        prompt_template: Optional[PromptTemplateBase] = None,
+        prompt_template: PromptTemplateBase | None = None,
         **kwargs: Any,
     ) -> KernelFunction:
         """
@@ -705,14 +701,14 @@ class Kernel(KernelBaseModel):
         Args:
             function_name (str): The name of the function
             plugin_name (str): The name of the plugin
-            description (Optional[str]): The description of the function
-            prompt (Optional[str]): The prompt template.
-            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
-            prompt_execution_settings (Optional[
-            Union[PromptExecutionSettings, list[PromptExecutionSettings], dict[str, PromptExecutionSettings]]
-        ]): The execution settings, will be parsed into a dict.
-            template_format (Optional[str]): The format of the prompt template
-            prompt_template (Optional[PromptTemplateBase]): The prompt template
+            description (str | None): The description of the function
+            prompt (str | None): The prompt template.
+            prompt_template_config (PromptTemplateConfig | None): The prompt template configuration
+            prompt_execution_settings (PromptExecutionSettings  | list[PromptExecutionSettings]
+                | dict[str, PromptExecutionSettings] | None):
+                The execution settings, will be parsed into a dict.
+            template_format (str | None): The format of the prompt template
+            prompt_template (PromptTemplateBase | None): The prompt template
             kwargs (Any): Additional arguments
 
         Returns:
@@ -784,7 +780,7 @@ class Kernel(KernelBaseModel):
         Creates a native function from the plugin name and registers it with the kernel.
 
         Args:
-            plugin_name (Optional[str]): The name of the plugin. If empty, a random name will be generated.
+            plugin_name (str | None): The name of the plugin. If empty, a random name will be generated.
             kernel_function (Callable): The kernel function
 
         Returns:
@@ -808,14 +804,14 @@ class Kernel(KernelBaseModel):
 
     def select_ai_service(
         self, function: KernelFunction, arguments: KernelArguments
-    ) -> Tuple[ALL_SERVICE_TYPES, PromptExecutionSettings]:
+    ) -> tuple[ALL_SERVICE_TYPES, PromptExecutionSettings]:
         """Uses the AI service selector to select a service for the function."""
         return self.ai_service_selector.select_ai_service(self, function, arguments)
 
     def get_service(
         self,
-        service_id: Optional[str] = None,
-        type: Optional[Type[ALL_SERVICE_TYPES]] = None,
+        service_id: str | None = None,
+        type: Type[ALL_SERVICE_TYPES] | None = None,
     ) -> ALL_SERVICE_TYPES:
         """Get a service by service_id and type.
 
@@ -824,14 +820,14 @@ class Kernel(KernelBaseModel):
             TextCompletionClientBase, ChatCompletionClientBase, EmbeddingGeneratorBase
             or a subclass of one.
             You can also check for multiple types in one go,
-            by using Union[TextCompletionClientBase, ChatCompletionClientBase].
+            by using TextCompletionClientBase | ChatCompletionClientBase.
 
         If type and service_id are both None, the first service is returned.
 
         Args:
-            service_id (Optional[str]): The service id,
+            service_id (str | None): The service id,
                 if None, the default service is returned or the first service is returned.
-            type (Optional[Type[ALL_SERVICE_TYPES]]): The type of the service, if None, no checks are done.
+            type (Type[ALL_SERVICE_TYPES] | None): The type of the service, if None, no checks are done.
 
         Returns:
             ALL_SERVICE_TYPES: The service.
@@ -862,7 +858,7 @@ class Kernel(KernelBaseModel):
         return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
 
     def get_prompt_execution_settings_from_service_id(
-        self, service_id: str, type: Optional[Type[T]] = None
+        self, service_id: str, type: Type[T] | None = None
     ) -> PromptExecutionSettings:
         """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
         service = self.get_service(service_id, type=type)
