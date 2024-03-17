@@ -29,13 +29,13 @@ internal sealed class StreamJsonParser
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        while (await new SingleJsonChunkParser().ExtractNextChunkAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
+        while (await new SingleChunkParser().ExtractNextChunkAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
         {
             yield return json;
         }
     }
 
-    private sealed class SingleJsonChunkParser
+    private sealed class SingleChunkParser
     {
         private readonly StringBuilder _jsonBuilder = new();
         private readonly char[] _buffer = new char[1];
