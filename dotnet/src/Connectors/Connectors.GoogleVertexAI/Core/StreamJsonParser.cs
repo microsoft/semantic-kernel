@@ -29,105 +29,62 @@ internal sealed class StreamJsonParser
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        while (await this.ExtractNextJsonStringAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
+        while (await new SingleJsonChunkParser().ExtractNextChunkAsync(reader, validateJson, ct).ConfigureAwait(false) is { } json)
         {
             yield return json;
         }
     }
 
-    private async Task<string?> ExtractNextJsonStringAsync(
-        TextReader reader,
-        bool validateJson,
-        CancellationToken ct)
-    {
-        JsonParserState state = new();
-        while (!ct.IsCancellationRequested && await reader.ReadAsync(state.Buffer, 0, 1).ConfigureAwait(false) > 0)
-        {
-            if (IsEscapedCharacterInsideQuotes(state))
-            {
-                continue;
-            }
-
-            DetermineIfQuoteStartOrEnd(state);
-            HandleCurrentCharacterOutsideQuotes(state);
-
-            if (state.IsCompleteJson)
-            {
-                return state.GetJsonString(validateJson);
-            }
-
-            state.ResetEscapeFlag();
-            state.AppendToJsonObject();
-        }
-
-        return null;
-    }
-
-    private static void HandleCurrentCharacterOutsideQuotes(JsonParserState state)
-    {
-        if (state is { InsideQuotes: true })
-        {
-            return;
-        }
-
-        switch (state.CurrentCharacter)
-        {
-            case '{':
-                state.BracketsCount++;
-                break;
-            case '}':
-                state.BracketsCount--;
-                if (state.BracketsCount == 0)
-                {
-                    state.MarkJsonAsComplete(appendCurrentCharacter: true);
-                }
-
-                break;
-        }
-    }
-
-    private static void DetermineIfQuoteStartOrEnd(JsonParserState state)
-    {
-        if (state is { CurrentCharacter: '\"', IsEscaping: false })
-        {
-            state.InsideQuotes = !state.InsideQuotes;
-        }
-    }
-
-    private static bool IsEscapedCharacterInsideQuotes(JsonParserState state)
-    {
-        if (state is { CurrentCharacter: '\\', IsEscaping: false, InsideQuotes: true })
-        {
-            state.IsEscaping = true;
-            state.AppendToJsonObject();
-            return true;
-        }
-
-        return false;
-    }
-
-    private sealed class JsonParserState
+    private sealed class SingleJsonChunkParser
     {
         private readonly StringBuilder _jsonBuilder = new();
+        private readonly char[] _buffer = new char[1];
 
-        public int BracketsCount { get; set; }
-        public bool InsideQuotes { get; set; }
-        public bool IsEscaping { get; set; }
-        public bool IsCompleteJson { get; private set; }
-        public char CurrentCharacter => this.Buffer[0];
-        public char[] Buffer { get; } = new char[1];
+        private int _bracketsCount;
+        private bool _insideQuotes;
+        private bool _isEscaping;
+        private bool _isCompleteJson;
 
-        public void AppendToJsonObject()
+        private char CurrentCharacter => this._buffer[0];
+
+        internal async Task<string?> ExtractNextChunkAsync(
+            TextReader reader,
+            bool validateJson,
+            CancellationToken ct)
         {
-            if (this.BracketsCount > 0 && !this.IsCompleteJson)
+            while (!ct.IsCancellationRequested && await reader.ReadAsync(this._buffer, 0, 1).ConfigureAwait(false) > 0)
+            {
+                if (this.IsEscapedCharacterInsideQuotes())
+                {
+                    continue;
+                }
+
+                this.DetermineIfQuoteStartOrEnd();
+                this.HandleCurrentCharacterOutsideQuotes();
+
+                if (this._isCompleteJson)
+                {
+                    return this.GetJsonString(validateJson);
+                }
+
+                this.ResetEscapeFlag();
+                this.AppendToJsonObject();
+            }
+
+            return null;
+        }
+
+        private void AppendToJsonObject()
+        {
+            if (this._bracketsCount > 0 && !this._isCompleteJson)
             {
                 this._jsonBuilder.Append(this.CurrentCharacter);
             }
         }
 
-        public string GetJsonString(bool validateJson)
+        private string GetJsonString(bool validateJson)
         {
-            if (!this.IsCompleteJson)
+            if (!this._isCompleteJson)
             {
                 throw new InvalidOperationException("Cannot get JSON string when JSON is not complete.");
             }
@@ -141,15 +98,58 @@ internal sealed class StreamJsonParser
             return json;
         }
 
-        public void MarkJsonAsComplete(bool appendCurrentCharacter)
+        private void MarkJsonAsComplete(bool appendCurrentCharacter)
         {
-            this.IsCompleteJson = true;
+            this._isCompleteJson = true;
             if (appendCurrentCharacter)
             {
                 this._jsonBuilder.Append(this.CurrentCharacter);
             }
         }
 
-        public void ResetEscapeFlag() => this.IsEscaping = false;
+        private void ResetEscapeFlag() => this._isEscaping = false;
+
+        private void HandleCurrentCharacterOutsideQuotes()
+        {
+            if (this._insideQuotes)
+            {
+                return;
+            }
+
+            switch (this.CurrentCharacter)
+            {
+                case '{':
+                    this._bracketsCount++;
+                    break;
+                case '}':
+                    this._bracketsCount--;
+                    if (this._bracketsCount == 0)
+                    {
+                        this.MarkJsonAsComplete(appendCurrentCharacter: true);
+                    }
+
+                    break;
+            }
+        }
+
+        private void DetermineIfQuoteStartOrEnd()
+        {
+            if (this is { CurrentCharacter: '\"', _isEscaping: false })
+            {
+                this._insideQuotes = !this._insideQuotes;
+            }
+        }
+
+        private bool IsEscapedCharacterInsideQuotes()
+        {
+            if (this is { CurrentCharacter: '\\', _isEscaping: false, _insideQuotes: true })
+            {
+                this._isEscaping = true;
+                this.AppendToJsonObject();
+                return true;
+            }
+
+            return false;
+        }
     }
 }
