@@ -23,6 +23,7 @@ internal sealed class StreamJsonParser
     /// <param name="validateJson">Set to true to enable JSON validation. Default is false.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>An enumerable collection of string representing the individual JSON objects.</returns>
+    /// <remarks>Stream will be disposed after parsing.</remarks>
     public async IAsyncEnumerable<string> ParseAsync(
         Stream stream,
         bool validateJson = false,
