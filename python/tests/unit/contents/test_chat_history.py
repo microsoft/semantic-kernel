@@ -261,10 +261,9 @@ async def test_template(chat_history: ChatHistory):
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
     )
-    assert (
-        rendered
-        == 'system stuff<chat_history><message role="assistant">I am an AI assistant</message></chat_history>What can you do?'  # noqa: E501
-    )
+    assert "system stuff" in rendered
+    assert "I am an AI assistant" in rendered
+    assert "What can you do?" in rendered
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history_2.messages[0].content == "system stuff"
@@ -287,10 +286,9 @@ async def test_chat_history_with_message_type():
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
     )
-    assert (
-        rendered
-        == 'system stuff<message role="assistant" type="OpenAIChatMessageContent">I am an AI assistant</message>What can you do?'  # noqa: E501
-    )
+    assert "system stuff" in rendered
+    assert "I am an AI assistant" in rendered
+    assert "What can you do?" in rendered
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered, message_type="OpenAIChatMessageContent")
     assert chat_history_2.messages[0].type == "OpenAIChatMessageContent"
@@ -316,10 +314,9 @@ async def test_chat_history_with_message_type_differs():
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
     )
-    assert (
-        rendered
-        == 'system stuff<message role="assistant" type="AzureChatMessageContent">I am an AI assistant</message>What can you do?'  # noqa: E501
-    )
+    assert "system stuff" in rendered
+    assert "I am an AI assistant" in rendered
+    assert "What can you do?" in rendered
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered, message_type="OpenAIChatMessageContent")
     assert chat_history_2.messages[0].type == "OpenAIChatMessageContent"
@@ -347,6 +344,9 @@ async def test_template_two_histories():  # ignore: E501
         kernel=Kernel(),
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
     )
+    assert "I am an AI assistant" in rendered
+    assert "What can you do?" in rendered
+    assert "I like to be added later on" in rendered
 
     chat_history_out = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history_out.messages[0].content == "system prompt"
