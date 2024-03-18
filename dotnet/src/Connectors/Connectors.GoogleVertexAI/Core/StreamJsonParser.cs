@@ -52,7 +52,7 @@ internal sealed class StreamJsonParser
         private char _currentCharacter;
         private string? _lastLine;
 
-        public ChunkParser(StreamReader reader)
+        internal ChunkParser(StreamReader reader)
         {
             this._reader = reader;
         }
