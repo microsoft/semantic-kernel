@@ -14,7 +14,7 @@ public sealed class TextChunkerInternationalTests
     public class StatefulTokenCounter
     {
         private int _callCount = 0;
-        private IDictionary<string, int> _callStats;
+        private readonly Dictionary<string, int> _callStats;
 
         private readonly Tokenizer _tokenizer;
 
@@ -23,7 +23,7 @@ public sealed class TextChunkerInternationalTests
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             this._tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
-            this._callStats = new Dictionary<string, int>();
+            this._callStats = [];
         }
         public int Count(string input)
         {
