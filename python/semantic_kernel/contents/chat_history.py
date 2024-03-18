@@ -230,7 +230,7 @@ class ChatHistory(KernelBaseModel):
             ValueError: If the ChatHistory instance cannot be serialized to JSON.
         """
         try:
-            return self.model_dump_json(indent=4)
+            return self.model_dump_json(indent=4, exclude_none=True)
         except Exception as e:
             raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}") from e
 

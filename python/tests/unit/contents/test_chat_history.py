@@ -186,7 +186,7 @@ def test_serialize():  # ignore: E501
     assert json_str is not None
     assert (
         json_str
-        == '{\n    "messages": [\n        {\n            "inner_content": null,\n            "ai_model_id": null,\n            "metadata": {},\n            "type": "ChatMessageContent",\n            "role": "system",\n            "content": "a test system prompt",\n            "encoding": null\n        },\n        {\n            "inner_content": null,\n            "ai_model_id": null,\n            "metadata": {},\n            "type": "ChatMessageContent",\n            "role": "user",\n            "content": "Message",\n            "encoding": null\n        }\n    ],\n    "message_type": "ChatMessageContent"\n}'  # noqa: E501
+        == '{\n    "messages": [\n        {\n            "metadata": {},\n            "type": "ChatMessageContent",\n            "role": "system",\n            "content": "a test system prompt"\n        },\n        {\n            "metadata": {},\n            "type": "ChatMessageContent",\n            "role": "user",\n            "content": "Message"\n        }\n    ],\n    "message_type": "ChatMessageContent"\n}'  # noqa: E501
     )
 
 
