@@ -52,7 +52,7 @@ classDiagram
         <<Abstract>>
         ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent, ChatMessageContent? input = null)*
         ~#IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()*
-        ~#Task RecieveAsync(IEnumerable<ChatMessageContent> history)*
+        ~#Task ReceiveAsync(IEnumerable<ChatMessageContent> history)*
     }
 
     class LocalChannel {
@@ -61,7 +61,7 @@ classDiagram
         -ChatHistory _chat
         ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent, ChatMessageContent? input = null)
         ~#IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()
-        ~#Task RecieveAsync(IEnumerable<ChatMessageContent> history)
+        ~#Task ReceiveAsync(IEnumerable<ChatMessageContent> history)
     }
 
     class GptAssistantChannel {
@@ -70,7 +70,7 @@ classDiagram
         -int _threadId
         ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent, ChatMessageContent? input = null)
         ~#IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()
-        ~#Task RecieveAsync(IEnumerable<ChatMessageContent> history)
+        ~#Task ReceiveAsync(IEnumerable<ChatMessageContent> history)
     }
 
     AgentNexus o-- AgentChannel

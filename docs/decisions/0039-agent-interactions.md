@@ -18,7 +18,7 @@ informed:
 - Must encapsulate complexity within
  implementation details, not calling patterns.
 
-> Note: Desire to establish AutoGen.Net alignement with SemanticKernel not limit to existing AutoGen definitions.
+> Note: Desire to establish AutoGen.Net alignment with SemanticKernel not limit to existing AutoGen definitions.
 
 ### Agent Modalities:
 - **SemanticKernel - IChatCompletionService**: No storage (local history and agent definitions)
@@ -212,7 +212,7 @@ Creating an agent based on the *SemanticKernel* `IChatCompletionService` interfa
 
 A `GptAssistantAgent` is also based on a `Kernel` object for function-calling, which may require a `IChatCompletionService` for prompt-functions and also supports `code-interpreter` and `retrieval` tools.
 
-> Note the use of a static factory method to support asynchornous initialization that includes calling the *Assistant API* to create or retrieve an agent definition.
+> Note the use of a static factory method to support asynchronous initialization that includes calling the *Assistant API* to create or retrieve an agent definition.
 
 ```c#
     await GptAssistantAgent.CreateAsync(
