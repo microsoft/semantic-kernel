@@ -75,7 +75,7 @@ azure-core = "^1.28.0"
 
 [tool.poetry.group.usearch.dependencies]
 usearch = "1.1.1"
-pyarrow = ">=12.0.1,<15.0.0"
+pyarrow = ">=12.0.1,<16.0.0"
 
 [tool.ruff]
 lint.select = ["E", "F", "I"]
