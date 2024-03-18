@@ -20,6 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 /// </summary>
 internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionClient
 {
+    private readonly StreamJsonParser _streamJsonParser = new();
     private readonly string _modelId;
     private readonly Uri _chatGenerationEndpoint;
     private readonly Uri _chatStreamingEndpoint;
@@ -486,8 +487,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        var parser = new StreamJsonParser();
-        await foreach (var json in parser.ParseAsync(responseStream, ct: ct))
+        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, ct: ct))
         {
             yield return DeserializeResponse<GeminiResponse>(json);
         }
