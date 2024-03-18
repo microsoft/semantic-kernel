@@ -7,9 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
+using SemanticKernel.Connectors.AssemblyAI.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Connectors.AssemblyAI.UnitTests.AudioToText;
+namespace SemanticKernel.Connectors.UnitTests.AssemblyAI;
 
 /// <summary>
 /// Unit tests for <see cref="AssemblyAIAudioToTextService"/> class.
@@ -84,7 +85,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 
         // Act
         var result = await service.GetTextContentsAsync(
-            new AudioContent(new BinaryData("data", "audio/wav"))
+            new AudioContent(new BinaryData("data"))
         ).ConfigureAwait(true);
 
         // Assert
@@ -161,7 +162,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentsAsync(
-                new AudioContent(new BinaryData("data", "audio/wav"))
+                new AudioContent(new BinaryData("data"))
             ).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }

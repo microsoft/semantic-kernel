@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.AssemblyAI.UnitTests.AudioToText;
+namespace SemanticKernel.Connectors.UnitTests.AssemblyAI;
 
 /// <summary>
 /// Unit tests for <see cref="AssemblyAIServiceCollectionExtensions"/> class.

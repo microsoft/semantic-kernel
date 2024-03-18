@@ -25,6 +25,10 @@ The content provided was: {content}",
         )
 
 
+class VarBlockRenderError(BlockRenderException):
+    pass
+
+
 class ValBlockSyntaxError(BlockSyntaxError):
     def __init__(self, content: str) -> None:
         super().__init__(
@@ -75,11 +79,20 @@ class TemplateRenderException(BlockRenderException):
     pass
 
 
+class HandlebarsTemplateSyntaxError(BlockSyntaxError):
+    pass
+
+
+class HandlebarsTemplateRenderException(BlockRenderException):
+    pass
+
+
 __all__ = [
     "BlockException",
     "BlockSyntaxError",
     "BlockRenderException",
     "VarBlockSyntaxError",
+    "VarBlockRenderError",
     "ValBlockSyntaxError",
     "NamedArgBlockSyntaxError",
     "FunctionIdBlockSyntaxError",
@@ -88,4 +101,6 @@ __all__ = [
     "CodeBlockRenderException",
     "TemplateSyntaxError",
     "TemplateRenderException",
+    "HandlebarsTemplateSyntaxError",
+    "HandlebarsTemplateRenderException",
 ]

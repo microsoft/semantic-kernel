@@ -10,7 +10,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>SKEXP0005;SKEXP0034;CS1591</NoWarn>
+    <NoWarn>SKEXP0001;SKEXP0005;SKEXP0070;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
