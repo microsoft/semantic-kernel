@@ -46,6 +46,7 @@ internal sealed class StreamJsonParser
         private readonly StreamReader _reader;
 
         private int _bracketsCount;
+        private int _startBracketIndex = -1;
         private bool _insideQuotes;
         private bool _isEscaping;
         private bool _isCompleteJson;
@@ -81,17 +82,27 @@ internal sealed class StreamJsonParser
                     }
 
                     this.DetermineIfQuoteStartOrEnd();
-                    this.HandleCurrentCharacterOutsideQuotes();
+                    this.HandleCurrentCharacterOutsideQuotes(i);
 
                     if (this._isCompleteJson)
                     {
-                        this._lastLine = i + 1 < line.Length ? line.Substring(i + 1) : null;
+                        if (i + 1 < line.Length)
+                        {
+                            this._lastLine = line.Substring(i + 1);
+                            this.AppendLine(line.Substring(0, i + 1));
+                        }
+                        else
+                        {
+                            this.AppendLine(line);
+                        }
+
                         return this.GetJsonString(validateJson);
                     }
 
                     this.ResetEscapeFlag();
-                    this.AppendToJsonObject();
                 }
+
+                this.AppendLine(line);
             }
 
             return null;
@@ -101,17 +112,23 @@ internal sealed class StreamJsonParser
         {
             this._jsonBuilder.Clear();
             this._bracketsCount = 0;
+            this._startBracketIndex = -1;
             this._insideQuotes = false;
             this._isEscaping = false;
             this._isCompleteJson = false;
             this._currentCharacter = default;
         }
 
-        private void AppendToJsonObject()
+        private void AppendLine(string line)
         {
-            if (this._bracketsCount > 0 && !this._isCompleteJson)
+            switch (this._jsonBuilder.Length)
             {
-                this._jsonBuilder.Append(this._currentCharacter);
+                case 0 when this._startBracketIndex >= 0:
+                    this._jsonBuilder.Append(line.Substring(this._startBracketIndex));
+                    break;
+                case > 0:
+                    this._jsonBuilder.Append(line);
+                    break;
             }
         }
 
@@ -131,18 +148,14 @@ internal sealed class StreamJsonParser
             return json;
         }
 
-        private void MarkJsonAsComplete(bool appendCurrentCharacter)
+        private void MarkJsonAsComplete()
         {
             this._isCompleteJson = true;
-            if (appendCurrentCharacter)
-            {
-                this._jsonBuilder.Append(this._currentCharacter);
-            }
         }
 
         private void ResetEscapeFlag() => this._isEscaping = false;
 
-        private void HandleCurrentCharacterOutsideQuotes()
+        private void HandleCurrentCharacterOutsideQuotes(int index)
         {
             if (this._insideQuotes)
             {
@@ -152,13 +165,16 @@ internal sealed class StreamJsonParser
             switch (this._currentCharacter)
             {
                 case '{':
-                    this._bracketsCount++;
+                    if (++this._bracketsCount == 1)
+                    {
+                        this._startBracketIndex = index;
+                    }
+
                     break;
                 case '}':
-                    this._bracketsCount--;
-                    if (this._bracketsCount == 0)
+                    if (--this._bracketsCount == 0)
                     {
-                        this.MarkJsonAsComplete(appendCurrentCharacter: true);
+                        this.MarkJsonAsComplete();
                     }
 
                     break;
@@ -178,7 +194,6 @@ internal sealed class StreamJsonParser
             if (this is { _currentCharacter: '\\', _isEscaping: false, _insideQuotes: true })
             {
                 this._isEscaping = true;
-                this.AppendToJsonObject();
                 return true;
             }
 
