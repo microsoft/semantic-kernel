@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Onnx</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFramework>net6.0</TargetFramework> <!-- TODO: Support netstandard2.0 once replacement for FastBertTokenizer available -->
+    <VersionSuffix>preview</VersionSuffix>
+  </PropertyGroup>
+
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+
+  <PropertyGroup>
+    <Title>Semantic Kernel - ONNX connectors</Title>
+    <Description>Semantic Kernel connectors for the ONNX runtime. Contains clients for text embedding generation.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <PackageReference Include="System.Text.Json" />
+
+    <PackageReference Include="FastBertTokenizer" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <PackageReference Include="System.Numerics.Tensors" />
+  </ItemGroup>
+
+</Project>
