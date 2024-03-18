@@ -1,4 +1,0 @@
-Set-ExecutionPolicy Unrestricted -Scope Process
-.\.venv\Scripts\activate
-
-python --vers
