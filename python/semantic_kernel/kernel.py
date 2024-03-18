@@ -13,7 +13,7 @@ import yaml
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents.streaming_content_mixin import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
     FunctionInitializationError,
@@ -139,7 +139,7 @@ class Kernel(KernelBaseModel):
         plugin_name: str | None = None,
         return_function_results: bool | None = False,
         **kwargs: Any,
-    ) -> AsyncIterable[list["StreamingKernelContent"] | list[FunctionResult]]:
+    ) -> AsyncIterable[Union[List["StreamingContentMixin"], List[FunctionResult]]]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
@@ -157,7 +157,7 @@ class Kernel(KernelBaseModel):
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Yields:
-            StreamingKernelContent: The content of the stream of the last function provided.
+            StreamingContentMixin: The content of the stream of the last function provided.
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)

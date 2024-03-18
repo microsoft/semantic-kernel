@@ -49,6 +49,8 @@ class ChatMessageContent(KernelContent):
         """
         root = Element(root_key)
         for field in self.model_fields_set:
+            if field in ["content", "type"]:
+                continue
             value = getattr(self, field)
             if value is None:
                 continue
@@ -62,6 +64,8 @@ class ChatMessageContent(KernelContent):
                 else:
                     value = "|".join(value)
             root.set(field, value)
+        if self.type != "ChatMessageContent":
+            root.set("type", self.type)
         root.text = self.content or ""
         return root
 

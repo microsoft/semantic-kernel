@@ -2,10 +2,9 @@ from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content i
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
-from semantic_kernel.contents.chat_message_content import ChatMessageContent, ChatMessageContentBase
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.chat_message_content_base import ChatMessageContentBase
 from semantic_kernel.contents.chat_role import ChatRole
-
-ChatMessageContentBase.model_rebuild()
 
 
 def test_cmc():
@@ -55,8 +54,18 @@ def test_aoai_cmc():
     }
 
 
-def test_cmc_from_root_model():
-    message = ChatMessageContentBase(role="user", content="Hello, world!", type="ChatMessageContent").root
+def test_cmc_from_root_model_from_fields():
+    message = ChatMessageContentBase.from_fields(role="user", content="Hello, world!", type="ChatMessageContent")
+    assert message.type == "ChatMessageContent"
+    assert message.role == ChatRole.USER
+    assert message.content == "Hello, world!"
+    assert message.model_fields_set == {"role", "content", "type"}
+
+
+def test_cmc_from_root_model_from_dict():
+    message = ChatMessageContentBase.from_dict(
+        {"role": "user", "content": "Hello, world!", "type": "ChatMessageContent"}
+    )
     assert message.type == "ChatMessageContent"
     assert message.role == ChatRole.USER
     assert message.content == "Hello, world!"
@@ -64,14 +73,14 @@ def test_cmc_from_root_model():
 
 
 def test_oai_cmc_from_root_model():
-    message = ChatMessageContentBase(
+    message = ChatMessageContentBase.from_fields(
         role="user",
         content="Hello, world!",
         function_call=FunctionCall(),
         tool_calls=[ToolCall()],
         tool_call_id="1234",
         type="OpenAIChatMessageContent",
-    ).root
+    )
     assert message.type == "OpenAIChatMessageContent"
     assert message.role == ChatRole.USER
     assert message.content == "Hello, world!"
@@ -82,7 +91,7 @@ def test_oai_cmc_from_root_model():
 
 
 def test_aoai_cmc_from_root_model():
-    message = ChatMessageContentBase(
+    message = ChatMessageContentBase.from_fields(
         role="user",
         content="Hello, world!",
         function_call=FunctionCall(),
@@ -90,7 +99,7 @@ def test_aoai_cmc_from_root_model():
         tool_call_id="1234",
         tool_message="test",
         type="AzureChatMessageContent",
-    ).root
+    )
     assert message.type == "AzureChatMessageContent"
     assert message.role == ChatRole.USER
     assert message.content == "Hello, world!"

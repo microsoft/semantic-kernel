@@ -1,19 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Final, Iterator, List, Literal, Optional, Union
+from typing import Any, Dict, Final, Iterator, List, Optional, Union
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET
 
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_message_content_base import ChatMessageContentBase
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.types import CHAT_MESSAGE_CONTENT_TYPES
 from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-
-if TYPE_CHECKING:
-    from semantic_kernel.contents.chat_message_content import ChatMessageContent
-
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +32,7 @@ class ChatHistory(KernelBaseModel):
     """
 
     messages: List["ChatMessageContent"]
-    message_type: Literal["ChatMessageContent", "OpenAIChatMessageContent", "AzureChatMessageContent"] = (
-        "ChatMessageContent"
-    )
+    message_type: CHAT_MESSAGE_CONTENT_TYPES = "ChatMessageContent"
 
     def __init__(self, **data: Any):
         """
@@ -60,19 +56,13 @@ class ChatHistory(KernelBaseModel):
         initialization and then discarded. The rest of the keyword arguments are passed to the superclass
         constructor and handled according to the Pydantic model's behavior.
         """
-        from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent  # noqa: F401
-        from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent  # noqa: F401
-        from semantic_kernel.contents.chat_message_content import ChatMessageContent  # noqa: F401
-
-        ChatMessageContentBase.model_rebuild()
-
         system_message_content = data.pop("system_message", None)
         message_type = data.get("message_type", "ChatMessageContent")
 
         if system_message_content:
-            system_message = ChatMessageContentBase(
+            system_message = ChatMessageContentBase.from_fields(
                 role=ChatRole.SYSTEM, content=system_message_content, type=message_type
-            ).root
+            )
 
             if "messages" in data:
                 data["messages"] = [system_message] + data["messages"]
@@ -102,7 +92,7 @@ class ChatHistory(KernelBaseModel):
 
     def add_message(
         self,
-        message: Union[ChatMessageContent, Dict[str, Any]],
+        message: Union["ChatMessageContent", Dict[str, Any]],
         encoding: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -117,6 +107,8 @@ class ChatHistory(KernelBaseModel):
             encoding (Optional[str]): The encoding of the message. Required if 'message' is a dict.
             metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
         """
+        from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
         if isinstance(message, ChatMessageContent):
             self.messages.append(message)
             return
@@ -128,7 +120,7 @@ class ChatHistory(KernelBaseModel):
             message["metadata"] = metadata
         if "type" not in message:
             message["type"] = self.message_type
-        self.messages.append(ChatMessageContentBase(**message).root)
+        self.messages.append(ChatMessageContentBase.from_dict(message))
 
     def _prepare_for_add(self, role: ChatRole, content: Optional[str], **kwargs: Any) -> Dict[str, str]:
         """Prepare a message to be added to the history."""
@@ -136,7 +128,7 @@ class ChatHistory(KernelBaseModel):
         kwargs["content"] = content
         return kwargs
 
-    def remove_message(self, message: ChatMessageContent) -> bool:
+    def remove_message(self, message: "ChatMessageContent") -> bool:
         """Remove a message from the history.
 
         Args:
@@ -155,7 +147,7 @@ class ChatHistory(KernelBaseModel):
         """Return the number of messages in the history."""
         return len(self.messages)
 
-    def __getitem__(self, index: int) -> ChatMessageContent:
+    def __getitem__(self, index: int) -> "ChatMessageContent":
         """Get a message from the history using the [] operator.
 
         Args:
@@ -166,7 +158,7 @@ class ChatHistory(KernelBaseModel):
         """
         return self.messages[index]
 
-    def __contains__(self, item: ChatMessageContent) -> bool:
+    def __contains__(self, item: "ChatMessageContent") -> bool:
         """Check if a message is in the history.
 
         Args:
@@ -184,7 +176,7 @@ class ChatHistory(KernelBaseModel):
             chat_history_xml.append(message.to_element(root_key=ROOT_KEY_MESSAGE))
         return ET.tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
-    def __iter__(self) -> Iterator[ChatMessageContent]:
+    def __iter__(self) -> Iterator["ChatMessageContent"]:
         """Return an iterator over the messages in the history."""
         return iter(self.messages)
 
@@ -268,7 +260,6 @@ class ChatHistory(KernelBaseModel):
         Stores the serialized ChatHistory to a file.
 
         Args:
-            chat_history (ChatHistory): The ChatHistory instance to serialize and store.
             file_path (str): The path to the file where the serialized data will be stored.
         """
         json_str = self.serialize()
