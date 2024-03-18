@@ -7,6 +7,9 @@
     <VersionSuffix>alpha</VersionSuffix>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Experimental.Agents.UnitTests" />
+  </ItemGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
   <PropertyGroup>
@@ -15,9 +18,7 @@
     <Description>Semantic Kernel Agents</Description>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="C:\Users\crickman\source\repos\semantic-kernel2\dotnet\src\InternalUtilities\src\Linq\AsyncEnumerable.cs" />
-    <Compile Remove="Chat\ChatChannel.cs" />
-    <Compile Remove="NexusChannel.cs" />
+    <Compile Remove="..\..\..\src\InternalUtilities\src\Linq\AsyncEnumerable.cs" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Agents.UnitTests" />
@@ -31,12 +32,5 @@
     <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Experimental.Agents.UnitTests" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Chat\" />
-    <Folder Include="Gpt\" />
   </ItemGroup>
 </Project>

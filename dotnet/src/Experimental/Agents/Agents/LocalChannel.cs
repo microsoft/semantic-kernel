@@ -40,7 +40,7 @@ public class LocalChannel<TAgent> : AgentChannel<TAgent> where TAgent : Agent
     /// <inheritdoc/>
     public override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return this._chat.Reverse().ToAsyncEnumerable();
+        return this._chat.Reverse().ToAsyncEnumerable(); // $$$ PERF
     }
 
     /// <summary>
