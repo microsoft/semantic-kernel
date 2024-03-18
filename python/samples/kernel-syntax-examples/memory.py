@@ -51,7 +51,8 @@ async def setup_chat_with_memory(
     User: {{$user_input}}
     ChatBot: """.strip()
 
-    chat_func = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0.8)
+    chat_func = kernel.create_semantic_function(
+        sk_prompt, max_tokens=200, temperature=0.8)
 
     context = kernel.create_new_context()
     context["fact1"] = "what is my name?"
@@ -94,13 +95,16 @@ async def main() -> None:
     kernel = sk.Kernel()
 
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_chat_service("chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
+    kernel.add_chat_service(
+        "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
     kernel.add_text_embedding_generation_service(
-        "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
+        "ada", sk_oai.OpenAITextEmbedding(
+            "text-embedding-ada-002", api_key, org_id)
     )
 
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
-    kernel.import_plugin(sk.core_plugins.TextMemoryPlugin(), "TextMemoryPlugin")
+    kernel.import_plugin(
+        sk.core_plugins.TextMemoryPlugin(), "TextMemoryPlugin")
 
     print("Populating memory...")
     await populate_memory(kernel)
