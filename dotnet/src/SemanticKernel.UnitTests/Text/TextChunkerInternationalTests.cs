@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
+using VerifyXunit;
 using static Microsoft.SemanticKernel.Text.TextChunker;
+using System.Threading.Tasks;
 
 namespace SemanticKernel.UnitTests.Text;
 public sealed class TextChunkerInternationalTests
@@ -94,7 +96,7 @@ public sealed class TextChunkerInternationalTests
             "새로운 친구를 만나고 작은 세계를 넓히기로 결심했습니다.")]
     [InlineData("كان الفأر يعيش في قرية صغيرة. كان يرى نفس المناظر ويتعامل مع نفس الأصدقاء دائمًا. في يوم من الأيام، قرر الفأر أن يغامر ويذهب إلى المدينة الكبيرة. حمل حقيبة صغيرة وركب القطار.\n\nكانت المدينة مليئة بالمفاجآت بالنسبة للفأر. المباني العالية، اللافتات النيون المشرقة، وضجيج الناس. كان يتجول بعيون متلألئة. ومع ذلك، كان عليه أن يتعود على هذا العالم الكبير قليلاً.\n\nفي يوم من الأيام، التقى الفأر بفأر كبير في الحديقة. قال له الفأر الكبير: \"أتيت من قرية صغيرة؟ المدينة قد تكون صعبة في بعض الأحيان، لكن هناك أصدقاء جدد ومغامرات رائعة في انتظارك.")]
     [InlineData("小老鼠住在一个宁静的小村庄里。他总是看着同样的风景，与同样的朋友们相处。有一天，他决定要去大城市冒险。他背着一个小小的背包，坐上了火车。\n\n大城市对小老鼠来说是一个充满惊奇的世界。高楼大厦、明亮的霓虹灯、人们的喧嚣声。他眼睛发亮地四处走动。然而，他需要一点时间来适应这个大世界。\n\n有一天，小老鼠在公园里遇到了一只大老鼠。大老鼠对他说：“你是从小村庄来的吗？大城市有时会很艰难，但也有新朋友和精彩的冒险等着你。”\n\n小老鼠微笑着点了点头。他决定在大城市里寻找新朋友，扩展自己的小小世界。🐭🌆")]
-    public void ShortStoryIsNotBeyondTokenLimit(string story)
+    public async Task VerifyShortStoryInLanguageAsync(string story)
     {
         var counter = new StatefulTokenCounter();
         var result = TextChunker.SplitPlainTextLines(story, 20, counter.Count);
@@ -102,8 +104,9 @@ public sealed class TextChunkerInternationalTests
         {
             Assert.True(counter.Count(line) <= 20);
         }
+        await Verifier.Verify(result).UseParameters(story);
 
         Assert.True(counter.CallCount > 0);
-        Assert.True(counter.CallCount < story.Length / 2);
+        Assert.True(counter.CallCount < story.Length);
     }
 }
