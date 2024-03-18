@@ -381,8 +381,8 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         return path;
     }
 
-    private const string BgeMicroV2ModelUrl = "https://huggingface.co/TaylorAI/bge-micro-v2/resolve/main/onnx/model.onnx";
-    private const string BgeMicroV2VocabUrl = "https://huggingface.co/TaylorAI/bge-micro-v2/raw/main/vocab.txt";
+    private const string BgeMicroV2ModelUrl = "https://huggingface.co/TaylorAI/bge-micro-v2/resolve/f09f671/onnx/model.onnx";
+    private const string BgeMicroV2VocabUrl = "https://huggingface.co/TaylorAI/bge-micro-v2/raw/f09f671/vocab.txt";
 
     private static async Task<BertOnnxTextEmbeddingGenerationService> GetBgeMicroV2ServiceAsync() =>
         await BertOnnxTextEmbeddingGenerationService.CreateAsync(
@@ -391,13 +391,13 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
 
     private static async Task<BertOnnxTextEmbeddingGenerationService> GetAllMiniLML6V2Async() =>
         await BertOnnxTextEmbeddingGenerationService.CreateAsync(
-            await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/resolve/main/model.onnx"),
-            await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/raw/main/vocab.txt"),
+            await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/resolve/1024484/model.onnx"),
+            await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/raw/1024484/vocab.txt"),
             new BertOnnxOptions { NormalizeEmbeddings = true });
 
     private static async Task<BertOnnxTextEmbeddingGenerationService> GetE5BaseV2Async() =>
         await BertOnnxTextEmbeddingGenerationService.CreateAsync(
-            await GetTestFilePath("https://huggingface.co/intfloat/e5-base-v2/resolve/main/onnx/model.onnx"),
-            await GetTestFilePath("https://huggingface.co/intfloat/e5-base-v2/raw/main/onnx/vocab.txt"),
+            await GetTestFilePath("https://huggingface.co/intfloat/e5-base-v2/resolve/1c644c9/onnx/model.onnx"),
+            await GetTestFilePath("https://huggingface.co/intfloat/e5-base-v2/raw/1c644c9/onnx/vocab.txt"),
             new BertOnnxOptions { NormalizeEmbeddings = true });
 }
