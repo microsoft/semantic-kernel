@@ -2,14 +2,12 @@
 
 from typing import Any
 
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
-
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import ContentAdditionException
 
 
-class OpenAIStreamingChatMessageContent(StreamingChatMessageContent, OpenAIChatMessageContent):
+class OpenAIStreamingChatMessageContent(StreamingContentMixin, OpenAIChatMessageContent):
     """This is the class for OpenAI streaming chat message response content.
 
     The end-user will have to either do something directly or gather them and combine them into a
@@ -34,7 +32,8 @@ class OpenAIStreamingChatMessageContent(StreamingChatMessageContent, OpenAIChatM
         __add__: Combines two StreamingChatMessageContent instances.
     """
 
-    inner_content: ChatCompletionChunk
+    def __bytes__(self) -> bytes:
+        return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
 
     def __add__(self, other: Any) -> "OpenAIStreamingChatMessageContent":
         """When combining two OpenAIStreamingChatMessageContent instances,

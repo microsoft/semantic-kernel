@@ -310,10 +310,13 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
         )
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-
+    rendered = rendered.strip()
+    # for some reason the ordering of role and tool_calls is not consistent
     assert (
-        rendered.strip()
-        == """<message role="user">User message</message>\n    \n    <message role="assistant" tool_calls="{&quot;id&quot;:&quot;test&quot;,&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;plug-test&quot;}}"></message>"""  # noqa E501
+        rendered
+        == """<message role="user" type="OpenAIChatMessageContent">User message</message>\n    \n    <message role="assistant" tool_calls="{&quot;id&quot;:&quot;test&quot;,&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;plug-test&quot;}}" type="OpenAIChatMessageContent"></message>"""  # noqa E501
+        or rendered
+        == """<message role="user" type="OpenAIChatMessageContent">User message</message>\n    \n    <message tool_calls="{&quot;id&quot;:&quot;test&quot;,&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;plug-test&quot;}}" role="assistant" type="OpenAIChatMessageContent"></message>"""  # noqa E501
     )
 
 

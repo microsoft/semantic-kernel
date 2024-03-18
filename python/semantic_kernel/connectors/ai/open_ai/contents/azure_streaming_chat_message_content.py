@@ -2,13 +2,11 @@
 from typing import Any
 
 from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
-    OpenAIStreamingChatMessageContent,
-)
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import ContentAdditionException
 
 
-class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent, AzureChatMessageContent):
+class AzureStreamingChatMessageContent(StreamingContentMixin, AzureChatMessageContent):
     """This is the class for Azure OpenAI streaming chat message response content.
 
     The end-user will have to either do something directly or gather them and combine them into a
@@ -33,6 +31,9 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent, AzureC
         __bytes__: Returns the content of the response encoded in the encoding.
         __add__: Combines two StreamingChatMessageContent instances.
     """
+
+    def __bytes__(self) -> bytes:
+        return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
 
     def __add__(self, other: Any) -> "AzureStreamingChatMessageContent":
         """When combining two AzureOpenAIStreamingChatMessageContent instances,

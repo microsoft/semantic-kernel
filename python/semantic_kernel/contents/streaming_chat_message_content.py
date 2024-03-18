@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import ContentAdditionException
 
@@ -32,8 +30,6 @@ class StreamingChatMessageContent(StreamingContentMixin, ChatMessageContent):
         __bytes__: Returns the content of the response encoded in the encoding.
         __add__: Combines two StreamingChatMessageContent instances.
     """
-
-    finish_reason: Optional[FinishReason] = None
 
     def __bytes__(self) -> bytes:
         return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""

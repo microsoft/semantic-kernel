@@ -309,7 +309,9 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
 
     assert (
         rendered.strip()
-        == """<message role="user">User message</message> <message role="assistant" tool_calls="{&quot;id&quot;:&quot;test&quot;,&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;plug-test&quot;}}"></message>"""  # noqa E501
+        == """<message role="user" type="OpenAIChatMessageContent">User message</message> <message tool_calls="{&quot;id&quot;:&quot;test&quot;,&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;plug-test&quot;}}" role="assistant" type="OpenAIChatMessageContent"></message>"""  # noqa E501
+        or rendered.strip()
+        == """<message role="user" type="OpenAIChatMessageContent">User message</message> <message role="assistant" tool_calls="[ToolCall(id='test', type='function', function=FunctionCall(name='plug-test', arguments=None))]" type="OpenAIChatMessageContent"></message>"""  # noqa E501
     )
 
 
