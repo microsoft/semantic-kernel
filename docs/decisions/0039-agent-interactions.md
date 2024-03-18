@@ -271,7 +271,7 @@ public sealed class CustomAgent : KernelAgent
 
 **2. Local Agent**
 
-An agent that relies soley on local chat-history can bind to the `LocalChannel` class, instead of creating a custom channel.  This example shows the implementation of the ChatCompletionClient:
+An agent that relies solely on local chat-history can bind to the `LocalChannel` class, instead of creating a custom channel.  This example shows the implementation of the ChatCompletionClient:
 
 > Note now the `LocalChannel` accepts the static `InvokeAsync` as a callback which has private access to `agent`.
 
