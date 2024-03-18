@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
@@ -149,6 +150,18 @@ public class Kernel {
         String pluginName,
         String functionName) {
         return this.<T>invokeAsync(pluginName, functionName).block();
+    }
+
+    /**
+     * Invokes a Prompt.
+     *
+     * @param <T>      The return type of the prompt.
+     * @param prompt   The prompt to invoke.
+     * @return The result of the prompt invocation.
+     * @see KernelFunction#invokeAsync(Kernel)
+     */
+    public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt) {
+        return invokeAsync(KernelFunction.<T>createFromPrompt(prompt).build());
     }
 
     /**
