@@ -154,11 +154,11 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
         {
             if (async)
             {
-                await tokenizer.LoadVocabularyAsync(vocabReader, convertInputToLowercase: !options.CaseSensitive, options.UnknownToken, options.ClsToken, options.SepToken, options.PadToken, options.Normalization).ConfigureAwait(false);
+                await tokenizer.LoadVocabularyAsync(vocabReader, convertInputToLowercase: !options.CaseSensitive, options.UnknownToken, options.ClsToken, options.SepToken, options.PadToken, options.UnicodeNormalization).ConfigureAwait(false);
             }
             else
             {
-                tokenizer.LoadVocabulary(vocabReader, convertInputToLowercase: !options.CaseSensitive, options.UnknownToken, options.ClsToken, options.SepToken, options.PadToken, options.Normalization);
+                tokenizer.LoadVocabulary(vocabReader, convertInputToLowercase: !options.CaseSensitive, options.UnknownToken, options.ClsToken, options.SepToken, options.PadToken, options.UnicodeNormalization);
             }
         }
 
@@ -215,7 +215,7 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
 
                 using IDisposableReadOnlyCollection<OrtValue> outputs = this._onnxSession.Run(s_runOptions, s_inputNames, inputValues, outputNames);
 
-                results[i] = Pool(outputs[0].GetTensorDataAsSpan<float>(), this._dimensions, this._options.PoolingMode, tokenCount);
+                results[i] = this.Pool(outputs[0].GetTensorDataAsSpan<float>());
 
                 if (logger?.IsEnabled(LogLevel.Trace) is true)
                 {
@@ -231,8 +231,9 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
         }
     }
 
-    private static float[] Pool(ReadOnlySpan<float> modelOutput, int dimensions, EmbeddingPoolingMode mode, int tokenCount)
+    private float[] Pool(ReadOnlySpan<float> modelOutput)
     {
+        int dimensions = this._dimensions;
         int embeddings = Math.DivRem(modelOutput.Length, dimensions, out int leftover);
         if (leftover != 0)
         {
@@ -246,7 +247,7 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
         }
         else
         {
-            switch (mode)
+            switch (this._options.PoolingMode)
             {
                 case EmbeddingPoolingMode.Mean or EmbeddingPoolingMode.MeanSquareRootTokensLength:
                     TensorPrimitives.Add(modelOutput.Slice(0, dimensions), modelOutput.Slice(dimensions, dimensions), result);
@@ -254,6 +255,11 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
                     {
                         TensorPrimitives.Add(result, modelOutput.Slice(pos, dimensions), result);
                     }
+
+                    TensorPrimitives.Divide(
+                        result,
+                        this._options.PoolingMode is EmbeddingPoolingMode.Mean ? embeddings : MathF.Sqrt(embeddings),
+                        result);
                     break;
 
                 case EmbeddingPoolingMode.Max:
@@ -266,11 +272,13 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
             }
         }
 
-        if (mode is EmbeddingPoolingMode.MeanSquareRootTokensLength && tokenCount != 0)
+        // If normalization has been requested, normalize the result.
+        if (this._options.NormalizeEmbeddings)
         {
-            TensorPrimitives.Divide(result, MathF.Sqrt(tokenCount), result);
+            TensorPrimitives.Divide(result, TensorPrimitives.Norm(result), result);
         }
 
+        // Return the computed embedding vector.
         return result;
     }
 }

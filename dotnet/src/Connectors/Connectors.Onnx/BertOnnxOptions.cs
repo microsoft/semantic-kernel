@@ -77,8 +77,8 @@ public sealed class BertOnnxOptions
         }
     }
 
-    /// <summary>Gets or sets the type of normalization to perform. Defaults to <see cref="NormalizationForm.FormD"/>.</summary>
-    public NormalizationForm Normalization { get; init; } = NormalizationForm.FormD;
+    /// <summary>Gets or sets the type of Unicode normalization to perform on input text. Defaults to <see cref="NormalizationForm.FormD"/>.</summary>
+    public NormalizationForm UnicodeNormalization { get; init; } = NormalizationForm.FormD;
 
     /// <summary>Gets or sets the pooling mode to use when generating the fixed-length embedding result. Defaults to "mean".</summary>
     public EmbeddingPoolingMode PoolingMode
@@ -94,4 +94,8 @@ public sealed class BertOnnxOptions
             this._poolingMode = value;
         }
     }
+
+    /// <summary>Gets or sets whether the resulting embedding vectors should be explicitly normalized. Defaults to false.</summary>
+    /// <remarks>Normalized embeddings may be compared more efficiently, such as by using a dot product rather than cosine similarity.</remarks>
+    public bool NormalizeEmbeddings { get; set; } = false;
 }

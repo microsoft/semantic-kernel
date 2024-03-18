@@ -28,8 +28,9 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         Assert.Equal("[UNK]", options.UnknownToken);
         Assert.Equal("[SEP]", options.SepToken);
         Assert.Equal("[PAD]", options.PadToken);
-        Assert.Equal(NormalizationForm.FormD, options.Normalization);
+        Assert.Equal(NormalizationForm.FormD, options.UnicodeNormalization);
         Assert.Equal(EmbeddingPoolingMode.Mean, options.PoolingMode);
+        Assert.False(options.NormalizeEmbeddings);
     }
 
     [Fact]
@@ -43,8 +44,9 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
             UnknownToken = "<B>",
             SepToken = "<C>",
             PadToken = "<D>",
-            Normalization = NormalizationForm.FormKC,
+            UnicodeNormalization = NormalizationForm.FormKC,
             PoolingMode = EmbeddingPoolingMode.MeanSquareRootTokensLength,
+            NormalizeEmbeddings = true,
         };
 
         Assert.True(options.CaseSensitive);
@@ -53,8 +55,9 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         Assert.Equal("<B>", options.UnknownToken);
         Assert.Equal("<C>", options.SepToken);
         Assert.Equal("<D>", options.PadToken);
-        Assert.Equal(NormalizationForm.FormKC, options.Normalization);
+        Assert.Equal(NormalizationForm.FormKC, options.UnicodeNormalization);
         Assert.Equal(EmbeddingPoolingMode.MeanSquareRootTokensLength, options.PoolingMode);
+        Assert.True(options.NormalizeEmbeddings);
     }
 
     [Fact]
@@ -96,6 +99,8 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
             [
                 "",
                 " ",
+                "A",
+                "Hi",
                 "This is a test. This is only a test.",
                 "Toto, I’ve got a feeling we’re not in Kansas anymore.",
             ];
@@ -105,7 +110,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
                 IList<ReadOnlyMemory<float>> results = await service.GenerateEmbeddingsAsync([input, input.ToUpperInvariant(), input.ToLowerInvariant()]);
                 for (int i = 1; i < results.Count; i++)
                 {
-                    Assert.Equal(results[0].Span, results[i].Span);
+                    AssertEqualTolerance(results[0].Span, results[i].Span);
                 }
             }
         }
@@ -340,8 +345,21 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
 
     private static void AssertEqualTolerance(ReadOnlySpan<float> left, ReadOnlySpan<float> right)
     {
-        var cosineSimilarity = TensorPrimitives.CosineSimilarity(left, right);
-        Assert.True(cosineSimilarity >= 0.999995f, $"Expected {cosineSimilarity} >= 0.999995f");
+        Assert.Equal(left.Length, right.Length);
+
+        for (int i = 0; i < left.Length; i++)
+        {
+            Assert.True(IsEqualWithTolerance(left[i], right[i]), $"{left[i]} != {right[i]} at [{i}]");
+        }
+    }
+
+    private static bool IsEqualWithTolerance(float expected, float actual)
+    {
+        const float Tolerance = 0.0000008f;
+        float diff = MathF.Abs(expected - actual);
+        return
+            diff <= Tolerance ||
+            diff <= MathF.Max(MathF.Abs(expected), MathF.Abs(actual)) * Tolerance;
     }
 
     private static async Task<string> GetTestFilePath(string url)
@@ -374,10 +392,12 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
     private static async Task<BertOnnxTextEmbeddingGenerationService> GetAllMiniLML6V2Async() =>
         await BertOnnxTextEmbeddingGenerationService.CreateAsync(
             await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/resolve/main/model.onnx"),
-            await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/raw/main/vocab.txt"));
+            await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/raw/main/vocab.txt"),
+            new BertOnnxOptions { NormalizeEmbeddings = true });
 
     private static async Task<BertOnnxTextEmbeddingGenerationService> GetE5BaseV2Async() =>
         await BertOnnxTextEmbeddingGenerationService.CreateAsync(
             await GetTestFilePath("https://huggingface.co/intfloat/e5-base-v2/resolve/main/onnx/model.onnx"),
-            await GetTestFilePath("https://huggingface.co/intfloat/e5-base-v2/raw/main/onnx/vocab.txt"));
+            await GetTestFilePath("https://huggingface.co/intfloat/e5-base-v2/raw/main/onnx/vocab.txt"),
+            new BertOnnxOptions { NormalizeEmbeddings = true });
 }
