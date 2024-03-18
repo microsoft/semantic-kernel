@@ -233,37 +233,46 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         [EnumeratorCancellation] CancellationToken ct)
     {
         var chatResponsesEnumerable = this.ProcessChatResponseStreamAsync(responseStream, ct: ct);
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-        await using var chatResponsesEnumerator = chatResponsesEnumerable.GetAsyncEnumerator(ct);
-#pragma warning restore CA2007
-        while (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
+        IAsyncEnumerator<GeminiChatMessageContent> chatResponsesEnumerator = null!;
+        try
         {
-            var messageContent = chatResponsesEnumerator.Current;
-            if (state.AutoInvoke && messageContent.ToolCalls is not null)
+            chatResponsesEnumerator = chatResponsesEnumerable.GetAsyncEnumerator(ct);
+            while (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
             {
-                if (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
+                var messageContent = chatResponsesEnumerator.Current;
+                if (state.AutoInvoke && messageContent.ToolCalls is not null)
                 {
-                    // We disable auto-invoke because we have more than one message in the stream.
-                    // This scenario should not happen but I leave it as a precaution
-                    state.AutoInvoke = false;
-                    // We return the first message
-                    yield return this.GetStreamingChatContentFromChatContent(messageContent);
-                    // We return the second message
-                    messageContent = chatResponsesEnumerator.Current;
-                    yield return this.GetStreamingChatContentFromChatContent(messageContent);
-                    continue;
+                    if (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        // We disable auto-invoke because we have more than one message in the stream.
+                        // This scenario should not happen but I leave it as a precaution
+                        state.AutoInvoke = false;
+                        // We return the first message
+                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                        // We return the second message
+                        messageContent = chatResponsesEnumerator.Current;
+                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                        continue;
+                    }
+
+                    // If function call was returned there is no more data in stream
+                    state.LastMessage = messageContent;
+                    yield break;
                 }
 
-                // If function call was returned there is no more data in stream
-                state.LastMessage = messageContent;
-                yield break;
+                // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-invoke is already false
+                state.AutoInvoke = false;
+
+                // If we don't want to attempt to invoke any functions, just return the result.
+                yield return this.GetStreamingChatContentFromChatContent(messageContent);
             }
-
-            // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-invoke is already false
-            state.AutoInvoke = false;
-
-            // If we don't want to attempt to invoke any functions, just return the result.
-            yield return this.GetStreamingChatContentFromChatContent(messageContent);
+        }
+        finally
+        {
+            if (chatResponsesEnumerator != null)
+            {
+                await chatResponsesEnumerator.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 
