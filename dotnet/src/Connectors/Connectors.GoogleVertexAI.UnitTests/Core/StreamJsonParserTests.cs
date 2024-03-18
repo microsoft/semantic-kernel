@@ -56,7 +56,7 @@ public sealed class StreamJsonParserTests
     }
 
     [Fact]
-    public async Task ParseWhenJsonStartsWithClosedBracketThrowsInvalidOperationAsync()
+    public async Task ParseWhenStreamStartsWithClosedBracketThrowsInvalidOperationAsync()
     {
         // Arrange
         var parser = new StreamJsonParser();
