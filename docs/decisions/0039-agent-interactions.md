@@ -89,7 +89,7 @@ GroupChat|AgentNexus|Nexus|AutoGen.Net|AutoGen.Net nexus implementation
 
 **1. Manual Agent Invocation and History Retrieval**
 
-Nothing prevents the caller from deciding agent invocation order and completion.  The entire history may also be retrieved, if desired.
+Nothing prevents the caller from deciding agent invocation order and completion.  Also, the entire history may also be retrieved if desired.
 
 ```c#
 ChatAgent agent1 = ... // SK IChatCompletionService
@@ -100,6 +100,7 @@ AgentChat chat = new();
 await WriteMessagesAsync(chat.InvokeAsync(agent1, "input"));
 await WriteMessagesAsync(chat.InvokeAsync(agent2));
 await WriteMessagesAsync(chat.InvokeAsync(agent3));
+
 await WriteMessagesAsync(chat.GetHistoryAsync());
 await WriteMessagesAsync(chat.GetHistoryAsync(agent2));
 ```
@@ -128,7 +129,7 @@ AgentChat chat =
 // Multi-turn interactions
 await WriteMessagesAsync(chat.InvokeAsync("input"));
 
-// Strategy selection with additional agent
+// Strategy selection with additional agent in unknown position
 chat.AddAgent(agent3);
 await WriteMessagesAsync(chat.InvokeAsync());
 
@@ -139,7 +140,7 @@ await WriteMessagesAsync(chat.InvokeAsync(agent3));
 await WriteMessagesAsync(chat.InvokeAsync(agent3, isJoining: false));
 ```
 
-**3. Multi-turn Completion Criteria**
+**3. Completion Criteria**
 
 A common case is to invoke a series of agent interactions until a goal has been achieved.  Completion may be manually reset to allow invocation to continue.
 
