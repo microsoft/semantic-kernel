@@ -121,12 +121,12 @@ internal sealed class StreamJsonParser
 
         private void AppendLine(string line)
         {
-            switch (this._jsonBuilder.Length)
+            switch (this._jsonBuilder)
             {
-                case 0 when this._startBracketIndex >= 0:
+                case { Length: 0 } when this._startBracketIndex >= 0:
                     this._jsonBuilder.Append(line.Substring(this._startBracketIndex));
                     break;
-                case > 0:
+                case { Length: > 0 }:
                     this._jsonBuilder.Append(line);
                     break;
             }
