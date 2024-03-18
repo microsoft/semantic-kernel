@@ -289,7 +289,7 @@ async def test_chat_history_with_message_type():
     )
     assert (
         rendered
-        == 'system stuff<message role="assistant" type="OpenAIChatMessageContent">I am an AI assistant</message>What can you do?'
+        == 'system stuff<message role="assistant" type="OpenAIChatMessageContent">I am an AI assistant</message>What can you do?'  # noqa: E501
     )
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered, message_type="OpenAIChatMessageContent")
@@ -318,7 +318,7 @@ async def test_chat_history_with_message_type_differs():
     )
     assert (
         rendered
-        == 'system stuff<message role="assistant" type="AzureChatMessageContent">I am an AI assistant</message>What can you do?'
+        == 'system stuff<message role="assistant" type="AzureChatMessageContent">I am an AI assistant</message>What can you do?'  # noqa: E501
     )
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered, message_type="OpenAIChatMessageContent")

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class ChatMessageContentBase(RootModel):
     """Base class for all chat message content types.
 
-    This class is used to dynamically create a certain type of ChatMessageContent, baed on the type field.
+    This class is used to dynamically create a certain type of ChatMessageContent, based on the type field.
     Please use this class always through the classmethods, from_dict, from_fields or from_element.
     If you don't do that, you need to manually rebuild the model with the model_rebuild method,
     after importing the ChatMessageContent and all it's subclasses. And you then have to use the root field.
@@ -46,8 +46,6 @@ class ChatMessageContentBase(RootModel):
         Returns:
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
-        from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent  # noqa: F401
-        from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent  # noqa: F401
         from semantic_kernel.contents.chat_message_content import ChatMessageContent  # noqa: F401
 
         cls.model_rebuild()
