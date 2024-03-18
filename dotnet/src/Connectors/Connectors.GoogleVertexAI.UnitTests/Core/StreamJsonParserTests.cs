@@ -56,6 +56,23 @@ public sealed class StreamJsonParserTests
     }
 
     [Fact]
+    public async Task ParseWhenJsonStartsWithClosedBracketThrowsInvalidOperationAsync()
+    {
+        // Arrange
+        var parser = new StreamJsonParser();
+        var stream = new MemoryStream();
+        string input = "}{}";
+        WriteToStream(stream, input);
+
+        // Act
+        // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+        async Task Act() => await parser.ParseAsync(stream).ToListAsync();
+
+        // Assert
+        await Assert.ThrowsAnyAsync<InvalidOperationException>(Act);
+    }
+
+    [Fact]
     public async Task ParseWhenStreamIsEmptyReturnsEmptyEnumerableAsync()
     {
         // Arrange
