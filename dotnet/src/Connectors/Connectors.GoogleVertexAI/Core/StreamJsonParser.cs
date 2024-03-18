@@ -176,7 +176,7 @@ internal sealed class StreamJsonParser
             switch (this._currentCharacter)
             {
                 case '{':
-                    if (++this._bracketsCount == 1 && this._startBracketIndex == -1)
+                    if (++this._bracketsCount == 1)
                     {
                         this._startBracketIndex = index;
                     }
