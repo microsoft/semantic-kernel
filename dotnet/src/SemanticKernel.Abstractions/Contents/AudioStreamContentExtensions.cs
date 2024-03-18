@@ -19,15 +19,14 @@ public static class AudioStreamContentExtensions
     {
         if (content is null) { throw new ArgumentNullException(nameof(content)); }
 
-        var originalPosition = content.Stream.Position;
+        var stream = Stream.Synchronized(content.Stream);
+        using var binaryReader = new BinaryReader(stream, Encoding.Default, leaveOpen: true);
+        AudioContent audioContent = new(binaryReader.ReadBytes((int)stream.Length));
 
-        using var binaryReader = new BinaryReader(content.Stream, Encoding.Default, leaveOpen: true);
-        var audioContent = new AudioContent(binaryReader.ReadBytes((int)content.Stream.Length));
-
-        // reset to original position if seek is supported
-        if (content.Stream.CanSeek)
+        // reset to 0 position if seek is supported
+        if (stream.CanSeek)
         {
-            content.Stream.Seek(originalPosition, SeekOrigin.Begin);
+            stream.Seek(0, SeekOrigin.Begin);
         }
 
         return audioContent;
