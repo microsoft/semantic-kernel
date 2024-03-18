@@ -46,9 +46,11 @@ class ChatMessageContentBase(RootModel):
         Returns:
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
-        from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent  # noqa: F401 I001
-        from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent  # noqa: F401 I001
-        from semantic_kernel.contents.chat_message_content import ChatMessageContent  # noqa: F401 I001
+        from semantic_kernel.connectors.ai.open_ai.contents import (  # noqa: F401, I001, E501
+            AzureChatMessageContent,
+            OpenAIChatMessageContent,
+        )
+        from semantic_kernel.contents.chat_message_content import ChatMessageContent  # noqa: F401, I001, E501
 
         cls.model_rebuild()
         if "type" not in kwargs:
