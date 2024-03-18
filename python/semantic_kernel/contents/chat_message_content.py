@@ -6,6 +6,7 @@ from xml.etree.ElementTree import Element
 from defusedxml import ElementTree
 
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -34,6 +35,7 @@ class ChatMessageContent(KernelContent):
     role: ChatRole
     content: Optional[str] = None
     encoding: Optional[str] = None
+    finish_reason: Optional[FinishReason] = None
 
     def __str__(self) -> str:
         return self.content or ""
