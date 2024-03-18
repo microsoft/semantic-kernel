@@ -99,10 +99,11 @@ internal sealed class StreamJsonParser
 
                 if (this._isCompleteJson)
                 {
-                    if (i + 1 < line.Length)
+                    int nextIndex = i + 1;
+                    if (nextIndex < line.Length)
                     {
-                        this._lastLine = line.Substring(i + 1);
-                        this.AppendLine(line.Substring(0, i + 1));
+                        this._lastLine = line.Substring(nextIndex);
+                        this.AppendLine(line.Substring(0, nextIndex));
                     }
                     else
                     {
