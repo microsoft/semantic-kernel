@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 /**
  * Provides a history of messages between the User, Assistant and System
@@ -25,7 +26,17 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * chat history
      */
     public ChatHistory() {
-        this(DEFAULT_CHAT_SYSTEM_PROMPT);
+        this(true);
+    }
+
+    /**
+     * Constructor that can add the default system instructions to the chat history.
+     *
+     * @param addDefaultSystemPrompt If true, the default system prompt will be added to the chat,
+     *                               otherwise empty
+     */
+    public ChatHistory(boolean addDefaultSystemPrompt) {
+        this(addDefaultSystemPrompt ? DEFAULT_CHAT_SYSTEM_PROMPT : null);
     }
 
     /**
@@ -33,13 +44,15 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      *
      * @param instructions The instructions to add to the chat history
      */
-    public ChatHistory(String instructions) {
+    public ChatHistory(@Nullable String instructions) {
         this.chatMessageContents = new ArrayList<>();
-        this.chatMessageContents.add(
-            new ChatMessageContent<>(
-                AuthorRole.ASSISTANT,
-                instructions == null || instructions.isEmpty() ? DEFAULT_CHAT_SYSTEM_PROMPT
-                    : instructions));
+        if (instructions != null) {
+
+            this.chatMessageContents.add(
+                new ChatMessageContent<>(
+                    AuthorRole.SYSTEM,
+                    instructions));
+        }
     }
 
     /**
