@@ -748,8 +748,18 @@ class Kernel(KernelBaseModel):
         if not text:
             raise PluginInitializationError("The input YAML string is empty")
 
-        data = yaml.safe_load(text)
-        prompt_template_config = PromptTemplateConfig(**data)
+        try:
+            data = yaml.safe_load(text)
+        except yaml.YAMLError as exc:
+            raise PluginInitializationError(f"Error loading YAML: {exc}") from exc
+
+        if not isinstance(data, dict):
+            raise PluginInitializationError("The YAML content must represent a dictionary")
+
+        try:
+            prompt_template_config = PromptTemplateConfig(**data)
+        except TypeError as exc:
+            raise PluginInitializationError(f"Error initializing PromptTemplateConfig: {exc}") from exc
 
         return self.create_function_from_prompt(
             function_name=prompt_template_config.name,

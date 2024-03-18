@@ -461,6 +461,11 @@ def test_create_function_from_yaml_empty_string(kernel: Kernel):
         kernel.create_function_from_yaml("", "plugin_name")
 
 
+def test_create_function_from_yaml_malformed_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("not yaml dict", "plugin_name")
+
+
 def test_create_function_from_valid_yaml(kernel: Kernel):
     plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
 
