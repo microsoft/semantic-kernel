@@ -214,7 +214,6 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
         async Task Act() => await parser.ParseAsync(stream, validateJson: true).ToListAsync();
 
         // Assert
