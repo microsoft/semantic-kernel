@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Azure OpenAI Image generation
 /// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
 /// </summary>
-[Experimental("SKEXP0012")]
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAIClient _client;
@@ -131,9 +131,8 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     {
         OpenAIClientOptions.ServiceVersion version = apiVersion switch
         {
-            // Dalle-E-3 is only supported in 2023-12-01-preview
-            "2023-12-01-preview" => OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview,
-            _ => OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview
+            // DALL-E 3 is only supported post 2023-12-01-preview
+            _ => OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview
         };
 
         var options = new OpenAIClientOptions(version)

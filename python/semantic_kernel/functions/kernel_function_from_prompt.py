@@ -5,9 +5,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Unio
 
 from pydantic import Field, ValidationError, model_validator
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -20,10 +18,11 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
@@ -43,7 +42,7 @@ PROMPT_RETURN_PARAM = KernelParameterMetadata(
 class KernelFunctionFromPrompt(KernelFunction):
     """Semantic Kernel Function from a prompt."""
 
-    prompt_template: KernelPromptTemplate
+    prompt_template: PromptTemplateBase
     prompt_execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     def __init__(
@@ -52,8 +51,8 @@ class KernelFunctionFromPrompt(KernelFunction):
         plugin_name: str,
         description: Optional[str] = None,
         prompt: Optional[str] = None,
-        template_format: Optional[str] = "semantic-kernel",
-        prompt_template: Optional[KernelPromptTemplate] = None,
+        template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
+        prompt_template: Optional[PromptTemplateBase] = None,
         prompt_template_config: Optional[PromptTemplateConfig] = None,
         prompt_execution_settings: Optional[
             Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
@@ -91,7 +90,7 @@ through prompt_template_config or in the prompt_template."
                     template=prompt,
                     template_format=template_format,
                 )
-            prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
+            prompt_template = TEMPLATE_FORMAT_MAP[template_format](prompt_template_config=prompt_template_config)
 
         try:
             metadata = KernelFunctionMetadata(
@@ -182,6 +181,7 @@ through prompt_template_config or in the prompt_template."
             service, ChatCompletionClientBase
         ):
             kwargs["kernel"] = kernel
+            kwargs["arguments"] = arguments
 
         try:
             completions = await service.complete_chat(
@@ -248,6 +248,7 @@ through prompt_template_config or in the prompt_template."
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
+                arguments=arguments,
             ):
                 yield content
             return
@@ -269,6 +270,7 @@ through prompt_template_config or in the prompt_template."
         service: ChatCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
+        arguments: KernelArguments,
     ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
         """Handles the chat service call."""
 
@@ -278,6 +280,7 @@ through prompt_template_config or in the prompt_template."
             service, ChatCompletionClientBase
         ):
             kwargs["kernel"] = kernel
+            kwargs["arguments"] = arguments
 
         chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
         try:
@@ -291,7 +294,7 @@ through prompt_template_config or in the prompt_template."
             return  # Exit after processing all iterations
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
     async def _handle_complete_text_stream(
         self,
@@ -306,7 +309,7 @@ through prompt_template_config or in the prompt_template."
             return
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"error": e})
+            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
     def add_default_values(self, arguments: "KernelArguments") -> KernelArguments:
         """Gathers the function parameters from the arguments."""

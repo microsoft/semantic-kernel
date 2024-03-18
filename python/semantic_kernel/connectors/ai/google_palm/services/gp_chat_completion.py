@@ -63,7 +63,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         chat_history: ChatHistory,
         settings: GooglePalmPromptExecutionSettings,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> List[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -114,7 +114,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         messages: List[Tuple[str, str]],
         settings: GooglePalmPromptExecutionSettings,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         raise NotImplementedError("Google Palm API does not currently support streaming")
 

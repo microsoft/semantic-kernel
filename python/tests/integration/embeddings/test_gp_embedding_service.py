@@ -6,6 +6,7 @@ import sys
 import pytest
 
 import semantic_kernel as sk
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 
 if sys.version_info >= (3, 9):
@@ -21,9 +22,7 @@ pytestmark = [
 
 
 @pytest.mark.asyncio
-async def test_gp_embedding_service(create_kernel, get_gp_config):
-    kernel = create_kernel
-
+async def test_gp_embedding_service(kernel: Kernel, get_gp_config):
     api_key = get_gp_config
 
     palm_text_embed = sk_gp.GooglePalmTextEmbedding("models/embedding-gecko-001", api_key)
