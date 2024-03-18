@@ -1,0 +1,101 @@
+classDiagram
+    Agent
+    Agent <|-- KernelAgent
+    Agent <|-- NexusAgent
+    %% KernelAgent <|-- LocalAgent
+    KernelAgent <|-- ChatCompletionAgent
+    KernelAgent <|-- GptAssistantAgent
+
+    AgentChannel~Agent~
+    AgentChannel <|-- LocalChannel~Agent~
+    AgentChannel <|-- GptAssistantChannel~GptAssistantAgent~
+
+    AgentNexus
+    AgentNexus <|-- AgentChat
+    AgentNexus <|-- GroupChat
+
+    class Agent {
+        <<Abstract>>        
+        +String Id
+        +String? Name
+        +String? Description
+        ~#Type ChannelType*
+        ~#Task~AgentChannel~ CreateChannelAsync()*
+    }
+    class NexusAgent {
+        +AgentNexus Agent
+        -IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatAgent agent, ChatHistory chat)$
+    }
+    class KernelAgent {
+        <<Abstract>>        
+        +Kernel Kernel
+    }
+    ChatCompletionAgent --> LocalChannel
+    class ChatCompletionAgent {
+        +String? Instructions
+        ~#Type ChannelType
+        ~#Task~AgentChannel~ CreateChannelAsync()
+        -IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatAgent agent, ChatHistory chat)$
+    }
+
+    GptAssistantAgent --> GptAssistantChannel
+    class GptAssistantAgent {
+        <<Final>>
+        -AssistantClient _client
+        Assistant _assistant
+        +String? Instructions
+        ~#Type ChannelType
+        ~#Task~AgentChannel~ CreateChannelAsync()
+    }
+
+    class AgentChannel {
+        <<Abstract>>
+        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent, ChatMessageContent? input = null)*
+        ~#IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()*
+        ~#Task RecieveAsync(IEnumerable<ChatMessageContent> history)*
+    }
+
+    class LocalChannel {
+        <<Final>>
+        -AgentInvocationCallback _invoker
+        -ChatHistory _chat
+        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent, ChatMessageContent? input = null)
+        ~#IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()
+        ~#Task RecieveAsync(IEnumerable<ChatMessageContent> history)
+    }
+
+    class GptAssistantChannel {
+        <<Final>>
+        -AssistantClient _client
+        -int _threadId
+        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent, ChatMessageContent? input = null)
+        ~#IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()
+        ~#Task RecieveAsync(IEnumerable<ChatMessageContent> history)
+    }
+
+    AgentNexus o-- AgentChannel
+    class AgentNexus {
+        <<Abstract>>
+        -Dictionary~Type, AgentChannel~ _agentChannels
+        ~ChatHistory History
+        +IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync(Agent? agent = null)
+        #IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent, ChatMessageContent? input = null)
+        -Task~AgentChannel~ GetChannelAsync(Agent agent)
+    }
+
+    AgentChat o-- Agent
+    class AgentChat {
+        +IReadOnlyList<Agent> Agents
+        +ExecutionSettings ExecutionSettings
+        +bool IsComplete
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync()
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(string? input = null)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(ChatMessageContent? input = null)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent, string? input = null)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent, ChatMessageContent? input = null)
+    }
+
+    class GroupChat {
+        <<AutoGen>>
+    }
+    
