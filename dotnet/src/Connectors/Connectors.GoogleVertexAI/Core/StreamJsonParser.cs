@@ -185,7 +185,7 @@ internal sealed class StreamJsonParser
                 case '}':
                     if (--this._bracketsCount < 0)
                     {
-                        throw new InvalidOperationException("Invalid JSON: too many closing brackets.");
+                        throw new InvalidOperationException("Invalid JSON in stream.");
                     }
 
                     if (this._bracketsCount == 0)
