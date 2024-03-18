@@ -72,40 +72,50 @@ internal sealed class StreamJsonParser
                     this._lastLine = null;
                 }
 
-                for (int i = 0; i < line!.Length; i++)
+                if (this.ProcessLineUntilCompleteJson(line!))
                 {
-                    this._currentCharacter = line[i];
-
-                    if (this.IsEscapedCharacterInsideQuotes())
-                    {
-                        continue;
-                    }
-
-                    this.DetermineIfQuoteStartOrEnd();
-                    this.HandleCurrentCharacterOutsideQuotes(i);
-
-                    if (this._isCompleteJson)
-                    {
-                        if (i + 1 < line.Length)
-                        {
-                            this._lastLine = line.Substring(i + 1);
-                            this.AppendLine(line.Substring(0, i + 1));
-                        }
-                        else
-                        {
-                            this.AppendLine(line);
-                        }
-
-                        return this.GetJsonString(validateJson);
-                    }
-
-                    this.ResetEscapeFlag();
+                    return this.GetJsonString(validateJson);
                 }
 
-                this.AppendLine(line);
+                this.AppendLine(line!);
             }
 
             return null;
+        }
+
+        private bool ProcessLineUntilCompleteJson(string line)
+        {
+            for (int i = 0; i < line!.Length; i++)
+            {
+                this._currentCharacter = line[i];
+
+                if (this.IsEscapedCharacterInsideQuotes())
+                {
+                    continue;
+                }
+
+                this.DetermineIfQuoteStartOrEnd();
+                this.HandleCurrentCharacterOutsideQuotes(i);
+
+                if (this._isCompleteJson)
+                {
+                    if (i + 1 < line.Length)
+                    {
+                        this._lastLine = line.Substring(i + 1);
+                        this.AppendLine(line.Substring(0, i + 1));
+                    }
+                    else
+                    {
+                        this.AppendLine(line);
+                    }
+
+                    return true;
+                }
+
+                this.ResetEscapeFlag();
+            }
+
+            return false;
         }
 
         private void ResetState()
