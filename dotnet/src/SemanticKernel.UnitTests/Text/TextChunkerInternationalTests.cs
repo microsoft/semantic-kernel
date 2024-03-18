@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
-using Xunit;
 using VerifyXunit;
+using Xunit;
 using static Microsoft.SemanticKernel.Text.TextChunker;
-using System.Threading.Tasks;
 
 namespace SemanticKernel.UnitTests.Text;
 public sealed class TextChunkerInternationalTests
