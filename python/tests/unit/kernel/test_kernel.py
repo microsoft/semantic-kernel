@@ -456,6 +456,18 @@ def test_create_function_from_prompt_succeeds(kernel: Kernel):
     assert len(func.parameters) == 2
 
 
+def test_create_function_from_yaml_empty_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("", "plugin_name")
+
+
+def test_create_function_from_valid_yaml(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_yaml_prompt_directory(plugins_directory, "TestFunctionYaml")
+    assert plugin is not None
+
+
 # endregion
 # region Functions
 

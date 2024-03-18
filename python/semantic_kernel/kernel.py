@@ -8,6 +8,7 @@ import os
 from copy import copy
 from typing import Any, AsyncIterable, Callable, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union
 
+import yaml
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -550,6 +551,35 @@ class Kernel(KernelBaseModel):
 
         return None
 
+    def import_plugin_from_yaml_prompt_directory(
+        self, parent_directory: str, plugin_directory_name: str
+    ) -> KernelPlugin:
+        """
+        Import a plugin from a directory containing YAML prompt templates.
+
+        Args:
+            parent_directory (str): The parent directory
+            plugin_directory_name (str): The plugin directory name
+
+        Returns:
+            KernelPlugin: The imported plugin
+        """
+        plugin_directory = self._validate_plugin_directory(
+            parent_directory=parent_directory, plugin_directory_name=plugin_directory_name
+        )
+
+        yaml_files = glob.glob(os.path.join(plugin_directory, "*.yaml"))
+
+        functions = []
+
+        for yaml_file in yaml_files:
+            with open(yaml_file, "r") as file:
+                yaml_content = file.read()
+                functions.append(self.create_function_from_yaml(yaml_content, plugin_name=plugin_directory_name))
+
+        plugin = KernelPlugin(name=plugin_directory_name, functions=functions)
+        return plugin
+
     def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         """
         Import a plugin from a directory containing prompt templates.
@@ -558,18 +588,15 @@ class Kernel(KernelBaseModel):
             parent_directory (str): The parent directory
             plugin_directory_name (str): The plugin directory name
         """
-        CONFIG_FILE = "config.json"
-        PROMPT_FILE = "skprompt.txt"
 
-        validate_plugin_name(plugin_directory_name)
-
-        plugin_directory = os.path.join(parent_directory, plugin_directory_name)
-        plugin_directory = os.path.abspath(plugin_directory)
-
-        if not os.path.exists(plugin_directory):
-            raise PluginInitializationError(f"Plugin directory does not exist: {plugin_directory_name}")
+        plugin_directory = self._validate_plugin_directory(
+            parent_directory=parent_directory, plugin_directory_name=plugin_directory_name
+        )
 
         functions = []
+
+        CONFIG_FILE = "config.json"
+        PROMPT_FILE = "skprompt.txt"
 
         directories = glob.glob(plugin_directory + "/*/")
         for directory in directories:
@@ -609,6 +636,30 @@ class Kernel(KernelBaseModel):
         plugin = KernelPlugin(name=plugin_directory_name, functions=functions)
 
         return plugin
+
+    def _validate_plugin_directory(self, parent_directory: str, plugin_directory_name: str) -> str:
+        """Validate the plugin name and that the plugin directory exists.
+
+        Args:
+            parent_directory (str): The parent directory
+            plugin_directory_name (str): The plugin directory name
+
+        Returns:
+            str: The plugin directory.
+
+        Raises:
+            PluginInitializationError: If the plugin directory does not exist.
+            PluginInvalidNameError: If the plugin name is invalid.
+        """
+        validate_plugin_name(plugin_directory_name)
+
+        plugin_directory = os.path.join(parent_directory, plugin_directory_name)
+        plugin_directory = os.path.abspath(plugin_directory)
+
+        if not os.path.exists(plugin_directory):
+            raise PluginInitializationError(f"Plugin directory does not exist: {plugin_directory_name}")
+
+        return plugin_directory
 
     # endregion
     # region Functions
@@ -680,6 +731,32 @@ class Kernel(KernelBaseModel):
         self.add_plugin(plugin_name or function.plugin_name, [function])
 
         return function
+
+    def create_function_from_yaml(self, text: str, plugin_name: str) -> KernelFunction:
+        """
+        Import a plugin from a YAML string.
+
+        Args:
+            text (str): The YAML string
+
+        Returns:
+            KernelFunction: The created Kernel Function
+
+        Raises:
+            PluginInitializationError: If the input YAML string is empty
+        """
+        if not text:
+            raise PluginInitializationError("The input YAML string is empty")
+
+        data = yaml.safe_load(text)
+        prompt_template_config = PromptTemplateConfig(**data)
+
+        return self.create_function_from_prompt(
+            function_name=prompt_template_config.name,
+            plugin_name=plugin_name,
+            description=prompt_template_config.description,
+            prompt_template_config=prompt_template_config,
+        )
 
     def register_function_from_method(
         self,
