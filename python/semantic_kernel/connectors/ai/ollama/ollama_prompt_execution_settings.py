@@ -18,6 +18,7 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
         # Despite the `serialization_alias` above, it seems like the 'model' is often not set.
         if 'model' not in settings:
             settings['model'] = self.ai_model_id
+        settings.update(kwargs)
         return settings
 
 

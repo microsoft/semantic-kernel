@@ -56,7 +56,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = False
         async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
+            async with session.post(str(self.url), json=settings.prepare_settings_dict(model=self.ai_model_id)) as response:
                 response.raise_for_status()
                 response_object = await response.json()
                 return [
@@ -90,7 +90,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = True
         async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
+            async with session.post(str(self.url), json=settings.prepare_settings_dict(model=self.ai_model_id)) as response:
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)

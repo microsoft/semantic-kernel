@@ -48,5 +48,5 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
                 ) as response:
                     response.raise_for_status()
                     response = await response.json()
-                    result.append(response['embedding'])
+                    result.append(response["embedding"])
         return array(result)
