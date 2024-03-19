@@ -16,7 +16,7 @@ Today, SK uses the current `IAIServiceSelector` implementation to determine whic
 The `IAIServiceSelector` implementation will return either a chat completion service, text generation service or it could return a service that implements both.
 The prompt will be run using chat completion by default and falls back to text generation as the alternate option.
 
-The behavior supersedes that description in [ADR-0038](0038-completion-service-selection.md)
+The behavior supersedes that description in [ADR-0015](0015-completion-service-selection.md)
 
 ## Decision Drivers
 
