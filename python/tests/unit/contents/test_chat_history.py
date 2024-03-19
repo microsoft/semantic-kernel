@@ -5,7 +5,7 @@ import pytest
 
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.contents.chat_history import HISTORY_SHORT_TAG, ChatHistory
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.exceptions import ContentInitializationError
@@ -214,7 +214,7 @@ def test_deserialize_invalid_json_raises_exception():
 
 def test_chat_history_to_prompt_empty(chat_history: ChatHistory):
     prompt = str(chat_history)
-    assert prompt == HISTORY_SHORT_TAG
+    assert prompt == "<chat_history />"
 
 
 def test_chat_history_to_prompt(chat_history: ChatHistory):

@@ -17,14 +17,6 @@ logger = logging.getLogger(__name__)
 
 ROOT_KEY_MESSAGE: Final[str] = "message"
 ROOT_KEY_HISTORY: Final[str] = "chat_history"
-MESSAGE_START_TAG: Final[str] = f"<{ROOT_KEY_MESSAGE}"
-MESSAGE_END_TAG: Final[str] = f"</{ROOT_KEY_MESSAGE}>"
-MESSAGE_END_TAG_LEN: Final[int] = len(MESSAGE_END_TAG)
-HISTORY_START_TAG: Final[str] = f"<{ROOT_KEY_HISTORY}"
-HISTORY_END_TAG: Final[str] = f"</{ROOT_KEY_HISTORY}>"
-HISTORY_SHORT_TAG: Final[str] = f"<{ROOT_KEY_HISTORY} />"
-HISTORY_END_TAG_LEN: Final[int] = len(HISTORY_END_TAG)
-HISTORY_SHORT_TAG_LEN: Final[int] = len(HISTORY_SHORT_TAG)
 
 
 class ChatHistory(KernelBaseModel):
@@ -176,7 +168,7 @@ class ChatHistory(KernelBaseModel):
         """Return an iterator over the messages in the history."""
         return iter(self.messages)
 
-    def __eq__(self, other: "ChatHistory") -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check if two ChatHistory instances are equal."""
         if not isinstance(other, ChatHistory):
             return False
