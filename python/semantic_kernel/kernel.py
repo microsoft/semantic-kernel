@@ -12,10 +12,7 @@ from typing import Any, AsyncIterable, Callable, Literal, Type, TypeVar
 import yaml
 from pydantic import Field, field_validator
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
@@ -55,7 +52,7 @@ from semantic_kernel.utils.validation import validate_plugin_name
 
 T = TypeVar("T")
 
-ALL_SERVICE_TYPES = TextCompletionClientBase | ChatCompletionClientBase | EmbeddingGeneratorBase
+ALL_SERVICE_TYPES = "TextCompletionClientBase | ChatCompletionClientBase | EmbeddingGeneratorBase"
 
 logger: logging.Logger = logging.getLogger(__name__)
 
