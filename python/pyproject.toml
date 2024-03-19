@@ -87,6 +87,7 @@ azure-core = "^1.28.0"
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
 torch = "^2.2.0"
+tiktoken = "^0.6.0"
 
 [tool.poetry.group.tests]
 optional = true

@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import os
 
+import tiktoken
+
 from semantic_kernel.text import (
     split_markdown_lines,
     split_markdown_paragraph,
@@ -561,4 +563,18 @@ def test_split_md_on_newlines():
     ]
     max_token_per_line = 15
     split = split_markdown_paragraph(test, max_token_per_line)
+    assert expected == split
+
+
+def gpt4_token_counter(input_text):
+    tokenizer = tiktoken.encoding_for_model("gpt-4")
+    return len(tokenizer.encode(input_text))
+
+
+def test_can_split_paragraphs_with_ideographic_punctuation_and_gpt_token_counter():
+    input_text = "田中の猫はかわいいですね。日本語上手。"
+    expected = ["田中の猫はかわいいですね。", "日本語上手。"]
+
+    split = split_plaintext_lines(input_text, 16, gpt4_token_counter)
+
     assert expected == split
