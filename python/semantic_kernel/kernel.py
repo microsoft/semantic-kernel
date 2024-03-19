@@ -566,13 +566,13 @@ class Kernel(KernelBaseModel):
         Args:
             parent_directory (str): The parent directory path where the plugin directory resides. This should be
                 an absolute path to ensure correct file resolution.
-            plugin_directory_name (str): The name of the directory that contains the plugin's YAML files and 
-                subdirectories. This directory name is used as the plugin name and should be directly under the 
+            plugin_directory_name (str): The name of the directory that contains the plugin's YAML files and
+                subdirectories. This directory name is used as the plugin name and should be directly under the
                 parent_directory.
 
         Returns:
-            KernelPlugin: An instance of KernelPlugin containing all the KernelFunction objects created from 
-                the YAML files and directories found in the specified plugin directory. The name of the 
+            KernelPlugin: An instance of KernelPlugin containing all the KernelFunction objects created from
+                the YAML files and directories found in the specified plugin directory. The name of the
                 plugin is set to the plugin_directory_name.
 
         Raises:
@@ -592,8 +592,8 @@ class Kernel(KernelBaseModel):
                 |--- skprompt.txt
                 |--- config.json
 
-            Calling `import_plugin("/path/to", "MyPlugins")` will create a KernelPlugin object named 
-                "MyPlugins", containing KernelFunction objects for `pluginA.yaml`, `pluginB.yaml`, 
+            Calling `import_plugin("/path/to", "MyPlugins")` will create a KernelPlugin object named
+                "MyPlugins", containing KernelFunction objects for `pluginA.yaml`, `pluginB.yaml`,
                 `Directory1`, and `Directory2`, each initialized with their respective configurations.
         """
         plugin_directory = self._validate_plugin_directory(
