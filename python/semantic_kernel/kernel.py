@@ -53,6 +53,7 @@ from semantic_kernel.utils.validation import validate_plugin_name
 T = TypeVar("T")
 
 ALL_SERVICE_TYPES = "TextCompletionClientBase | ChatCompletionClientBase | EmbeddingGeneratorBase"
+COMPLETION_TYES = "TextCompletionClientBase | ChatCompletionClientBase"
 
 logger: logging.Logger = logging.getLogger(__name__)
 

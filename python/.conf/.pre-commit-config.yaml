@@ -31,10 +31,10 @@ repos:
     hooks:
     - id: mypy
       name: mypy
-      entry: poetry -C python/ run python -m mypy --config-file=python/mypy.ini python/semantic_kernel
+      entry: poetry -C python/ run python -m mypy --no-namespace-packages --config-file=python/mypy.ini 
       language: system
       types: [python]
-      pass_filenames: false
+      pass_filenames: true
   - repo: local
     hooks:
     - id: tests
@@ -42,4 +42,4 @@ repos:
       entry: poetry -C python/ run coverage run -m pytest python/tests/unit
       language: system
       types: [python]
-      pass_filenames: false
+      pass_filenames: true
