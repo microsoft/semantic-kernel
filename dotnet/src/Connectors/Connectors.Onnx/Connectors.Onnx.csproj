@@ -5,7 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Onnx</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>net6.0</TargetFramework> <!-- TODO: Support netstandard2.0 once replacement for FastBertTokenizer available -->
-    <VersionSuffix>preview</VersionSuffix>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -13,7 +13,7 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <PropertyGroup>
-    <Title>Semantic Kernel - ONNX connectors</Title>
+    <Title>Semantic Kernel - ONNX Connectors</Title>
     <Description>Semantic Kernel connectors for the ONNX runtime. Contains clients for text embedding generation.</Description>
   </PropertyGroup>
 

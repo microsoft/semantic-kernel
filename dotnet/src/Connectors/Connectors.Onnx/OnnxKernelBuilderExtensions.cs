@@ -25,7 +25,7 @@ public static class OnnxKernelBuilderExtensions
         this IKernelBuilder builder,
         string onnxModelPath,
         string vocabPath,
-        BertOnnxOptions? options,
+        BertOnnxOptions? options = null,
         string? serviceId = null)
     {
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
@@ -46,7 +46,7 @@ public static class OnnxKernelBuilderExtensions
         this IKernelBuilder builder,
         Stream onnxModelStream,
         Stream vocabStream,
-        BertOnnxOptions? options,
+        BertOnnxOptions? options = null,
         string? serviceId = null)
     {
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
