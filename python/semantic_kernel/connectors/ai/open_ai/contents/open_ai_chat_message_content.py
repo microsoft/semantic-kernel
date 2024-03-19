@@ -2,7 +2,6 @@
 from typing import List, Optional
 from xml.etree.ElementTree import Element
 
-from defusedxml import ElementTree
 from openai.types.chat import ChatCompletion
 
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
@@ -40,7 +39,7 @@ class OpenAIChatMessageContent(ChatMessageContent):
         # Directly using the class name and the attribute name as strings
         return f"{ToolCall.__name__}.{ToolCall.id.__name__}"
 
-    def to_prompt(self, root_key: str) -> str:
+    def to_element(self, root_key: str) -> Element:
         """Convert the OpenAIChatMessageContent to a prompt.
 
         Returns:
@@ -56,7 +55,7 @@ class OpenAIChatMessageContent(ChatMessageContent):
         if self.tool_call_id:
             root.set("tool_call_id", self.tool_call_id)
         root.text = self.content or ""
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
+        return root
 
     @classmethod
     def from_element(cls, element: Element) -> "ChatMessageContent":
