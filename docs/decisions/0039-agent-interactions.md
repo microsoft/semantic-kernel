@@ -83,6 +83,8 @@ GroupChat|AgentNexus|Nexus|AutoGen.Net|AutoGen.Net nexus implementation
 
 ### Usage / Calling Pattern
 
+Let's explore the patterns for creating and using agents.
+
 `AgentChat` is a concrete `AgentNexus` that supports common calling patterns.
 
 > Note: All interaction occurs via the nexus.  There is no need (or ability) to invoke agent directly...ever.
@@ -238,6 +240,8 @@ or to retrieve an existing agent:
 > OPEN: `ToolCallBehavior` support?
 
 ### Building / Implementation Pattern
+
+Let's explore the patterns this design presents to an agent builder.
 
 **1. Any Agent**
 
