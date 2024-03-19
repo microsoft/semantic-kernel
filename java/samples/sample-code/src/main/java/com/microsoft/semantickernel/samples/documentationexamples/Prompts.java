@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.samples.documentation;
+package com.microsoft.semantickernel.samples.documentationexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
@@ -6,8 +6,6 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
-
-import java.util.Scanner;
 
 public class Prompts {
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
