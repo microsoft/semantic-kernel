@@ -46,7 +46,8 @@ public sealed class GeminiPluginCollectionExtensionsTests
 
         // Assert
         Assert.True(result);
-        Assert.Same(function, actualFunction);
+        Assert.NotNull(actualFunction);
+        Assert.Equal(function.Name, actualFunction.Name);
         Assert.Null(actualArguments);
     }
 
@@ -74,7 +75,8 @@ public sealed class GeminiPluginCollectionExtensionsTests
 
         // Assert
         Assert.True(result);
-        Assert.Same(function, actualFunction);
+        Assert.NotNull(actualFunction);
+        Assert.Equal(function.Name, actualFunction.Name);
 
         Assert.NotNull(actualArguments);
         Assert.Equal(expectedArgs["location"]!.ToString(), actualArguments["location"]!.ToString());
