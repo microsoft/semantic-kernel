@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import logging
 from typing import Dict, Mapping, Optional
 
@@ -10,7 +9,7 @@ from pydantic import Field, validate_call
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
-from semantic_kernel.connectors.telemetry import APP_INFO
+from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -50,6 +49,7 @@ class OpenAIConfigBase(OpenAIHandler):
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
             merged_headers.update(APP_INFO)
+        merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
         if not async_client:
             if not api_key:
