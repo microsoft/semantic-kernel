@@ -1,16 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-# TODO @jmj: Finish tests. Could use validaton that all settings from the YAML were actually used in invokation
-
 import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 
-# TODO @jmj: Move this to a .YAML file
 yaml_text = """
 name: GenerateStory
 template: |
@@ -27,8 +25,8 @@ input_variables:
 output_variable:
   description: The generated story.
 execution_settings:
-  gpt-3.5-turbo:
-    temperature: 0.6
+  default:
+    temperature: 0.5
 """.strip()
 
 kernel = sk.Kernel()
@@ -36,15 +34,17 @@ kernel = sk.Kernel()
 api_key, org_id = sk.openai_settings_from_dot_env()
 
 kernel.add_service(sk_oai.OpenAIChatCompletion(ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id))
+kernel.add_service(sk_oai.OpenAIChatCompletion(ai_model_id="gpt-4", api_key=api_key, org_id=org_id))
 
 
 async def main() -> None:
     chat_function: KernelFunction = kernel.create_function_from_prompt_yaml(yaml_text)
     arguments = KernelArguments(
+        # PromptExecutionSettings(service_id="gpt-3.5-turbo"),
         **{
             "topic": "Dogs",
             "length": 3,
-        }
+        },
     )
 
     result: FunctionResult = await kernel.invoke(chat_function, arguments)
