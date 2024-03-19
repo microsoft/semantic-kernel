@@ -411,7 +411,7 @@ sealed class GptAssistantChannel : AgentChannel<GptAssistantAgent>
         // and enumerate new messages for nexus processing
     }
 
-    protected internal override async Task RecieveAsync(
+    protected internal override async Task ReceiveAsync(
         IEnumerable<ChatMessageContent> history,
         CancellationToken cancellationToken)
     {
