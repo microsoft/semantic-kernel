@@ -226,9 +226,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAISearch.Un
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.HuggingFace.UnitTests", "src\Connectors\Connectors.HuggingFace.UnitTests\Connectors.HuggingFace.UnitTests.csproj", "{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.GoogleVertexAI", "src\Connectors\Connectors.GoogleVertexAI\Connectors.GoogleVertexAI.csproj", "{6578D31B-2CF3-4FF4-A845-7A0412FEB42E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Google", "src\Connectors\Connectors.Google\Connectors.Google.csproj", "{6578D31B-2CF3-4FF4-A845-7A0412FEB42E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.GoogleVertexAI.UnitTests", "src\Connectors\Connectors.GoogleVertexAI.UnitTests\Connectors.GoogleVertexAI.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Google.UnitTests", "src\Connectors\Connectors.Google.UnitTests\Connectors.Google.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\HomeAutomation\HomeAutomation.csproj", "{13429BD6-4C4E-45EC-81AD-30BAC380AA60}"
 EndProject
