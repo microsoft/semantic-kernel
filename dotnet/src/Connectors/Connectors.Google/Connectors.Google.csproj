@@ -16,7 +16,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Google Connectors</Title>
-    <Description>Semantic Kernel Connectors for Google generation platforms (GoogleAI/VertexAI). Contains generation and embedding services.</Description>
+    <Description>Semantic Kernel connectors for Google generation platforms (GoogleAI/VertexAI). Contains generation and embedding services.</Description>
   </PropertyGroup>
 
   <ItemGroup>
