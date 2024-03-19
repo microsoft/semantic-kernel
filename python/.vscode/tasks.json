@@ -30,7 +30,66 @@
                 }
             },
             "presentation": {
-                "reveal": "silent",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Python: Run Checks - PR",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run",
+                "pre-commit",
+                "run",
+                "-c",
+                ".conf/.pre-commit-config.yaml"
+            ],
+            "problemMatcher": {
+                "owner": "python",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            },
+            "presentation": {
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Python: Run Mypy",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run",
+                "pre-commit",
+                "run",
+                "-c",
+                ".conf/.pre-commit-config.yaml",
+                "-a",
+                "mypy"
+            ],
+            "problemMatcher": {
+                "owner": "python",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            },
+            "presentation": {
                 "panel": "shared"
             }
         },
@@ -39,7 +98,9 @@
             "type": "shell",
             "command": "poetry",
             "args": [
-                "install"
+                "install",
+                "--extras",
+                "all"
             ],
             "presentation": {
                 "reveal": "silent",
