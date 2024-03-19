@@ -21,19 +21,19 @@ IMPORTANT: Use only the available functions listed in the [AVAILABLE FUNCTIONS] 
 
 Here is an example of a valid $JSON_BLOB:
 {
-  "action": "functionName",
+  "action": "pluginName-functionName",
   "action_variables": {"parameterName": "some value", ...}
 }
 
 Here is another example of a valid $JSON_BLOB:
 {
-  "action": "_Function_.Name",
+  "action": "Plugin-Function",
   "action_variables": {"parameterName": "some value", ...}
 }
 
 Here is another example of a valid $JSON_BLOB:
 {
-  "action": "FunctionName2",
+  "action": "Plugin-FunctionName2",
   "action_variables": {"parameterName": "some value", ...}
 }
 
@@ -48,7 +48,7 @@ the input question I must answer
 To solve this problem, I should carefully analyze the given question and identify the necessary steps. Any facts I discover earlier in my thought process should be repeated here to keep them readily available.
 [ACTION]
 {
-  "action": "functionName",
+  "action": "plugin-functionName",
   "action_variables": {"parameterName": "some value", ...}
 }
 [OBSERVATION]

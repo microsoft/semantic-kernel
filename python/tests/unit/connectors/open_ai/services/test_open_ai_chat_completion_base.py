@@ -13,10 +13,14 @@ from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_messa
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.exceptions import (
+    FunctionCallInvalidArgumentsException,
+)
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
 
-async def mock_async_process_chat_stream_response(arg1, response, tool_call_behavior, chat_history, kernel):
+async def mock_async_process_chat_stream_response(arg1, response, tool_call_behavior, chat_history, kernel, arguments):
     mock_content = MagicMock(spec=OpenAIStreamingChatMessageContent)
     yield [mock_content], None
 
@@ -26,6 +30,7 @@ async def test_complete_chat_stream(kernel: Kernel):
     chat_history = MagicMock()
     settings = MagicMock()
     mock_response = MagicMock()
+    arguments = KernelArguments()
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._get_tool_call_behavior",
@@ -44,7 +49,9 @@ async def test_complete_chat_stream(kernel: Kernel):
             ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
         )
 
-        async for content in chat_completion_base.complete_chat_stream(chat_history, settings, kernel=kernel):
+        async for content in chat_completion_base.complete_chat_stream(
+            chat_history, settings, kernel=kernel, arguments=arguments
+        ):
             assert content is not None
 
         settings_mock.assert_called_once_with(settings)
@@ -58,6 +65,7 @@ async def test_complete_chat(tool_call, kernel: Kernel):
     chat_history = MagicMock()
     settings = MagicMock()
     mock_message_content = MagicMock(spec=List[OpenAIChatMessageContent])
+    arguments = KernelArguments()
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._get_tool_call_behavior",
@@ -78,7 +86,7 @@ async def test_complete_chat(tool_call, kernel: Kernel):
             ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
         )
 
-        result = await chat_completion_base.complete_chat(chat_history, settings, kernel=kernel)
+        result = await chat_completion_base.complete_chat(chat_history, settings, kernel=kernel, arguments=arguments)
 
         if tool_call:
             assert result is None
@@ -99,15 +107,17 @@ async def test_process_tool_calls():
     tool_call_mock.function.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
     tool_call_mock.function.name = "test_function"
     tool_call_mock.function.arguments = {"arg_name": "arg_value"}
-    tool_call_mock.id = "test_id"
 
+    tool_call_mock.function.parse_arguments.return_value = {"arg_name": "arg_value"}
+
+    tool_call_mock.id = "test_id"
     result_mock = MagicMock(spec=OpenAIChatMessageContent)
     result_mock.tool_calls = [tool_call_mock]
-
     chat_history_mock = MagicMock(spec=ChatHistory)
 
     kernel_mock = MagicMock(spec=Kernel)
     kernel_mock.invoke = AsyncMock(return_value=MagicMock(value="Function result"))
+    arguments = KernelArguments()
 
     chat_completion_base = OpenAIChatCompletionBase(
         ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
@@ -116,7 +126,7 @@ async def test_process_tool_calls():
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.logger", autospec=True
     ) as logger_mock:
-        await chat_completion_base._process_tool_calls(result_mock, kernel_mock, chat_history_mock)
+        await chat_completion_base._process_tool_calls(result_mock, kernel_mock, chat_history_mock, arguments)
 
     logger_mock.info.assert_any_call(f"processing {len(result_mock.tool_calls)} tool calls")
     logger_mock.info.assert_any_call(
@@ -128,6 +138,54 @@ async def test_process_tool_calls():
     )
 
     chat_history_mock.add_message.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_process_tool_calls_with_continuation_on_malformed_arguments():
+    tool_call_mock = MagicMock()
+    tool_call_mock.function.parse_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
+    tool_call_mock.function.name = "test_function"
+    tool_call_mock.function.arguments = "Not a valid JSON string"
+    tool_call_mock.id = "test_id"
+
+    another_tool_call_mock = MagicMock()
+    another_tool_call_mock.function.parse_arguments.return_value = {"another_arg_name": "another_arg_value"}
+    another_tool_call_mock.function.name = "another_test_function"
+    another_tool_call_mock.function.arguments = {"another_arg_name": "another_arg_value"}
+    another_tool_call_mock.id = "another_test_id"
+
+    result_mock = MagicMock(spec=OpenAIChatMessageContent)
+    result_mock.tool_calls = [tool_call_mock, another_tool_call_mock]
+
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    kernel_mock = MagicMock(spec=Kernel)
+    kernel_mock.invoke = AsyncMock(return_value=MagicMock(value="Another Function result"))
+
+    arguments = KernelArguments()
+
+    chat_completion_base = OpenAIChatCompletionBase(
+        ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
+    )
+
+    with patch(
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.logger", autospec=True
+    ) as logger_mock:
+        await chat_completion_base._process_tool_calls(result_mock, kernel_mock, chat_history_mock, arguments)
+
+    logger_mock.exception.assert_any_call(
+        "Received invalid arguments for function test_function: Malformed arguments. Trying tool call again."
+    )
+
+    add_message_calls = chat_history_mock.add_message.call_args_list
+    assert any(
+        call[1]["message"].content == "The tool call arguments are malformed, please try again."
+        and call[1]["message"].tool_call_id == "test_id"
+        and call[1]["message"].metadata == {"function_name": "test_function"}
+        for call in add_message_calls
+    ), "Expected call to add_message not found with the expected message content and metadata."
+
+    logger_mock.info.assert_any_call("processing 2 tool calls")
 
 
 @pytest.mark.parametrize(

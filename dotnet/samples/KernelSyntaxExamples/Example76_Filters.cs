@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
-using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Xunit;
 using Xunit.Abstractions;
+
+namespace Examples;
 
 public class Example76_Filters : BaseTest
 {
@@ -34,7 +35,8 @@ public class Example76_Filters : BaseTest
         kernel.PromptFilters.Add(new FirstPromptFilter(this.Output));
 
         var function = kernel.CreateFunctionFromPrompt("What is Seattle", functionName: "MyFunction");
-        var result = await kernel.InvokeAsync(function);
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: new[] { function }));
+        var result = await kernel.InvokeAsync(kernel.Plugins["MyPlugin"]["MyFunction"]);
 
         WriteLine(result);
     }
@@ -55,10 +57,10 @@ public class Example76_Filters : BaseTest
         }
 
         public void OnFunctionInvoking(FunctionInvokingContext context) =>
-            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.Name}");
+            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.PluginName}.{context.Function.Name}");
 
         public void OnFunctionInvoked(FunctionInvokedContext context) =>
-            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.Name}");
+            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.PluginName}.{context.Function.Name}");
     }
 
     private sealed class SecondFunctionFilter : IFunctionFilter
@@ -71,10 +73,10 @@ public class Example76_Filters : BaseTest
         }
 
         public void OnFunctionInvoking(FunctionInvokingContext context) =>
-            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.Name}");
+            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.PluginName}.{context.Function.Name}");
 
         public void OnFunctionInvoked(FunctionInvokedContext context) =>
-            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.Name}");
+            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.PluginName}.{context.Function.Name}");
     }
 
     private sealed class FirstPromptFilter : IPromptFilter
@@ -87,10 +89,10 @@ public class Example76_Filters : BaseTest
         }
 
         public void OnPromptRendering(PromptRenderingContext context) =>
-            this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendering)} - {context.Function.Name}");
+            this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendering)} - {context.Function.PluginName}.{context.Function.Name}");
 
         public void OnPromptRendered(PromptRenderedContext context) =>
-            this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendered)} - {context.Function.Name}");
+            this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendered)} - {context.Function.PluginName}.{context.Function.Name}");
     }
 
     #endregion
