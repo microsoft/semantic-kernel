@@ -11,6 +11,7 @@ from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
@@ -176,9 +177,7 @@ async def test_azure_oai_chat_service_with_tool_call(setup_tldr_function_for_oai
 
 
 @pytest.mark.asyncio
-async def test_azure_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for_oai_models, get_aoai_config):
-    kernel, _, _ = setup_tldr_function_for_oai_models
-
+async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, get_aoai_config):
     _, api_key, endpoint = get_aoai_config
 
     if "Python_Integration_Tests" in os.environ:
@@ -207,7 +206,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(setup_tldr_functi
         ),
     )
 
-    kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
+    kernel.import_plugin_from_object(MathPlugin(), plugin_name="Math")
 
     # Create the prompt function
     chat_func = kernel.create_function_from_prompt(prompt="{{$input}}", function_name="chat", plugin_name="chat")
@@ -221,7 +220,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(setup_tldr_functi
         auto_invoke_kernel_functions=True,
         max_auto_invoke_attempts=3,
     )
-    arguments = KernelArguments(input="what is 1+1?", settings=execution_settings)
+    arguments = KernelArguments(input="what is 101+102?", settings=execution_settings)
 
     result = None
     async for message in kernel.invoke_stream(chat_func, arguments=arguments):
