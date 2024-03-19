@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Extensions;
@@ -16,70 +15,6 @@ namespace SemanticKernel.Connectors.Google.UnitTests.Extensions;
 /// </summary>
 public sealed class VertexAIServiceCollectionExtensionsTests
 {
-    [Fact]
-    public void VertexAIGeminiTextGenerationServiceShouldBeRegisteredInKernelServicesBearerAsString()
-    {
-        // Arrange
-        var kernelBuilder = Kernel.CreateBuilder();
-
-        // Act
-        kernelBuilder.AddVertexAIGeminiTextGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
-        var kernel = kernelBuilder.Build();
-
-        // Assert
-        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<VertexAIGeminiTextGenerationService>(textGenerationService);
-    }
-
-    [Fact]
-    public void VertexAIGeminiTextGenerationServiceShouldBeRegisteredInKernelServicesBearerAsFunc()
-    {
-        // Arrange
-        var kernelBuilder = Kernel.CreateBuilder();
-
-        // Act
-        kernelBuilder.AddVertexAIGeminiTextGeneration("modelId", () => Task.FromResult("apiKey"), location: "test2", projectId: "projectId");
-        var kernel = kernelBuilder.Build();
-
-        // Assert
-        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<VertexAIGeminiTextGenerationService>(textGenerationService);
-    }
-
-    [Fact]
-    public void VertexAIGeminiTextGenerationServiceShouldBeRegisteredInServiceCollectionBearerAsString()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddVertexAIGeminiTextGeneration("modelId", "apiKey", location: "test2", projectId: "projectId");
-        var serviceProvider = services.BuildServiceProvider();
-
-        // Assert
-        var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<VertexAIGeminiTextGenerationService>(textGenerationService);
-    }
-
-    [Fact]
-    public void VertexAIGeminiTextGenerationServiceShouldBeRegisteredInServiceCollectionBearerAsFunc()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddVertexAIGeminiTextGeneration("modelId", () => Task.FromResult("apiKey"), location: "test2", projectId: "projectId");
-        var serviceProvider = services.BuildServiceProvider();
-
-        // Assert
-        var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<VertexAIGeminiTextGenerationService>(textGenerationService);
-    }
-
     [Fact]
     public void VertexAIGeminiChatCompletionServiceShouldBeRegisteredInKernelServicesBearerAsString()
     {

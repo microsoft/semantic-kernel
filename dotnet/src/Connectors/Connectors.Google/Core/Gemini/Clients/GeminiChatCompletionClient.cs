@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 /// <summary>
 /// Represents a client for interacting with the chat completion Gemini model.
 /// </summary>
-internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionClient
+internal sealed class GeminiChatCompletionClient : ClientBase
 {
     private readonly StreamJsonParser _streamJsonParser = new();
     private readonly string _modelId;
@@ -134,7 +134,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         this._chatStreamingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:streamGenerateContent?alt=sse");
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Generates a chat message asynchronously.
+    /// </summary>
+    /// <param name="chatHistory">The chat history containing the conversation data.</param>
+    /// <param name="executionSettings">Optional settings for prompt execution.</param>
+    /// <param name="kernel">A kernel instance.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>Returns a list of chat message contents.</returns>
     public async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
@@ -172,7 +179,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Generates a stream of chat messages asynchronously.
+    /// </summary>
+    /// <param name="chatHistory">The chat history containing the conversation data.</param>
+    /// <param name="executionSettings">Optional settings for prompt execution.</param>
+    /// <param name="kernel">A kernel instance.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>An asynchronous enumerable of <see cref="StreamingChatMessageContent"/> streaming chat contents.</returns>
     public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,

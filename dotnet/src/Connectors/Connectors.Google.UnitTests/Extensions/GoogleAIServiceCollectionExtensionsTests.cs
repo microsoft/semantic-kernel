@@ -5,7 +5,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Extensions;
@@ -15,38 +14,6 @@ namespace SemanticKernel.Connectors.Google.UnitTests.Extensions;
 /// </summary>
 public sealed class GoogleAIServiceCollectionExtensionsTests
 {
-    [Fact]
-    public void GoogleAIGeminiTextGenerationServiceShouldBeRegisteredInKernelServices()
-    {
-        // Arrange
-        var kernelBuilder = Kernel.CreateBuilder();
-
-        // Act
-        kernelBuilder.AddGoogleAIGeminiTextGeneration("modelId", "apiKey");
-        var kernel = kernelBuilder.Build();
-
-        // Assert
-        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<GoogleAIGeminiTextGenerationService>(textGenerationService);
-    }
-
-    [Fact]
-    public void GoogleAIGeminiTextGenerationServiceShouldBeRegisteredInServiceCollection()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddGoogleAIGeminiTextGeneration("modelId", "apiKey");
-        var serviceProvider = services.BuildServiceProvider();
-
-        // Assert
-        var textGenerationService = serviceProvider.GetRequiredService<ITextGenerationService>();
-        Assert.NotNull(textGenerationService);
-        Assert.IsType<GoogleAIGeminiTextGenerationService>(textGenerationService);
-    }
-
     [Fact]
     public void GoogleAIGeminiChatCompletionServiceShouldBeRegisteredInKernelServices()
     {
