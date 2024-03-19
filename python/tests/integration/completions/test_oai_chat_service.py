@@ -187,6 +187,13 @@ async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_fun
     assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
     assert len(output) < 100
 
+    try:
+        await client.close()
+    except Exception as e:
+        # don't fail if we can't close the client
+        # but print so we know the error
+        print(f"Error closing client: {e}")
+
 
 @pytest.mark.asyncio
 async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_models, get_aoai_config):
@@ -274,6 +281,13 @@ async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_mod
     assert result is not None
     assert len(str(result.value)) > 0
 
+    try:
+        await client.close()
+    except Exception as e:
+        # don't fail if we can't close the client
+        # but print so we know the error
+        print(f"Error closing client: {e}")
+
 
 @pytest.mark.asyncio
 async def test_oai_chat_service_with_yaml_handlebars(setup_tldr_function_for_oai_models, get_oai_config):
@@ -312,3 +326,10 @@ async def test_oai_chat_service_with_yaml_handlebars(setup_tldr_function_for_oai
     result = await kernel.invoke(plugin["TestFunctionHandlebars"], chat_history=chat_history)
     assert result is not None
     assert len(str(result.value)) > 0
+
+    try:
+        await client.close()
+    except Exception as e:
+        # don't fail if we can't close the client
+        # but print so we know the error
+        print(f"Error closing client: {e}")

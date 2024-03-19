@@ -164,11 +164,14 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
+    arguments["user_input"] = user_input
+    arguments["chat_history"] = history
+
     stream = True
     if stream:
         await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
     else:
-        result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
+        result = await kernel.invoke(chat_function, arguments=arguments)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # OpenAIChatMessageContent with information about the tool calls, which need to be sent

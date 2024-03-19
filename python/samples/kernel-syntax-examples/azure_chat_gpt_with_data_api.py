@@ -26,7 +26,7 @@ from semantic_kernel.utils.settings import (
 kernel = sk.Kernel()
 
 # Load Azure OpenAI Settings
-aoai_settings = azure_openai_settings_from_dot_env_as_dict()
+aoai_settings = azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 
 # For example, AI Search index may contain the following document:
 
@@ -51,7 +51,7 @@ az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
 req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
-# When using data, set use_extensions=True and use the 2023-12-01-preview API version.
+# When using data, set use_extensions=True and use the 2024-02-15-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
     service_id="chat-gpt",
     use_extensions=True,

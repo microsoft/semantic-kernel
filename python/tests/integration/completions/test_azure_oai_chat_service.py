@@ -80,7 +80,7 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version="2024-02-01",
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -134,7 +134,7 @@ async def test_azure_oai_chat_service_with_tool_call(setup_tldr_function_for_oai
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version="2024-02-01",
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -193,7 +193,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version="2024-02-01",
         default_headers={"Test-User-X-ID": "test"},
     )
 

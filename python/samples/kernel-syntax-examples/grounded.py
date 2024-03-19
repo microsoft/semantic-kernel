@@ -65,7 +65,7 @@ def setup(use_azure: bool = False):
                 deployment_name=deployment,
                 endpoint=endpoint,
                 api_key=api_key,
-                api_version="2023-12-01-preview",
+                api_version="2024-02-15-preview",
                 log=logger,
             ),
         )
