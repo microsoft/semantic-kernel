@@ -33,13 +33,6 @@ class AIServiceSelector:
             for id, settings in func_exec_settings.items():
                 if id not in execution_settings_dict:
                     execution_settings_dict[id] = settings
-                elif execution_settings_dict[id].extension_data is not None:
-                    execution_settings_dict[id].extension_data = {
-                        **execution_settings_dict[id].extension_data,
-                        **settings.extension_data,
-                    }
-                else:
-                    execution_settings_dict[id].extension_data = settings.extension_data
         for service_id, settings in execution_settings_dict.items():
             service = kernel.get_service(service_id, type=(TextCompletionClientBase, ChatCompletionClientBase))
             if service:
