@@ -27,7 +27,7 @@ public class AzureOpenAIChatCompletionWithDataConfig
     public string CompletionApiKey { get; set; } = string.Empty;
 
     /// <summary>
-    /// Azure OpenAI Completion API version (e.g. 2023-06-01-preview)
+    /// Azure OpenAI Completion API version (e.g. 2024-02-01)
     /// </summary>
     public string CompletionApiVersion { get; set; } = string.Empty;
 
