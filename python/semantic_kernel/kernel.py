@@ -6,7 +6,7 @@ import inspect
 import logging
 import os
 from copy import copy
-from typing import Any, AsyncIterable, Callable, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, AsyncIterable, Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
 

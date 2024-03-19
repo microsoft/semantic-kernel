@@ -5,9 +5,6 @@ import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner import (
     FunctionCallingStepwisePlanner,
 )
