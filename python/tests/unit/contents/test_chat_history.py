@@ -269,7 +269,7 @@ async def test_template(chat_history: ChatHistory):
     )
     assert (
         rendered
-        == 'system stuff<chat_history><message role="assistant">I am an AI assistant</message></chat_history>What can you do?'
+        == 'system stuff<chat_history><message role="assistant">I am an AI assistant</message></chat_history>What can you do?'  # noqa: E501
     )
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
