@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Embeddings;
@@ -20,11 +22,16 @@ public sealed class MemoryBuilder
     /// <summary>Gets the collection of services to be built into the <see cref="Kernel"/>.</summary>
     public IServiceCollection Services => this._services ??= new ServiceCollection();
 
+    /// <summary>Whether to allow a call to Build.</summary>
+    /// <remarks>As a minor aid to help avoid misuse, we try to prevent Build from being called on instances returned from AddKernel.</remarks>
+    internal bool AllowBuild { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MemoryBuilder"/> class.
     /// </summary>
     public MemoryBuilder()
     {
+        this.AllowBuild = true;
     }
 
     /// <summary>
@@ -36,6 +43,8 @@ public sealed class MemoryBuilder
         Verify.NotNull(services);
 
         this._services = services;
+
+        this.AllowBuild = false;
     }
 
     /// <summary>
@@ -44,6 +53,13 @@ public sealed class MemoryBuilder
     /// <returns>Instance of <see cref="ISemanticTextMemory"/>.</returns>
     public ISemanticTextMemory Build()
     {
+        if (!this.AllowBuild)
+        {
+            throw new InvalidOperationException(
+                "Build is not permitted on instances returned from AddSemanticTextMemory. " +
+                "Resolve the ISemanticTextMemory from the service provider.");
+        }
+
         var serviceProvider = this.Services.BuildServiceProvider();
 
         var memoryStore = serviceProvider.GetService<IMemoryStore>() ??

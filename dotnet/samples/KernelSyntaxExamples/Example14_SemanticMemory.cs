@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Memory;
@@ -24,7 +26,7 @@ public class Example14_SemanticMemory : BaseTest
     private const string MemoryCollectionName = "SKGitHub";
 
     [Fact]
-    public async Task RunAsync()
+    public async Task RunMemoryWithMemoryBuilderAsync()
     {
         WriteLine("==============================================================");
         WriteLine("======== Semantic Memory using Azure AI Search ========");
@@ -62,6 +64,31 @@ public class Example14_SemanticMemory : BaseTest
             .Build();
 
         await RunExampleAsync(memoryWithCustomDb);
+    }
+
+    [Fact]
+    public async Task RunMemoryWithDependencyInjectionAsync()
+    {
+        WriteLine("==============================================================");
+        WriteLine("======== Semantic Memory using Azure AI Search ========");
+        WriteLine("==============================================================");
+
+        /* This example leverages Azure AI Search to provide SK with Semantic Memory.
+         *
+         * Azure AI Search automatically indexes your data semantically, so you don't
+         * need to worry about embedding generation.
+         */
+
+        var services = new ServiceCollection();
+
+        services.AddOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey);
+        services.AddAzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey);
+        var builder = services.AddSemanticTextMemory();
+
+        var provider = services.BuildServiceProvider();
+        var memoryWithACS = provider.GetRequiredService<ISemanticTextMemory>();
+
+        await RunExampleAsync(memoryWithACS);
     }
 
     private async Task RunExampleAsync(ISemanticTextMemory memory)
