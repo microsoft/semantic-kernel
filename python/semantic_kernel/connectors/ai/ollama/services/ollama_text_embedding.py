@@ -39,10 +39,14 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
         Returns:
             ndarray -- Embeddings for the texts.
         """
-        async with AsyncSession(self.session) as session:
-            async with session.post(
-                self.url,
-                json={"model": self.ai_model_id, "texts": texts, "options": kwargs},
-            ) as response:
-                response.raise_for_status()
-                return array(await response.json())
+        result = []
+        for text in texts:
+            async with AsyncSession(self.session) as session:
+                async with session.post(
+                    self.url,
+                    json={"model": self.ai_model_id, "prompt": text, "options": kwargs},
+                ) as response:
+                    response.raise_for_status()
+                    response = await response.json()
+                    result.append(response['embedding'])
+        return array(result)
