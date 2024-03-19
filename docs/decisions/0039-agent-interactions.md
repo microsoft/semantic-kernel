@@ -72,6 +72,7 @@ Class Name|Parent Class|Role|Modality|Note
 Agent|-|Agent|Abstraction|Root agent abstraction
 KernelAgent|Agent|Agent|Abstraction|Includes `Kernel` services and plug-ins
 NexusAgent|Agent|Agent|Utility|`Agent` adapter based on `AgentNexus`
+ProxyAgent|Agent|Agent|Abstraction|`Agent` adapter based on another (inner) `Agent`
 ChatCompletionAgent|KernelAgent|Agent|SemanticKernel|A functional agent based on `IChatCompletionService`
 GptAssistantAgent|KernelAgent|Agent|Assistant API|A functional agent based on *Open AI Assistant API*
 AgentChannel|-|Channel|Abstraction|Allows an agent to participate in a nexus.
