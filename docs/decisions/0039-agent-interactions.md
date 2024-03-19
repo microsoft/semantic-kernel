@@ -92,9 +92,9 @@ GroupChat|AgentNexus|Nexus|AutoGen.Net|AutoGen.Net nexus implementation
 Nothing prevents the caller from deciding agent invocation order and completion.  Also, the entire history may also be retrieved if desired.
 
 ```c#
-ChatAgent agent1 = ... // SK IChatCompletionService
-GptAgent agent2 = ... // Open AI Assistant API
-AutoGen.Agent agent3 = ... // AutoGen based agent
+ChatAgent agent1 = ...; // SK IChatCompletionService
+GptAgent agent2 = ...; // Open AI Assistant API
+AutoGen.Agent agent3 = ...; // AutoGen based agent
 
 AgentChat chat = new();
 await WriteMessagesAsync(chat.InvokeAsync(agent1, "input"));
@@ -111,9 +111,9 @@ await WriteMessagesAsync(chat.GetHistoryAsync(agent2));
 Invoking agents in a series is based on a selection strategy and capped by a maximum iteration depth.
 
 ```c#
-var agent1 = ...
-var agent2 = ...
-var agent3 = ...
+var agent1 = ...;
+var agent2 = ...;
+var agent3 = ...;
 
 AgentChat chat =
     new()
@@ -145,9 +145,9 @@ await WriteMessagesAsync(chat.InvokeAsync(agent3, isJoining: false));
 A common case is to invoke a series of agent interactions until a goal has been achieved.  Completion may be manually reset to allow invocation to continue.
 
 ```c#
-var agent1 = ...
-var agent2 = ...
-var agent3 = ...
+var agent1 = ...;
+var agent2 = ...;
+var agent3 = ...;
 
 AgentChat chat =
     new()
@@ -172,9 +172,9 @@ await WriteMessagesAsync(chat.InvokeAsync(agent3));
 An `AgentNexus` might also act as an `Agent`.  This is realized via the `NexusAgent` class.  Agents within the `AgentNexus` interact in the same context as the outer nexus, but without joining the outer nexus.  (See AutoGen.Net `GroupChatManager`)
 
 ```c#
-var agent1 = ...
-var agent2 = ...
-var agent3 = ...
+var agent1 = ...;
+var agent2 = ...;
+var agent3 = ...;
 
 	
 AgentChat innerChat = 
@@ -286,7 +286,8 @@ public sealed class ChatCompletionAgent : KernelAgent
 
     public string? Instructions { get; }
 
-    protected internal override Type ChannelType => typeof(LocalChannel<ChatCompletion>);
+    protected internal override Type ChannelType => 
+        typeof(LocalChannel<ChatCompletionAgent>);
 
     protected internal override Task<AgentChannel> CreateChannelAsync(
         AgentNexus nexus,
@@ -294,7 +295,7 @@ public sealed class ChatCompletionAgent : KernelAgent
     {
         return 
             Task.FromResult<AgentChannel>(
-                new LocalChannel<ChatAgent>(nexus, InvokeAsync));
+                new LocalChannel<ChatCompletionAgent>(nexus, InvokeAsync));
     }
 
     private static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
@@ -344,12 +345,12 @@ public sealed class ChatCompletionAgent : KernelAgent
 
 **3. Remote Agent**
 
-An agent based on an API and remote storage introduces a different set of assumptions.  In this case, the `GptChannel` is doing the hard work.
+An agent based on an API and remote storage introduces a different set of assumptions.  In this case, the `GptAssistantChannel` is doing the hard work.
 
 > Note the internal client and model as well as the asynchronous call to *Assistant API* during during channel initialization.
 
 ```c#
-public sealed class GptAgent : KernelAgent
+public sealed class GptAssistantAgent : KernelAgent
 {
     private readonly Assistant _model;
     private readonly AssistantsClient _client;
@@ -362,7 +363,7 @@ public sealed class GptAgent : KernelAgent
 
     internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
 
-    protected internal override Type ChannelType => typeof(GptChannel);
+    protected internal override Type ChannelType => typeof(GptAssistantChannel);
 
     protected internal override async Task<AgentChannel> CreateChannelAsync(
         AgentNexus nexus, 
@@ -370,17 +371,64 @@ public sealed class GptAgent : KernelAgent
     {
         var thread =  await this._client.CreateThreadAsync(cancellationToken);
 
-        return new GptChannel(this._client, thread.Value.Id);
+        return new GptAssistantChannel(this._client, thread.Value.Id);
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GptAgent"/> class.
     /// </summary>
-    private GptAgent(AssistantsClient client, Assistant model, Kernel kernel)
+    private GptAssistantAgent(AssistantsClient client, Assistant model, Kernel kernel)
         : base(kernel)
     {
         this._assistant = model;
         this._client = client;
+    }
+}
+```
+
+**4. Custom Channel**
+
+An agent based on an API and remote storage requires a specialized protocol.  The following example provides an outline of the contracts a custom channel must implement.
+
+The method of primary interest is `InvokeAsync`.
+This is the `InvokeAsync` that might be concepualized as belonging to the `Agent` contract.  In fact, for the `LocalChannel` case the invoke method is indeed co-located on the agent...incidentally for convenience.  The natural binding for the entry point for agent invocation is actually the `AgentNexus`, which federates invocation via the `AgentChannel`.
+
+
+> Note: The caller has no visibility into the channel surface area.  These contracts are entirely managed by the `AgentNexus`.
+
+```c#
+sealed class GptAssistantChannel : AgentChannel<GptAssistantAgent>
+{
+    private readonly AssistantsClient _client;
+    private readonly string _threadId;
+
+    protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        GptAssistantAgent agent, 
+        ChatMessageContent? input, 
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        // Use AssistantClient to create and monitor run
+        // and enumerate new messages for nexus processing
+    }
+
+    protected internal override async Task RecieveAsync(
+        IEnumerable<ChatMessageContent> history,
+        CancellationToken cancellationToken)
+    {
+        // Use AssistantClient to add messages to thread
+    }
+
+    protected internal override async IAsyncEnumerable<ChatMessageContent> GetHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        // Use AssistantClient to retrieve and enumerate thread messages,
+        // Should the caller opt to iterate the chat history outside of the
+        // invoke method.
+    }
+
+    public GptChannel(AssistantsClient client, string threadId)
+    {
+        this._client = client;
+        this._threadId = threadId;
     }
 }
 ```
