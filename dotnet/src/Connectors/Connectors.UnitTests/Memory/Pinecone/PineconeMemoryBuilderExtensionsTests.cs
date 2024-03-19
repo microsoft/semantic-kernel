@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
@@ -34,7 +35,8 @@ public sealed class PineconeMemoryBuilderExtensionsTests : IDisposable
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent("[\"fake-index1\"]", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new MemoryBuilder();
-        builder.WithPineconeMemoryStore("fake-environment", "fake-api-key", this._httpClient);
+        builder.Services.AddSingleton(this._httpClient);
+        builder.WithPineconeMemoryStore("fake-environment", "fake-api-key");
         builder.WithTextEmbeddingGeneration(embeddingGenerationMock);
 
         var memory = builder.Build(); //This call triggers the internal factory registered by WithPineconeMemoryStore method to create an instance of the PineconeMemoryStore class.

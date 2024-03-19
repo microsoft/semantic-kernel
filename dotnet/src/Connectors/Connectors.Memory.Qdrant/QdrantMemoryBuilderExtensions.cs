@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
@@ -15,52 +17,27 @@ public static class QdrantMemoryBuilderExtensions
     /// Registers Qdrant memory connector.
     /// </summary>
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance.</param>
+    /// <param name="vectorSize">The size of the vectors.</param>
     /// <param name="endpoint">The Qdrant Vector Database endpoint.</param>
-    /// <param name="vectorSize">The size of the vectors.</param>
+    /// <param name="serviceId">A local identifier for the given memory store.</param>
     /// <returns>Updated Memory builder including Qdrant memory connector.</returns>
     public static MemoryBuilder WithQdrantMemoryStore(
         this MemoryBuilder builder,
-        string endpoint,
-        int vectorSize)
-    {
-        builder.WithMemoryStore((loggerFactory, injectedClient) =>
-        {
-            var client = new QdrantVectorDbClient(
-                HttpClientProvider.GetHttpClient(injectedClient),
-                vectorSize,
-                endpoint,
-                loggerFactory);
-
-            return new QdrantMemoryStore(client, loggerFactory);
-        });
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Registers Qdrant memory connector.
-    /// </summary>
-    /// <param name="builder">The <see cref="MemoryBuilder"/> instance.</param>
-    /// <param name="httpClient">The optional <see cref="HttpClient"/> instance used for making HTTP requests.</param>
-    /// <param name="vectorSize">The size of the vectors.</param>
-    /// <param name="endpoint">The Qdrant Vector Database endpoint. If not specified, the base address of the HTTP client is used.</param>
-    /// <returns>Updated Memory builder including Qdrant memory connector.</returns>
-    public static MemoryBuilder WithQdrantMemoryStore(
-        this MemoryBuilder builder,
-        HttpClient httpClient,
         int vectorSize,
-        string? endpoint = null)
+        string? endpoint = null,
+        string? serviceId = null)
     {
-        builder.WithMemoryStore((loggerFactory, injectedClient) =>
+        builder.Services.AddKeyedSingleton(serviceId, (provider, _) =>
         {
             var client = new QdrantVectorDbClient(
-                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient),
+                HttpClientProvider.GetHttpClient(provider.GetService<HttpClient>()),
                 vectorSize,
                 endpoint,
-                loggerFactory);
-
-            return new QdrantMemoryStore(client, loggerFactory);
+                provider.GetService<ILoggerFactory>());
+            return client;
         });
+
+        builder.Services.AddKeyedSingleton<IMemoryStore, QdrantMemoryStore>(serviceId);
 
         return builder;
     }

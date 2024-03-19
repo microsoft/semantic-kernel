@@ -8,6 +8,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
@@ -49,7 +50,8 @@ public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(JsonSerializer.Serialize(getResponse, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }), Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new MemoryBuilder();
-        builder.WithWeaviateMemoryStore(this._httpClient, "https://fake-random-test-weaviate-host", "fake-api-key", apiVersion);
+        builder.Services.AddSingleton(this._httpClient);
+        builder.WithWeaviateMemoryStore("https://fake-random-test-weaviate-host", "fake-api-key", apiVersion);
         builder.WithTextEmbeddingGeneration(embeddingGenerationMock);
 
         var memory = builder.Build(); //This call triggers the internal factory registered by WithWeaviateMemoryStore method to create an instance of the WeaviateMemoryStore class.

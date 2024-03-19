@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -15,10 +14,29 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0001")]
 public sealed class MemoryBuilder
 {
-    private Func<IMemoryStore>? _memoryStoreFactory = null;
-    private Func<ITextEmbeddingGenerationService>? _embeddingGenerationFactory = null;
-    private HttpClient? _httpClient;
-    private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
+    /// <summary>The collection of services to be available through the <see cref="Kernel"/>.</summary>
+    private IServiceCollection? _services;
+
+    /// <summary>Gets the collection of services to be built into the <see cref="Kernel"/>.</summary>
+    public IServiceCollection Services => this._services ??= new ServiceCollection();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MemoryBuilder"/> class.
+    /// </summary>
+    public MemoryBuilder()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MemoryBuilder"/> class with the specified services.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    public MemoryBuilder(IServiceCollection services)
+    {
+        Verify.NotNull(services);
+
+        this._services = services;
+    }
 
     /// <summary>
     /// Build a new instance of <see cref="ISemanticTextMemory"/> using the settings passed so far.
@@ -26,10 +44,12 @@ public sealed class MemoryBuilder
     /// <returns>Instance of <see cref="ISemanticTextMemory"/>.</returns>
     public ISemanticTextMemory Build()
     {
-        var memoryStore = this._memoryStoreFactory?.Invoke() ??
+        var serviceProvider = this.Services.BuildServiceProvider();
+
+        var memoryStore = serviceProvider.GetService<IMemoryStore>() ??
             throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
 
-        var embeddingGeneration = this._embeddingGenerationFactory?.Invoke() ??
+        var embeddingGeneration = serviceProvider.GetService<ITextEmbeddingGenerationService>() ??
             throw new KernelException($"{nameof(ITextEmbeddingGenerationService)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
 
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
@@ -43,7 +63,7 @@ public sealed class MemoryBuilder
     public MemoryBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
     {
         Verify.NotNull(loggerFactory);
-        this._loggerFactory = loggerFactory;
+        this.Services.AddSingleton(loggerFactory);
         return this;
     }
 
@@ -55,7 +75,7 @@ public sealed class MemoryBuilder
     public MemoryBuilder WithHttpClient(HttpClient httpClient)
     {
         Verify.NotNull(httpClient);
-        this._httpClient = httpClient;
+        this.Services.AddSingleton(httpClient);
         return this;
     }
 
@@ -63,35 +83,12 @@ public sealed class MemoryBuilder
     /// Add memory store.
     /// </summary>
     /// <param name="store">Store to add.</param>
+    /// <param name="serviceId">A local identifier for the given memory store.</param>
     /// <returns>Updated Memory builder including the memory store.</returns>
-    public MemoryBuilder WithMemoryStore(IMemoryStore store)
+    public MemoryBuilder WithMemoryStore(IMemoryStore store, string? serviceId = null)
     {
         Verify.NotNull(store);
-        this._memoryStoreFactory = () => store;
-        return this;
-    }
-
-    /// <summary>
-    /// Add memory store factory.
-    /// </summary>
-    /// <param name="factory">The store factory.</param>
-    /// <returns>Updated Memory builder including the memory store.</returns>
-    public MemoryBuilder WithMemoryStore<TStore>(Func<ILoggerFactory, TStore> factory) where TStore : IMemoryStore
-    {
-        Verify.NotNull(factory);
-        this._memoryStoreFactory = () => factory(this._loggerFactory);
-        return this;
-    }
-
-    /// <summary>
-    /// Add memory store factory.
-    /// </summary>
-    /// <param name="factory">The store factory.</param>
-    /// <returns>Updated Memory builder including the memory store.</returns>
-    public MemoryBuilder WithMemoryStore<TStore>(Func<ILoggerFactory, HttpClient?, TStore> factory) where TStore : IMemoryStore
-    {
-        Verify.NotNull(factory);
-        this._memoryStoreFactory = () => factory(this._loggerFactory, this._httpClient);
+        this.Services.AddKeyedSingleton(serviceId, store);
         return this;
     }
 
@@ -99,24 +96,12 @@ public sealed class MemoryBuilder
     /// Add text embedding generation.
     /// </summary>
     /// <param name="textEmbeddingGeneration">The text embedding generation.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>Updated Memory builder including the text embedding generation.</returns>
-    public MemoryBuilder WithTextEmbeddingGeneration(ITextEmbeddingGenerationService textEmbeddingGeneration)
+    public MemoryBuilder WithTextEmbeddingGeneration(ITextEmbeddingGenerationService textEmbeddingGeneration, string? serviceId = null)
     {
         Verify.NotNull(textEmbeddingGeneration);
-        this._embeddingGenerationFactory = () => textEmbeddingGeneration;
-        return this;
-    }
-
-    /// <summary>
-    /// Add text embedding generation.
-    /// </summary>
-    /// <param name="factory">The text embedding generation factory.</param>
-    /// <returns>Updated Memory builder including the text embedding generation.</returns>
-    public MemoryBuilder WithTextEmbeddingGeneration<TEmbeddingGeneration>(
-        Func<ILoggerFactory, HttpClient?, TEmbeddingGeneration> factory) where TEmbeddingGeneration : ITextEmbeddingGenerationService
-    {
-        Verify.NotNull(factory);
-        this._embeddingGenerationFactory = () => factory(this._loggerFactory, this._httpClient);
+        this.Services.AddKeyedSingleton(serviceId, textEmbeddingGeneration);
         return this;
     }
 }
