@@ -727,9 +727,11 @@ class Kernel(KernelBaseModel):
         if function_config.has_chat_prompt:
             service = self.get_ai_service(
                 ChatCompletionClientBase,
-                function_config.prompt_template_config.default_services[0]
-                if len(function_config.prompt_template_config.default_services) > 0
-                else None,
+                (
+                    function_config.prompt_template_config.default_services[0]
+                    if len(function_config.prompt_template_config.default_services) > 0
+                    else None
+                ),
             )
             req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
 
@@ -753,9 +755,11 @@ class Kernel(KernelBaseModel):
         else:
             service = self.get_ai_service(
                 TextCompletionClientBase,
-                function_config.prompt_template_config.default_services[0]
-                if len(function_config.prompt_template_config.default_services) > 0
-                else None,
+                (
+                    function_config.prompt_template_config.default_services[0]
+                    if len(function_config.prompt_template_config.default_services) > 0
+                    else None
+                ),
             )
             req_settings_type = service.__closure__[0].cell_contents.get_prompt_execution_settings_class()
 

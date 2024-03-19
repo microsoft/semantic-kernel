@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 """A basic JSON-based planner for the Python Semantic Kernel"""
+
 import json
 
 import regex
