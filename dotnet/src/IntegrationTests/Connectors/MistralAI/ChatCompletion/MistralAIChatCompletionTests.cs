@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -34,7 +36,7 @@ public sealed class MistralAIChatCompletionTests
     }
 
     [Fact] // (Skip = "This test is for manual verification.")
-    public async Task ValidChatCompletionAsync()
+    public async Task ValidateGetChatMessageContentsAsync()
     {
         // Arrange
         var model = this._configuration["MistralAI:ChatModel"];
@@ -56,7 +58,7 @@ public sealed class MistralAIChatCompletionTests
     }
 
     [Fact] // (Skip = "This test is for manual verification.")
-    public async Task ValidateChatPromptAsync()
+    public async Task ValidateInvokeChatPromptAsync()
     {
         // Arrange
         var model = this._configuration["MistralAI:ChatModel"];
@@ -77,5 +79,35 @@ public sealed class MistralAIChatCompletionTests
         // Assert
         Assert.NotNull(response);
         Assert.False(string.IsNullOrEmpty(response.ToString()));
+    }
+
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task ValidateGetStreamingChatMessageContentsAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ChatModel"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!);
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.System, "Respond in French."),
+            new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
+        };
+        var response = service.GetStreamingChatMessageContentsAsync(chatHistory, this._executionSettings);
+        var chunks = new List<StreamingChatMessageContent>();
+        var content = new StringBuilder();
+        await foreach (var chunk in response)
+        {
+            chunks.Add(chunk);
+
+            content.Append(chunk.Content);
+        };
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.True(chunks.Count > 0);
+        Assert.False(string.IsNullOrEmpty(content.ToString()));
     }
 }

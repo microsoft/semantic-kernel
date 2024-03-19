@@ -1,61 +1,73 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
-/*
-{
-    "id": "83632e31ce19471f9163a5288cdf0bcb",
-    "object": "chat.completion.chunk",
-    "created": 1709762658,
-    "model": "mistral-tiny",
-    "choices": [
-        {
-            "index": 0,
-            "delta": {
-                "role": "assistant",
-                "content": ""
-            },
-            "finish_reason": null,
-            "logprobs": null
-        }
-    ],
-    "usage": null
-}
- */
+/// <summary>
+/// Represents a chat completion chunk from Mistral.
+/// </summary>
 internal class MistralChatCompletionChunk
 {
-    internal string? GetText()
-    {
-        throw new NotImplementedException();
-    }
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("object")]
+    public string? Object { get; set; }
+
+    [JsonPropertyName("created")]
+    public int Created { get; set; }
+
+    [JsonPropertyName("model")]
+    public string? Model { get; set; }
+
+    [JsonPropertyName("choices")]
+    public List<MistralChatCompletionChoice>? Choices { get; set; }
+
+    [JsonPropertyName("usage")]
+    public MistralUsage? Usage { get; set; }
 
     internal IReadOnlyDictionary<string, object?>? GetMetadata()
     {
-        throw new NotImplementedException();
+        if (this._metadata is null)
+        {
+            this._metadata = new Dictionary<string, object?>(4)
+            {
+                { nameof(MistralChatCompletionChunk.Id), this.Id },
+                { nameof(MistralChatCompletionChunk.Model), this.Model },
+                { nameof(MistralChatCompletionChunk.Created), this.Created },
+                { nameof(MistralChatCompletionChunk.Object), this.Object },
+                { nameof(MistralChatCompletionChunk.Usage), this.Usage },
+            };
+        }
+
+        return this._metadata;
     }
 
     internal AuthorRole? GetRole()
     {
-        throw new NotImplementedException();
+        var role = this.Choices?.FirstOrDefault()?.Delta?.Role;
+        return role is null ? null : new AuthorRole(role);
     }
 
     internal string? GetContent()
     {
-        throw new NotImplementedException();
+        return this.Choices?.FirstOrDefault()?.Delta?.Content;
     }
 
     internal int GetChoiceIndex()
     {
-        throw new NotImplementedException();
+        return this.Choices?.FirstOrDefault()?.Index ?? -1;
     }
 
     internal Encoding? GetEncoding()
     {
-        throw new NotImplementedException();
+        return null;
     }
+
+    private IReadOnlyDictionary<string, object?>? _metadata;
 }

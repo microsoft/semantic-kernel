@@ -102,6 +102,21 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// The API version to use.
+    /// </summary>
+    [JsonPropertyName("api_version")]
+    public string ApiVersion
+    {
+        get => this._apiVersion;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._apiVersion = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -125,6 +140,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
             MaxTokens = this.MaxTokens,
             SafePrompt = this.SafePrompt,
             RandomSeed = this.RandomSeed,
+            ApiVersion = this.ApiVersion,
         };
     }
 
@@ -160,6 +176,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     private int? _maxTokens;
     private bool _safePrompt = false;
     private int? _randomSeed;
+    private string _apiVersion = "v1";
 
     #endregion
 }

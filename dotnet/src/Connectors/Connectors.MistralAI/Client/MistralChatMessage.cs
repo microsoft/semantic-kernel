@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 internal class MistralChatMessage
 {
     [JsonPropertyName("role")]
-    public string Role { get; set; }
+    public string? Role { get; set; }
 
     [JsonPropertyName("content")]
     public string Content { get; set; }
@@ -18,14 +18,14 @@ internal class MistralChatMessage
     /// <summary>
     /// Construct an instance of <see cref="MistralChatMessage"/>.
     /// </summary>
-    /// <param name="role">Must be one of: system, user, assistant</param>
+    /// <param name="role">If provided must be one of: system, user, assistant</param>
     /// <param name="content">Content of the chat message</param>
     [JsonConstructor]
-    internal MistralChatMessage(string role, string content)
+    internal MistralChatMessage(string? role, string content)
     {
-        if (role != "system" && role != "user" && role != "assistant")
+        if (role is not null && role != "system" && role != "user" && role != "assistant")
         {
-            throw new System.ArgumentException("Role must be one of: system, user, assistant", nameof(role));
+            throw new System.ArgumentException($"Role must be one of: system, user, assistant. {role} is an invalid role.", nameof(role));
         }
 
         this.Role = role;

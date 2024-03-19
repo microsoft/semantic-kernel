@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -89,8 +88,8 @@ public sealed class MistralClientTests : IDisposable
     public async Task ValidateGetStreamingChatMessageContentsAsync()
     {
         // Arrange
-        var content = this.GetTestResponses("chat_completions_streaming_response.txt");
-        this._delegatingHandler = new AssertingStreamingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
+        var content = this.GetTestResponseAsStream("chat_completions_streaming_response.txt");
+        this._delegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
         this._httpClient = new HttpClient(this._delegatingHandler, false);
         var client = new MistralClient("mistral-tiny", this._httpClient, "key");
 
@@ -108,7 +107,15 @@ public sealed class MistralClientTests : IDisposable
 
         // Assert
         Assert.NotNull(response);
-        Assert.Equal(10, chunks.Count);
+        Assert.Equal(124, chunks.Count);
+        foreach (var chunk in chunks)
+        {
+            Assert.NotNull(chunk);
+            Assert.Equal("mistral-tiny", chunk.ModelId);
+            Assert.NotNull(chunk.Content);
+            Assert.NotNull(chunk.Role);
+            Assert.NotNull(chunk.Metadata);
+        }
     }
 
     public void Dispose()
@@ -122,9 +129,10 @@ public sealed class MistralClientTests : IDisposable
         return File.ReadAllText($"./TestData/{fileName}");
     }
 
-    private string[] GetTestResponses(string fileName)
+    private MemoryStream GetTestResponseAsStream(string fileName)
     {
-        return File.ReadAllLines($"./TestData/{fileName}");
+        var bytes = File.ReadAllBytes($"./TestData/{fileName}");
+        return new MemoryStream(bytes);
     }
 
     internal sealed class AssertingDelegatingHandler : DelegatingHandler
@@ -137,9 +145,20 @@ public sealed class MistralClientTests : IDisposable
         internal AssertingDelegatingHandler(string requestUri, string content)
         {
             this.RequestUri = new Uri(requestUri);
+            this.RequestHeaders = GetDefaultRequestHeaders("key", false);
             this.ResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(content, System.Text.Encoding.UTF8, "application/json")
+            };
+        }
+
+        internal AssertingDelegatingHandler(string requestUri, Stream content)
+        {
+            this.RequestUri = new Uri(requestUri);
+            this.RequestHeaders = GetDefaultRequestHeaders("key", true);
+            this.ResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StreamContent(content)
             };
         }
 
@@ -148,51 +167,6 @@ public sealed class MistralClientTests : IDisposable
             Assert.Equal(this.RequestUri, request.RequestUri);
             Assert.Equal(this.Method, request.Method);
             Assert.Equal(this.RequestHeaders, request.Headers);
-
-            return await Task.FromResult(this.ResponseMessage);
-        }
-    }
-
-    internal sealed class AssertingStreamingDelegatingHandler : DelegatingHandler
-    {
-        public Uri RequestUri { get; init; }
-        public string[] Chunks { get; init; }
-        public HttpMethod Method { get; init; } = HttpMethod.Post;
-        public HttpRequestHeaders RequestHeaders { get; init; } = GetDefaultRequestHeaders("key", false);
-        public HttpResponseMessage ResponseMessage { get; init; } = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-
-        internal AssertingStreamingDelegatingHandler(string requestUri, string[] chunks)
-        {
-            this.RequestUri = new Uri(requestUri);
-            this.Chunks = chunks;
-        }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            Assert.Equal(this.RequestUri, request.RequestUri);
-            Assert.Equal(this.Method, request.Method);
-            Assert.Equal(this.RequestHeaders, request.Headers);
-
-            this.ResponseMessage.Content = new PushStreamContent(async (stream, content, context) =>
-            {
-                foreach (var chunk in this.Chunks)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    if (string.IsNullOrWhiteSpace(chunk))
-                    {
-                        continue;
-                    }
-
-                    var buffer = Encoding.UTF8.GetBytes(chunk);
-                    await stream.WriteAsync(new ReadOnlyMemory<byte>(buffer), cancellationToken);
-
-                    await Task.Delay(100, cancellationToken);
-                }
-            });
 
             return await Task.FromResult(this.ResponseMessage);
         }

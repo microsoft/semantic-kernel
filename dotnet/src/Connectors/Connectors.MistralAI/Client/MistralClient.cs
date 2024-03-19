@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -33,52 +34,89 @@ internal sealed class MistralClient
         Verify.NotNullOrWhiteSpace(apiKey);
         Verify.NotNull(httpClient);
 
-        endpoint ??= new Uri("https://api.mistral.ai/v1");
-        this._separator = endpoint.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture) ? string.Empty : "/";
         this._endpoint = endpoint;
         this._modelId = modelId;
         this._apiKey = apiKey;
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
-        this._streamJsonParser = new ChatCompletionStreamJsonParser();
     }
 
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
         string modelId = executionSettings?.ModelId ?? this._modelId;
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings);
-        var endpoint = new Uri($"{this._endpoint}{this._separator}chat/completions");
+        var request = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings);
+        var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "chat/completions");
 
         using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, stream: false);
 
         var response = await this.SendRequestAsync<ChatCompletionResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        return response.Choices.Select(chatChoice => new ChatMessageContent(new AuthorRole(chatChoice.Message!.Role), chatChoice.Message!.Content, this._modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(response, chatChoice))).ToList();
+        return response.Choices.Select(chatChoice => new ChatMessageContent(new AuthorRole(chatChoice.Message!.Role!), chatChoice.Message!.Content, this._modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(response, chatChoice))).ToList();
     }
 
-    internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
+    internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, [EnumeratorCancellation] CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
         string modelId = executionSettings?.ModelId ?? this._modelId;
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings);
-        var endpoint = new Uri($"{this._endpoint}{this._separator}chat/completions");
+        var request = this.CreateChatCompletionRequest(modelId, stream: true, chatHistory, mistralExecutionSettings);
+        var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "chat/completions");
 
         using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, stream: true);
 
         using var response = await this.SendStreamingRequestAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
-        foreach (var streamingTextContent in this.ProcessResponseStream(responseStream, modelId))
+        using var reader = new StreamReader(responseStream);
+        string line;
+        string? rawChunk = null;
+        AuthorRole? currentRole = null;
+        while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
         {
-            yield return streamingTextContent;
+            if (!string.IsNullOrEmpty(line))
+            {
+                rawChunk = line.Substring("data:".Length).Trim();
+            }
+            else
+            {
+                if (rawChunk is not null and "[DONE]")
+                {
+                    continue;
+                }
+                var chunk = await JsonSerializer.DeserializeAsync<MistralChatCompletionChunk>(
+                    new MemoryStream(Encoding.UTF8.GetBytes(rawChunk))).ConfigureAwait(false);
+                rawChunk = null;
+
+                if (chunk is null)
+                {
+                    throw new KernelException("Unexpected response from model")
+                    {
+                        Data = { { "ResponseData", rawChunk } },
+                    };
+                }
+
+                var role = chunk.GetRole();
+                if (role is not null)
+                {
+                    currentRole = role;
+                }
+
+                yield return new(role: role ?? currentRole,
+                    content: chunk.GetContent(),
+                    choiceIndex: chunk.GetChoiceIndex(),
+                    modelId: modelId,
+                    encoding: chunk.GetEncoding(),
+                    innerContent: chunk,
+                    metadata: chunk.GetMetadata());
+            }
         }
     }
 
-    internal async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken, Kernel? kernel = null)
+    internal async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
         var request = new TextEmbeddingRequest(this._modelId, data);
-        var endpoint = new Uri($"{this._endpoint}{this._separator}embeddings");
+        var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "embeddings");
         using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, false);
 
         var response = await this.SendRequestAsync<TextEmbeddingResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
@@ -89,11 +127,9 @@ internal sealed class MistralClient
     #region private
     private readonly string _modelId;
     private readonly string _apiKey;
-    private readonly Uri _endpoint;
-    private readonly string _separator;
+    private readonly Uri? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    private readonly IStreamJsonParser _streamJsonParser;
 
     private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings? executionSettings)
     {
@@ -146,26 +182,11 @@ internal sealed class MistralClient
         return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
     }
 
-    private IEnumerable<StreamingChatMessageContent> ProcessResponseStream(Stream stream, string modelId)
-        => from chatCompletionChunk in this.ParseTextResponseStream(stream)
-           from chatContent in this.GetStreamingChatMessageContentFromResponse(chatCompletionChunk, modelId)
-           select chatContent;
-
-    private IEnumerable<MistralChatCompletionChunk> ParseTextResponseStream(Stream responseStream)
-        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<MistralChatCompletionChunk>);
-
-    private List<StreamingChatMessageContent> GetStreamingChatMessageContentFromResponse(MistralChatCompletionChunk chunk, string modelId)
+    private Uri GetEndpoint(MistralAIPromptExecutionSettings executionSettings, string path)
     {
-        return new List<StreamingChatMessageContent>
-        {
-            new(role: chunk.GetRole(),
-                content: chunk.GetContent(),
-                choiceIndex: chunk.GetChoiceIndex(),
-                modelId: modelId,
-                encoding: chunk.GetEncoding(),
-                innerContent: chunk,
-                metadata: chunk.GetMetadata())
-        };
+        var endpoint = this._endpoint ?? new Uri($"https://api.mistral.ai/{executionSettings.ApiVersion}");
+        var separator = endpoint.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture) ? string.Empty : "/";
+        return new Uri($"{endpoint}{separator}{path}");
     }
 
     private static T DeserializeResponse<T>(string body)
