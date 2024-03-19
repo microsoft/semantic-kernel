@@ -558,7 +558,7 @@ class Kernel(KernelBaseModel):
         are then grouped into a single KernelPlugin instance.
 
         This method does not recurse into subdirectories beyond one level deep from the specified plugin directory.
-        For YAML files, function names are extracted from the content of the YAML files themselves (the name propert).
+        For YAML files, function names are extracted from the content of the YAML files themselves (the name property).
         For directories, the function name is assumed to be the name of the directory. Each KernelFunction object is
         initialized with data parsed from the associated files and added to a list of functions that are then assigned
         to the created KernelPlugin object.
