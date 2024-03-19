@@ -355,13 +355,13 @@ public sealed class GptAssistantAgent : KernelAgent
     private readonly Assistant _model;
     private readonly AssistantsClient _client;
 
-    public override string? Description => this._assistant.Description;
+    public override string? Description => this._model.Description;
     public override string Id => this._model.Id;
     public override string? Name => this._model.Name;
     
     public string? Instructions => this._model.Instructions;
 
-    internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
+    internal IReadOnlyList<ToolDefinition> Tools => this._model.Tools;
 
     protected internal override Type ChannelType => typeof(GptAssistantChannel);
 
