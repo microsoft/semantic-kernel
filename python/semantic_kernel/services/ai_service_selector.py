@@ -33,9 +33,7 @@ class AIServiceSelector:
             for id, settings in func_exec_settings.items():
                 if id not in execution_settings_dict:
                     execution_settings_dict[id] = settings
-                elif (
-                    execution_settings_dict[id].extension_data is not None
-                ):  # TODO @jmj - Ask in PR if it is correct to merge the extension_data.
+                elif execution_settings_dict[id].extension_data is not None:
                     execution_settings_dict[id].extension_data = {
                         **execution_settings_dict[id].extension_data,
                         **settings.extension_data,
