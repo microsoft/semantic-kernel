@@ -12,6 +12,66 @@ namespace SemanticKernel.Connectors.GoogleVertexAI.UnitTests.Core;
 
 public sealed class StreamJsonParserTests
 {
+    private const string SeeTestData =
+        """
+        data: {"candidates": [{"content": {"parts": [{"text": "lorem ipsum"}],"role": "model"},"finishReason": "STOP","index": 0,"safetyRatings": [{"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HATE_SPEECH","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HARASSMENT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_DANGEROUS_CONTENT","probability": "NEGLIGIBLE"}]}],"promptFeedback": {"safetyRatings": [{"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HATE_SPEECH","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HARASSMENT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_DANGEROUS_CONTENT","probability": "NEGLIGIBLE"}]}}
+
+        data: {"candidates": [{"content": {"parts": [{"text": "lorem ipsum"}],"role": "model"},"finishReason": "STOP","index": 0,"safetyRatings": [{"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HATE_SPEECH","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HARASSMENT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_DANGEROUS_CONTENT","probability": "NEGLIGIBLE"}]}]}
+
+        data: {"candidates": [{"content": {"parts": [{"text": " lorem ipsum"}],"role": "model"},"finishReason": "STOP","index": 0,"safetyRatings": [{"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HATE_SPEECH","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HARASSMENT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_DANGEROUS_CONTENT","probability": "NEGLIGIBLE"}]}]}
+
+        data: {"candidates": [{"finishReason": "SAFETY","index": 0,"safetyRatings": [{"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","probability": "HIGH"},{"category": "HARM_CATEGORY_HATE_SPEECH","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HARASSMENT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_DANGEROUS_CONTENT","probability": "NEGLIGIBLE"}]}]}
+
+        """;
+
+    [Fact]
+    public async Task ParseSseStreamReturnsEnumerableWithFourObjectsAsync()
+    {
+        // Arrange
+        var parser = new StreamJsonParser();
+        var stream = new MemoryStream();
+        WriteToStream(stream, SeeTestData);
+
+        // Act
+        var result = await parser.ParseAsync(stream).ToListAsync();
+
+        // Assert
+        Assert.Equal(4, result.Count);
+    }
+
+    [Fact]
+    public async Task ParseSseStreamReturnsEnumerableWhereEachLineStartsAndEndsWithBracketAsync()
+    {
+        // Arrange
+        var parser = new StreamJsonParser();
+        var stream = new MemoryStream();
+        WriteToStream(stream, SeeTestData);
+
+        // Act
+        var result = await parser.ParseAsync(stream).ToListAsync();
+
+        // Assert
+        Assert.All(result, json => Assert.StartsWith("{", json, StringComparison.Ordinal));
+        Assert.All(result, json => Assert.EndsWith("}", json, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ParseWhenStreamStartsWithClosedBracketThrowsInvalidOperationAsync()
+    {
+        // Arrange
+        var parser = new StreamJsonParser();
+        var stream = new MemoryStream();
+        string input = "}{}";
+        WriteToStream(stream, input);
+
+        // Act
+        // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+        async Task Act() => await parser.ParseAsync(stream).ToListAsync();
+
+        // Assert
+        await Assert.ThrowsAnyAsync<InvalidOperationException>(Act);
+    }
+
     [Fact]
     public async Task ParseWhenStreamIsEmptyReturnsEmptyEnumerableAsync()
     {
@@ -154,7 +214,6 @@ public sealed class StreamJsonParserTests
         WriteToStream(stream, input);
 
         // Act
-        // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
         async Task Act() => await parser.ParseAsync(stream, validateJson: true).ToListAsync();
 
         // Assert

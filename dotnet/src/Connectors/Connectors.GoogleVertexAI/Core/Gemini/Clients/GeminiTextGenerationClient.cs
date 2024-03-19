@@ -10,14 +10,14 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
-/// Represents a client for interacting with the text generation gemini model.
+/// Represents a client for interacting with the text generation Gemini model.
 /// </summary>
 internal sealed class GeminiTextGenerationClient
 {
     private readonly IGeminiChatCompletionClient _chatCompletionClient;
 
     /// <summary>
-    /// Represents a client for interacting with the text generation gemini model.
+    /// Represents a client for interacting with the text generation Gemini model.
     /// </summary>
     /// <param name="chatCompletionClient">A Gemini chat completion client instance.</param>
     internal GeminiTextGenerationClient(IGeminiChatCompletionClient chatCompletionClient)

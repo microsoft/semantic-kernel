@@ -16,11 +16,11 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Connectors.GoogleVertexAI.Core;
 
 /// <summary>
-/// Represents a client for interacting with the chat completion gemini model.
+/// Represents a client for interacting with the chat completion Gemini model.
 /// </summary>
 internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatCompletionClient
 {
-    private readonly StreamJsonParser _streamJsonParser;
+    private readonly StreamJsonParser _streamJsonParser = new();
     private readonly string _modelId;
     private readonly Uri _chatGenerationEndpoint;
     private readonly Uri _chatStreamingEndpoint;
@@ -81,7 +81,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
             description: "Number of tokens used");
 
     /// <summary>
-    /// Represents a client for interacting with the chat completion gemini model via GoogleAI.
+    /// Represents a client for interacting with the chat completion Gemini model via GoogleAI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
@@ -100,13 +100,12 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         Verify.NotNullOrWhiteSpace(apiKey);
 
         this._modelId = modelId;
-        this._streamJsonParser = new StreamJsonParser();
         this._chatGenerationEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._modelId}:generateContent?key={apiKey}");
         this._chatStreamingEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._modelId}:streamGenerateContent?key={apiKey}&alt=sse");
     }
 
     /// <summary>
-    /// Represents a client for interacting with the chat completion gemini model via VertexAI.
+    /// Represents a client for interacting with the chat completion Gemini model via VertexAI.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
@@ -131,7 +130,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         Verify.NotNullOrWhiteSpace(projectId);
 
         this._modelId = modelId;
-        this._streamJsonParser = new StreamJsonParser();
         this._chatGenerationEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:generateContent");
         this._chatStreamingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:streamGenerateContent?alt=sse");
     }
@@ -235,14 +233,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        IAsyncEnumerator<GeminiChatMessageContent>? chatResponsesEnumerator = null;
+        var chatResponsesEnumerable = this.ProcessChatResponseStreamAsync(responseStream, ct: ct);
+        IAsyncEnumerator<GeminiChatMessageContent> chatResponsesEnumerator = null!;
         try
         {
-            var chatResponsesEnumerable = this.ProcessChatResponseStreamAsync(responseStream, ct: ct);
             chatResponsesEnumerator = chatResponsesEnumerable.GetAsyncEnumerator(ct);
             while (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
             {
-                var messageContent = chatResponsesEnumerator.Current!;
+                var messageContent = chatResponsesEnumerator.Current;
                 if (state.AutoInvoke && messageContent.ToolCalls is not null)
                 {
                     if (await chatResponsesEnumerator.MoveNextAsync().ConfigureAwait(false))
@@ -250,9 +248,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase, IGeminiChatComple
                         // We disable auto-invoke because we have more than one message in the stream.
                         // This scenario should not happen but I leave it as a precaution
                         state.AutoInvoke = false;
-                        await chatResponsesEnumerator.DisposeAsync().ConfigureAwait(false);
-                        // We need to reset the enumerator
-                        chatResponsesEnumerator = chatResponsesEnumerable.GetAsyncEnumerator(ct);
+                        // We return the first message
+                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                        // We return the second message
+                        messageContent = chatResponsesEnumerator.Current;
+                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
                         continue;
                     }
 

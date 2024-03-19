@@ -18,7 +18,7 @@ internal sealed class GeminiContent
     public IList<GeminiPart>? Parts { get; set; }
 
     /// <summary>
-    /// Optional. The producer of the content. Must be either 'user' or 'model'.
+    /// Optional. The producer of the content. Must be either 'user' or 'model' or 'function'.
     /// </summary>
     /// <remarks>Useful to set for multi-turn conversations, otherwise can be left blank or unset.</remarks>
     [JsonPropertyName("role")]
