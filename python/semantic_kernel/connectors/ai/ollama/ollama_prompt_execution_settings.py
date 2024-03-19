@@ -15,9 +15,9 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
 
     def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
         settings = super().prepare_settings_dict(**kwargs)
-        # Despite the `serialization_alias` above, it seems like the 'model' is often not set.
-        if 'model' not in settings:
-            settings['model'] = self.ai_model_id
+        # Despite the `serialization_alias` above, it seems like the 'model' is not set.
+        if "model" not in settings:
+            settings["model"] = self.ai_model_id
         settings.update(kwargs)
         return settings
 

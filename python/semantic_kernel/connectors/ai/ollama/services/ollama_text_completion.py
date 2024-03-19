@@ -55,7 +55,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
             async with session.post(self.url, json=settings.prepare_settings_dict(model=self.ai_model_id)) as response:
                 response.raise_for_status()
                 inner_content = await response.json()
-                text = inner_content['response']
+                text = inner_content["response"]
                 return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
     async def complete_stream(
@@ -78,7 +78,8 @@ class OllamaTextCompletion(TextCompletionClientBase):
         settings.prompt = prompt
         settings.stream = True
         async with AsyncSession(self.session) as session:
-            async with session.post(self.url, json=settings.prepare_settings_dict(model=self.ai_model_id)) as response:
+            request = settings.prepare_settings_dict(model=self.ai_model_id)
+            async with session.post(self.url, json=request) as response:
                 response.raise_for_status()
                 async for line in response.content:
                     body = json.loads(line)
