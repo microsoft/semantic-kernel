@@ -469,8 +469,24 @@ def test_create_function_from_yaml_malformed_string(kernel: Kernel):
 def test_create_function_from_valid_yaml(kernel: Kernel):
     plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
 
-    plugin = kernel.import_plugin_from_yaml_prompt_directory(plugins_directory, "TestFunctionYaml")
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYaml")
     assert plugin is not None
+
+
+def test_create_function_from_valid_yaml_handlebars(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlHandlebars")
+    assert plugin is not None
+    assert plugin["TestFunctionHandlebars"] is not None
+
+
+def test_create_function_from_valid_yaml_jinja2(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlJinja2")
+    assert plugin is not None
+    assert plugin["TestFunctionJinja2"] is not None
 
 
 # endregion

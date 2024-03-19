@@ -551,91 +551,96 @@ class Kernel(KernelBaseModel):
 
         return None
 
-    def import_plugin_from_yaml_prompt_directory(
-        self, parent_directory: str, plugin_directory_name: str
-    ) -> KernelPlugin:
+    def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         """
-        Import a plugin from a directory containing YAML prompt templates.
+        Import a plugin from a specified directory, processing both YAML files and subdirectories
+        containing `skprompt.txt` and `config.json` files to create KernelFunction objects. These objects
+        are then grouped into a single KernelPlugin instance.
+
+        This method does not recurse into subdirectories beyond one level deep from the specified plugin directory.
+        For YAML files, function names are extracted from the content of the YAML files themselves (the name propert).
+        For directories, the function name is assumed to be the name of the directory. Each KernelFunction object is
+        initialized with data parsed from the associated files and added to a list of functions that are then assigned
+        to the created KernelPlugin object.
 
         Args:
-            parent_directory (str): The parent directory
-            plugin_directory_name (str): The plugin directory name
+            parent_directory (str): The parent directory path where the plugin directory resides. This should be
+                an absolute path to ensure correct file resolution.
+            plugin_directory_name (str): The name of the directory that contains the plugin's YAML files and 
+                subdirectories. This directory name is used as the plugin name and should be directly under the 
+                parent_directory.
 
         Returns:
-            KernelPlugin: The imported plugin
+            KernelPlugin: An instance of KernelPlugin containing all the KernelFunction objects created from 
+                the YAML files and directories found in the specified plugin directory. The name of the 
+                plugin is set to the plugin_directory_name.
+
+        Raises:
+            PluginInitializationError: If the plugin directory does not exist.
+            PluginInvalidNameError: If the plugin name is invalid.
+
+        Example:
+            Assuming a plugin directory structure as follows:
+
+            MyPlugins/
+            |--- pluginA.yaml
+            |--- pluginB.yaml
+            |--- Directory1/
+                |--- skprompt.txt
+                |--- config.json
+            |--- Directory2/
+                |--- skprompt.txt
+                |--- config.json
+
+            Calling `import_plugin("/path/to", "MyPlugins")` will create a KernelPlugin object named 
+                "MyPlugins", containing KernelFunction objects for `pluginA.yaml`, `pluginB.yaml`, 
+                `Directory1`, and `Directory2`, each initialized with their respective configurations.
         """
         plugin_directory = self._validate_plugin_directory(
             parent_directory=parent_directory, plugin_directory_name=plugin_directory_name
         )
 
-        yaml_files = glob.glob(os.path.join(plugin_directory, "*.yaml"))
-
         functions = []
 
+        # Handle YAML files at the root
+        yaml_files = glob.glob(os.path.join(plugin_directory, "*.yaml"))
         for yaml_file in yaml_files:
             with open(yaml_file, "r") as file:
                 yaml_content = file.read()
                 functions.append(self.create_function_from_yaml(yaml_content, plugin_name=plugin_directory_name))
 
-        plugin = KernelPlugin(name=plugin_directory_name, functions=functions)
-        return plugin
+        # Handle directories containing skprompt.txt and config.json
+        for item in os.listdir(plugin_directory):
+            item_path = os.path.join(plugin_directory, item)
+            if os.path.isdir(item_path):
+                prompt_path = os.path.join(item_path, "skprompt.txt")
+                config_path = os.path.join(item_path, "config.json")
 
-    def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
-        """
-        Import a plugin from a directory containing prompt templates.
+                if os.path.exists(prompt_path) and os.path.exists(config_path):
+                    with open(config_path, "r") as config_file:
+                        prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
+                    prompt_template_config.name = item
 
-        Args:
-            parent_directory (str): The parent directory
-            plugin_directory_name (str): The plugin directory name
-        """
+                    with open(prompt_path, "r") as prompt_file:
+                        prompt = prompt_file.read()
+                        prompt_template_config.template = prompt
 
-        plugin_directory = self._validate_plugin_directory(
-            parent_directory=parent_directory, plugin_directory_name=plugin_directory_name
-        )
+                    prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                        prompt_template_config=prompt_template_config
+                    )
 
-        functions = []
+                    functions.append(
+                        self.create_function_from_prompt(
+                            plugin_name=plugin_directory_name,
+                            prompt_template=prompt_template,
+                            prompt_template_config=prompt_template_config,
+                            template_format=prompt_template_config.template_format,
+                            function_name=item,
+                            description=prompt_template_config.description,
+                        )
+                    )
 
-        CONFIG_FILE = "config.json"
-        PROMPT_FILE = "skprompt.txt"
-
-        directories = glob.glob(plugin_directory + "/*/")
-        for directory in directories:
-            dir_name = os.path.dirname(directory)
-            function_name = os.path.basename(dir_name)
-            prompt_path = os.path.join(directory, PROMPT_FILE)
-
-            # Continue only if the prompt template exists
-            if not os.path.exists(prompt_path):
-                continue
-
-            config_path = os.path.join(directory, CONFIG_FILE)
-            with open(config_path, "r") as config_file:
-                prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
-            prompt_template_config.name = function_name
-
-            # Load Prompt Template
-            with open(prompt_path, "r") as prompt_file:
-                prompt = prompt_file.read()
-                prompt_template_config.template = prompt
-
-            prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
-                prompt_template_config=prompt_template_config
-            )
-
-            functions += [
-                self.create_function_from_prompt(
-                    plugin_name=plugin_directory_name,
-                    prompt_template=prompt_template,
-                    prompt_template_config=prompt_template_config,
-                    template_format=prompt_template_config.template_format,
-                    function_name=function_name,
-                    description=prompt_template_config.description,
-                )
-            ]
-
-        plugin = KernelPlugin(name=plugin_directory_name, functions=functions)
-
-        return plugin
+        return KernelPlugin(name=plugin_directory_name, functions=functions)
 
     def _validate_plugin_directory(self, parent_directory: str, plugin_directory_name: str) -> str:
         """Validate the plugin name and that the plugin directory exists.
@@ -766,6 +771,7 @@ class Kernel(KernelBaseModel):
             plugin_name=plugin_name,
             description=prompt_template_config.description,
             prompt_template_config=prompt_template_config,
+            template_format=prompt_template_config.template_format,
         )
 
     def register_function_from_method(
