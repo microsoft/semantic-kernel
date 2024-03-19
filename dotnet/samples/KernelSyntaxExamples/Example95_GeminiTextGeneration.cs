@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.GoogleVertexAI;
+using Microsoft.SemanticKernel.Connectors.Google;
 using Xunit;
 using Xunit.Abstractions;
 
