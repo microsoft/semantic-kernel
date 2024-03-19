@@ -39,10 +39,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import (
-    KERNEL_TEMPLATE_FORMAT_NAME,
-    TEMPLATE_FORMAT_TYPES,
-)
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
@@ -80,9 +77,9 @@ class Kernel(KernelBaseModel):
     function_invoking_handlers: Dict[
         int, Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
     ] = Field(default_factory=dict)
-    function_invoked_handlers: Dict[
-        int, Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]
-    ] = Field(default_factory=dict)
+    function_invoked_handlers: Dict[int, Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]] = (
+        Field(default_factory=dict)
+    )
 
     def __init__(
         self,
@@ -756,6 +753,8 @@ class Kernel(KernelBaseModel):
 
         import yaml
 
+        from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+
         try:
             yaml_data: Dict[str, Any] = yaml.safe_load(text)
             prompt_template_config = PromptTemplateConfig(**yaml_data)
@@ -894,5 +893,4 @@ class Kernel(KernelBaseModel):
         """Removes the services from the Kernel, does not delete them."""
         self.services.clear()
 
-    # endregion
     # endregion
