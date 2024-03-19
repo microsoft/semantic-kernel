@@ -54,4 +54,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Client\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

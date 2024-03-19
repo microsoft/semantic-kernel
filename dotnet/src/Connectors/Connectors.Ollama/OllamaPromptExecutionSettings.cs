@@ -2,6 +2,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
@@ -46,5 +47,6 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Maximum number of tokens to generate.
     /// </summary>
+    [JsonPropertyName("max_tokens")]
     public int? MaxTokens { get; set; }
 }
