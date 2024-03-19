@@ -60,7 +60,6 @@ def is_null_or_empty(value: Optional[str] = None) -> bool:
 
 class StepwisePlanner:
     config: StepwisePlannerConfig
-    _arguments: "KernelArguments"
     _function_flow_function: "KernelFunction"
 
     def __init__(
@@ -89,7 +88,7 @@ class StepwisePlanner:
         self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)
         self._native_functions = self._kernel.import_plugin_from_object(self, RESTRICTED_PLUGIN_NAME)
 
-        self._context = KernelArguments()
+        self._arguments = KernelArguments()
 
     @property
     def metadata(self) -> KernelFunctionMetadata:
@@ -134,11 +133,12 @@ class StepwisePlanner:
         question: Annotated[str, "The question to answer"],
         function_descriptions: Annotated[List[str], "List of tool descriptions"],
     ) -> FunctionResult:
+        self._arguments["question"] = question
+        self._arguments["function_descriptions"] = function_descriptions
         steps_taken: List[SystemStep] = []
         if not is_null_or_empty(question):
             for i in range(self.config.max_iterations):
                 scratch_pad = self.create_scratch_pad(question, steps_taken)
-
                 self._arguments["agent_scratch_pad"] = scratch_pad
 
                 llm_response = await self._system_step_function.invoke(self._kernel, self._arguments)
@@ -391,7 +391,7 @@ class StepwisePlanner:
         ]
         inputs = "\n".join(inputs)
 
-        function_description = function.description.strip()
+        function_description = function.description.strip() if function.description else ""
 
         if is_null_or_empty(inputs):
             return f"{function.fully_qualified_name}: {function_description}\n  inputs: None\n"

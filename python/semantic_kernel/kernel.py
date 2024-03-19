@@ -40,7 +40,6 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import (
-    HANDLEBARS_TEMPLATE_FORMAT_NAME,
     KERNEL_TEMPLATE_FORMAT_NAME,
     TEMPLATE_FORMAT_TYPES,
 )
@@ -376,7 +375,9 @@ class Kernel(KernelBaseModel):
         prompt: str,
         arguments: Optional[KernelArguments] = None,
         template_format: Literal[
-            KERNEL_TEMPLATE_FORMAT_NAME, HANDLEBARS_TEMPLATE_FORMAT_NAME
+            "semantic-kernel",
+            "handlebars",
+            "jinja2",
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
         **kwargs: Any,
     ) -> Optional[Union[FunctionResult, List[FunctionResult]]]:
@@ -613,6 +614,14 @@ class Kernel(KernelBaseModel):
     # region Functions
 
     def func(self, plugin_name: str, function_name: str) -> KernelFunction:
+        if plugin_name not in self.plugins:
+            raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
+        if function_name not in self.plugins[plugin_name]:
+            raise KernelFunctionNotFoundError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
+        return self.plugins[plugin_name][function_name]
+
+    def func_from_fully_qualified_function_name(self, fully_qualified_function_name: str) -> KernelFunction:
+        plugin_name, function_name = fully_qualified_function_name.split("-", maxsplit=1)
         if plugin_name not in self.plugins:
             raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
         if function_name not in self.plugins[plugin_name]:
