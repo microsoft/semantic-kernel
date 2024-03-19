@@ -12,7 +12,7 @@ namespace Examples;
 /// <summary>
 /// Represents an example class for Gemini Embedding Generation with volatile memory store.
 /// </summary>
-public sealed class Example94_GeminiGetModelResult : BaseTest
+public sealed class Example95_GeminiGetModelResult : BaseTest
 {
     [Fact]
     public async Task GetTokenUsageMetadataAsync()
@@ -62,5 +62,5 @@ public sealed class Example94_GeminiGetModelResult : BaseTest
         WriteLine(geminiMetadata?.AsJson());
     }
 
-    public Example94_GeminiGetModelResult(ITestOutputHelper output) : base(output) { }
+    public Example95_GeminiGetModelResult(ITestOutputHelper output) : base(output) { }
 }

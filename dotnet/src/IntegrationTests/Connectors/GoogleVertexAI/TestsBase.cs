@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.TextGeneration;
 using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI;
@@ -46,19 +45,6 @@ public abstract class TestsBase
             this.GoogleAIGetApiKey()),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
             modelId: this.VertexAIGetGeminiVisionModel(),
-            bearerKey: this.VertexAIGetBearerKey(),
-            location: this.VertexAIGetLocation(),
-            projectId: this.VertexAIGetProjectId()),
-        _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
-    };
-
-    protected ITextGenerationService GetTextService(ServiceType serviceType) => serviceType switch
-    {
-        ServiceType.GoogleAI => new GoogleAIGeminiTextGenerationService(
-            this.GoogleAIGetGeminiModel(),
-            this.GoogleAIGetApiKey()),
-        ServiceType.VertexAI => new VertexAIGeminiTextGenerationService(
-            modelId: this.VertexAIGetGeminiModel(),
             bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
             projectId: this.VertexAIGetProjectId()),

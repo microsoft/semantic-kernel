@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel;
 
@@ -16,35 +15,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class GoogleAIKernelBuilderExtensions
 {
-    /// <summary>
-    /// Add Google AI Gemini Text Generation service to the kernel builder.
-    /// </summary>
-    /// <param name="builder">The kernel builder.</param>
-    /// <param name="modelId">The model for text generation.</param>
-    /// <param name="apiKey">The API key for authentication Gemini API.</param>
-    /// <param name="serviceId">The optional service ID.</param>
-    /// <param name="httpClient">The optional custom HttpClient.</param>
-    /// <returns>The updated kernel builder.</returns>
-    public static IKernelBuilder AddGoogleAIGeminiTextGeneration(
-        this IKernelBuilder builder,
-        string modelId,
-        string apiKey,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
-    {
-        Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-        Verify.NotNull(apiKey);
-
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new GoogleAIGeminiTextGenerationService(
-                modelId: modelId,
-                apiKey: apiKey,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-        return builder;
-    }
-
     /// <summary>
     /// Add Google AI Gemini Chat Completion and Text Generation services to the kernel builder.
     /// </summary>
