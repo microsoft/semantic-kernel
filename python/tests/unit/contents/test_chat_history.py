@@ -353,7 +353,7 @@ async def test_template_without_chat_history():
     assert rendered == "What can you do?"
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "What can you do?"
-    assert chat_history.messages[0].role == ChatRole.SYSTEM
+    assert chat_history.messages[0].role == ChatRole.USER
 
 
 @pytest.mark.asyncio
@@ -387,7 +387,7 @@ async def test_handwritten_xml_invalid():
     ).render(kernel=Kernel(), arguments=KernelArguments())
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == '<message role="user"test content</message>'
-    assert chat_history.messages[0].role == ChatRole.SYSTEM
+    assert chat_history.messages[0].role == ChatRole.USER
 
 
 @pytest.mark.asyncio

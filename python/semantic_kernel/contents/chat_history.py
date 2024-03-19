@@ -194,7 +194,7 @@ class ChatHistory(KernelBaseModel):
             xml_prompt = ET.fromstring(f"<prompt>{prompt}</prompt>")
         except ET.ParseError as e:
             logger.error(f"Error parsing XML of prompt: {e}")
-            return cls(messages=[chat_message_content_type(role=ChatRole.SYSTEM, content=prompt)])
+            return cls(messages=[chat_message_content_type(role=ChatRole.USER, content=prompt)])
         if xml_prompt.text and xml_prompt.text.strip():
             messages.append(chat_message_content_type(role=ChatRole.SYSTEM, content=xml_prompt.text.strip()))
         for item in xml_prompt:
@@ -205,6 +205,8 @@ class ChatHistory(KernelBaseModel):
                     messages.append(chat_message_content_type.from_element(message))
             if item.tail and item.tail.strip():
                 messages.append(chat_message_content_type(role=ChatRole.USER, content=item.tail.strip()))
+        if len(messages) == 1 and messages[0].role == ChatRole.SYSTEM:
+            messages[0].role = ChatRole.USER
         return cls(messages=messages)
 
     def serialize(self) -> str:
