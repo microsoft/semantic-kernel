@@ -48,7 +48,7 @@ class KernelFunctionFromPrompt(KernelFunction):
     def __init__(
         self,
         function_name: str,
-        plugin_name: str,
+        plugin_name: Optional[str] = None,
         description: Optional[str] = None,
         prompt: Optional[str] = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
@@ -62,18 +62,18 @@ class KernelFunctionFromPrompt(KernelFunction):
         Initializes a new instance of the KernelFunctionFromPrompt class
 
         Args:
-            function_name (str): The name of the function
-            plugin_name (str): The name of the plugin
-            description (str): The description for the function
+            function_name               (str): The name of the function
 
-            prompt (Optional[str]): The prompt
-            template_format (Optional[str]): The template format, default is "semantic-kernel"
-            prompt_template (Optional[KernelPromptTemplate]): The prompt template
-            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
-            prompt_execution_settings (Optional): instance, list or dict of PromptExecutionSettings to be used
+            plugin_name                 (Optional[str]): The name of the plugin
+            description                 (Optional[str]): The description for the function
+            prompt                      (Optional[str]): The prompt
+            template_format             (Optional[str]): The template format, default is "semantic-kernel"
+            prompt_template             (Optional[KernelPromptTemplate]): The prompt template
+            prompt_template_config      (Optional[PromptTemplateConfig]): The prompt template configuration
+            prompt_execution_settings   (Optional): instance, list or dict of PromptExecutionSettings to be used
                 by the function, can also be supplied through prompt_template_config,
                 but the supplied one is used if both are present.
-                prompt_template_config (Optional[PromptTemplateConfig]): the prompt template config.
+            prompt_template_config      (Optional[PromptTemplateConfig]): the prompt template config.
         """
         if not prompt and not prompt_template_config and not prompt_template:
             raise FunctionInitializationError(

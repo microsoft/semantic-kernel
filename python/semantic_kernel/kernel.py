@@ -39,10 +39,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import (
-    KERNEL_TEMPLATE_FORMAT_NAME,
-    TEMPLATE_FORMAT_TYPES,
-)
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
@@ -550,6 +547,56 @@ class Kernel(KernelBaseModel):
 
         return None
 
+    def import_plugin_from_yaml_directory(self, directory: str) -> KernelPlugin:
+        """
+        Imports a plugin from a directory containing YAML files.
+
+        This function reads YAML files from the specified directory, each representing a KernelFunction, and compiles them
+        into a KernelPlugin. The plugin's name is determined by the directory's name. Each YAML file should define a single
+        KernelFunction.
+
+        Parameters:
+        directory (str): The directory path where YAML files are stored.
+
+        Returns:
+        KernelPlugin: An instance of KernelPlugin containing all the functions defined in the YAML files.
+
+        Raises:
+        PluginInitializationError: If the directory does not exist, is not a directory, or if any other error occurs during
+        the import process.
+        """
+        YAML_FILE = "*.yaml"
+
+        plugin_directory: str = os.path.abspath(directory)
+        plugin_name: str = os.path.basename(plugin_directory)
+
+        validate_plugin_name(plugin_name)
+
+        if not os.path.exists(plugin_directory):
+            raise PluginInitializationError(f"Path does not exist: {plugin_directory}")
+        elif not os.path.isdir(plugin_directory):
+            raise PluginInitializationError(f"Path is not a directory: {plugin_directory}")
+
+        functions: List[KernelFunction] = []
+        yaml_files = glob.glob(plugin_directory + "/" + YAML_FILE)
+        try:
+            for yaml_file in yaml_files:
+                try:
+                    with open(yaml_file, "r") as yaml_file:
+                        yaml_content = yaml_file.read()
+                    function: KernelFunction = self.create_function_from_prompt_yaml(yaml_content, plugin_name)
+                    functions.append(function)
+                except Exception as exception:
+                    raise PluginInitializationError(
+                        f"Error occurred while importing plugin from directory: {os.path.basename(yaml_file)}"
+                    ) from exception
+            plugin = KernelPlugin(name=plugin_name, functions=functions)
+        except Exception as exception:
+            raise PluginInitializationError(
+                "Error occurred while loading KernelFunctions into KernelPlugin."
+            ) from exception
+        return plugin
+
     def import_plugin_from_prompt_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         """
         Import a plugin from a directory containing prompt templates.
@@ -677,9 +724,62 @@ class Kernel(KernelBaseModel):
             prompt_execution_settings=prompt_execution_settings,
         )
 
-        self.add_plugin(plugin_name or function.plugin_name, [function])
+        # Ensuring plugin_name is None if either plugin_name or function.plugin_name are None or whitespace
+        if (plugin_name is None or not plugin_name.strip()) or (
+            function.plugin_name is not None and not function.plugin_name.strip()
+        ):
+            plugin_name = None
+        else:
+            plugin_name = function.plugin_name if function.plugin_name and function.plugin_name.strip() else plugin_name
+
+        if plugin_name:
+            self.add_plugin(plugin_name, [function])
 
         return function
+
+    def create_function_from_prompt_yaml(
+        self, text: str, plugin_name: Optional[str] = None, **kwargs: Any
+    ) -> "KernelFunction":
+        """
+        Create a KernelFunction object from a YAML prompt.
+
+        Args:
+            text (str): The YAML prompt text.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            KernelFunction: The created KernelFunction object.
+        """
+
+        import yaml
+
+        from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+
+        try:
+            yaml_data: Dict[str, Any] = yaml.safe_load(text)
+            prompt_template_config = PromptTemplateConfig(**yaml_data)
+            prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
+            prompt_execution_settings: Dict[str, PromptExecutionSettings] = kwargs.get(
+                "execution_settings", prompt_template_config.execution_settings
+            )
+
+            if prompt_template_config.template_format != "semantic-kernel":
+                error_message = 'Template format "{prompt_template_config.template_format}" is not supported at this time.\n please use the "semantic-kernel" format.'
+                raise FunctionInitializationError(error_message)
+
+            kernel_function: KernelFunction = self.create_function_from_prompt(
+                function_name=prompt_template_config.name,
+                plugin_name=plugin_name,
+                description=prompt_template_config.description,
+                prompt_template=prompt_template,
+                prompt_template_config=prompt_template_config,
+                template_format=prompt_template_config.template_format,
+                prompt_execution_settings=prompt_execution_settings,
+            )
+
+            return kernel_function
+        except Exception as exception:
+            raise FunctionInitializationError("Error occurred while initializing from YAML.") from exception
 
     def register_function_from_method(
         self,

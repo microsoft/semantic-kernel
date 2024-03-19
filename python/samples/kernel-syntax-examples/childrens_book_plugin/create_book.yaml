@@ -1,0 +1,27 @@
+name: CreateBook
+template: |
+  based on {{$topic}},
+  write me a children's book with at most {{$num_words_per_page}} words on
+  each page and a maximum of {{$num_pages}} pages.
+  Return it in JSON using the following format: [{ "page": 1, "content":"the content of the page" }]
+template_format: semantic-kernel
+description: Creates a children's book from the given input with a suggested number of words per page and a specific total number of pages
+input_variables:
+  - name: topic
+    description: The topic of the story.
+    is_required: true
+  - name: num_words_per_page
+    description: The number of words per page.
+    is_required: true
+  - name: num_pages
+    description: The number of pages in the book.
+    is_required: true
+output_variable:
+  description: The generated children's book.
+execution_settings:
+  default:
+    max_tokens: 2000
+    temperature: 0.5
+    top_p: 1.0
+    presence_penalty: 0.0
+    frequency_penalty: 0.0

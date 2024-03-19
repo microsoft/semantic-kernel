@@ -1,0 +1,24 @@
+name: BookIdeas
+template: |
+  based on a topic about {{$topic}},
+  create a list of {{$num_ideas}} ideas for a children's book
+  the book title and a short description,
+  represented as a valid json string, as an array of [{ "title": "the title", "description":"the short description" }]
+template_format: semantic-kernel
+description: Given a topic description generate a number of children's book ideas with short descriptions
+input_variables:
+  - name: topic
+    description: The topic of the story.
+    is_required: true
+  - name: num_ideas
+    description: The number of ideas to generate.
+    is_required: true
+output_variable:
+  description: The generated list of children's book ideas.
+execution_settings:
+  default:
+    max_tokens: 2000
+    temperature: 0.5
+    top_p: 1.0
+    presence_penalty: 0.0
+    frequency_penalty: 0.0
