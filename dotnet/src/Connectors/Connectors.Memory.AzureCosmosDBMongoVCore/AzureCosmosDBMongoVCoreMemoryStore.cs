@@ -435,7 +435,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
         };
     }
 
-    private async Task<IAsyncCursor<BsonDocument>> VectorSearchAysnc(
+    private async Task<IAsyncCursor<BsonDocument>> VectorSearchAsync(
         int limit,
         ReadOnlyMemory<float> embedding,
         string collectionName,

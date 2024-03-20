@@ -18,9 +18,9 @@
     <Description>Azure CosmosDB Mongo vCore connector for Semantic Kernel plugins and semantic memory</Description>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageVersion Include="MongoDB.Driver" />
-  </ItemGroup>
+  <!-- <ItemGroup>
+    <PackageReference Update="MongoDB.Driver" Version="2.24.0" />
+  </ItemGroup> -->
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
