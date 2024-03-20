@@ -32,15 +32,19 @@ async def main():
     plan = await planner.create_plan(goal=ask)
 
     # ask the sequential planner to execute the identified function.
-    result = await plan.invoke()
+    result = await plan.invoke(kernel)
 
+    print("The plan's steps are:")
     for step in plan._steps:
-        print(step.description, ":", step._state.__dict__)
+        print(
+            f"- {step.description.replace('.', '')} using {step.metadata.fully_qualified_name} "
+            f"with parameters: {step.parameters}"
+        )
 
     print("Expected Answer:")
     print(result)
     """
-    Output:
+    Example Output:
     SUNDAY
     """
 

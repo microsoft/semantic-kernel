@@ -8,9 +8,7 @@ from typing import Optional
 
 import yaml
 
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.utils import (
     get_tool_call_object,
@@ -106,16 +104,20 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             raise PlannerInvalidConfigurationError("Input question cannot be empty")
 
         try:
-            chat_completion = kernel.get_service(service_id=self.service_id, type=OpenAIChatCompletion)
+            chat_completion = kernel.get_service(service_id=self.service_id)
         except Exception as exc:
             raise PlannerInvalidConfigurationError(
                 f"The OpenAI service `{self.service_id}` is not available. Please configure the AI service."
             ) from exc
 
-        prompt_execution_settings: (
-            OpenAIChatPromptExecutionSettings
-        ) = self.options.execution_settings or chat_completion.get_prompt_execution_settings_class()(
-            service_id=self.service_id
+        if not isinstance(chat_completion, (OpenAIChatCompletion, AzureChatCompletion)):
+            raise PlannerInvalidConfigurationError(
+                f"The service with id `{self.service_id}` is not an OpenAI based service."
+            )
+
+        prompt_execution_settings = (
+            self.options.execution_settings
+            or chat_completion.get_prompt_execution_settings_class()(service_id=self.service_id)
         )
 
         # Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance

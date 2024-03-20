@@ -193,7 +193,7 @@ class ChatHistory(KernelBaseModel):
         try:
             xml_prompt = ET.fromstring(f"<prompt>{prompt}</prompt>")
         except ET.ParseError as e:
-            logger.error(f"Error parsing XML of prompt: {e}")
+            logger.warning(f"Unable to parse XML from prompt: {e}")
             return cls(messages=[chat_message_content_type(role=ChatRole.USER, content=prompt)])
         if xml_prompt.text and xml_prompt.text.strip():
             messages.append(chat_message_content_type(role=ChatRole.SYSTEM, content=xml_prompt.text.strip()))
