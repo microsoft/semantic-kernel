@@ -228,9 +228,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\H
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuggingFaceImageTextExample", "samples\HuggingFaceImageTextExample\HuggingFaceImageTextExample.csproj", "{8EE10EB0-A947-49CC-BCC1-18D93415B9E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AssemblyAI", "src\Connectors\Connectors.AssemblyAI\Connectors.AssemblyAI.csproj", "{3560310D-8E51-42EA-BC8F-D73F1EF52318}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AssemblyAI", "src\Connectors\Connectors.AssemblyAI\Connectors.AssemblyAI.csproj", "{3560310D-8E51-42EA-BC8F-D73F1EF52318}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AssemblyAI.UnitTests", "src\Connectors\Connectors.AssemblyAI.UnitTests\Connectors.AssemblyAI.UnitTests.csproj", "{CF31162C-DAA8-497A-9088-0FCECE46439B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AssemblyAI.UnitTests", "src\Connectors\Connectors.AssemblyAI.UnitTests\Connectors.AssemblyAI.UnitTests.csproj", "{CF31162C-DAA8-497A-9088-0FCECE46439B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -627,7 +627,7 @@ Global
 		{13429BD6-4C4E-45EC-81AD-30BAC380AA60} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{8EE10EB0-A947-49CC-BCC1-18D93415B9E4} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{3560310D-8E51-42EA-BC8F-D73F1EF52318} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
-		{CF31162C-DAA8-497A-9088-0FCECE46439B} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{CF31162C-DAA8-497A-9088-0FCECE46439B} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

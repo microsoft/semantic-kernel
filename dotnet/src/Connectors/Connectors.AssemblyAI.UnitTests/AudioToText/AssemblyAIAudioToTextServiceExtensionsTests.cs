@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -26,7 +27,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         var kernel = Kernel.CreateBuilder()
             .AddAssemblyAIAudioToText(
                 apiKey: ApiKey,
-                endpoint: Endpoint,
+                endpoint: new Uri(Endpoint),
                 serviceId: ServiceId,
                 httpClient: httpClient
             )
@@ -49,7 +50,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         var services = new ServiceCollection();
         services.AddAssemblyAIAudioToText(
             apiKey: ApiKey,
-            endpoint: Endpoint,
+            endpoint: new Uri(Endpoint),
             serviceId: ServiceId
         );
         using var provider = services.BuildServiceProvider();
