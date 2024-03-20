@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010</NoWarn>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
