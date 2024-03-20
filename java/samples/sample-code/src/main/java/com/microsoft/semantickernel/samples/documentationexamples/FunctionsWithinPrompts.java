@@ -82,8 +82,8 @@ public class FunctionsWithinPrompts {
         // Create handlebars template for intent
         KernelFunction<String> getIntent = KernelFunction.<String>createFromPrompt(
                 """
-                <message role="system">Instructions: What is of this request?
-                Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices[0]}}.
+                <message role="system">Instructions: What is the intent of this request?
+                Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices.[0]}}.
                 Choices: {{choices}}.</message>
 
                 {{#each fewShotExamples}}
