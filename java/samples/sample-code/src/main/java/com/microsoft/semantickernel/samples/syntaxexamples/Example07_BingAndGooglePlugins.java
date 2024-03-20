@@ -6,7 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.connectors.web.bing.BingConnector;
+import com.microsoft.semantickernel.samples.connectors.web.bing.BingConnector;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
