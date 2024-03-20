@@ -10,7 +10,7 @@
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.2.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.4" />
-    <PackageVersion Include="Markdig" Version="0.34.0" />
+    <PackageVersion Include="Markdig" Version="0.36.2" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
@@ -22,6 +22,8 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.17.1" />
+    <PackageVersion Include="FastBertTokenizer" Version="0.4.67" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
@@ -59,9 +61,9 @@
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <!-- Plugins -->
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.1" />
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
-    <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.2" />
+    <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.10.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.9.2" />
     <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
@@ -77,7 +79,7 @@
     <PackageVersion Include="YamlDotNet" Version="15.1.2" />
     <!-- Memory stores -->
     <PackageVersion Include="Pgvector" Version="0.2.0" />
-    <PackageVersion Include="NRedisStack" Version="0.11.0" />
+    <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
