@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
 /// </summary>
 public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
 {
-    private readonly IMongoClient _cosmosDBMongoClient;
+    private readonly MongoClient _cosmosDBMongoClient;
     private readonly IMongoDatabase _cosmosMongoDatabase;
 
     /// <summary>
@@ -295,11 +295,16 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default
     )
     {
-        using var cursor = await this.VectorSearch(1, embedding, collectionName, cancellationToken)
+        using var cursor = await this.VectorSearchAsync(
+                1,
+                embedding,
+                collectionName,
+                cancellationToken
+            )
             .ConfigureAwait(false);
         var result = await cursor.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         // Access the similarityScore from the BSON document
-        var similarityScore = result.GetValue("similarityScore").AsDouble;
+        double similarityScore = result.GetValue("similarityScore").AsDouble;
         if (similarityScore < minRelevanceScore)
         {
             return null;
@@ -322,7 +327,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
         [EnumeratorCancellation] CancellationToken cancellationToken = default
     )
     {
-        using var cursor = await this.VectorSearch(
+        using var cursor = await this.VectorSearchAsync(
                 limit,
                 embedding,
                 collectionName,
@@ -352,7 +357,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Disposes the <see cref="MongoDBMemoryStore"/> instance.
     /// </summary>
-    public async void Dispose()
+    public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
