@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
+    <PackageVersion Include="MongoDB.Driver" />
   </ItemGroup>
 
   <ItemGroup>

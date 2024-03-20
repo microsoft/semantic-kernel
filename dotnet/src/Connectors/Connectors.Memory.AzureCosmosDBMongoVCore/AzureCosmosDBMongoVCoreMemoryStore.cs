@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved
 
 using System;
 using System.Collections.Concurrent;
@@ -349,7 +349,9 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Disposes the <see cref="MongoDBMemoryStore"/> instance.
+    /// </summary>
     public async void Dispose()
     {
         this.Dispose(true);
@@ -433,7 +435,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
         };
     }
 
-    private async Task<IAsyncCursor<BsonDocument>> VectorSearch(
+    private async Task<IAsyncCursor<BsonDocument>> VectorSearchAysnc(
         int limit,
         ReadOnlyMemory<float> embedding,
         string collectionName,
