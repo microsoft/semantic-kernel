@@ -29,6 +29,7 @@ public class AzureCosmosDBMongoVCoreMemoryStoreTests
         IMongoCollection<AzureCosmosDBMongoVCoreMemoryRecord>
     > _mongoCollectionMock;
     private readonly Mock<IMongoDatabase> _mongoDatabaseMock;
+    private readonly Mock<MongoClientSettings> _mongoSettingsMock;
 
     public AzureCosmosDBMongoVCoreMemoryStoreTests()
     {
@@ -37,7 +38,13 @@ public class AzureCosmosDBMongoVCoreMemoryStoreTests
         this._mongoCollectionMock =
             new Mock<IMongoCollection<AzureCosmosDBMongoVCoreMemoryRecord>>();
         this._mongoClusterMock = new Mock<ICluster>();
+        this._mongoSettingsMock = new Mock<MongoClientSettings>();
 
+        _mockMongoClient.Setup(client => client.Settings).Returns(this._mongoSettingsMock.Object);
+        _mockMongoSettings.SetupProperty(
+            settings => settings.ApplicationName,
+            "DotNet_Semantic_Kernel"
+        );
         this._mongoClientMock.Setup(client => client.GetDatabase(DatabaseName, null))
             .Returns(this._mongoDatabaseMock.Object);
         this._mongoClientMock.Setup(client => client.Cluster)
