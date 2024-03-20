@@ -9,6 +9,8 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
@@ -55,8 +57,8 @@ public class FunctionsWithinPrompts {
 
         Kernel kernel = Kernel.builder()
             .withAIService(ChatCompletionService.class, chatCompletionService)
+            .withPlugin(KernelPluginFactory.createFromObject(new ConversationSummaryPlugin(), "ConversationSummaryPlugin"))
             .build();
-
 
         List<String> choices = Arrays.asList("ContinueConversation", "EndConversation");
 

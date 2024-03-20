@@ -1,5 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.web.bing;
+package com.microsoft.semantickernel.samples.connectors.web.bing;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpHeaderName;
@@ -13,17 +19,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.connectors.WebSearchEngineConnector;
 import com.microsoft.semantickernel.exceptions.SKException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
+
 import reactor.core.publisher.Mono;
 
 public class BingConnector implements WebSearchEngineConnector {
 
     private static String BING_SEARCH_URL;
-    static {
+static {
         String bingSearchUrl = System.getProperty("bing.search.url");
         if (bingSearchUrl == null || bingSearchUrl.isEmpty())
             bingSearchUrl = System.getenv("BING_SEARCH_URL");
