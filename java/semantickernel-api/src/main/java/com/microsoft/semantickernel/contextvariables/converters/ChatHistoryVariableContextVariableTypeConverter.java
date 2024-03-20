@@ -6,6 +6,7 @@ import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import java.util.stream.Collectors;
 
 /**
  * A {@link ContextVariableTypeConverter} for
@@ -37,12 +38,14 @@ public class ChatHistoryVariableContextVariableTypeConverter extends
      * Converts a {@link ChatHistory} to an XML string.
      */
     private static String toXmlString(ChatHistory chatHistory) {
-        return chatHistory
+        String messages = chatHistory
             .getMessages()
             .stream()
-            .map(message -> String.format("<message role=\"%s\">%s</message>%n",
+            .map(message -> String.format("<message role=\"%s\">%s</message>",
                 message.getAuthorRole(),
                 message.getContent()))
-            .reduce("", (acc, message) -> acc + message);
+            .collect(Collectors.joining("\n"));
+
+        return String.format("<messages>%n%s%n</messages>", messages);
     }
 }

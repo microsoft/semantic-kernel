@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
+import static com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments.MAIN_KEY;
+
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
@@ -8,6 +10,7 @@ import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.ValueResolver;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
@@ -16,7 +19,6 @@ import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
@@ -24,11 +26,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -62,8 +64,11 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                     promptTemplate.getName())));
         }
 
+        if (context == null) {
+            context = InvocationContext.builder().build();
+        }
         HandleBarsPromptTemplateHandler handler = new HandleBarsPromptTemplateHandler(kernel,
-            template);
+            template, context);
 
         if (arguments == null) {
             arguments = KernelFunctionArguments.builder().build();
@@ -89,8 +94,17 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         @Override
         public Object resolve(Object context) {
             if (context instanceof ChatMessageContent) {
-                String result = ((ChatMessageContent) context).getContent();
-                return result != null ? result : UNRESOLVED;
+                String content = ((ChatMessageContent) context).getContent();
+
+                if (content == null) {
+                    return UNRESOLVED;
+                }
+
+                return String.format(
+                    "<message role=\"%s\">%s</message>",
+                    ((ChatMessageContent) context).getAuthorRole().toString()
+                        .toLowerCase(Locale.ROOT),
+                    content);
             }
             return UNRESOLVED;
         }
@@ -158,56 +172,58 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         @SuppressFBWarnings("CT_CONSTRUCTOR_THROW") // Think this is a false positive
         public HandleBarsPromptTemplateHandler(
             Kernel kernel,
-            String template) {
+            String template,
+            InvocationContext context) {
             this.template = template;
             this.handlebars = new Handlebars();
             this.handlebars
                 .registerHelper("message", HandleBarsPromptTemplateHandler::handleMessage)
-                .registerHelper("each", HandleBarsPromptTemplateHandler::handleEach);
+                .registerHelper("each", handleEach(context));
 
-            addFunctionHelpers(kernel, this.handlebars);
+            addFunctionHelpers(kernel, this.handlebars, context);
 
             // TODO: 1.0 Add more helpers
         }
 
-        private static CharSequence handleEach(Object context, Options options)
-            throws IOException {
-            if (context instanceof ChatHistory) {
-                StringBuilder sb = new StringBuilder("<messages>");
-                for (ChatMessageContent message : (ChatHistory) context) {
-                    sb.append(options.fn(message));
-                }
-                sb.append("</messages>");
-                return new Handlebars.SafeString(sb.toString());
-            }
-            if (context instanceof List) {
-                StringBuilder sb = new StringBuilder();
-                Iterator<?> iterator = ((List<?>) context).iterator();
-                while (iterator.hasNext()) {
-                    Object element = iterator.next();
-                    if (element instanceof KernelPlugin) {
-                        KernelPlugin plugin = (KernelPlugin) element;
-                        Iterator<KernelFunction<?>> functions = plugin.iterator();
-                        while (functions.hasNext()) {
-                            KernelFunction<?> function = functions.next();
-                            sb.append(options.fn(function));
+        private static Helper<Object> handleEach(InvocationContext invocationContext) {
+            return (context, options) -> {
+                if (context instanceof Iterable) {
+                    StringBuilder sb = new StringBuilder();
+                    Iterator<?> iterator = ((Iterable<?>) context).iterator();
+                    while (iterator.hasNext()) {
+                        Object element = iterator.next();
+                        if (element instanceof KernelPlugin) {
+                            KernelPlugin plugin = (KernelPlugin) element;
+                            Iterator<KernelFunction<?>> functions = plugin.iterator();
+                            while (functions.hasNext()) {
+                                KernelFunction<?> function = functions.next();
+                                sb.append(options.fn(function));
+                            }
+                        } else {
+                            sb.append(options.fn(element));
                         }
-                    } else {
-                        sb.append(options.fn(element));
                     }
+                    return new Handlebars.SafeString(sb.toString());
                 }
-                return new Handlebars.SafeString(sb.toString());
-            }
-            return "";
+
+                ContextVariableType type = invocationContext.getContextVariableTypes()
+                    .getVariableTypeForClass(context.getClass());
+                if (type != null) {
+                    return type.getConverter().toPromptString(context);
+                }
+                return null;
+            };
         }
 
+        @Nullable
         private static CharSequence handleMessage(Object context, Options options)
             throws IOException {
             String role = options.hash("role");
             String content = (String) options.fn(context);
 
             if (context instanceof Optional) {
-                ChatMessageContent message = ((Optional<ChatMessageContent>) context).orElse(null);
+                ChatMessageContent message = ((Optional<ChatMessageContent>) context).orElse(
+                    null);
                 if (message != null) {
                     if (role == null || role.isEmpty()) {
                         role = message.getAuthorRole().name();
@@ -222,7 +238,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         "<message role=\"%s\">%s</message>",
                         role.toLowerCase(Locale.ROOT), content));
             }
-            return "";
+            return null;
         }
 
         public Mono<String> render(KernelFunctionArguments variables) {
@@ -247,7 +263,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
     }
 
     @SuppressWarnings("StringSplitter")
-    private static void addFunctionHelpers(Kernel kernel, Handlebars handlebars) {
+    private static void addFunctionHelpers(Kernel kernel, Handlebars handlebars,
+        InvocationContext context) {
         kernel
             .getPlugins()
             .forEach(plugin -> {
@@ -258,22 +275,40 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         String pluginName = plugin.getName();
                         handlebars.registerHelper(
                             ToolCallBehavior.formFullFunctionName(pluginName, functionName),
-                            functionInvokeHelper(kernel, kernelFunction));
+                            functionInvokeHelper(kernel, kernelFunction, context));
                     });
 
             });
     }
 
-    private static Helper<Object> functionInvokeHelper(Kernel kernel,
-        KernelFunction<?> kernelFunction) {
+    private static Helper<Object> functionInvokeHelper(
+        Kernel kernel,
+        KernelFunction<?> kernelFunction,
+        InvocationContext invocationContext) {
         return (context, options) -> {
+
+            KernelFunctionArguments.Builder builder = KernelFunctionArguments.builder();
+            if (context instanceof KernelFunctionArguments) {
+                builder.withVariables((KernelFunctionArguments) context);
+            } else {
+                builder.withInput(context);
+            }
+
+            if (options.hash(MAIN_KEY) != null) {
+                builder.withVariables(options.hash
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(
+                        Entry::getKey,
+                        entry -> invocationContext
+                            .getContextVariableTypes()
+                            .contextVariableOf(entry.getValue()))));
+            }
+
             // TODO Figure out if possible to do async render
             return kernelFunction
                 .invokeAsync(kernel)
-                .withArguments(
-                    KernelFunctionArguments.builder()
-                        .withInput(context)
-                        .build())
+                .withArguments(builder.build())
                 .block()
                 .getResult();
         };
