@@ -20,7 +20,8 @@ def _is_annotation_of_type(annotation, type_to_match) -> bool:
     return (annotation is type_to_match) or (
         # Handle cases where the annotation is provided as a string to avoid circular imports
         # for example: `async def read(self, context: "KernelContext"):` in file_io_plugin.py
-        isinstance(annotation, str) and annotation == type_to_match.__name__
+        isinstance(annotation, str)
+        and annotation == type_to_match.__name__
     )
 
 
