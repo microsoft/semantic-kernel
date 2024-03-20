@@ -1,0 +1,7 @@
+{
+  "message": {
+    "role": "assistant",
+    "content": "This is test completion response"
+  },
+  "model": "fake-model"
+}
