@@ -83,7 +83,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
     #region private ================================================================================
 
-    private const string DefaultApiVersion = "2023-06-01-preview";
+    private const string DefaultApiVersion = "2024-02-01";
 
     private readonly AzureOpenAIChatCompletionWithDataConfig _config;
 
