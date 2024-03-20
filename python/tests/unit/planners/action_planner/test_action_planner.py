@@ -5,24 +5,20 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 
-import semantic_kernel as sk
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.prompt_execution_settings import \
-    PromptExecutionSettings
-from semantic_kernel.core_plugins import TimePlugin
-from semantic_kernel.exceptions import (PlannerInvalidConfigurationError,
-                                        PlannerInvalidGoalError,
-                                        PlannerInvalidPlanError)
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import (
+    PlannerInvalidConfigurationError,
+    PlannerInvalidGoalError,
+    PlannerInvalidPlanError,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_function_metadata import \
-    KernelFunctionMetadata
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import \
-    KernelPluginCollection
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.planners import ActionPlanner
-from semantic_kernel.planners.action_planner.action_planner_config import \
-    ActionPlannerConfig
+from semantic_kernel.planners.action_planner.action_planner_config import ActionPlannerConfig
 
 
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Mock(spec=KernelFunction):
@@ -118,6 +114,7 @@ async def test_plan_creation():
     assert "translate_to" in plan.state
     assert "input" in plan.state
 
+
 @pytest.mark.asyncio
 async def test_no_parameter_plan_creation():
     goal = "What date is it today?"
@@ -156,6 +153,7 @@ async def test_no_parameter_plan_creation():
     assert plan.parameters == {}
     assert plan.state == {}
     assert plan.description == mock_function.description
+
 
 @pytest.fixture
 def plugins_input():
