@@ -108,6 +108,51 @@ Finally, refer to our API references for more details on the C# and Python APIs:
 - [C# API reference](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet)
 - Python API reference (coming soon)
 
+## Running from the Terminal
+
+To run the from the terminal, follow these steps:
+
+### For C#:
+
+  #### Navigate to the C# directory:
+  
+   ```bash
+   cd path/to/csharp/examples
+   ```
+
+  #### Run the script:
+  
+   ```bash
+   dotnet run
+  ```
+
+## For Python:
+
+#### Navigate to the Python directory:
+
+```
+cd path/to/python/examples
+```
+#### Run the script:
+
+```
+python example_script.py
+```
+
+## For Java:
+
+#### Navigate to the Java examples directory:
+
+```
+cd path/to/java/examples
+```
+
+#### Run the example script:
+
+```
+java -jar example_script.jar
+```
+
 ## Chat Copilot: see what's possible with Semantic Kernel
 
 If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
