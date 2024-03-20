@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Connectors.Google;
 
-namespace Microsoft.SemanticKernel.Connectors.Google;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods for <see cref="IReadOnlyKernelPluginCollection"/>.
