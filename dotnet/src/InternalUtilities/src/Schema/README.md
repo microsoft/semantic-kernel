@@ -1,4 +1,4 @@
-This is a copy of the code at https://github.com/eiriktsarpalis/stj-schema-mapper/tree/main/src/JsonSchemaMapper. It should be kept in sync with any changes made in that repo.
+JsonSchemaMapper{Configuration}.cs are a copy of the code at https://github.com/eiriktsarpalis/stj-schema-mapper/tree/main/src/JsonSchemaMapper. It should be kept in sync with any changes made in that repo.
 
 Changes from that code:
 - Public types changed to be internal and sealed

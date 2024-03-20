@@ -692,7 +692,7 @@ internal static class JsonSchemaMapper
         [typeof(float)] = (JsonSchemaType.Number, null),
         [typeof(double)] = (JsonSchemaType.Number, null),
         [typeof(decimal)] = (JsonSchemaType.Number, null),
-#if NETCOREAPP
+#if NET7_0_OR_GREATER
         [typeof(UInt128)] = (JsonSchemaType.Integer, null),
         [typeof(Int128)] = (JsonSchemaType.Integer, null),
         [typeof(Half)] = (JsonSchemaType.Number, null),
@@ -705,7 +705,7 @@ internal static class JsonSchemaMapper
         [typeof(DateTime)] = (JsonSchemaType.String, Format: "date-time"),
         [typeof(DateTimeOffset)] = (JsonSchemaType.String, Format: "date-time"),
         [typeof(TimeSpan)] = (JsonSchemaType.String, Format: "time"),
-#if NETCOREAPP
+#if NET6_0_OR_GREATER
         [typeof(DateOnly)] = (JsonSchemaType.String, Format: "date"),
         [typeof(TimeOnly)] = (JsonSchemaType.String, Format: "time"),
 #endif
