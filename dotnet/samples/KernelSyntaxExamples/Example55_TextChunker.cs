@@ -84,73 +84,101 @@ public class Example55_TextChunker : BaseTest
     /// Custom token counter implementation using SharpToken.
     /// Note: SharpToken is used for demonstration purposes only, it's possible to use any available or custom tokenization logic.
     /// </summary>
-    private static TokenCounter SharpTokenTokenCounter => (string input) =>
+    public class SharpTokenTokenCounter
     {
-        // Initialize encoding by encoding name
-        var encoding = GptEncoding.GetEncoding("cl100k_base");
+        private readonly GptEncoding _encoding;
 
-        // Initialize encoding by model name
-        // var encoding = GptEncoding.GetEncodingForModel("gpt-4");
+        public SharpTokenTokenCounter()
+        {
+            this._encoding = GptEncoding.GetEncoding("cl100k_base");
+            // Initialize encoding by model name
+            // this._encoding = GptEncoding.GetEncodingForModel("gpt-4");
+        }
 
-        var tokens = encoding.Encode(input);
+        public int Count(string input)
+        {
+            var tokens = this._encoding.Encode(input);
 
-        return tokens.Count;
-    };
+            return tokens.Count;
+        }
+    }
 
     /// <summary>
     /// MicrosoftML token counter implementation.
     /// </summary>
-    private static TokenCounter MicrosoftMLTokenCounter => (string input) =>
+    public class MicrosoftMLTokenCounter
     {
-        Tokenizer tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
-        return tokenizer.CountTokens(input);
-    };
+        private readonly Tokenizer _tokenizer;
+
+        public MicrosoftMLTokenCounter()
+        {
+            this._tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
+        }
+
+        public int Count(string input)
+        {
+            return this._tokenizer.CountTokens(input);
+        }
+    }
 
     /// <summary>
     /// MicrosoftML token counter implementation using Roberta and local vocab
     /// </summary>
-    private static TokenCounter MicrosoftMLRobertaTokenCounter => (string input) =>
+    public class MicrosoftMLRobertaTokenCounter
     {
-        var encoder = EmbeddedResource.ReadStream("EnglishRoberta.encoder.json");
-        var vocab = EmbeddedResource.ReadStream("EnglishRoberta.vocab.bpe");
-        var dict = EmbeddedResource.ReadStream("EnglishRoberta.dict.txt");
+        private readonly Tokenizer _tokenizer;
 
-        if (encoder is null || vocab is null || dict is null)
+        public MicrosoftMLRobertaTokenCounter()
         {
-            throw new FileNotFoundException("Missing required resources");
+            var encoder = EmbeddedResource.ReadStream("EnglishRoberta.encoder.json");
+            var vocab = EmbeddedResource.ReadStream("EnglishRoberta.vocab.bpe");
+            var dict = EmbeddedResource.ReadStream("EnglishRoberta.dict.txt");
+
+            if (encoder is null || vocab is null || dict is null)
+            {
+                throw new FileNotFoundException("Missing required resources");
+            }
+
+            EnglishRoberta model = new(encoder, vocab, dict);
+
+            model.AddMaskSymbol(); // Not sure what this does, but it's in the example
+            this._tokenizer = new(model, new RobertaPreTokenizer());
         }
 
-        EnglishRoberta model = new(encoder, vocab, dict);
+        public int Count(string input)
+        {
+            var tokens = this._tokenizer.Encode(input).Tokens;
 
-        model.AddMaskSymbol(); // Not sure what this does, but it's in the example
-        Tokenizer tokenizer = new(model, new RobertaPreTokenizer());
-        var tokens = tokenizer.Encode(input).Tokens;
-
-        return tokens.Count;
-    };
+            return tokens.Count;
+        }
+    }
 
     /// <summary>
     /// DeepDev token counter implementation.
     /// </summary>
-    private static TokenCounter DeepDevTokenCounter => (string input) =>
+    public class DeepDevTokenCounter
     {
-        // Initialize encoding by encoding name
-        var tokenizer = TokenizerBuilder.CreateByEncoderNameAsync("cl100k_base").GetAwaiter().GetResult();
+        private readonly ITokenizer _tokenizer;
 
-        // Initialize encoding by model name
-        // var tokenizer = TokenizerBuilder.CreateByModelNameAsync("gpt-4").GetAwaiter().GetResult();
+        public DeepDevTokenCounter()
+        {
+            this._tokenizer = TokenizerBuilder.CreateByEncoderNameAsync("cl100k_base").GetAwaiter().GetResult();
+        }
 
-        var tokens = tokenizer.Encode(input, new HashSet<string>());
-        return tokens.Count;
-    };
+        public int Count(string input)
+        {
+            var tokens = this._tokenizer.Encode(input, new HashSet<string>());
+            return tokens.Count;
+        }
+    }
 
     private static readonly Func<TokenCounterType, TokenCounter> s_tokenCounterFactory = (TokenCounterType counterType) =>
         counterType switch
         {
-            TokenCounterType.SharpToken => (string input) => SharpTokenTokenCounter(input),
-            TokenCounterType.MicrosoftML => (string input) => MicrosoftMLTokenCounter(input),
-            TokenCounterType.DeepDev => (string input) => DeepDevTokenCounter(input),
-            TokenCounterType.MicrosoftMLRoberta => (string input) => MicrosoftMLRobertaTokenCounter(input),
+            TokenCounterType.SharpToken => new SharpTokenTokenCounter().Count,
+            TokenCounterType.MicrosoftML => new MicrosoftMLTokenCounter().Count,
+            TokenCounterType.DeepDev => new DeepDevTokenCounter().Count,
+            TokenCounterType.MicrosoftMLRoberta => new MicrosoftMLRobertaTokenCounter().Count,
             _ => throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null),
         };
 
