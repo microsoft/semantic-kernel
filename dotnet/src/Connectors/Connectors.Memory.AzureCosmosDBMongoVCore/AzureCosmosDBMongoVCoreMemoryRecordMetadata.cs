@@ -6,7 +6,7 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
 
 /// <summary>
-/// A MongoDB record metadata.
+/// A MongoDB memory record metadata.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
 public struct AzureCosmosDBMongoVCoreMemoryRecordMetadata
@@ -53,7 +53,7 @@ public struct AzureCosmosDBMongoVCoreMemoryRecordMetadata
     public string AdditionalMetadata { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="MongoDBMemoryRecordMetadata"/> structure.
+    /// Initializes a new instance of <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata"/> structure.
     /// </summary>
     public AzureCosmosDBMongoVCoreMemoryRecordMetadata(MemoryRecordMetadata memoryRecordMetadata)
     {
