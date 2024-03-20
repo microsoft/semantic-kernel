@@ -10,6 +10,9 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests;
 
+/// <summary>
+/// Unit tests of <see cref="OllamaServiceCollectionExtensions"/>.
+/// </summary>
 public class OllamaServiceCollectionExtensionsTests
 {
     [Fact]

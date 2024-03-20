@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// <summary>
 /// Represents a embedding generation service using Ollama Original API.
 /// </summary>
-[Experimental("SKEXP0011")]
 public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private Dictionary<string, object?> AttributesInternal { get; } = new();

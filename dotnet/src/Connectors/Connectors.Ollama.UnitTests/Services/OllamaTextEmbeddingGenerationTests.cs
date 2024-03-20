@@ -12,7 +12,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests;
 
-public class OllamaTextEmbeddingGenerationTests : IDisposable
+public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;

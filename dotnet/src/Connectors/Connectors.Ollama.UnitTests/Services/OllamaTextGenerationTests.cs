@@ -14,7 +14,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests;
 
-public class OllamaTextGenerationTests : IDisposable
+public sealed class OllamaTextGenerationTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
@@ -164,9 +164,13 @@ public class OllamaTextGenerationTests : IDisposable
         Assert.Equal("fake-model", lastTextContent.ModelId);
     }
 
+    /// <summary>
+    /// Disposes resources used by this class.
+    /// </summary>
     public void Dispose()
     {
-        this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
+
+        this._httpClient.Dispose();
     }
 }

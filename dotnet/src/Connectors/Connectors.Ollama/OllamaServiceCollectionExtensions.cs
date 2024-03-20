@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -76,7 +75,6 @@ public static class OllamaServiceCollectionExtensions
     /// <param name="baseUri">The base uri to Ollama hosted service.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
-    [Experimental("SKEXP0011")]
     public static IServiceCollection AddOllamaTextEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,

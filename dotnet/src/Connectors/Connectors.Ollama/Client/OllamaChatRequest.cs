@@ -51,6 +51,9 @@ public sealed class OllamaChatRequest
         };
     }
 
+    /// <summary>
+    /// Ollama chat request message object.
+    /// </summary>
     public sealed class OllamaChatRequestMessage
     {
         /// <summary>

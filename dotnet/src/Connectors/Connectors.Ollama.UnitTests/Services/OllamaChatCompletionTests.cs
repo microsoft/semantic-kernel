@@ -14,7 +14,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests;
 
-public class OllamaChatCompletionTests : IDisposable
+public sealed class OllamaChatCompletionTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
