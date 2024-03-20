@@ -64,7 +64,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
+            ToolCallBehavior = GeminiToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
         };
 
         // Act
@@ -101,7 +101,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Assistant, string.Empty, "modelId", [functionCallPart]));
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
+            ToolCallBehavior = GeminiToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
         };
 
         // Act
@@ -139,7 +139,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         chatHistory.Add(new GeminiChatMessageContent(AuthorRole.Tool, string.Empty, "modelId", toolCallResponse));
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
+            ToolCallBehavior = GeminiToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
         };
 
         // Act
@@ -166,7 +166,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
+            ToolCallBehavior = GeminiToolCallBehavior.EnableFunctions([this._timePluginDate, this._timePluginNow])
         };
 
         // Act
@@ -197,7 +197,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
         };
 
         // Act
@@ -227,7 +227,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
         };
 
         // Act
@@ -257,7 +257,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
         };
 
         // Act
@@ -285,14 +285,14 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
         };
         // used reflection to simplify the test
-        typeof(ToolCallBehavior)
-            .GetField($"<{nameof(ToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+        typeof(GeminiToolCallBehavior)
+            .GetField($"<{nameof(GeminiToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
             .SetValue(executionSettings.ToolCallBehavior, 100);
-        typeof(ToolCallBehavior)
-            .GetField($"<{nameof(ToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+        typeof(GeminiToolCallBehavior)
+            .GetField($"<{nameof(GeminiToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
             .SetValue(executionSettings.ToolCallBehavior, 10);
 
         // Act
@@ -327,14 +327,14 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
         };
         // used reflection to simplify the test
-        typeof(ToolCallBehavior)
-            .GetField($"<{nameof(ToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+        typeof(GeminiToolCallBehavior)
+            .GetField($"<{nameof(GeminiToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
             .SetValue(executionSettings.ToolCallBehavior, 1);
-        typeof(ToolCallBehavior)
-            .GetField($"<{nameof(ToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+        typeof(GeminiToolCallBehavior)
+            .GetField($"<{nameof(GeminiToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
             .SetValue(executionSettings.ToolCallBehavior, 1);
 
         // Act
@@ -362,14 +362,14 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
         };
         // used reflection to simplify the test
-        typeof(ToolCallBehavior)
-            .GetField($"<{nameof(ToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+        typeof(GeminiToolCallBehavior)
+            .GetField($"<{nameof(GeminiToolCallBehavior.MaximumUseAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
             .SetValue(executionSettings.ToolCallBehavior, 100);
-        typeof(ToolCallBehavior)
-            .GetField($"<{nameof(ToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+        typeof(GeminiToolCallBehavior)
+            .GetField($"<{nameof(GeminiToolCallBehavior.MaximumAutoInvokeAttempts)}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
             .SetValue(executionSettings.ToolCallBehavior, 1);
 
         // Act
