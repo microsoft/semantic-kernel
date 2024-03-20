@@ -1,9 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from __future__ import annotations
+
 from typing import Any, Callable, Optional
 
 from pydantic import model_validator
 
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    AzureChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIPromptExecutionSettings,
 )
@@ -21,7 +26,7 @@ class FunctionCallingStepwisePlannerOptions(PlannerOptions):
     get_step_prompt: Optional[Callable[[], str]] = None
     max_iterations: Optional[int] = 15
     min_iteration_time_ms: Optional[int] = 100
-    execution_settings: Optional[OpenAIPromptExecutionSettings] = None
+    execution_settings: Optional[OpenAIPromptExecutionSettings | AzureChatPromptExecutionSettings] = None
 
     @model_validator(mode="before")
     @classmethod
