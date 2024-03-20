@@ -84,7 +84,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     )
     {
         MongoClientSettings settings = MongoClientSettings.FromConnectionString(connectionString);
-        settings.ApplicationName = applicationName;
+        settings.ApplicationName = applicationName ?? "DotNet_Semantic_Kernel";
         this._cosmosDBMongoClient = new MongoClient(settings);
         this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(databaseName);
         this._indexName = indexName ?? "default_index";
@@ -116,7 +116,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     )
     {
         MongoClientSettings settings = mongoClient.Settings;
-        settings.ApplicationName = applicationName;
+        settings.ApplicationName = applicationName ?? "DotNet_Semantic_Kernel";
         this._cosmosDBMongoClient = new MongoClient(settings);
         this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(databaseName);
         this._indexName = indexName ?? "default_index";
