@@ -49,7 +49,7 @@ class OpenAIConfigBase(OpenAIHandler):
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
             merged_headers.update(APP_INFO)
-        merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
         if not async_client:
             if not api_key:
