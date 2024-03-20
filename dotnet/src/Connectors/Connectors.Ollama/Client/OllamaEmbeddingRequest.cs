@@ -25,7 +25,7 @@ internal sealed class OllamaEmbeddingRequest
     /// <param name="ollamaPromptExecutionSettings">Execution settings to be used for the request.</param>
     /// <param name="connectorModelId">Model Id to be used for the request if no one is provided in the execution settings.</param>
     /// <returns>OllamaTextRequest object.</returns>
-    public static OllamaEmbeddingRequest FromPromptAndExecutionSettings(string prompt, OllamaPromptExecutionSettings ollamaPromptExecutionSettings, string connectorModelId)
+    internal static OllamaEmbeddingRequest FromPromptAndExecutionSettings(string prompt, OllamaPromptExecutionSettings ollamaPromptExecutionSettings, string connectorModelId)
     {
         return new OllamaEmbeddingRequest
         {

@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 /// <summary>
 /// Ollama Response object model.
 /// </summary>
-public sealed class OllamaTextRequest
+internal sealed class OllamaTextRequest
 {
     /// <summary>
     /// Candidate responses from the model.
@@ -34,7 +34,7 @@ public sealed class OllamaTextRequest
     /// <param name="ollamaPromptExecutionSettings">Execution settings to be used for the request.</param>
     /// <param name="connectorModelId">Model Id to be used for the request if no one is provided in the execution settings.</param>
     /// <returns>OllamaTextRequest object.</returns>
-    public static OllamaTextRequest FromPromptAndExecutionSettings(string prompt, OllamaPromptExecutionSettings ollamaPromptExecutionSettings, string connectorModelId)
+    internal static OllamaTextRequest FromPromptAndExecutionSettings(string prompt, OllamaPromptExecutionSettings ollamaPromptExecutionSettings, string connectorModelId)
     {
         return new OllamaTextRequest
         {
