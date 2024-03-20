@@ -35,9 +35,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ?
-            new AzureOpenAIAudioToTextService("deployment-name", "https://endpoint", "api-key", "model-id", loggerFactory: this._mockLoggerFactory.Object) :
-            new AzureOpenAIAudioToTextService("deployment-name", "https://endpoint", "api-key", "model-id");
+        var service = includeLoggerFactory ? new AzureOpenAIAudioToTextService("deployment-name", "https://endpoint", "api-key", "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAIAudioToTextService("deployment-name", "https://endpoint", "api-key", "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -51,9 +49,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     {
         // Arrange & Act
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var service = includeLoggerFactory ?
-            new AzureOpenAIAudioToTextService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
-            new AzureOpenAIAudioToTextService("deployment", "https://endpoint", credentials, "model-id");
+        var service = includeLoggerFactory ? new AzureOpenAIAudioToTextService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAIAudioToTextService("deployment", "https://endpoint", credentials, "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -67,9 +63,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
-        var service = includeLoggerFactory ?
-            new AzureOpenAIAudioToTextService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
-            new AzureOpenAIAudioToTextService("deployment", client, "model-id");
+        var service = includeLoggerFactory ? new AzureOpenAIAudioToTextService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAIAudioToTextService("deployment", client, "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -107,6 +101,27 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 
         // Act
         var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data")), new OpenAIAudioToTextExecutionSettings("file.mp3"));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Test audio-to-text response", result[0].Text);
+    }
+
+    [Fact]
+    public async Task GetTextContentWithStreamByDefaultWorksCorrectlyAsync()
+    {
+        // Arrange
+        var service = new AzureOpenAIAudioToTextService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        var result = await service.GetTextContentsAsync(
+            new AudioStreamContent(new BinaryData("data").ToStream()),
+            new OpenAIAudioToTextExecutionSettings("file.mp3")
+        );
 
         // Assert
         Assert.NotNull(result);

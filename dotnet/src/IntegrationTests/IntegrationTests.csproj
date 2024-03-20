@@ -6,7 +6,7 @@
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060</NoWarn>
+    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0005,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070</NoWarn>
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -48,6 +48,7 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Connectors\Connectors.AssemblyAI\Connectors.AssemblyAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
