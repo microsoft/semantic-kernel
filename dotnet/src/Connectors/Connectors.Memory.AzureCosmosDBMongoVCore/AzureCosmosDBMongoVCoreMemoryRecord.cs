@@ -53,11 +53,17 @@ public sealed class AzureCosmosDBMongoVCoreMemoryRecord
     /// <summary>
     /// Returns mapped <see cref="MemoryRecord"/>.
     /// </summary>
-    public static MemoryRecord ToMemoryRecord(BsonDocument doc, bool withEmbedding) 
+    public static MemoryRecord ToMemoryRecord(BsonDocument doc, bool withEmbedding)
     {
-        return new (
-            BsonSerializer.Deserialize<AzureCosmosDBMongoVCoreMemoryRecordMetadata>(doc["metadata"].AsBsonDocument).ToMemoryRecordMetadata(),
-            withEmbedding ? doc["embedding"].AsBsonArray.Select(x => (float)x.AsDouble).ToArray() : null,
+        return new(
+            BsonSerializer
+                .Deserialize<AzureCosmosDBMongoVCoreMemoryRecordMetadata>(
+                    doc["metadata"].AsBsonDocument
+                )
+                .ToMemoryRecordMetadata(),
+            withEmbedding
+                ? doc["embedding"].AsBsonArray.Select(x => (float)x.AsDouble).ToArray()
+                : null,
             doc["_id"].AsString,
             doc["timestamp"]?.ToUniversalTime()
         );
@@ -70,7 +76,11 @@ public sealed class AzureCosmosDBMongoVCoreMemoryRecord
     /// </summary>
     public MemoryRecord ToMemoryRecord(bool withEmbedding)
     {
-        return new(this.Metadata.ToMemoryRecordMetadata(), withEmbedding ? this.Embedding : null, this.Id, this.Timestamp?.ToLocalTime());
+        return new(
+            this.Metadata.ToMemoryRecordMetadata(),
+            withEmbedding ? this.Embedding : null,
+            this.Id,
+            this.Timestamp?.ToLocalTime()
+        );
     }
-
 }

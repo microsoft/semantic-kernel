@@ -4,8 +4,11 @@ from typing import List, Tuple
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import CosmosDBSimilarityType, \
-    CosmosDBVectorSearchType, get_mongodb_search_client
+from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
+    CosmosDBSimilarityType,
+    CosmosDBVectorSearchType,
+    get_mongodb_search_client,
+)
 from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord

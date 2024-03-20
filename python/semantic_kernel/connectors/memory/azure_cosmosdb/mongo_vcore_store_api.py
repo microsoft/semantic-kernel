@@ -8,8 +8,10 @@ import numpy as np
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
     AzureCosmosDBStoreApi,
 )
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import CosmosDBSimilarityType, \
-    CosmosDBVectorSearchType
+from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
+    CosmosDBSimilarityType,
+    CosmosDBVectorSearchType,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
@@ -100,8 +102,12 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                     )
                 elif self.kind == CosmosDBVectorSearchType.VECTOR_HNSW:
                     create_index_commands = self._get_vector_index_hnsw(
-                        collection_name, self.kind, self.m, self.ef_construction, self.similarity,
-                        self.vector_dimensions
+                        collection_name,
+                        self.kind,
+                        self.m,
+                        self.ef_construction,
+                        self.similarity,
+                        self.vector_dimensions,
                     )
                 # invoke the command from the database object
                 self.database.command(create_index_commands)
@@ -251,9 +257,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             nearest_results.append((result, aggResult["similarityScore"]))
         return nearest_results
 
-    def _get_pipeline_vector_ivf(
-        self, embeddings: List[float], k: int = 4
-    ) -> List[dict[str, Any]]:
+    def _get_pipeline_vector_ivf(self, embeddings: List[float], k: int = 4) -> List[dict[str, Any]]:
         pipeline: List[dict[str, Any]] = [
             {
                 "$search": {

@@ -69,5 +69,12 @@ public struct AzureCosmosDBMongoVCoreMemoryRecordMetadata
     /// Returns mapped <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata"/>.
     /// </summary>
     public MemoryRecordMetadata ToMemoryRecordMetadata() =>
-        new(this.IsReference, this.ExternalSourceName, this.Id, this.Description, this.Text, this.AdditionalMetadata);
+        new(
+            this.IsReference,
+            this.ExternalSourceName,
+            this.Id,
+            this.Description,
+            this.Text,
+            this.AdditionalMetadata
+        );
 }

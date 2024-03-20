@@ -19,12 +19,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver"/>
+    <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
   </ItemGroup>
-
-  <ItemGroup>
-        <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
-    </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
