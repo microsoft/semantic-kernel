@@ -1,3 +1,5 @@
+files: ^python/
+fail_fast: true
 repos:
   - repo: https://github.com/floatingpurr/sync_with_poetry
     rev: 1.1.0
@@ -25,3 +27,19 @@ repos:
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
+  - repo: local
+    hooks:
+    - id: mypy
+      name: mypy
+      entry: poetry -C python/ run python -m mypy --no-namespace-packages --config-file=python/mypy.ini 
+      language: system
+      types: [python]
+      pass_filenames: true
+  - repo: local
+    hooks:
+    - id: tests
+      name: tests
+      entry: poetry -C python/ run coverage run -m pytest python/tests/unit
+      language: system
+      types: [python]
+      pass_filenames: true

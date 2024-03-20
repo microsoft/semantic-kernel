@@ -456,6 +456,39 @@ def test_create_function_from_prompt_succeeds(kernel: Kernel):
     assert len(func.parameters) == 2
 
 
+def test_create_function_from_yaml_empty_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("", "plugin_name")
+
+
+def test_create_function_from_yaml_malformed_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("not yaml dict", "plugin_name")
+
+
+def test_create_function_from_valid_yaml(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYaml")
+    assert plugin is not None
+
+
+def test_create_function_from_valid_yaml_handlebars(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlHandlebars")
+    assert plugin is not None
+    assert plugin["TestFunctionHandlebars"] is not None
+
+
+def test_create_function_from_valid_yaml_jinja2(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlJinja2")
+    assert plugin is not None
+    assert plugin["TestFunctionJinja2"] is not None
+
+
 # endregion
 # region Functions
 
