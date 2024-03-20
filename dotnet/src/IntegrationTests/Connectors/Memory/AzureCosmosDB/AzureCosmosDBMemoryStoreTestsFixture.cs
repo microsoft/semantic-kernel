@@ -67,7 +67,7 @@ public class AzureCosmosDBMemoryStoreTestsFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await this.MemoryStore.DeleteCollectionAsync(this.CollectionName);
-        await this.MemoryStore.Dispose();
+        this.MemoryStore.Dispose();
     }
 
     private static string GetSetting(IConfigurationRoot configuration, string settingName)
