@@ -24,7 +24,7 @@ public class AzureCosmosDBMemoryStoreTestsFixture : IAsyncLifetime
     private int numberOfConnections = 16;
     private int efConstruction = 64;
     private int efSearch = 40;
-    private String applicationName = "DOTNET_SEMANTIC_KERNEL"
+    private String applicationName = "DOTNET_SEMANTIC_KERNEL";
 
     public AzureCosmosDBMemoryStoreTestsFixture()
     {
