@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama.Core;
 /// <summary>
 /// Ollama chat request object.
 /// </summary>
-public sealed class OllamaChatRequest
+internal sealed class OllamaChatRequest
 {
     /// <summary>
     /// Candidate responses from the model.
@@ -54,7 +54,7 @@ public sealed class OllamaChatRequest
     /// <summary>
     /// Ollama chat request message object.
     /// </summary>
-    public sealed class OllamaChatRequestMessage
+    internal sealed class OllamaChatRequestMessage
     {
         /// <summary>
         /// Role of the message.

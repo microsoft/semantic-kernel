@@ -4,11 +4,12 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.Ollama;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods for adding Ollama Text Generation service to the kernel builder.
