@@ -52,11 +52,16 @@
     <None Update="OpenAI\TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TestData\text_generation_test_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\embeddings_test_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Client\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
