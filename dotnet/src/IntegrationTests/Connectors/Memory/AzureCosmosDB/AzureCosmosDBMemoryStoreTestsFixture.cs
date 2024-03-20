@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Linq;
@@ -16,19 +16,28 @@ public class AzureCosmosDBMemoryStoreTestsFixture : IAsyncLifetime
     public string DatabaseName { get; }
     public string CollectionName { get; }
 
-    public string indexName = "default_index";
-    public string kind = "vector_hnsw";
-    public int numLists = 1;
-    public string similarity = "COS";
-    public int dimensions = 3;
-    public int numberOfConnections = 16;
-    public int efConstruction = 64;
-    public int efSearch = 40;
-    
+    private string indexName = "default_index";
+    private string kind = "vector_hnsw";
+    private int numLists = 1;
+    private string similarity = "COS";
+    private int dimensions = 3;
+    private int numberOfConnections = 16;
+    private int efConstruction = 64;
+    private int efSearch = 40;
+    private String applicationName = "DOTNET_SEMANTIC_KERNEL"
+
     public AzureCosmosDBMemoryStoreTestsFixture()
     {
         // Load Configuration
-        var configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).AddJsonFile(path: "testsettings.development.json", optional: false, reloadOnChange: true).AddEnvironmentVariables().Build();
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(
+                path: "testsettings.development.json",
+                optional: false,
+                reloadOnChange: true
+            )
+            .AddEnvironmentVariables()
+            .Build();
 
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
@@ -37,6 +46,7 @@ public class AzureCosmosDBMemoryStoreTestsFixture : IAsyncLifetime
             connectionString,
             this.DatabaseName,
             this.indexName,
+            this.applicationName,
             this.kind,
             this.numLists,
             this.similarity,
@@ -44,18 +54,20 @@ public class AzureCosmosDBMemoryStoreTestsFixture : IAsyncLifetime
             this.numberOfConnections,
             this.efConstruction,
             this.efSearch
-            );    
+        );
     }
 
     public async Task InitializeAsync()
     {
-        await this.MemoryStore.UpsertBatchAsync(this.CollectionName, DataHelper.VectorSearchTestRecords).ToListAsync();
+        await this
+            .MemoryStore.UpsertBatchAsync(this.CollectionName, DataHelper.VectorSearchTestRecords)
+            .ToListAsync();
     }
 
-    public async Task DisposeAsync() 
+    public async Task DisposeAsync()
     {
-        this.MemoryStore.DeleteCollectionAsync(this.CollectionName);
-        this.MemoryStore.Dispose();
+        await this.MemoryStore.DeleteCollectionAsync(this.CollectionName);
+        await this.MemoryStore.Dispose();
     }
 
     private static string GetSetting(IConfigurationRoot configuration, string settingName)

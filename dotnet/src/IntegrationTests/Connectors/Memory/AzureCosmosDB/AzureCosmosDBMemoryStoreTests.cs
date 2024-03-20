@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Linq;
@@ -52,7 +52,9 @@ public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemorySt
 
         await memoryStore.CreateCollectionAsync(collectionName);
         var keys = await memoryStore.UpsertBatchAsync(collectionName, records).ToListAsync();
-        var actualRecords = await memoryStore.GetBatchAsync(collectionName, keys, withEmbeddings: withEmbeddings).ToListAsync();
+        var actualRecords = await memoryStore
+            .GetBatchAsync(collectionName, keys, withEmbeddings: withEmbeddings)
+            .ToListAsync();
 
         Assert.NotNull(keys);
         Assert.NotNull(actualRecords);
@@ -62,7 +64,11 @@ public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemorySt
         var actualRecordsOrdered = actualRecords.OrderBy(r => r.Key).ToArray();
         for (int i = 0; i < Count; i++)
         {
-            AssertMemoryRecordEqual(records[i], actualRecordsOrdered[i], assertEmbeddingEqual: withEmbeddings);
+            AssertMemoryRecordEqual(
+                records[i],
+                actualRecordsOrdered[i],
+                assertEmbeddingEqual: withEmbeddings
+            );
         }
 
         await memoryStore.RemoveBatchAsync(collectionName, keys);
@@ -82,31 +88,47 @@ public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemorySt
         var searchEmbedding = DataHelper.VectorSearchTestEmbedding;
         var nearestMatchesExpected = DataHelper.VectorSearchExpectedResults;
 
-        var nearestMatchesActual = await memoryStore.GetNearestMatchesAsync(
-            collectionName,
-            searchEmbedding,
-            limit,
-            withEmbeddings: withEmbeddings)
+        var nearestMatchesActual = await memoryStore
+            .GetNearestMatchesAsync(
+                collectionName,
+                searchEmbedding,
+                limit,
+                withEmbeddings: withEmbeddings
+            )
             .ToListAsync();
 
         Assert.NotNull(nearestMatchesActual);
 
         for (int i = 0; i < limit; i++)
         {
-            AssertMemoryRecordEqual(nearestMatchesExpected[i], nearestMatchesActual[i].Item1, withEmbeddings);
-        } 
+            AssertMemoryRecordEqual(
+                nearestMatchesExpected[i],
+                nearestMatchesActual[i].Item1,
+                withEmbeddings
+            );
+        }
     }
 
-    private static void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord, bool assertEmbeddingEqual = true)
+    private static void AssertMemoryRecordEqual(
+        MemoryRecord expectedRecord,
+        MemoryRecord actualRecord,
+        bool assertEmbeddingEqual = true
+    )
     {
         Assert.Equal(expectedRecord.Key, actualRecord.Key);
         Assert.Equal(expectedRecord.Timestamp, actualRecord.Timestamp);
         Assert.Equal(expectedRecord.Metadata.Id, actualRecord.Metadata.Id);
         Assert.Equal(expectedRecord.Metadata.Text, actualRecord.Metadata.Text);
         Assert.Equal(expectedRecord.Metadata.Description, actualRecord.Metadata.Description);
-        Assert.Equal(expectedRecord.Metadata.AdditionalMetadata, actualRecord.Metadata.AdditionalMetadata);
+        Assert.Equal(
+            expectedRecord.Metadata.AdditionalMetadata,
+            actualRecord.Metadata.AdditionalMetadata
+        );
         Assert.Equal(expectedRecord.Metadata.IsReference, actualRecord.Metadata.IsReference);
-        Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
+        Assert.Equal(
+            expectedRecord.Metadata.ExternalSourceName,
+            actualRecord.Metadata.ExternalSourceName
+        );
 
         if (assertEmbeddingEqual)
         {

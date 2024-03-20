@@ -100,7 +100,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Initiates a AzureCosmosDBMongoVCoreMemoryStore instance using a Azure CosmosDB MongoDB client
     /// and other properties required for vector search.
-    /// <summary>
+    /// </summary>
     public AzureCosmosDBMongoVCoreMemoryStore(
         IMongoClient mongoClient,
         string databaseName,
@@ -464,7 +464,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
             limit = int.MaxValue;
         }
 
-        BsonDocument[] pipeline = null;
+        BsonDocument[] pipeline = Array.Empty<BsonDocument>();
         switch (this._kind)
         {
             case "vector-ivf":
