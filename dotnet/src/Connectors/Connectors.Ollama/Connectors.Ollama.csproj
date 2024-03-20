@@ -17,6 +17,10 @@
     <Title>Semantic Kernel - Ollama AI connectors</Title>
     <Description>Semantic Kernel connector for Ollama. Contains clients for text generation.</Description>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.Ollama.UnitTests" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
