@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.Google.Core;
 namespace Microsoft.SemanticKernel.Connectors.Google;
 
 /// <summary>Represents a behavior for Gemini tool calls.</summary>
-public abstract class ToolCallBehavior
+public abstract class GeminiToolCallBehavior
 {
     // NOTE: Right now, the only tools that are available are for function calling. In the future,
     // this class can be extended to support additional kinds of tools, including composite ones:
@@ -41,7 +41,7 @@ public abstract class ToolCallBehavior
     /// <remarks>
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ToolCallBehavior EnableKernelFunctions => new KernelFunctions(autoInvoke: false);
+    public static GeminiToolCallBehavior EnableKernelFunctions => new KernelFunctions(autoInvoke: false);
 
     /// <summary>
     /// Gets an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
@@ -52,23 +52,23 @@ public abstract class ToolCallBehavior
     /// handling invoking any requested functions and supplying the results back to the model.
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ToolCallBehavior AutoInvokeKernelFunctions => new KernelFunctions(autoInvoke: true);
+    public static GeminiToolCallBehavior AutoInvokeKernelFunctions => new KernelFunctions(autoInvoke: true);
 
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
     /// <returns>
-    /// The <see cref="ToolCallBehavior"/> that may be set into <see cref="ToolCallBehavior"/>
+    /// The <see cref="GeminiToolCallBehavior"/> that may be set into <see cref="GeminiToolCallBehavior"/>
     /// to indicate that the specified functions should be made available to the model.
     /// </returns>
-    public static ToolCallBehavior EnableFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke = false)
+    public static GeminiToolCallBehavior EnableFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke = false)
     {
         Verify.NotNull(functions);
         return new EnabledFunctions(functions, autoInvoke);
     }
 
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
-    private ToolCallBehavior(bool autoInvoke)
+    private GeminiToolCallBehavior(bool autoInvoke)
     {
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
@@ -95,22 +95,22 @@ public abstract class ToolCallBehavior
     /// false if a request needs to be validated against an allow list.</value>
     internal virtual bool AllowAnyRequestedKernelFunction => false;
 
-    /// <summary>Configures the <paramref name="request"/> with any tools this <see cref="ToolCallBehavior"/> provides.</summary>
+    /// <summary>Configures the <paramref name="request"/> with any tools this <see cref="GeminiToolCallBehavior"/> provides.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> used for the operation.
     /// This can be queried to determine what tools to provide into the <paramref name="request"/>.</param>
     /// <param name="request">The destination <see cref="GeminiRequest"/> to configure.</param>
     internal abstract void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request);
 
-    internal ToolCallBehavior Clone()
+    internal GeminiToolCallBehavior Clone()
     {
-        return (ToolCallBehavior)this.MemberwiseClone();
+        return (GeminiToolCallBehavior)this.MemberwiseClone();
     }
 
     /// <summary>
-    /// Represents a <see cref="ToolCallBehavior"/> that will provide to the model all available functions from a
+    /// Represents a <see cref="GeminiToolCallBehavior"/> that will provide to the model all available functions from a
     /// <see cref="Kernel"/> provided by the client.
     /// </summary>
-    internal sealed class KernelFunctions : ToolCallBehavior
+    internal sealed class KernelFunctions : GeminiToolCallBehavior
     {
         internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
 
@@ -135,9 +135,9 @@ public abstract class ToolCallBehavior
     }
 
     /// <summary>
-    /// Represents a <see cref="ToolCallBehavior"/> that provides a specified list of functions to the model.
+    /// Represents a <see cref="GeminiToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
-    internal sealed class EnabledFunctions : ToolCallBehavior
+    internal sealed class EnabledFunctions : GeminiToolCallBehavior
     {
         private readonly GeminiFunction[] _functions;
 

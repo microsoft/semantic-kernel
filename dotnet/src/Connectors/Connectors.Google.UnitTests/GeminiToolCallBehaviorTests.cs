@@ -11,18 +11,18 @@ using Xunit;
 namespace SemanticKernel.Connectors.Google.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="ToolCallBehavior"/>
+/// Unit tests for <see cref="GeminiToolCallBehavior"/>
 /// </summary>
-public sealed class ToolCallBehaviorTests
+public sealed class GeminiToolCallBehaviorTests
 {
     [Fact]
     public void EnableKernelFunctionsReturnsCorrectKernelFunctionsInstance()
     {
         // Arrange & Act
-        var behavior = ToolCallBehavior.EnableKernelFunctions;
+        var behavior = GeminiToolCallBehavior.EnableKernelFunctions;
 
         // Assert
-        Assert.IsType<ToolCallBehavior.KernelFunctions>(behavior);
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(behavior);
         Assert.Equal(0, behavior.MaximumAutoInvokeAttempts);
     }
 
@@ -30,10 +30,10 @@ public sealed class ToolCallBehaviorTests
     public void AutoInvokeKernelFunctionsReturnsCorrectKernelFunctionsInstance()
     {
         // Arrange & Act
-        var behavior = ToolCallBehavior.AutoInvokeKernelFunctions;
+        var behavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions;
 
         // Assert
-        Assert.IsType<ToolCallBehavior.KernelFunctions>(behavior);
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(behavior);
         Assert.Equal(5, behavior.MaximumAutoInvokeAttempts);
     }
 
@@ -43,17 +43,17 @@ public sealed class ToolCallBehaviorTests
         // Arrange & Act
         List<GeminiFunction> functions =
             [new GeminiFunction("Plugin", "Function", "description", [], null)];
-        var behavior = ToolCallBehavior.EnableFunctions(functions);
+        var behavior = GeminiToolCallBehavior.EnableFunctions(functions);
 
         // Assert
-        Assert.IsType<ToolCallBehavior.EnabledFunctions>(behavior);
+        Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(behavior);
     }
 
     [Fact]
     public void KernelFunctionsConfigureGeminiRequestWithNullKernelDoesNotAddTools()
     {
         // Arrange
-        var kernelFunctions = new ToolCallBehavior.KernelFunctions(autoInvoke: false);
+        var kernelFunctions = new GeminiToolCallBehavior.KernelFunctions(autoInvoke: false);
         var geminiRequest = new GeminiRequest();
 
         // Act
@@ -67,7 +67,7 @@ public sealed class ToolCallBehaviorTests
     public void KernelFunctionsConfigureGeminiRequestWithoutFunctionsDoesNotAddTools()
     {
         // Arrange
-        var kernelFunctions = new ToolCallBehavior.KernelFunctions(autoInvoke: false);
+        var kernelFunctions = new GeminiToolCallBehavior.KernelFunctions(autoInvoke: false);
         var geminiRequest = new GeminiRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
@@ -82,7 +82,7 @@ public sealed class ToolCallBehaviorTests
     public void KernelFunctionsConfigureGeminiRequestWithFunctionsAddsTools()
     {
         // Arrange
-        var kernelFunctions = new ToolCallBehavior.KernelFunctions(autoInvoke: false);
+        var kernelFunctions = new GeminiToolCallBehavior.KernelFunctions(autoInvoke: false);
         var geminiRequest = new GeminiRequest();
         var kernel = Kernel.CreateBuilder().Build();
         var plugin = GetTestPlugin();
@@ -99,7 +99,7 @@ public sealed class ToolCallBehaviorTests
     public void EnabledFunctionsConfigureGeminiRequestWithoutFunctionsDoesNotAddTools()
     {
         // Arrange
-        var enabledFunctions = new ToolCallBehavior.EnabledFunctions([], autoInvoke: false);
+        var enabledFunctions = new GeminiToolCallBehavior.EnabledFunctions([], autoInvoke: false);
         var geminiRequest = new GeminiRequest();
 
         // Act
@@ -114,13 +114,13 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => GeminiKernelFunctionMetadataExtensions.ToGeminiFunction(function));
-        var enabledFunctions = new ToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
+        var enabledFunctions = new GeminiToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
         var geminiRequest = new GeminiRequest();
 
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureGeminiRequest(null, geminiRequest));
         Assert.Equal(
-            $"Auto-invocation with {nameof(ToolCallBehavior.EnabledFunctions)} is not supported when no kernel is provided.",
+            $"Auto-invocation with {nameof(GeminiToolCallBehavior.EnabledFunctions)} is not supported when no kernel is provided.",
             exception.Message);
     }
 
@@ -129,14 +129,14 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
-        var enabledFunctions = new ToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
+        var enabledFunctions = new GeminiToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
         var geminiRequest = new GeminiRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureGeminiRequest(kernel, geminiRequest));
         Assert.Equal(
-            $"The specified {nameof(ToolCallBehavior.EnabledFunctions)} function MyPlugin{GeminiFunction.NameSeparator}MyFunction is not available in the kernel.",
+            $"The specified {nameof(GeminiToolCallBehavior.EnabledFunctions)} function MyPlugin{GeminiFunction.NameSeparator}MyFunction is not available in the kernel.",
             exception.Message);
     }
 
@@ -148,7 +148,7 @@ public sealed class ToolCallBehaviorTests
         // Arrange
         var plugin = GetTestPlugin();
         var functions = plugin.GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
-        var enabledFunctions = new ToolCallBehavior.EnabledFunctions(functions, autoInvoke);
+        var enabledFunctions = new GeminiToolCallBehavior.EnabledFunctions(functions, autoInvoke);
         var geminiRequest = new GeminiRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
@@ -166,13 +166,13 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
-        var toolcallbehavior = new ToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
+        var toolcallbehavior = new GeminiToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
 
         // Act
         var clone = toolcallbehavior.Clone();
 
         // Assert
-        Assert.IsType<ToolCallBehavior.EnabledFunctions>(clone);
+        Assert.IsType<GeminiToolCallBehavior.EnabledFunctions>(clone);
         Assert.NotSame(toolcallbehavior, clone);
         Assert.Equivalent(toolcallbehavior, clone, strict: true);
     }
@@ -182,13 +182,13 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
-        var toolcallbehavior = new ToolCallBehavior.KernelFunctions(autoInvoke: true);
+        var toolcallbehavior = new GeminiToolCallBehavior.KernelFunctions(autoInvoke: true);
 
         // Act
         var clone = toolcallbehavior.Clone();
 
         // Assert
-        Assert.IsType<ToolCallBehavior.KernelFunctions>(clone);
+        Assert.IsType<GeminiToolCallBehavior.KernelFunctions>(clone);
         Assert.NotSame(toolcallbehavior, clone);
         Assert.Equivalent(toolcallbehavior, clone, strict: true);
     }
