@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,6 +21,7 @@ namespace Microsoft.SemanticKernel.Text;
 /// <remarks>
 /// This class is thread-safe.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 internal sealed class StreamJsonParser
 {
     /// <summary>
