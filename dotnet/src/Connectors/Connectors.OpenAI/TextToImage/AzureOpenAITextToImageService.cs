@@ -142,10 +142,9 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         if (httpClient != null)
         {
-            // Disable retries when using a custom HttpClient
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0);
-
             options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
         }
 
         return options;
