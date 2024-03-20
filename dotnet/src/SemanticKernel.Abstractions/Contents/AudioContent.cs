@@ -14,6 +14,11 @@ namespace Microsoft.SemanticKernel;
 public class AudioContent : KernelContent
 {
     /// <summary>
+    /// URI of audio file.
+    /// </summary>
+    public Uri? Uri { get; set; }
+
+    /// <summary>
     /// The audio data.
     /// </summary>
     public ReadOnlyMemory<byte>? Data { get; set; }
@@ -41,5 +46,22 @@ public class AudioContent : KernelContent
         : base(innerContent, modelId, metadata)
     {
         this.Data = data;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    /// <param name="uri">URI of audio file.</param>
+    /// <param name="modelId">The model ID used to generate the content.</param>
+    /// <param name="innerContent">Inner content,</param>
+    /// <param name="metadata">Additional metadata</param>
+    public AudioContent(
+        Uri uri,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Uri = uri;
     }
 }
