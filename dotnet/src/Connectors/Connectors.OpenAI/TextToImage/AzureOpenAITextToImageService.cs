@@ -8,10 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
-using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
 
@@ -127,29 +125,12 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         return imageGenerations.Value.Data[0].Url.AbsoluteUri;
     }
 
-    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient, string? apiVersion)
-    {
-        OpenAIClientOptions.ServiceVersion version = apiVersion switch
+    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient, string? apiVersion) =>
+        ClientCore.GetOpenAIClientOptions(httpClient, apiVersion switch
         {
             // DALL-E 3 is supported in the latest API releases
             _ => OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview
-        };
-
-        var options = new OpenAIClientOptions(version)
-        {
-            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-        };
-
-        if (httpClient != null)
-        {
-            // Disable retries when using a custom HttpClient
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0);
-
-            options.Transport = new HttpClientTransport(httpClient);
-        }
-
-        return options;
-    }
+        });
 
     internal void AddAttribute(string key, string? value)
     {
