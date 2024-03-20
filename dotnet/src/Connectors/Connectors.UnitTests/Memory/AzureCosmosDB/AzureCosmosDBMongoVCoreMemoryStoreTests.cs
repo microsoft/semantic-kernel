@@ -40,8 +40,8 @@ public class AzureCosmosDBMongoVCoreMemoryStoreTests
         this._mongoClusterMock = new Mock<ICluster>();
         this._mongoSettingsMock = new Mock<MongoClientSettings>();
 
-        _mockMongoClient.Setup(client => client.Settings).Returns(this._mongoSettingsMock.Object);
-        _mockMongoSettings.SetupProperty(
+        _mongoClientMock.Setup(client => client.Settings).Returns(this._mongoSettingsMock.Object);
+        _mongoSettingsMock.SetupProperty(
             settings => settings.ApplicationName,
             "DotNet_Semantic_Kernel"
         );
