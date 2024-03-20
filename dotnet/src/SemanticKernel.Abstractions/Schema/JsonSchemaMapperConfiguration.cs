@@ -1,11 +1,12 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace JsonSchemaMapper;
 
 /// <summary>
 /// Controls the behavior of the <see cref="JsonSchemaMapper"/> class.
 /// </summary>
-public class JsonSchemaMapperConfiguration
+internal sealed class JsonSchemaMapperConfiguration
 {
     /// <summary>
     /// Gets the default configuration object used by <see cref="JsonSchemaMapper"/>.
@@ -42,9 +43,9 @@ public class JsonSchemaMapperConfiguration
     /// Determines whether nullability should be included in the schema for reference types.
     /// </summary>
     /// <remarks>
-    /// Defaults to false. Currently STJ doesn't recognize non-nullable reference types 
-    /// (https://github.com/dotnet/runtime/issues/1256) so the serializer will always treat 
-    /// them as nullable. Enabling this option improves accuracy of the generated schema 
+    /// Defaults to false. Currently STJ doesn't recognize non-nullable reference types
+    /// (https://github.com/dotnet/runtime/issues/1256) so the serializer will always treat
+    /// them as nullable. Enabling this option improves accuracy of the generated schema
     /// with respect to the actual serialization behavior but can result in more noise.
     /// </remarks>
     public bool AllowNullForReferenceTypes { get; init; }
@@ -58,7 +59,7 @@ public class JsonSchemaMapperConfiguration
     /// </remarks>
     public int MaxDepth
     {
-        get => _maxDepth;
+        get => this._maxDepth;
         init
         {
             if (value < 0)
@@ -67,7 +68,7 @@ public class JsonSchemaMapperConfiguration
                 static void Throw() => throw new ArgumentOutOfRangeException(nameof(value));
             }
 
-            _maxDepth = value;
+            this._maxDepth = value;
         }
     }
 }

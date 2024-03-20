@@ -1,19 +1,22 @@
-﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization.Metadata;
-using System.Text.Json.Serialization;
-using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace JsonSchemaMapper;
 
 /// <summary>
 /// Maps .NET types to JSON schema objects using contract metadata from <see cref="JsonTypeInfo"/> instances.
 /// </summary>
-public static class JsonSchemaMapper
+internal static class JsonSchemaMapper
 {
     /// <summary>
     /// The JSON schema draft version used by the generated schemas.
@@ -52,7 +55,7 @@ public static class JsonSchemaMapper
     }
 
     /// <summary>
-    /// Generates a JSON schema corresponding to the specified contract metadata.   
+    /// Generates a JSON schema corresponding to the specified contract metadata.
     /// </summary>
     /// <param name="typeInfo">The contract metadata for which to generate the schema.</param>
     /// <param name="configuration">The configuration object controlling the schema generation.</param>
@@ -122,9 +125,9 @@ public static class JsonSchemaMapper
 
             return MapJsonSchemaCore(
                 nullableElementTypeInfo,
-                ref state, 
-                description, 
-                customConverter, 
+                ref state,
+                description,
+                customConverter,
                 parentNullableOfT: type);
         }
 
@@ -206,13 +209,14 @@ public static class JsonSchemaMapper
                         }
                         else if (numberHandling is JsonNumberHandling.AllowNamedFloatingPointLiterals)
                         {
-                            anyOfTypes = [
+                            anyOfTypes = new JsonArray()
+                            {
                                 new JsonObject { [TypePropertyName] = MapSchemaType(schemaType) },
-                                new JsonObject 
+                                new JsonObject
                                 {
                                     [EnumPropertyName] = new JsonArray { (JsonNode)"NaN", (JsonNode)"Infinity", (JsonNode)"-Infinity" }
                                 }
-                            ];
+                            };
 
                             schemaType = JsonSchemaType.Any; // reset the parent setting
                         }
@@ -259,8 +263,8 @@ public static class JsonSchemaMapper
                 if (emitsTypeDiscriminator)
                 {
                     Debug.Assert(derivedTypeDiscriminator?.Value is not null);
-                    (properties ??= []).Add(derivedTypeDiscriminator!.Value);
-                    (requiredProperties ??= []).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
+                    (properties ??= new()).Add(derivedTypeDiscriminator!.Value);
+                    (requiredProperties ??= new()).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
                 }
 
                 state.Push(PropertiesPropertyName);
@@ -286,11 +290,11 @@ public static class JsonSchemaMapper
                     JsonObject propertySchema = MapJsonSchemaCore(propertyTypeInfo, ref state, propertyDescription, property.CustomConverter, propertyNumberHandling);
                     state.Pop();
 
-                    (properties ??= []).Add(property.Name, propertySchema);
+                    (properties ??= new()).Add(property.Name, propertySchema);
 
                     if (property.IsRequired)
                     {
-                        (requiredProperties ??= []).Add((JsonNode)property.Name);
+                        (requiredProperties ??= new()).Add((JsonNode)property.Name);
                     }
                 }
                 state.Pop();
@@ -311,8 +315,8 @@ public static class JsonSchemaMapper
                     // { "properties" : { "$type" : { "const" : "discriminator" }, "$values" : { "type" : "array", "items" : { ... } } } }
 
                     schemaType = JsonSchemaType.Object;
-                    (properties ??= []).Add(derivedTypeDiscriminator!.Value);
-                    (requiredProperties ??= []).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
+                    (properties ??= new()).Add(derivedTypeDiscriminator!.Value);
+                    (requiredProperties ??= new()).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
 
                     state.Push(PropertiesPropertyName);
                     state.Push(StjValuesMetadataProperty);
@@ -322,7 +326,7 @@ public static class JsonSchemaMapper
                     state.Pop();
                     state.Pop();
 
-                    properties.Add(StjValuesMetadataProperty, 
+                    properties.Add(StjValuesMetadataProperty,
                         new JsonObject
                         {
                             [TypePropertyName] = MapSchemaType(JsonSchemaType.Array),
@@ -348,8 +352,8 @@ public static class JsonSchemaMapper
                 if (emitsTypeDiscriminator)
                 {
                     Debug.Assert(derivedTypeDiscriminator?.Value is not null);
-                    (properties ??= []).Add(derivedTypeDiscriminator!.Value);
-                    (requiredProperties ??= []).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
+                    (properties ??= new()).Add(derivedTypeDiscriminator!.Value);
+                    (requiredProperties ??= new()).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
                 }
 
                 state.Push(AdditionalPropertiesPropertyName);
@@ -383,65 +387,72 @@ public static class JsonSchemaMapper
             additionalProperties,
             enumValues,
             anyOfTypes,
-            ref state);
+            state);
     }
 
-    private ref struct GenerationState(JsonSchemaMapperConfiguration configuration)
+    private ref struct GenerationState
     {
+        private readonly List<string>? _currentPath;
+        private readonly Dictionary<(Type, JsonConverter), string>? _typePaths;
         private int _currentDepth = 0;
-        private readonly List<string>? _currentPath = configuration.AllowSchemaReferences ? new() : null;
-        private readonly Dictionary<(Type, JsonConverter), string>? _typePaths = configuration.AllowSchemaReferences ? new() : null;
 
-        public readonly JsonSchemaMapperConfiguration Configuration => configuration;
-        public readonly int CurrentDepth => _currentDepth;
+        public GenerationState(JsonSchemaMapperConfiguration configuration)
+        {
+            this.Configuration = configuration;
+            this._currentPath = configuration.AllowSchemaReferences ? new() : null;
+            this._typePaths = configuration.AllowSchemaReferences ? new() : null;
+        }
+
+        public readonly JsonSchemaMapperConfiguration Configuration { get; }
+        public readonly int CurrentDepth => this._currentDepth;
 
         public void Push(string nodeId)
         {
-            if (_currentDepth == configuration.MaxDepth)
+            if (this._currentDepth == this.Configuration.MaxDepth)
             {
                 Throw();
                 static void Throw() => throw new InvalidOperationException("The maximum depth of the schema has been reached.");
             }
 
-            _currentDepth++;
+            this._currentDepth++;
 
-            if (configuration.AllowSchemaReferences)
+            if (this.Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(_currentPath != null);
-                _currentPath!.Add(nodeId);
+                Debug.Assert(this._currentPath != null);
+                this._currentPath!.Add(nodeId);
             }
         }
 
         public void Pop()
         {
-            Debug.Assert(_currentDepth > 0);
-            _currentDepth--;
+            Debug.Assert(this._currentDepth > 0);
+            this._currentDepth--;
 
-            if (configuration.AllowSchemaReferences)
+            if (this.Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(_currentPath != null);
-                _currentPath!.RemoveAt(_currentPath.Count - 1);
+                Debug.Assert(this._currentPath != null);
+                this._currentPath!.RemoveAt(this._currentPath.Count - 1);
             }
         }
 
         public readonly void RegisterTypePath(Type type, JsonConverter converter)
         {
-            if (Configuration.AllowSchemaReferences)
+            if (this.Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(_currentPath != null);
-                Debug.Assert(_typePaths != null);
+                Debug.Assert(this._currentPath != null);
+                Debug.Assert(this._typePaths != null);
 
-                string pointer = _currentDepth == 0 ? "#" : "#/" + string.Join("/", _currentPath);
-                _typePaths!.Add((type, converter), pointer);
+                string pointer = this._currentDepth == 0 ? "#" : "#/" + string.Join("/", this._currentPath);
+                this._typePaths!.Add((type, converter), pointer);
             }
         }
 
         public readonly bool TryGetGeneratedSchemaPath(Type type, JsonConverter converter, [NotNullWhen(true)]out string? value)
         {
-            if (Configuration.AllowSchemaReferences)
+            if (this.Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(_typePaths != null);
-                return _typePaths!.TryGetValue((type, converter), out value);
+                Debug.Assert(this._typePaths != null);
+                return this._typePaths!.TryGetValue((type, converter), out value);
             }
 
             value = null;
@@ -459,7 +470,7 @@ public static class JsonSchemaMapper
         JsonNode? additionalProperties,
         JsonArray? enumValues,
         JsonArray? anyOfSchema,
-        ref readonly GenerationState state)
+        GenerationState state)
     {
         var schema = new JsonObject();
 
@@ -529,7 +540,7 @@ public static class JsonSchemaMapper
         Object = 64,
     }
 
-    private readonly static JsonSchemaType[] s_schemaValues = [
+    private readonly static JsonSchemaType[] s_schemaValues = {
         // NB the order of these values influences order of types in the rendered schema
         JsonSchemaType.String,
         JsonSchemaType.Integer,
@@ -538,7 +549,7 @@ public static class JsonSchemaMapper
         JsonSchemaType.Array,
         JsonSchemaType.Object,
         JsonSchemaType.Null
-    ];
+    };
 
     private static JsonNode? MapSchemaType(JsonSchemaType schemaType)
     {
