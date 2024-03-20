@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.AI.OpenAI;
-using Json.Schema;
-using Json.Schema.Generation;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -176,11 +174,7 @@ public sealed class OpenAIFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchema.Parse(JsonSerializer.Serialize(
-                new JsonSchemaBuilder()
-                .FromType(typeof(string))
-                .Description(description!)
-                .Build()));
+            return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.

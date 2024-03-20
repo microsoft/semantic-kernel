@@ -3,8 +3,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Json.Schema;
-using Json.Schema.Generation;
 
 namespace Microsoft.SemanticKernel;
 
@@ -140,12 +138,7 @@ public sealed class KernelParameterMetadata
                         description += $"{(needsSpace ? " " : "")}(default value: {stringDefault})";
                     }
 
-                    var builder = new JsonSchemaBuilder().FromType(parameterType);
-                    if (!string.IsNullOrWhiteSpace(description))
-                    {
-                        builder = builder.Description(description!);
-                    }
-                    schema = new KernelJsonSchema(JsonSerializer.SerializeToElement(builder.Build()));
+                    schema = KernelJsonSchemaBuilder.Build(null, parameterType, description);
                 }
                 catch (ArgumentException)
                 {
