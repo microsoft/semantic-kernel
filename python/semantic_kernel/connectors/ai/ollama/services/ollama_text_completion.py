@@ -54,7 +54,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         settings.prompt = prompt
         settings.stream = False
         async with AsyncSession(self.session) as session:
-            async with session.post(self.url, json=settings.prepare_settings_dict() as response:
+            async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
                 inner_content = await response.json()
                 text = inner_content["response"]
