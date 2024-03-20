@@ -72,6 +72,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0070 | Ollama AI connector | | | | | |
 | SKEXP0070 | Gemini AI connector | | | | | |
 | SKEXP0070 | Mistral AI connector | | | | | |
+| SKEXP0070 | ONNX AI connector | | | | | |
 | | | | | | | |
 | SKEXP0101 | Experiment with Assistants | | | | | |
 | SKEXP0101 | Experiment with Flow Orchestration | | | | | |
