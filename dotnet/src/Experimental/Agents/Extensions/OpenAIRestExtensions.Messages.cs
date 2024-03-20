@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,24 +22,27 @@ internal static partial class OpenAIRestExtensions
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="content">The message text</param>
+    /// <param name="fileIds">Up to 10 file ids</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message definition</returns>
     public static Task<ThreadMessageModel> CreateUserTextMessageAsync(
         this OpenAIRestContext context,
         string threadId,
         string content,
+        IEnumerable<string>? fileIds,
         CancellationToken cancellationToken = default)
     {
         var payload =
             new
             {
                 role = AuthorRole.User.Label,
-                content,
+                file_ids = fileIds?.ToArray() ?? Array.Empty<string>(),
+                content
             };
 
         return
             context.ExecutePostAsync<ThreadMessageModel>(
-                GetMessagesUrl(threadId),
+                context.GetMessagesUrl(threadId),
                 payload,
                 cancellationToken);
     }
@@ -59,7 +63,7 @@ internal static partial class OpenAIRestExtensions
     {
         return
             context.ExecuteGetAsync<ThreadMessageModel>(
-                GetMessagesUrl(threadId, messageId),
+                context.GetMessagesUrl(threadId, messageId),
                 cancellationToken);
     }
 
@@ -68,16 +72,21 @@ internal static partial class OpenAIRestExtensions
     /// </summary>
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
+    /// <param name="lastId">The identifier of the last message retrieved</param>
+    /// <param name="count">The maximum number of messages requested (up to 100 / default: 25)</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message list definition</returns>
     public static Task<ThreadMessageListModel> GetMessagesAsync(
         this OpenAIRestContext context,
         string threadId,
+        string? lastId = null,
+        int? count = null,
         CancellationToken cancellationToken = default)
     {
         return
             context.ExecuteGetAsync<ThreadMessageListModel>(
-                GetMessagesUrl(threadId),
+                context.GetMessagesUrl(threadId),
+                $"limit={count ?? 25}&after={lastId ?? string.Empty}",
                 cancellationToken);
     }
 
@@ -99,7 +108,7 @@ internal static partial class OpenAIRestExtensions
             messageIds.Select(
                 id =>
                     context.ExecuteGetAsync<ThreadMessageModel>(
-                        GetMessagesUrl(threadId, id),
+                        context.GetMessagesUrl(threadId, id),
                         cancellationToken)).ToArray();
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -107,13 +116,13 @@ internal static partial class OpenAIRestExtensions
         return tasks.Select(t => t.Result).ToArray();
     }
 
-    internal static string GetMessagesUrl(string threadId)
+    internal static string GetMessagesUrl(this OpenAIRestContext context, string threadId)
     {
-        return $"{BaseThreadUrl}/{threadId}/messages";
+        return $"{context.GetThreadUrl(threadId)}/messages";
     }
 
-    internal static string GetMessagesUrl(string threadId, string messageId)
+    internal static string GetMessagesUrl(this OpenAIRestContext context, string threadId, string messageId)
     {
-        return $"{BaseThreadUrl}/{threadId}/messages/{messageId}";
+        return $"{context.GetThreadUrl(threadId)}/messages/{messageId}";
     }
 }

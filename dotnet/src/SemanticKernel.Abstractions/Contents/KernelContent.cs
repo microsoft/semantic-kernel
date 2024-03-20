@@ -8,6 +8,15 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
+[JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
+#pragma warning disable SKEXP0010
+[JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
+#pragma warning restore SKEXP0010
+#pragma warning disable SKEXP0001
+[JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
+#pragma warning restore SKEXP0001
 public abstract class KernelContent
 {
     /// <summary>
@@ -17,17 +26,29 @@ public abstract class KernelContent
     /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
     /// </remarks>
     [JsonIgnore]
-    public object? InnerContent { get; }
+    public object? InnerContent { get; set; }
 
     /// <summary>
     /// The model ID used to generate the content.
     /// </summary>
-    public string? ModelId { get; }
+    public string? ModelId { get; set; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
+
+    /// <summary>
+    /// MIME type of the content.
+    /// </summary>
+    public string? MimeType { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelContent"/> class.
+    /// </summary>
+    protected KernelContent()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.

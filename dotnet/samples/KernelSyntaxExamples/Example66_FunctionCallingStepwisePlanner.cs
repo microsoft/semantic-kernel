@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,12 +22,12 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
 
         var kernel = InitializeKernel();
 
-        var config = new FunctionCallingStepwisePlannerConfig
+        var options = new FunctionCallingStepwisePlannerOptions
         {
             MaxIterations = 15,
             MaxTokens = 4000,
         };
-        var planner = new FunctionCallingStepwisePlanner(config);
+        var planner = new FunctionCallingStepwisePlanner(options);
 
         foreach (var question in questions)
         {
@@ -52,7 +51,7 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
                 modelId: "gpt-3.5-turbo-1106")
             .Build();
 
-        kernel.ImportPluginFromType<EmailPlugin>();
+        kernel.ImportPluginFromType<Plugins.EmailPlugin>();
         kernel.ImportPluginFromType<MathPlugin>();
         kernel.ImportPluginFromType<TimePlugin>();
 

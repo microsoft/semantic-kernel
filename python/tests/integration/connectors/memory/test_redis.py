@@ -3,14 +3,11 @@
 import asyncio
 import os
 import platform
-from datetime import datetime
 
-import numpy as np
 import pytest
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.memory.redis import RedisMemoryStore
-from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
     import redis  # noqa: F401
@@ -37,48 +34,6 @@ def connection_string():
         connection_string = "redis://localhost:6379"
 
     return connection_string
-
-
-@pytest.fixture
-def memory_record1():
-    return MemoryRecord(
-        id="test_id1",
-        text="sample text1",
-        is_reference=False,
-        embedding=np.array([0.5, 0.5]),
-        description="description",
-        additional_metadata="additional metadata",
-        external_source_name="external source",
-        timestamp=datetime.now(),
-    )
-
-
-@pytest.fixture
-def memory_record2():
-    return MemoryRecord(
-        id="test_id2",
-        text="sample text2",
-        is_reference=False,
-        embedding=np.array([0.25, 0.75]),
-        description="description",
-        additional_metadata="additional metadata",
-        external_source_name="external source",
-        timestamp=datetime.now(),
-    )
-
-
-@pytest.fixture
-def memory_record3():
-    return MemoryRecord(
-        id="test_id3",
-        text="sample text3",
-        is_reference=False,
-        embedding=np.array([0.25, 0.80]),
-        description="description",
-        additional_metadata="additional metadata",
-        external_source_name="external source",
-        timestamp=datetime.now(),
-    )
 
 
 @pytest.fixture
@@ -158,7 +113,6 @@ async def test_upsert_and_get(memory_store, memory_record1):
 
     assert fetch_1 is not None, "Could not get record"
     assert fetch_1._id == memory_record1._id
-    assert fetch_1._timestamp == memory_record1._timestamp
     assert fetch_1._is_reference == memory_record1._is_reference
     assert fetch_1._external_source_name == memory_record1._external_source_name
     assert fetch_1._description == memory_record1._description
@@ -239,7 +193,6 @@ async def test_get_nearest_match(memory_store, memory_record1, memory_record2):
 
     assert result is not None
     assert result[0]._id == memory_record1._id
-    assert result[0]._timestamp == memory_record1._timestamp
     assert result[0]._is_reference == memory_record1._is_reference
     assert result[0]._external_source_name == memory_record1._external_source_name
     assert result[0]._description == memory_record1._description

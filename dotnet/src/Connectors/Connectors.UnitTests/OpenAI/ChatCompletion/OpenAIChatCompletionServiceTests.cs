@@ -99,8 +99,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("TimePlugin_Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
-        Assert.Equal("TimePlugin_Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("TimePlugin_Now", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
     }
 
     [Fact]
@@ -256,11 +256,68 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.Equal(2, optionsJson.GetProperty("messages").GetArrayLength());
-        Assert.Equal("Assistant is a large language model.", optionsJson.GetProperty("messages")[0].GetProperty("content").GetString());
-        Assert.Equal("system", optionsJson.GetProperty("messages")[0].GetProperty("role").GetString());
-        Assert.Equal("Hello", optionsJson.GetProperty("messages")[1].GetProperty("content").GetString());
-        Assert.Equal("user", optionsJson.GetProperty("messages")[1].GetProperty("role").GetString());
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(2, messages.GetArrayLength());
+
+        Assert.Equal("Assistant is a large language model.", messages[0].GetProperty("content").GetString());
+        Assert.Equal("system", messages[0].GetProperty("role").GetString());
+
+        Assert.Equal("Hello", messages[1].GetProperty("content").GetString());
+        Assert.Equal("user", messages[1].GetProperty("role").GetString());
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsWithChatMessageContentItemCollectionAndSettingsCorrectlyAsync()
+    {
+        // Arrange
+        const string Prompt = "This is test prompt";
+        const string SystemMessage = "This is test system message";
+        const string AssistantMessage = "This is assistant message";
+        const string CollectionItemPrompt = "This is collection item prompt";
+
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var settings = new OpenAIPromptExecutionSettings() { ChatSystemPrompt = SystemMessage };
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(Prompt);
+        chatHistory.AddAssistantMessage(AssistantMessage);
+        chatHistory.AddUserMessage(new ChatMessageContentItemCollection()
+        {
+            new TextContent(CollectionItemPrompt),
+            new ImageContent(new Uri("https://image"))
+        });
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, settings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+
+        Assert.Equal(4, messages.GetArrayLength());
+
+        Assert.Equal(SystemMessage, messages[0].GetProperty("content").GetString());
+        Assert.Equal("system", messages[0].GetProperty("role").GetString());
+
+        Assert.Equal(Prompt, messages[1].GetProperty("content").GetString());
+        Assert.Equal("user", messages[1].GetProperty("role").GetString());
+
+        Assert.Equal(AssistantMessage, messages[2].GetProperty("content").GetString());
+        Assert.Equal("assistant", messages[2].GetProperty("role").GetString());
+
+        var contentItems = messages[3].GetProperty("content");
+        Assert.Equal(2, contentItems.GetArrayLength());
+        Assert.Equal(CollectionItemPrompt, contentItems[0].GetProperty("text").GetString());
+        Assert.Equal("text", contentItems[0].GetProperty("type").GetString());
+        Assert.Equal("https://image/", contentItems[1].GetProperty("image_url").GetProperty("url").GetString());
+        Assert.Equal("image_url", contentItems[1].GetProperty("type").GetString());
     }
 
     public void Dispose()

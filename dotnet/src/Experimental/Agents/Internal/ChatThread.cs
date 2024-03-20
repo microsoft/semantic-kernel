@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ internal sealed class ChatThread : IAgentThread
         // Common case is for failure exception to be raised by REST invocation.  Null result is a logical possibility, but unlikely edge case.
         var threadModel = await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false);
 
-        return new ChatThread(threadModel, messageListModel: null, restContext);
+        return new ChatThread(threadModel, restContext);
     }
 
     /// <summary>
@@ -44,39 +45,42 @@ internal sealed class ChatThread : IAgentThread
     public static async Task<IAgentThread> GetAsync(OpenAIRestContext restContext, string threadId, CancellationToken cancellationToken = default)
     {
         var threadModel = await restContext.GetThreadModelAsync(threadId, cancellationToken).ConfigureAwait(false);
-        var messageListModel = await restContext.GetMessagesAsync(threadId, cancellationToken).ConfigureAwait(false);
 
-        return new ChatThread(threadModel, messageListModel, restContext);
+        return new ChatThread(threadModel, restContext);
     }
 
     /// <inheritdoc/>
-    public async Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
+    public async Task<IChatMessage> AddUserMessageAsync(string message, IEnumerable<string>? fileIds = null, CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
-        var messageModel =
-            await this._restContext.CreateUserTextMessageAsync(
-                this.Id,
-                message,
-                cancellationToken).ConfigureAwait(false);
+        var messageModel = await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds, cancellationToken).ConfigureAwait(false);
 
         return new ChatMessage(messageModel);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<IChatMessage>> GetMessagesAsync(int? count = null, string? lastMessageId = null, CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(agent, string.Empty, arguments, cancellationToken);
+        var messageModel = await this._restContext.GetMessagesAsync(this.Id, lastMessageId, count, cancellationToken).ConfigureAwait(false);
+
+        return messageModel.Data.Select(m => new ChatMessage(m)).ToArray();
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, KernelArguments? arguments = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    {
+        return this.InvokeAsync(agent, string.Empty, arguments, null, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, KernelArguments? arguments = null, IEnumerable<string>? fileIds = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
         if (!string.IsNullOrWhiteSpace(userMessage))
         {
-            yield return await this.AddUserMessageAsync(userMessage, cancellationToken).ConfigureAwait(false);
+            yield return await this.AddUserMessageAsync(userMessage, fileIds, cancellationToken).ConfigureAwait(false);
         }
 
         // Finalize prompt / agent instructions using provided parameters.
@@ -85,11 +89,10 @@ internal sealed class ChatThread : IAgentThread
         // Create run using templated prompt
         var runModel = await this._restContext.CreateRunAsync(this.Id, agent.Id, instructions, agent.Tools, cancellationToken).ConfigureAwait(false);
         var run = new ChatRun(runModel, agent.Kernel, this._restContext);
-        var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 
-        var messages = await this._restContext.GetMessagesAsync(this.Id, results, cancellationToken).ConfigureAwait(false);
-        foreach (var message in messages)
+        await foreach (var messageId in run.GetResultAsync(cancellationToken).ConfigureAwait(false))
         {
+            var message = await this._restContext.GetMessageAsync(this.Id, messageId, cancellationToken).ConfigureAwait(false);
             yield return new ChatMessage(message);
         }
     }
@@ -114,7 +117,6 @@ internal sealed class ChatThread : IAgentThread
     /// </summary>
     private ChatThread(
         ThreadModel threadModel,
-        ThreadMessageListModel? messageListModel,
         OpenAIRestContext restContext)
     {
         this.Id = threadModel.Id;

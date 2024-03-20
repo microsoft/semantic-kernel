@@ -327,7 +327,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
-        Application = HttpHeaderValues.UserAgent,
+        Application = HttpHeaderConstant.Values.UserAgent,
     };
 
     private bool _searchInitialized;

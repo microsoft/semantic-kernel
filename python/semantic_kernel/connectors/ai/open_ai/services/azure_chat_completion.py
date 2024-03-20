@@ -1,50 +1,31 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-
 import logging
-from typing import (
-    Any,
-    AsyncGenerator,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    Tuple,
-    Union,
-    overload,
-)
+from typing import Any, Dict, Mapping, Optional, Union, overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
+from openai.types.chat.chat_completion import ChatCompletion, Choice
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
-from semantic_kernel.connectors.ai.ai_request_settings import AIRequestSettings
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.models.chat.azure_chat_with_data_response import (
-    AzureChatWithDataStreamResponse,
+from semantic_kernel.connectors.ai.open_ai.contents import AzureChatMessageContent, AzureStreamingChatMessageContent
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
-    AzureChatRequestSettings,
-)
-from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
-    AzureOpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
-    OpenAITextCompletionBase,
-)
-from semantic_kernel.connectors.ai.open_ai.utils import _parse_choices, _parse_message
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenAITextCompletionBase):
+class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
     """Azure Chat completion class."""
 
     @overload
@@ -52,12 +33,12 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         self,
         deployment_name: str,
         base_url: Union[HttpsUrl, str],
+        service_id: Optional[str] = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -82,8 +63,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional) (Deprecated)
-            logger: deprecated, use 'log' instead.
         """
 
     @overload
@@ -92,11 +71,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         deployment_name: str,
         endpoint: Union[HttpsUrl, str],
         api_version: str = DEFAULT_AZURE_API_VERSION,
+        service_id: Optional[str] = None,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Any] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -119,8 +98,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional) (Deprecated)
-            logger: deprecated, use 'log' instead.
         """
 
     @overload
@@ -128,7 +105,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
-        log: Optional[Any] = None,
+        service_id: Optional[str] = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -140,7 +117,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
-            log: The logger instance to use. (Optional) (Deprecated)
         """
 
     @overload
@@ -149,11 +125,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         deployment_name: str,
         endpoint: Union[HttpsUrl, str],
         api_version: str = DEFAULT_AZURE_API_VERSION,
+        service_id: Optional[str] = None,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Any] = None,
         use_extensions: bool = False,
     ) -> None:
         """
@@ -189,14 +165,13 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
         endpoint: Optional[Union[HttpsUrl, str]] = None,
         base_url: Optional[Union[HttpsUrl, str]] = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
+        service_id: Optional[str] = None,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
         use_extensions: bool = False,
-        log: Optional[Any] = None,
-        **kwargs,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -225,18 +200,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            log: The logger instance to use. (Optional) (Deprecated)
-            logger: deprecated.
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
             use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
                 When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
                 The default value is False.
         """
-        if log:
-            logger.warning("The `log` parameter is deprecated. Please use the `logging` module instead.")
-        if kwargs.get("logger"):
-            logger.warning("The 'logger' argument is deprecated. Please use the `logging` module instead.")
-
         if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
         if use_extensions and endpoint and deployment_name:
@@ -246,6 +214,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
             endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
             base_url=base_url,
             api_version=api_version,
+            service_id=service_id,
             api_key=api_key,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
@@ -269,88 +238,65 @@ class AzureChatCompletion(AzureOpenAIConfigBase, ChatCompletionClientBase, OpenA
             endpoint=settings.get("endpoint"),
             base_url=settings.get("base_url"),
             api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
+            service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
         )
 
-    async def complete_chat(
-        self,
-        messages: List[Dict[str, str]],
-        settings: AzureChatRequestSettings,
-        logger: Optional[Any] = None,
-    ) -> Union[Tuple[Optional[str], Optional[FunctionCall]], List[Tuple[Optional[str], Optional[FunctionCall]]],]:
-        """Executes a chat completion request and returns the result.
-
-        Arguments:
-            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
-
-        Returns:
-            Union[str, List[str]] -- The completion result(s).
-        """
-        settings.messages = messages
-        settings.stream = False
-        if settings.ai_model_id is None:
-            settings.ai_model_id = self.ai_model_id
-        response = await self._send_request(request_settings=settings)
-
-        if len(response.choices) == 1:
-            return _parse_message(
-                response.choices[0].message,
-                with_data=settings.extra_body is not None,
-            )
-        else:
-            return [
-                _parse_message(
-                    choice.message,
-                    with_data=settings.extra_body is not None,
-                )
-                for choice in response.choices
-            ]
-
-    async def complete_chat_stream(
-        self,
-        messages: List[Dict[str, str]],
-        settings: AzureChatRequestSettings,
-        logger: Optional[Any] = None,
-    ) -> Union[AsyncGenerator[Union[str, List[str]], None], AzureChatWithDataStreamResponse]:
-        """Executes a chat completion request and returns the result.
-
-        Arguments:
-            messages {List[Tuple[str,str]]} -- The messages to use for the chat completion.
-            settings {OpenAIRequestSettings} -- The settings to use for the chat completion request.
-            logger {Optional[Logger]} -- The logger instance to use. (Optional)
-
-        Returns:
-            Union[str, List[str]] -- The completion result(s).
-        """
-        settings.messages = messages
-        settings.stream = True
-        if settings.ai_model_id is None:
-            settings.ai_model_id = self.ai_model_id
-        response = await self._send_request(request_settings=settings)
-        if settings.extra_body is not None:
-            yield AzureChatWithDataStreamResponse(response, settings)
-        else:
-            # parse the completion text(s) and yield them
-            async for chunk in response:
-                if len(chunk.choices) == 0:
-                    continue
-                # if multiple responses are requested, keep track of them
-                if settings.number_of_responses > 1:
-                    completions = [""] * settings.number_of_responses
-                    for choice in chunk.choices:
-                        text, index = _parse_choices(choice)
-                        completions[index] = text
-                    yield completions
-                # if only one response is requested, yield it
-                else:
-                    text, index = _parse_choices(chunk.choices[0])
-                    yield text
-
-    def get_request_settings_class(self) -> "AIRequestSettings":
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
-        return AzureChatRequestSettings
+        return AzureChatPromptExecutionSettings
+
+    def _create_chat_message_content(
+        self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
+    ) -> AzureChatMessageContent:
+        """Create a Azure chat message content object from a choice."""
+        metadata = self._get_metadata_from_chat_choice(choice)
+        metadata.update(response_metadata)
+        return AzureChatMessageContent(
+            inner_content=response,
+            ai_model_id=self.ai_model_id,
+            metadata=metadata,
+            role=ChatRole(choice.message.role) if choice.message.role is not None else None,
+            content=choice.message.content,
+            function_call=self._get_function_call_from_chat_choice(choice),
+            tool_calls=self._get_tool_calls_from_chat_choice(choice),
+            tool_message=self._get_tool_message_from_chat_choice(choice),
+        )
+
+    def _create_streaming_chat_message_content(
+        self,
+        chunk: ChatCompletionChunk,
+        choice: ChunkChoice,
+        chunk_metadata: Dict[str, Any],
+    ):
+        """Create a Azure streaming chat message content object from a choice."""
+        metadata = self._get_metadata_from_chat_choice(choice)
+        metadata.update(chunk_metadata)
+        return AzureStreamingChatMessageContent(
+            choice_index=choice.index,
+            inner_content=chunk,
+            ai_model_id=self.ai_model_id,
+            metadata=metadata,
+            role=ChatRole(choice.delta.role) if choice.delta.role is not None else None,
+            content=choice.delta.content,
+            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason is not None else None,
+            function_call=self._get_function_call_from_chat_choice(choice),
+            tool_calls=self._get_tool_calls_from_chat_choice(choice),
+            tool_message=self._get_tool_message_from_chat_choice(choice),
+        )
+
+    def _get_tool_message_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[str]:
+        """Get the tool message from a choice."""
+        if isinstance(choice, Choice):
+            content = choice.message
+        else:
+            content = choice.delta
+        if content.model_extra is not None and "context" in content.model_extra:
+            if "messages" in content.model_extra["context"]:
+                for message in content.model_extra["context"]["messages"]:
+                    if "tool" in message["role"]:
+                        return message["content"]
+        return None

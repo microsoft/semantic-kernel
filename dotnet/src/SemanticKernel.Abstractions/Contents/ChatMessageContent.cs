@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -18,20 +21,99 @@ public class ChatMessageContent : KernelContent
     public AuthorRole Role { get; set; }
 
     /// <summary>
-    /// Content of the message
+    /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection of <see cref="TextContent"/> type.
     /// </summary>
-    public string? Content { get; set; }
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string? Content
+    {
+        get
+        {
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            return textContent?.Text;
+        }
+        set
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            if (textContent is not null)
+            {
+                textContent.Text = value;
+                textContent.Encoding = this.Encoding;
+            }
+            else
+            {
+                this.Items.Add(new TextContent(
+                    text: value,
+                    modelId: this.ModelId,
+                    innerContent: this.InnerContent,
+                    encoding: this.Encoding,
+                    metadata: this.Metadata
+                )
+                { MimeType = this.MimeType });
+            }
+        }
+    }
 
     /// <summary>
     /// Chat message content items
     /// </summary>
-    public ChatMessageContentItemCollection? Items { get; set; }
+    public ChatMessageContentItemCollection Items
+    {
+        get => this._items ??= new ChatMessageContentItemCollection();
+        set => this._items = value;
+    }
 
     /// <summary>
     /// The encoding of the text content.
     /// </summary>
     [JsonIgnore]
-    public Encoding Encoding { get; set; }
+    public Encoding Encoding
+    {
+        get
+        {
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            if (textContent is not null)
+            {
+                return textContent.Encoding;
+            }
+
+            return this._encoding;
+        }
+        set
+        {
+            this._encoding = value;
+
+            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            if (textContent is not null)
+            {
+                textContent.Encoding = value;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents the source of the message.
+    /// </summary>
+    /// <remarks>
+    /// The source is corresponds to the entity that generated this message.
+    /// The property is intended to be used by agents to associate themselves with the messages they generate.
+    /// </remarks>
+    [Experimental("SKEXP0101")]
+    [JsonIgnore]
+    public object? Source { get; set; }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ChatMessageContent"/> class
+    /// </summary>
+    [JsonConstructor]
+    public ChatMessageContent()
+    {
+        this._encoding = Encoding.UTF8;
+    }
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
@@ -42,7 +124,6 @@ public class ChatMessageContent : KernelContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
-    [JsonConstructor]
     public ChatMessageContent(
         AuthorRole role,
         string? content,
@@ -53,8 +134,8 @@ public class ChatMessageContent : KernelContent
         : base(innerContent, modelId, metadata)
     {
         this.Role = role;
+        this._encoding = encoding ?? Encoding.UTF8;
         this.Content = content;
-        this.Encoding = encoding ?? Encoding.UTF8;
     }
 
     /// <summary>
@@ -76,8 +157,8 @@ public class ChatMessageContent : KernelContent
         : base(innerContent, modelId, metadata)
     {
         this.Role = role;
-        this.Encoding = encoding ?? Encoding.UTF8;
-        this.Items = items;
+        this._encoding = encoding ?? Encoding.UTF8;
+        this._items = items;
     }
 
     /// <inheritdoc/>
@@ -85,4 +166,7 @@ public class ChatMessageContent : KernelContent
     {
         return this.Content ?? string.Empty;
     }
+
+    private ChatMessageContentItemCollection? _items;
+    private Encoding _encoding;
 }

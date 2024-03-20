@@ -32,13 +32,6 @@ internal sealed class Agent : IAgent
     public KernelPluginCollection Plugins => this.Kernel.Plugins;
 
     /// <inheritdoc/>
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-#pragma warning disable CA1716 // Identifiers should not match keywords
-    public string Object => this._model.Object;
-#pragma warning restore CA1720 // Identifier contains type name - We don't control the schema
-#pragma warning restore CA1716 // Identifiers should not match keywords
-
-    /// <inheritdoc/>
     public AgentCapability Capabilities { get; }
 
     /// <inheritdoc/>
@@ -63,6 +56,7 @@ internal sealed class Agent : IAgent
     public IEnumerable<string> FileIds => this._fileIds.AsEnumerable();
 
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+
     private static readonly Dictionary<string, IPromptTemplateFactory> s_templateFactories =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -238,14 +232,12 @@ internal sealed class Agent : IAgent
         var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
-
-            var messages = await thread.InvokeAsync(this, input, arguments, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            var messages = await thread.InvokeAsync(this, input, arguments, fileIds: null, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
             var response =
                 new AgentResponse
                 {
                     ThreadId = thread.Id,
-                    Message = string.Concat(messages.Select(m => m.Content)),
+                    Message = string.Join(Environment.NewLine, messages.Select(m => m.Content)),
                 };
 
             return response;
