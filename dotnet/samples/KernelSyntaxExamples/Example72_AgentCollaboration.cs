@@ -124,7 +124,7 @@ public class Example72_AgentCollaboration : BaseTest
         return
             Track(
                 await CreateAgentBuilder()
-                    .WithInstructions("You are a copywriter with ten years of experience and are known for b/threadsrevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.")
+                    .WithInstructions("You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.")
                     .WithName("Copywriter")
                     .WithDescription("Copywriter")
                     .WithPlugin(agent?.AsPlugin())
@@ -149,7 +149,7 @@ public class Example72_AgentCollaboration : BaseTest
         return
             UseOpenAI ?
                 builder.WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
-                builder.WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.DeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
+                builder.WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 
     private void DisplayMessages(IEnumerable<IChatMessage> messages, IAgent? agent = null)

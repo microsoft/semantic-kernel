@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 """A basic JSON-based planner for the Python Semantic Kernel"""
+
 import json
 
 import regex
@@ -151,8 +152,8 @@ class BasicPlanner:
         available_functions_string = ""
         for name in list(all_functions_descriptions_dict.keys()):
             available_functions_string += name + "\n"
-            description = all_functions_descriptions_dict[name]
-            available_functions_string += "description: " + description + "\n"
+            description = all_functions_descriptions_dict[name] or ""
+            available_functions_string += "description: " + description + "\n" if description else ""
             available_functions_string += "args:\n"
 
             # Add the parameters for each function
@@ -224,8 +225,7 @@ class BasicPlanner:
 
         for subtask in subtasks:
             plugin_name, function_name = subtask["function"].split(".")
-            kernel_function = kernel.plugins[plugin_name][function_name]
-
+            kernel_function = kernel.func(plugin_name, function_name)
             # Get the arguments dictionary for the function
             args = subtask.get("args", None)
             if args:

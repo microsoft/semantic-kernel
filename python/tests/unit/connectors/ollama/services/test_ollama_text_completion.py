@@ -20,11 +20,15 @@ def test_settings():
 @pytest.mark.asyncio
 @patch("aiohttp.ClientSession.post")
 async def test_complete(mock_post):
-    mock_post.return_value = MockResponse(response="test_response")
+    mock_post.return_value = MockResponse(response={"response": "test_response"})
     ollama = OllamaTextCompletion(ai_model_id="test_model")
     response = await ollama.complete(
         "test prompt",
+<<<<<<<< HEAD:python/tests/unit/connectors/ollama/services/test_ollama_test_completion.py
         OllamaTextPromptExecutionSettings(ai_model_id="test-model", options={"test": "test"}),
+========
+        OllamaTextPromptExecutionSettings(options={"test": "test"}),
+>>>>>>>> main:python/tests/unit/connectors/ollama/services/test_ollama_text_completion.py
     )
     assert response[0].text == "test_response"
 
@@ -36,7 +40,11 @@ async def test_complete_stream(mock_post):
     ollama = OllamaTextCompletion(ai_model_id="test_model")
     response = ollama.complete_stream(
         "test_prompt",
+<<<<<<<< HEAD:python/tests/unit/connectors/ollama/services/test_ollama_test_completion.py
         OllamaTextPromptExecutionSettings(ai_model_id="test_model", options={"test": "test"}),
+========
+        OllamaTextPromptExecutionSettings(options={"test": "test"}),
+>>>>>>>> main:python/tests/unit/connectors/ollama/services/test_ollama_text_completion.py
     )
     async for line in response:
         if line:
