@@ -48,5 +48,20 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     /// Maximum number of tokens to generate.
     /// </summary>
     [JsonPropertyName("max_tokens")]
-    public int? MaxTokens { get; set; }
+    public int? MaxTokens
+    {
+        get => this._maxTokens;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._maxTokens = value;
+        }
+    }
+
+    #region private ================================================================================
+
+    private int? _maxTokens;
+
+    #endregion
 }

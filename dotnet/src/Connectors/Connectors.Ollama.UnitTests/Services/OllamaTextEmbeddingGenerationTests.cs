@@ -21,7 +21,6 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("embeddings_test_response.json"));
-
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
 
@@ -41,9 +40,7 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
 
         var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
-
         var value = values.SingleOrDefault();
-
         Assert.Equal("Semantic-Kernel", value);
     }
 
@@ -74,9 +71,7 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
 
         //Assert
         var requestPayload = JsonSerializer.Deserialize<OllamaTextRequest>(this._messageHandlerStub.RequestContent);
-
         Assert.NotNull(requestPayload);
-
         Assert.Equal("fake-text", requestPayload.Prompt);
     }
 
@@ -96,7 +91,6 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
         Assert.NotNull(contents);
 
         var content = contents.SingleOrDefault();
-
         Assert.Equal(8, content.Length);
     }
 

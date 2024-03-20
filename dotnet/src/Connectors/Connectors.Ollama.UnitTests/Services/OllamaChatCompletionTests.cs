@@ -23,7 +23,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("chat_completion_test_response.json"));
-
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
 
@@ -37,7 +36,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
             httpClient: this._httpClient);
 
         var chat = new ChatHistory();
-
         chat.AddMessage(AuthorRole.User, "fake-text");
 
         //Act
@@ -47,9 +45,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
 
         var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
-
         var value = values.SingleOrDefault();
-
         Assert.Equal("Semantic-Kernel", value);
     }
 
@@ -58,9 +54,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     {
         //Arrange
         var sut = new OllamaChatCompletionService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
-
         var chat = new ChatHistory();
-
         chat.AddMessage(AuthorRole.User, "fake-text");
 
         //Act
@@ -78,9 +72,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
             "fake-model",
             new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
-
         var chat = new ChatHistory();
-
         chat.AddMessage(AuthorRole.User, "fake-text");
 
         //Act
@@ -88,9 +80,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         //Assert
         var requestPayload = JsonSerializer.Deserialize<OllamaChatRequest>(this._messageHandlerStub.RequestContent);
-
         Assert.NotNull(requestPayload);
-
         Assert.Equal("fake-text", requestPayload.Messages!.First().Content);
     }
 
@@ -104,7 +94,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
             httpClient: this._httpClient);
 
         var chat = new ChatHistory();
-
         chat.AddMessage(AuthorRole.User, "fake-text");
 
         //Act
@@ -114,9 +103,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(messages);
 
         var message = messages.SingleOrDefault();
-
         Assert.NotNull(message);
-
         Assert.Equal("This is test completion response", message.Content);
     }
 
@@ -144,7 +131,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
         };
 
         var chat = new ChatHistory();
-
         chat.AddMessage(AuthorRole.User, "fake-text");
 
         //Act
@@ -152,9 +138,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         //Assert
         Assert.NotNull(messages);
-
         var message = messages.SingleOrDefault();
-
         Assert.NotNull(message);
 
         // Assert
@@ -186,7 +170,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
         };
 
         var chat = new ChatHistory();
-
         chat.AddMessage(AuthorRole.User, "fake-text");
 
         // Act
