@@ -312,9 +312,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Memory.SqlServer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeInterpreterPlugin", "samples\Demos\CodeInterpreterPlugin\CodeInterpreterPlugin.csproj", "{3ED53702-0E53-473A-A0F4-645DB33541C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.HuggingFace.UnitTests", "src\Connectors\Connectors.HuggingFace.UnitTests\Connectors.HuggingFace.UnitTests.csproj", "{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Ollama.UnitTests", "src\Connectors\Connectors.Ollama.UnitTests\Connectors.Ollama.UnitTests.csproj", "{D10F83A7-FD69-46E5-83FD-B36D196A6E29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama.UnitTests", "src\Connectors\Connectors.Ollama.UnitTests\Connectors.Ollama.UnitTests.csproj", "{D10F83A7-FD69-46E5-83FD-B36D196A6E29}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QualityCheckWithFilters", "samples\Demos\QualityCheck\QualityCheckWithFilters\QualityCheckWithFilters.csproj", "{1D3EEB5B-0E06-4700-80D5-164956E43D0A}"
 EndProject
