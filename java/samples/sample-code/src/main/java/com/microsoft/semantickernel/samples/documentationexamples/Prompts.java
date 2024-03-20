@@ -57,7 +57,9 @@ public class Prompts {
          */
 
         System.out.println("0.0 Initial prompt");
+        // <InvokeInitialPrompt>
         System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        // </InvokeInitialPrompt>
 
         // 1.0 Make the prompt more specific
         /////////////////////////////////////////////////////////////////
