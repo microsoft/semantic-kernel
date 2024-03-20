@@ -1,4 +1,4 @@
-// Copyright 2024 Microsoft Corporation
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.documentationexamples;
 
 import java.util.HashMap;
@@ -18,7 +18,7 @@ public class ConfiguringPrompts {
 
     // CLIENT_KEY is for an OpenAI client
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
-    
+
     // AZURE_CLIENT_KEY and CLIENT_ENDPOINT are for an Azure client
     // CLIENT_ENDPOINT required if AZURE_CLIENT_KEY is set
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
@@ -26,26 +26,26 @@ public class ConfiguringPrompts {
 
     private static final String CHAT_MODEL_ID = System.getenv()
         .getOrDefault("CHAT_MODEL_ID", "gpt-3.5-turbo");
-        
+
     public static void main(String[] args) {
         System.out.println("======== Configuring Prompts ========");
-        
+
         OpenAIAsyncClient client = null;
-        
+
         if (AZURE_CLIENT_KEY != null && CLIENT_ENDPOINT != null) {
             client = new OpenAIClientBuilder()
-            .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-            .endpoint(CLIENT_ENDPOINT)
-            .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
         } else if (CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-            .credential(new KeyCredential(CLIENT_KEY))
-            .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         } else {
             System.out.println("No client key found");
             return;
         }
-        
+
         ChatCompletionService chatCompletionService = ChatCompletionService.builder()
             .withModelId(CHAT_MODEL_ID)
             .withOpenAIAsyncClient(client)
@@ -60,24 +60,24 @@ public class ConfiguringPrompts {
                 .withName("Chat")
                 .withTemplate(
                     """
-                    {{ConversationSummaryPlugin.SummarizeConversation $history}} 
-                    User: {{$request}} 
-                    Assistant: 
-                    """.stripIndent())
+                        {{ConversationSummaryPlugin.SummarizeConversation $history}}
+                        User: {{$request}}
+                        Assistant:
+                        """.stripIndent())
                 .addInputVariable(InputVariable.build(
                     "history",
                     String.class,
                     "The history of the conversation.",
-                    null, 
+                    null,
                     false))
                 .addInputVariable(InputVariable.build(
                     "request",
                     String.class,
                     "The user's request.",
-                    null, 
+                    null,
                     true))
-                .withExecutionSettings(new HashMap<String,PromptExecutionSettings>() 
-                    {{
+                .withExecutionSettings(new HashMap<String, PromptExecutionSettings>() {
+                    {
                         put("gpt-3.5-turbo", PromptExecutionSettings.builder()
                             .withMaxTokens(1_000)
                             .withTemperature(0d)
@@ -87,7 +87,8 @@ public class ConfiguringPrompts {
                             .withMaxTokens(8_000)
                             .withTemperature(0.3d)
                             .build());
-                    }})
+                    }
+                })
                 .build())
             .build();
     }
