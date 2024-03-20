@@ -5,20 +5,24 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 
+import semantic_kernel as sk
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions import (
-    PlannerInvalidConfigurationError,
-    PlannerInvalidGoalError,
-    PlannerInvalidPlanError,
-)
+from semantic_kernel.connectors.ai.prompt_execution_settings import \
+    PromptExecutionSettings
+from semantic_kernel.core_plugins import TimePlugin
+from semantic_kernel.exceptions import (PlannerInvalidConfigurationError,
+                                        PlannerInvalidGoalError,
+                                        PlannerInvalidPlanError)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_function_metadata import \
+    KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
+from semantic_kernel.functions.kernel_plugin_collection import \
+    KernelPluginCollection
 from semantic_kernel.planners import ActionPlanner
-from semantic_kernel.planners.action_planner.action_planner_config import ActionPlannerConfig
+from semantic_kernel.planners.action_planner.action_planner_config import \
+    ActionPlannerConfig
 
 
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Mock(spec=KernelFunction):
@@ -114,6 +118,44 @@ async def test_plan_creation():
     assert "translate_to" in plan.state
     assert "input" in plan.state
 
+@pytest.mark.asyncio
+async def test_no_parameter_plan_creation():
+    goal = "What date is it today?"
+    plan_str = dedent(
+        """Here is a plan that can achieve the given task:\n\n{""plan"":\n{""rationale"":
+        ""the list contains a function that allows to get today's date."",
+        ""function"": ""TimePlugin.today""\n}\n}\n\n
+        This plan makes use of the today function in TimePlugin to get today's date."""
+    )
+
+    kernel = Mock(spec=Kernel)
+    mock_function = Mock(spec=KernelFunction)
+    plugins = KernelPluginCollection()
+    kernel.plugins = plugins
+
+    kernel_function_metadata = KernelFunctionMetadata(
+        name="today",
+        description="Get Today's date",
+        plugin_name="TimePlugin",
+        is_prompt=False,
+        parameters=[],
+    )
+    mock_function = create_mock_function(kernel_function_metadata)
+
+    kernel.plugins.add(plugin=KernelPlugin(name=kernel_function_metadata.plugin_name, functions=[mock_function]))
+
+    function_result = FunctionResult(function=kernel_function_metadata, value=plan_str, metadata={})
+    mock_function.invoke.return_value = function_result
+
+    kernel.create_function_from_prompt.return_value = mock_function
+
+    planner = ActionPlanner(kernel, service_id="test")
+    plan = await planner.create_plan(goal)
+
+    assert plan is not None
+    assert plan.parameters == {}
+    assert plan.state == {}
+    assert plan.description == mock_function.description
 
 @pytest.fixture
 def plugins_input():
@@ -121,6 +163,7 @@ def plugins_input():
         ("SendEmail", "email", "Send an e-mail", False),
         ("GetEmailAddress", "email", "Get an e-mail address", False),
         ("Translate", "WriterPlugin", "Translate something", True),
+        ("today", "TimePlugin", "Get Today's date", True),
         ("Summarize", "SummarizePlugin", "Summarize something", True),
     ]
 
