@@ -327,7 +327,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             )
 
             if existing_record:
-                pointId = str(existing_record[0].id)
+                pointId = str(existing_record.id)
             else:
                 pointId = str(uuid.uuid4())
 

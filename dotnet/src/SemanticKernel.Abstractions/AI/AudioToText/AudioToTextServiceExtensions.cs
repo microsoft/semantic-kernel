@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.AudioToText;
 /// <summary>
 /// Class with extension methods for <see cref="IAudioToTextService"/> interface.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 public static class AudioToTextServiceExtensions
 {
     /// <summary>

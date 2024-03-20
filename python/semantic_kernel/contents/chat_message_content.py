@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import json
 from typing import Optional
 from xml.etree.ElementTree import Element
 
@@ -35,6 +36,20 @@ class ChatMessageContent(KernelContent):
     def __str__(self) -> str:
         return self.content or ""
 
+    def to_element(self, root_key: str) -> Element:
+        """Convert the ChatMessageContent to an XML Element.
+
+        Args:
+            root_key: str - The key to use for the root of the XML Element.
+
+        Returns:
+            Element - The XML Element representing the ChatMessageContent.
+        """
+        root = Element(root_key)
+        root.set("role", self.role.value)
+        root.text = self.content or ""
+        return root
+
     def to_prompt(self, root_key: str) -> str:
         """Convert the ChatMessageContent to a prompt.
 
@@ -42,10 +57,8 @@ class ChatMessageContent(KernelContent):
             str - The prompt from the ChatMessageContent.
         """
 
-        root = Element(root_key)
-        root.set("role", self.role.value)
-        root.text = self.content or ""
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode")
+        root = self.to_element(root_key)
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
     @classmethod
     def from_element(cls, element: Element) -> "ChatMessageContent":
@@ -58,4 +71,6 @@ class ChatMessageContent(KernelContent):
             ChatMessageContent - The new instance of ChatMessageContent.
         """
         args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        if metadata := element.get("metadata"):
+            args["metadata"] = json.loads(metadata)
         return cls(**args)

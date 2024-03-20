@@ -5,11 +5,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.memory.chroma.utils import (
-    camel_to_snake,
-    chroma_compute_similarity_scores,
-    query_results_to_records,
-)
+from semantic_kernel.connectors.memory.chroma.utils import chroma_compute_similarity_scores, query_results_to_records
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -62,8 +58,6 @@ class ChromaMemoryStore(MemoryStoreBase):
                 "Could not import chromadb python package. " "Please install it with `pip install chromadb`."
             ) from exc
 
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if client_settings:
             self._client_settings = client_settings
         else:
@@ -75,8 +69,6 @@ class ChromaMemoryStore(MemoryStoreBase):
         self._client = chromadb.Client(self._client_settings)
         self._persist_directory = persist_directory
         self._default_query_includes = ["embeddings", "metadatas", "documents"]
-
-        self._default_embedding_function = "DisableChromaEmbeddingFunction"
 
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in Chroma if it does not exist.
@@ -90,20 +82,12 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        self._client.create_collection(
-            # Current version of ChromeDB reject camel case collection names.
-            name=camel_to_snake(collection_name),
-            # ChromaMemoryStore will get embeddings from SemanticTextMemory. Never use this.
-            embedding_function=self._default_embedding_function,
-        )
+        self._client.create_collection(name=collection_name)
 
     async def get_collection(self, collection_name: str) -> Optional["Collection"]:
         try:
             # Current version of ChromeDB rejects camel case collection names.
-            return self._client.get_collection(
-                name=camel_to_snake(collection_name),
-                embedding_function=self._default_embedding_function,
-            )
+            return self._client.get_collection(name=collection_name)
         except ValueError:
             return None
 
@@ -124,8 +108,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        # Current version of ChromeDB reject camel case collection names.
-        self._client.delete_collection(name=camel_to_snake(collection_name))
+        self._client.delete_collection(name=collection_name)
 
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.

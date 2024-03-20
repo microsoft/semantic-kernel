@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// A base class for data entries.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class DataEntryBase
 {
     /// <summary>
