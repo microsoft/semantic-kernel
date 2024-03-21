@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ public sealed partial class GptAgent : KernelAgent
     /// <param name="name">The agent name</param>
     /// <param name="enableCodeIntepreter">Enable code-intepreter tool</param>
     /// <param name="enableRetrieval">Enable retrieval tool</param>
+    /// <param name="fileIds">$$$</param>
     /// <param name="metadata">Agent metadata</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An agent instance</returns>
@@ -33,6 +35,7 @@ public sealed partial class GptAgent : KernelAgent
         string? name,
         bool enableCodeIntepreter = false,
         bool enableRetrieval = false,
+        IEnumerable<string>? fileIds = null,
         IDictionary<string, string>? metadata = null,
         CancellationToken cancellationToken = default)
     {
@@ -47,8 +50,12 @@ public sealed partial class GptAgent : KernelAgent
                 Instructions = instructions,
                 Name = name,
                 Metadata = metadata,
-                // $$$ FILEID
             };
+
+        foreach (var fileId in fileIds ?? Array.Empty<string>())
+        {
+            options.FileIds.Add(fileId);
+        }
 
         if (enableCodeIntepreter)
         {

@@ -26,19 +26,19 @@ public class LocalChannel<TAgent> : AgentChannel<TAgent> where TAgent : Agent
     private readonly AgentInvocationAsync _agentInvoker;
 
     /// <inheritdoc/>
-    protected override IAsyncEnumerable<ChatMessageContent> InvokeAsync(TAgent agent, ChatMessageContent? input, CancellationToken cancellationToken)
+    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(TAgent agent, ChatMessageContent? input, CancellationToken cancellationToken)
     {
         return this._agentInvoker.Invoke(agent, new ChatHistory(this._chat), cancellationToken);
     }
 
     /// <inheritdoc/>
-    public override Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected internal override Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
+    protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._chat.Reverse().ToAsyncEnumerable(); // $$$ PERF
     }

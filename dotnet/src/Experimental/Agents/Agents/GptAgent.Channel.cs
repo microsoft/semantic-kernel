@@ -31,7 +31,7 @@ public sealed partial class GptAgent : KernelAgent
             s_pollingStates =
             [
                 RunStatus.Queued,
-            RunStatus.InProgress
+                RunStatus.InProgress
             ];
 
         private readonly AssistantsClient _client;
@@ -40,7 +40,7 @@ public sealed partial class GptAgent : KernelAgent
         private readonly Dictionary<string, string> _agentNames; // $$$ WHY ???
 
         /// <inheritdoc/>
-        public override async Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+        protected internal override async Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
         {
             foreach (var message in history)
             {
@@ -66,7 +66,7 @@ public sealed partial class GptAgent : KernelAgent
         }
 
         /// <inheritdoc/>
-        protected override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(GptAgent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
+        protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(GptAgent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (input.TryGetContent(out var content))
             {
@@ -260,7 +260,7 @@ public sealed partial class GptAgent : KernelAgent
         }
 
         /// <inheritdoc/>
-        public override async IAsyncEnumerable<ChatMessageContent> GetHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        protected internal override async IAsyncEnumerable<ChatMessageContent> GetHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             PageableList<ThreadMessage> messages;
 
@@ -305,7 +305,7 @@ public sealed partial class GptAgent : KernelAgent
         /// <summary>
         /// Initializes a new instance of the <see cref="GptChannel"/> class.
         /// </summary>
-        internal GptChannel(AssistantsClient client, string threadId)
+        public GptChannel(AssistantsClient client, string threadId)
         {
             this._client = client;
             this._threadId = threadId;

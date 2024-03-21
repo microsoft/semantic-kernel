@@ -29,7 +29,7 @@ public sealed partial class GptAgent : KernelAgent
     /// <summary>
     /// The instructions of the agent (optional)
     /// </summary>
-    public string? Instructions { get; }
+    public string? Instructions => this._assistant.Instructions;
 
     /// <inheritdoc/>
     public override string? Name => this._assistant.Name;

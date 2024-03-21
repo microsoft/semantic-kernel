@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -8,6 +10,7 @@ using Microsoft.SemanticKernel.Experimental.Agents;
 using Microsoft.SemanticKernel.Experimental.Agents.Agents;
 using Microsoft.SemanticKernel.Experimental.Agents.Strategy;
 using Plugins;
+using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,6 +21,8 @@ namespace Examples;
 /// </summary>
 public class Example99_Agents : BaseTest
 {
+    private readonly OpenAIFileService _fileService;
+
     /// <summary>
     /// Demonstrate single chat agent.
     /// </summary>
@@ -141,12 +146,16 @@ public class Example99_Agents : BaseTest
     {
         WriteLine("======== Run:Retrieval GPT Agent ========");
 
-        // $$$ FILEID
+        var result =
+            await this._fileService.UploadContentAsync(
+                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         var agent =
             await CreateGptAgentAsync(
                 "Helper",
-                enableRetrieval: true);
+                enableRetrieval: true,
+                fileId: result.Id);
 
         await ChatAsync(
             agent,
@@ -235,6 +244,7 @@ public class Example99_Agents : BaseTest
             "concept: maps made out of egg cartons.",
             new NexusExecutionSettings
             {
+                MaximumIterations = 9,
                 CompletionCriteria =
                     new SemanticCompletionStrategy(
                         agent1.Kernel.GetRequiredService<IChatCompletionService>(),
@@ -393,16 +403,6 @@ public class Example99_Agents : BaseTest
         return WriteContentAsync(nexus.InvokeAsync(agent, message));
     }
 
-    private string GetApiKey()
-    {
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
-        {
-            return TestConfiguration.OpenAI.ApiKey;
-        }
-
-        return TestConfiguration.AzureOpenAI.ApiKey;
-    }
-
     private void WriteAgent(Agent agent)
     {
         this.WriteLine($"[{agent.GetType().Name}:{agent.Id}:{agent.Name ?? "*"}]");
@@ -413,6 +413,11 @@ public class Example99_Agents : BaseTest
         await foreach (var content in messages)
         {
             this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
+            if ((content.Content ?? string.Empty).StartsWith("file", StringComparison.OrdinalIgnoreCase) ||
+                (content.Content ?? string.Empty).StartsWith("assistant", StringComparison.OrdinalIgnoreCase)) // $$$ HACK
+            {
+                await ShowFileAsync(content.Content!);
+            }
         }
     }
     private Task WriteHistoryAsync(AgentNexus nexus, Agent? agent = null)
@@ -430,12 +435,30 @@ public class Example99_Agents : BaseTest
         return WriteContentAsync(nexus.GetHistoryAsync(agent));
     }
 
+    private async Task ShowFileAsync(string fileId)
+    {
+        var filename = $"{fileId}.jpg";
+        var content = this._fileService.GetFileContent(fileId);
+        await using var outputStream = File.OpenWrite(filename);
+        await using var inputStream = await content.GetStreamAsync();
+        await inputStream.CopyToAsync(outputStream);
+        var path = Path.Combine(Environment.CurrentDirectory, filename);
+        this.WriteLine($"$ {path}");
+        //Process.Start(
+        //    new ProcessStartInfo
+        //    {
+        //        FileName = "cmd.exe",
+        //        Arguments = $"/C start {path}"
+        //    });
+    }
+
     private async Task<GptAgent> CreateGptAgentAsync(
         string name,
         string? instructions = null,
         KernelPlugin? plugin = null,
         bool enableCoding = false,
-        bool enableRetrieval = false)
+        bool enableRetrieval = false,
+        string? fileId = null)
     {
         return
             await GptAgent.CreateAsync(
@@ -445,7 +468,8 @@ public class Example99_Agents : BaseTest
                 description: null,
                 name,
                 enableCoding,
-                enableRetrieval);
+                enableRetrieval,
+                fileIds: fileId == null ? null : new string[] { fileId });
     }
 
     private ChatAgent CreateChatAgent(
@@ -462,23 +486,34 @@ public class Example99_Agents : BaseTest
                 new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions });
     }
 
+    private string GetApiKey()
+    {
+        //if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
+        {
+            return TestConfiguration.OpenAI.ApiKey;
+        }
+
+        //return TestConfiguration.AzureOpenAI.ApiKey;
+    }
+
     private Kernel CreateKernel(KernelPlugin? plugin = null)
     {
         var builder = Kernel.CreateBuilder();
 
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
+        //if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
         {
             builder.AddOpenAIChatCompletion(
-                TestConfiguration.OpenAI.ChatModelId,
+                "gpt-4-turbo-preview",
+                //TestConfiguration.OpenAI.ChatModelId,
                 TestConfiguration.OpenAI.ApiKey);
         }
-        else
-        {
-            builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey);
-        }
+        //else
+        //{
+        //    builder.AddAzureOpenAIChatCompletion(
+        //        TestConfiguration.AzureOpenAI.ChatDeploymentName,
+        //        TestConfiguration.AzureOpenAI.Endpoint,
+        //        TestConfiguration.AzureOpenAI.ApiKey);
+        //}
 
         if (plugin != null)
         {
@@ -490,5 +525,6 @@ public class Example99_Agents : BaseTest
 
     public Example99_Agents(ITestOutputHelper output) : base(output)
     {
+        this._fileService = new OpenAIFileService(TestConfiguration.OpenAI.ApiKey);
     }
 }
