@@ -15,7 +15,7 @@ public class Prompts {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID",
-        "gpt-35-turbo-2");
+        "gpt-3.5-turbo");
 
     public static void main(String[] args) {
         System.out.println("======== Prompts ========");
