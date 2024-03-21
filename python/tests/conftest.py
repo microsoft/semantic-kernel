@@ -11,12 +11,12 @@ import pytest
 
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
-from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.hooks.function_invoked_context import FunctionInvokedContext
+from semantic_kernel.hooks.function_invoking_context import FunctionInvokingContext
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.settings import (
@@ -55,10 +55,10 @@ def kernel_with_default_service(kernel: Kernel, default_service: AIServiceClient
 
 @pytest.fixture(scope="function")
 def kernel_with_handlers(kernel: Kernel) -> Kernel:
-    def invoking_handler(kernel: Kernel, e: FunctionInvokingEventArgs) -> FunctionInvokingEventArgs:
+    def invoking_handler(kernel: Kernel, e: FunctionInvokingContext) -> FunctionInvokingContext:
         pass
 
-    def invoked_handler(kernel: Kernel, e: FunctionInvokedEventArgs) -> FunctionInvokedEventArgs:
+    def invoked_handler(kernel: Kernel, e: FunctionInvokedContext) -> FunctionInvokedContext:
         pass
 
     kernel.add_function_invoking_handler(invoking_handler)
