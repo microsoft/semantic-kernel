@@ -128,6 +128,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         chat_history_for_steps = await self._build_chat_history_for_step(question, initial_plan, cloned_kernel)
         prompt_execution_settings.tool_choice = "auto"
         prompt_execution_settings.tools = get_tool_call_object(kernel, {"exclude_plugin": [self.service_id]})
+        arguments = KernelArguments()
         for i in range(self.options.max_iterations):
             # sleep for a bit to avoid rate limiting
             if i > 0:
@@ -157,7 +158,9 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 )
 
             try:
-                await chat_completion._process_tool_calls(chat_result, cloned_kernel, chat_history_for_steps)
+                await chat_completion._process_tool_calls(
+                    result=chat_result, kernel=cloned_kernel, chat_history=chat_history_for_steps, arguments=arguments
+                )
             except Exception as exc:
                 chat_history_for_steps.add_user_message(f"An error occurred during planner invocation: {exc}")
                 continue

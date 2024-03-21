@@ -355,9 +355,11 @@ def test_prompt_plugin_can_be_imported(kernel: Kernel):
     plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
 
     assert plugin is not None
-    assert len(plugin.functions) == 1
+    assert len(plugin.functions) == 2
     func = plugin.functions["TestFunction"]
     assert func is not None
+    func_handlebars = plugin.functions["TestFunctionHandlebars"]
+    assert func_handlebars is not None
 
 
 def test_prompt_plugin_not_found(kernel: Kernel):
@@ -452,6 +454,39 @@ def test_create_function_from_prompt_succeeds(kernel: Kernel):
     assert func.name == "TestFunction"
     assert func.description == "Write a short story."
     assert len(func.parameters) == 2
+
+
+def test_create_function_from_yaml_empty_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("", "plugin_name")
+
+
+def test_create_function_from_yaml_malformed_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("not yaml dict", "plugin_name")
+
+
+def test_create_function_from_valid_yaml(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYaml")
+    assert plugin is not None
+
+
+def test_create_function_from_valid_yaml_handlebars(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlHandlebars")
+    assert plugin is not None
+    assert plugin["TestFunctionHandlebars"] is not None
+
+
+def test_create_function_from_valid_yaml_jinja2(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlJinja2")
+    assert plugin is not None
+    assert plugin["TestFunctionJinja2"] is not None
 
 
 # endregion

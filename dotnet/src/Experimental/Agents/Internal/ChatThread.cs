@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +57,14 @@ internal sealed class ChatThread : IAgentThread
         var messageModel = await this._restContext.CreateUserTextMessageAsync(this.Id, message, fileIds, cancellationToken).ConfigureAwait(false);
 
         return new ChatMessage(messageModel);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<IChatMessage>> GetMessagesAsync(int? count = null, string? lastMessageId = null, CancellationToken cancellationToken = default)
+    {
+        var messageModel = await this._restContext.GetMessagesAsync(this.Id, lastMessageId, count, cancellationToken).ConfigureAwait(false);
+
+        return messageModel.Data.Select(m => new ChatMessage(m)).ToArray();
     }
 
     /// <inheritdoc/>
