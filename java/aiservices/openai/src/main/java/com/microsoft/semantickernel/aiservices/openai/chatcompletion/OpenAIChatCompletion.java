@@ -247,11 +247,13 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         function.getMetadata().getParameters().forEach(parameter -> {
             if (arguments.containsKey(parameter.getName())) {
+                ContextVariable<?> arg = arguments.get(parameter.getName());
                 if (parsers.containsKey(parameter.getTypeClass())) {
-                    ContextVariable<?> arg = arguments.get(parameter.getName());
                     Object value = parsers.get(parameter.getTypeClass()).apply(arg.getValue().toString());
                     Class clazz = parameter.getTypeClass();
                     updatedArguments.put(parameter.getName(), ContextVariable.of(value, new ContextVariableTypeConverter.NoopConverter<>(clazz)));
+                } else {
+                    updatedArguments.put(parameter.getName(), arg);
                 }
             }
         });
