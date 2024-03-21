@@ -159,8 +159,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.Equal(2, optionsJson.GetProperty("messages").GetArrayLength());
-        Assert.Equal("John Doe", optionsJson.GetProperty("messages")[1].GetProperty("tool_call_id").GetString());
+        Assert.Equal(1, optionsJson.GetProperty("messages").GetArrayLength());
+        Assert.Equal("John Doe", optionsJson.GetProperty("messages")[0].GetProperty("tool_call_id").GetString());
     }
 
     [Fact]
@@ -258,13 +258,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(2, messages.GetArrayLength());
+        Assert.Equal(1, messages.GetArrayLength());
 
-        Assert.Equal("Assistant is a large language model.", messages[0].GetProperty("content").GetString());
-        Assert.Equal("system", messages[0].GetProperty("role").GetString());
-
-        Assert.Equal("Hello", messages[1].GetProperty("content").GetString());
-        Assert.Equal("user", messages[1].GetProperty("role").GetString());
+        Assert.Equal("Hello", messages[0].GetProperty("content").GetString());
+        Assert.Equal("user", messages[0].GetProperty("role").GetString());
     }
 
     [Fact]
