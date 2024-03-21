@@ -131,10 +131,14 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
-            var embedding = withEmbeddings ? reader.GetString(3) : default;
+            DateTimeOffset? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
+            var similarity = reader.GetDouble(3);
+            var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
 
-            var kustoRecord = new KustoMemoryRecord(key, metadata, embedding, timestamp);
+            var deserializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+            var deserializedembedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+
+            var kustoRecord = new KustoMemoryRecord(key, deserializedMetadata, deserializedembedding, timestamp);
 
             yield return kustoRecord.ToMemoryRecord();
         }
@@ -214,11 +218,14 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
+            DateTimeOffset? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
             var similarity = reader.GetDouble(3);
             var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
 
-            var kustoRecord = new KustoMemoryRecord(key, metadata, recordEmbedding, timestamp);
+            var deserializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+            var deserializedembedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+
+            var kustoRecord = new KustoMemoryRecord(key, deserializedMetadata, deserializedembedding, timestamp);
 
             yield return (kustoRecord.ToMemoryRecord(), similarity);
         }
