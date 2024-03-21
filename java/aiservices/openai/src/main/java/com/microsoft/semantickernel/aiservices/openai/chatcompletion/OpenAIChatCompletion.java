@@ -20,7 +20,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.SKException;
@@ -39,9 +42,11 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionServic
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -230,6 +235,30 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         return result.map(op -> (List<ChatMessageContent<?>>) op);
     }
 
+    private KernelFunctionArguments correctFunctionArgumentsTypes(KernelFunction<?> function, KernelFunctionArguments arguments) {
+        Map<String, ContextVariable<?>> updatedArguments = new CaseInsensitiveMap<>();
+
+        // TODO: Where to put this?
+        Map<Class<?>, Function<String, ?>> parsers = new HashMap<>();
+        parsers.put(double.class, Double::parseDouble);
+        parsers.put(int.class, Integer::parseInt);
+        parsers.put(Double.class, Double::parseDouble);
+        parsers.put(Integer.class, Integer::parseInt);
+
+        function.getMetadata().getParameters().forEach(parameter -> {
+            if (arguments.containsKey(parameter.getName())) {
+                if (parsers.containsKey(parameter.getTypeClass())) {
+                    ContextVariable<?> arg = arguments.get(parameter.getName());
+                    Object value = parsers.get(parameter.getTypeClass()).apply(arg.getValue().toString());
+                    Class clazz = parameter.getTypeClass();
+                    updatedArguments.put(parameter.getName(), ContextVariable.of(value, new ContextVariableTypeConverter.NoopConverter<>(clazz)));
+                }
+            }
+        });
+
+        return KernelFunctionArguments.builder().withVariables(updatedArguments).build();
+    }
+
     @SuppressWarnings("StringSplitter")
     private Mono<FunctionResult<String>> invokeFunctionTool(
         Kernel kernel,
@@ -249,7 +278,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
             return function
                 .invokeAsync(kernel)
-                .withArguments(openAIFunctionToolCall.getArguments())
+                .withArguments(correctFunctionArgumentsTypes(function, openAIFunctionToolCall.getArguments()))
                 .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
                     String.class));
         } catch (JsonProcessingException e) {

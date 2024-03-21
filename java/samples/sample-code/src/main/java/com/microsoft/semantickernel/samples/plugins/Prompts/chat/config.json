@@ -21,13 +21,11 @@
      "input_variables": [
         {
           "name": "request",
-          "description": "The user's request.",
-          "required": true
+          "description": "The user's request."
         },
         {
           "name": "history",
-          "description": "The history of the conversation.",
-          "required": true
+          "description": "The history of the conversation."
         }
      ]
 }

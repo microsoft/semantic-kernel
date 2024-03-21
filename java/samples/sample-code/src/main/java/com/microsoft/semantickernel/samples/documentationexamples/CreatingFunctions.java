@@ -8,6 +8,9 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.MathPlugin;
@@ -69,22 +72,26 @@ public class CreatingFunctions {
         ChatHistory history = new ChatHistory();
 
         // Start the conversation
-        System.out.print("User > ");
+        System.out.print("user > ");
         Scanner scanner = new Scanner(System.in);
         String userInput;
         while (!(userInput = scanner.nextLine()).isEmpty()) {
             history.addUserMessage(userInput);
 
-            reply(chat, history);
+            reply(kernel, chat, history);
             messageOutput(history);
+
+            System.out.print("user > ");
         }
     }
 
-    private static void reply(ChatCompletionService chatGPT, ChatHistory chatHistory) {
+    private static void reply(Kernel kernel, ChatCompletionService chatGPT, ChatHistory chatHistory) {
         // Enable auto function calling
         var toolCallBehavior = ToolCallBehavior.allowAllKernelFunctions(true);
 
-        var reply = chatGPT.getChatMessageContentsAsync(chatHistory, null, null)
+        var reply = chatGPT.getChatMessageContentsAsync(chatHistory, kernel, InvocationContext.builder()
+                    .withToolCallBehavior(toolCallBehavior)
+                    .build())
                 .block();
 
         StringBuilder message = new StringBuilder();
@@ -94,7 +101,7 @@ public class CreatingFunctions {
 
     private static void messageOutput(ChatHistory chatHistory) {
         var message = chatHistory.getLastMessage().get();
-        System.out.println(message.getAuthorRole() + ": " + message.getContent());
+        System.out.println(message.getAuthorRole() + " > " + message.getContent());
         System.out.println("------------------------");
     }
 }

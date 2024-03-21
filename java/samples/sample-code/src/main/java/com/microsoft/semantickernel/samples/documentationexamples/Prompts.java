@@ -163,8 +163,8 @@ public class Prompts {
 
         // 5.0 Provide context to the AI
         /////////////////////////////////////////////////////////////////
-        String history = "User input: I hate sending emails, no one ever reads them.\nAI response: I'm sorry to hear that. Messages may be a better way to communicate.";
         // <ContextPrompt>
+        String history = "User input: I hate sending emails, no one ever reads them.\nAI response: I'm sorry to hear that. Messages may be a better way to communicate.";
         prompt = """
             Instructions: What is the intent of this request?
             If you don't know the intent, don't guess; instead respond with "Unknown".
@@ -186,8 +186,8 @@ public class Prompts {
 
         // 6.0 Using message roles in chat completion prompts
         /////////////////////////////////////////////////////////////////
-        history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         // <RolePrompt>
+        history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         prompt = """
             <message role="system">Instructions: What is the intent of this request?
             If you don't know the intent, don't guess; instead respond with "Unknown".
@@ -210,8 +210,8 @@ public class Prompts {
         System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
 
         // 7.0 Give your AI words of encouragement
-        history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         // <BonusPrompt>
+        history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         prompt = """
             <message role="system">Instructions: What is the intent of this request?
             If you don't know the intent, don't guess; instead respond with "Unknown".
