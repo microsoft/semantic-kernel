@@ -329,3 +329,27 @@ async def test_helpers_messageToPrompt_other(kernel: Kernel):
     other_list = ["test1", "test2"]
     rendered = await target.render(kernel, KernelArguments(other_list=other_list))
     assert rendered.strip() == """test1 test2"""
+
+
+@mark.asyncio
+async def test_helpers_unless(kernel: Kernel):
+    template = """{{#unless test}}test2{{/unless}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test2="test2"))
+    assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_with(kernel: Kernel):
+    template = """{{#with test}}{{test1}}{{/with}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test={"test1": "test2"}))
+    assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_lookup(kernel: Kernel):
+    template = """{{lookup test 'test1'}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test={"test1": "test2"}))
+    assert rendered.strip() == """test2"""
