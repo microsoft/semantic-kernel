@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -13,13 +14,19 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
-public class FunctionsWithinPrompts {
+public class Templates {
+
+    public static InputStream INPUT = System.in;
 
     // CLIENT_KEY is for an OpenAI client
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
@@ -33,8 +40,7 @@ public class FunctionsWithinPrompts {
         .getOrDefault("MODEL_ID", "gpt-3.5-turbo");
 
     public static void main(String[] args) {
-
-        System.out.println("======== Functions within Prompts ========");
+        System.out.println("======== Templates ========");
 
         OpenAIAsyncClient client;
 
@@ -52,6 +58,20 @@ public class FunctionsWithinPrompts {
             return;
         }
 
+        // Customise the type converters toPromptString for ChatHistory to serialize the messages as "author: content"
+        ContextVariableTypeConverter<ChatHistory> chatHistoryType = ContextVariableTypeConverter
+            .builder(ChatHistory.class)
+            .proxyGlobalType()
+            .toPromptString(history -> {
+                return history.getMessages()
+                    .stream()
+                    .map(message -> String.format("%s: %s",
+                        message.getAuthorRole(),
+                        message.getContent()))
+                    .collect(Collectors.joining("\n"));
+            })
+            .build();
+
         ChatCompletionService chatCompletionService = ChatCompletionService.builder()
             .withModelId(MODEL_ID)
             .withOpenAIAsyncClient(client)
@@ -65,6 +85,15 @@ public class FunctionsWithinPrompts {
             .withPlugin(plugin)
             .build();
 
+        // <create_chat>
+        KernelFunction<String> chat = KernelFunctionFromPrompt.<String>createFromPrompt("""
+            {{$history}}
+            user: {{$request}}
+            assistant:""")
+            .build();
+        // </create_chat>
+
+        // <handlebars_add_variables_1>
         List<String> choices = Arrays.asList("ContinueConversation", "EndConversation");
 
         // Create few-shot examples
@@ -80,13 +109,14 @@ public class FunctionsWithinPrompts {
             },
             new ChatHistory() {
                 {
-                    addMessage(AuthorRole.USER,
-                        "Can you send the full update to the marketing team?");
+                    addMessage(AuthorRole.USER, "Thanks, I'm done for now");
                     addMessage(AuthorRole.SYSTEM, "Intent:");
                     addMessage(AuthorRole.ASSISTANT, "EndConversation");
                 }
             });
+        // </handlebars_add_variables_1>
 
+        // <handlebars_prompt>
         // Create handlebars template for intent
         KernelFunction<String> getIntent = KernelFunction.<String>createFromPrompt(
             """
@@ -100,39 +130,38 @@ public class FunctionsWithinPrompts {
                     {{/each}}
                 {{/each}}
 
-                {{ConversationSummaryPlugin-SummarizeConversation history}}
+                {{#each chatHistory}}
+                    <message role="{{role}}">{{content}}</message>
+                {{/each}}
 
                 <message role="user">{{request}}</message>
                 <message role="system">Intent:</message>
                 """)
             .withTemplateFormat("handlebars")
             .build();
+        // </handlebars_prompt>
 
-        // Create a Semantic Kernel template for chat
-        KernelFunction<String> chat = KernelFunction.<String>createFromPrompt(
-            """
-                {{ConversationSummaryPlugin.SummarizeConversation $history}}
-                User: {{$request}}
-                Assistant:
-                """)
-            .build();
-
+        Scanner scanner = new Scanner(INPUT);
+        // <use_chat>
         // Create chat history
         ChatHistory history = new ChatHistory();
 
         // Start the chat loop
         while (true) {
+            // <handlebars_add_variables_2>
             // Get user input
-            System.console().printf("User > ");
-            String request = System.console().readLine();
+            System.out.print("User > ");
+            String request = scanner.nextLine();
 
             KernelFunctionArguments arguments = KernelFunctionArguments.builder()
                 .withVariable("request", request)
                 .withVariable("choices", choices)
-                .withVariable("history", history)
+                .withVariable("chatHistory", history)
                 .withVariable("fewShotExamples", fewShotExamples)
                 .build();
+            // </handlebars_add_variables_2>
 
+            // <handlebars_invoke>
             // Invoke handlebars prompt
             FunctionResult<String> intent = kernel.invokeAsync(getIntent)
                 .withArguments(arguments)
@@ -140,6 +169,7 @@ public class FunctionsWithinPrompts {
                     ToolCallBehavior.allowOnlyKernelFunctions(true,
                         plugin.get("SummarizeConversation")))
                 .block();
+            // </handlebars_invoke>
 
             // End the chat if the intent is "Stop"
             if ("EndConversation".equals(intent.getResult())) {
@@ -151,17 +181,18 @@ public class FunctionsWithinPrompts {
                 .withArguments(
                     KernelFunctionArguments.builder()
                         .withVariable("request", request)
-                        .withVariable("history", history)
+                        .withVariable("history", history, chatHistoryType)
                         .build())
                 .block();
 
             String message = chatResult.getResult();
-            System.console().printf("Assistant > %s\n", message);
+            System.out.printf("Assistant > %s\n", message);
 
             // Append to history
             history.addUserMessage(request);
             history.addAssistantMessage(message);
         }
+        // </use_chat>
     }
 
 }

@@ -113,7 +113,7 @@ public final class CodeBlock extends Block implements CodeRendering {
                         kernel,
                         arguments,
                         context,
-                        ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+                        context.getContextVariableTypes().getVariableTypeForClass(String.class))
                     .map(it -> {
                         return it.getValue();
                     });
@@ -168,6 +168,9 @@ public final class CodeBlock extends Block implements CodeRendering {
         @Nullable InvocationContext context) {
         Block firstArg = this.tokens.get(1);
 
+        ContextVariableTypes types = context == null ? new ContextVariableTypes()
+            : context.getContextVariableTypes();
+
         // Get the function metadata
         KernelFunctionMetadata<?> functionMetadata = kernel
             .getFunction(fBlock.getPluginName(), fBlock.getFunctionName()).getMetadata();
@@ -180,16 +183,39 @@ public final class CodeBlock extends Block implements CodeRendering {
         }
 
         String firstPositionalParameterName = null;
-        Object firstPositionalInputValue;
+        Object firstPositionalInputValue = null;
         int namedArgsStartIndex = 1;
 
         if (firstArg.getType() != BlockTypes.NAMED_ARG) {
             // Gets the function first parameter name
             firstPositionalParameterName = functionMetadata.getParameters().get(0).getName();
 
-            firstPositionalInputValue = ((TextRendering) tokens.get(1)).render(arguments);
-            // Type check is avoided and marshalling is done by the function itself
+            String contextVariableName = firstPositionalParameterName;
+            if (firstArg instanceof VarBlock) {
+                contextVariableName = ((VarBlock) firstArg).getName();
+            }
 
+            ContextVariable<?> arg = arguments.get(contextVariableName);
+            Class<?> desiredType = functionMetadata.getParameters().get(0).getTypeClass();
+
+            if (arg != null) {
+                try {
+                    firstPositionalInputValue = ContextVariable.convert(arg, desiredType, types);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+
+            if (firstPositionalInputValue == null) {
+                firstPositionalInputValue = ((TextRendering) tokens.get(1)).render(arguments);
+                firstPositionalInputValue = ContextVariable
+                    .convert(
+                        firstPositionalInputValue,
+                        functionMetadata.getParameters().get(0).getTypeClass(),
+                        types);
+            }
+
+            // Type check is avoided and marshalling is done by the function itself
             if (firstPositionalInputValue == null) {
                 throw new SKException(
                     "Unexpected null value for first positional argument: " + tokens.get(1)
@@ -199,11 +225,7 @@ public final class CodeBlock extends Block implements CodeRendering {
             // Keep previous trust information when updating the input
             arguments.put(
                 firstPositionalParameterName,
-                ContextVariable
-                    .convert(
-                        firstPositionalInputValue,
-                        functionMetadata.getParameters().get(0).getTypeClass(),
-                        context == null ? null : context.getContextVariableTypes()));
+                types.contextVariableOf(firstPositionalInputValue));
             namedArgsStartIndex++;
         }
 
@@ -222,7 +244,7 @@ public final class CodeBlock extends Block implements CodeRendering {
                     "Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{firstPositionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
             }
 
-            arguments.put(arg.getName(), ContextVariable.of(arg.getValue(arguments)));
+            arguments.put(arg.getName(), types.contextVariableOf(arg.getValue(arguments)));
         }
 
         return arguments;

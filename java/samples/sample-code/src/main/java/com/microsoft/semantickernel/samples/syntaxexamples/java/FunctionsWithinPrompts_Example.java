@@ -79,7 +79,7 @@ public class FunctionsWithinPrompts_Example {
             new ChatHistory(
                 Arrays.asList(
                     new ChatMessageContent<String>(AuthorRole.USER,
-                        "Can you send the full update to the marketing team?"),
+                        "Thats all"),
                     new ChatMessageContent<String>(AuthorRole.SYSTEM, "Intent:"),
                     new ChatMessageContent<String>(AuthorRole.ASSISTANT, "EndConversation"))));
 
@@ -98,11 +98,8 @@ public class FunctionsWithinPrompts_Example {
                         {{/each}}
                     {{/each}}
 
-                    {{ConversationSummaryPlugin-SummarizeConversation history}}
-
                     <message role="user">{{request}}</message>
-                    <message role="system">Intent:</message>
-                    """
+                    <message role="system">Intent:</message>"""
                     .stripIndent())
             .withTemplateFormat("handlebars")
             .build();
@@ -111,7 +108,12 @@ public class FunctionsWithinPrompts_Example {
         // Create a Semantic Kernel template for chat
         // <FunctionFromPrompt>
         var chat = KernelFunctionFromPrompt.<String>createFromPrompt("""
-            {{ConversationSummaryPlugin.SummarizeConversation $history}}
+            Answer the users question below taking into account the conversation so far.
+
+            [START SUMMARY OF CONVERSATION SO FAR]
+                {{ConversationSummaryPlugin.SummarizeConversation $history}}
+            [END SUMMARY OF CONVERSATION SO FAR]
+
             User: {{$request}}
             Assistant:
             """.stripIndent()).build();
@@ -119,12 +121,37 @@ public class FunctionsWithinPrompts_Example {
 
         Scanner scanner = new Scanner(INPUT);
 
-        ChatHistory history = new ChatHistory();
+        ChatHistory history = new ChatHistory(false);
         // Start the chat loop
         while (true) {
             // Get user input
             System.out.println("User > ");
             var request = scanner.nextLine();
+
+            String historyString = history.getMessages()
+                .stream()
+                .map(message -> message.getAuthorRole() + ": " + message.getContent())
+                .collect(Collectors.joining("\n"));
+
+            /*
+             * Renders to:
+             * 
+             * <message role=\"system\">Instructions: What is the intent of this request?
+             * Do not explain the reasoning, just reply back with the intent. If you are unsure,
+             * reply with .
+             * Choices: ContinueConversation,EndConversation.</message>
+             * 
+             * <message role=\"user\">Can you send a very quick approval to the marketing
+             * team?</message>
+             * <message role=\"system\">Intent:</message>
+             * <message role=\"assistant\">ContinueConversation</message>
+             * <message role=\"user\">Can you send the full update to the marketing team?</message>
+             * <message role=\"system\">Intent:</message>
+             * <message role=\"assistant\">EndConversation</message>
+             * 
+             * <message role=\"user\">Can you send an approval to the marketing team?</message>
+             * <message role=\"system\">Intent:</message>
+             */
 
             // Invoke handlebars prompt
             var intent = kernel.invokeAsync(getIntent)
@@ -132,7 +159,7 @@ public class FunctionsWithinPrompts_Example {
                     KernelFunctionArguments.builder()
                         .withVariable("request", request)
                         .withVariable("choices", choices)
-                        .withVariable("history", history)
+                        .withVariable("history", historyString)
                         .withVariable("fewShotExamples", fewShotExamples)
                         .build())
                 .withToolCallBehavior(
@@ -150,9 +177,7 @@ public class FunctionsWithinPrompts_Example {
                 .withArguments(
                     KernelFunctionArguments.builder()
                         .withVariable("request", request)
-                        .withVariable("history", history.getMessages().stream()
-                            .map(it -> it.getAuthorRole() + ": " + it.getContent())
-                            .collect(Collectors.joining("\n")))
+                        .withVariable("history", historyString)
                         .build())
                 .block();
 

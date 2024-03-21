@@ -21,7 +21,6 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author davidgrieve
  */
 public class HandlebarsPromptTemplateTest {
@@ -101,7 +100,7 @@ public class HandlebarsPromptTemplateTest {
             .build();
 
         // Return from renderAsync is normalized to remove empty lines and leading/trailing whitespace
-        String expResult = "CHOICE-A [CHOICE-A, CHOICE-B] <messages> A B </messages> <messages> C D </messages> Hello World";
+        String expResult = "CHOICE-A [CHOICE-A, CHOICE-B] A B C D Hello World";
 
         String result = instance.renderAsync(kernel, arguments, null).block();
         assertNotNull(result);

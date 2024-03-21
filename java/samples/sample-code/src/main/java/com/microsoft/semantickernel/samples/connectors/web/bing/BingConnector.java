@@ -25,7 +25,7 @@ import reactor.core.publisher.Mono;
 public class BingConnector implements WebSearchEngineConnector {
 
     private static String BING_SEARCH_URL;
-static {
+    static {
         String bingSearchUrl = System.getProperty("bing.search.url");
         if (bingSearchUrl == null || bingSearchUrl.isEmpty())
             bingSearchUrl = System.getenv("BING_SEARCH_URL");

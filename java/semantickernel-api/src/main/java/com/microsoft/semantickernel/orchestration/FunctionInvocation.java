@@ -102,7 +102,10 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         function
             .invokeAsync(
                 kernel,
-                KernelFunctionArguments.builder().withVariables(arguments).build(),
+                KernelFunctionArguments
+                    .builder()
+                    .withVariables(arguments)
+                    .build(),
                 null,
                 new InvocationContext(context))
             .handle(convertToType(variableType))
@@ -173,7 +176,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             .withArguments(arguments)
             .addKernelHooks(hooks)
             .withPromptExecutionSettings(promptExecutionSettings)
-            .withToolCallBehavior(toolCallBehavior);
+            .withToolCallBehavior(toolCallBehavior)
+            .withTypes(contextVariableTypes);
     }
 
     /**

@@ -55,7 +55,7 @@ public class CreatingFunctions {
                 .invokeAsync(kernel.getFunction("MathPlugin", "sqrt"))
                 .withArguments(KernelFunctionArguments
                         .builder()
-                        .withVariable("number1", 12.0)
+                        .withVariable("number1", "12.0")
                         .build())
                 .block();
         System.out.println("The square root of 12 is " + answer.getResult() + ".");
