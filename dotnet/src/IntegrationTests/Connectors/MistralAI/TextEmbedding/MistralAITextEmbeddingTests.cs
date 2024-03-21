@@ -26,7 +26,7 @@ public sealed class MistralAITextEmbeddingTests
             .Build();
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact] // (Skip = "This test is for manual verification.")
     public async Task MistralAIGenerateEmbeddingsAsync()
     {
         // Arrange

@@ -75,7 +75,7 @@ internal sealed class MistralClient
         {
             if (!string.IsNullOrEmpty(line))
             {
-                rawChunk = line.Substring("data:".Length).Trim();
+                rawChunk = line.Substring(SseDataLength).Trim();
             }
             else
             {
@@ -89,25 +89,24 @@ internal sealed class MistralClient
 
                 if (chunk is null)
                 {
-                    throw new KernelException("Unexpected response from model")
+                    throw new KernelException("Unexpected chunk response from model")
                     {
                         Data = { { "ResponseData", rawChunk } },
                     };
                 }
 
-                var role = chunk.GetRole();
-                if (role is not null)
+                for (int i = 0; i < chunk.GetChoiceCount(); i++)
                 {
-                    currentRole = role;
-                }
+                    currentRole ??= chunk.GetRole(i);
 
-                yield return new(role: role ?? currentRole,
-                    content: chunk.GetContent(),
-                    choiceIndex: chunk.GetChoiceIndex(),
-                    modelId: modelId,
-                    encoding: chunk.GetEncoding(),
-                    innerContent: chunk,
-                    metadata: chunk.GetMetadata());
+                    yield return new(role: currentRole,
+                        content: chunk.GetContent(i),
+                        choiceIndex: i,
+                        modelId: modelId,
+                        encoding: chunk.GetEncoding(),
+                        innerContent: chunk,
+                        metadata: chunk.GetMetadata());
+                }
             }
         }
     }
@@ -130,6 +129,8 @@ internal sealed class MistralClient
     private readonly Uri? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
+
+    private const int SseDataLength = 5;
 
     private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings? executionSettings)
     {

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -48,20 +47,25 @@ internal class MistralChatCompletionChunk
         return this._metadata;
     }
 
-    internal AuthorRole? GetRole()
+    internal int GetChoiceCount()
     {
-        var role = this.Choices?.FirstOrDefault()?.Delta?.Role;
+        return this.Choices?.Count ?? 0;
+    }
+
+    internal AuthorRole? GetRole(int index)
+    {
+        var role = this.Choices?[index]?.Delta?.Role;
         return role is null ? null : new AuthorRole(role);
     }
 
-    internal string? GetContent()
+    internal string? GetContent(int index)
     {
-        return this.Choices?.FirstOrDefault()?.Delta?.Content;
+        return this.Choices?[index]?.Delta?.Content;
     }
 
-    internal int GetChoiceIndex()
+    internal int GetChoiceIndex(int index)
     {
-        return this.Choices?.FirstOrDefault()?.Index ?? -1;
+        return this.Choices?[index]?.Index ?? -1;
     }
 
     internal Encoding? GetEncoding()

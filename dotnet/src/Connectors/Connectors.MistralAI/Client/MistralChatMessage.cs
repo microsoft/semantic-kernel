@@ -23,7 +23,7 @@ internal class MistralChatMessage
     [JsonConstructor]
     internal MistralChatMessage(string? role, string content)
     {
-        if (role is not null && role != "system" && role != "user" && role != "assistant")
+        if (role is not null && role is not "system" && role is not "user" && role is not "assistant")
         {
             throw new System.ArgumentException($"Role must be one of: system, user, assistant. {role} is an invalid role.", nameof(role));
         }
