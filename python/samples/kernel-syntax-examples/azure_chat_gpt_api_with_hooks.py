@@ -1,0 +1,62 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from __future__ import annotations
+
+import asyncio
+import os
+
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.hooks import FunctionInvokedContext, FunctionInvokingContext, KernelHook
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
+
+
+class ChatHistoryHooked(ChatHistory, KernelHook):
+    def on_function_invoking(self, context: FunctionInvokingContext) -> FunctionInvokingContext | None:
+        try:
+            user_input = input("User:> ")
+        except KeyboardInterrupt:
+            context.cancel()
+            return
+        except EOFError:
+            context.cancel()
+            return
+        if user_input == "exit":
+            context.cancel()
+            return
+        self.add_user_message(user_input)
+
+    def on_function_invoked(self, context: FunctionInvokedContext) -> FunctionInvokedContext | None:
+        self.add_message(context.function_result.value[0])
+        print(f"Mosscap:> {context.function_result}")
+
+    def on_exit(self):
+        print("\nExiting chat...")
+
+
+async def main() -> None:
+    kernel = Kernel()
+    kernel.add_service(
+        AzureChatCompletion(
+            service_id="chat-gpt", **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+        )
+    )
+    kernel.import_plugin_from_prompt_directory(
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources"), "chat"
+    )
+    history = ChatHistoryHooked()
+    kernel.add_hook(history)
+    kernel.add_hook_function("on_exit", lambda: print("\nExiting application..."))
+
+    chatting = True
+    while chatting:
+        chatting = await kernel.invoke(
+            function_name="chat",
+            plugin_name="chat",
+            chat_history=history,
+        )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

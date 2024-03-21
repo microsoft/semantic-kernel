@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
+import atexit
 import logging
 from copy import copy
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Literal, Type, TypeVar, Union
@@ -9,7 +10,6 @@ from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
-from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
     KernelFunctionAlreadyExistsError,
     KernelFunctionNotFoundError,
@@ -23,6 +23,8 @@ from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.hooks import FunctionInvokedContext, FunctionInvokingContext
+from semantic_kernel.hooks.kernel_hook import KernelHook
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
@@ -71,11 +73,12 @@ class Kernel(KernelBaseModel):
     services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
-    function_invoking_handlers: dict[
-        int, Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
-    ] = Field(default_factory=dict)
-    function_invoked_handlers: dict[int, Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]] = (
+    hooks: list[KernelHook] = Field(default_factory=list)
+    function_invoking_handlers: dict[int, Callable[["Kernel", FunctionInvokingContext], FunctionInvokingContext]] = (
         Field(default_factory=dict)
+    )
+    function_invoked_handlers: dict[int, Callable[["Kernel", FunctionInvokedContext], FunctionInvokedContext]] = Field(
+        default_factory=dict
     )
 
     def __init__(
@@ -109,6 +112,7 @@ class Kernel(KernelBaseModel):
         if ai_service_selector:
             args["ai_service_selector"] = ai_service_selector
         super().__init__(**args)
+        atexit.register(self.on_exit)
 
     @field_validator("plugins", mode="before")
     @classmethod
@@ -248,28 +252,44 @@ class Kernel(KernelBaseModel):
         if not function:
             if not function_name or not plugin_name:
                 raise KernelFunctionNotFoundError("No function or plugin name provided")
-            function = self.get_function(plugin_name, function_name)
-        function_invoking_args = self.on_function_invoking(function.metadata, arguments)
-        if function_invoking_args.is_cancel_requested:
-            logger.info(
-                f"Execution was cancelled on function invoking event of function: {function.fully_qualified_name}."
-            )
-            return None
-        if function_invoking_args.updated_arguments:
-            logger.info(
-                f"Arguments updated by function_invoking_handler, new arguments: {function_invoking_args.arguments}"
-            )
-            arguments = function_invoking_args.arguments
-        function_result = None
-        exception = None
-        try:
-            function_result = await function.invoke(self, arguments)
-        except Exception as exc:
-            logger.error(
-                "Something went wrong in function invocation. During function invocation:"
-                f" '{function.fully_qualified_name}'. Error description: '{str(exc)}'"
-            )
-            exception = exc
+            functions = [self.func(plugin_name, function_name)]
+        if not isinstance(functions, list):
+            functions = [functions]
+            number_of_steps = 1
+        else:
+            number_of_steps = len(functions)
+        for func in functions:
+            # While loop is used to repeat the function invocation, if requested
+            while True:
+                function_invoking_args = await self.on_function_invoking(func.metadata, arguments)
+                if function_invoking_args.is_cancel_requested:
+                    logger.info(
+                        f"Execution was cancelled on function invoking event of pipeline step "
+                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
+                    )
+                    return results if results else None
+                if function_invoking_args.updated_arguments:
+                    logger.info(
+                        f"Arguments updated by function_invoking_handler in pipeline step: "
+                        f"{pipeline_step}, new arguments: {function_invoking_args.arguments}"
+                    )
+                    arguments = function_invoking_args.arguments
+                if function_invoking_args.is_skip_requested:
+                    logger.info(
+                        f"Execution was skipped on function invoking event of pipeline step "
+                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
+                    )
+                    break
+                function_result = None
+                exception = None
+                try:
+                    function_result = await func.invoke(self, arguments)
+                except Exception as exc:
+                    logger.error(
+                        "Something went wrong in function invocation. During function invocation:"
+                        f" '{func.plugin_name}.{func.name}'. Error description: '{str(exc)}'"
+                    )
+                    exception = exc
 
         # this allows a hook to alter the results before adding.
         function_invoked_args = self.on_function_invoked(function.metadata, arguments, function_result, exception)
@@ -349,41 +369,110 @@ class Kernel(KernelBaseModel):
     # endregion
     # region Function Invoking/Invoked Events
 
-    def on_function_invoked(
+    async def on_function_invoked(
         self,
         kernel_function_metadata: KernelFunctionMetadata,
         arguments: KernelArguments,
         function_result: FunctionResult | None = None,
         exception: Exception | None = None,
-    ) -> FunctionInvokedEventArgs:
-        # TODO: include logic that uses function_result
-        args = FunctionInvokedEventArgs(
+        metadata: dict[str, Any] | None = None,
+    ) -> FunctionInvokedContext:
+        context = FunctionInvokedContext(
             kernel_function_metadata=kernel_function_metadata,
             arguments=arguments,
+            metadata=metadata or {},
             function_result=function_result,
             exception=exception or function_result.metadata.get("exception", None) if function_result else None,
         )
-        if self.function_invoked_handlers:
-            for handler in self.function_invoked_handlers.values():
-                handler(self, args)
-        return args
+        for hook in self.hooks:
+            try:
+                updated_context = hook.on_function_invoked(context)
+                if updated_context:
+                    context = updated_context
+                updated_context = await hook.on_function_invoked_async(context)
+                if updated_context:
+                    context = updated_context
+            except Exception as exc:
+                logger.error(
+                    f"An error occurred in the on_function_invoked event of hook: {hook.__class__.__name__}. "
+                    f"Error description: {str(exc)}"
+                )
+        return context
 
-    def on_function_invoking(
-        self, kernel_function_metadata: KernelFunctionMetadata, arguments: KernelArguments
-    ) -> FunctionInvokingEventArgs:
-        args = FunctionInvokingEventArgs(kernel_function_metadata=kernel_function_metadata, arguments=arguments)
-        if self.function_invoking_handlers:
-            for handler in self.function_invoking_handlers.values():
-                handler(self, args)
-        return args
+    async def on_function_invoking(
+        self,
+        kernel_function_metadata: KernelFunctionMetadata,
+        arguments: KernelArguments,
+        metadata: dict[str, Any] | None = None,
+    ) -> FunctionInvokingContext:
+        context = FunctionInvokingContext(
+            kernel_function_metadata=kernel_function_metadata, arguments=arguments, metadata=metadata or {}
+        )
+        for hook in self.hooks:
+            try:
+                updated_context = hook.on_function_invoking(context)
+                if updated_context:
+                    context = updated_context
+                updated_context = await hook.on_function_invoking_async(context)
+                if updated_context:
+                    context = updated_context
+            except Exception as exc:
+                logger.error(
+                    f"An error occurred in the on_function_invoking event of hook: {hook.__class__.__name__}. "
+                    f"Error description: {str(exc)}"
+                )
+        return context
+
+    def on_exit(self) -> None:
+        for hook in self.hooks:
+            try:
+                hook.on_exit()
+            except Exception as exc:
+                logger.error(
+                    f"An error occurred in the on_exit event of hook: {hook.__class__.__name__}. "
+                    f"Error description: {str(exc)}"
+                )
+
+    def add_hook(self, hook: KernelHook, priority: int | None = None) -> None:
+        if not isinstance(hook, KernelHook):
+            raise TypeError("The hook must be an instance of KernelHook")
+        if priority is not None:
+            self.hooks.insert(priority, hook)
+        else:
+            self.hooks.append(hook)
+
+        try:
+            hook.on_register()
+        except Exception as exc:
+            logger.error(
+                f"An error occurred in the on_register event of hook: {hook.__class__.__name__}. "
+                f"Error description: {str(exc)}"
+            )
+
+    def add_hook_function(
+        self,
+        hook_name: Literal[
+            "on_function_invoking",
+            "on_function_invoked",
+            "on_function_invoking_async",
+            "on_function_invoked_async",
+            "on_register",
+            "on_exit",
+        ],
+        hook_function: Callable[[T], T | None] | Callable[..., T | None],
+        priority: int | None = None,
+    ) -> None:
+        hook = KernelHook()
+        object.__setattr__(hook, hook_name, hook_function)
+        self.add_hook(hook, priority)
 
     def add_function_invoking_handler(
-        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
+        self, handler: Callable[["Kernel", FunctionInvokingContext], FunctionInvokingContext]
     ) -> None:
         self.function_invoking_handlers[id(handler)] = handler
 
     def add_function_invoked_handler(
-        self, handler: Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]
+        self, handler: Callable[["Kernel", FunctionInvokedContext], FunctionInvokedContext]
     ) -> None:
         self.function_invoked_handlers[id(handler)] = handler
 

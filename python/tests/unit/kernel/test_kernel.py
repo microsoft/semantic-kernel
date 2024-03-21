@@ -10,11 +10,6 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
-from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
-from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
     KernelFunctionAlreadyExistsError,
     KernelServiceNotFoundError,
@@ -26,6 +21,8 @@ from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.hooks.function_invoked_context import FunctionInvokedContext
+from semantic_kernel.hooks.function_invoking_context import FunctionInvokingContext
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 
@@ -192,7 +189,7 @@ async def test_invoke_handles_pre_invocation(kernel: Kernel, create_mock_functio
 
     invoked = 0
 
-    def invoking_handler(kernel: Kernel, e: FunctionInvokingEventArgs) -> FunctionInvokingEventArgs:
+    def invoking_handler(kernel: Kernel, e: FunctionInvokingContext) -> FunctionInvokingContext:
         nonlocal invoked
         invoked += 1
         return e
@@ -260,7 +257,7 @@ async def test_invoke_change_variable_invoking_handler(kernel: Kernel, create_mo
 
     mock_function = create_mock_function(name="test_function", value=new_input)
 
-    def invoking_handler(sender, e: FunctionInvokingEventArgs):
+    def invoking_handler(sender, e: FunctionInvokingContext):
         e.arguments["input"] = new_input
         e.updated_arguments = True
         return e
@@ -282,7 +279,7 @@ async def test_invoke_change_variable_invoked_handler(kernel: Kernel, create_moc
 
     mock_function = create_mock_function(name="test_function", value=new_input)
 
-    def invoked_handler(sender, e: FunctionInvokedEventArgs):
+    def invoked_handler(sender, e: FunctionInvokedContext):
         e.arguments["input"] = new_input
         e.updated_arguments = True
         return e

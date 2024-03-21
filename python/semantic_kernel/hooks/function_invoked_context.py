@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
+from __future__ import annotations
 
 from pydantic import Field
 
-from semantic_kernel.events.kernel_events_args import KernelEventArgs
 from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.hooks.kernel_hook_context_base import HookContextBase
 
 
-class FunctionInvokedEventArgs(KernelEventArgs):
+class FunctionInvokedContext(HookContextBase):
     """Function Invoked Event Args.
 
     Receives relevant parts of the the execution, after (invoked) the function is executed.
@@ -37,8 +37,8 @@ class FunctionInvokedEventArgs(KernelEventArgs):
         repeat: Sets the is_repeat_requested flag to True.
     """
 
-    function_result: Optional[FunctionResult] = None
-    exception: Optional[Exception] = None
+    function_result: FunctionResult | None = None
+    exception: Exception | None = None
     is_repeat_requested: bool = Field(default=False, init_var=False)
 
     def repeat(self):
