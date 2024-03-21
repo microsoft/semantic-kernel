@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Iterator, List
 from xml.etree.ElementTree import Element, tostring
 
 from defusedxml.ElementTree import XML, ParseError
@@ -33,7 +34,7 @@ class ChatHistory(KernelBaseModel):
         messages (List[ChatMessageContent]): The list of chat messages in the history.
     """
 
-    messages: List["ChatMessageContent"]
+    messages: list["ChatMessageContent"]
     message_type: TYPES_CHAT_MESSAGE_CONTENT = "ChatMessageContent"
 
     def __init__(self, **data: Any):
@@ -87,16 +88,16 @@ class ChatHistory(KernelBaseModel):
         self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content, **kwargs))
 
     def add_tool_message(
-        self, content: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None, **kwargs: Any
+        self, content: str | None = None, metadata: dict[str, Any] | None = None, **kwargs: Any
     ) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content, **kwargs), metadata=metadata)
 
     def add_message(
         self,
-        message: Union["ChatMessageContent", Dict[str, Any]],
-        encoding: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        message: "ChatMessageContent" | dict[str, Any],
+        encoding: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Add a message to the history.
 
@@ -124,7 +125,7 @@ class ChatHistory(KernelBaseModel):
             message["type"] = self.message_type
         self.messages.append(ChatMessageContentBase.from_dict(message))
 
-    def _prepare_for_add(self, role: ChatRole, content: Optional[str], **kwargs: Any) -> Dict[str, str]:
+    def _prepare_for_add(self, role: ChatRole, content: str | None = None, **kwargs: Any) -> dict[str, str]:
         """Prepare a message to be added to the history."""
         kwargs["role"] = role
         kwargs["content"] = content
