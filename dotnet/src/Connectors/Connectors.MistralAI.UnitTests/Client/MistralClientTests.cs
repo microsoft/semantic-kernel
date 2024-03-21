@@ -118,6 +118,25 @@ public sealed class MistralClientTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task ValidateChatHistoryAsync()
+    {
+        // Arrange
+        var content = this.GetTestResponseAsStream("chat_completions_streaming_response.txt");
+        this._delegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
+        this._httpClient = new HttpClient(this._delegatingHandler, false);
+        var client = new MistralClient("mistral-tiny", this._httpClient, "key");
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.Assistant, "What is the best French cheese?")
+        };
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetChatMessageContentsAsync(chatHistory, default));
+    }
+
     public void Dispose()
     {
         this._delegatingHandler?.Dispose();

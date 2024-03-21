@@ -43,6 +43,8 @@ internal sealed class MistralClient
 
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
+        this.ValidateChatHistory(chatHistory);
+
         string modelId = executionSettings?.ModelId ?? this._modelId;
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings);
@@ -57,6 +59,8 @@ internal sealed class MistralClient
 
     internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, [EnumeratorCancellation] CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
+        this.ValidateChatHistory(chatHistory);
+
         string modelId = executionSettings?.ModelId ?? this._modelId;
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = this.CreateChatCompletionRequest(modelId, stream: true, chatHistory, mistralExecutionSettings);
@@ -77,14 +81,13 @@ internal sealed class MistralClient
             {
                 rawChunk = line.Substring(SseDataLength).Trim();
             }
-            else
+            else if (rawChunk is not null)
             {
-                if (rawChunk is not null and "[DONE]")
+                if (rawChunk is "[DONE]")
                 {
                     continue;
                 }
-                var chunk = await JsonSerializer.DeserializeAsync<MistralChatCompletionChunk>(
-                    new MemoryStream(Encoding.UTF8.GetBytes(rawChunk))).ConfigureAwait(false);
+                var chunk = JsonSerializer.Deserialize<MistralChatCompletionChunk>(rawChunk);
                 rawChunk = null;
 
                 if (chunk is null)
@@ -131,6 +134,22 @@ internal sealed class MistralClient
     private readonly ILogger _logger;
 
     private const int SseDataLength = 5;
+
+    /// <summary>
+    /// Messages are required and the first prompt role should be user or system.
+    /// </summary>
+    private void ValidateChatHistory(ChatHistory chatHistory)
+    {
+        if (chatHistory.Count == 0)
+        {
+            throw new ArgumentException("Chat history must contain at least one message", nameof(chatHistory));
+        }
+        var firstRole = chatHistory[0].Role.ToString();
+        if (firstRole is not "system" && firstRole is not "user")
+        {
+            throw new ArgumentException("First message in chat history should have system or user role", nameof(chatHistory));
+        }
+    }
 
     private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings? executionSettings)
     {
