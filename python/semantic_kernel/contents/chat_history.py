@@ -1,22 +1,24 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Dict, Final, Iterator, List, Optional, Union
-from xml.etree.ElementTree import Element
+from typing import Any, Dict, Iterator, List, Optional, Union
+from xml.etree.ElementTree import Element, tostring
 
-import defusedxml.ElementTree as ET
+from defusedxml.ElementTree import XML, ParseError
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_message_content_base import ChatMessageContentBase
 from semantic_kernel.contents.chat_role import ChatRole
-from semantic_kernel.contents.types import CHAT_MESSAGE_CONTENT_TYPES
+from semantic_kernel.contents.const import (
+    CHAT_MESSAGE_CONTENT,
+    ROOT_KEY_HISTORY,
+    ROOT_KEY_MESSAGE,
+    TYPES_CHAT_MESSAGE_CONTENT,
+)
 from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
-
-ROOT_KEY_MESSAGE: Final[str] = "message"
-ROOT_KEY_HISTORY: Final[str] = "chat_history"
 
 
 class ChatHistory(KernelBaseModel):
@@ -32,7 +34,7 @@ class ChatHistory(KernelBaseModel):
     """
 
     messages: List["ChatMessageContent"]
-    message_type: CHAT_MESSAGE_CONTENT_TYPES = "ChatMessageContent"
+    message_type: TYPES_CHAT_MESSAGE_CONTENT = "ChatMessageContent"
 
     def __init__(self, **data: Any):
         """
@@ -57,7 +59,7 @@ class ChatHistory(KernelBaseModel):
         constructor and handled according to the Pydantic model's behavior.
         """
         system_message_content = data.pop("system_message", None)
-        message_type = data.get("message_type", "ChatMessageContent")
+        message_type = data.get("message_type", CHAT_MESSAGE_CONTENT)
 
         if system_message_content:
             system_message = ChatMessageContentBase.from_fields(
@@ -174,7 +176,7 @@ class ChatHistory(KernelBaseModel):
         chat_history_xml = Element(ROOT_KEY_HISTORY)
         for message in self.messages:
             chat_history_xml.append(message.to_element(root_key=ROOT_KEY_MESSAGE))
-        return ET.tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
+        return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
     def __iter__(self) -> Iterator["ChatMessageContent"]:
         """Return an iterator over the messages in the history."""
@@ -188,7 +190,7 @@ class ChatHistory(KernelBaseModel):
         return self.messages == other.messages
 
     @classmethod
-    def from_rendered_prompt(cls, rendered_prompt: str, message_type: str = "ChatMessageContent") -> "ChatHistory":
+    def from_rendered_prompt(cls, rendered_prompt: str, message_type: str = CHAT_MESSAGE_CONTENT) -> "ChatHistory":
         """
         Create a ChatHistory instance from a rendered prompt.
 
@@ -201,12 +203,18 @@ class ChatHistory(KernelBaseModel):
         messages: List[ChatMessageContent] = []
         prompt = rendered_prompt.strip()
         try:
-            xml_prompt = ET.fromstring(f"<prompt>{prompt}</prompt>")
-        except ET.ParseError as e:
+            xml_prompt = XML(text=f"<prompt>{prompt}</prompt>")
+        except ParseError as e:
             logger.error(f"Error parsing XML of prompt: {e}")
-            return cls(messages=[ChatMessageContentBase(role=ChatRole.USER, content=prompt)])
+            return cls(
+                messages=[ChatMessageContentBase.from_fields(role=ChatRole.USER, content=prompt, type=message_type)]
+            )
         if xml_prompt.text and xml_prompt.text.strip():
-            messages.append(ChatMessageContentBase(role=ChatRole.SYSTEM, content=xml_prompt.text.strip()))
+            messages.append(
+                ChatMessageContentBase.from_fields(
+                    role=ChatRole.SYSTEM, content=xml_prompt.text.strip(), type=message_type
+                )
+            )
         for item in xml_prompt:
             if item.tag == ROOT_KEY_MESSAGE:
                 messages.append(ChatMessageContentBase.from_element(item))
@@ -214,10 +222,12 @@ class ChatHistory(KernelBaseModel):
                 for message in item:
                     messages.append(ChatMessageContentBase.from_element(message))
             if item.tail and item.tail.strip():
-                messages.append(ChatMessageContentBase(role=ChatRole.USER, content=item.tail.strip()))
+                messages.append(
+                    ChatMessageContentBase.from_fields(role=ChatRole.USER, content=item.tail.strip(), type=message_type)
+                )
         if len(messages) == 1 and messages[0].role == ChatRole.SYSTEM:
             messages[0].role = ChatRole.USER
-        return cls(messages=messages)
+        return cls(messages=messages, message_type=message_type)
 
     def serialize(self) -> str:
         """

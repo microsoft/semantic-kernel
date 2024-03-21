@@ -5,7 +5,9 @@ from xml.etree.ElementTree import Element
 
 from defusedxml import ElementTree
 
+from semantic_kernel.contents.chat_message_content_base import DISCRIMINATOR_FIELD
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -31,7 +33,7 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
-    type: Literal["ChatMessageContent"] = "ChatMessageContent"
+    type: Literal[CHAT_MESSAGE_CONTENT] = CHAT_MESSAGE_CONTENT  # type: ignore
     role: ChatRole
     content: Optional[str] = None
     encoding: Optional[str] = None
@@ -51,7 +53,7 @@ class ChatMessageContent(KernelContent):
         """
         root = Element(root_key)
         for field in self.model_fields_set:
-            if field in ["content", "type"]:
+            if field in ["content", DISCRIMINATOR_FIELD]:
                 continue
             value = getattr(self, field)
             if value is None:
@@ -66,8 +68,8 @@ class ChatMessageContent(KernelContent):
                 else:
                     value = "|".join(value)
             root.set(field, value)
-        if self.type != "ChatMessageContent":
-            root.set("type", self.type)
+        if self.type != CHAT_MESSAGE_CONTENT:
+            root.set(DISCRIMINATOR_FIELD, self.type)
         root.text = self.content or ""
         return root
 

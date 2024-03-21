@@ -1,14 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import TYPE_CHECKING, Any, List, Literal, Optional
+from typing import Any, List, Literal, Optional
 
 from pydantic import field_validator
 
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents import ChatMessageContent
-
-if TYPE_CHECKING:
-    pass
+from semantic_kernel.contents.const import OPENAI_CHAT_MESSAGE_CONTENT
 
 
 class OpenAIChatMessageContent(ChatMessageContent):
@@ -30,7 +28,7 @@ class OpenAIChatMessageContent(ChatMessageContent):
         __str__: Returns the content of the response.
     """
 
-    type: Literal["OpenAIChatMessageContent"] = "OpenAIChatMessageContent"
+    type: Literal[OPENAI_CHAT_MESSAGE_CONTENT] = OPENAI_CHAT_MESSAGE_CONTENT  # type: ignore
     function_call: Optional[FunctionCall] = None
     tool_calls: Optional[List[ToolCall]] = None
     tool_call_id: Optional[str] = None

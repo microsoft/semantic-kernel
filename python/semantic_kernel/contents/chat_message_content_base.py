@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import sys
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Final
+
+from semantic_kernel.contents.const import ALL_CHAT_MESSAGE_CONTENTS, CHAT_MESSAGE_CONTENT
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -12,9 +14,9 @@ from xml.etree.ElementTree import Element
 from pydantic import Field, RootModel
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
-    from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
+DISCRIMINATOR_FIELD: Final[str] = "type"
 
 
 class ChatMessageContentBase(RootModel):
@@ -31,10 +33,7 @@ class ChatMessageContentBase(RootModel):
       which is a instance of ChatMessageContent or the requested subclass.
     """
 
-    root: Annotated[
-        Union["ChatMessageContent", "OpenAIChatMessageContent", "AzureChatMessageContent"],
-        Field(discriminator="type"),
-    ]
+    root: Annotated[ALL_CHAT_MESSAGE_CONTENTS, Field(discriminator=DISCRIMINATOR_FIELD)]
 
     @classmethod
     def from_fields(cls, **kwargs: Any) -> "ChatMessageContent":
@@ -53,8 +52,8 @@ class ChatMessageContentBase(RootModel):
         from semantic_kernel.contents.chat_message_content import ChatMessageContent  # noqa: F401, I001, E501
 
         cls.model_rebuild()
-        if "type" not in kwargs:
-            kwargs["type"] = "ChatMessageContent"
+        if DISCRIMINATOR_FIELD not in kwargs:
+            kwargs[DISCRIMINATOR_FIELD] = CHAT_MESSAGE_CONTENT
         return cls(**kwargs).root
 
     @classmethod
