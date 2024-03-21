@@ -3,9 +3,17 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -13,6 +21,35 @@ import reactor.core.publisher.Mono;
 public class KernelFunctionFromMethodTest {
 
     public KernelFunctionFromMethodTest() {
+    }
+
+    public static class ExamplePlugin {
+
+        @DefineKernelFunction(name = "sqrt", description = "Take the square root of a number")
+        public static double sqrt(
+            @KernelFunctionParameter(name = "number1", description = "The number to take a square root of", type = double.class) double number1) {
+            return Math.sqrt(number1);
+        }
+    }
+
+    @Test
+    void typeConversionOnMethodCall() {
+        KernelPlugin plugin = KernelPluginFactory.createFromObject(
+            new ExamplePlugin(), "ExamplePlugin");
+
+        Kernel kernel = Kernel.builder().build();
+
+        FunctionResult<String> result = plugin
+            .get("sqrt")
+            .invokeAsync(kernel)
+            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+            .withArguments(
+                KernelFunctionArguments.builder()
+                    .withVariable("number1", "12.0")
+                    .build())
+            .block();
+
+        Assertions.assertEquals("3.4641016151377544", result.getResult());
     }
 
     @Test

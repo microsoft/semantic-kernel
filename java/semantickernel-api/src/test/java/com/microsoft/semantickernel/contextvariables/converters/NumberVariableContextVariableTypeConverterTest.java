@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.contextvariables.converters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
@@ -92,4 +93,11 @@ public class NumberVariableContextVariableTypeConverterTest {
         assertEquals(expResult, result);
     }
 
+    @Test
+    void testFromStringToDouble() {
+        Object s = "12.0";
+        double expResult = 12.0d;
+        ContextVariable<Double> result = ContextVariable.convert(s, double.class, null);
+        assertEquals(expResult, result.getValue());
+    }
 }
