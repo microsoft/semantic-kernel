@@ -37,8 +37,8 @@ STEP_PROMPT_FILE_PATH = os.path.join(CUR_DIR, "step_prompt.txt")
 STEPWISE_PLANNER_PLUGIN_NAME = "StepwisePlanner_Excluded"
 
 STEPWISE_USER_MESSAGE = (
-    "Perform the next step of the plan if there is more work to do."
-    "When you have reached a final answer, use the UserInteraction-SendFinalAnswer"
+    "Perform the next step of the plan if there is more work to do. "
+    "When you have reached a final answer, use the UserInteraction-SendFinalAnswer "
     "function to communicate this back to the user."
 )
 
