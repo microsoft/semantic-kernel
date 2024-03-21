@@ -239,4 +239,25 @@ public class ContextVariableTypes {
     public void putConverters(ContextVariableTypes contextVariableTypes) {
         this.variableTypes.putAll(contextVariableTypes.variableTypes);
     }
+
+    /**
+     * Create a context variable of the given value.
+     *
+     * @param value The value to create a context variable of.
+     * @param <T>   The type of the context variable.
+     * @return The context variable of the given value.
+     */
+    public <T> ContextVariable<T> contextVariableOf(T value) {
+        if (value instanceof ContextVariable) {
+            return (ContextVariable<T>) value;
+        }
+
+        ContextVariableType<?> type = getVariableTypeForClass(value.getClass());
+
+        if (type == null) {
+            throw new SKException("Unknown type: " + value.getClass());
+        }
+
+        return (ContextVariable<T>) type.of(value);
+    }
 }

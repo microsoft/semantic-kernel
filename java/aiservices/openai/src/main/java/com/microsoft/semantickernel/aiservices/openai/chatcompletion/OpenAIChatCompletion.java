@@ -203,7 +203,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                                                     "A tool call was requested, but no kernel was provided to the invocation, this is a unsupported configuration"));
                                         }
 
-                                        return invokeFunctionTool(kernel, functionToolCall)
+                                        return invokeFunctionTool(
+                                            kernel,
+                                            functionToolCall,
+                                            invocationContext.getContextVariableTypes())
                                             .map(functionResult -> {
                                                 // Add chat request tool message to the chat options
                                                 ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
@@ -233,7 +236,8 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     @SuppressWarnings("StringSplitter")
     private Mono<FunctionResult<String>> invokeFunctionTool(
         Kernel kernel,
-        ChatCompletionsFunctionToolCall toolCall) {
+        ChatCompletionsFunctionToolCall toolCall,
+        ContextVariableTypes contextVariableTypes) {
 
         try {
             OpenAIFunctionToolCall openAIFunctionToolCall = extractOpenAIFunctionToolCall(toolCall);
@@ -250,8 +254,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             return function
                 .invokeAsync(kernel)
                 .withArguments(openAIFunctionToolCall.getArguments())
-                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
-                    String.class));
+                .withResultType(contextVariableTypes.getVariableTypeForClass(String.class));
         } catch (JsonProcessingException e) {
             return Mono.error(new SKException("Failed to parse tool arguments"));
         }

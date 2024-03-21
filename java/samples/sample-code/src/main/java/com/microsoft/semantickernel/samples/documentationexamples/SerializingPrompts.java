@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.documentationexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -17,7 +18,8 @@ public class SerializingPrompts {
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
+    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID",
+        "gpt-35-turbo-2");
 
     public static void main(String[] args) {
         System.out.println("======== Serializing Prompts ========");
@@ -25,21 +27,21 @@ public class SerializingPrompts {
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
         Kernel kernel = Kernel.builder()
-                .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
-                        .withModelId(MODEL_ID)
-                        .withOpenAIAsyncClient(client)
-                        .build())
-                .build();
+            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
+                .withModelId(MODEL_ID)
+                .withOpenAIAsyncClient(client)
+                .build())
+            .build();
 
         // Load prompts
         // This part is omitted as it requires a specific implementation to load prompts from a directory

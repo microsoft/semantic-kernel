@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.documentationexamples;
 
 import java.util.Scanner;
@@ -22,7 +23,8 @@ public class CreatingFunctions {
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
+    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID",
+        "gpt-35-turbo-2");
 
     public static void main(String[] args) {
         System.out.println("======== Prompts ========");
@@ -30,38 +32,38 @@ public class CreatingFunctions {
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
         Kernel kernel = Kernel.builder()
-                .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
-                        .withModelId(MODEL_ID)
-                        .withOpenAIAsyncClient(client)
-                        .build())
-                .withPlugin(KernelPluginFactory.createFromObject(new MathPlugin(), "MathPlugin"))
-                .build();
+            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
+                .withModelId(MODEL_ID)
+                .withOpenAIAsyncClient(client)
+                .build())
+            .withPlugin(KernelPluginFactory.createFromObject(new MathPlugin(), "MathPlugin"))
+            .build();
 
         // Test the math plugin
         var answer = kernel
-                .invokeAsync(kernel.getFunction("MathPlugin", "sqrt"))
-                .withArguments(KernelFunctionArguments
-                        .builder()
-                        .withVariable("number1", 12.0)
-                        .build())
-                .block();
+            .invokeAsync(kernel.getFunction("MathPlugin", "sqrt"))
+            .withArguments(KernelFunctionArguments
+                .builder()
+                .withVariable("number1", 12.0)
+                .build())
+            .block();
         System.out.println("The square root of 12 is " + answer.getResult() + ".");
 
         // Create chat history
         ChatCompletionService chat = OpenAIChatCompletion.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build();
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
+            .build();
 
         System.out.println("Chat content:");
         System.out.println("------------------------");
@@ -85,7 +87,7 @@ public class CreatingFunctions {
         var toolCallBehavior = ToolCallBehavior.allowAllKernelFunctions(true);
 
         var reply = chatGPT.getChatMessageContentsAsync(chatHistory, null, null)
-                .block();
+            .block();
 
         StringBuilder message = new StringBuilder();
         reply.forEach(chatMessageContent -> message.append(chatMessageContent.getContent()));

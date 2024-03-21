@@ -77,6 +77,10 @@ public class ContextVariable<T> {
             contextVariableTypes = new ContextVariableTypes();
         }
 
+        if (it instanceof ContextVariable) {
+            it = (U) ((ContextVariable<?>) it).getValue();
+        }
+
         if (it == null) {
             return new ContextVariable<>(
                 contextVariableTypes.getVariableTypeForClass(requestedResultType),
