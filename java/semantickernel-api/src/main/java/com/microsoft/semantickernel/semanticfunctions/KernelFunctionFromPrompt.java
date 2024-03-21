@@ -81,6 +81,17 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         return new Builder<>();
     }
 
+    /**
+     * Creates a new instance of {@link Builder}.
+     *
+     * @param returnType The type of the return value of the function
+     * @param <T>        The type of the return value of the function
+     * @return a new instance of {@link Builder}
+     */
+    public static <T> Builder<T> builder(Class<T> returnType) {
+        return new Builder<>();
+    }
+
     private Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
         @Nullable KernelFunctionArguments argumentsIn,
@@ -105,7 +116,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         ContextVariableType<T> variableType = contextVariableType != null
             ? contextVariableType
             : context.getContextVariableTypes().getVariableTypeForClass(
-                (Class<T>) this.getMetadata().getReturnParameter().getParameterType());
+                (Class<T>) this.getMetadata().getOutputVariableType().getType());
 
         return this.template
             .renderAsync(kernel, arguments, context)
@@ -283,7 +294,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         private String template;
         private String templateFormat = PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT;
         @Nullable
-        private OutputVariable outputVariable;
+        private OutputVariable<?> outputVariable;
         @Nullable
         private PromptTemplateFactory promptTemplateFactory;
         @Nullable
@@ -364,9 +375,10 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         }
 
         @Override
-        public FromPromptBuilder<T> withOutputVariable(@Nullable OutputVariable outputVariable) {
+        public <U> FromPromptBuilder<U> withOutputVariable(
+            @Nullable OutputVariable<U> outputVariable) {
             this.outputVariable = outputVariable;
-            return this;
+            return (FromPromptBuilder<U>) this;
         }
 
         @Override

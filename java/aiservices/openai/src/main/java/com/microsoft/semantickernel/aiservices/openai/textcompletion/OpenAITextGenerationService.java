@@ -3,10 +3,8 @@ package com.microsoft.semantickernel.aiservices.openai.textcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.CompletionsOptions;
-import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
@@ -14,11 +12,9 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.services.textcompletion.StreamingTextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
-import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
@@ -117,19 +113,6 @@ public class OpenAITextGenerationService implements TextGenerationService {
                     })
                     .collect(Collectors.toList());
             });
-    }
-
-    private static Map<String, ContextVariable<?>> buildMetadata(
-        String id,
-        CompletionsUsage usage,
-        OffsetDateTime createdAt) {
-
-        Map<String, ContextVariable<?>> metadata = new HashMap<>();
-        metadata.put("id", ContextVariable.of(id));
-        metadata.put("usage", ContextVariable.of(usage));
-        metadata.put("created_at", ContextVariable.of(createdAt));
-
-        return metadata;
     }
 
     private CompletionsOptions getCompletionsOptions(

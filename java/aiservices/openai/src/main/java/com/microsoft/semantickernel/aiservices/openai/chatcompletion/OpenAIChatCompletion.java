@@ -49,6 +49,9 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * OpenAI chat completion service.
+ */
 public class OpenAIChatCompletion implements ChatCompletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAIChatCompletion.class);
@@ -67,6 +70,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         this.modelId = modelId;
     }
 
+    /**
+     * Create a new instance of {@link OpenAIChatCompletion.Builder}.
+     *
+     * @return a new instance of {@link OpenAIChatCompletion.Builder}
+     */
     public static OpenAIChatCompletion.Builder builder() {
         return new OpenAIChatCompletion.Builder();
     }
@@ -229,8 +237,14 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         try {
             OpenAIFunctionToolCall openAIFunctionToolCall = extractOpenAIFunctionToolCall(toolCall);
+            String pluginName = openAIFunctionToolCall.getPluginName();
+            if (pluginName == null || pluginName.isEmpty()) {
+                return Mono.error(
+                    new SKException("Plugin name is required for function tool call"));
+            }
+
             KernelFunction<?> function = kernel.getFunction(
-                openAIFunctionToolCall.getPluginName(),
+                pluginName,
                 openAIFunctionToolCall.getFunctionName());
 
             return function
@@ -243,6 +257,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         }
     }
 
+    @SuppressWarnings("StringSplitter")
     private OpenAIFunctionToolCall extractOpenAIFunctionToolCall(
         ChatCompletionsFunctionToolCall toolCall) throws JsonProcessingException {
 
@@ -482,6 +497,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         return modelId;
     }
 
+    /**
+     * Builder for creating a new instance of {@link OpenAIChatCompletion}.
+     */
     public static class Builder extends ChatCompletionService.Builder {
 
         @Override

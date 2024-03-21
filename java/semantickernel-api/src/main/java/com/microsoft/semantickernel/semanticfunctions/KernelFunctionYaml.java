@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-
 import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
  * A class for creating a {@link KernelFunction} instance from a YAML representation of a prompt
@@ -31,9 +29,10 @@ public class KernelFunctionYaml {
     public static <T> KernelFunction<T> fromPromptYaml(
         String yaml,
         @Nullable PromptTemplateFactory promptTemplateFactory) throws IOException {
-        try (InputStream targetStream = new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))) {
+        try (InputStream targetStream = new ByteArrayInputStream(
+            yaml.getBytes(StandardCharsets.UTF_8))) {
             return fromYaml(targetStream, promptTemplateFactory);
-        } 
+        }
     }
 
     /**

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod.ImplementationFunc;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,8 +16,8 @@ public class MethodDetails {
     @Nullable
     private final String description;
     private final ImplementationFunc<?> function;
-    private final List<KernelParameterMetadata<?>> parameters;
-    private final KernelReturnParameterMetadata<?> returnParameter;
+    private final List<InputVariable> parameters;
+    private final OutputVariable<?> returnParameter;
 
     /**
      * Constructor.
@@ -33,8 +32,8 @@ public class MethodDetails {
         String name,
         @Nullable String description,
         ImplementationFunc<?> function,
-        List<KernelParameterMetadata<?>> parameters,
-        KernelReturnParameterMetadata<?> returnParameter) {
+        List<InputVariable> parameters,
+        OutputVariable<?> returnParameter) {
         this.name = name;
         this.description = description;
         this.function = function;
@@ -75,7 +74,7 @@ public class MethodDetails {
      *
      * @return The parameters of the method.
      */
-    public List<KernelParameterMetadata<?>> getParameters() {
+    public List<InputVariable> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
@@ -84,7 +83,7 @@ public class MethodDetails {
      *
      * @return The return parameter of the method.
      */
-    public KernelReturnParameterMetadata<?> getReturnParameter() {
+    public OutputVariable<?> getReturnParameter() {
         return returnParameter;
     }
 }

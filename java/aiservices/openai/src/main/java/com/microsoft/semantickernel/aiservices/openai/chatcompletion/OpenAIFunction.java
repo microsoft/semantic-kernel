@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
-import com.microsoft.semantickernel.semanticfunctions.KernelParameterMetadata;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -86,7 +86,7 @@ class OpenAIFunction {
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            for (KernelParameterMetadata<?> parameter : metadata.getParameters()) {
+            for (InputVariable parameter : metadata.getParameters()) {
                 String parameterJsonSchema = getSchemaForFunctionParameter(
                     parameter.getDescription());
                 properties.put(parameter.getName(), objectMapper.readTree(parameterJsonSchema));
@@ -129,14 +129,17 @@ class OpenAIFunction {
             this.properties = Collections.unmodifiableMap(properties);
         }
 
+        @SuppressWarnings("UnusedMethod")
         public String getType() {
             return type;
         }
 
+        @SuppressWarnings("UnusedMethod")
         public List<String> getRequired() {
             return required;
         }
 
+        @SuppressWarnings("UnusedMethod")
         public Map<String, JsonNode> getProperties() {
             return properties;
         }

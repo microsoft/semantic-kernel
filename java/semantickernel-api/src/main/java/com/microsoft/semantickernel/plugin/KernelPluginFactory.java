@@ -6,10 +6,12 @@ import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader.ResourceLocation;
+import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.semanticfunctions.KernelParameterMetadata;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
+import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
@@ -25,6 +27,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -42,6 +45,38 @@ public class KernelPluginFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelPluginFactory.class);
     private static final String CONFIG_FILE = "config.json";
     private static final String PROMPT_FILE = "skprompt.txt";
+    private static final CaseInsensitiveMap<Class<?>> PRIMATIVE_CLASS_NAMES = new CaseInsensitiveMap<>();
+    private static final CaseInsensitiveMap<Class<?>> COMMON_CLASS_NAMES = new CaseInsensitiveMap<>();
+    private static final Map<Class<?>, Class<?>> BOXED_FROM_PRIMATIVE = new HashMap<>();
+
+    static {
+        PRIMATIVE_CLASS_NAMES.put("void", void.class);
+        PRIMATIVE_CLASS_NAMES.put("int", int.class);
+        PRIMATIVE_CLASS_NAMES.put("double", double.class);
+        PRIMATIVE_CLASS_NAMES.put("boolean", boolean.class);
+        PRIMATIVE_CLASS_NAMES.put("float", float.class);
+        PRIMATIVE_CLASS_NAMES.put("long", long.class);
+        PRIMATIVE_CLASS_NAMES.put("short", short.class);
+        PRIMATIVE_CLASS_NAMES.put("byte", byte.class);
+        PRIMATIVE_CLASS_NAMES.put("char", char.class);
+
+        COMMON_CLASS_NAMES.put("integer", int.class);
+        COMMON_CLASS_NAMES.put("string", String.class);
+        COMMON_CLASS_NAMES.put("list", ArrayList.class);
+        COMMON_CLASS_NAMES.put("map", HashMap.class);
+        COMMON_CLASS_NAMES.put("set", HashSet.class);
+
+        BOXED_FROM_PRIMATIVE.put(void.class, Void.class);
+        BOXED_FROM_PRIMATIVE.put(int.class, Integer.class);
+        BOXED_FROM_PRIMATIVE.put(double.class, Double.class);
+        BOXED_FROM_PRIMATIVE.put(boolean.class, Boolean.class);
+        BOXED_FROM_PRIMATIVE.put(float.class, Float.class);
+        BOXED_FROM_PRIMATIVE.put(long.class, Long.class);
+        BOXED_FROM_PRIMATIVE.put(short.class, Short.class);
+        BOXED_FROM_PRIMATIVE.put(byte.class, Byte.class);
+        BOXED_FROM_PRIMATIVE.put(char.class, Character.class);
+
+    }
 
     /**
      * Creates a plugin that wraps the specified target object. Methods decorated with
@@ -59,25 +94,36 @@ public class KernelPluginFactory {
             .map(method -> {
                 DefineKernelFunction annotation = method.getAnnotation(DefineKernelFunction.class);
                 Class<?> returnType = getReturnType(annotation, method);
-                KernelReturnParameterMetadata<?> kernelReturnParameterMetadata = new KernelReturnParameterMetadata<>(
+                OutputVariable<?> kernelReturnParameterMetadata = new OutputVariable<>(
                     annotation.returnDescription(),
                     returnType);
 
-                return KernelFunction
+                KernelFunctionFromMethod.Builder<Object> builder = KernelFunction
                     .createFromMethod(method, target)
-                    .withPluginName(pluginName)
-                    .withFunctionName(annotation.name())
-                    .withDescription(annotation.description())
                     .withParameters(getParameters(method))
-                    .withReturnParameter(kernelReturnParameterMetadata)
-                    .build();
+                    .withReturnParameter(kernelReturnParameterMetadata);
+
+                if (pluginName != null && !pluginName.isEmpty()) {
+                    builder = builder.withPluginName(pluginName);
+                }
+
+                if (annotation.name() != null && !annotation.name().isEmpty()) {
+                    builder = builder.withFunctionName(annotation.name());
+                }
+
+                if (annotation.description() != null && !annotation.description().isEmpty()) {
+                    builder = builder.withDescription(annotation.description());
+                }
+
+                return builder.build();
+
             }).collect(ArrayList::new, (list, it) -> list.add(it), (a, b) -> a.addAll(b));
 
         return createFromFunctions(pluginName, methods);
     }
 
     private static Class<?> getReturnType(DefineKernelFunction annotation, Method method) {
-        Class<?> returnType;
+        Class<?> returnType = null;
         if (annotation.returnType().isEmpty()) {
             returnType = method.getReturnType();
 
@@ -92,25 +138,99 @@ public class KernelPluginFactory {
                 // primarily meant to handle void
                 return method.getReturnType();
             }
+
             try {
                 returnType = Thread.currentThread().getContextClassLoader()
                     .loadClass(annotation.returnType());
-
-                if (!Publisher.class.isAssignableFrom(method.getReturnType())
-                    && !returnType.isAssignableFrom(method.getReturnType())) {
-                    throw new SKException(
-                        "Return type " + returnType.getName() + " is not assignable from "
-                            + method.getReturnType());
-                }
-
             } catch (ClassNotFoundException e) {
+                // ignore
+            }
+
+            if (returnType == null) {
+                returnType = getCommonTypeAlias(method, className);
+            }
+
+            if (returnType == null) {
                 throw new SKException("Could not find return type " + annotation.returnType()
                     + "  is not found on method " + method.getDeclaringClass().getName() + "."
                     + method.getName());
             }
+
+            if (!Publisher.class.isAssignableFrom(method.getReturnType())
+                && !returnType.isAssignableFrom(method.getReturnType())) {
+                throw new SKException(
+                    "Return type " + returnType.getName() + " is not assignable from "
+                        + method.getReturnType());
+            }
         }
 
         return returnType;
+    }
+
+    /**
+     * Returns a class found via an inexact match on the class name, i.e does not require the user
+     * to provide a fully qualified class name for common types.
+     *
+     * @param method    The method to get the return type for.
+     * @param className The class name to search for.
+     * @return The class if found, otherwise null.
+     */
+    @Nullable
+    private static Class<?> getCommonTypeAlias(Method method, String className) {
+        Class<?> returnType = PRIMATIVE_CLASS_NAMES.get(className);
+
+        if (returnType == null) {
+            returnType = COMMON_CLASS_NAMES.get(className);
+        }
+
+        if (returnType != null && Publisher.class.isAssignableFrom(method.getReturnType())) {
+            return returnType;
+        }
+
+        if (returnType != null && !returnType.isAssignableFrom(method.getReturnType())) {
+            returnType = BOXED_FROM_PRIMATIVE.get(returnType);
+        }
+
+        return returnType;
+    }
+
+    /**
+     * Returns the class for the provided type name.
+     *
+     * @param className The type name.
+     * @return The class for the type name.
+     */
+    public static Class<?> getTypeForName(String className) {
+        Class<?> clazz = PRIMATIVE_CLASS_NAMES.get(className);
+
+        if (clazz == null) {
+            clazz = COMMON_CLASS_NAMES.get(className);
+        }
+
+        if (clazz != null) {
+            return clazz;
+        }
+
+        try {
+            clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+
+        if (clazz == null) {
+            try {
+                // Seems that in tests specifically we need to use the class loader of the class itself
+                clazz = KernelPluginFactory.class.getClassLoader().loadClass(className);
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
+        }
+
+        if (clazz == null) {
+            throw new SKException("Requested type could not be found: " + className
+                + ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
+        }
+        return clazz;
     }
 
     /**
@@ -143,17 +263,17 @@ public class KernelPluginFactory {
         return new KernelPlugin(pluginName, description, funcs);
     }
 
-    private static List<KernelParameterMetadata<?>> getParameters(Method method) {
+    private static List<InputVariable> getParameters(Method method) {
         return Arrays.stream(method.getParameters())
             .filter(parameter -> parameter.isAnnotationPresent(KernelFunctionParameter.class))
             .map(parameter -> {
                 KernelFunctionParameter annotation = parameter.getAnnotation(
                     KernelFunctionParameter.class);
 
-                return new KernelParameterMetadata<>(
+                return InputVariable.build(
                     annotation.name(),
-                    annotation.description(),
                     annotation.type(),
+                    annotation.description(),
                     annotation.defaultValue(),
                     annotation.required());
             }).collect(Collectors.toList());
@@ -169,8 +289,10 @@ public class KernelPluginFactory {
      * @param promptTemplateFactory The factory to use for creating prompt templates.
      * @return The imported plugin.
      */
-    public static KernelPlugin importPluginFromDirectory(Path parentDirectory,
-        String pluginDirectoryName, PromptTemplateFactory promptTemplateFactory) {
+    public static KernelPlugin importPluginFromDirectory(
+        Path parentDirectory,
+        String pluginDirectoryName,
+        @Nullable PromptTemplateFactory promptTemplateFactory) {
 
         // Verify.ValidSkillName(pluginDirectoryName);
         File pluginDir = new File(parentDirectory.toFile(), pluginDirectoryName);
@@ -216,7 +338,7 @@ public class KernelPluginFactory {
     }
 
     private static KernelFunction<?> getKernelFunction(
-        PromptTemplateFactory promptTemplateFactory,
+        @Nullable PromptTemplateFactory promptTemplateFactory,
         File configPath,
         File promptPath)
         throws IOException {
@@ -238,7 +360,7 @@ public class KernelPluginFactory {
 
     @SuppressWarnings("unchecked")
     private static <T> KernelFunction<T> getKernelFunction(
-        PromptTemplateFactory promptTemplateFactory,
+        @Nullable PromptTemplateFactory promptTemplateFactory,
         PromptTemplateConfig config,
         String template) {
         PromptTemplate promptTemplate;
@@ -265,6 +387,26 @@ public class KernelPluginFactory {
     }
 
     /**
+     * @param parentDirectory       The parent directory containing the plugin directories.
+     * @param pluginDirectoryName   The name of the plugin directory.
+     * @param functionName          The name of the function to import.
+     * @param promptTemplateFactory The factory to use for creating prompt templates.
+     * @return The imported plugin.
+     * @see KernelPluginFactory#importPluginFromResourcesDirectory(String, String, String,
+     * PromptTemplateFactory, Class)
+     */
+    @Nullable
+    public static KernelPlugin importPluginFromResourcesDirectory(
+        String parentDirectory,
+        String pluginDirectoryName,
+        String functionName,
+        @Nullable PromptTemplateFactory promptTemplateFactory) {
+        return importPluginFromResourcesDirectory(parentDirectory, pluginDirectoryName,
+            functionName,
+            promptTemplateFactory, null);
+    }
+
+    /**
      * Imports a plugin from a resource directory, which may be on the classpath or filesystem. The
      * directory should contain subdirectories, each of which contains a prompt template and a
      * configuration file. The configuration file should be named "config.json" and the prompt
@@ -274,7 +416,8 @@ public class KernelPluginFactory {
      * @param pluginDirectoryName   The name of the plugin directory.
      * @param functionName          The name of the function to import.
      * @param promptTemplateFactory The factory to use for creating prompt templates.
-     * @param clazz                 The class to use for loading resources.
+     * @param clazz                 The class to use for loading resources. If null, the classloader
+     *                              will be used.
      * @return The imported plugin.
      */
     @Nullable
@@ -282,8 +425,8 @@ public class KernelPluginFactory {
         String parentDirectory,
         String pluginDirectoryName,
         String functionName,
-        PromptTemplateFactory promptTemplateFactory,
-        Class<?> clazz) {
+        @Nullable PromptTemplateFactory promptTemplateFactory,
+        @Nullable Class<?> clazz) {
 
         String template = getTemplatePrompt(parentDirectory, pluginDirectoryName, functionName,
             clazz);
@@ -313,7 +456,7 @@ public class KernelPluginFactory {
         String pluginDirectory,
         String pluginName,
         String functionName,
-        Class<?> clazz) {
+        @Nullable Class<?> clazz) {
         String promptFileName = pluginDirectory + File.separator + pluginName + File.separator
             + functionName
             + File.separator + PROMPT_FILE;
@@ -327,8 +470,13 @@ public class KernelPluginFactory {
         }
     }
 
-    private static String getFileContents(String file, Class<?> clazz)
+    private static String getFileContents(String file, @Nullable Class<?> clazz)
         throws FileNotFoundException {
+        if (clazz == null) {
+            return EmbeddedResourceLoader.readFile(file, null, ResourceLocation.CLASSPATH_ROOT,
+                ResourceLocation.FILESYSTEM);
+        }
+
         return EmbeddedResourceLoader.readFile(file, clazz, ResourceLocation.CLASSPATH_ROOT,
             ResourceLocation.CLASSPATH, ResourceLocation.FILESYSTEM);
     }
@@ -337,7 +485,7 @@ public class KernelPluginFactory {
     private static PromptTemplateConfig getPromptTemplateConfig(
         String pluginDirectory,
         String pluginName, String functionName,
-        Class<?> clazz) {
+        @Nullable Class<?> clazz) {
         String configFileName = pluginDirectory + File.separator + pluginName + File.separator
             + functionName
             + File.separator + CONFIG_FILE;

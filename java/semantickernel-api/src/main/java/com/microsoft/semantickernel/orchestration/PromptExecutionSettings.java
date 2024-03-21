@@ -1,17 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Configuration settings for prompt execution.
@@ -307,7 +305,8 @@ public class PromptExecutionSettings {
 
     @Override
     public int hashCode() {
-        return Objects.hash(serviceId, modelId, temperature, topP, presencePenalty, frequencyPenalty,
+        return Objects.hash(serviceId, modelId, temperature, topP, presencePenalty,
+            frequencyPenalty,
             maxTokens, bestOf, resultsPerPrompt, user, stopSequences, tokenSelectionBiases);
     }
 
@@ -315,7 +314,7 @@ public class PromptExecutionSettings {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (obj == null || getClass() != obj.getClass())
+        if (!getClass().isInstance(obj))
             return false;
 
         PromptExecutionSettings other = (PromptExecutionSettings) obj;

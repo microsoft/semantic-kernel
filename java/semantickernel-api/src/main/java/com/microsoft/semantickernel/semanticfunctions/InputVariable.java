@@ -3,10 +3,8 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.exceptions.SKException;
-
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 /**
@@ -14,13 +12,39 @@ import javax.annotation.Nullable;
  */
 public class InputVariable {
 
-    private String name;
-    private String type;
+    private final String name;
     @Nullable
-    private String description;
+    private final String description;
     @Nullable
-    private String defaultValue;
-    private boolean isRequired;
+    private final String defaultValue;
+    private final boolean isRequired;
+    private final String type;
+
+    /**
+     * Creates a new instance of {@link InputVariable}.
+     *
+     * @param name         the name of the input variable
+     * @param type         the type of the input variable
+     * @param description  the description of the input variable
+     * @param defaultValue the default value of the input variable
+     * @param isRequired   whether the input variable is required
+     */
+    @JsonCreator
+    public InputVariable(
+        @JsonProperty("name") String name,
+        @JsonProperty("type") String type,
+        @JsonProperty("description") @Nullable String description,
+        @JsonProperty("default") @Nullable String defaultValue,
+        @JsonProperty("is_required") boolean isRequired) {
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.isRequired = isRequired;
+        if (type == null) {
+            type = "java.lang.String";
+        }
+        this.type = type;
+    }
 
     /**
      * Creates a new instance of {@link InputVariable}.
@@ -42,24 +66,16 @@ public class InputVariable {
      * @param type         the type of the input variable
      * @param description  the description of the input variable
      * @param defaultValue the default value of the input variable
-     * @param isRequired   whether the input variable is required
+     * @param required     whether the input variable is required
+     * @return a new instance of {@link InputVariable}
      */
-    @JsonCreator
-    public InputVariable(
-        @JsonProperty("name") String name,
-        @JsonProperty("type") String type,
-        @JsonProperty("description") @Nullable String description,
-        @JsonProperty("default") @Nullable String defaultValue,
-        @JsonProperty("is_required") boolean isRequired) {
-        this.name = name;
-
-        if (type == null) {
-            type = "java.lang.String";
-        }
-        this.type = type;
-        this.description = description;
-        this.defaultValue = defaultValue;
-        this.isRequired = isRequired;
+    public static InputVariable build(
+        String name,
+        Class<?> type,
+        @Nullable String description,
+        @Nullable String defaultValue,
+        boolean required) {
+        return new InputVariable(name, type.getName(), description, defaultValue, required);
     }
 
     /**
@@ -69,15 +85,6 @@ public class InputVariable {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * Gets the type of the input variable.
-     *
-     * @return the type of the input variable
-     */
-    public String getType() {
-        return type;
     }
 
     /**
@@ -110,18 +117,21 @@ public class InputVariable {
     }
 
     /**
+     * Gets the type of the input variable.
+     *
+     * @return the type of the input variable
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
      * Gets the class of the type of the input variable.
      *
      * @return the class of the type of the input variable
      */
     public Class<?> getTypeClass() {
-        try {
-            return Thread.currentThread().getContextClassLoader().loadClass(type);
-        } catch (ClassNotFoundException e) {
-            throw new SKException(
-                "Could not load class for type: " + type + " for input variable " + name +
-                    ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
-        }
+        return KernelPluginFactory.getTypeForName(type);
     }
 
     @Override
@@ -131,22 +141,28 @@ public class InputVariable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null || obj.getClass() != getClass())
+        }
+
+        if (!getClass().isInstance(obj)) {
             return false;
+        }
 
         InputVariable other = (InputVariable) obj;
-        if (!Objects.equals(name, other.name)) 
+        if (!Objects.equals(name, other.name)) {
             return false;
-        if (!Objects.equals(type, other.type)) 
+        }
+        if (!Objects.equals(type, other.type)) {
             return false;
-        if (!Objects.equals(description, other.description)) 
+        }
+        if (!Objects.equals(description, other.description)) {
             return false;
-        if (!Objects.equals(defaultValue, other.defaultValue)) 
+        }
+        if (!Objects.equals(defaultValue, other.defaultValue)) {
             return false;
-       return isRequired == other.isRequired;
+        }
+        return isRequired == other.isRequired;
     }
 
-    
 }

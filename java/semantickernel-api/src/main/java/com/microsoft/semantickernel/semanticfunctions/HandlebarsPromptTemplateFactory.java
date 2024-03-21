@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
-import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
 import java.util.Locale;
+
+import com.microsoft.semantickernel.templateengine.handlebars.HandlebarsPromptTemplate;
+
 import reactor.util.annotation.NonNull;
 
 /**

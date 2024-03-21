@@ -23,8 +23,10 @@ public class FunctionResult<T> {
     /**
      * Create a new instance of FunctionResult.
      *
-     * @param result   The result of the function invocation.
-     * @param metadata Metadata about the result of the function invocation.
+     * @param result            The result of the function invocation.
+     * @param metadata          Metadata about the result of the function invocation.
+     * @param unconvertedResult The result of the function invocation before it was converted to the
+     *                          expected type.
      */
     public FunctionResult(
         ContextVariable<T> result,
@@ -38,7 +40,9 @@ public class FunctionResult<T> {
     /**
      * Create a new instance of FunctionResult with no metadata.
      *
-     * @param of The result of the function invocation.
+     * @param of                The result of the function invocation.
+     * @param unconvertedResult The result of the function invocation before it was converted to the
+     *                          expected type.
      */
     public FunctionResult(ContextVariable<T> of,
         @Nullable Object unconvertedResult) {
@@ -77,6 +81,11 @@ public class FunctionResult<T> {
         return metadata;
     }
 
+    /**
+     * Get the result of the function invocation before it was converted to the expected type.
+     *
+     * @return The result of the function invocation before it was converted to the expected type.
+     */
     @Nullable
     public Object getUnconvertedResult() {
         return unconvertedResult;

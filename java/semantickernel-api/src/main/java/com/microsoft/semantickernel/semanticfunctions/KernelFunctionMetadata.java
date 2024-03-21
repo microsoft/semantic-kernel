@@ -5,10 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
-
-import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
 
 /**
  * Metadata about a kernel function.
@@ -22,8 +19,8 @@ public class KernelFunctionMetadata<T> {
     private final String pluginName;
     @Nullable
     private final String description;
-    private final List<KernelParameterMetadata<?>> parameters;
-    private final KernelReturnParameterMetadata<T> returnParameter;
+    private final List<InputVariable> parameters;
+    private final OutputVariable<T> returnParameterType;
 
     /**
      * Create a new instance of KernelFunctionMetadata.
@@ -32,14 +29,14 @@ public class KernelFunctionMetadata<T> {
      * @param name            The name of the function.
      * @param description     The description of the function.
      * @param parameters      The parameters of the function.
-     * @param returnParameter The return parameter of the function.
+     * @param returnParameterType   The return parameter type of the function.
      */
     public KernelFunctionMetadata(
         @Nullable String pluginName,
         String name,
         @Nullable String description,
-        @Nullable List<KernelParameterMetadata<?>> parameters,
-        KernelReturnParameterMetadata<T> returnParameter) {
+        @Nullable List<InputVariable> parameters,
+        OutputVariable<T> returnParameterType) {
         this.pluginName = pluginName;
         this.name = name;
         this.description = description;
@@ -49,7 +46,7 @@ public class KernelFunctionMetadata<T> {
             this.parameters = new ArrayList<>(parameters);
         }
 
-        this.returnParameter = returnParameter;
+        this.returnParameterType = returnParameterType;
     }
 
     /**
@@ -76,7 +73,7 @@ public class KernelFunctionMetadata<T> {
      *
      * @return The parameters of the function.
      */
-    public List<KernelParameterMetadata<?>> getParameters() {
+    public List<InputVariable> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
@@ -95,23 +92,22 @@ public class KernelFunctionMetadata<T> {
      *
      * @return The return parameter of the function.
      */
-    public KernelReturnParameterMetadata<T> getReturnParameter() {
-        return returnParameter;
+    public OutputVariable<T> getOutputVariableType() {
+        return returnParameterType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, pluginName, description, parameters, returnParameter);
+        return Objects.hash(name, pluginName, description, parameters, returnParameterType);
     }
-        
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (obj == null || getClass() != obj.getClass())
+        if (!getClass().isInstance(obj))
             return false;
-            
+
         KernelFunctionMetadata<?> other = (KernelFunctionMetadata<?>) obj;
         if (!Objects.equals(name, other.name))
             return false;
@@ -121,8 +117,7 @@ public class KernelFunctionMetadata<T> {
             return false;
         if (!Objects.equals(parameters, other.parameters))
             return false;
-        return Objects.equals(returnParameter, other.returnParameter);
+        return Objects.equals(returnParameterType, other.returnParameterType);
     }
 
-    
 }

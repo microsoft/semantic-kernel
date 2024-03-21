@@ -11,8 +11,8 @@ import com.microsoft.semantickernel.implementation.templateengine.tokenizer.bloc
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.TextRendering;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.VarBlock;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;

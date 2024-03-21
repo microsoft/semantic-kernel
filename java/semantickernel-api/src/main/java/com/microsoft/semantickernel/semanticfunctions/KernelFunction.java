@@ -333,9 +333,11 @@ public abstract class KernelFunction<T> {
          * Set the output variable for the function.
          *
          * @param outputVariable The output variable for the function
+         * @param <U>                  The type of the output variable
          * @return The builder
          */
-        FromPromptBuilder<T> withOutputVariable(@Nullable OutputVariable outputVariable);
+        <U> FromPromptBuilder<U> withOutputVariable(
+            @Nullable OutputVariable<U> outputVariable);
 
         /**
          * Set the output variable for the function.
