@@ -387,9 +387,8 @@ class Kernel(KernelBaseModel):
         for hook in self.hooks:
             try:
                 updated_context = hook.on_function_invoked(context)
-                if updated_context:
-                    context = updated_context
-                updated_context = await hook.on_function_invoked_async(context)
+                if inspect.isawaitable(updated_context):
+                    updated_context = await updated_context
                 if updated_context:
                     context = updated_context
             except Exception as exc:
@@ -411,9 +410,10 @@ class Kernel(KernelBaseModel):
         for hook in self.hooks:
             try:
                 updated_context = hook.on_function_invoking(context)
+                if inspect.isawaitable(updated_context):
+                    updated_context = await updated_context
                 if updated_context:
                     context = updated_context
-                updated_context = await hook.on_function_invoking_async(context)
                 if updated_context:
                     context = updated_context
             except Exception as exc:
@@ -434,6 +434,7 @@ class Kernel(KernelBaseModel):
                 )
 
     def add_hook(self, hook: KernelHook, priority: int | None = None) -> None:
+        """Add a KernelHook to the Kernel."""
         if not isinstance(hook, KernelHook):
             raise TypeError("The hook must be an instance of KernelHook")
         if priority is not None:
@@ -466,23 +467,25 @@ class Kernel(KernelBaseModel):
         object.__setattr__(hook, hook_name, hook_function)
         self.add_hook(hook, priority)
 
-    def add_function_invoking_handler(
-        self, handler: Callable[["Kernel", FunctionInvokingContext], FunctionInvokingContext]
-    ) -> None:
-        self.function_invoking_handlers[id(handler)] = handler
+    # TODO: remove hook method
 
-    def add_function_invoked_handler(
-        self, handler: Callable[["Kernel", FunctionInvokedContext], FunctionInvokedContext]
-    ) -> None:
-        self.function_invoked_handlers[id(handler)] = handler
+    # def add_function_invoking_handler(
+    #     self, handler: Callable[["Kernel", FunctionInvokingContext], FunctionInvokingContext]
+    # ) -> None:
+    #     self.function_invoking_handlers[id(handler)] = handler
 
-    def remove_function_invoking_handler(self, handler: Callable) -> None:
-        if id(handler) in self.function_invoking_handlers:
-            del self.function_invoking_handlers[id(handler)]
+    # def add_function_invoked_handler(
+    #     self, handler: Callable[["Kernel", FunctionInvokedContext], FunctionInvokedContext]
+    # ) -> None:
+    #     self.function_invoked_handlers[id(handler)] = handler
 
-    def remove_function_invoked_handler(self, handler: Callable) -> None:
-        if id(handler) in self.function_invoked_handlers:
-            del self.function_invoked_handlers[id(handler)]
+    # def remove_function_invoking_handler(self, handler: Callable) -> None:
+    #     if id(handler) in self.function_invoking_handlers:
+    #         del self.function_invoking_handlers[id(handler)]
+
+    # def remove_function_invoked_handler(self, handler: Callable) -> None:
+    #     if id(handler) in self.function_invoked_handlers:
+    #         del self.function_invoked_handlers[id(handler)]
 
     # endregion
     # region Plugins & Functions

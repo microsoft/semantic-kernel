@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from __future__ import annotations
+
 from typing import Any
 
 from pydantic import Field
@@ -10,7 +11,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class HookContextBase(KernelBaseModel):
+class KernelHookContextBase(KernelBaseModel):
     """Base class for Kernel Event args.
 
     Receives relevant parts of the the execution, either before (invoking) or after (invoked) the function is executed.

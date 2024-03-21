@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Coroutine
 
 if TYPE_CHECKING:
     from semantic_kernel.hooks.function_invoked_context import FunctionInvokedContext
@@ -11,26 +11,22 @@ if TYPE_CHECKING:
 class KernelHook:
     """Kernel Hook class."""
 
-    async def on_function_invoking_async(self, context: "FunctionInvokingContext") -> "FunctionInvokingContext" | None:
-        """Called before a function is invoked."""
+    def on_function_invoking(
+        self, context: "FunctionInvokingContext"
+    ) -> "FunctionInvokingContext | None" | Coroutine[Any, Any, "FunctionInvokingContext | None"]:
+        """Called before a function is invoked. This can be made asynchronous."""
         return
 
-    async def on_function_invoked_async(self, context: "FunctionInvokedContext") -> "FunctionInvokedContext" | None:
-        """Called after a function is invoked."""
+    def on_function_invoked(
+        self, context: "FunctionInvokedContext"
+    ) -> "FunctionInvokedContext | None" | Coroutine[Any, Any, "FunctionInvokingContext | None"]:
+        """Called after a function is invoked. This can be made asynchronous."""
         return
 
-    def on_function_invoking(self, context: "FunctionInvokingContext") -> "FunctionInvokingContext" | None:
-        """Called before a function is invoked."""
-        return
-
-    def on_function_invoked(self, context: "FunctionInvokedContext") -> "FunctionInvokedContext" | None:
-        """Called after a function is invoked."""
-        return
-
-    def on_register(self):
+    def on_register(self) -> None:
         """Called when the kernel is registered."""
         pass
 
-    def on_exit(self):
+    def on_exit(self) -> None:
         """Called before the kernel exits."""
         pass
