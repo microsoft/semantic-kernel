@@ -2,6 +2,7 @@
 from typing import Literal, Optional
 
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
+from semantic_kernel.contents.const import AZURE_CHAT_MESSAGE_CONTENT
 
 
 class AzureChatMessageContent(OpenAIChatMessageContent):
@@ -24,5 +25,5 @@ class AzureChatMessageContent(OpenAIChatMessageContent):
         __str__: Returns the content of the response.
     """
 
-    type: Literal["AzureChatMessageContent"] = "AzureChatMessageContent"
+    type: Literal[AZURE_CHAT_MESSAGE_CONTENT] = AZURE_CHAT_MESSAGE_CONTENT  # type: ignore
     tool_message: Optional[str] = None
