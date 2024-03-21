@@ -80,7 +80,8 @@
     <!-- Memory stores -->
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
-    <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6" />
+    <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
+    <PackageVersion Include="Testcontainers.Milvus" Version="3.8.0" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
