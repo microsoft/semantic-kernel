@@ -6,80 +6,114 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
-
-import java.util.Arrays;
-import java.util.List;
+import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import java.io.InputStream;
 import java.util.Scanner;
 
 public class SerializingPrompts {
-    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
-    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-    // Only required if AZURE_CLIENT_KEY is set
+    public static InputStream INPUT = System.in;
+
+    // CLIENT_KEY is for an OpenAI client
+    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+
+    // AZURE_CLIENT_KEY and CLIENT_ENDPOINT are for an Azure client
+    // CLIENT_ENDPOINT required if AZURE_CLIENT_KEY is set
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID",
-        "gpt-35-turbo-2");
+
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "gpt-3.5-turbo");
 
     public static void main(String[] args) {
-        System.out.println("======== Serializing Prompts ========");
+
+        System.out.println("======== Serializing ========");
+
         OpenAIAsyncClient client;
 
-        if (AZURE_CLIENT_KEY != null) {
+        if (AZURE_CLIENT_KEY != null && CLIENT_ENDPOINT != null) {
             client = new OpenAIClientBuilder()
                 .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
                 .endpoint(CLIENT_ENDPOINT)
                 .buildAsyncClient();
-        } else {
+        } else if (CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
                 .credential(new KeyCredential(CLIENT_KEY))
                 .buildAsyncClient();
+        } else {
+            System.out.println("No client key found");
+            return;
         }
 
-        Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build())
+        var chatCompletionService = ChatCompletionService.builder()
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
             .build();
 
-        // Load prompts
-        // This part is omitted as it requires a specific implementation to load prompts from a directory
+        var conversationSummaryPlugin = KernelPluginFactory
+            .createFromObject(new ConversationSummaryPlugin(), "ConversationSummaryPlugin");
 
-        // Load prompt from YAML
-        // This part is omitted as it requires a specific implementation to load prompts from a YAML file
+        var chatPlugin = KernelPluginFactory.importPluginFromResourcesDirectory(
+            "Plugins",
+            "Prompts",
+            "Chat",
+            null,
+            String.class);
 
-        // Create choices
-        List<String> choices = Arrays.asList("ContinueConversation", "EndConversation");
+        var kernel = Kernel.builder()
+            .withAIService(ChatCompletionService.class, chatCompletionService)
+            .withPlugin(conversationSummaryPlugin)
+            .withPlugin(chatPlugin)
+            .build();
 
-        // Create few-shot examples
-        // This part is omitted as it requires a specific implementation to create few-shot examples
+        ChatHistory chatHistory = new ChatHistory();
 
-        // Create chat history
-        // This part is omitted as it requires a specific implementation to create chat history
+        chatCompletionService
+            .getChatMessageContentsAsync(
+                chatHistory,
+                kernel,
+                null)
+            .block();
+
+        Scanner scanner = new Scanner(INPUT);
+
+        ChatHistory history = new ChatHistory(
+            "This example is a chat bot that answers questions. Ask a question to get started. Type 'exit' to quit.");
+
+        System.out.println(
+            "This example is a chat bot that answers questions. Ask a question to get started. Type 'exit' to quit.");
 
         // Start the chat loop
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("User > ");
-        String userInput;
-        while (!(userInput = scanner.nextLine()).isEmpty()) {
-            // Invoke handlebars prompt
-            // This part is omitted as it requires a specific implementation to invoke a prompt
+        while (true) {
+            // Get user input
+            System.out.println("User > ");
+            var request = scanner.nextLine();
+            if ("exit".equalsIgnoreCase(request)) {
+                break;
+            }
 
-            // End the chat if the intent is "Stop"
-            // This part is omitted as it requires a specific implementation to handle the intent
+            var chatResult = kernel
+                .invokeAsync(chatPlugin.get("chat"))
+                .withArguments(
+                    KernelFunctionArguments.builder()
+                        .withVariable("request", request)
+                        .withVariable("history", history)
+                        .build())
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+                .block();
 
-            // Get chat response
-            // This part is omitted as it requires a specific implementation to get the chat response
-
-            // Stream the response
-            // This part is omitted as it requires a specific implementation to stream the response
+            String message = chatResult.getResult();
+            System.out.println("Assistant: " + message);
+            System.out.println();
 
             // Append to history
-            // This part is omitted as it requires a specific implementation to append to the history
-
-            // Get user input again
-            System.out.print("User > ");
+            history.addUserMessage(request);
+            history.addAssistantMessage(message);
         }
     }
 }

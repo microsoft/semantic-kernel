@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -35,7 +36,7 @@ public class InputVariable {
         @JsonProperty("type") String type,
         @JsonProperty("description") @Nullable String description,
         @JsonProperty("default") @Nullable String defaultValue,
-        @JsonProperty("is_required") boolean isRequired) {
+        @JsonAlias({ "required", "is_required" }) @JsonProperty("is_required") boolean isRequired) {
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;

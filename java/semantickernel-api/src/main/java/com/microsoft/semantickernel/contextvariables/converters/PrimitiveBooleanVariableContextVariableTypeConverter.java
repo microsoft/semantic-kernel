@@ -12,14 +12,14 @@ import java.util.Locale;
  *
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
-public class PrimativeBooleanVariableContextVariableTypeConverter extends
-    PrimativeVariableContextVariableTypeConverter {
+public class PrimitiveBooleanVariableContextVariableTypeConverter extends
+    PrimitiveVariableContextVariableTypeConverter {
 
     /**
      * Initializes a new instance of the
-     * {@link PrimativeBooleanVariableContextVariableTypeConverter} class.
+     * {@link PrimitiveBooleanVariableContextVariableTypeConverter} class.
      */
-    public PrimativeBooleanVariableContextVariableTypeConverter() {
+    public PrimitiveBooleanVariableContextVariableTypeConverter() {
         super(
             boolean.class,
             s -> {

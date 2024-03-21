@@ -14,7 +14,7 @@ import java.util.function.Function;
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class NumberVariableContextVariableTypeConverter<T extends Number> extends
-    PrimativeVariableContextVariableTypeConverter<T> {
+    PrimitiveVariableContextVariableTypeConverter<T> {
 
     /**
      * Creates a new instance of the {@link NumberVariableContextVariableTypeConverter} class.

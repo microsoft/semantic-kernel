@@ -181,6 +181,17 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     }
 
     /**
+     * Supply the result type of function invocation. Uses the global context variable types.
+     *
+     * @param resultType The arguments to supply to the function invocation.
+     * @param <U>        The type of the result of the function invocation.
+     * @return A new {@code FunctionInvocation} for fluent chaining.
+     */
+    public <U> FunctionInvocation<U> withResultType(Class<U> resultType) {
+        return withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(resultType));
+    }
+
+    /**
      * Add a kernel hook to the function invocation.
      *
      * @param hook The kernel hook to add.

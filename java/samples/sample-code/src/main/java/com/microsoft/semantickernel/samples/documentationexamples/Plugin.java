@@ -38,10 +38,12 @@ public class Plugin {
         OpenAIAsyncClient client;
 
         if (AZURE_CLIENT_KEY != null && CLIENT_ENDPOINT != null) {
+            // <build_client>
             client = new OpenAIClientBuilder()
                 .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
                 .endpoint(CLIENT_ENDPOINT)
                 .buildAsyncClient();
+            // </build_client>
         } else if (CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
                 .credential(new KeyCredential(CLIENT_KEY))
@@ -50,6 +52,8 @@ public class Plugin {
             System.out.println("No client key found");
             return;
         }
+
+        // <build_kernel>
 
         ChatCompletionService chatCompletionService = ChatCompletionService.builder()
             .withModelId(MODEL_ID)
@@ -63,6 +67,8 @@ public class Plugin {
             .withAIService(ChatCompletionService.class, chatCompletionService)
             .withPlugin(plugin)
             .build();
+
+        // </build_kernel>
 
         Scanner scanner = new Scanner(INPUT);
 

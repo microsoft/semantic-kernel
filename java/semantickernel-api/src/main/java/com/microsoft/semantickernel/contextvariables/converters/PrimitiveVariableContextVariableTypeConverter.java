@@ -5,31 +5,25 @@ import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes
 
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
-import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
- * A {@link ContextVariableTypeConverter} for {@code java.lang.Number} type variables. Use, for
- * example, {@code ContextVariableTypes.getGlobalVariableTypeForClass(Integer.class)} to get an
- * instance of this class that works with the {@code Integer} type.
- *
- * @param <T> the type of the number
- * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
+ * A {@link ContextVariableTypeConverter} for primative variables.
  */
-public class PrimativeVariableContextVariableTypeConverter<T> extends
+public class PrimitiveVariableContextVariableTypeConverter<T> extends
     ContextVariableTypeConverter<T> {
 
     private final Function<Object, T> fromObject;
 
     /**
-     * Creates a new instance of the {@link PrimativeVariableContextVariableTypeConverter} class.
+     * Creates a new instance of the {@link PrimitiveVariableContextVariableTypeConverter} class.
      *
      * @param clazz            the class
      * @param fromPromptString the function to convert from a prompt string
-     * @param fromObject    the function to convert from an object to primative
+     * @param fromObject       the function to convert from an object to primative
      */
-    public PrimativeVariableContextVariableTypeConverter(
+    public PrimitiveVariableContextVariableTypeConverter(
         Class<T> clazz,
         Function<String, T> fromPromptString,
         Function<Object, T> fromObject,
