@@ -139,7 +139,7 @@ class Kernel(KernelBaseModel):
         plugin_name: str | None = None,
         return_function_results: bool | None = False,
         **kwargs: Any,
-    ) -> AsyncIterable[Union[List["StreamingContentMixin"], List[FunctionResult]]]:
+    ) -> AsyncIterable[list["StreamingContentMixin"] | list[FunctionResult]]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
