@@ -160,7 +160,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Theory]
-    [InlineData("", "Assistant is a large language model.")]
+    [InlineData("", "")]
     [InlineData("System prompt", "System prompt")]
     public void ItUsesCorrectChatSystemPrompt(string chatSystemPrompt, string expectedChatSystemPrompt)
     {
