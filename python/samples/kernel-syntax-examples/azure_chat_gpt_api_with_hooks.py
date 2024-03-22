@@ -13,7 +13,7 @@ from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as
 
 
 class ChatHistoryHooked(ChatHistory, KernelHook):
-    def on_function_invoking(self, context: FunctionInvokingContext) -> FunctionInvokingContext | None:
+    def on_function_invoking(self, context: FunctionInvokingContext) -> None:
         try:
             user_input = input("User:> ")
         except KeyboardInterrupt:
@@ -27,7 +27,7 @@ class ChatHistoryHooked(ChatHistory, KernelHook):
             return
         self.add_user_message(user_input)
 
-    def on_function_invoked(self, context: FunctionInvokedContext) -> FunctionInvokedContext | None:
+    def on_function_invoked(self, context: FunctionInvokedContext) -> None:
         self.add_message(context.function_result.value[0])
         print(f"Mosscap:> {context.function_result}")
 
