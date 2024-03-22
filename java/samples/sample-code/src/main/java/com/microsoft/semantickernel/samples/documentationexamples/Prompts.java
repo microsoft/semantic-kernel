@@ -41,18 +41,13 @@ public class Prompts {
 
         // 0.0 Initial prompt
         String request = "I want to send an email to the marketing team celebrating their recent milestone.";
-        String prompt = """
-            What is the intent of this request? %s
-            """.formatted(request);
+        String prompt = "What is the intent of this request? %s".formatted(request);
 
         /* Uncomment this block to make this example interactive
         // <InitialPrompt>
         System.out.println("Your request: ");
         String request = new Scanner(System.in).nextLine();
-        String prompt = """
-            What is the intent of this request? %s
-            You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument.
-            """.formatted(request);
+        String prompt = "What is the intent of this request? %s".formatted(request);
         // </InitialPrompt>
          */
 
