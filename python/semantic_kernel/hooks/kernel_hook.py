@@ -11,15 +11,11 @@ if TYPE_CHECKING:
 class KernelHook:
     """Kernel Hook class."""
 
-    def on_function_invoking(
-        self, context: "FunctionInvokingContext"
-    ) -> "FunctionInvokingContext | None" | Coroutine[Any, Any, "FunctionInvokingContext | None"]:
+    def on_function_invoking(self, context: "FunctionInvokingContext") -> None | Coroutine[Any, Any, None]:
         """Called before a function is invoked. This can be made asynchronous."""
         return
 
-    def on_function_invoked(
-        self, context: "FunctionInvokedContext"
-    ) -> "FunctionInvokedContext | None" | Coroutine[Any, Any, "FunctionInvokingContext | None"]:
+    def on_function_invoked(self, context: "FunctionInvokedContext") -> None | Coroutine[Any, Any, None]:
         """Called after a function is invoked. This can be made asynchronous."""
         return
 
