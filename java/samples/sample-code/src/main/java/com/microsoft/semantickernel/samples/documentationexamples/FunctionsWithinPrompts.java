@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.documentationexamples;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
@@ -16,8 +19,6 @@ import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
-import java.util.Arrays;
-import java.util.List;
 
 public class FunctionsWithinPrompts {
 
@@ -52,18 +53,24 @@ public class FunctionsWithinPrompts {
             return;
         }
 
+        // <CreateChatCompletionService>
         ChatCompletionService chatCompletionService = ChatCompletionService.builder()
             .withModelId(MODEL_ID)
             .withOpenAIAsyncClient(client)
             .build();
+        // </CreateChatCompletionService>
 
+        // <CreatePluginFromObject>
         KernelPlugin plugin = KernelPluginFactory.createFromObject(
             new ConversationSummaryPlugin(), "ConversationSummaryPlugin");
+        // </CreatePluginFromObject>
 
+        // <CreateKernel>
         Kernel kernel = Kernel.builder()
             .withAIService(ChatCompletionService.class, chatCompletionService)
             .withPlugin(plugin)
             .build();
+        // </CreateKernel>
 
         List<String> choices = Arrays.asList("ContinueConversation", "EndConversation");
 
@@ -88,6 +95,7 @@ public class FunctionsWithinPrompts {
             });
 
         // Create handlebars template for intent
+        // <IntentFunction>
         KernelFunction<String> getIntent = KernelFunction.<String>createFromPrompt(
             """
                 <message role="system">Instructions: What is the intent of this request?
@@ -107,8 +115,10 @@ public class FunctionsWithinPrompts {
                 """)
             .withTemplateFormat("handlebars")
             .build();
+        // </IntentFunction>
 
         // Create a Semantic Kernel template for chat
+        // <CreateFunctionFromPrompt>
         KernelFunction<String> chat = KernelFunction.<String>createFromPrompt(
             """
                 {{ConversationSummaryPlugin.SummarizeConversation $history}}
@@ -116,11 +126,13 @@ public class FunctionsWithinPrompts {
                 Assistant:
                 """)
             .build();
+        // </CreateFunctionFromPrompt>
 
         // Create chat history
         ChatHistory history = new ChatHistory();
 
         // Start the chat loop
+        // <ChatLoop>
         while (true) {
             // Get user input
             System.console().printf("User > ");
@@ -162,6 +174,7 @@ public class FunctionsWithinPrompts {
             history.addUserMessage(request);
             history.addAssistantMessage(message);
         }
+        // </ChatLoop>
     }
 
 }
