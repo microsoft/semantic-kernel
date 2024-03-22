@@ -1,4 +1,3 @@
-// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.documentationexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -14,8 +13,7 @@ public class Prompts {
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID",
-        "gpt-3.5-turbo");
+    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
     public static void main(String[] args) {
         System.out.println("======== Prompts ========");
@@ -23,22 +21,22 @@ public class Prompts {
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                .endpoint(CLIENT_ENDPOINT)
-                .buildAsyncClient();
+                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                    .endpoint(CLIENT_ENDPOINT)
+                    .buildAsyncClient();
         } else {
             client = new OpenAIClientBuilder()
-                .credential(new KeyCredential(CLIENT_KEY))
-                .buildAsyncClient();
+                    .credential(new KeyCredential(CLIENT_KEY))
+                    .buildAsyncClient();
         }
 
         // <KernelCreation>
         Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build())
-            .build();
+                .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
+                        .withModelId(MODEL_ID)
+                        .withOpenAIAsyncClient(client)
+                        .build())
+                .build();
         // </KernelCreation>
 
         // 0.0 Initial prompt
@@ -47,16 +45,15 @@ public class Prompts {
             What is the intent of this request? %s
             """.formatted(request);
 
-        /*
-         * Uncomment this block to make this example interactive
-         * // <InitialPrompt>
-         * System.out.println("Your request: ");
-         * String request = new Scanner(System.in).nextLine();
-         * String prompt = """
-         * What is the intent of this request? %s
-         * You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument.
-         * """.formatted(request);
-         * // </InitialPrompt>
+        /* Uncomment this block to make this example interactive
+        // <InitialPrompt>
+        System.out.println("Your request: ");
+        String request = new Scanner(System.in).nextLine();
+        String prompt = """
+            What is the intent of this request? %s
+            You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument.
+            """.formatted(request);
+        // </InitialPrompt>
          */
 
         System.out.println("0.0 Initial prompt");
@@ -120,8 +117,7 @@ public class Prompts {
             ## Intent
             """.formatted(request);
         // </FormattedPrompt>
-        System.out
-            .println("2.1 Add structure to the output with formatting (using Markdown and JSON)");
+        System.out.println("2.1 Add structure to the output with formatting (using Markdown and JSON)");
         System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
 
         // 3.0 Provide examples with few-shot prompting

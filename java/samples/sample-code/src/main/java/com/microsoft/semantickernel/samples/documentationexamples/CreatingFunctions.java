@@ -28,7 +28,7 @@ public class CreatingFunctions {
     private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
     public static void main(String[] args) {
-        System.out.println("======== Creating Functions ========");
+        System.out.println("======== Prompts ========");
         OpenAIAsyncClient client;
 
         if (AZURE_CLIENT_KEY != null) {
@@ -71,6 +71,7 @@ public class CreatingFunctions {
         System.out.println("Chat content:");
         System.out.println("------------------------");
 
+        // <Conversation>
         ChatHistory history = new ChatHistory();
 
         // Start the conversation
@@ -90,7 +91,7 @@ public class CreatingFunctions {
             StringBuilder message = new StringBuilder();
             reply.forEach(chatMessageContent -> message.append(chatMessageContent.getContent()));
 
-            System.out.println("Assistant" + " > " + message);
+            System.out.println("Assistant" + " > " + message.toString());
 
             // Add the message from the agent to the chat history
             history.addAssistantMessage(message.toString());
@@ -98,5 +99,6 @@ public class CreatingFunctions {
             // Get user input again
             System.out.print("User > ");
         }
+        // </Conversation>
     }
 }
