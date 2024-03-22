@@ -34,15 +34,9 @@ public static class TextChunker
 
         public void Add(string value, int tokenCount) => this.Values.Add((value, tokenCount));
 
-        public void AddRange(StringListWithTokenCount range)
-        {
-            this.Values.AddRange(range.Values);
-        }
+        public void AddRange(StringListWithTokenCount range) => this.Values.AddRange(range.Values);
 
-        public void RemoveRange(int index, int count)
-        {
-            this.Values.RemoveRange(index, count);
-        }
+        public void RemoveRange(int index, int count) => this.Values.RemoveRange(index, count);
 
         public int Count => this.Values.Count;
 
@@ -54,7 +48,6 @@ public static class TextChunker
 
         public int TokenCountAt(int i) => this.Values[i].TokenCount;
     }
-
 
     /// <summary>
     /// Delegate for counting tokens in a string.
