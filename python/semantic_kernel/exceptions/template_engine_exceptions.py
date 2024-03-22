@@ -79,6 +79,22 @@ class TemplateRenderException(BlockRenderException):
     pass
 
 
+class HandlebarsTemplateSyntaxError(BlockSyntaxError):
+    pass
+
+
+class HandlebarsTemplateRenderException(BlockRenderException):
+    pass
+
+
+class Jinja2TemplateSyntaxError(BlockSyntaxError):
+    pass
+
+
+class Jinja2TemplateRenderException(BlockRenderException):
+    pass
+
+
 __all__ = [
     "BlockException",
     "BlockSyntaxError",
@@ -93,4 +109,8 @@ __all__ = [
     "CodeBlockRenderException",
     "TemplateSyntaxError",
     "TemplateRenderException",
+    "HandlebarsTemplateSyntaxError",
+    "HandlebarsTemplateRenderException",
+    "Jinja2TemplateSyntaxError",
+    "Jinja2TemplateRenderException",
 ]

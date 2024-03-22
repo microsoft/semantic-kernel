@@ -20,7 +20,6 @@ from semantic_kernel.exceptions import (
     ServiceInvalidTypeError,
 )
 from semantic_kernel.exceptions.function_exceptions import (
-    FunctionInvalidNameError,
     FunctionNameNotUniqueError,
     PluginInitializationError,
     PluginInvalidNameError,
@@ -356,9 +355,11 @@ def test_prompt_plugin_can_be_imported(kernel: Kernel):
     plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
 
     assert plugin is not None
-    assert len(plugin.functions) == 1
+    assert len(plugin.functions) == 2
     func = plugin.functions["TestFunction"]
     assert func is not None
+    func_handlebars = plugin.functions["TestFunctionHandlebars"]
+    assert func_handlebars is not None
 
 
 def test_prompt_plugin_not_found(kernel: Kernel):
@@ -455,6 +456,39 @@ def test_create_function_from_prompt_succeeds(kernel: Kernel):
     assert len(func.parameters) == 2
 
 
+def test_create_function_from_yaml_empty_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("", "plugin_name")
+
+
+def test_create_function_from_yaml_malformed_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("not yaml dict", "plugin_name")
+
+
+def test_create_function_from_valid_yaml(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYaml")
+    assert plugin is not None
+
+
+def test_create_function_from_valid_yaml_handlebars(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlHandlebars")
+    assert plugin is not None
+    assert plugin["TestFunctionHandlebars"] is not None
+
+
+def test_create_function_from_valid_yaml_jinja2(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlJinja2")
+    assert plugin is not None
+    assert plugin["TestFunctionJinja2"] is not None
+
+
 # endregion
 # region Functions
 
@@ -494,13 +528,6 @@ def test_register_undecorated_native_function(kernel: Kernel, not_decorated_nati
 def test_register_with_none_plugin_name(kernel: Kernel, decorated_native_function):
     with pytest.raises(ValidationError):
         kernel.register_function_from_method(method=decorated_native_function, plugin_name=None)
-
-
-def test_register_overloaded_native_function(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method("TestPlugin", decorated_native_function)
-
-    with pytest.raises(FunctionInvalidNameError):
-        kernel.register_function_from_method("TestPlugin", decorated_native_function)
 
 
 # endregion

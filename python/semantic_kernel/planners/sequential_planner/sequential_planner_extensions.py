@@ -7,9 +7,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
-from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
-    SequentialPlannerConfig,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -22,15 +20,8 @@ class SequentialPlannerFunctionExtension:
             + (f" (default value: {parameter.default_value})" if parameter.default_value else "")
             for parameter in function.parameters
         ]
-
         inputs = "\n".join(inputs)
-        qualified_name = SequentialPlannerFunctionExtension.to_fully_qualified_name(function)
-
-        return f"{qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
-
-    @staticmethod
-    def to_fully_qualified_name(function: KernelFunctionMetadata):
-        return f"{function.plugin_name}.{function.name}"
+        return f"{function.fully_qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
 
     @staticmethod
     def to_embedding_string(function: KernelFunctionMetadata):
@@ -109,18 +100,14 @@ class SequentialPlannerKernelExtension:
             return relevant_functions
         for memory_entry in memories:
             function = next(
-                (
-                    func
-                    for func in available_functions
-                    if SequentialPlannerFunctionExtension.to_fully_qualified_name(func) == memory_entry.id
-                ),
+                (func for func in available_functions if func.fully_qualified_name == memory_entry.id),
                 None,
             )
             if function is not None:
                 logger.debug(
                     "Found relevant function. Relevance Score: {0}, Function: {1}".format(
                         memory_entry.relevance,
-                        SequentialPlannerFunctionExtension.to_fully_qualified_name(function),
+                        function.fully_qualified_name,
                     )
                 )
                 relevant_functions.append(function)

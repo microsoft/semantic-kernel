@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Dict, Final, Iterator, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Final, Iterator, List, Optional, Type, Union
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET
 
@@ -14,9 +16,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 logger = logging.getLogger(__name__)
 
 ROOT_KEY_MESSAGE: Final[str] = "message"
-START_TAG: Final[str] = f"<{ROOT_KEY_MESSAGE}"
-END_TAG: Final[str] = f"</{ROOT_KEY_MESSAGE}>"
-LEN_END_TAG: Final[int] = len(END_TAG)
+ROOT_KEY_HISTORY: Final[str] = "chat_history"
 
 
 class ChatHistory(KernelBaseModel):
@@ -159,15 +159,16 @@ class ChatHistory(KernelBaseModel):
 
     def __str__(self) -> str:
         """Return a string representation of the history."""
-        if not self.messages:
-            return ""
-        return "\n".join([msg.to_prompt(root_key=ROOT_KEY_MESSAGE) for msg in self.messages])
+        chat_history_xml = Element(ROOT_KEY_HISTORY)
+        for message in self.messages:
+            chat_history_xml.append(message.to_element(root_key=ROOT_KEY_MESSAGE))
+        return ElementTree.tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
     def __iter__(self) -> Iterator[ChatMessageContent]:
         """Return an iterator over the messages in the history."""
         return iter(self.messages)
 
-    def __eq__(self, other: "ChatHistory") -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check if two ChatHistory instances are equal."""
         if not isinstance(other, ChatHistory):
             return False
@@ -188,38 +189,25 @@ class ChatHistory(KernelBaseModel):
             ChatHistory: The ChatHistory instance created from the rendered prompt.
         """
         messages: List[chat_message_content_type] = []
-        result, remainder = cls._render_remaining(rendered_prompt, chat_message_content_type, True)
-        if result:
-            messages.append(result)
-        while remainder:
-            result, remainder = cls._render_remaining(remainder, chat_message_content_type)
-            if result:
-                messages.append(result)
-        return cls(messages=messages)
-
-    @staticmethod
-    def _render_remaining(
-        prompt: Optional[str],
-        chat_message_content_type: Type[ChatMessageContent] = ChatMessageContent,
-        first: bool = False,
-    ) -> Tuple[Optional[ChatMessageContent], Optional[str]]:
-        """Render the remaining messages in the history."""
-        if not prompt:
-            return None, None
-        prompt = prompt.strip()
-        start = prompt.find(START_TAG)
-        end = prompt.find(END_TAG)
-        role = ChatRole.SYSTEM if first else ChatRole.USER
-        if start == -1 or end == -1:
-            return chat_message_content_type(role=role, content=prompt), None
-        if start > 0 and end > 0:
-            return chat_message_content_type(role=role, content=prompt[:start]), prompt[start:]
-        end_of_tag = end + LEN_END_TAG
+        prompt = rendered_prompt.strip()
         try:
-            return chat_message_content_type.from_element(ET.fromstring(prompt[start:end_of_tag])), prompt[end_of_tag:]
-        except Exception as exc:
-            logger.warning(f"Unable to parse prompt: {prompt[start:end_of_tag]}, returning as content", exc_info=exc)
-            return chat_message_content_type(role=role, content=prompt[start:end_of_tag]), prompt[end_of_tag:]
+            xml_prompt = ET.fromstring(f"<prompt>{prompt}</prompt>")
+        except ET.ParseError as e:
+            logger.error(f"Error parsing XML of prompt: {e}")
+            return cls(messages=[chat_message_content_type(role=ChatRole.USER, content=prompt)])
+        if xml_prompt.text and xml_prompt.text.strip():
+            messages.append(chat_message_content_type(role=ChatRole.SYSTEM, content=xml_prompt.text.strip()))
+        for item in xml_prompt:
+            if item.tag == ROOT_KEY_MESSAGE:
+                messages.append(chat_message_content_type.from_element(item))
+            elif item.tag == ROOT_KEY_HISTORY:
+                for message in item:
+                    messages.append(chat_message_content_type.from_element(message))
+            if item.tail and item.tail.strip():
+                messages.append(chat_message_content_type(role=ChatRole.USER, content=item.tail.strip()))
+        if len(messages) == 1 and messages[0].role == ChatRole.SYSTEM:
+            messages[0].role = ChatRole.USER
+        return cls(messages=messages)
 
     def serialize(self) -> str:
         """
@@ -234,7 +222,7 @@ class ChatHistory(KernelBaseModel):
         try:
             return self.model_dump_json(indent=4)
         except Exception as e:
-            raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}")
+            raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}") from e
 
     @classmethod
     def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
@@ -257,7 +245,7 @@ class ChatHistory(KernelBaseModel):
         except Exception as e:
             raise ContentInitializationError(f"Invalid JSON format: {e}")
 
-    def store_chat_history_to_file(chat_history: "ChatHistory", file_path: str) -> None:
+    def store_chat_history_to_file(self, file_path: str) -> None:
         """
         Stores the serialized ChatHistory to a file.
 
@@ -265,11 +253,12 @@ class ChatHistory(KernelBaseModel):
             chat_history (ChatHistory): The ChatHistory instance to serialize and store.
             file_path (str): The path to the file where the serialized data will be stored.
         """
-        json_str = chat_history.serialize()
+        json_str = self.serialize()
         with open(file_path, "w") as file:
             file.write(json_str)
 
-    def load_chat_history_from_file(file_path: str) -> "ChatHistory":
+    @classmethod
+    def load_chat_history_from_file(cls, file_path: str) -> "ChatHistory":
         """
         Loads the ChatHistory from a file.
 
@@ -281,4 +270,4 @@ class ChatHistory(KernelBaseModel):
         """
         with open(file_path, "r") as file:
             json_str = file.read()
-        return ChatHistory.restore_chat_history(json_str)
+        return cls.restore_chat_history(json_str)
