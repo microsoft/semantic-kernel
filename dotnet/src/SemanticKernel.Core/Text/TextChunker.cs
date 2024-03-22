@@ -32,6 +32,8 @@ public static class TextChunker
 
         public void Add(string value) => this.Values.Add((value, this._tokenCounter is null ? GetDefaultTokenCount(value.Length) : this._tokenCounter(value)));
 
+        public void Add(string value, int tokenCount) => this.Values.Add((value, tokenCount));
+
         public void AddRange(StringListWithTokenCount range)
         {
             this.Values.AddRange(range.Values);
@@ -337,13 +339,15 @@ public static class TextChunker
             }
         }
 
-        result.Add((inputString is not null, trim) switch
+        var resultString = inputString ?? input.ToString();
+        var resultTokenCount = inputTokenCount;
+        if (trim && !resultString.Trim().Equals(resultString, StringComparison.Ordinal))
         {
-            (true, true) => inputString!.Trim(),
-            (true, false) => inputString!,
-            (false, true) => input.Trim().ToString(),
-            (false, false) => input.ToString(),
-        });
+            resultString = resultString.Trim();
+            resultTokenCount = GetTokenCount(resultString, tokenCounter);
+        }
+
+        result.Add(resultString, resultTokenCount);
 
         return (result, inputWasSplit);
     }

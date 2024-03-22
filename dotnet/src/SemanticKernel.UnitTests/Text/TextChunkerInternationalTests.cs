@@ -107,6 +107,6 @@ public sealed class TextChunkerInternationalTests
         await Verifier.Verify(result).UseParameters(language);
 
         Assert.True(counter.CallCount > 0);
-        Assert.True(counter.CallCount < story.Length);
+        Assert.True(counter.CallCount < story.Length / 2);
     }
 }
