@@ -49,6 +49,9 @@ internal abstract class ClientCore
     /// </remarks>
     private const int MaxInflightAutoInvokes = 5;
 
+    /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
+    private static readonly ChatCompletionsFunctionToolDefinition s_nonInvocableFunctionTool = new() { Name = "NonInvocableTool" };
+
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
@@ -424,19 +427,37 @@ internal abstract class ClientCore
                 }
             }
 
-            // Respect the tool's maximum use attempts and maximum auto-invoke attempts.
+            // Update tool use information for the next go-around based on having completed another iteration.
             Debug.Assert(chatExecutionSettings.ToolCallBehavior is not null);
+
+            // Set the tool choice to none. If we end up wanting to use tools, we'll reset it to the desired value.
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+            chatOptions.Tools.Clear();
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
-                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
                 }
             }
+            else
+            {
+                // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
+                // what functions are available in the kernel.
+                chatExecutionSettings.ToolCallBehavior.ConfigureOptions(kernel, chatOptions);
+            }
 
+            // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
+            // if we don't send any tools in subsequent requests, even if we say not to use any.
+            if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
+            {
+                Debug.Assert(chatOptions.Tools.Count == 0);
+                chatOptions.Tools.Add(s_nonInvocableFunctionTool);
+            }
+
+            // Disable auto invocation if we've exceeded the allowed limit.
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
@@ -618,19 +639,37 @@ internal abstract class ClientCore
                 }
             }
 
-            // Respect the tool's maximum use attempts and maximum auto-invoke attempts.
+            // Update tool use information for the next go-around based on having completed another iteration.
             Debug.Assert(chatExecutionSettings.ToolCallBehavior is not null);
+
+            // Set the tool choice to none. If we end up wanting to use tools, we'll reset it to the desired value.
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+            chatOptions.Tools.Clear();
 
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                // Set the tool choice to none. We'd also like to clear the tools, but doing so can make the service unhappy ("[] is too short - 'tools'").
-                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+                // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
                 }
             }
+            else
+            {
+                // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
+                // what functions are available in the kernel.
+                chatExecutionSettings.ToolCallBehavior.ConfigureOptions(kernel, chatOptions);
+            }
 
+            // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
+            // if we don't send any tools in subsequent requests, even if we say not to use any.
+            if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
+            {
+                Debug.Assert(chatOptions.Tools.Count == 0);
+                chatOptions.Tools.Add(s_nonInvocableFunctionTool);
+            }
+
+            // Disable auto invocation if we've exceeded the allowed limit.
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
@@ -697,19 +736,22 @@ internal abstract class ClientCore
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient)
+    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, OpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
-        OpenAIClientOptions options = new()
-        {
-            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-        };
+        OpenAIClientOptions options = serviceVersion is not null ?
+            new(serviceVersion.Value) :
+            new();
+
+        options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
             options.Transport = new HttpClientTransport(httpClient);
             options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
         }
 
         return options;
@@ -730,7 +772,7 @@ internal abstract class ClientCore
 
         if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt))
         {
-            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt);
+            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt!);
             textRole = AuthorRole.User;
         }
 
@@ -922,17 +964,17 @@ internal abstract class ClientCore
                 return new ChatRequestToolMessage(message.Content, toolIdString);
             }
 
-            if (message.Items is { Count: > 0 })
+            if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
-                return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
-                {
-                    TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
-                    ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
-                    _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
-                })));
+                return new ChatRequestUserMessage(textContent.Text);
             }
 
-            return new ChatRequestUserMessage(message.Content);
+            return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
+            {
+                TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
+                ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
+                _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
+            })));
         }
 
         if (message.Role == AuthorRole.Assistant)

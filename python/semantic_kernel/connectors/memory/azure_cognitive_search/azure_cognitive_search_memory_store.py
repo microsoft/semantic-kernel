@@ -9,12 +9,14 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    HnswVectorSearchAlgorithmConfiguration,
+    HnswAlgorithmConfiguration,
+    HnswParameters,
     SearchIndex,
     SearchResourceEncryptionKey,
     VectorSearch,
+    VectorSearchProfile,
 )
-from azure.search.documents.models import Vector
+from azure.search.documents.models import VectorizedQuery
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
@@ -75,7 +77,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
+        vector_config: Optional[HnswAlgorithmConfiguration] = None,
         search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
@@ -92,26 +94,31 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
+        vector_search_profile_name = "az-vector-config"
         if vector_config:
-            vector_search = VectorSearch(algorithm_configurations=[vector_config])
+            vector_search_profile = VectorSearchProfile(
+                name=vector_search_profile_name, algorithm_configuration_name=vector_config.name
+            )
+            vector_search = VectorSearch(profiles=[vector_search_profile], algorithms=[vector_config])
         else:
+            vector_search_algorithm_name = "az-vector-hnsw-config"
+            vector_search_profile = VectorSearchProfile(
+                name=vector_search_profile_name, algorithm_configuration_name=vector_search_algorithm_name
+            )
             vector_search = VectorSearch(
-                algorithm_configurations=[
-                    HnswVectorSearchAlgorithmConfiguration(
-                        name="az-vector-config",
+                profiles=[vector_search_profile],
+                algorithms=[
+                    HnswAlgorithmConfiguration(
+                        name=vector_search_algorithm_name,
                         kind="hnsw",
-                        hnsw_parameters={
-                            # Number of bi-directional links, 4 to 10
-                            "m": 4,
-                            # Size of nearest neighbors list during indexing, 100 to 1000
-                            "efConstruction": 400,
-                            # Size of nearest neighbors list during search, 100 to 1000
-                            "efSearch": 500,
-                            # cosine, dotProduct, euclidean
-                            "metric": "cosine",
-                        },
+                        parameters=HnswParameters(
+                            m=4,  # Number of bi-directional links, typically between 4 and 10
+                            ef_construction=400,  # Size during indexing, range: 100-1000
+                            ef_search=500,  # Size during search, range: 100-1000
+                            metric="cosine",  # Can be "cosine", "dotProduct", or "euclidean"
+                        ),
                     )
-                ]
+                ],
             )
 
         if not self._search_index_client:
@@ -128,7 +135,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             # Create the search index with the semantic settings
             index = SearchIndex(
                 name=collection_name.lower(),
-                fields=get_index_schema(self._vector_size),
+                fields=get_index_schema(self._vector_size, vector_search_profile_name),
                 vector_search=vector_search,
                 encryption_key=search_resource_encryption_key,
             )
@@ -378,12 +385,12 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
 
-        vector = Vector(value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING)
+        vector = VectorizedQuery(vector=embedding.flatten(), k_nearest_neighbors=limit, fields=SEARCH_FIELD_EMBEDDING)
 
         search_results = await search_client.search(
             search_text="*",
-            vectors=[vector],
             select=get_field_selection(with_embeddings),
+            vector_queries=[vector],
         )
 
         if not search_results or search_results is None:

@@ -30,7 +30,16 @@
       "type": "python",
       "request": "launch",
       "module": "pytest",
-      "args": ["${file}"]
+      "args": [
+        "${file}"
+      ]
+    },
+    {
+      "name": "C#: HuggingFaceImageTextExample",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}\\dotnet\\samples\\HuggingFaceImageTextExample\\HuggingFaceImageTextExample.csproj",
+      "launchConfigurationId": "TargetFramework=;HuggingFaceImageTextExample"
     }
   ]
 }
