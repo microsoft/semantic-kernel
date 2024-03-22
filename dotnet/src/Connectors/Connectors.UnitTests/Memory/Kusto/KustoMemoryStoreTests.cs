@@ -189,18 +189,17 @@ public class KustoMemoryStoreTests
         // Arrange
         var expectedMemoryRecord = this.GetRandomMemoryRecord();
         var kustoMemoryEntry = new KustoMemoryRecord(expectedMemoryRecord);
-
         this._cslQueryProviderMock
             .Setup(client => client.ExecuteQueryAsync(
                 DatabaseName,
                 It.Is<string>(s => s.Contains(CollectionName) && s.Contains(expectedMemoryRecord.Key)),
                 It.IsAny<ClientRequestProperties>(),
                 CancellationToken.None))
-            .ReturnsAsync(CollectionToDataReader(new string[][] {
-                new string[] {
+            .ReturnsAsync(CollectionToDataReader(new dynamic[][] {
+                new dynamic[] {
                     expectedMemoryRecord.Key,
                     KustoSerializer.SerializeMetadata(expectedMemoryRecord.Metadata),
-                    KustoSerializer.SerializeDateTimeOffset(expectedMemoryRecord.Timestamp),
+                    expectedMemoryRecord.Timestamp?.LocalDateTime,
                     KustoSerializer.SerializeEmbedding(expectedMemoryRecord.Embedding),
                 }}));
 
@@ -377,21 +376,17 @@ public class KustoMemoryStoreTests
         return table.CreateDataReader();
     }
 
-    private static DataTableReader CollectionToDataReader(string[][] data)
+    private static DataTableReader CollectionToDataReader(dynamic[][] data)
     {
         using var table = new DataTable();
 
         if (data != null)
         {
             data = data.ToArrayIfNotAlready();
-            if (data[0] != null)
-            {
-                for (int i = 0; i < data[0].Length; i++)
-                {
-                    table.Columns.Add($"Column{i + 1}", typeof(string));
-                }
-            }
-
+            table.Columns.Add("Column1", typeof(string));
+            table.Columns.Add("Column2", typeof(string));
+            table.Columns.Add("Column3", typeof(DateTime));
+            table.Columns.Add("Column4", typeof(string));
             for (int i = 0; i < data.Length; i++)
             {
                 table.Rows.Add(data[i]);
