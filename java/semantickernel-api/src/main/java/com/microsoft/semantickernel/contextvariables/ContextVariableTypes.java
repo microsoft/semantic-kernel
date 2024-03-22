@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.contextvariables.converters.CompletionUsageC
 import com.microsoft.semantickernel.contextvariables.converters.DateTimeContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.InstantContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.NumberVariableContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.converters.PrimitiveBooleanVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.StringVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.TextContentVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.converters.VoidVariableContextVariableTypeConverter;
@@ -29,7 +30,6 @@ public class ContextVariableTypes {
     static {
         List<ContextVariableTypeConverter<?>> types = Arrays.asList(
             new CharacterVariableContextVariableTypeConverter(),
-            new BooleanVariableContextVariableTypeConverter(),
             new ChatHistoryVariableContextVariableTypeConverter(),
             new TextContentVariableContextVariableTypeConverter(),
             new StringVariableContextVariableTypeConverter(),
@@ -39,6 +39,9 @@ public class ContextVariableTypes {
             new DateTimeContextVariableTypeConverter(),
             new InstantContextVariableTypeConverter(),
             new CompletionUsageContextVariableTypeConverter(),
+
+            new BooleanVariableContextVariableTypeConverter(),
+            new PrimitiveBooleanVariableContextVariableTypeConverter(),
 
             new NumberVariableContextVariableTypeConverter<>(Byte.class, Byte::parseByte,
                 Number::byteValue),
