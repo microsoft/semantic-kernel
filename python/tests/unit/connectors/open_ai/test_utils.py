@@ -10,23 +10,14 @@ from semantic_kernel.kernel import Kernel
 
 @pytest.fixture
 def decorated_function_all_params() -> Callable:  # type: ignore
-    @kernel_function(name="test")
-    def decorated_function_all_params(arg1: str, arg2: Optional[str], arg3: List[str], arg4: Dict[str, str]) -> str:
-        return "test"
-
-    return decorated_function_all_params
-
-
-@pytest.fixture
-def decorated_function_all_params2() -> Callable:  # type: ignore
     @kernel_function
-    def decorated_function_all_params(arg1: str, arg2: Optional[str], arg3: List[str], arg4: Dict[str, str]) -> str:
+    def test(arg1: str, arg2: Optional[str], arg3: List[str], arg4: Dict[str, str]) -> str:
         return "test"
 
-    return decorated_function_all_params
+    return test
 
 
-def test_get_tool_call_object(kernel: Kernel, decorated_function_all_params, decorated_function_all_params2):
+def test_get_tool_call_object(kernel: Kernel, decorated_function_all_params):
     kernel.add_plugin("test", [decorated_function_all_params])
     tools = get_tool_call_object(kernel)
     assert len(tools) == 1
