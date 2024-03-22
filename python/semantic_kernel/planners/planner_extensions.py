@@ -2,6 +2,7 @@
 
 import logging
 
+from semantic_kernel.connectors.ai.open_ai.utils import get_function_calling_object
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
@@ -68,3 +69,20 @@ class PlannerKernelExtension:
         # TODO support for semantic memory query
 
         return available_functions
+
+    @staticmethod
+    async def get_available_functions_json(
+        kernel: Kernel,
+        arguments: KernelArguments,
+        options: PlannerOptions = None,
+    ):
+        excluded_plugins = options.excluded_plugins or []
+        excluded_functions = options.excluded_functions or []
+
+        available_functions = [
+            func
+            for func in kernel.plugins.get_list_of_function_metadata()
+            if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
+        ]
+
+        return [get_function_calling_object(func, {}) for func in available_functions]
