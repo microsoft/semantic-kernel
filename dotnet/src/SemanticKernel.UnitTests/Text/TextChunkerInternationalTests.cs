@@ -102,7 +102,6 @@ public sealed class TextChunkerInternationalTests
         var result = TextChunker.SplitPlainTextLines(story, 20, counter.Count);
         Assert.True(counter.CallCount > 0);
         Assert.True(counter.CallCount < story.Length / 2);
-
         foreach (var line in result)
         {
             Assert.True(counter.Count(line) <= 20);

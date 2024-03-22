@@ -772,7 +772,7 @@ internal abstract class ClientCore
 
         if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt))
         {
-            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt);
+            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt!);
             textRole = AuthorRole.User;
         }
 
