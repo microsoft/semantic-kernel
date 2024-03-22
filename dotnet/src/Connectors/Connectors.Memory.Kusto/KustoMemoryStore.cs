@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -129,17 +130,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
         while (reader.Read())
         {
-            var key = reader.GetString(0);
-            var metadata = reader.GetString(1);
-            DateTimeOffset? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
-            var similarity = reader.GetDouble(3);
-            var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
-
-            var deserializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
-            var deserializedembedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
-
-            var kustoRecord = new KustoMemoryRecord(key, deserializedMetadata, deserializedembedding, timestamp);
-
+            var (kustoRecord, similarity) = this.ConvertStreamDataToKustoMemoryRecord(reader, withEmbeddings);
             yield return kustoRecord.ToMemoryRecord();
         }
     }
@@ -216,16 +207,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
         while (reader.Read())
         {
-            var key = reader.GetString(0);
-            var metadata = reader.GetString(1);
-            DateTimeOffset? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
-            var similarity = reader.GetDouble(3);
-            var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
-
-            var deserializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
-            var deserializedembedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
-
-            var kustoRecord = new KustoMemoryRecord(key, deserializedMetadata, deserializedembedding, timestamp);
+            var (kustoRecord, similarity) = this.ConvertStreamDataToKustoMemoryRecord(reader, withEmbeddings);
 
             yield return (kustoRecord.ToMemoryRecord(), similarity);
         }
@@ -355,6 +337,25 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         s_timestampColumn
     };
 
+    /// <summary>
+    /// Converts stream data to KustoMemoryRecord
+    /// </summary>
+    /// <param name="reader"></param>
+    /// <param name="withEmbeddings"></param>
+    /// <returns></returns>
+    private (KustoMemoryRecord, double) ConvertStreamDataToKustoMemoryRecord(IDataReader reader, bool withEmbeddings)
+    {
+        var key = reader.GetString(0);
+        var metadata = reader.GetString(1);
+        DateTimeOffset? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
+        var similarity = reader.GetDouble(3);
+        var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
+
+        var deserializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+        var deserializedembedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+
+        return (new KustoMemoryRecord(key, deserializedMetadata, deserializedembedding, timestamp), similarity);
+    }
     /// <summary>
     /// Converts collection name to Kusto table name.
     /// </summary>

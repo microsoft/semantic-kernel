@@ -71,6 +71,21 @@ public sealed class KustoMemoryRecord
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
+    /// </summary>
+    /// <param name="key">Entity key.</param>
+    /// <param name="metadata">Serialized metadata associated with memory entity.</param>
+    /// <param name="embedding">Source content embedding.</param>
+    /// <param name="timestamp">Optional timestamp.</param>
+    public KustoMemoryRecord(string key, string metadata, string? embedding, DateTimeOffset? timestamp = null)
+    {
+        this.Key = key;
+        this.Metadata = KustoSerializer.DeserializeMetadata(metadata);
+        this.Embedding = KustoSerializer.DeserializeEmbedding(embedding);
+        this.Timestamp = timestamp;
+    }
+
+    /// <summary>
     /// Returns instance of mapped <see cref="MemoryRecord"/>.
     /// </summary>
     public MemoryRecord ToMemoryRecord()
