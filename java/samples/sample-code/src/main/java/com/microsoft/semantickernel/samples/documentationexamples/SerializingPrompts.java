@@ -5,6 +5,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory;
@@ -32,7 +33,7 @@ public class SerializingPrompts {
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
-    private static final String SAMPLES_DIR = "java/samples/sample-code/src/main/java/com/microsoft/semantickernel/samples";
+    private static final String PLUGINS_DIR = "java/samples/sample-code/src/main/resources/Plugins";
 
     public static void main(String[] args) throws IOException {
         System.out.println("======== Serializing Prompts ========");
@@ -49,6 +50,20 @@ public class SerializingPrompts {
                     .buildAsyncClient();
         }
 
+        // Create few-shot examples
+        ChatHistory continueConversation = new ChatHistory(false);
+        continueConversation.addMessage(AuthorRole.USER, "Can you send a very quick approval to the marketing team?");
+        continueConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
+        continueConversation.addMessage(AuthorRole.ASSISTANT, "ContinueConversation");
+        ChatHistory endConversation = new ChatHistory(false);
+        endConversation.addMessage(AuthorRole.USER, "Can you send the full update to the marketing team?");
+        endConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
+        endConversation.addMessage(AuthorRole.ASSISTANT, "EndConversation");
+
+        List<ChatHistory> fewShotExamples = List.of(continueConversation, endConversation);
+
+        // <InvokeSerializedPrompts>
+        // Create Kernel
         Kernel kernel = Kernel.builder()
                 .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
                         .withModelId(MODEL_ID)
@@ -59,27 +74,17 @@ public class SerializingPrompts {
 
         // Load prompts
         var prompts = KernelPluginFactory.importPluginFromDirectory(
-                Path.of(SAMPLES_DIR, "plugins"), "Prompts", null);
+                Path.of(PLUGINS_DIR), "Prompts", null);
 
         // Load prompt from YAML
+        // <LoadPromptFromYAML>
         var getIntent = KernelFunctionYaml.fromPromptYaml(
-                Files.readString(Path.of(SAMPLES_DIR, "documentationexamples", "getIntent.prompt.yaml")),
+                Files.readString(Path.of(PLUGINS_DIR, "Prompts", "getIntent.prompt.yaml")),
                 new HandlebarsPromptTemplateFactory());
+        // </LoadPromptFromYAML>
 
         // Create choices
         List<String> choices = Arrays.asList("ContinueConversation", "EndConversation");
-
-        // Create few-shot examples
-        ChatHistory continueConversation = new ChatHistory();
-        continueConversation.addMessage(AuthorRole.USER, "Can you send a very quick approval to the marketing team?");
-        continueConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
-        continueConversation.addMessage(AuthorRole.ASSISTANT, "ContinueConversation");
-        ChatHistory endConversation = new ChatHistory();
-        endConversation.addMessage(AuthorRole.USER, "Can you send the full update to the marketing team?");
-        endConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
-        endConversation.addMessage(AuthorRole.ASSISTANT, "EndConversation");
-
-        List<ChatHistory> fewShotExamples = List.of(continueConversation, endConversation);
 
         // Create chat history
         ChatHistory history = new ChatHistory();
@@ -90,6 +95,8 @@ public class SerializingPrompts {
         String userInput;
         while (!(userInput = scanner.nextLine()).isEmpty()) {
             // Invoke handlebars prompt
+
+            // <InvokePromptFromYaml>
             var intent = kernel.invokeAsync(getIntent)
                     .withArguments(KernelFunctionArguments.builder()
                             .withVariable("request", userInput)
@@ -98,16 +105,31 @@ public class SerializingPrompts {
                             .withVariable("fewShotExamples", fewShotExamples)
                             .build())
                     .block();
+            // </InvokePromptFromYaml>
 
             // End the chat if the intent is "Stop"
             if (intent.getResult().equals("EndConversation")) {
                 break;
             }
 
-            // WIP
+            var reply = kernel.invokeAsync(prompts.get("Chat"))
+                    .withArguments(KernelFunctionArguments.builder()
+                            .withVariable("request", userInput)
+                            .withVariable("history",
+                                    String.join("\n", history.getMessages().stream().map(m -> m.getAuthorRole() + " > " + m.getContent()).toList()))
+                            .build())
+                    .withResultType(String.class)
+                    .block().getResult();
+
+            System.out.println("Assistant" + " > " + reply);
+
+            // Append to history
+            history.addUserMessage(userInput);
+            history.addAssistantMessage(reply);
 
             // Get user input again
             System.out.print("User > ");
         }
+        // </InvokeSerializedPrompts>
     }
 }
