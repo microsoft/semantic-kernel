@@ -28,7 +28,7 @@ public class CreatingFunctions {
     private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
     public static void main(String[] args) {
-        System.out.println("======== Prompts ========");
+        System.out.println("======== Creating Functions ========");
         OpenAIAsyncClient client;
 
         if (AZURE_CLIENT_KEY != null) {
@@ -42,6 +42,7 @@ public class CreatingFunctions {
                     .buildAsyncClient();
         }
 
+        // <RunNativeFunction>
         Kernel kernel = Kernel.builder()
                 .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
                         .withModelId(MODEL_ID)
@@ -55,10 +56,11 @@ public class CreatingFunctions {
                 .invokeAsync(kernel.getFunction("MathPlugin", "sqrt"))
                 .withArguments(KernelFunctionArguments
                         .builder()
-                        .withVariable("number1", "12.0")
+                        .withVariable("number1", 12.0)
                         .build())
                 .block();
         System.out.println("The square root of 12 is " + answer.getResult() + ".");
+        // </RunNativeFunction>
 
         // Create chat history
         ChatCompletionService chat = OpenAIChatCompletion.builder()
@@ -72,36 +74,29 @@ public class CreatingFunctions {
         ChatHistory history = new ChatHistory();
 
         // Start the conversation
-        System.out.print("user > ");
+        System.out.print("User > ");
         Scanner scanner = new Scanner(System.in);
         String userInput;
         while (!(userInput = scanner.nextLine()).isEmpty()) {
             history.addUserMessage(userInput);
 
-            reply(kernel, chat, history);
-            messageOutput(history);
+            var toolCallBehavior = ToolCallBehavior.allowAllKernelFunctions(true);
 
-            System.out.print("user > ");
+            var reply = chat.getChatMessageContentsAsync(history, kernel, InvocationContext.builder()
+                            .withToolCallBehavior(toolCallBehavior)
+                            .build())
+                    .block();
+
+            StringBuilder message = new StringBuilder();
+            reply.forEach(chatMessageContent -> message.append(chatMessageContent.getContent()));
+
+            System.out.println("Assistant" + " > " + message);
+
+            // Add the message from the agent to the chat history
+            history.addAssistantMessage(message.toString());
+
+            // Get user input again
+            System.out.print("User > ");
         }
-    }
-
-    private static void reply(Kernel kernel, ChatCompletionService chatGPT, ChatHistory chatHistory) {
-        // Enable auto function calling
-        var toolCallBehavior = ToolCallBehavior.allowAllKernelFunctions(true);
-
-        var reply = chatGPT.getChatMessageContentsAsync(chatHistory, kernel, InvocationContext.builder()
-                    .withToolCallBehavior(toolCallBehavior)
-                    .build())
-                .block();
-
-        StringBuilder message = new StringBuilder();
-        reply.forEach(chatMessageContent -> message.append(chatMessageContent.getContent()));
-        chatHistory.addAssistantMessage(message.toString());
-    }
-
-    private static void messageOutput(ChatHistory chatHistory) {
-        var message = chatHistory.getLastMessage().get();
-        System.out.println(message.getAuthorRole() + " > " + message.getContent());
-        System.out.println("------------------------");
     }
 }
