@@ -9,9 +9,10 @@ sequenceDiagram
     participant LLM
     Client->>+AI Service: Invoke Chat Completion with Auto Function Call
     AI Service->>+LLM: Chat Completion
+    loop For Each Tool LLM Requires
     LLM->>-AI Service: Tool Call Request
     AI Service->>AI Service: Update Local Chat History
-    loop For Each Tool in Tool Call request
+    loop For Each Tool in Tool Call Request
     AI Service->>+Kernel: Function Call
     Kernel->>+Plugin: Invoke Function
     Plugin->>-Kernel: Function Result
@@ -19,6 +20,7 @@ sequenceDiagram
     end
     AI Service->>AI Service: Update Local Chat History
     AI Service->>+LLM: Tool Call Response
+    end
     LLM->>-AI Service: Chat Completion Response
     AI Service->>AI Service: Update Local Chat History
     AI Service->>-Client: Chat Completion Response
