@@ -25,8 +25,8 @@ public static class TextChunker
     public delegate int TokenCounter(string input);
 
     private static readonly char[] s_spaceChar = new[] { ' ' };
-    private static readonly string?[] s_plaintextSplitOptions = new[] { "\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null };
-    private static readonly string?[] s_markdownSplitOptions = new[] { ".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null };
+    private static readonly string?[] s_plaintextSplitOptions = new[] { "\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null };
+    private static readonly string?[] s_markdownSplitOptions = new[] { ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", "\n\r", null };
 
     /// <summary>
     /// Split plain text into lines.
