@@ -3,12 +3,12 @@ import os
 
 import pytest
 from openai import AsyncOpenAI
-from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from tests.integration.completions.utils import retry
 
 
 @pytest.mark.asyncio

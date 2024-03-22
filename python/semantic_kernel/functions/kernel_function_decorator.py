@@ -2,6 +2,7 @@
 
 
 import logging
+from functools import wraps
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
 from typing import Any, Callable, Dict, Optional
 
@@ -10,12 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 def kernel_function(
-    *,
+    func: Callable = None,
     name: Optional[str] = None,
     description: Optional[str] = None,
 ):
     """
-    Decorator for kernel functions.
+    Decorator for kernel functions, can be used directly as @kernel_function
+    or with parameters @kernel_function(name='function', description='I am a function.').
 
     This decorator is used to mark a function as a kernel function. It also provides metadata for the function.
     The name and description can be left empty, and then the function name and docstring will be used.
@@ -42,6 +44,7 @@ def kernel_function(
 
     """
 
+    @wraps(func)
     def decorator(func: Callable):
         func.__kernel_function__ = True
         func.__kernel_function_description__ = description or func.__doc__
@@ -49,7 +52,7 @@ def kernel_function(
         func.__kernel_function_streaming__ = isasyncgenfunction(func) or isgeneratorfunction(func)
         logger.debug(f"Parsing decorator for function: {func.__kernel_function_name__}")
 
-        func_sig = signature(func)
+        func_sig = signature(func, eval_str=True)
         logger.debug(f"{func_sig=}")
         func.__kernel_function_parameters__ = [
             _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
@@ -62,6 +65,8 @@ def kernel_function(
         func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)
         return func
 
+    if func:
+        return decorator(func)
     return decorator
 
 
@@ -96,6 +101,11 @@ def _parse_internal_annotation(annotation: Parameter, required: bool) -> Dict[st
     if getattr(annotation, "__name__", None) == "Optional":
         required = False
     if hasattr(annotation, "__args__"):
+        if getattr(annotation, "__name__", "").lower() in ["list", "dict"]:
+            return {
+                "type_": f"{annotation.__name__}[{', '.join([_parse_internal_annotation(arg, required)['type_'] for arg in annotation.__args__])}]",  # noqa: E501
+                "is_required": required,
+            }
         results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]
         type_objects = [
             result["type_object"]

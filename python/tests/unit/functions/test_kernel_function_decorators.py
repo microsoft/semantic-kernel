@@ -1,5 +1,5 @@
 import sys
-from typing import TYPE_CHECKING, AsyncIterable, Optional, Union
+from typing import TYPE_CHECKING, AsyncIterable, Dict, List, Optional, Union
 
 import pytest
 
@@ -46,6 +46,14 @@ class MiscClass:
 
     @kernel_function()
     def func_input_annotated_optional(self, input: Annotated[Optional[str], "input description"] = "test"):
+        return input
+
+    @kernel_function()
+    def func_input_list(self, input: List[str]):
+        return input
+
+    @kernel_function()
+    def func_input_dict(self, input: Dict[str, str]):
         return input
 
     @kernel_function()
@@ -149,6 +157,24 @@ def test_kernel_function_param_annotated_optional():
     assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
     assert not my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0]["default_value"] == "test"
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
+
+
+def test_kernel_function_list():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_input_list")
+    assert my_func.__kernel_function_parameters__[0]["type_"] == "List[str]"
+    assert my_func.__kernel_function_parameters__[0]["is_required"]
+    assert my_func.__kernel_function_parameters__[0].get("default_value") is None
+    assert my_func.__kernel_function_parameters__[0]["name"] == "input"
+
+
+def test_kernel_function_dict():
+    decorator_test = MiscClass()
+    my_func = getattr(decorator_test, "func_input_dict")
+    assert my_func.__kernel_function_parameters__[0]["type_"] == "Dict[str, str]"
+    assert my_func.__kernel_function_parameters__[0]["is_required"]
+    assert my_func.__kernel_function_parameters__[0].get("default_value") is None
     assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
@@ -256,6 +282,9 @@ def test_kernel_function_no_typing():
         (Annotated[Optional[Union[str, int]], "test"], "test", "str, int", False),
         (str, None, "str", True),
         (Union[str, int, float, "KernelArguments"], None, "str, int, float, KernelArguments", True),
+        (Optional[str], None, "str", False),
+        (List[str], None, "List[str]", True),
+        (Dict[str, str], None, "Dict[str, str]", True),
     ],
 )
 def test_annotation_parsing(annotation, description, type_, is_required):
