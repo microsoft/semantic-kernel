@@ -4,7 +4,6 @@ import os
 
 import pytest
 from openai import AsyncAzureOpenAI
-from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
@@ -13,6 +12,7 @@ from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from tests.integration.completions.utils import retry
 
 
 @pytest.mark.asyncio

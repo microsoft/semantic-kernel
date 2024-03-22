@@ -38,10 +38,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import (
-    KERNEL_TEMPLATE_FORMAT_NAME,
-    TEMPLATE_FORMAT_TYPES,
-)
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
@@ -457,7 +454,12 @@ class Kernel(KernelBaseModel):
     # endregion
     # region Plugins
 
-    def add_plugin(self, plugin_name: str, functions: list[KernelFunction], plugin: KernelPlugin | None = None) -> None:
+    def add_plugin(
+        self,
+        plugin_name: str,
+        functions: list[KernelFunction | Callable[[Any], Any]],
+        plugin: KernelPlugin | None = None,
+    ) -> None:
         """
         Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
         it uses that instance instead of creating a new KernelPlugin.
@@ -467,6 +469,15 @@ class Kernel(KernelBaseModel):
             functions (list[KernelFunction]): The functions to add to the plugin
             plugin (KernelPlugin | None): An optional pre-defined plugin instance
         """
+        for index, function in enumerate(functions):
+            if not isinstance(function, KernelFunction):
+                # if it is not a KernelFunction already, assume it is a method, try to create a KernelFunction
+                try:
+                    functions[index] = KernelFunctionFromMethod(plugin_name=plugin_name, method=function)
+                except Exception as e:
+                    raise FunctionInitializationError(
+                        f"Failed to initialize function: {function} for plugin: {plugin_name}"
+                    ) from e
         if plugin is None:
             # If no plugin instance is provided, create a new KernelPlugin
             plugin = KernelPlugin(name=plugin_name, functions=functions)
