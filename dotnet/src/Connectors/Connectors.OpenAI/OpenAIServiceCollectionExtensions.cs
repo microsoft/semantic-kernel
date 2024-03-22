@@ -1054,6 +1054,46 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name</param>
     /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="apiVersion">Azure OpenAI API version</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAITextToImage(
+        this IKernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? modelId = null,
+        string? serviceId = null,
+        string? apiVersion = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNull(credentials);
+
+        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                endpoint,
+                credentials,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                apiVersion));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add the  Azure OpenAI DallE text to image service to the list
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
     /// <param name="apiKey">Azure OpenAI API key</param>
     /// <param name="modelId">Model identifier</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
