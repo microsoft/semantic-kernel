@@ -42,7 +42,7 @@ public static class TextChunker
 
         public List<string> ToStringList() => this.Values.Select(v => v.Value).ToList();
 
-        public List<(string Value, int TokenCount)> Values { get; } = new();
+        private List<(string Value, int TokenCount)> Values { get; } = new();
 
         public string ValueAt(int i) => this.Values[i].Value;
 
