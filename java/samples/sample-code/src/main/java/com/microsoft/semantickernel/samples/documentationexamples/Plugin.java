@@ -18,19 +18,13 @@ import java.io.InputStream;
 import java.util.Scanner;
 
 public class Plugin {
-
-    public static InputStream INPUT = System.in;
-
     // CLIENT_KEY is for an OpenAI client
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
-
-    // AZURE_CLIENT_KEY and CLIENT_ENDPOINT are for an Azure client
-    // CLIENT_ENDPOINT required if AZURE_CLIENT_KEY is set
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
-    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
 
-    private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "gpt-3.5-turbo");
+    // Only required if AZURE_CLIENT_KEY is set
+    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
     public static void main(String[] args) {
         System.out.println("======== Plugin ========");
@@ -53,8 +47,8 @@ public class Plugin {
             return;
         }
 
-        // <build_kernel>
 
+        // <KernelCreation>
         ChatCompletionService chatCompletionService = ChatCompletionService.builder()
             .withModelId(MODEL_ID)
             .withOpenAIAsyncClient(client)
@@ -67,20 +61,19 @@ public class Plugin {
             .withAIService(ChatCompletionService.class, chatCompletionService)
             .withPlugin(plugin)
             .build();
+        // </KernelCreation>
 
-        // </build_kernel>
-
-        Scanner scanner = new Scanner(INPUT);
-
+        // <Chat>
+        // Create chat history
         var history = new ChatHistory();
 
-        // Start the chat loop
-        while (true) {
-            // <handlebars_add_variables_2>
-            // Get user input
-            System.out.print("User > ");
-            String request = scanner.nextLine();
-            history.addUserMessage(request);
+        // Start the conversation
+        System.out.print("User > ");
+        Scanner scanner = new Scanner(System.in);
+        String userInput;
+        while (!(userInput = scanner.nextLine()).isEmpty()) {
+            // Add user input to history
+            history.addUserMessage(userInput);
 
             // Enable auto function calling
             var invocationContext = InvocationContext.builder()
@@ -88,6 +81,7 @@ public class Plugin {
                     ToolCallBehavior.allowAllKernelFunctions(true))
                 .build();
 
+            // Get the response from the AI
             var result = chatCompletionService
                 .getChatMessageContentsAsync(
                     history,
@@ -98,31 +92,35 @@ public class Plugin {
             String message = result.get(result.size() - 1).getContent();
             System.out.printf("Assistant > %s%n", message);
 
-            // Append to history
+            // Add the message from the agent to the chat history
             history.addAssistantMessage(message);
         }
+        // </Chat>
     }
 
+    // <LightPlugin>
     public static class LightPlugin {
 
         public boolean isOn = false;
 
-        @DefineKernelFunction(name = "changeState", description = "Changes the state of the light.'")
+        @DefineKernelFunction(name = "getState", description = "Gets the state of the light.'")
+        String getState() {
+            return isOn ? "on" : "off";
+        }
 
+        @DefineKernelFunction(name = "changeState", description = "Changes the state of the light.'")
         public String changeState(
-            @KernelFunctionParameter(name = "newState", description = "The new state of the light, boolean true==on, false==off.", type = boolean.class) boolean newState) {
+            @KernelFunctionParameter(name = "newState",
+                    description = "The new state of the light, boolean true==on, false==off.",
+                    type = boolean.class) boolean newState) {
+
             this.isOn = newState;
             String state = getState();
 
             // Print the state to the console
             System.out.printf("[Light is now %s]%n", state);
-
             return state;
         }
-
-        String getState() {
-            return isOn ? "on" : "off";
-
-        }
     }
+    // </LightPlugin>
 }
