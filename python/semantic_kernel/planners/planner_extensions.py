@@ -2,7 +2,6 @@
 
 import logging
 
-from semantic_kernel.connectors.ai.open_ai.utils import get_function_calling_object
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
