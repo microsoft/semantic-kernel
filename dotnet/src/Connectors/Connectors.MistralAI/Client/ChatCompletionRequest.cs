@@ -31,6 +31,14 @@ internal sealed class ChatCompletionRequest
     [JsonPropertyName("safe_prompt")]
     public bool SafePrompt { get; set; } = false;
 
+    [JsonPropertyName("tools")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IList<MistralTool>? Tools { get; set; }
+
+    [JsonPropertyName("tool_choice")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ToolChoice { get; set; }
+
     [JsonPropertyName("random_seed")]
     public int? RandomSeed { get; set; }
 
@@ -41,5 +49,14 @@ internal sealed class ChatCompletionRequest
     internal ChatCompletionRequest(string model)
     {
         this.Model = model;
+    }
+
+    /// <summary>
+    /// Add a tool to the request.
+    /// </summary>
+    internal void AddTool(MistralTool tool)
+    {
+        this.Tools ??= new List<MistralTool>();
+        this.Tools.Add(tool);
     }
 }

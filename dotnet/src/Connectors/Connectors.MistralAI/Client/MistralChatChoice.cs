@@ -15,6 +15,10 @@ internal class MistralChatChoice
     [JsonPropertyName("message")]
     public MistralChatMessage? Message { get; set; }
 
+    /// <summary>
+    /// The reason the chat completion was finished.
+    /// Enum: "stop" "length" "model_length" "error" "tool_calls"
+    /// </summary>
     [JsonPropertyName("finish_reason")]
     public string? FinishReason { get; set; }
 }
