@@ -53,7 +53,8 @@ public class Prompts {
 
         System.out.println("0.0 Initial prompt");
         // <InvokeInitialPrompt>
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        var result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
         // </InvokeInitialPrompt>
 
         // 1.0 Make the prompt more specific
@@ -65,7 +66,8 @@ public class Prompts {
             """.formatted(request);
         // </MoreSpecificPrompt>
         System.out.println("1.0 Make the prompt more specific");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 2.0 Add structure to the output with formatting
         /////////////////////////////////////////////////////////////////
@@ -78,7 +80,8 @@ public class Prompts {
             """.formatted(request);
         // </StructuredPrompt>
         System.out.println("2.0 Add structure to the output with formatting");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 2.1 Add structure to the output with formatting (using Markdown and JSON)
         /////////////////////////////////////////////////////////////////
@@ -113,7 +116,8 @@ public class Prompts {
             """.formatted(request);
         // </FormattedPrompt>
         System.out.println("2.1 Add structure to the output with formatting (using Markdown and JSON)");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 3.0 Provide examples with few-shot prompting
         /////////////////////////////////////////////////////////////////
@@ -133,7 +137,8 @@ public class Prompts {
             """.formatted(request);
         // </FewShotPrompt>
         System.out.println("3.0 Provide examples with few-shot prompting");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 4.0 Tell the AI what to do to avoid doing something wrong
         /////////////////////////////////////////////////////////////////
@@ -154,7 +159,8 @@ public class Prompts {
             """.formatted(request);
         // </AvoidPrompt>
         System.out.println("4.0 Tell the AI what to do to avoid doing something wrong");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 5.0 Provide context to the AI
         /////////////////////////////////////////////////////////////////
@@ -177,7 +183,8 @@ public class Prompts {
             """.formatted(history, request);
         // </ContextPrompt>
         System.out.println("5.0 Provide context to the AI");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 6.0 Using message roles in chat completion prompts
         /////////////////////////////////////////////////////////////////
@@ -202,7 +209,8 @@ public class Prompts {
             """.formatted(history, request);
         // </RolePrompt>
         System.out.println("6.0 Using message roles in chat completion prompts");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 7.0 Give your AI words of encouragement
         // <BonusPrompt>
@@ -227,6 +235,7 @@ public class Prompts {
             """.formatted(history, request);
         // </BonusPrompt>
         System.out.println("7.0 Give your AI words of encouragement");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
     }
 }
