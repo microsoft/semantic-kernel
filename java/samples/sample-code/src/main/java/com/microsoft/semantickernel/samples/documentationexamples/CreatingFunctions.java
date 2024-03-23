@@ -81,16 +81,17 @@ public class CreatingFunctions {
         while (!(userInput = scanner.nextLine()).isEmpty()) {
             history.addUserMessage(userInput);
 
-            var toolCallBehavior = ToolCallBehavior.allowAllKernelFunctions(true);
+            // Enable auto function calling
+            var invocationContext = InvocationContext.builder()
+                    .withToolCallBehavior(
+                            ToolCallBehavior.allowAllKernelFunctions(true))
+                    .build();
 
-            var reply = chat.getChatMessageContentsAsync(history, kernel, InvocationContext.builder()
-                            .withToolCallBehavior(toolCallBehavior)
-                            .build())
+            // Get the response from the AI
+            var reply = chat.getChatMessageContentsAsync(history, kernel, invocationContext)
                     .block();
 
-            StringBuilder message = new StringBuilder();
-            reply.forEach(chatMessageContent -> message.append(chatMessageContent.getContent()));
-
+            String message = reply.get(reply.size() - 1).getContent();
             System.out.println("Assistant" + " > " + message);
 
             // Add the message from the agent to the chat history
