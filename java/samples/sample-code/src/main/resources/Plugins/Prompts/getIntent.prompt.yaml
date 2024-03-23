@@ -36,3 +36,7 @@ execution_settings:
     model_id:     gpt-35-turbo-2
     max_tokens:   10
     temperature:  0.2
+  gpt-4:
+    model_id: gpt-4-1106-preview
+    max_tokens: 10
+    temperature: 0.2
