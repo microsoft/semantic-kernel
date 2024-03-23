@@ -80,6 +80,34 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             GetClientOptions(httpClient, apiVersion));
     }
 
+    /// <summary>
+    /// Create a new instance of Azure OpenAI image generation service
+    /// </summary>
+    /// <param name="deploymentName">Deployment name identifier</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service.</param>
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
+    public AzureOpenAITextToImageService(
+        string deploymentName,
+        string? modelId,
+        OpenAIClient openAIClient,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNullOrWhiteSpace(deploymentName);
+
+        this._deploymentName = deploymentName;
+
+        if (modelId is not null)
+        {
+            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
+        this.AddAttribute(DeploymentNameKey, deploymentName);
+
+        this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
+
+        this._client = openAIClient;
+    }
+
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(
         string description,
