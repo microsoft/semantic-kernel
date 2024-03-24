@@ -1,0 +1,24 @@
+PROVIDE A NEW CODE GIVEN THE TASK AND DATAFRAME TO FIX THE ERROR FROM PREVIOUS CODE.
+
++++++
+TASK:
+{{$task}}
++++++
+DATAFRAME INFO:
+[START DF]
+{{$df}}
+[END DF]
++++++
+PREVIOUS CODE:
+[START CODE]
+{{$code}}
+[END CODE]
++++++
+ERROR:
+[ERROR]
+{{$input}}
+[END ERROR]
++++++
+[NEWCODE]
+Add Your Code Here
+[ENDNEWCODE]

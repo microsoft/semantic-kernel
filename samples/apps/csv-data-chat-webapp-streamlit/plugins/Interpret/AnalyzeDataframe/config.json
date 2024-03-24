@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "Analyze the dataframe provided. Determine shape and columns of the data.",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 256,
+      "temperature": 0,
+      "top_p": 0,
+      "presence_penalty": 0,
+      "frequency_penalty": 0
+    }
+  },
+  "input_variables": [
+    {
+      "name": "input",
+      "description": "Input for this semantic function",
+      "default": ""
+    }
+  ]
+}

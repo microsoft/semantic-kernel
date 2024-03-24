@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "Create a code for pandas dataframe based on user prompt and dataframe provided.",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 256,
+      "temperature": 0,
+      "top_p": 0,
+      "presence_penalty": 0,
+      "frequency_penalty": 0
+    }
+  },
+  "input_variables": [
+    {
+      "name": "input",
+      "description": "User prompt for this semantic function",
+      "default": ""
+    },
+    {
+      "name": "dataframe",
+      "description": "Input as dataframe",
+      "default": ""
+    }
+  ]
+}
