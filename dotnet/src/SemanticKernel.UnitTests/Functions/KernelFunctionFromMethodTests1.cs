@@ -1251,7 +1251,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Assert
         Assert.NotNull(actualArgValue);
-        Assert.Equal(13, actualArgValue.Id);
+        Assert.Equal(28, actualArgValue.Id);
     }
 
     [Theory]
