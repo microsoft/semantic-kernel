@@ -25,7 +25,6 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -173,7 +172,6 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         return kernel;
     }
 
-    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
     private readonly XunitLogger<Kernel> _logger;
 
@@ -193,7 +191,6 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         if (disposing)
         {
             this._logger.Dispose();
-            this._testOutputHelper.Dispose();
         }
     }
 }

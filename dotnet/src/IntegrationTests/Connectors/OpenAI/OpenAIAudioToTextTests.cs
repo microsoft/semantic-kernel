@@ -15,13 +15,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIAudioToTextTests : IDisposable
 {
-    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     public OpenAIAudioToTextTests(ITestOutputHelper output)
     {
-        this._testOutputHelper = new RedirectOutput(output);
-
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -86,6 +83,5 @@ public sealed class OpenAIAudioToTextTests : IDisposable
 
     public void Dispose()
     {
-        this._testOutputHelper.Dispose();
     }
 }

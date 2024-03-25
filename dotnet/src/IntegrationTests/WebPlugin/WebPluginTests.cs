@@ -17,8 +17,6 @@ public sealed class WebPluginTests : IDisposable
         this._logger = new XunitLogger<Kernel>(output);
         this._output = output;
 
-        this._testOutputHelper = new RedirectOutput(output);
-
         // Load configuration
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -36,7 +34,6 @@ public sealed class WebPluginTests : IDisposable
 
     private readonly ITestOutputHelper _output;
     private readonly XunitLogger<Kernel> _logger;
-    private readonly RedirectOutput _testOutputHelper;
 
     public void Dispose()
     {
@@ -54,7 +51,6 @@ public sealed class WebPluginTests : IDisposable
         if (disposing)
         {
             this._logger.Dispose();
-            this._testOutputHelper.Dispose();
         }
     }
 
