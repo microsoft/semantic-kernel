@@ -2,7 +2,6 @@
 
 using System;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,11 +13,9 @@ public sealed class WebPluginTests : IDisposable
 
     public WebPluginTests(ITestOutputHelper output)
     {
-        this._logger = new XunitLogger<Kernel>(output);
         this._output = output;
 
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -36,27 +33,11 @@ public sealed class WebPluginTests : IDisposable
     #region internals
 
     private readonly ITestOutputHelper _output;
-    private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~WebPluginTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
+        this._testOutputHelper.Dispose();
     }
 
     #endregion
