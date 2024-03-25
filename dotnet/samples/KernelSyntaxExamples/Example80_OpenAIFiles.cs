@@ -23,7 +23,7 @@ public sealed class Example79_OpenAIFiles : BaseTest
     /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
     /// If 'false', Azure takes precedence.
     /// </summary>
-    private const bool ForceOpenAI = true;
+    private const bool ForceOpenAI = false;
 
     /// <summary>
     /// Show how to utilize OpenAI file-service.
@@ -37,7 +37,7 @@ public sealed class Example79_OpenAIFiles : BaseTest
         var kernel =
             ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
                 Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build() :
-                Kernel.CreateBuilder().AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey).Build();
+                Kernel.CreateBuilder().AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey).Build();
 
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
 
