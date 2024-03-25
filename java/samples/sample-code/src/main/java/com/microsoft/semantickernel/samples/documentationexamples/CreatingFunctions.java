@@ -91,7 +91,7 @@ public class CreatingFunctions {
                 .block();
 
             String message = reply.get(reply.size() - 1).getContent();
-            System.out.println("Assistant" + " > " + message);
+            System.out.println("Assistant > " + message);
 
             // Add the message from the agent to the chat history
             history.addAssistantMessage(message.toString());

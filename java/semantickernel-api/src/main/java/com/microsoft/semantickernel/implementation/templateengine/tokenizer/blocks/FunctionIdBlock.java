@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import javax.annotation.Nullable;
 
@@ -48,7 +49,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(@Nullable KernelFunctionArguments variables) {
+    public String render(ContextVariableTypes types, @Nullable KernelFunctionArguments variables) {
         return this.getContent();
     }
 

@@ -75,11 +75,9 @@ public class Plugin {
         // Start the conversation
         System.out.print("User > ");
         Scanner scanner = new Scanner(INPUT);
-
-        while (true) {
+        String userInput;
+        while (!(userInput = scanner.nextLine()).isEmpty()) {
             // Add user input to history
-            System.out.print("User > ");
-            String userInput = scanner.nextLine();
             history.addUserMessage(userInput);
 
             // Enable auto function calling
@@ -88,6 +86,7 @@ public class Plugin {
                     ToolCallBehavior.allowAllKernelFunctions(true))
                 .build();
 
+            // Get the response from the AI
             var result = chatCompletionService
                 .getChatMessageContentsAsync(
                     history,
@@ -100,6 +99,7 @@ public class Plugin {
 
             // Add the message from the agent to the chat history
             history.addAssistantMessage(message);
+            System.out.print("User > ");
         }
         // </Chat>
     }

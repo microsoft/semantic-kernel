@@ -5,15 +5,15 @@ template: |
   Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices.[0]}}.
   Choices: {{choices}}.</message>
 
-  BEGIN EXAMPLES
   {{#each fewShotExamples}}
       {{#each this}}
           <message role="{{role}}">{{content}}</message>
       {{/each}}
   {{/each}}
-  END EXAMPLES
 
-  {{ConversationSummaryPlugin.SummarizeConversation history}}
+  <message role="assistant">Summary of conversation so far:
+  {{ConversationSummaryPlugin-SummarizeConversation history}}
+  </message>
 
   <message role="user">{{request}}</message>
   <message role="system">Intent:</message>

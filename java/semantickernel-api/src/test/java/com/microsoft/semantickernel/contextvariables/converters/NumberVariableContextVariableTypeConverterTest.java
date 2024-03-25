@@ -20,7 +20,7 @@ public class NumberVariableContextVariableTypeConverterTest {
             .getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         Object expResult = "1";
-        Object result = instance.toObject(1, String.class);
+        Object result = instance.toObject(new ContextVariableTypes(), 1, String.class);
         assertEquals(expResult, result);
     }
 
@@ -78,7 +78,7 @@ public class NumberVariableContextVariableTypeConverterTest {
             .getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         String expResult = "123";
-        String result = instance.toPromptString(num);
+        String result = instance.toPromptString(new ContextVariableTypes(), num);
         assertEquals(expResult, result);
     }
 
@@ -89,7 +89,7 @@ public class NumberVariableContextVariableTypeConverterTest {
             .getGlobalVariableTypeForClass(Integer.class);
         ContextVariableTypeConverter<Integer> instance = type.getConverter();
         String expResult = "";
-        String result = instance.toPromptString(num);
+        String result = instance.toPromptString(new ContextVariableTypes(), num);
         assertEquals(expResult, result);
     }
 

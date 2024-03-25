@@ -6,6 +6,8 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.converters.CollectionVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory;
@@ -21,8 +23,10 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class SerializingPrompts {
+
     public static InputStream INPUT = System.in;
 
     // CLIENT_KEY is for an OpenAI client
@@ -63,12 +67,15 @@ public class SerializingPrompts {
         continueConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
         continueConversation.addMessage(AuthorRole.ASSISTANT, "ContinueConversation");
         ChatHistory endConversation = new ChatHistory(false);
-        endConversation.addMessage(AuthorRole.USER,
-            "Can you send the full update to the marketing team?");
+        endConversation.addMessage(AuthorRole.USER, "Thats all");
         endConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
         endConversation.addMessage(AuthorRole.ASSISTANT, "EndConversation");
 
         List<ChatHistory> fewShotExamples = List.of(continueConversation, endConversation);
+
+        // Customise the type converters toPromptString for ChatHistory to serialize the messages as "author: content"
+        CollectionVariableContextVariableTypeConverter collectionConverter = new CollectionVariableContextVariableTypeConverter(
+            "\n");
 
         // <InvokeSerializedPrompts>
         // Create Kernel
@@ -99,19 +106,24 @@ public class SerializingPrompts {
         ChatHistory history = new ChatHistory();
 
         // Start the chat loop
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(INPUT);
         System.out.print("User > ");
         String userInput;
         while (!(userInput = scanner.nextLine()).isEmpty()) {
             // Invoke handlebars prompt
+
+            String historyString = history.getMessages()
+                .stream()
+                .map(m -> m.getAuthorRole() + " > " + m.getContent())
+                .collect(Collectors.joining("\n"));
 
             // <InvokePromptFromYaml>
             var intent = kernel.invokeAsync(getIntent)
                 .withArguments(KernelFunctionArguments.builder()
                     .withVariable("request", userInput)
                     .withVariable("choices", choices)
-                    .withVariable("history", history)
-                    .withVariable("fewShotExamples", fewShotExamples)
+                    .withVariable("history", historyString)
+                    .withVariable("fewShotExamples", fewShotExamples, collectionConverter)
                     .build())
                 .block();
             // </InvokePromptFromYaml>
@@ -132,7 +144,7 @@ public class SerializingPrompts {
                 .withResultType(String.class)
                 .block().getResult();
 
-            System.out.println("Assistant> " + reply);
+            System.out.println("Assistant > " + reply);
 
             // Append to history
             history.addUserMessage(userInput);

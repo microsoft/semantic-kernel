@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blo
 
 import static com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.BlockTypes.NAMED_ARG;
 
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.Verify;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
@@ -128,7 +129,7 @@ public class NamedArgBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(@Nullable KernelFunctionArguments variables) {
+    public String render(ContextVariableTypes types, @Nullable KernelFunctionArguments variables) {
         return getContent();
     }
 
@@ -151,15 +152,15 @@ public class NamedArgBlock extends Block implements TextRendering {
     }
 
     @SuppressWarnings("NullAway")
-    public String getValue(KernelFunctionArguments arguments) {
+    public String getValue(ContextVariableTypes types, KernelFunctionArguments arguments) {
         boolean valueIsValidValBlock = this.valBlock != null && this.valBlock.isValid();
         if (valueIsValidValBlock) {
-            return this.valBlock.render(arguments);
+            return this.valBlock.render(types, arguments);
         }
 
         boolean valueIsValidVarBlock = this.varBlock != null && this.varBlock.isValid();
         if (valueIsValidVarBlock) {
-            return this.varBlock.render(arguments);
+            return this.varBlock.render(types, arguments);
         }
 
         return "";
