@@ -1,4 +1,3 @@
-// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.documentationexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -14,8 +13,7 @@ public class Prompts {
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID",
-        "gpt-3.5-turbo");
+    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
     public static void main(String[] args) {
         System.out.println("======== Prompts ========");
@@ -23,45 +21,40 @@ public class Prompts {
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                .endpoint(CLIENT_ENDPOINT)
-                .buildAsyncClient();
+                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                    .endpoint(CLIENT_ENDPOINT)
+                    .buildAsyncClient();
         } else {
             client = new OpenAIClientBuilder()
-                .credential(new KeyCredential(CLIENT_KEY))
-                .buildAsyncClient();
+                    .credential(new KeyCredential(CLIENT_KEY))
+                    .buildAsyncClient();
         }
 
         // <KernelCreation>
         Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build())
-            .build();
+                .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
+                        .withModelId(MODEL_ID)
+                        .withOpenAIAsyncClient(client)
+                        .build())
+                .build();
         // </KernelCreation>
 
         // 0.0 Initial prompt
         String request = "I want to send an email to the marketing team celebrating their recent milestone.";
-        String prompt = """
-            What is the intent of this request? %s
-            """.formatted(request);
+        String prompt = "What is the intent of this request? %s".formatted(request);
 
-        /*
-         * Uncomment this block to make this example interactive
-         * // <InitialPrompt>
-         * System.out.println("Your request: ");
-         * String request = new Scanner(System.in).nextLine();
-         * String prompt = """
-         * What is the intent of this request? %s
-         * You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument.
-         * """.formatted(request);
-         * // </InitialPrompt>
+        /* Uncomment this block to make this example interactive
+        // <InitialPrompt>
+        System.out.println("Your request: ");
+        String request = new Scanner(System.in).nextLine();
+        String prompt = "What is the intent of this request? %s".formatted(request);
+        // </InitialPrompt>
          */
 
         System.out.println("0.0 Initial prompt");
         // <InvokeInitialPrompt>
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        var result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
         // </InvokeInitialPrompt>
 
         // 1.0 Make the prompt more specific
@@ -73,7 +66,8 @@ public class Prompts {
             """.formatted(request);
         // </MoreSpecificPrompt>
         System.out.println("1.0 Make the prompt more specific");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 2.0 Add structure to the output with formatting
         /////////////////////////////////////////////////////////////////
@@ -86,7 +80,8 @@ public class Prompts {
             """.formatted(request);
         // </StructuredPrompt>
         System.out.println("2.0 Add structure to the output with formatting");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 2.1 Add structure to the output with formatting (using Markdown and JSON)
         /////////////////////////////////////////////////////////////////
@@ -120,9 +115,9 @@ public class Prompts {
             ## Intent
             """.formatted(request);
         // </FormattedPrompt>
-        System.out
-            .println("2.1 Add structure to the output with formatting (using Markdown and JSON)");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        System.out.println("2.1 Add structure to the output with formatting (using Markdown and JSON)");
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 3.0 Provide examples with few-shot prompting
         /////////////////////////////////////////////////////////////////
@@ -142,7 +137,8 @@ public class Prompts {
             """.formatted(request);
         // </FewShotPrompt>
         System.out.println("3.0 Provide examples with few-shot prompting");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 4.0 Tell the AI what to do to avoid doing something wrong
         /////////////////////////////////////////////////////////////////
@@ -163,12 +159,13 @@ public class Prompts {
             """.formatted(request);
         // </AvoidPrompt>
         System.out.println("4.0 Tell the AI what to do to avoid doing something wrong");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 5.0 Provide context to the AI
         /////////////////////////////////////////////////////////////////
-        String history = "User input: I hate sending emails, no one ever reads them.\nAI response: I'm sorry to hear that. Messages may be a better way to communicate.";
         // <ContextPrompt>
+        String history = "User input: I hate sending emails, no one ever reads them.\nAI response: I'm sorry to hear that. Messages may be a better way to communicate.";
         prompt = """
             Instructions: What is the intent of this request?
             If you don't know the intent, don't guess; instead respond with "Unknown".
@@ -186,12 +183,13 @@ public class Prompts {
             """.formatted(history, request);
         // </ContextPrompt>
         System.out.println("5.0 Provide context to the AI");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 6.0 Using message roles in chat completion prompts
         /////////////////////////////////////////////////////////////////
-        history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         // <RolePrompt>
+        history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         prompt = """
             <message role="system">Instructions: What is the intent of this request?
             If you don't know the intent, don't guess; instead respond with "Unknown".
@@ -211,11 +209,12 @@ public class Prompts {
             """.formatted(history, request);
         // </RolePrompt>
         System.out.println("6.0 Using message roles in chat completion prompts");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
 
         // 7.0 Give your AI words of encouragement
-        history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         // <BonusPrompt>
+        history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         prompt = """
             <message role="system">Instructions: What is the intent of this request?
             If you don't know the intent, don't guess; instead respond with "Unknown".
@@ -236,6 +235,7 @@ public class Prompts {
             """.formatted(history, request);
         // </BonusPrompt>
         System.out.println("7.0 Give your AI words of encouragement");
-        System.out.println(kernel.invokePromptAsync(prompt).block().getResult());
+        result = kernel.invokePromptAsync(prompt).block().getResult();
+        System.out.println(result);
     }
 }

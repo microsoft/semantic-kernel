@@ -1,4 +1,3 @@
-// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.documentationexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -6,8 +5,22 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
+import com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionYaml;
+import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -18,45 +31,63 @@ public class SerializingPrompts {
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID",
-        "gpt-35-turbo-2");
+    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
-    public static void main(String[] args) {
+    private static final String PLUGINS_DIR = "java/samples/sample-code/src/main/resources/Plugins";
+
+    public static void main(String[] args) throws IOException {
         System.out.println("======== Serializing Prompts ========");
         OpenAIAsyncClient client;
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                .endpoint(CLIENT_ENDPOINT)
-                .buildAsyncClient();
+                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                    .endpoint(CLIENT_ENDPOINT)
+                    .buildAsyncClient();
         } else {
             client = new OpenAIClientBuilder()
-                .credential(new KeyCredential(CLIENT_KEY))
-                .buildAsyncClient();
+                    .credential(new KeyCredential(CLIENT_KEY))
+                    .buildAsyncClient();
         }
 
+        // Create few-shot examples
+        ChatHistory continueConversation = new ChatHistory(false);
+        continueConversation.addMessage(AuthorRole.USER, "Can you send a very quick approval to the marketing team?");
+        continueConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
+        continueConversation.addMessage(AuthorRole.ASSISTANT, "ContinueConversation");
+        ChatHistory endConversation = new ChatHistory(false);
+        endConversation.addMessage(AuthorRole.USER, "Can you send the full update to the marketing team?");
+        endConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
+        endConversation.addMessage(AuthorRole.ASSISTANT, "EndConversation");
+
+        List<ChatHistory> fewShotExamples = List.of(continueConversation, endConversation);
+
+        // <InvokeSerializedPrompts>
+        // Create Kernel
         Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build())
-            .build();
+                .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
+                        .withModelId(MODEL_ID)
+                        .withOpenAIAsyncClient(client)
+                        .build())
+                .withPlugin(KernelPluginFactory.createFromObject(new ConversationSummaryPlugin(), "ConversationSummaryPlugin"))
+                .build();
 
         // Load prompts
-        // This part is omitted as it requires a specific implementation to load prompts from a directory
+        var prompts = KernelPluginFactory.importPluginFromDirectory(
+                Path.of(PLUGINS_DIR), "Prompts", null);
 
         // Load prompt from YAML
-        // This part is omitted as it requires a specific implementation to load prompts from a YAML file
+        // <LoadPromptFromYAML>
+        var getIntent = KernelFunctionYaml.fromPromptYaml(
+                Files.readString(Path.of(PLUGINS_DIR, "Prompts", "getIntent.prompt.yaml")),
+                new HandlebarsPromptTemplateFactory());
+        // </LoadPromptFromYAML>
 
         // Create choices
         List<String> choices = Arrays.asList("ContinueConversation", "EndConversation");
 
-        // Create few-shot examples
-        // This part is omitted as it requires a specific implementation to create few-shot examples
-
         // Create chat history
-        // This part is omitted as it requires a specific implementation to create chat history
+        ChatHistory history = new ChatHistory();
 
         // Start the chat loop
         Scanner scanner = new Scanner(System.in);
@@ -64,22 +95,41 @@ public class SerializingPrompts {
         String userInput;
         while (!(userInput = scanner.nextLine()).isEmpty()) {
             // Invoke handlebars prompt
-            // This part is omitted as it requires a specific implementation to invoke a prompt
+
+            // <InvokePromptFromYaml>
+            var intent = kernel.invokeAsync(getIntent)
+                    .withArguments(KernelFunctionArguments.builder()
+                            .withVariable("request", userInput)
+                            .withVariable("choices", choices)
+                            .withVariable("history", history)
+                            .withVariable("fewShotExamples", fewShotExamples)
+                            .build())
+                    .block();
+            // </InvokePromptFromYaml>
 
             // End the chat if the intent is "Stop"
-            // This part is omitted as it requires a specific implementation to handle the intent
+            if (intent.getResult().equals("EndConversation")) {
+                break;
+            }
 
-            // Get chat response
-            // This part is omitted as it requires a specific implementation to get the chat response
+            var reply = kernel.invokeAsync(prompts.get("Chat"))
+                    .withArguments(KernelFunctionArguments.builder()
+                            .withVariable("request", userInput)
+                            .withVariable("history",
+                                    String.join("\n", history.getMessages().stream().map(m -> m.getAuthorRole() + " > " + m.getContent()).toList()))
+                            .build())
+                    .withResultType(String.class)
+                    .block().getResult();
 
-            // Stream the response
-            // This part is omitted as it requires a specific implementation to stream the response
+            System.out.println("Assistant" + " > " + reply);
 
             // Append to history
-            // This part is omitted as it requires a specific implementation to append to the history
+            history.addUserMessage(userInput);
+            history.addAssistantMessage(reply);
 
             // Get user input again
             System.out.print("User > ");
         }
+        // </InvokeSerializedPrompts>
     }
 }

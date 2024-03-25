@@ -274,7 +274,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         String functionName = kernelFunction.getName();
                         String pluginName = plugin.getName();
                         handlebars.registerHelper(
-                            ToolCallBehavior.formFullFunctionName(pluginName, functionName),
+                            String.format("%s.%s", pluginName, functionName),
                             functionInvokeHelper(kernel, kernelFunction, context));
                     });
 
