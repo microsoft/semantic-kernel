@@ -9,20 +9,25 @@ namespace Microsoft.SemanticKernel;
 
 internal static class KernelJsonSchemaBuilder
 {
-    private static readonly JsonSchemaMapperConfiguration s_config = new() { IncludeSchemaVersion = false };
+    private static readonly JsonSchemaMapperConfiguration s_config = new()
+    {
+        IncludeSchemaVersion = false,
+        ResolveNullableReferenceTypes = false
+    };
+
     private static readonly JsonSerializerOptions s_options = CreateDefaultOptions();
 
     public static KernelJsonSchema Build(JsonSerializerOptions? options, Type type, string? description = null)
     {
         options ??= s_options;
 
-        JsonObject o = options.GetJsonSchema(type, s_config);
+        JsonObject jsonObj = options.GetJsonSchema(type, s_config);
         if (!string.IsNullOrWhiteSpace(description))
         {
-            o["description"] = description;
+            jsonObj["description"] = description;
         }
 
-        return KernelJsonSchema.Parse(JsonSerializer.Serialize(o, options));
+        return KernelJsonSchema.Parse(JsonSerializer.Serialize(jsonObj, options));
     }
 
     private static JsonSerializerOptions CreateDefaultOptions()

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.ComponentModel;
 
 namespace JsonSchemaMapper;
@@ -6,7 +9,12 @@ namespace JsonSchemaMapper;
 /// <summary>
 /// Controls the behavior of the <see cref="JsonSchemaMapper"/> class.
 /// </summary>
-internal sealed class JsonSchemaMapperConfiguration
+#if EXPOSE_JSON_SCHEMA_MAPPER
+    public
+#else
+    internal
+#endif
+    class JsonSchemaMapperConfiguration
 {
     /// <summary>
     /// Gets the default configuration object used by <see cref="JsonSchemaMapper"/>.
@@ -43,12 +51,22 @@ internal sealed class JsonSchemaMapperConfiguration
     /// Determines whether nullability should be included in the schema for reference types.
     /// </summary>
     /// <remarks>
-    /// Defaults to false. Currently STJ doesn't recognize non-nullable reference types
+    /// Defaults to true. Currently STJ doesn't recognize non-nullable reference types
     /// (https://github.com/dotnet/runtime/issues/1256) so the serializer will always treat
-    /// them as nullable. Enabling this option improves accuracy of the generated schema
+    /// them as nullable. Disabling this option improves accuracy of the generated schema
     /// with respect to the actual serialization behavior but can result in more noise.
     /// </remarks>
-    public bool AllowNullForReferenceTypes { get; init; }
+    public bool ResolveNullableReferenceTypes { get; init; } = true;
+
+    /// <summary>
+    /// Dtermines whether properties bound to non-optional constructor parameters should be flagged as required.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to true. Current STJ treats all constructor parameters as optional
+    /// (https://github.com/dotnet/runtime/issues/100075) so disabling this option
+    /// will generate schemas that are more compatible with the actual serialization behavior.
+    /// </remarks>
+    public bool RequireConstructorParameters { get; init; } = true;
 
     /// <summary>
     /// Determines the maximum permitted depth when traversing the generated type graph.
@@ -59,7 +77,7 @@ internal sealed class JsonSchemaMapperConfiguration
     /// </remarks>
     public int MaxDepth
     {
-        get => this._maxDepth;
+        get => _maxDepth;
         init
         {
             if (value < 0)
@@ -68,7 +86,7 @@ internal sealed class JsonSchemaMapperConfiguration
                 static void Throw() => throw new ArgumentOutOfRangeException(nameof(value));
             }
 
-            this._maxDepth = value;
+            _maxDepth = value;
         }
     }
 }
