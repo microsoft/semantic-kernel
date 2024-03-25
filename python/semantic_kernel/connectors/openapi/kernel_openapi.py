@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import json
 import logging
 import sys
@@ -7,7 +9,7 @@ if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, urlunparse
 
 import aiohttp
 import requests
@@ -46,9 +48,7 @@ class PreparedRestApiRequest:
             f"request_body={self.request_body})"
         )
 
-    def validate_request(self, spec: Spec, **kwargs):
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+    def validate_request(self, spec: Spec):
         request = requests.Request(
             self.method,
             self.url,
@@ -95,6 +95,19 @@ class RestApiOperation:
     :return: A PreparedRestApiRequest object
     """
 
+    def url_join(self, base_url, path):
+        """Join a base URL and a path, correcting for any missing slashes."""
+        parsed_base = urlparse(base_url)
+        # Ensure the base path ends with a slash
+        if not parsed_base.path.endswith('/'):
+            base_path = parsed_base.path + '/'
+        else:
+            base_path = parsed_base.path
+        # Correctly join the base path and the additional path, avoiding duplicate slashes
+        full_path = urljoin(base_path, path.lstrip('/'))
+        # Reconstruct the full URL
+        return urlunparse(parsed_base._replace(path=full_path))
+
     def prepare_request(
         self, path_params=None, query_params=None, headers=None, request_body=None
     ) -> PreparedRestApiRequest:
@@ -102,9 +115,10 @@ class RestApiOperation:
         if path_params:
             path = path.format(**path_params)
 
-        url = urljoin(self.server_url, path)
+        url = self.url_join(self.server_url, path)
 
-        processed_query_params, processed_headers = {}, headers
+        processed_query_params = {}
+        processed_headers = headers if headers is not None else {}
         for param in self.params:
             param_name = param["name"]
             param_schema = param["schema"]
@@ -159,10 +173,6 @@ class RestApiOperation:
 
 
 class OpenApiParser:
-    def __init__(self, **kwargs):
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-
     """
     Import an OpenAPI file.
     :param openapi_file: The path to the OpenAPI file which can be local or a URL.
@@ -246,7 +256,7 @@ class OpenApiRunner:
 
 
 """
-Registers a plugin with the kernel that can run OpenAPI operations.
+Imports a plugin with the kernel that can run OpenAPI operations.
 :param kernel: The kernel to register the plugin with
 :param plugin_name: The name of the plugin
 :param openapi_document: The OpenAPI document to register. Can be a filename or URL
@@ -254,7 +264,7 @@ Registers a plugin with the kernel that can run OpenAPI operations.
 """
 
 
-def register_openapi_plugin(
+def import_plugin_from_openapi(
     kernel: Kernel,
     plugin_name: str,
     openapi_document: str,

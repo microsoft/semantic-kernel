@@ -67,6 +67,7 @@ usearch = { version = "^2.9", optional = true}
 pyarrow = { version = ">=12.0.1,<15.0.0", optional = true}
 
 # Groups are for development only (installed through Poetry)
+pyyaml = "^6.0.1"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5"
 black = "^24.2.0"
