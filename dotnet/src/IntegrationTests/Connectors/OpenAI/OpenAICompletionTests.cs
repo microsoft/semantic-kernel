@@ -33,7 +33,6 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         this._logger = new XunitLogger<Kernel>(output);
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
