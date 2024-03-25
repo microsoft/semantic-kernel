@@ -46,15 +46,20 @@ public class ConfiguringPrompts {
             return;
         }
 
+        // <CreateChatCompletionService>
         ChatCompletionService chatCompletionService = ChatCompletionService.builder()
             .withModelId(CHAT_MODEL_ID)
             .withOpenAIAsyncClient(client)
             .build();
+        // </CreateChatCompletionService>
 
+        // <CreateKernel>
         Kernel kernel = Kernel.builder()
             .withAIService(ChatCompletionService.class, chatCompletionService)
             .build();
+        // </CreateKernel>
 
+        // <CreateFromPrompt
         KernelFunction<String> chat = KernelFunction.<String>createFromPrompt(
             PromptTemplateConfig.builder()
                 .withName("Chat")
@@ -91,5 +96,6 @@ public class ConfiguringPrompts {
                 })
                 .build())
             .build();
+        // <CreateFromPrompt
     }
 }
