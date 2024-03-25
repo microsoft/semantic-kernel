@@ -36,7 +36,7 @@ public static class RestApiOperationResponseExtensions
         return response.ContentType switch
         {
             var ct when ct.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) => ValidateJson(response),
-            var ct when ct.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase),
+            var ct when ct.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase) => ValidateXml(response),
             var ct when ct.StartsWith("text/plain", StringComparison.OrdinalIgnoreCase) || ct.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) => ValidateTextHtml(response),
             _ => true,
         };
