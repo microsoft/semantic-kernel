@@ -19,7 +19,6 @@ public sealed class OpenAITextToAudioTests : IDisposable
     public OpenAITextToAudioTests(ITestOutputHelper output)
     {
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
