@@ -2,12 +2,12 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Connectors.Google;
+namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 /// <summary>
 /// Extension methods for <see cref="IReadOnlyKernelPluginCollection"/>.
 /// </summary>
-public static class GeminiPluginCollectionExtensions
+internal static class GeminiPluginCollectionExtensions
 {
     /// <summary>
     /// Given an <see cref="GeminiFunctionToolCall"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/>

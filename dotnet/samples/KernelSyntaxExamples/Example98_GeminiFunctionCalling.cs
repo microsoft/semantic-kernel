@@ -150,7 +150,20 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
                 chatHistory.Add(result);
                 foreach (var toolCall in result.ToolCalls)
                 {
-                    if (!kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments))
+                    KernelArguments? arguments = null;
+                    if (kernel.Plugins.TryGetFunction(toolCall.PluginName, toolCall.FunctionName, out var function))
+                    {
+                        // Add parameters to arguments
+                        if (toolCall.Arguments is not null)
+                        {
+                            arguments = new KernelArguments();
+                            foreach (var parameter in toolCall.Arguments)
+                            {
+                                arguments[parameter.Key] = parameter.Value?.ToString();
+                            }
+                        }
+                    }
+                    else
                     {
                         this.WriteLine("Unable to find function. Please try again!");
                         continue;
