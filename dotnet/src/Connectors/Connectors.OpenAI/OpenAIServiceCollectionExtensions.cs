@@ -1049,7 +1049,7 @@ public static class OpenAIServiceCollectionExtensions
     #region Images
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE text to image service to the list
+    /// Add the  Azure OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name</param>
@@ -1089,7 +1089,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE text to image service to the list
+    /// Add the  Azure OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name</param>
@@ -1129,7 +1129,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE text to image service to the list
+    /// Add the  Azure OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name</param>
