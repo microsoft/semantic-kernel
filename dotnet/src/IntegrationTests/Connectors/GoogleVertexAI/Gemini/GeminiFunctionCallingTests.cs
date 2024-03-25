@@ -31,7 +31,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.EnableKernelFunctions,
         };
 
         // Act
@@ -59,7 +59,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.EnableKernelFunctions,
         };
 
         // Act
@@ -89,7 +89,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         };
 
         // Act
@@ -116,7 +116,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         };
 
         // Act
@@ -145,7 +145,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         };
 
         // Act
@@ -170,7 +170,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         };
 
         // Act
@@ -199,7 +199,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         };
 
         // Act
@@ -226,7 +226,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         };
 
         // Act
@@ -254,7 +254,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         };
 
         // Act
@@ -280,7 +280,7 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 2000,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
         };
 
         // Act

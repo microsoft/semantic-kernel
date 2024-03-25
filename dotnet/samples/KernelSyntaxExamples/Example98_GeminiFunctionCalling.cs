@@ -108,7 +108,7 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
 
         WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
-            GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions };
             WriteLine(await kernel.InvokePromptAsync(
                 "Check current UTC time, and return current weather in Paris city", new(settings)));
             WriteLine();
@@ -116,7 +116,7 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
 
         WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
         {
-            GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions };
             await foreach (var update in kernel.InvokePromptStreamingAsync(
                                "Check current UTC time, and return current weather in Boston city", new(settings)))
             {
@@ -131,7 +131,7 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
             var chat = kernel.GetRequiredService<IChatCompletionService>();
             var chatHistory = new ChatHistory();
 
-            GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+            GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.EnableKernelFunctions };
             chatHistory.AddUserMessage("Check current UTC time, and return current weather in London city");
             while (true)
             {
