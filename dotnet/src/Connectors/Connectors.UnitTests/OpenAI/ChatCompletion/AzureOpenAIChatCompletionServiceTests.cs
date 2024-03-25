@@ -436,10 +436,13 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         });
 
         // Act & Assert
-        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([]))
-        {
-            Assert.Equal("Test chat streaming response", chunk.Content);
-        }
+        var enumerator = service.GetStreamingChatMessageContentsAsync([]).GetAsyncEnumerator();
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("Test chat streaming response", enumerator.Current.Content);
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("stop", enumerator.Current.Metadata?["FinishReason"]);
     }
 
     [Fact]

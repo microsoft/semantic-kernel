@@ -168,19 +168,22 @@ internal abstract class ClientCore
 
     private static Dictionary<string, object?> GetChoiceMetadata(Completions completions, Choice choice)
     {
-        return new Dictionary<string, object?>(5)
+        return new Dictionary<string, object?>(8)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.Usage), completions.Usage },
             { nameof(choice.ContentFilterResults), choice.ContentFilterResults },
+            { nameof(choice.FinishReason), choice.FinishReason },
+            { nameof(choice.LogProbabilityModel), choice.LogProbabilityModel },
+            { nameof(choice.Index), choice.Index },
         };
     }
 
     private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice)
     {
-        return new Dictionary<string, object?>(6)
+        return new Dictionary<string, object?>(12)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
@@ -188,16 +191,23 @@ internal abstract class ClientCore
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
             { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
+            { nameof(chatChoice.FinishReason), chatChoice.FinishReason?.ToString() },
+            { nameof(chatChoice.FinishDetails), chatChoice.FinishDetails },
+            { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
+            { nameof(chatChoice.LogProbabilityInfo), chatChoice.LogProbabilityInfo },
+            { nameof(chatChoice.Index), chatChoice.Index },
+            { nameof(chatChoice.Enhancements), chatChoice.Enhancements },
         };
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
-        return new Dictionary<string, object?>(3)
+        return new Dictionary<string, object?>(4)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+            { nameof(completions.FinishReason), completions.FinishReason?.ToString() },
         };
     }
 
@@ -504,12 +514,12 @@ internal abstract class ClientCore
             // Stream the response.
             IReadOnlyDictionary<string, object?>? metadata = null;
             ChatRole? streamedRole = default;
-            CompletionsFinishReason finishReason = default;
+            CompletionsFinishReason? finishReason;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
-                metadata ??= GetResponseMetadata(update);
+                metadata = GetResponseMetadata(update);
                 streamedRole ??= update.Role;
-                finishReason = update.FinishReason ?? default;
+                finishReason = update.FinishReason;
 
                 // If we're intending to invoke function calls, we need to consume that function call information.
                 if (autoInvoke)
