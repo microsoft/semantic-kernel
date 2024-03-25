@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 namespace Microsoft.SemanticKernel;
 
