@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-from typing import Optional
+from __future__ import annotations
 
 from pytest import mark
 
@@ -27,7 +26,7 @@ class MyPlugin:
         return "123 ok" if input == "123" else f"{input} != 123"
 
     @kernel_function()
-    def asis(self, input: Optional[str] = None) -> str:
+    def asis(self, input: str | None = None) -> str:
         return input or ""
 
 

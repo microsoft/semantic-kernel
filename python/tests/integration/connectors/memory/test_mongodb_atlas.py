@@ -1,4 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import os
 import random
 import time
@@ -8,9 +10,7 @@ import pytest
 import pytest_asyncio
 from pymongo import errors
 
-from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import (
-    MongoDBAtlasMemoryStore,
-)
+from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import MongoDBAtlasMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 mongodb_atlas_installed: bool

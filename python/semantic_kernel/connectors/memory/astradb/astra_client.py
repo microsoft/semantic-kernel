@@ -1,5 +1,7 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import json
-from typing import Dict, List, Optional
 
 import aiohttp
 
@@ -16,7 +18,7 @@ class AstraClient:
         keyspace_name: str,
         embedding_dim: int,
         similarity_function: str,
-        session: Optional[aiohttp.ClientSession] = None,
+        session: aiohttp.ClientSession | None = None,
     ):
         self.astra_id = astra_id
         self.astra_application_token = astra_application_token
@@ -34,7 +36,7 @@ class AstraClient:
         }
         self._session = session
 
-    async def _run_query(self, request_url: str, query: Dict):
+    async def _run_query(self, request_url: str, query: dict):
         async with AsyncSession(self._session) as session:
             async with session.post(request_url, data=json.dumps(query), headers=self.request_header) as response:
                 if response.status == 200:
@@ -63,8 +65,8 @@ class AstraClient:
     async def create_collection(
         self,
         collection_name: str,
-        embedding_dim: Optional[int] = None,
-        similarity_function: Optional[str] = None,
+        embedding_dim: int | None = None,
+        similarity_function: str | None = None,
     ):
         query = {
             "createCollection": {
@@ -91,12 +93,12 @@ class AstraClient:
     async def find_documents(
         self,
         collection_name: str,
-        filter: Optional[Dict] = None,
-        vector: Optional[List[float]] = None,
-        limit: Optional[int] = None,
-        include_vector: Optional[bool] = None,
-        include_similarity: Optional[bool] = None,
-    ) -> List[Dict]:
+        filter: dict | None = None,
+        vector: list[float] | None = None,
+        limit: int | None = None,
+        include_vector: bool | None = None,
+        include_similarity: bool | None = None,
+    ) -> list[dict]:
         find_query = {}
 
         if filter is not None:
@@ -121,17 +123,17 @@ class AstraClient:
         result = await self._run_query(self._build_request_collection_url(collection_name), query)
         return result["data"]["documents"]
 
-    async def insert_document(self, collection_name: str, document: Dict) -> str:
+    async def insert_document(self, collection_name: str, document: dict) -> str:
         query = {"insertOne": {"document": document}}
         result = await self._run_query(self._build_request_collection_url(collection_name), query)
         return result["status"]["insertedIds"][0]
 
-    async def insert_documents(self, collection_name: str, documents: List[Dict]) -> List[str]:
+    async def insert_documents(self, collection_name: str, documents: list[dict]) -> list[str]:
         query = {"insertMany": {"documents": documents}}
         result = await self._run_query(self._build_request_collection_url(collection_name), query)
         return result["status"]["insertedIds"]
 
-    async def update_document(self, collection_name: str, filter: Dict, update: Dict, upsert: bool = True) -> Dict:
+    async def update_document(self, collection_name: str, filter: dict, update: dict, upsert: bool = True) -> dict:
         query = {
             "findOneAndUpdate": {
                 "filter": filter,
@@ -142,7 +144,7 @@ class AstraClient:
         result = await self._run_query(self._build_request_collection_url(collection_name), query)
         return result["status"]
 
-    async def update_documents(self, collection_name: str, filter: Dict, update: Dict):
+    async def update_documents(self, collection_name: str, filter: dict, update: dict):
         query = {
             "updateMany": {
                 "filter": filter,
@@ -152,7 +154,7 @@ class AstraClient:
         result = await self._run_query(self._build_request_collection_url(collection_name), query)
         return result["status"]
 
-    async def delete_documents(self, collection_name: str, filter: Dict) -> int:
+    async def delete_documents(self, collection_name: str, filter: dict) -> int:
         query = {"deleteMany": {"filter": filter}}
         result = await self._run_query(self._build_request_collection_url(collection_name), query)
         return result["status"]["deletedCount"]

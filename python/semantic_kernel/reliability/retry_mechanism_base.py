@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
@@ -11,7 +12,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class RetryMechanismBase(ABC):
     @abstractmethod
-    async def execute_with_retry(self, action: Callable[[], Awaitable[T]]) -> Awaitable[T]:
+    async def execute_with_retry(self, action: Callable[..., Awaitable[T]]) -> Awaitable[T]:
         """Executes the given action with retry logic.
 
         Arguments:

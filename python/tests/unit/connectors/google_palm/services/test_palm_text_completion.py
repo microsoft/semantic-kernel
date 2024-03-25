@@ -1,4 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import sys
 from unittest.mock import MagicMock, patch
 
@@ -9,12 +11,8 @@ if sys.version_info >= (3, 9):
     from google.generativeai.types import Completion
     from google.generativeai.types.text_types import TextCompletion
 
-    from semantic_kernel.connectors.ai.google_palm import (
-        GooglePalmTextPromptExecutionSettings,
-    )
-    from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
-        GooglePalmTextCompletion,
-    )
+    from semantic_kernel.connectors.ai.google_palm import GooglePalmTextPromptExecutionSettings
+    from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import GooglePalmTextCompletion
 
 
 pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")

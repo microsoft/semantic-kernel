@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import asyncio
 import sys
-from typing import Union
 
 from semantic_kernel.exceptions import FunctionExecutionException
 
@@ -27,9 +27,7 @@ class WaitPlugin(KernelBaseModel):
     """
 
     @kernel_function(description="Wait for a certain number of seconds.")
-    async def wait(
-        self, input: Annotated[Union[float, str], "The number of seconds to wait, can be str or float."]
-    ) -> None:
+    async def wait(self, input: Annotated[float | str, "The number of seconds to wait, can be str or float."]) -> None:
         if isinstance(input, str):
             try:
                 input = float(input)

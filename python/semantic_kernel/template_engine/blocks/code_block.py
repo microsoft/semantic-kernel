@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import Field, field_validator, model_validator
 
@@ -49,7 +50,7 @@ class CodeBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.CODE
-    tokens: List[Block] = Field(default_factory=list)
+    tokens: list[Block] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod
@@ -65,7 +66,7 @@ class CodeBlock(Block):
         return fields
 
     @field_validator("tokens", mode="after")
-    def check_tokens(cls, tokens: List[Block]) -> List[Block]:
+    def check_tokens(cls, tokens: list[Block]) -> list[Block]:
         """Check the tokens in the list.
 
         If the first token is a value or variable, the rest of the tokens will be ignored.
@@ -155,7 +156,7 @@ these will be ignored."
 
     def _get_function_from_plugin_collection(
         self, plugins: KernelPluginCollection, function_block: FunctionIdBlock
-    ) -> Optional["KernelFunction"]:
+    ) -> "KernelFunction" | None:
         """
         Get the function from the plugin collection
 

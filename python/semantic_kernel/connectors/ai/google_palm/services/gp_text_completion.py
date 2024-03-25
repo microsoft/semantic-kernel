@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 import sys
-from typing import List
 
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceResponseException
@@ -39,7 +39,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         """
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
-    async def complete(self, prompt: str, settings: GooglePalmTextPromptExecutionSettings) -> List[TextContent]:
+    async def complete(self, prompt: str, settings: GooglePalmTextPromptExecutionSettings) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -48,7 +48,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             settings {GooglePalmTextPromptExecutionSettings} -- Settings for the request.
 
         Returns:
-            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+            list[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
         settings.prompt = prompt
         if not settings.ai_model_id:

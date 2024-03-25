@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import base64
 import os
-from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.indexes.aio import SearchIndexClient
@@ -23,10 +23,10 @@ SEARCH_FIELD_IS_REF = "IsReference"
 
 
 def get_search_index_async_client(
-    search_endpoint: Optional[str] = None,
-    admin_key: Optional[str] = None,
-    azure_credential: Optional[AzureKeyCredential] = None,
-    token_credential: Optional[TokenCredential] = None,
+    search_endpoint: str | None = None,
+    admin_key: str | None = None,
+    azure_credential: AzureKeyCredential | None = None,
+    token_credential: TokenCredential | None = None,
 ):
     """Return a client for Azure Cognitive Search.
 
@@ -147,14 +147,14 @@ def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
     return search_fields
 
 
-def get_field_selection(with_embeddings: bool) -> List[str]:
+def get_field_selection(with_embeddings: bool) -> list[str]:
     """Get the list of fields to search and load.
 
     Arguments:
         with_embedding {bool} -- Whether to include the embedding vector field.
 
     Returns:
-        List[str] -- List of fields.
+        list[str] -- list of fields.
     """
 
     field_selection = [

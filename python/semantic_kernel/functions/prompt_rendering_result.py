@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import Field
 
@@ -20,4 +21,4 @@ class PromptRenderingResult(KernelBaseModel):
 
     rendered_prompt: str
     ai_service: Any
-    execution_settings: Optional[PromptExecutionSettings] = Field(default_factory=PromptExecutionSettings)
+    execution_settings: PromptExecutionSettings | None = Field(default_factory=PromptExecutionSettings)

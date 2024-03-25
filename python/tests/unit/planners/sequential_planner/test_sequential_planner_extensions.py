@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 from unittest.mock import Mock
 
@@ -6,16 +7,10 @@ import pytest
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
-    SequentialPlannerConfig,
-)
-from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerKernelExtension,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
+from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import SequentialPlannerKernelExtension
 
 
 async def _async_generator(query_result):

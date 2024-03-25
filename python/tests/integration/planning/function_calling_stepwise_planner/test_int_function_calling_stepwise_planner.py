@@ -1,10 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import pytest
 
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner import (

@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from numpy import array, ndarray
 
@@ -23,8 +24,8 @@ class ChromaMemoryStore(MemoryStoreBase):
 
     def __init__(
         self,
-        persist_directory: Optional[str] = None,
-        client_settings: Optional["chromadb.config.Settings"] = None,
+        persist_directory: str | None = None,
+        client_settings: "chromadb.config.Settings" | None = None,
         **kwargs,
     ) -> None:
         """
@@ -32,9 +33,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         Collection names with uppercase characters are not supported by ChromaDB, they will be automatically converted.
 
         Args:
-            persist_directory (Optional[str], optional): Path to the directory where data will be persisted.
+            persist_directory (str | None, optional): Path to the directory where data will be persisted.
                 Defaults to None, which means the default settings for ChromaDB will be used.
-            client_settings (Optional["chromadb.config.Settings"], optional): A Settings instance to configure
+            client_settings ("chromadb.config.Settings" | None, optional): A Settings instance to configure
                 the ChromaDB client. Defaults to None, which means the default settings for ChromaDB will be used.
             similarity_fetch_limit (int, optional): The maximum number of results to calculate cosine-similarity.
         Example:
@@ -84,18 +85,18 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         self._client.create_collection(name=collection_name)
 
-    async def get_collection(self, collection_name: str) -> Optional["Collection"]:
+    async def get_collection(self, collection_name: str) -> "Collection" | None:
         try:
             # Current version of ChromeDB rejects camel case collection names.
             return self._client.get_collection(name=collection_name)
         except ValueError:
             return None
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            list[str] -- The list of collections.
         """
         return [collection.name for collection in self._client.list_collections()]
 
@@ -132,7 +133,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             records {MemoryRecord} -- The record to upsert.
 
         Returns:
-            List[str] -- The unique database key of the record.
+            list[str] -- The unique database key of the record.
         """
         collection = await self.get_collection(collection_name)
         if collection is None:
@@ -157,15 +158,15 @@ class ChromaMemoryStore(MemoryStoreBase):
         )
         return record._key
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+            records {list[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records. In Pinecone, these are the record IDs.
+            list[str] -- The unique database keys of the records. In Pinecone, these are the record IDs.
         """
         # upsert is checking collection existence
         return [await self.upsert(collection_name, record) for record in records]
@@ -189,16 +190,16 @@ class ChromaMemoryStore(MemoryStoreBase):
                 f"Record with key '{key}' does not exist in collection '{collection_name}'"
             ) from exc
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to get the records from.
-            keys {List[str]} -- The unique database keys of the records.
+            keys {list[str]} -- The unique database keys of the records.
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            list[MemoryRecord] -- The records.
         """
         collection = await self.get_collection(collection_name)
         if collection is None:
@@ -222,12 +223,12 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         await self.remove_batch(collection_name, [key])
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]} -- The unique database keys of the records to remove.
+            keys {list[str]} -- The unique database keys of the records to remove.
 
         Returns:
             None
@@ -243,7 +244,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = True,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -254,7 +255,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            list[tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
         if with_embeddings is False:
             logger.warning(
@@ -310,7 +311,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = True,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
@@ -320,7 +321,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            tuple[MemoryRecord, float] -- The record and the relevance score.
         """
         results = await self.get_nearest_matches(
             collection_name=collection_name,

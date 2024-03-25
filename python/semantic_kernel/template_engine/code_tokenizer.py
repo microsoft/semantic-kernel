@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import List
 
 from semantic_kernel.exceptions import CodeBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
@@ -25,7 +25,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [parameter]      ::= [variable] | [value]
 class CodeTokenizer:
     @staticmethod
-    def tokenize(text: str) -> List[Block]:
+    def tokenize(text: str) -> list[Block]:
         # Remove spaces, which are ignored anyway
         text = text.strip() if text else ""
         # Render None/empty to []
@@ -39,14 +39,14 @@ class CodeTokenizer:
         current_token_type = None
 
         # Track the content of the current token
-        current_token_content: List[str] = []
+        current_token_content: list[str] = []
 
         # Other state we need to track
         text_value_delimiter = None
         space_separator_found = False
         skip_next_char = False
         next_char = ""
-        blocks: List[Block] = []
+        blocks: list[Block] = []
 
         for index, current_char in enumerate(text[:-1]):
             next_char = text[index + 1]

@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import os
 from importlib.metadata import PackageNotFoundError, version
-from typing import Any, Dict
+from typing import Any
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 
@@ -26,7 +27,7 @@ APP_INFO = (
 )
 
 
-def prepend_semantic_kernel_to_user_agent(headers: Dict[str, Any]):
+def prepend_semantic_kernel_to_user_agent(headers: dict[str, Any]):
     """
     Prepend "Semantic-Kernel" to the User-Agent in the headers.
 

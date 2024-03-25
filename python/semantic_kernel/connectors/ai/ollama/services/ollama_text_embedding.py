@@ -1,15 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 import aiohttp
 from numpy import array, ndarray
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -22,19 +20,19 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
 
     Arguments:
         ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
-        url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
-        session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
+        url {str | HttpUrl | None} -- URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
+        session {aiohttp.ClientSession | None} -- Optional client session to use for requests.
     """
 
     url: HttpUrl = "http://localhost:11434/api/embeddings"
-    session: Optional[aiohttp.ClientSession] = None
+    session: aiohttp.ClientSession | None = None
 
-    async def generate_embeddings(self, texts: List[str], **kwargs) -> ndarray:
+    async def generate_embeddings(self, texts: list[str], **kwargs) -> ndarray:
         """
         Generates embeddings for a list of texts.
 
         Arguments:
-            texts {List[str]} -- Texts to generate embeddings for.
+            texts {list[str]} -- Texts to generate embeddings for.
 
         Returns:
             ndarray -- Embeddings for the texts.

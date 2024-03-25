@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from numpy import array, linalg, ndarray
 
@@ -25,7 +26,7 @@ def camel_to_snake(camel_str):
     return snake_str
 
 
-def query_results_to_records(results: "QueryResult", with_embedding: bool) -> List[MemoryRecord]:
+def query_results_to_records(results: "QueryResult", with_embedding: bool) -> list[MemoryRecord]:
     # if results has only one record, it will be a list instead of a nested list
     # this is to make sure that results is always a nested list
     # {'ids': ['test_id1'], 'embeddings': [[...]], 'documents': ['sample text1'], 'metadatas': [{...}]}

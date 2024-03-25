@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import atexit
 import json
 import logging
-from typing import List, Optional, Tuple
 
 import numpy as np
 from numpy import ndarray
@@ -51,7 +51,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             min_pool {int} -- The minimum number of connections in the connection pool.\n
             max_pool {int} -- The maximum number of connections in the connection pool.\n
             schema {str} -- The schema to use. (default: {"public"})\n
-            timezone_offset {Optional[str]} -- The timezone offset to use. (default: {None})
+            timezone_offset {str | None} -- The timezone offset to use. (default: {None})
             Expected format '-7:00'. Uses the local timezone offset when not provided.\n
         """
         if kwargs.get("logger"):
@@ -67,13 +67,13 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = None,
+        dimension_num: int | None = None,
     ) -> None:
         """Creates a new collection.
 
         Arguments:
             collection_name {str} -- The name of the collection to create.\n
-            dimension_num {Optional[int]} -- The dimensionality of the embeddings. (default: {None})
+            dimension_num {int | None} -- The dimensionality of the embeddings. (default: {None})
             Uses the default dimensionality when not provided
 
         Returns:
@@ -103,11 +103,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (),
                 )
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            list[str] -- The list of collections.
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
@@ -184,15 +184,15 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise ServiceResponseException("Upsert failed")
                 return result[0]
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+            records {list[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records.
+            list[str] -- The unique database keys of the records.
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
@@ -277,17 +277,17 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to get the records from.
-            keys {List[str]} -- The unique database keys of the records.
+            keys {list[str]} -- The unique database keys of the records.
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records that were found from list of keys, can be empty.
+            list[MemoryRecord] -- The records that were found from list of keys, can be empty.
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
@@ -347,12 +347,12 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (key,),
                 )
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]} -- The unique database keys of the records to remove.
+            keys {list[str]} -- The unique database keys of the records to remove.
 
         Returns:
             None
@@ -378,7 +378,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -389,7 +389,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            list[tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
@@ -447,7 +447,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
@@ -457,7 +457,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            tuple[MemoryRecord, float] -- The record and the relevance score.
         """
 
         results = await self.get_nearest_matches(
@@ -475,7 +475,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         results = await self.__get_collections(cur)
         return collection_name in results
 
-    async def __get_collections(self, cur: Cursor) -> List[str]:
+    async def __get_collections(self, cur: Cursor) -> list[str]:
         cur.execute(
             """
             SELECT table_name

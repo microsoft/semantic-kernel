@@ -1,12 +1,17 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import json
 import logging
 import sys
-from typing import Dict, Mapping, Optional, Union
+from collections.abc import Mapping
+from typing import Union
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
+
 from urllib.parse import urljoin
 
 import aiohttp
@@ -16,9 +21,7 @@ from openapi_core.contrib.requests import RequestsOpenAPIRequest
 from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -72,10 +75,10 @@ class RestApiOperation:
         method: str,
         server_url: str,
         path: str,
-        summary: Optional[str] = None,
-        description: Optional[str] = None,
-        params: Optional[Mapping[str, str]] = None,
-        request_body: Optional[Mapping[str, str]] = None,
+        summary: str | None = None,
+        description: str | None = None,
+        params: Mapping[str, str] | None = None,
+        request_body: Mapping[str, str] | None = None,
     ):
         self.id = id
         self.method = method
@@ -179,7 +182,7 @@ class OpenApiParser:
     :return: A dictionary of RestApiOperation objects keyed by operationId
     """
 
-    def create_rest_api_operations(self, parsed_document) -> Dict[str, RestApiOperation]:
+    def create_rest_api_operations(self, parsed_document) -> dict[str, RestApiOperation]:
         paths = parsed_document.get("paths", {})
         request_objects = {}
         for path, methods in paths.items():
@@ -219,10 +222,10 @@ class OpenApiRunner:
     async def run_operation(
         self,
         operation: RestApiOperation,
-        path_params: Optional[Dict[str, str]] = None,
-        query_params: Optional[Dict[str, str]] = None,
-        headers: Optional[Dict[str, str]] = None,
-        request_body: Optional[Union[str, Dict[str, str]]] = None,
+        path_params: dict[str, str] | None = None,
+        query_params: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        request_body: Union[str, dict[str, str]] | None = None,
     ) -> str:
         prepared_request = operation.prepare_request(
             path_params=path_params,
@@ -258,7 +261,7 @@ def register_openapi_plugin(
     kernel: Kernel,
     plugin_name: str,
     openapi_document: str,
-) -> Dict[str, KernelFunction]:
+) -> dict[str, KernelFunction]:
     parser = OpenApiParser()
     parsed_doc = parser.parse(openapi_document)
     operations = parser.create_rest_api_operations(parsed_doc)
@@ -272,10 +275,10 @@ def register_openapi_plugin(
             name=operation_id,
         )
         async def run_openapi_operation(
-            path_params: Annotated[Optional[Union[Dict, str]], "A dictionary of path parameters"] = None,
-            query_params: Annotated[Optional[Union[Dict, str]], "A dictionary of query parameters"] = None,
-            headers: Annotated[Optional[Union[Dict, str]], "A dictionary of headers"] = None,
-            request_body: Annotated[Optional[Union[Dict, str]], "A dictionary of the request body"] = None,
+            path_params: Annotated[dict | str | None, "A dictionary of path parameters"] = None,
+            query_params: Annotated[dict | str | None, "A dictionary of query parameters"] = None,
+            headers: Annotated[dict | str | None, "A dictionary of headers"] = None,
+            request_body: Annotated[dict | str | None, "A dictionary of the request body"] = None,
         ) -> str:
             response = await runner.run_operation(
                 operation,
@@ -285,13 +288,17 @@ def register_openapi_plugin(
                 query_params=(
                     json.loads(query_params)
                     if isinstance(query_params, str)
-                    else query_params if query_params else None
+                    else query_params
+                    if query_params
+                    else None
                 ),
                 headers=json.loads(headers) if isinstance(headers, str) else headers if headers else None,
                 request_body=(
                     json.loads(request_body)
                     if isinstance(request_body, str)
-                    else request_body if request_body else None
+                    else request_body
+                    if request_body
+                    else None
                 ),
             )
             return response

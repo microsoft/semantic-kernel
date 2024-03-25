@@ -1,4 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import sys
 from typing import TYPE_CHECKING
 
@@ -73,9 +75,7 @@ class ConversationSummaryPlugin:
         :return: KernelArguments with the summarized conversation result in key self.return_key.
         """
         from semantic_kernel.text import text_chunker
-        from semantic_kernel.text.function_extension import (
-            aggregate_chunked_results,
-        )
+        from semantic_kernel.text.function_extension import aggregate_chunked_results
 
         lines = text_chunker._split_text_lines(input, ConversationSummaryPlugin._max_tokens, True)
         paragraphs = text_chunker._split_text_paragraph(lines, ConversationSummaryPlugin._max_tokens)

@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import pytest
 from pytest import mark
@@ -95,11 +96,11 @@ async def test_it_renders_fail(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_it_renders_list(kernel: Kernel):
-    template = "List: {% for item in items %}{{ item }}{% endfor %}"
+    template = "list: {% for item in items %}{{ item }}{% endfor %}"
     target = create_jinja2_prompt_template(template)
 
     rendered = await target.render(kernel, KernelArguments(items=["item1", "item2", "item3"]))
-    assert rendered == "List: item1item2item3"
+    assert rendered == "list: item1item2item3"
 
 
 @pytest.mark.asyncio

@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import sys
 from unittest.mock import MagicMock, patch
@@ -7,9 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 if sys.version_info >= (3, 9):
-    from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import (
-        GooglePalmTextEmbedding,
-    )
+    from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import GooglePalmTextEmbedding
 
 
 pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import List, Tuple
 
 import numpy as np
 import redis
@@ -122,12 +122,12 @@ class RedisMemoryStore(MemoryStoreBase):
             except Exception as e:
                 raise ServiceResponseException(f"Failed to create collection {collection_name}") from e
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """
         Returns a list of names of all collection names present in the data store.
 
         Returns:
-            List[str] -- list of collection names
+            list[str] -- list of collection names
         """
         # Note: FT._LIST is a temporary command that may be deprecated in the future according to Redis
         return [name.decode() for name in self._database.execute_command("FT._LIST")]
@@ -195,7 +195,7 @@ class RedisMemoryStore(MemoryStoreBase):
         except Exception as e:
             raise ServiceResponseException("Could not upsert messages.") from e
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """
         Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
@@ -206,10 +206,10 @@ class RedisMemoryStore(MemoryStoreBase):
 
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
-            records {List[MemoryRecord]} -- List of memory records to upsert
+            records {list[MemoryRecord]} -- list of memory records to upsert
 
         Returns
-            List[str] -- Redis keys associated with the upserted memory records
+            list[str] -- Redis keys associated with the upserted memory records
         """
 
         keys = list()
@@ -248,18 +248,18 @@ class RedisMemoryStore(MemoryStoreBase):
         return record
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """
         Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
-            keys {List[str]} -- IDs associated with the memory records to get
+            keys {list[str]} -- IDs associated with the memory records to get
             with_embedding {bool} -- Include embeddings with the memory records, default to False
 
         Returns:
-            List[MemoryRecord] -- The memory records if found, else an empty list
+            list[MemoryRecord] -- The memory records if found, else an empty list
         """
 
         records = list()
@@ -284,13 +284,13 @@ class RedisMemoryStore(MemoryStoreBase):
 
         self._database.delete(get_redis_key(collection_name, key))
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """
         Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
-            keys {List[str]} -- IDs associated with the memory records to remove
+            keys {list[str]} -- IDs associated with the memory records to remove
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
@@ -304,7 +304,7 @@ class RedisMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """
         Get the nearest matches to an embedding using the configured similarity algorithm.
 
@@ -316,7 +316,7 @@ class RedisMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- Include embeddings in the resultant memory records, default to False
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- Records and their relevance scores by descending
+            list[tuple[MemoryRecord, float]] -- Records and their relevance scores by descending
                 order, or an empty list if no relevant matches are found
         """
         if not await self.does_collection_exist(collection_name):
@@ -357,7 +357,7 @@ class RedisMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """
         Get the nearest match to an embedding using the configured similarity algorithm.
 
@@ -368,7 +368,7 @@ class RedisMemoryStore(MemoryStoreBase):
             with_embedding {bool} -- Include embedding in the resultant memory record, default to False
 
         Returns:
-            Tuple[MemoryRecord, float] -- Record and the relevance score, or None if not found
+            tuple[MemoryRecord, float] -- Record and the relevance score, or None if not found
         """
         matches = await self.get_nearest_matches(
             collection_name=collection_name,

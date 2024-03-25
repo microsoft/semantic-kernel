@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-from typing import List
+from __future__ import annotations
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -8,7 +7,7 @@ from semantic_kernel.kernel import Kernel
 
 
 async def aggregate_chunked_results(
-    func: KernelFunction, chunked_results: List[str], kernel: Kernel, arguments: KernelArguments
+    func: KernelFunction, chunked_results: list[str], kernel: Kernel, arguments: KernelArguments
 ) -> str:
     """
     Aggregate the results from the chunked results.

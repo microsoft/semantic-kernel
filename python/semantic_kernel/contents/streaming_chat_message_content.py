@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import json
-from typing import Optional
 from xml.etree.ElementTree import Element
 
 from defusedxml import ElementTree
@@ -22,14 +22,14 @@ class StreamingChatMessageContent(StreamingKernelContent):
 
     Args:
         choice_index: int - The index of the choice that generated this response.
-        inner_content: Optional[Any] - The inner content of the response,
+        inner_content: Any | None - The inner content of the response,
             this should hold all the information from the response so even
             when not creating a subclass a developer can leverage the full thing.
-        ai_model_id: Optional[str] - The id of the AI model that generated this response.
-        metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-        role: Optional[ChatRole] - The role of the chat message, defaults to ASSISTANT.
-        content: Optional[str] - The text of the response.
-        encoding: Optional[str] - The encoding of the text.
+        ai_model_id: str | None - The id of the AI model that generated this response.
+        metadata: dict[str, Any] - Any metadata that should be attached to the response.
+        role: ChatRole | None - The role of the chat message, defaults to ASSISTANT.
+        content: str | None - The text of the response.
+        encoding: str | None - The encoding of the text.
 
     Methods:
         __str__: Returns the content of the response.
@@ -37,10 +37,10 @@ class StreamingChatMessageContent(StreamingKernelContent):
         __add__: Combines two StreamingChatMessageContent instances.
     """
 
-    role: Optional[ChatRole] = ChatRole.ASSISTANT
-    content: Optional[str] = None
-    encoding: Optional[str] = None
-    finish_reason: Optional[FinishReason] = None
+    role: ChatRole | None = ChatRole.ASSISTANT
+    content: str | None = None
+    encoding: str | None = None
+    finish_reason: FinishReason | None = None
 
     def __str__(self) -> str:
         return self.content or ""

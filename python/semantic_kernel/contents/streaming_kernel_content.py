@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import Field
 
@@ -11,9 +13,9 @@ class StreamingKernelContent(KernelBaseModel, ABC):
     """Base class for all streaming kernel contents."""
 
     choice_index: int
-    inner_content: Optional[Any] = None
-    ai_model_id: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    inner_content: Any | None = None
+    ai_model_id: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @abstractmethod
     def __str__(self) -> str:

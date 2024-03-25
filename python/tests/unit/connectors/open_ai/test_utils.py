@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import Callable, Dict, List, Optional
+from __future__ import annotations
+
+from typing import Callable
 
 import pytest
 
@@ -11,7 +13,7 @@ from semantic_kernel.kernel import Kernel
 @pytest.fixture
 def decorated_function_all_params() -> Callable:  # type: ignore
     @kernel_function
-    def test(arg1: str, arg2: Optional[str], arg3: List[str], arg4: Dict[str, str]) -> str:
+    def test(arg1: str, arg2: str | None, arg3: list[str], arg4: dict[str, str]) -> str:
         return "test"
 
     return test

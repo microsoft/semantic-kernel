@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import Any, Dict
+from typing import Any
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
@@ -19,7 +19,7 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 """
 
 
-def _config_ban_tokens(settings: PromptExecutionSettings, keys: Dict[Any, Any]):
+def _config_ban_tokens(settings: PromptExecutionSettings, keys: dict[Any, Any]):
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
         # -100 to potentially ban all tokens in the list

@@ -1,5 +1,8 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import logging
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from pydantic import Field, SerializeAsAny
 from pydantic.dataclasses import dataclass
@@ -15,52 +18,52 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ConnectionStringAuthentication:
     type: Literal["ConnectionString"] = "ConnectionString"
-    connectionString: Optional[str] = None
+    connectionString: str | None = None
 
 
 @dataclass
 class ApiKeyAuthentication:
     type: Literal["APIKey"] = "APIKey"
-    key: Optional[str] = None
+    key: str | None = None
 
 
 @dataclass
 class AzureEmbeddingDependency:
     type: Literal["DeploymentName"] = "DeploymentName"
-    deploymentName: Optional[str] = None
+    deploymentName: str | None = None
 
 
 @dataclass
 class AzureDataSourceParameters:
     indexName: str
-    indexLanguage: Optional[str] = None
-    fieldsMapping: Dict[str, Any] = Field(default_factory=dict)
-    inScope: Optional[bool] = True
-    topNDocuments: Optional[int] = 5
-    semanticConfiguration: Optional[str] = None
-    roleInformation: Optional[str] = None
-    filter: Optional[str] = None
-    embeddingKey: Optional[str] = None
-    embeddingEndpoint: Optional[str] = None
-    embeddingDeploymentName: Optional[str] = None
+    indexLanguage: str | None = None
+    fieldsMapping: dict[str, Any] = Field(default_factory=dict)
+    inScope: bool | None = True
+    topNDocuments: int | None = 5
+    semanticConfiguration: str | None = None
+    roleInformation: str | None = None
+    filter: str | None = None
+    embeddingKey: str | None = None
+    embeddingEndpoint: str | None = None
+    embeddingDeploymentName: str | None = None
     strictness: int = 3
-    embeddingDependency: Optional[AzureEmbeddingDependency] = None
+    embeddingDependency: AzureEmbeddingDependency | None = None
 
 
 @dataclass
 class AzureCosmosDBDataSource(AzureDataSourceParameters):
-    authentication: Optional[ConnectionStringAuthentication] = None
-    databaseName: Optional[str] = None
-    containerName: Optional[str] = None
-    embeddingDependencyType: Optional[AzureEmbeddingDependency] = None
+    authentication: ConnectionStringAuthentication | None = None
+    databaseName: str | None = None
+    containerName: str | None = None
+    embeddingDependencyType: AzureEmbeddingDependency | None = None
 
 
 @dataclass
 class AzureAISearchDataSources(AzureDataSourceParameters):
-    endpoint: Optional[str] = None
-    key: Optional[str] = None
+    endpoint: str | None = None
+    key: str | None = None
     queryType: Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"] = "simple"
-    authentication: Optional[ApiKeyAuthentication] = None
+    authentication: ApiKeyAuthentication | None = None
 
 
 @dataclass
@@ -68,14 +71,14 @@ class AzureDataSources:
     """Class to hold Azure AI data source parameters."""
 
     type: Literal["AzureCognitiveSearch", "AzureCosmosDB"] = "AzureCognitiveSearch"
-    parameters: Optional[SerializeAsAny[AzureDataSourceParameters]] = None
+    parameters: SerializeAsAny[AzureDataSourceParameters] | None = None
 
 
 # @dataclass
 class ExtraBody(KernelBaseModel):
-    data_sources: Optional[List[AzureDataSources]] = Field(None, alias="dataSources")
-    input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
-    output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
+    data_sources: list[AzureDataSources] | None = Field(None, alias="dataSources")
+    input_language: str | None = Field(None, serialization_alias="inputLanguage")
+    output_language: str | None = Field(None, serialization_alias="outputLanguage")
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -84,5 +87,5 @@ class ExtraBody(KernelBaseModel):
 class AzureChatPromptExecutionSettings(OpenAIChatPromptExecutionSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
-    response_format: Optional[str] = None
-    extra_body: Optional[Union[Dict[str, Any], ExtraBody]] = None
+    response_format: str | None = None
+    extra_body: dict[str | Any, ExtraBody] | None = None

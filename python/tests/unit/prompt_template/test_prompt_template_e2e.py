@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import os
-from typing import List, Optional, Tuple
 
 from pytest import mark, raises
 
@@ -13,7 +13,7 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
-def _get_template_language_tests() -> List[Tuple[str, str]]:
+def _get_template_language_tests() -> list[tuple[str, str]]:
     path = __file__
     path = os.path.dirname(path)
 
@@ -42,7 +42,7 @@ class MyPlugin:
         return "123 ok" if input == "123" else f"{input} != 123"
 
     @kernel_function()
-    def asis(self, input: Optional[str] = None) -> str:
+    def asis(self, input: str | None = None) -> str:
         return input or ""
 
 

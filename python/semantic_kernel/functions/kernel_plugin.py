@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Union
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -27,27 +28,27 @@ class KernelPlugin(KernelBaseModel):
         name (str): The name of the plugin. The name can be upper/lower
             case letters and underscores.
         description (str): The description of the plugin.
-        functions (Dict[str, KernelFunction]): The functions in the plugin,
+        functions (dict[str, KernelFunction]): The functions in the plugin,
             indexed by their name.
     """
 
     name: Annotated[str, StringConstraints(pattern=PLUGIN_NAME_REGEX, min_length=1)]
-    description: Optional[str] = Field(default=None)
-    functions: Optional[Dict[str, "KernelFunction"]] = Field(default_factory=dict)
+    description: str | None = Field(default=None)
+    functions: dict[str, "KernelFunction"] | None = Field(default_factory=dict)
 
     def __init__(
         self,
         name: str,
-        description: Optional[str] = None,
-        functions: Optional[Union[List["KernelFunction"], Dict[str, "KernelFunction"]]] = None,
+        description: str | None = None,
+        functions: Union[list["KernelFunction"], dict[str, "KernelFunction"]] | None = None,
     ):
         """
         Initialize a new instance of the KernelPlugin class
 
         Args:
             name (str): The name of the plugin.
-            description (Optional[str]): The description of the plugin.
-            functions (List[KernelFunction]): The functions in the plugin.
+            description (str | None): The description of the plugin.
+            functions (list[KernelFunction]): The functions in the plugin.
 
         Raises:
             ValueError: If the functions list contains duplicate function names.
@@ -103,23 +104,23 @@ class KernelPlugin(KernelBaseModel):
 
     @classmethod
     def from_functions(
-        cls, functions: List["KernelFunction"], plugin_name: str, description: Optional[str] = None
+        cls, functions: list["KernelFunction"], plugin_name: str, description: str | None = None
     ) -> "KernelPlugin":
         """
         Creates a KernelPlugin from a KernelFunction instance.
 
         Args:
-            functions (List[KernelFunction]): The functions to create the plugin from.
-            plugin_name (Optional[str]): The name of the plugin. If not specified,
+            functions (list[KernelFunction]): The functions to create the plugin from.
+            plugin_name (str | None): The name of the plugin. If not specified,
                 the name of the function will be used.
-            description (Optional[str]): The description of the plugin.
+            description (str | None): The description of the plugin.
 
         Returns:
             A KernelPlugin instance.
         """
         return cls(name=plugin_name, description=description, functions=functions)
 
-    def get_functions_metadata(self) -> List["KernelFunctionMetadata"]:
+    def get_functions_metadata(self) -> list["KernelFunctionMetadata"]:
         """
         Get the metadata for the functions in the plugin.
 

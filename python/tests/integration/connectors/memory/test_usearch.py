@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 from datetime import datetime
-from typing import List
 
 import numpy as np
 import pytest
@@ -90,7 +90,7 @@ def memory_record3():
     )
 
 
-def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> List[MemoryRecord]:
+def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> list[MemoryRecord]:
     return [
         MemoryRecord(
             is_reference=False,

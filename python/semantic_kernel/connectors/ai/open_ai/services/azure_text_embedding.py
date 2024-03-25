@@ -1,22 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 import logging
-from typing import Dict, Mapping, Optional, overload
+from collections.abc import Mapping
+from typing import overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
-    AzureOpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
-    OpenAITextEmbeddingBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -29,7 +24,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
-        service_id: Optional[str] = None,
+        service_id: str | None = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -46,14 +41,14 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     def __init__(
         self,
         deployment_name: str,
-        endpoint: Optional[str] = None,
+        endpoint: str | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        async_client: Optional[AsyncAzureOpenAI] = None,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncAzureOpenAI | None = None,
     ) -> None:
         """
         Initialize an AzureTextEmbedding service.
@@ -96,7 +91,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         )
 
     @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "AzureTextEmbedding":
+    def from_dict(cls, settings: dict[str, str]) -> "AzureTextEmbedding":
         """
         Initialize an Azure OpenAI service from a dictionary of settings.
 
