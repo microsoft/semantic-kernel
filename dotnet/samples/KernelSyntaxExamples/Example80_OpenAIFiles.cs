@@ -23,9 +23,6 @@ public sealed class Example79_OpenAIFiles : BaseTest
     /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
     /// If 'false', Azure takes precedence.
     /// </summary>
-    /// <remarls>
-    /// 
-    /// </remarls>
     private const bool ForceOpenAI = true;
 
     /// <summary>
