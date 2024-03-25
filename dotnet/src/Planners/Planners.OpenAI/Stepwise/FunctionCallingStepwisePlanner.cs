@@ -125,7 +125,6 @@ public sealed class FunctionCallingStepwisePlanner
                         Iterations = i + 1,
                     };
                 }
-
             }
 
             // Look up function in kernel
