@@ -146,16 +146,7 @@ public sealed class ChatHistoryTests : IDisposable
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
+        this._logger.Dispose();
+        this._testOutputHelper.Dispose();
     }
 }
