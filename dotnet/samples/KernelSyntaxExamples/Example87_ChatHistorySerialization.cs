@@ -15,6 +15,7 @@ namespace Examples;
 public class Example87_ChatHistorySerialization : BaseTest
 {
     private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
+
     /// <summary>
     /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
     /// with <see cref="ChatMessageContent"/> having SK various content types as items.
