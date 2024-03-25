@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
 /// <summary>
@@ -17,7 +15,7 @@ internal class MistralFunction
     /// <summary>
     /// The description of the function to help the model determine when and how to invoke it.
     /// </summary>
-    public String? Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// The function parameters, defined using a JSON Schema object. If omitted, the function is considered to have an empty parameter list.
@@ -27,7 +25,7 @@ internal class MistralFunction
     /// <summary>
     /// Construct an instance of <see cref="MistralFunction"/>.
     /// </summary>
-    public MistralFunction(string name, string description, object parameters)
+    public MistralFunction(string name, string description, object? parameters)
     {
         Verify.NotNull(name, nameof(name));
         Verify.ValidFunctionName(name);

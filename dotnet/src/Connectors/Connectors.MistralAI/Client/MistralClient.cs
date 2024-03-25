@@ -47,7 +47,7 @@ internal sealed class MistralClient
 
         string modelId = executionSettings?.ModelId ?? this._modelId;
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var request = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings);
+        var request = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings, kernel);
         var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "chat/completions");
 
         using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, stream: false);
@@ -151,7 +151,7 @@ internal sealed class MistralClient
         }
     }
 
-    private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings? executionSettings)
+    private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings? executionSettings, Kernel? kernel = null)
     {
         var request = new ChatCompletionRequest(modelId)
         {
@@ -166,6 +166,11 @@ internal sealed class MistralClient
             request.MaxTokens = executionSettings.MaxTokens;
             request.SafePrompt = executionSettings.SafePrompt;
             request.RandomSeed = executionSettings.RandomSeed;
+
+            if (executionSettings.ToolCallBehavior is not null)
+            {
+                executionSettings.ToolCallBehavior.ConfigureRequest(kernel, request);
+            }
         }
 
         return request;
