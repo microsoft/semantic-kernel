@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-from typing import Optional
+from __future__ import annotations
 
 from pydantic import Field
 
@@ -37,8 +36,8 @@ class FunctionInvokedEventArgs(KernelEventArgs):
         repeat: Sets the is_repeat_requested flag to True.
     """
 
-    function_result: Optional[FunctionResult] = None
-    exception: Optional[Exception] = None
+    function_result: FunctionResult | None = None
+    exception: Exception | None = None
     is_repeat_requested: bool = Field(default=False, init_var=False)
 
     def repeat(self):

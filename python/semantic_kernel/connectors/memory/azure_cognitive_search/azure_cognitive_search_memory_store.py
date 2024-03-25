@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 import uuid
 from inspect import isawaitable
-from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -43,21 +43,21 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         vector_size: int,
-        search_endpoint: Optional[str] = None,
-        admin_key: Optional[str] = None,
-        azure_credentials: Optional[AzureKeyCredential] = None,
-        token_credentials: Optional[TokenCredential] = None,
+        search_endpoint: str | None = None,
+        admin_key: str | None = None,
+        azure_credentials: AzureKeyCredential | None = None,
+        token_credentials: TokenCredential | None = None,
         **kwargs,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
         Arguments:
             vector_size {int}                                -- Embedding vector size.
-            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Cognitive Search service
+            search_endpoint {str | None}                  -- The endpoint of the Azure Cognitive Search service
                                                                 (default: {None}).
-            admin_key {Optional[str]}                        -- Azure Cognitive Search API key (default: {None}).
-            azure_credentials {Optional[AzureKeyCredential]} -- Azure Cognitive Search credentials (default: {None}).
-            token_credentials {Optional[TokenCredential]}    -- Azure Cognitive Search token credentials
+            admin_key {str | None}                        -- Azure Cognitive Search API key (default: {None}).
+            azure_credentials {AzureKeyCredential | None} -- Azure Cognitive Search credentials (default: {None}).
+            token_credentials {TokenCredential | None}    -- Azure Cognitive Search token credentials
                                                                 (default: {None}).
 
         Instantiate using Async Context Manager:
@@ -77,8 +77,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        vector_config: Optional[HnswAlgorithmConfiguration] = None,
-        search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
+        vector_config: HnswAlgorithmConfiguration | None = None,
+        search_resource_encryption_key: SearchResourceEncryptionKey | None = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -142,11 +142,11 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
             await self._search_index_client.create_index(index)
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            list[str] -- The list of collections.
         """
 
         results_list = []
@@ -206,15 +206,15 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             return result[0]
         return None
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upsert a batch of records.
 
         Arguments:
             collection_name {str}        -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+            records {list[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records.
+            list[str] -- The unique database keys of the records.
         """
 
         # Initialize search client here
@@ -272,17 +272,17 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         return dict_to_memory_record(search_result, with_embedding)
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
             collection_name {str}  -- The name of the collection to get the records from.
-            keys {List[str]}       -- The unique database keys of the records.
+            keys {list[str]}       -- The unique database keys of the records.
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            list[MemoryRecord] -- The records.
         """
 
         search_results = []
@@ -297,12 +297,12 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         return search_results
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]}      -- The unique database keys of the records to remove.
+            keys {list[str]}      -- The unique database keys of the records to remove.
 
         Returns:
             None
@@ -335,7 +335,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
         Arguments:
@@ -345,7 +345,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             with_embedding {bool}       -- Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            tuple[MemoryRecord, float] -- The record and the relevance score.
         """
 
         memory_records = await self.get_nearest_matches(
@@ -368,7 +368,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using vector configuration.
 
         Parameters:
@@ -379,7 +379,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             with_embeddings {bool}      -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            list[tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
 
         # Look up Search client class to see if exists or create

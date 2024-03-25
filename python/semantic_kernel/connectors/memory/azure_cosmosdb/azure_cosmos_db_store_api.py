@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple
 
 from numpy import ndarray
 
@@ -16,7 +15,7 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         raise NotImplementedError
 
     @abstractmethod
@@ -32,7 +31,7 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         raise NotImplementedError
 
     @abstractmethod
@@ -40,7 +39,7 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         raise NotImplementedError
 
     @abstractmethod
@@ -48,7 +47,7 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         raise NotImplementedError
 
     @abstractmethod
@@ -59,7 +58,7 @@ class AzureCosmosDBStoreApi(ABC):
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         raise NotImplementedError
 
     @abstractmethod
@@ -69,5 +68,5 @@ class AzureCosmosDBStoreApi(ABC):
         embedding: ndarray,
         min_relevance_score: float,
         with_embedding: bool,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         raise NotImplementedError

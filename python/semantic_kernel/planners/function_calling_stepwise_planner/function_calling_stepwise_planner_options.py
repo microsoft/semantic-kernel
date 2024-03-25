@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import model_validator
 
@@ -19,8 +19,8 @@ class FunctionCallingStepwisePlannerOptions(PlannerOptions):
     max_tokens_ratio: float | None = 0.1
     max_completion_tokens: int | None = None
     max_prompt_tokens: int | None = None
-    get_initial_plan: Callable[[], str] | None = None
-    get_step_prompt: Callable[[], str] | None = None
+    get_initial_plan: Callable[..., str] | None = None
+    get_step_prompt: Callable[..., str] | None = None
     max_iterations: int | None = 15
     min_iteration_time_ms: int | None = 100
     execution_settings: OpenAIPromptExecutionSettings | None = None

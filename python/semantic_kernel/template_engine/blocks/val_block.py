@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from re import S, compile
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
@@ -46,8 +47,8 @@ class ValBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.VALUE
-    value: Optional[str] = ""
-    quote: Optional[str] = "'"
+    value: str | None = ""
+    quote: str | None = "'"
 
     @model_validator(mode="before")
     @classmethod
@@ -69,5 +70,5 @@ class ValBlock(Block):
             fields["quote"] = quote
         return fields
 
-    def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
+    def render(self, *_: tuple["Kernel", "KernelArguments"] | None) -> str:
         return self.value

@@ -1,5 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
@@ -16,14 +16,14 @@ class StreamingChatMessageContent(StreamingContentMixin, ChatMessageContent):
 
     Args:
         choice_index: int - The index of the choice that generated this response.
-        inner_content: Optional[Any] - The inner content of the response,
+        inner_content: Any | None - The inner content of the response,
             this should hold all the information from the response so even
             when not creating a subclass a developer can leverage the full thing.
-        ai_model_id: Optional[str] - The id of the AI model that generated this response.
-        metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-        role: Optional[ChatRole] - The role of the chat message, defaults to ASSISTANT.
-        content: Optional[str] - The text of the response.
-        encoding: Optional[str] - The encoding of the text.
+        ai_model_id: str | None - The id of the AI model that generated this response.
+        metadata: dict[str, Any] - Any metadata that should be attached to the response.
+        role: ChatRole | None - The role of the chat message, defaults to ASSISTANT.
+        content: str | None - The text of the response.
+        encoding: str | None - The encoding of the text.
 
     Methods:
         __str__: Returns the content of the response.

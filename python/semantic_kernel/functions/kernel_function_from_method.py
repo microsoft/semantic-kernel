@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
-from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Callable
 
 from pydantic import ValidationError
 
@@ -27,21 +28,21 @@ class KernelFunctionFromMethod(KernelFunction):
     # some attributes are now properties, still listed here for documentation purposes
 
     method: Callable[..., Any]
-    stream_method: Optional[Callable[..., Any]] = None
+    stream_method: Callable[..., Any] | None = None
 
     def __init__(
         self,
         method: Callable[..., Any],
-        plugin_name: Optional[str] = None,
-        stream_method: Optional[Callable[..., Any]] = None,
+        plugin_name: str | None = None,
+        stream_method: Callable[..., Any] | None = None,
     ) -> None:
         """
         Initializes a new instance of the KernelFunctionFromMethod class
 
         Args:
             method (Callable[..., Any]): The method to be called
-            plugin_name (Optional[str]): The name of the plugin
-            stream_method (Optional[Callable[..., Any]]): The stream method for the function
+            plugin_name (str | None): The name of the plugin
+            stream_method (Callable[..., Any] | None): The stream method for the function
         """
         if method is None:
             raise FunctionInitializationError("Method cannot be `None`")
@@ -76,13 +77,15 @@ class KernelFunctionFromMethod(KernelFunction):
             # reraise the exception to clarify it comes from KernelFunction init
             raise FunctionInitializationError("Failed to create KernelFunctionMetadata") from exc
 
-        args: Dict[str, Any] = {
+        args: dict[str, Any] = {
             "metadata": metadata,
             "method": method,
             "stream_method": (
                 stream_method
                 if stream_method is not None
-                else method if isasyncgenfunction(method) or isgeneratorfunction(method) else None
+                else method
+                if isasyncgenfunction(method) or isgeneratorfunction(method)
+                else None
             ),
         }
 
@@ -114,7 +117,7 @@ class KernelFunctionFromMethod(KernelFunction):
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[List[StreamingContentMixin], Any]]:
+    ) -> AsyncIterable[list[StreamingContentMixin] | Any]:
         if self.stream_method is None:
             raise NotImplementedError("Stream method not implemented")
         function_arguments = self.gather_function_parameters(kernel, arguments)
@@ -125,9 +128,9 @@ class KernelFunctionFromMethod(KernelFunction):
             for partial_result in self.stream_method(**function_arguments):
                 yield partial_result
 
-    def gather_function_parameters(self, kernel: "Kernel", arguments: "KernelArguments") -> Dict[str, Any]:
+    def gather_function_parameters(self, kernel: "Kernel", arguments: "KernelArguments") -> dict[str, Any]:
         """Gathers the function parameters from the arguments."""
-        function_arguments: Dict[str, Any] = {}
+        function_arguments: dict[str, Any] = {}
         for param in self.parameters:
             if param.name == "kernel":
                 function_arguments[param.name] = kernel

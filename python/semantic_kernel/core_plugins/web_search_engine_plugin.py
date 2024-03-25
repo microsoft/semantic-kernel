@@ -1,5 +1,8 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import sys
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -35,9 +38,9 @@ class WebSearchEnginePlugin:
     async def search(
         self,
         query: Annotated[str, "The search query"],
-        num_results: Annotated[Optional[int], "The number of search results to return"] = 1,
-        offset: Annotated[Optional[int], "The number of search results to skip"] = 0,
-    ) -> List[str]:
+        num_results: Annotated[int | None, "The number of search results to return"] = 1,
+        offset: Annotated[int | None, "The number of search results to skip"] = 0,
+    ) -> list[str]:
         """
         Returns the search results of the query provided.
         Returns `num_results` results and ignores the first `offset`.

@@ -1,19 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import json
 import logging
-from typing import AsyncIterable, List, Optional
+from typing import AsyncIterable
 
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
-    OllamaTextPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 
@@ -28,17 +25,17 @@ class OllamaTextCompletion(TextCompletionClientBase):
 
     Arguments:
         ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
-        url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/generate
+        url {str | HttpUrl | None} -- URL of the Ollama server, defaults to http://localhost:11434/api/generate
     """
 
     url: HttpUrl = "http://localhost:11434/api/generate"
-    session: Optional[aiohttp.ClientSession] = None
+    session: aiohttp.ClientSession | None = None
 
     async def complete(
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -47,7 +44,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
             settings {OllamaTextPromptExecutionSettings} -- Settings for the request.
 
         Returns:
-            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+            list[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -64,7 +61,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
-    ) -> AsyncIterable[List[StreamingTextContent]]:
+    ) -> AsyncIterable[list[StreamingTextContent]]:
         """
         Streams a text completion using a Ollama model.
         Note that this method does not support multiple responses,
@@ -75,7 +72,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
             settings {OllamaTextPromptExecutionSettings} -- Request settings.
 
         Yields:
-            List[StreamingTextContent] -- Completion result.
+            list[StreamingTextContent] -- Completion result.
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id

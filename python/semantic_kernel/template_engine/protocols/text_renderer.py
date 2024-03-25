@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from semantic_kernel import Kernel
@@ -13,7 +14,7 @@ class TextRenderer(Protocol):
     Protocol for static (text) blocks that don't need async rendering.
     """
 
-    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+    def render(self, kernel: "Kernel", arguments: "KernelArguments" | None = None) -> str:
         """
         Render the block using only the given variables.
 

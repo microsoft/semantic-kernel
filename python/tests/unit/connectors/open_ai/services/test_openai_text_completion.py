@@ -1,13 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 
 
 def test_open_ai_text_completion_init() -> None:

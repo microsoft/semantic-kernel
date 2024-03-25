@@ -1,13 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import json
 import logging
 import sys
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
+
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -40,11 +43,11 @@ class TextMemoryPlugin(KernelBaseModel):
     async def recall(
         self,
         ask: Annotated[str, "The information to retrieve"],
-        collection: Annotated[Optional[str], "The collection to search for information."] = DEFAULT_COLLECTION,
+        collection: Annotated[str, "The collection to search for information."] = DEFAULT_COLLECTION,
         relevance: Annotated[
-            Optional[float], "The relevance score, from 0.0 to 1.0; 1.0 means perfect match"
+            float, "The relevance score, from 0.0 to 1.0; 1.0 means perfect match"
         ] = DEFAULT_RELEVANCE,
-        limit: Annotated[Optional[int], "The maximum number of relevant memories to recall."] = DEFAULT_LIMIT,
+        limit: Annotated[int, "The maximum number of relevant memories to recall."] = DEFAULT_LIMIT,
     ) -> str:
         """
         Recall a fact from the long term memory.
@@ -81,7 +84,7 @@ class TextMemoryPlugin(KernelBaseModel):
         self,
         text: Annotated[str, "The information to save."],
         key: Annotated[str, "The unique key to associate with the information."],
-        collection: Annotated[Optional[str], "The collection to save the information."] = DEFAULT_COLLECTION,
+        collection: Annotated[str, "The collection to save the information."] = DEFAULT_COLLECTION,
     ) -> None:
         """
         Save a fact to the long term memory.

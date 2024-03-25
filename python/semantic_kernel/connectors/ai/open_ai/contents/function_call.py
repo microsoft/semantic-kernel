@@ -1,12 +1,9 @@
 """Class to hold chat messages."""
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from semantic_kernel.exceptions import (
-    FunctionCallInvalidArgumentsException,
-    FunctionCallInvalidNameException,
-)
+from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException, FunctionCallInvalidNameException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -14,16 +11,16 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 class FunctionCall(KernelBaseModel):
     """Class to hold a function call response."""
 
-    name: Optional[str] = None
-    arguments: Optional[str] = None
+    name: str | None = None
+    arguments: str | None = None
 
-    def __add__(self, other: Optional["FunctionCall"]) -> "FunctionCall":
+    def __add__(self, other: "FunctionCall | None") -> "FunctionCall":
         """Add two function calls together, combines the arguments, ignores the name."""
         if not other:
             return self
         return FunctionCall(name=self.name or other.name, arguments=(self.arguments or "") + (other.arguments or ""))
 
-    def parse_arguments(self) -> Optional[Dict[str, Any]]:
+    def parse_arguments(self) -> dict[str, Any] | None:
         """Parse the arguments into a dictionary."""
         if not self.arguments:
             return None
@@ -39,7 +36,7 @@ class FunctionCall(KernelBaseModel):
             return KernelArguments()
         return KernelArguments(**args)
 
-    def split_name(self) -> List[str]:
+    def split_name(self) -> list[str]:
         """Split the name into a plugin and function name."""
         if not self.name:
             raise FunctionCallInvalidNameException("Name is not set.")
@@ -47,7 +44,7 @@ class FunctionCall(KernelBaseModel):
             return ["", self.name]
         return self.name.split("-", maxsplit=1)
 
-    def split_name_dict(self) -> dict:
+    def split_name_dict(self) -> dict[str, str]:
         """Split the name into a plugin and function name."""
         parts = self.split_name()
         return {"plugin_name": parts[0], "function_name": parts[1]}

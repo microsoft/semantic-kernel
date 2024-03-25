@@ -31,7 +31,7 @@ class ChatHistory(KernelBaseModel):
     as a keyword argument, but not be part of the class definition.
 
     Attributes:
-        messages (List[ChatMessageContent]): The list of chat messages in the history.
+        messages (list[ChatMessageContent]): The list of chat messages in the history.
     """
 
     messages: list["ChatMessageContent"]
@@ -51,8 +51,8 @@ class ChatHistory(KernelBaseModel):
 
         Parameters:
         - **data: Arbitrary keyword arguments. The constructor looks for two optional keys:
-            - 'messages': Optional[List[ChatMessageContent]], a list of chat messages to include in the history.
-            - 'system_message' Optional[str]: An optional string representing a system-generated message to be
+            - 'messages': list[ChatMessageContent] | None, a list of chat messages to include in the history.
+            - 'system_message' str | None: An optional string representing a system-generated message to be
                 included at the start of the chat history.
 
         Note: The 'system_message' is not retained as part of the class's attributes; it's used during
@@ -105,10 +105,10 @@ class ChatHistory(KernelBaseModel):
         dictionary with the necessary information to construct a ChatMessageContent instance.
 
         Args:
-            message (Union[ChatMessageContent, dict]): The message to add, either as
+            message (ChatMessageContent | dict): The message to add, either as
                 a pre-constructed ChatMessageContent instance or a dictionary specifying 'role' and 'content'.
-            encoding (Optional[str]): The encoding of the message. Required if 'message' is a dict.
-            metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
+            encoding (str | None): The encoding of the message. Required if 'message' is a dict.
+            metadata (dict[str, Any] | None): Any metadata to attach to the message. Required if 'message' is a dict.
         """
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
 

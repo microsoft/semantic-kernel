@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Optional, Union
 
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -47,15 +48,15 @@ class KernelFunction(KernelBaseModel):
             underscores with a minimum length of 1.
         plugin_name (str): The name of the plugin that contains this function. Must be upper/lower
             case letters and underscores with a minimum length of 1.
-        description (Optional[str]): The description of the function.
+        description (str | None): The description of the function.
         is_prompt (bool): Whether the function is semantic.
-        stream_function (Optional[Callable[..., Any]]): The stream function for the function.
-        parameters (List[KernelParameterMetadata]): The parameters for the function.
-        return_parameter (Optional[KernelParameterMetadata]): The return parameter for the function.
+        stream_function (Callable[..., Any] | None): The stream function for the function.
+        parameters (list[KernelParameterMetadata]): The parameters for the function.
+        return_parameter (KernelParameterMetadata | None): The return parameter for the function.
         function (Callable[..., Any]): The function to call.
         prompt_execution_settings (PromptExecutionSettings): The AI prompt execution settings.
         prompt_template_config (PromptTemplateConfig): The prompt template configuration.
-        metadata (Optional[KernelFunctionMetadata]): The metadata for the function.
+        metadata (KernelFunctionMetadata | None): The metadata for the function.
     """
 
     # some attributes are now properties, still listed here for documentation purposes
@@ -67,13 +68,13 @@ class KernelFunction(KernelBaseModel):
         cls,
         function_name: str,
         plugin_name: str,
-        description: Optional[str] = None,
-        prompt: Optional[str] = None,
+        description: str | None = None,
+        prompt: str | None = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        prompt_template: Optional["PromptTemplateBase"] = None,
-        prompt_template_config: Optional["PromptTemplateConfig"] = None,
+        prompt_template: "PromptTemplateBase" | None = None,
+        prompt_template_config: "PromptTemplateConfig" | None = None,
         prompt_execution_settings: Optional[
-            Union["PromptExecutionSettings", List["PromptExecutionSettings"], Dict[str, "PromptExecutionSettings"]]
+            Union["PromptExecutionSettings", list["PromptExecutionSettings"], dict[str, "PromptExecutionSettings"]]
         ] = None,
     ) -> "KernelFunctionFromPrompt":
         """
@@ -96,8 +97,8 @@ class KernelFunction(KernelBaseModel):
     def from_method(
         cls,
         method: Callable[..., Any],
-        plugin_name: Optional[str] = None,
-        stream_method: Optional[Callable[..., Any]] = None,
+        plugin_name: str | None = None,
+        stream_method: Callable[..., Any] | None = None,
     ) -> "KernelFunctionFromMethod":
         """
         Create a new instance of the KernelFunctionFromMethod class.
@@ -123,7 +124,7 @@ class KernelFunction(KernelBaseModel):
         return self.metadata.fully_qualified_name
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         return self.metadata.description
 
     @property
@@ -131,26 +132,26 @@ class KernelFunction(KernelBaseModel):
         return self.metadata.is_prompt
 
     @property
-    def parameters(self) -> List[KernelParameterMetadata]:
+    def parameters(self) -> list[KernelParameterMetadata]:
         return self.metadata.parameters
 
     @property
-    def return_parameter(self) -> Optional[KernelParameterMetadata]:
+    def return_parameter(self) -> KernelParameterMetadata | None:
         return self.metadata.return_parameter
 
     async def __call__(
         self,
         kernel: "Kernel",
-        arguments: Optional[KernelArguments] = None,
+        arguments: KernelArguments | None = None,
         **kwargs: Any,
     ) -> "FunctionResult":
         """Invoke the function with the given arguments.
 
         Args:
             kernel (Kernel): The kernel
-            arguments (Optional[KernelArguments]): The Kernel arguments.
+            arguments (KernelArguments | None): The Kernel arguments.
                 Optional, defaults to None.
-            kwargs (Dict[str, Any]): Additional keyword arguments that will be
+            kwargs (dict[str, Any]): Additional keyword arguments that will be
 
         Returns:
             FunctionResult: The result of the function
@@ -168,7 +169,7 @@ class KernelFunction(KernelBaseModel):
     async def invoke(
         self,
         kernel: "Kernel",
-        arguments: Optional[KernelArguments] = None,
+        arguments: KernelArguments | None = None,
         **kwargs: Any,
     ) -> "FunctionResult":
         """Invoke the function with the given arguments.
@@ -197,15 +198,15 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[Union["StreamingContentMixin", Any]]]]:
+    ) -> AsyncIterable[Union[FunctionResult, list["StreamingContentMixin | Any"]]]:
         pass
 
     async def invoke_stream(
         self,
         kernel: "Kernel",
-        arguments: Optional[KernelArguments] = None,
+        arguments: KernelArguments | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[Union[FunctionResult, List[Union["StreamingContentMixin", Any]]]]:
+    ) -> AsyncIterable[Union[FunctionResult, list["StreamingContentMixin | Any"]]]:
         """
         Invoke a stream async function with the given arguments.
 

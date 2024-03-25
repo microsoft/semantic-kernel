@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 

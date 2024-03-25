@@ -5,9 +5,7 @@ import typing_extensions as te
 from pydantic import Field, Json
 
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins.conversation_summary_plugin import (
-    ConversationSummaryPlugin,
-)
+from semantic_kernel.core_plugins.conversation_summary_plugin import ConversationSummaryPlugin
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
@@ -20,9 +18,7 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
+from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -171,7 +167,7 @@ class TestUsageInPydanticFields:
         class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: t.Optional[kernel_type] = None
+            field: t.kernel_type | None = None
 
         assert_serializable(TestModel(), TestModel)
 

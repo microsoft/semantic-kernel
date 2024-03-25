@@ -5,7 +5,7 @@ For each function the list includes details about the input parameters.
 {{ActionPlanner_Excluded.EdgeCaseExamples}}
 [END OF EXAMPLES]
 [REAL SCENARIO STARTS HERE]
-- List of functions:
+- list of functions:
 {{ActionPlanner_Excluded.ListOfFunctions}}
 - End list of functions.
 Goal: {{ $goal }}

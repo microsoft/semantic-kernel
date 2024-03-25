@@ -1,5 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 # Even though there is no strict separation between errors and exceptions in Python, it is a good practice to use:
 # - Exceptions for exceptional conditions that a reasonable application may wish to catch.

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-from typing import List, Tuple
+from __future__ import annotations
 
 from numpy import ndarray
 
@@ -100,11 +99,11 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.create_collection(collection_name)
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            list[str] -- The list of collections.
         """
         return await self.cosmosStore.get_collections()
 
@@ -142,15 +141,15 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.upsert(str(), record)
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upsert a batch of records.
 
         Arguments:
             collection_name {str}        -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+            records {list[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records.
+            list[str] -- The unique database keys of the records.
         """
         return await self.cosmosStore.upsert_batch(str(), records)
 
@@ -167,16 +166,16 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.get(str(), key, with_embedding)
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
             collection_name {str}  -- The name of the collection to get the records from.
-            keys {List[str]}       -- The unique database keys of the records.
+            keys {list[str]}       -- The unique database keys of the records.
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            list[MemoryRecord] -- The records.
         """
         return await self.cosmosStore.get_batch(str(), keys, with_embeddings)
 
@@ -192,12 +191,12 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.remove(str(), key)
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]}      -- The unique database keys of the records to remove.
+            keys {list[str]}      -- The unique database keys of the records to remove.
 
         Returns:
             None
@@ -211,7 +210,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using vector configuration.
 
         Parameters:
@@ -222,7 +221,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
             with_embeddings {bool}      -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            list[tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
         return await self.cosmosStore.get_nearest_matches(str(), embedding, limit, min_relevance_score, with_embeddings)
 
@@ -232,7 +231,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float,
         with_embedding: bool,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
         Arguments:
@@ -242,6 +241,6 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
             with_embedding {bool}       -- Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            tuple[MemoryRecord, float] -- The record and the relevance score.
         """
         return await self.cosmosStore.get_nearest_match(str(), embedding, min_relevance_score, with_embedding)

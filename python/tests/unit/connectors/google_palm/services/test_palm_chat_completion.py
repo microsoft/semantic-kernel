@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import asyncio
 import sys
@@ -10,12 +11,8 @@ from pydantic import ValidationError
 if sys.version_info >= (3, 9):
     from google.generativeai.types import ChatResponse, MessageDict
 
-    from semantic_kernel.connectors.ai.google_palm import (
-        GooglePalmChatPromptExecutionSettings,
-    )
-    from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
-        GooglePalmChatCompletion,
-    )
+    from semantic_kernel.connectors.ai.google_palm import GooglePalmChatPromptExecutionSettings
+    from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import GooglePalmChatCompletion
     from semantic_kernel.contents.chat_history import ChatHistory
 
 

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -9,18 +10,18 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 
 class OllamaPromptExecutionSettings(PromptExecutionSettings):
     ai_model_id: str = Field("", serialization_alias="model")
-    format: Optional[Literal["json"]] = None
-    options: Optional[Dict[str, Any]] = None
+    format: Literal["json"] | None = None
+    options: dict[str, Any] | None = None
     stream: bool = False
 
 
 class OllamaTextPromptExecutionSettings(OllamaPromptExecutionSettings):
-    prompt: Optional[str] = None
-    context: Optional[str] = None
-    system: Optional[str] = None
-    template: Optional[str] = None
+    prompt: str | None = None
+    context: str | None = None
+    system: str | None = None
+    template: str | None = None
     raw: bool = False
 
 
 class OllamaChatPromptExecutionSettings(OllamaPromptExecutionSettings):
-    messages: Optional[List[Dict[str, str]]] = None
+    messages: list[dict[str, str]] | None = None

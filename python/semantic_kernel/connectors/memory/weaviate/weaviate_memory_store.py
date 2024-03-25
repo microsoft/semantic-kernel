@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import asyncio
 import logging
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import numpy as np
 import weaviate
@@ -140,7 +140,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         schema["class"] = collection_name
         await asyncio.get_running_loop().run_in_executor(None, self.client.schema.create_class, schema)
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         schemas = await asyncio.get_running_loop().run_in_executor(None, self.client.schema.get)
         return [schema["class"] for schema in schemas["classes"]]
 
@@ -166,7 +166,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             vector,
         )
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         def _upsert_batch_inner():
             results = []
             with self.client.batch as batch:
@@ -191,7 +191,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         results = await self.get_batch(collection_name, [key], with_embedding)
         return results[0] if results else None
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embedding: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embedding: bool) -> list[MemoryRecord]:
         queries = self._build_multi_get_query(collection_name, keys, with_embedding)
 
         results = await asyncio.get_running_loop().run_in_executor(None, self.client.query.multi_get(queries).do)
@@ -204,7 +204,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         return memory_records
 
-    def _build_multi_get_query(self, collection_name: str, keys: List[str], with_embedding: bool):
+    def _build_multi_get_query(self, collection_name: str, keys: list[str], with_embedding: bool):
         queries = []
         for i, key in enumerate(keys):
             query = self.client.query.get(collection_name, ALL_PROPERTIES).with_where(
@@ -234,7 +234,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         await self.remove_batch(collection_name, [key])
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         # TODO: Use In operator when it's available
         #       (https://github.com/weaviate/weaviate/issues/2387)
         #       and handle max delete objects
@@ -257,7 +257,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         nearVector = {
             "vector": embedding,
             "certainty": min_relevance_score,
@@ -296,7 +296,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         embedding: np.ndarray,
         min_relevance_score: float,
         with_embedding: bool,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         results = await self.get_nearest_matches(
             collection_name,
             embedding,

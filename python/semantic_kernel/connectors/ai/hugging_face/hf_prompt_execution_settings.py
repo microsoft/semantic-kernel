@@ -1,4 +1,7 @@
-from typing import Any, Dict
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
+from typing import Any
 
 from transformers import GenerationConfig
 
@@ -24,7 +27,7 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
             )
         )
 
-    def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
         gen_config = self.get_generation_config()
         settings = {
             "generation_config": gen_config,

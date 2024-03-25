@@ -4,18 +4,23 @@ from __future__ import annotations
 import logging
 import sys
 from functools import wraps
-from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
+from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction
 from typing import Any, Callable
+
+if sys.version_info < (3, 10):
+    from get_annotations import get_annotations
+else:
+    from inspect import get_annotations
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)
 
 
 def kernel_function(
-    func: Callable[[Any], Any] | None = None,
+    func: Callable[..., Any] | None = None,
     name: str | None = None,
     description: str | None = None,
-) -> Callable[[Any], Any]:
+) -> Callable[..., Any]:
     """
     Decorator for kernel functions, can be used directly as @kernel_function
     or with parameters @kernel_function(name='function', description='I am a function.').
@@ -39,8 +44,8 @@ def kernel_function(
     and that is stored as a bool in __kernel_function_streaming__.
 
     Args:
-        name (Optional[str]) -- The name of the function, if not supplied, the function name will be used.
-        description (Optional[str]) -- The description of the function,
+        name (str | None) -- The name of the function, if not supplied, the function name will be used.
+        description (str | None) -- The description of the function,
             if not supplied, the function docstring will be used, can be None.
 
     """
@@ -52,18 +57,36 @@ def kernel_function(
         func.__kernel_function_name__ = name or func.__name__
         func.__kernel_function_streaming__ = isasyncgenfunction(func) or isgeneratorfunction(func)
         logger.debug(f"Parsing decorator for function: {func.__kernel_function_name__}")
+        try:
+            annotations = get_annotations(func, eval_str=True)
+        except Exception as ex:
+            logger.error(f"Failed to get annotations for function {func.__name__}: {ex}")
+            annotations = {}
+        # if sys.version_info >= (3, 10):
+        #     func_sig = signature(func, eval_str=True)
+        # else:
+        #     # func_sig = signature(func)
+        #     param_types: dict[str, Any] = get_annotations(func, eval_str=True)
+        #     new_parameters: list[Parameter] = []
+        #     if "self" in func_sig.parameters:
+        #         new_parameters.append(func_sig.parameters["self"])
+        #     for p_name, param in param_types.items():
+        #         if p_name not in func_sig.parameters:
+        #             continue
+        #         orig_param = func_sig.parameters[p_name]
+        #         new_parameters.append(
+        #             Parameter(name=p_name, kind=orig_param.kind, annotation=param, default=orig_param.default)
+        #         )
+        #     func_sig.replace(
+        #         parameters=new_parameters,
+        #         return_annotation=param_types.get("return", func_sig.return_annotation),
+        #     )
 
-        if sys.version_info > (3, 9):
-            func_sig = signature(func, eval_str=True)
-        else:
-            func_sig = signature(func)
-        logger.debug(f"{func_sig=}")
-        func.__kernel_function_parameters__ = [
-            _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
-        ]
+        logger.debug(f"{annotations=}")
+        func.__kernel_function_parameters__ = [_parse_parameter(name, param) for name, param in annotations.items()]
         return_param_dict = {}
-        if func_sig.return_annotation != Signature.empty:
-            return_param_dict = _parse_annotation(func_sig.return_annotation)
+        if not annotations.get("return", None):
+            return_param_dict = _parse_annotation(annotations.get("return"))
         func.__kernel_function_return_type__ = return_param_dict.get("type_", "None")
         func.__kernel_function_return_description__ = return_param_dict.get("description", "")
         func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)
@@ -74,14 +97,18 @@ def kernel_function(
     return decorator
 
 
-def _parse_parameter(param: Parameter) -> dict[str, Any]:
-    logger.debug(f"Parsing param: {param}")
-    ret = {}
-    if param != Parameter.empty:
-        ret = _parse_annotation(param.annotation)
-    ret["name"] = param.name
-    if param.default != Parameter.empty:
-        ret["default_value"] = param.default
+def _parse_parameter(name: str, param: Parameter) -> dict[str, Any]:
+    logger.debug(f"Parsing param: {name}")
+    logger.debug(f"Parsing annotation: {param}")
+    ret = {"name": name}
+    if not isinstance(param, str):
+        if hasattr(param, "annotation"):
+            ret = _parse_annotation(param.annotation)
+        if hasattr(param, "default"):
+            ret["default_value"] = param.default
+    else:
+        ret["type_"] = param
+        ret["is_required"] = True
     return ret
 
 

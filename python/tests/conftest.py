@@ -1,10 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
-
 from __future__ import annotations
 
 import os
 import warnings
-from typing import Callable, List
+from typing import Callable
 from unittest.mock import Mock
 
 import pytest
@@ -96,7 +95,7 @@ def custom_plugin_class():
 
 @pytest.fixture(scope="session")
 def create_mock_function() -> Callable:
-    async def stream_func(*args, **kwargs) -> List[StreamingTextContent]:
+    async def stream_func(*args, **kwargs) -> list[StreamingTextContent]:
         yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
 
     def create_mock_function(name: str, value: str = "test") -> KernelFunction:

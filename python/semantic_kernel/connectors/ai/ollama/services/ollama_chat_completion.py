@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import json
 import logging
-from typing import Any, AsyncIterable, List, Optional
+from typing import Any, AsyncIterable
 
 import aiohttp
 from pydantic import HttpUrl
@@ -28,19 +29,19 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 
     Arguments:
         ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
-        url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/chat
-        session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
+        url {str | HttpUrl | None} -- URL of the Ollama server, defaults to http://localhost:11434/api/chat
+        session {aiohttp.ClientSession | None} -- Optional client session to use for requests.
     """
 
     url: HttpUrl = "http://localhost:11434/api/chat"
-    session: Optional[aiohttp.ClientSession] = None
+    session: aiohttp.ClientSession | None = None
 
     async def complete_chat(
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> List[ChatMessageContent]:
+    ) -> list[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
@@ -48,10 +49,10 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
                 that can be rendered into a set of messages, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
-            kwargs {Dict[str, Any]} -- The optional arguments.
+            kwargs {dict[str, Any]} -- The optional arguments.
 
         Returns:
-            List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
+            list[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -75,7 +76,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> AsyncIterable[List[StreamingChatMessageContent]]:
+    ) -> AsyncIterable[list[StreamingChatMessageContent]]:
         """
         Streams a text completion using a Ollama model.
         Note that this method does not support multiple responses.
@@ -84,10 +85,10 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
                 that can be rendered into a set of messages, from system, user, assistant and function.
             settings {OllamaChatPromptExecutionSettings} -- Request settings.
-            kwargs {Dict[str, Any]} -- The optional arguments.
+            kwargs {dict[str, Any]} -- The optional arguments.
 
         Yields:
-            List[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.
+            list[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -116,7 +117,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -125,7 +126,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             settings {OllamaChatPromptExecutionSettings} -- Settings for the request.
 
         Returns:
-            List["TextContent"] -- The completion result(s).
+            list["TextContent"] -- The completion result(s).
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -147,7 +148,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-    ) -> AsyncIterable[List[StreamingTextContent]]:
+    ) -> AsyncIterable[list[StreamingTextContent]]:
         """
         Streams a text completion using a Ollama model.
         Note that this method does not support multiple responses.
@@ -157,7 +158,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             settings {OllamaChatPromptExecutionSettings} -- Request settings.
 
         Yields:
-            List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
+            list["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
         """
 
         if not settings.ai_model_id:

@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 from textwrap import dedent
 from unittest.mock import MagicMock, Mock

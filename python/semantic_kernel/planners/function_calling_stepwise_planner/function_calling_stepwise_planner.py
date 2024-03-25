@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import asyncio
 import logging
 import os
 from copy import copy
-from typing import Optional
 
 import yaml
 
@@ -13,10 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.utils import (
-    get_function_calling_object,
-    get_tool_call_object,
-)
+from semantic_kernel.connectors.ai.open_ai.utils import get_function_calling_object, get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -56,7 +53,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     generate_plan_yaml: str
     step_prompt: str
 
-    def __init__(self, service_id: str, options: Optional[FunctionCallingStepwisePlannerOptions] = None):
+    def __init__(self, service_id: str, options: FunctionCallingStepwisePlannerOptions | None = None):
         """Initialize a new instance of the FunctionCallingStepwisePlanner
 
         The FunctionCallingStepwisePlanner is a planner based on top of an OpenAI Chat Completion service
@@ -68,7 +65,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
 
         Args:
             service_id (str): The service id
-            options (Optional[FunctionCallingStepwisePlannerOptions], optional): The options for
+            options (FunctionCallingStepwisePlannerOptions | None, optional): The options for
                 the function calling stepwise planner. Defaults to None.
         """
         options = options or FunctionCallingStepwisePlannerOptions()

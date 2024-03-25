@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 import sentence_transformers
 import torch
@@ -20,8 +21,8 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     def __init__(
         self,
         ai_model_id: str,
-        device: Optional[int] = -1,
-        service_id: Optional[str] = None,
+        device: int | None = -1,
+        service_id: str | None = None,
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextEmbedding class.
@@ -29,7 +30,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         Arguments:
             ai_model_id {str} -- Hugging Face model card string, see
                 https://huggingface.co/sentence-transformers
-            device {Optional[int]} -- Device to run the model on, -1 for CPU, 0+ for GPU.
+            device {int | None} -- Device to run the model on, -1 for CPU, 0+ for GPU.
             log  -- The logger instance to use. (Optional) (Deprecated)
 
         Note that this model will be downloaded from the Hugging Face model hub.
@@ -42,12 +43,12 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
-    async def generate_embeddings(self, texts: List[str]) -> ndarray:
+    async def generate_embeddings(self, texts: list[str]) -> ndarray:
         """
         Generates embeddings for a list of texts.
 
         Arguments:
-            texts {List[str]} -- Texts to generate embeddings for.
+            texts {list[str]} -- Texts to generate embeddings for.
 
         Returns:
             ndarray -- Embeddings for the texts.

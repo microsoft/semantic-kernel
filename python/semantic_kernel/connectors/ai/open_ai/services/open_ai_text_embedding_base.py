@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
-from typing import Any, List, Optional
+from typing import Any
 
 from numpy import array, ndarray
 
@@ -13,13 +14,13 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 
 
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
-    async def generate_embeddings(self, texts: List[str], batch_size: Optional[int] = None, **kwargs: Any) -> ndarray:
+    async def generate_embeddings(self, texts: list[str], batch_size: int | None = None, **kwargs: Any) -> ndarray:
         """Generates embeddings for the given texts.
 
         Arguments:
-            texts {List[str]} -- The texts to generate embeddings for.
-            batch_size {Optional[int]} -- The batch size to use for the request.
-            kwargs {Dict[str, Any]} -- Additional arguments to pass to the request,
+            texts {list[str]} -- The texts to generate embeddings for.
+            batch_size {int | None} -- The batch size to use for the request.
+            kwargs {dict[str, Any]} -- Additional arguments to pass to the request,
                 see OpenAIEmbeddingPromptExecutionSettings for the details.
 
         Returns:

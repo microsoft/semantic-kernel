@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import json
 import logging
 import re
 from enum import Enum
-from typing import Callable, Dict
+from typing import Callable
 
 from semantic_kernel.contents.chat_history import ROOT_KEY_MESSAGE, ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -139,7 +140,7 @@ def _snake_case(this, *args, **kwargs):
     return arg.lower()
 
 
-HANDLEBAR_SYSTEM_HELPERS: Dict[str, Callable] = {
+HANDLEBAR_SYSTEM_HELPERS: dict[str, Callable] = {
     "set": _set,
     "get": _get,
     "array": _array,

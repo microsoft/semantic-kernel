@@ -1,21 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Mapping, Optional, overload
+from collections.abc import Mapping
+from typing import Any, overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
-    AzureOpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
-    OpenAITextCompletionBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -28,11 +24,11 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         self,
         base_url: str,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
@@ -63,12 +59,12 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         deployment_name: str,
         endpoint: str,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        log: Optional[Any] = None,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        log: Any | None = None,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
@@ -98,7 +94,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
-        service_id: Optional[str] = None,
+        service_id: str | None = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -114,16 +110,16 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
 
     def __init__(
         self,
-        deployment_name: Optional[str] = None,
-        endpoint: Optional[str] = None,
-        base_url: Optional[str] = None,
+        deployment_name: str | None = None,
+        endpoint: str | None = None,
+        base_url: str | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        async_client: Optional[AsyncAzureOpenAI] = None,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncAzureOpenAI | None = None,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
@@ -146,7 +142,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use.
+            async_client {AsyncAzureOpenAI | None} -- An existing client to use.
         """
         super().__init__(
             deployment_name=deployment_name,
@@ -163,7 +159,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         )
 
     @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "AzureTextCompletion":
+    def from_dict(cls, settings: dict[str, str]) -> "AzureTextCompletion":
         """
         Initialize an Azure OpenAI service from a dictionary of settings.
 

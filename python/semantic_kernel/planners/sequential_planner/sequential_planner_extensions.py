@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -37,8 +37,8 @@ class SequentialPlannerKernelExtension:
     async def get_functions_manual(
         kernel: "Kernel",
         arguments: KernelArguments,
-        semantic_query: str = None,
-        config: SequentialPlannerConfig = None,
+        semantic_query: str | None = None,
+        config: SequentialPlannerConfig | None = None,
     ) -> str:
         config = config or SequentialPlannerConfig()
 
@@ -56,7 +56,7 @@ class SequentialPlannerKernelExtension:
         kernel: Kernel,
         arguments: KernelArguments,
         config: SequentialPlannerConfig,
-        semantic_query: Optional[str] = None,
+        semantic_query: str | None = None,
     ):
         excluded_plugins = config.excluded_plugins or []
         excluded_functions = config.excluded_functions or []
@@ -91,9 +91,9 @@ class SequentialPlannerKernelExtension:
     @staticmethod
     async def get_relevant_functions(
         kernel: Kernel,
-        available_functions: List[KernelFunctionMetadata],
-        memories: Optional[List[MemoryQueryResult]] = None,
-    ) -> List[KernelFunctionMetadata]:
+        available_functions: list[KernelFunctionMetadata],
+        memories: list[MemoryQueryResult] | None = None,
+    ) -> list[KernelFunctionMetadata]:
         relevant_functions = []
         # TODO: cancellation
         if memories is None:

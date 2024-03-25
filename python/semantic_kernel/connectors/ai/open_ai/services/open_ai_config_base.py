@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import Dict, Mapping, Optional
+from collections.abc import Mapping
 
 from openai import AsyncOpenAI
 from pydantic import Field, validate_call
@@ -20,12 +21,12 @@ class OpenAIConfigBase(OpenAIHandler):
     def __init__(
         self,
         ai_model_id: str = Field(min_length=1),
-        api_key: Optional[str] = Field(min_length=1),
-        ai_model_type: Optional[OpenAIModelTypes] = OpenAIModelTypes.CHAT,
-        org_id: Optional[str] = None,
-        service_id: Optional[str] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        async_client: Optional[AsyncOpenAI] = None,
+        api_key: str | None = Field(min_length=1),
+        ai_model_type: OpenAIModelTypes | None = OpenAIModelTypes.CHAT,
+        org_id: str | None = None,
+        service_id: str | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncOpenAI | None = None,
     ) -> None:
         """Initialize a client for OpenAI services.
 
@@ -35,13 +36,13 @@ class OpenAIConfigBase(OpenAIHandler):
         Arguments:
             ai_model_id {str} -- OpenAI model identifier. Must be non-empty.
                 Default to a preset value.
-            api_key {Optional[str]} -- OpenAI API key for authentication.
+            api_key {str | None} -- OpenAI API key for authentication.
                 Must be non-empty. (Optional)
-            ai_model_type {Optional[OpenAIModelTypes]} -- The type of OpenAI
+            ai_model_type {OpenAIModelTypes | None} -- The type of OpenAI
                 model to interact with. Defaults to CHAT.
-            org_id {Optional[str]} -- OpenAI organization ID. This is optional
+            org_id {str | None} -- OpenAI organization ID. This is optional
                 unless the account belongs to multiple organizations.
-            default_headers {Optional[Mapping[str, str]]} -- Default headers
+            default_headers {Mapping[str, str] | None} -- Default headers
                 for HTTP requests. (Optional)
 
         """
@@ -68,7 +69,7 @@ class OpenAIConfigBase(OpenAIHandler):
             args["service_id"] = service_id
         super().__init__(**args)
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         """
         Create a dict of the service settings.
         """

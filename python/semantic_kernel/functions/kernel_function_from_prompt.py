@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Optional
 
 from pydantic import Field, ValidationError, model_validator
 
@@ -43,19 +44,19 @@ class KernelFunctionFromPrompt(KernelFunction):
     """Semantic Kernel Function from a prompt."""
 
     prompt_template: PromptTemplateBase
-    prompt_execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
+    prompt_execution_settings: dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     def __init__(
         self,
         function_name: str,
         plugin_name: str,
-        description: Optional[str] = None,
-        prompt: Optional[str] = None,
+        description: str | None = None,
+        prompt: str | None = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        prompt_template: Optional[PromptTemplateBase] = None,
-        prompt_template_config: Optional[PromptTemplateConfig] = None,
+        prompt_template: PromptTemplateBase | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
         prompt_execution_settings: Optional[
-            Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
+            PromptExecutionSettings | list[PromptExecutionSettings, dict[str, PromptExecutionSettings]]
         ] = None,
     ) -> None:
         """
@@ -66,14 +67,14 @@ class KernelFunctionFromPrompt(KernelFunction):
             plugin_name (str): The name of the plugin
             description (str): The description for the function
 
-            prompt (Optional[str]): The prompt
-            template_format (Optional[str]): The template format, default is "semantic-kernel"
-            prompt_template (Optional[KernelPromptTemplate]): The prompt template
-            prompt_template_config (Optional[PromptTemplateConfig]): The prompt template configuration
+            prompt (str | None): The prompt
+            template_format (str | None): The template format, default is "semantic-kernel"
+            prompt_template (KernelPromptTemplate | None): The prompt template
+            prompt_template_config (PromptTemplateConfig | None): The prompt template configuration
             prompt_execution_settings (Optional): instance, list or dict of PromptExecutionSettings to be used
                 by the function, can also be supplied through prompt_template_config,
                 but the supplied one is used if both are present.
-                prompt_template_config (Optional[PromptTemplateConfig]): the prompt template config.
+                prompt_template_config (PromptTemplateConfig | None): the prompt template config.
         """
         if not prompt and not prompt_template_config and not prompt_template:
             raise FunctionInitializationError(
@@ -112,8 +113,8 @@ through prompt_template_config or in the prompt_template."
     @classmethod
     def rewrite_execution_settings(
         cls,
-        data: Dict[str, Any],
-    ) -> Dict[str, PromptExecutionSettings]:
+        data: dict[str, Any],
+    ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary.
 
         If the prompt_execution_settings is not a dictionary, it is converted to a dictionary.
@@ -212,7 +213,7 @@ through prompt_template_config or in the prompt_template."
 
     def _create_function_result(
         self,
-        completions: Union[List[ChatMessageContent], List[TextContent]],
+        completions: list[ChatMessageContent] | list[TextContent],
         chat_history: ChatHistory,
         arguments: KernelArguments,
         prompt: str = None,
@@ -236,7 +237,7 @@ through prompt_template_config or in the prompt_template."
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncIterable[FunctionResult | list[StreamingContentMixin]]:
         """Invokes the function stream with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
@@ -271,7 +272,7 @@ through prompt_template_config or in the prompt_template."
         execution_settings: PromptExecutionSettings,
         prompt: str,
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncIterable[FunctionResult | list[StreamingContentMixin]]:
         """Handles the chat service call."""
 
         # pass the kernel in for auto function calling
@@ -303,7 +304,7 @@ through prompt_template_config or in the prompt_template."
         service: TextCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncIterable[FunctionResult | list[StreamingContentMixin]]:
         """Handles the text service call."""
         try:
             async for partial_content in service.complete_stream(prompt=prompt, settings=execution_settings):

@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import json
 import logging
 import os
 import sys
 from textwrap import dedent
-from typing import Optional
+from typing import Any
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -55,9 +56,9 @@ class ActionPlanner:
         self,
         kernel: Kernel,
         service_id: str,
-        config: Optional[ActionPlannerConfig] = None,
-        prompt: Optional[str] = None,
-        **kwargs,
+        config: ActionPlannerConfig | None = None,
+        prompt: str | None = None,
+        **kwargs: Any,
     ) -> None:
         if kernel is None:
             raise PlannerInvalidConfigurationError("Kernel cannot be `None`.")
@@ -157,12 +158,12 @@ class ActionPlanner:
 
         return plan
 
-    @kernel_function(description="List a few good examples of plans to generate", name="GoodExamples")
+    @kernel_function(description="list a few good examples of plans to generate", name="GoodExamples")
     def good_examples(self, goal: Annotated[str, "The current goal processed by the planner"]) -> str:
         return dedent(
             """
             [EXAMPLE]
-            - List of functions:
+            - list of functions:
             // Get the current time.
             TimePlugin.Time
             No parameters.
@@ -180,14 +181,14 @@ class ActionPlanner:
         )
 
     @kernel_function(
-        description="List a few edge case examples of plans to handle",
+        description="list a few edge case examples of plans to handle",
         name="EdgeCaseExamples",
     )
     def edge_case_examples(self, goal: Annotated[str, "The current goal processed by the planner"]) -> str:
         return dedent(
             '''
             [EXAMPLE]
-            - List of functions:
+            - list of functions:
             // Get the current time.
             TimePlugin.Time
             No parameters.
@@ -209,7 +210,7 @@ class ActionPlanner:
             '''
         )
 
-    @kernel_function(description="List all functions available in the kernel", name="ListOfFunctions")
+    @kernel_function(description="list all functions available in the kernel", name="ListOfFunctions")
     def list_of_functions(self, goal: Annotated[str, "The current goal processed by the planner"]) -> str:
         available_functions = [
             self._create_function_string(func)
@@ -223,7 +224,7 @@ class ActionPlanner:
 
         available_functions_str = "\n".join(available_functions)
 
-        logger.info(f"List of available functions:\n{available_functions_str}")
+        logger.info(f"list of available functions:\n{available_functions_str}")
 
         return available_functions_str
 

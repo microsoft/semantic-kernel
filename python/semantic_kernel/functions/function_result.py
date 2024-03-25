@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import Any, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any
 
 from pydantic import Field
 
@@ -49,7 +51,7 @@ class FunctionResult(KernelBaseModel):
         else:
             return ""
 
-    def get_inner_content(self, index: int = 0) -> Optional[Any]:
+    def get_inner_content(self, index: int = 0) -> Any | None:
         """Get the inner content of the function result.
 
         Arguments:

@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from re import compile
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
@@ -31,20 +32,20 @@ class FunctionIdBlock(Block):
 
     Args:
         content (str): The content of the block.
-        function_name (Optional[str], optional): The function name.
-        plugin_name (Optional[str], optional): The plugin name.
+        function_name (str | None, optional): The function name.
+        plugin_name (str | None, optional): The plugin name.
 
     Raises:
         ValueError: If the content does not have valid syntax.
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.FUNCTION_ID
-    function_name: Optional[str] = ""
-    plugin_name: Optional[str] = None
+    function_name: str | None = ""
+    plugin_name: str | None = None
 
     @model_validator(mode="before")
     @classmethod
-    def parse_content(cls, fields: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_content(cls, fields: dict[str, Any]) -> dict[str, Any]:
         """Parse the content of the function id block and extract the plugin and function name.
 
         If both are present in the fields, return the fields as is.
@@ -61,5 +62,5 @@ class FunctionIdBlock(Block):
         fields["function_name"] = matches.group("function")
         return fields
 
-    def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
+    def render(self, *_: tuple["Kernel", "KernelArguments"] | None) -> str:
         return self.content

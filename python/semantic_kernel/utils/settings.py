@@ -1,16 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
-from typing import Dict, Optional, Tuple, Union
+from typing import Union
 
 from dotenv import dotenv_values
 
 
-def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+def openai_settings_from_dot_env() -> tuple[str, str] | None:
     """
     Reads the OpenAI API key and organization ID from the .env file.
 
     Returns:
-        Tuple[str, str]: The OpenAI API key, the OpenAI organization ID
+        tuple[str, str]: The OpenAI API key, the OpenAI organization ID
     """
 
     config = dotenv_values(".env")
@@ -25,17 +26,17 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
 def azure_openai_settings_from_dot_env(
     include_deployment: bool = True, include_api_version: bool = False
-) -> Union[Tuple[str, str, str], Tuple[str, str, str, str]]:
+) -> Union[tuple[str, str, str], tuple[str, str, str, str]]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
 
     Arguments:
         include_deployment {bool} -- Whether to include the deployment name in the return value
         include_api_version {bool} -- Whether to include the API version in the return value,
-            when set to True, this will also make the output a Tuple[str, str, str, str].
+            when set to True, this will also make the output a tuple[str, str, str, str].
 
     Returns:
-        Union[Tuple[str, str, str], Tuple[str, str, str, str]]: The deployment name (or empty), Azure OpenAI API key,
+        Union[tuple[str, str, str], tuple[str, str, str, str]]: The deployment name (or empty), Azure OpenAI API key,
           the endpoint and optionally the api version
     """
 
@@ -62,12 +63,12 @@ def azure_openai_settings_from_dot_env(
 
 def azure_openai_settings_from_dot_env_as_dict(
     include_deployment: bool = True, include_api_version: bool = False
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
 
     Returns:
-        Dict[str, str]: The deployment name (or empty), Azure OpenAI API key,
+        dict[str, str]: The deployment name (or empty), Azure OpenAI API key,
         endpoint and api version (or empty)
     """
     (
@@ -102,11 +103,11 @@ def postgres_settings_from_dot_env() -> str:
     return connection_string
 
 
-def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+def pinecone_settings_from_dot_env() -> tuple[str, str] | None:
     """
     Reads the Pinecone API key and Environment from the .env file.
     Returns:
-        Tuple[str, str]: The Pinecone API key, the Pinecone Environment
+        tuple[str, str]: The Pinecone API key, the Pinecone Environment
     """
 
     api_key, environment = None, None
@@ -130,11 +131,11 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     return api_key, environment
 
 
-def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+def astradb_settings_from_dot_env() -> tuple[str, str] | None:
     """
     Reads the Astradb API key and Environment from the .env file.
     Returns:
-        Tuple[str, str]: The Astradb API key, the Astradb Environment
+        tuple[str, str]: The Astradb API key, the Astradb Environment
     """
 
     app_token, db_id, region, keyspace = None, None, None, None
@@ -170,12 +171,12 @@ def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     return app_token, db_id, region, keyspace
 
 
-def weaviate_settings_from_dot_env() -> Tuple[Optional[str], str]:
+def weaviate_settings_from_dot_env() -> tuple[str | None, str]:
     """
     Reads the Weaviate API key and URL from the .env file.
 
     Returns:
-        Tuple[str, str]: The Weaviate API key, the Weaviate URL
+        tuple[str, str]: The Weaviate API key, the Weaviate URL
     """
 
     config = dotenv_values(".env")
@@ -234,7 +235,7 @@ def google_palm_settings_from_dot_env() -> str:
     return api_key
 
 
-def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str]:
+def azure_cosmos_db_settings_from_dot_env() -> tuple[str, str]:
     """
     Reads the Azure CosmosDB environment variables for the .env file.
     Returns:
@@ -265,12 +266,12 @@ def redis_settings_from_dot_env() -> str:
 
 def azure_aisearch_settings_from_dot_env(
     include_index_name=False,
-) -> Union[Tuple[str, str], Tuple[str, str, str]]:
+) -> tuple[str | str, tuple[str, str, str]]:
     """
     Reads the Azure AI Search environment variables for the .env file.
 
     Returns:
-        Tuple[str, str]: Azure AI Search API key, the Azure AI Search URL
+        tuple[str, str]: Azure AI Search API key, the Azure AI Search URL
     """
     config = dotenv_values(".env")
     api_key = config.get("AZURE_AISEARCH_API_KEY", None)
@@ -287,12 +288,12 @@ def azure_aisearch_settings_from_dot_env(
         return api_key, url, index_name
 
 
-def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
+def azure_aisearch_settings_from_dot_env_as_dict() -> dict[str, str]:
     """
     Reads the Azure AI Search environment variables including index name from the .env file.
 
     Returns:
-        Dict[str, str]: the Azure AI search environment variables
+        dict[str, str]: the Azure AI search environment variables
     """
     api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
     return {"key": api_key, "endpoint": url, "indexName": index_name}

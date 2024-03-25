@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import json
 import os
@@ -14,9 +15,7 @@ from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import StepwisePlanner
-from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (
-    StepwisePlannerConfig,
-)
+from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import StepwisePlannerConfig
 
 
 class TempWebSearchEnginePlugin:

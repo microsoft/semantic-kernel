@@ -1,13 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 from re import match as re_match
-from typing import Optional
 
-from semantic_kernel.exceptions import (
-    FunctionInvalidNameError,
-    FunctionInvalidParamNameError,
-    PluginInvalidNameError,
-)
+from semantic_kernel.exceptions import FunctionInvalidNameError, FunctionInvalidParamNameError, PluginInvalidNameError
 
 # Validation regexes
 PLUGIN_NAME_REGEX = r"^[0-9A-Za-z_]+$"
@@ -16,7 +12,7 @@ FULLY_QUALIFIED_FUNCTION_NAME = r"^(?P<plugin>[0-9A-Za-z_]+)[.](?P<function>[0-9
 FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 
 
-def validate_plugin_name(value: Optional[str]) -> None:
+def validate_plugin_name(value: str | None) -> None:
     """
     Validates that the plugin name is valid.
 
@@ -38,7 +34,7 @@ def validate_plugin_name(value: Optional[str]) -> None:
         )
 
 
-def validate_function_name(value: Optional[str]) -> None:
+def validate_function_name(value: str | None) -> None:
     """
     Validates that the function name is valid.
 
@@ -60,7 +56,7 @@ def validate_function_name(value: Optional[str]) -> None:
         )
 
 
-def validate_function_param_name(value: Optional[str]) -> None:
+def validate_function_param_name(value: str | None) -> None:
     """
     Validates that the function parameter name is valid.
 

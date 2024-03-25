@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-"""A basic JSON-based planner for the Python Semantic Kernel"""
+from __future__ import annotations
 
 import json
 
@@ -10,6 +9,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+"""A basic JSON-based planner for the Python Semantic Kernel"""
 
 
 class Plan:

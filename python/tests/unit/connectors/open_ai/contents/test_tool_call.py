@@ -1,5 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall

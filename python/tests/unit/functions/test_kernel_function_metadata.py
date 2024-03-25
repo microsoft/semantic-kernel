@@ -1,4 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import pytest
 
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata

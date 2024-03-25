@@ -1,19 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import Dict, Mapping, Optional, overload
+from collections.abc import Mapping
+from typing import overload
 
 from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
-    OpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
-    OpenAITextEmbeddingBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -26,7 +22,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         self,
         ai_model_id: str,
         async_client: AsyncOpenAI,
-        service_id: Optional[str] = None,
+        service_id: str | None = None,
     ) -> None:
         """
         Initialize an OpenAITextEmbedding service.
@@ -40,11 +36,11 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
     def __init__(
         self,
         ai_model_id: str,
-        api_key: Optional[str] = None,
-        org_id: Optional[str] = None,
-        service_id: Optional[str] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        async_client: Optional[AsyncOpenAI] = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
+        service_id: str | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncOpenAI | None = None,
     ) -> None:
         """
         Initializes a new instance of the OpenAITextCompletion class.
@@ -54,12 +50,12 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 https://platform.openai.com/docs/models
             api_key {str} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys
-            org_id {Optional[str]} -- OpenAI organization ID.
+            org_id {str | None} -- OpenAI organization ID.
                 This is usually optional unless your
                 account belongs to multiple organizations.
-            default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
+            default_headers {Mapping[str,str] | None}: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
+            async_client {AsyncOpenAI | None} -- An existing client to use. (Optional)
         """
         super().__init__(
             ai_model_id=ai_model_id,
@@ -72,7 +68,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         )
 
     @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextEmbedding":
+    def from_dict(cls, settings: dict[str, str]) -> "OpenAITextEmbedding":
         """
         Initialize an Open AI service from a dictionary of settings.
 

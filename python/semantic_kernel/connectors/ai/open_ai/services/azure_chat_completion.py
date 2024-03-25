@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import logging
-from typing import Any, Dict, Mapping, Optional, Union, overload
+from collections.abc import Mapping
+from typing import Any, overload
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -32,13 +35,13 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def __init__(
         self,
         deployment_name: str,
-        base_url: Union[HttpsUrl, str],
-        service_id: Optional[str] = None,
+        base_url: HttpsUrl | str,
+        service_id: str | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -69,13 +72,13 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def __init__(
         self,
         deployment_name: str,
-        endpoint: Union[HttpsUrl, str],
+        endpoint: HttpsUrl | str,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -105,7 +108,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         self,
         deployment_name: str,
         async_client: AsyncAzureOpenAI,
-        service_id: Optional[str] = None,
+        service_id: str | None = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -123,13 +126,13 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def __init__(
         self,
         deployment_name: str,
-        endpoint: Union[HttpsUrl, str],
+        endpoint: HttpsUrl | str,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
         use_extensions: bool = False,
     ) -> None:
         """
@@ -162,15 +165,15 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def __init__(
         self,
         deployment_name: str,
-        endpoint: Optional[Union[HttpsUrl, str]] = None,
-        base_url: Optional[Union[HttpsUrl, str]] = None,
+        endpoint: HttpsUrl | str | None = None,
+        base_url: HttpsUrl | str | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        async_client: Optional[AsyncAzureOpenAI] = None,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncAzureOpenAI | None = None,
         use_extensions: bool = False,
     ) -> None:
         """
@@ -200,7 +203,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 The default value is False.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
+            async_client {AsyncAzureOpenAI | None} -- An existing client to use. (Optional)
             use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
                 When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
                 The default value is False.
@@ -224,7 +227,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         )
 
     @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "AzureChatCompletion":
+    def from_dict(cls, settings: dict[str, str]) -> "AzureChatCompletion":
         """
         Initialize an Azure OpenAI service from a dictionary of settings.
 
@@ -250,7 +253,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         return AzureChatPromptExecutionSettings
 
     def _create_chat_message_content(
-        self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
+        self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
     ) -> AzureChatMessageContent:
         """Create a Azure chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -270,7 +273,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         self,
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
-        chunk_metadata: Dict[str, Any],
+        chunk_metadata: dict[str, Any],
     ):
         """Create a Azure streaming chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -288,7 +291,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             tool_message=self._get_tool_message_from_chat_choice(choice),
         )
 
-    def _get_tool_message_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[str]:
+    def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> str | None:
         """Get the tool message from a choice."""
         if isinstance(choice, Choice):
             content = choice.message

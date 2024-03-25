@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 import urllib
-from typing import List
 
 import aiohttp
 
@@ -27,7 +27,7 @@ class BingConnector(ConnectorBase):
                 "Bing API key cannot be null. Please set environment variable BING_API_KEY."
             )
 
-    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:
+    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
         """
         Returns the search results of the query provided by pinging the Bing web search API.
         Returns `num_results` results and ignores the first `offset`.

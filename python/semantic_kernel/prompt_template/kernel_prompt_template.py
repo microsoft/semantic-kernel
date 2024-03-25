@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
 from pydantic import PrivateAttr, field_validator
 
@@ -22,7 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelPromptTemplate(PromptTemplateBase):
-    _blocks: List[Block] = PrivateAttr(default_factory=list)
+    _blocks: list[Block] = PrivateAttr(default_factory=list)
 
     @field_validator("prompt_template_config")
     @classmethod
@@ -56,13 +57,13 @@ class KernelPromptTemplate(PromptTemplateBase):
                         # is a named arg block.
                         self._add_if_missing(sub_block.variable.name, seen)
 
-    def _add_if_missing(self, variable_name: str, seen: Optional[set] = None):
+    def _add_if_missing(self, variable_name: str, seen: set | None = None):
         # Convert variable_name to lower case to handle case-insensitivity
         if variable_name and variable_name.lower() not in seen:
             seen.add(variable_name.lower())
             self.prompt_template_config.input_variables.append(InputVariable(name=variable_name))
 
-    def extract_blocks(self) -> List[Block]:
+    def extract_blocks(self) -> list[Block]:
         """
         Given a prompt template string, extract all the blocks
         (text, variables, function calls).
@@ -79,7 +80,7 @@ class KernelPromptTemplate(PromptTemplateBase):
             return []
         return TemplateTokenizer.tokenize(self.prompt_template_config.template)
 
-    async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+    async def render(self, kernel: "Kernel", arguments: "KernelArguments" | None = None) -> str:
         """
         Using the prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -96,7 +97,7 @@ class KernelPromptTemplate(PromptTemplateBase):
             arguments = KernelArguments()
         return await self.render_blocks(self._blocks, kernel, arguments)
 
-    async def render_blocks(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
+    async def render_blocks(self, blocks: list[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -108,7 +109,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
         logger.debug(f"Rendering list of {len(blocks)} blocks")
-        rendered_blocks: List[str] = []
+        rendered_blocks: list[str] = []
         for block in blocks:
             if isinstance(block, TextRenderer):
                 rendered_blocks.append(block.render(kernel, arguments))
@@ -124,13 +125,13 @@ class KernelPromptTemplate(PromptTemplateBase):
         return prompt
 
     def render_variables(
-        self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None
-    ) -> List[Block]:
+        self, blocks: list[Block], kernel: "Kernel", arguments: "KernelArguments" | None = None
+    ) -> list[Block]:
         """
         Given a list of blocks, render the Variable Blocks, replacing
         placeholders with the actual value in memory.
 
-        :param blocks: List of blocks, typically all the blocks found in a template
+        :param blocks: list of blocks, typically all the blocks found in a template
         :param variables: Container of all the temporary variables known to the kernel
         :return: An updated list of blocks where Variable Blocks have rendered to
             Text Blocks
@@ -139,7 +140,7 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         logger.debug("Rendering variables")
 
-        rendered_blocks: List[Block] = []
+        rendered_blocks: list[Block] = []
         for block in blocks:
             if block.type == BlockTypes.VARIABLE:
                 rendered_blocks.append(TextBlock.from_text(block.render(kernel, arguments)))
@@ -148,12 +149,12 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         return rendered_blocks
 
-    async def render_code(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> List[Block]:
+    async def render_code(self, blocks: list[Block], kernel: "Kernel", arguments: "KernelArguments") -> list[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
         functions and replacing placeholders with the functions result.
 
-        :param blocks: List of blocks, typically all the blocks found in a template
+        :param blocks: list of blocks, typically all the blocks found in a template
         :param execution_context: Access into the current kernel execution context
         :return: An updated list of blocks where Code Blocks have rendered to
             Text Blocks
@@ -162,7 +163,7 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         logger.debug("Rendering code")
 
-        rendered_blocks: List[Block] = []
+        rendered_blocks: list[Block] = []
         for block in blocks:
             if block.type == BlockTypes.CODE:
                 rendered_blocks.append(TextBlock.from_text(await block.render_code(kernel, arguments)))
