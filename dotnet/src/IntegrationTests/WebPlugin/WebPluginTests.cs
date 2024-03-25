@@ -18,7 +18,6 @@ public sealed class WebPluginTests : IDisposable
         this._output = output;
 
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         IConfigurationRoot configuration = new ConfigurationBuilder()
