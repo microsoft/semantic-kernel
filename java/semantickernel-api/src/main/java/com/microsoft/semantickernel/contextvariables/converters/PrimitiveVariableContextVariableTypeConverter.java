@@ -10,6 +10,8 @@ import javax.annotation.Nullable;
 
 /**
  * A {@link ContextVariableTypeConverter} for primative variables.
+ *
+ * @param <T> the type of the variable
  */
 public class PrimitiveVariableContextVariableTypeConverter<T> extends
     ContextVariableTypeConverter<T> {
