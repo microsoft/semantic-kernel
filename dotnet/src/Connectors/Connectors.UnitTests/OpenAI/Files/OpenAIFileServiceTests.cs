@@ -262,7 +262,6 @@ public sealed class OpenAIFileServiceTests : IDisposable
                 new OpenAIFileService("api-key", "organization", this._httpClient);
     }
 
-
     private HttpResponseMessage CreateSuccessResponse(string payload)
     {
         return
