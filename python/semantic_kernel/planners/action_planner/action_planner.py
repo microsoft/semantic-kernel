@@ -148,7 +148,7 @@ class ActionPlanner:
             )
             plan = Plan(description=goal, function=function_ref)
 
-        if "parameters" in generated_plan['plan']:
+        if "parameters" in generated_plan["plan"]:
             for key, val in generated_plan["plan"]["parameters"].items():
                 logger.info(f"Parameter {key}: {val}")
                 if val:
