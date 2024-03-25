@@ -243,7 +243,7 @@ public abstract class ToolCallBehavior
                 throw new KernelException($"Auto-invocation with {nameof(RequiredFunction)} is not supported when no kernel is provided.");
             }
 
-            // Make sure that if auto-invocation is specified, every enabled function can be found in the kernel.
+            // Make sure that if auto-invocation is specified, the required function can be found in the kernel.
             if (autoInvoke)
             {
                 if (!kernel!.Plugins.TryGetFunction(this._function.PluginName, this._function.FunctionName, out _))
