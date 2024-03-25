@@ -244,12 +244,9 @@ public abstract class ToolCallBehavior
             }
 
             // Make sure that if auto-invocation is specified, the required function can be found in the kernel.
-            if (autoInvoke)
+            if (autoInvoke && !kernel!.Plugins.TryGetFunction(this._function.PluginName, this._function.FunctionName, out _))
             {
-                if (!kernel!.Plugins.TryGetFunction(this._function.PluginName, this._function.FunctionName, out _))
-                {
-                    throw new KernelException($"The specified {nameof(RequiredFunction)} function {this._function.FullyQualifiedName} is not available in the kernel.");
-                }
+                throw new KernelException($"The specified {nameof(RequiredFunction)} function {this._function.FullyQualifiedName} is not available in the kernel.");
             }
 
             options.ToolChoice = this._choice;
