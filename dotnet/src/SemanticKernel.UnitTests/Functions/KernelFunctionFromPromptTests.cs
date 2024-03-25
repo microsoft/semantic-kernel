@@ -56,9 +56,9 @@ public class KernelFunctionFromPromptTests
     }
 
     [Theory]
-    [InlineData(null, "Assistant is a large language model.")]
+    [InlineData(null, null)]
     [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string? providedSystemChatPrompt, string expectedSystemChatPrompt)
+    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string? providedSystemChatPrompt, string? expectedSystemChatPrompt)
     {
         // Arrange
         var mockTextGeneration = new Mock<ITextGenerationService>();

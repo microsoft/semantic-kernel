@@ -27,8 +27,7 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(settings);
-        Assert.NotNull(settings.ChatSystemPrompt);
-        Assert.Equal("Assistant is a large language model.", settings.ChatSystemPrompt);
+        Assert.Null(settings.ChatSystemPrompt);
     }
 
     [Fact]

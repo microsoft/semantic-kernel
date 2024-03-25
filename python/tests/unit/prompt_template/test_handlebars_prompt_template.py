@@ -329,3 +329,41 @@ async def test_helpers_messageToPrompt_other(kernel: Kernel):
     other_list = ["test1", "test2"]
     rendered = await target.render(kernel, KernelArguments(other_list=other_list))
     assert rendered.strip() == """test1 test2"""
+
+
+@mark.asyncio
+async def test_helpers_unless(kernel: Kernel):
+    template = """{{#unless test}}test2{{/unless}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test2="test2"))
+    assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_with(kernel: Kernel):
+    template = """{{#with test}}{{test1}}{{/with}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test={"test1": "test2"}))
+    assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_lookup(kernel: Kernel):
+    template = """{{lookup test 'test1'}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test={"test1": "test2"}))
+    assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_chat_history_messages(kernel: Kernel):
+    template = """{{messages chat_history}}"""
+    target = create_handlebars_prompt_template(template)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("User message")
+    chat_history.add_assistant_message("Assistant message")
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert (
+        rendered.strip()
+        == """<chat_history><message role="user">User message</message><message role="assistant">Assistant message</message></chat_history>"""  # noqa E501
+    )
