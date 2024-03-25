@@ -49,7 +49,7 @@ public sealed class Example85_AgentCharts : BaseTest
             await InvokeAgentAsync(
                 thread,
                 "1-first", @"
-Display this data using a bar-chart with no sumation:
+Display this data using a bar-chart with no summation:
 
 Banding  Brown Pink Yellow  Sum
 X00000   339   433     126  898
