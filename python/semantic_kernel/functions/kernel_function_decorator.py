@@ -1,20 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 import logging
+import sys
 from functools import wraps
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)
 
 
 def kernel_function(
-    func: Callable = None,
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-):
+    func: Callable[[Any], Any] | None = None,
+    name: str | None = None,
+    description: str | None = None,
+) -> Callable[[Any], Any]:
     """
     Decorator for kernel functions, can be used directly as @kernel_function
     or with parameters @kernel_function(name='function', description='I am a function.').
@@ -45,14 +46,17 @@ def kernel_function(
     """
 
     @wraps(func)
-    def decorator(func: Callable):
+    def decorator(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         func.__kernel_function__ = True
         func.__kernel_function_description__ = description or func.__doc__
         func.__kernel_function_name__ = name or func.__name__
         func.__kernel_function_streaming__ = isasyncgenfunction(func) or isgeneratorfunction(func)
         logger.debug(f"Parsing decorator for function: {func.__kernel_function_name__}")
 
-        func_sig = signature(func, eval_str=True)
+        if sys.version_info > (3, 9):
+            func_sig = signature(func, eval_str=True)
+        else:
+            func_sig = signature(func)
         logger.debug(f"{func_sig=}")
         func.__kernel_function_parameters__ = [
             _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
@@ -70,7 +74,7 @@ def kernel_function(
     return decorator
 
 
-def _parse_parameter(param: Parameter) -> Dict[str, Any]:
+def _parse_parameter(param: Parameter) -> dict[str, Any]:
     logger.debug(f"Parsing param: {param}")
     ret = {}
     if param != Parameter.empty:
@@ -81,7 +85,7 @@ def _parse_parameter(param: Parameter) -> Dict[str, Any]:
     return ret
 
 
-def _parse_annotation(annotation: Parameter) -> Dict[str, Any]:
+def _parse_annotation(annotation: Parameter) -> dict[str, Any]:
     logger.debug(f"Parsing annotation: {annotation}")
     if annotation == Signature.empty:
         return {"type_": "Any", "is_required": True}
@@ -94,7 +98,7 @@ def _parse_annotation(annotation: Parameter) -> Dict[str, Any]:
     return ret
 
 
-def _parse_internal_annotation(annotation: Parameter, required: bool) -> Dict[str, Any]:
+def _parse_internal_annotation(annotation: Parameter, required: bool) -> dict[str, Any]:
     logger.debug(f"Internal {annotation=}")
     if hasattr(annotation, "__forward_arg__"):
         return {"type_": annotation.__forward_arg__, "is_required": required}
