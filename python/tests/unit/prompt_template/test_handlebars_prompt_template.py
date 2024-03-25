@@ -353,3 +353,17 @@ async def test_helpers_lookup(kernel: Kernel):
     target = create_handlebars_prompt_template(template)
     rendered = await target.render(kernel, KernelArguments(test={"test1": "test2"}))
     assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_chat_history_messages(kernel: Kernel):
+    template = """{{messages chat_history}}"""
+    target = create_handlebars_prompt_template(template)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("User message")
+    chat_history.add_assistant_message("Assistant message")
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert (
+        rendered.strip()
+        == """<chat_history><message role="user">User message</message><message role="assistant">Assistant message</message></chat_history>"""  # noqa E501
+    )
