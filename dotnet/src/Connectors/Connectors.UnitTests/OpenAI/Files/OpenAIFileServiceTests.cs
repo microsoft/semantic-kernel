@@ -37,8 +37,8 @@ public sealed class OpenAIFileServiceTests : IDisposable
     {
         // Arrange & Act
         var service = includeLoggerFactory ?
-            new OpenAIFileService("api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAIFileService("api-key", "organization");
+            new OpenAIFileService("api-key", loggerFactory: this._mockLoggerFactory.Object) :
+            new OpenAIFileService("api-key");
 
         // Assert
         Assert.NotNull(service);
