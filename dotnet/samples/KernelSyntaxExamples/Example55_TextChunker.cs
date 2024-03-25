@@ -112,14 +112,12 @@ public class Example55_TextChunker : BaseTest
 
         public MicrosoftMLTokenCounter()
         {
-            this._tokenizer = new(new Bpe());
+            this._tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
         }
 
         public int Count(string input)
         {
-            var tokens = this._tokenizer.Encode(input).Tokens;
-
-            return tokens.Count;
+            return this._tokenizer.CountTokens(input);
         }
     }
 

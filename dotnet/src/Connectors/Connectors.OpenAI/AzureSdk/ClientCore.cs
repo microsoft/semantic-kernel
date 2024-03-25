@@ -736,13 +736,15 @@ internal abstract class ClientCore
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient)
+    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, OpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
-        OpenAIClientOptions options = new()
-        {
-            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-        };
+        OpenAIClientOptions options = serviceVersion is not null ?
+            new(serviceVersion.Value) :
+            new();
+
+        options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
@@ -770,7 +772,7 @@ internal abstract class ClientCore
 
         if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt))
         {
-            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt);
+            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt!);
             textRole = AuthorRole.User;
         }
 
