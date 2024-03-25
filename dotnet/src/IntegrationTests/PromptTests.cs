@@ -68,21 +68,7 @@ public sealed class PromptTests : IDisposable
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~PromptTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-        }
+        this._logger.Dispose();
     }
 
     private void ConfigureAzureOpenAI(IKernelBuilder kernelBuilder)

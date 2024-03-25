@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAIAudioToTextTests : IDisposable
+public sealed class OpenAIAudioToTextTests
 {
     private readonly IConfigurationRoot _configuration;
 
@@ -79,9 +79,5 @@ public sealed class OpenAIAudioToTextTests : IDisposable
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
-    }
-
-    public void Dispose()
-    {
     }
 }
