@@ -1317,7 +1317,9 @@ public sealed class KernelFunctionFromMethodTests1
         }
     }
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class ThirdPartyJsonPrimitive
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
         private readonly string _jsonToReturn;
 
