@@ -407,7 +407,9 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
-                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+#pragma warning disable CS0618 // Type or member is obsolete
+                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior?.ToolCallResultSerializerOptions ?? kernel.SerializerOptions);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, toolCall.Id, this.Logger);
 
@@ -618,7 +620,9 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
-                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+#pragma warning disable CS0618 // Type or member is obsolete
+                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior?.ToolCallResultSerializerOptions ?? kernel.SerializerOptions);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
 
@@ -1111,9 +1115,9 @@ internal abstract class ClientCore
     /// Processes the function result.
     /// </summary>
     /// <param name="functionResult">The result of the function call.</param>
-    /// <param name="toolCallBehavior">The ToolCallBehavior object containing optional settings like JsonSerializerOptions.TypeInfoResolver.</param>
+    /// <param name="serializerOptions">Options to control the JSON serialization behavior.</param>
     /// <returns>A string representation of the function result.</returns>
-    private static string? ProcessFunctionResult(object functionResult, ToolCallBehavior? toolCallBehavior)
+    private static string? ProcessFunctionResult(object functionResult, JsonSerializerOptions? serializerOptions)
     {
         if (functionResult is string stringResult)
         {
@@ -1131,6 +1135,6 @@ internal abstract class ClientCore
         // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
         // For more details about the polymorphic serialization, see the article at:  
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
-        return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
+        return JsonSerializer.Serialize(functionResult, serializerOptions);
     }
 }

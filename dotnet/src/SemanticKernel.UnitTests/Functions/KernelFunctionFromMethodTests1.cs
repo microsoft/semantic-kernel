@@ -1209,57 +1209,6 @@ public sealed class KernelFunctionFromMethodTests1
     }
 
     [Fact]
-    public async Task ItCanDeserializeJsonDocumentAsync()
-    {
-        // Arrange
-        var document = JsonDocument.Parse(@"{""id"":28}");
-        CustomTypeForJsonTests? actualArgValue = null;
-
-        var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
-
-        // Act
-        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = document });
-
-        // Assert
-        Assert.NotNull(actualArgValue);
-        Assert.Equal(28, actualArgValue.Id);
-    }
-
-    [Fact]
-    public async Task ItCanDeserializeJsonElementAsync()
-    {
-        // Arrange
-        var element = JsonDocument.Parse(@"{""id"":28}").RootElement;
-        CustomTypeForJsonTests? actualArgValue = null;
-
-        var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
-
-        // Act
-        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = element });
-
-        // Assert
-        Assert.NotNull(actualArgValue);
-        Assert.Equal(28, actualArgValue.Id);
-    }
-
-    [Fact]
-    public async Task ItCanDeserializeJsonNodeAsync()
-    {
-        // Arrange
-        var node = JsonNode.Parse(@"{""id"":28}");
-        CustomTypeForJsonTests? actualArgValue = null;
-
-        var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
-
-        // Act
-        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = node });
-
-        // Assert
-        Assert.NotNull(actualArgValue);
-        Assert.Equal(28, actualArgValue.Id);
-    }
-
-    [Fact]
     public async Task ItShouldNotDeserializeIfParameterTypeAndArgumentTypeAreSameAsync()
     {
         // Arrange
@@ -1276,38 +1225,68 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Same(node, actualArgValue);
     }
 
-    [Fact]
-    public async Task ItCanDeserializeJsonStringAsync()
+    [Theory]
+    [InlineData(typeof(string))]
+    [InlineData(typeof(JsonNode))]
+    [InlineData(typeof(JsonDocument))]
+    [InlineData(typeof(JsonElement))]
+    public async Task ItCanDeserializeFunctionArgumentsAsync(Type paramType)
     {
         // Arrange
-        var jsonString = @"{""id"":28}";
+        object? paramValue = paramType switch
+        {
+            Type t when t == typeof(string) => @"{""id"":28}",
+            Type t when t == typeof(JsonNode) => JsonNode.Parse(@"{""id"":28}"),
+            Type t when t == typeof(JsonDocument) => JsonDocument.Parse(@"{""id"":28}"),
+            Type t when t == typeof(JsonElement) => JsonDocument.Parse(@"{""id"":28}").RootElement,
+            _ => throw new ArgumentOutOfRangeException(nameof(paramType))
+        };
+
         CustomTypeForJsonTests? actualArgValue = null;
 
         var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
 
         // Act
-        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = jsonString });
+        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = paramValue });
 
         // Assert
         Assert.NotNull(actualArgValue);
-        Assert.Equal(28, actualArgValue.Id);
+        Assert.Equal(13, actualArgValue.Id);
     }
 
-    [Fact]
-    public async Task ItCanDeserializeThirdPartyJsonPrimitivesAsync()
+    [Theory]
+    [InlineData(typeof(string))]
+    [InlineData(typeof(JsonNode))]
+    [InlineData(typeof(JsonDocument))]
+    [InlineData(typeof(JsonElement))]
+    public async Task ItCanUseKernelSerializerOptionsForArgumentsDeserializationAsync(Type paramType)
     {
         // Arrange
-        var thirdPartyJsonPrimitive = new ThirdPartyJsonPrimitive(@"{""id"":28}");
+        object? paramValue = paramType switch
+        {
+            Type t when t == typeof(string) => @"{""id"":28}",
+            Type t when t == typeof(JsonNode) => JsonNode.Parse(@"{""id"":28}"),
+            Type t when t == typeof(JsonDocument) => JsonDocument.Parse(@"{""id"":28}"),
+            Type t when t == typeof(JsonElement) => JsonDocument.Parse(@"{""id"":28}").RootElement,
+            _ => throw new ArgumentOutOfRangeException(nameof(paramType))
+        };
+
+        this._kernel.SerializerOptions = new JsonSerializerOptions
+        {
+            // Registering a custom converter to always return 13 to make sure it's used
+            Converters = { new CustomTypeForJsonTestsConverter(13) }
+        };
+
         CustomTypeForJsonTests? actualArgValue = null;
 
         var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
 
         // Act
-        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = thirdPartyJsonPrimitive });
+        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = paramValue });
 
         // Assert
         Assert.NotNull(actualArgValue);
-        Assert.Equal(28, actualArgValue.Id);
+        Assert.Equal(13, actualArgValue.Id);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
@@ -1316,6 +1295,26 @@ public sealed class KernelFunctionFromMethodTests1
     {
         [JsonPropertyName("id")]
         public int Id { get; set; }
+    }
+
+    public class CustomTypeForJsonTestsConverter : JsonConverter<int>
+    {
+        private readonly int _expectedId;
+
+        public CustomTypeForJsonTestsConverter(int expectedId)
+        {
+            this._expectedId = expectedId;
+        }
+
+        public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return this._expectedId;
+        }
+
+        public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options)
+        {
+            writer.WriteNumberValue(value);
+        }
     }
 
     private sealed class ThirdPartyJsonPrimitive

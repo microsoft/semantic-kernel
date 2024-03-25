@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -91,6 +92,7 @@ public abstract class ToolCallBehavior
     /// <summary>
     /// Options to control tool call result serialization behavior.
     /// </summary>
+    [Obsolete("This property is deprecated in favor of Kernel.SerializerOptions and will be removed in one of the following releases.")]
     public virtual JsonSerializerOptions? ToolCallResultSerializerOptions { get; set; }
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
