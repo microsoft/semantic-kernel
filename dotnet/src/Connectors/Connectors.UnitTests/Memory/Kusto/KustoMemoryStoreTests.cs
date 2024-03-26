@@ -199,7 +199,7 @@ public class KustoMemoryStoreTests
                 new dynamic[] {
                     expectedMemoryRecord.Key,
                     KustoSerializer.SerializeMetadata(expectedMemoryRecord.Metadata),
-                    expectedMemoryRecord.Timestamp?.LocalDateTime,
+                    expectedMemoryRecord.Timestamp?.LocalDateTime!,
                     KustoSerializer.SerializeEmbedding(expectedMemoryRecord.Embedding),
                 }}));
 
