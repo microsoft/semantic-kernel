@@ -83,9 +83,7 @@ class KernelFunctionFromMethod(KernelFunction):
             "stream_method": (
                 stream_method
                 if stream_method is not None
-                else method
-                if isasyncgenfunction(method) or isgeneratorfunction(method)
-                else None
+                else method if isasyncgenfunction(method) or isgeneratorfunction(method) else None
             ),
         }
 
