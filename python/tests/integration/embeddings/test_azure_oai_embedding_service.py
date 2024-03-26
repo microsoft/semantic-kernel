@@ -54,7 +54,7 @@ async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel,
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version="2024-02-01",
         default_headers={"Test-User-X-ID": "test"},
     )
 

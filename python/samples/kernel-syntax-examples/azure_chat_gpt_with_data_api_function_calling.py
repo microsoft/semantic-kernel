@@ -22,13 +22,13 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 
 # NOTE:
 # AzureOpenAI function calling requires the following models: gpt-35-turbo (1106) or gpt-4 (1106-preview)
-# along with the API version: 2023-12-01-preview
+# along with the API version: 2024-02-15-preview
 # https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/function-calling?tabs=python
 
 kernel = sk.Kernel()
 
 # Load Azure OpenAI Settings
-deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+deployment, api_key, endpoint, api_version = sk.azure_openai_settings_from_dot_env(include_api_version=True)
 
 # Create the data source settings
 azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
@@ -48,7 +48,7 @@ chat_service = sk_oai.AzureChatCompletion(
     deployment_name="gpt-35-turbo-16k",
     api_key=api_key,
     endpoint=endpoint,
-    api_version="2023-12-01-preview",
+    api_version=api_version,
     use_extensions=True,
 )
 kernel.add_service(

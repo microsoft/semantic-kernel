@@ -24,7 +24,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 kernel = sk.Kernel()
 
 # Load Azure OpenAI Settings
-deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+deployment, api_key, endpoint, api_version = sk.azure_openai_settings_from_dot_env(include_api_version=True)
 
 # For example, AI Search index may contain the following document:
 
@@ -54,13 +54,13 @@ az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
 extra = ExtraBody(dataSources=[az_data])
 req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
-# When using data, set use_extensions=True and use the 2023-12-01-preview API version.
+# When using data, set use_extensions=True and use the 2024-02-15-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
     service_id="chat-gpt",
     deployment_name=deployment,
     api_key=api_key,
     endpoint=endpoint,
-    api_version="2023-12-01-preview",
+    api_version=api_version,
     use_extensions=True,
 )
 kernel.add_service(chat_service)

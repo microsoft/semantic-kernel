@@ -50,7 +50,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
             api_version: The API version to use. (Optional)
-                The default value is "2023-05-15".
+                The default value is "2024-02-01".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
             default_headers: The default headers mapping of string keys to
@@ -86,7 +86,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
             api_version: The API version to use. (Optional)
-                The default value is "2023-05-15".
+                The default value is "2024-02-01".
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
             default_headers: The default headers mapping of string keys to

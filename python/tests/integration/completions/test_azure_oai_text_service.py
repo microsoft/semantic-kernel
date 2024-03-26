@@ -80,7 +80,7 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version="2024-02-01",
         default_headers={"Test-User-X-ID": "test"},
     )
 

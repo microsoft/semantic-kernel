@@ -70,7 +70,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             can be found in the Keys & Endpoint section when examining
             your resource from the Azure portal.
         :param api_version: The API version to use. (Optional)
-            The default value is "2023-05-15".
+            The default value is "2024-02-01".
         :param api_key: The API key for the Azure deployment. This value can be
             found in the Keys & Endpoint section when examining your resource in
             the Azure portal. You can use either KEY1 or KEY2.

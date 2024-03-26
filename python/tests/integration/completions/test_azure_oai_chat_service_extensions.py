@@ -115,7 +115,7 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
             deployment_name=deployment_name,
             api_key=api_key,
             endpoint=endpoint,
-            api_version="2023-12-01-preview",
+            api_version="2024-02-15-preview",
             use_extensions=True,
         )
         kernel.add_service(chat_service)
