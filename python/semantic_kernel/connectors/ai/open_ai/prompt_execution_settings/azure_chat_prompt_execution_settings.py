@@ -19,6 +19,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.settings import AzureAISearchSettings
 
 logger = logging.getLogger(__name__)
 
@@ -86,10 +87,45 @@ class AzureCosmosDBDataSource(AzureChatRequestBase):
 
 class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
     endpoint: Optional[str] = None
-    key: Optional[str] = None
     query_type: Annotated[Literal["simple", "semantic", "vector", "vectorSimpleHybrid",
                                   "vectorSemanticHybrid"], AfterValidator(to_snake)] = "simple"
     authentication: Optional[ApiKeyAuthentication] = None
+
+    @staticmethod
+    def from_dotenv():
+        azure_aisearch_settings = AzureAISearchSettings()
+        embedding_dependency = None
+        if "vector" in azure_aisearch_settings.query_type:
+            if not azure_aisearch_settings.embedding_deployment_name:
+                raise ValueError(
+                    "No embedding deployment name found in the environment.  Please set AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME and try again.")
+
+            embedding_dependency = AzureEmbeddingDependency(
+                deployment_name=azure_aisearch_settings.embedding_deployment_name
+            )
+
+        return AzureAISearchDataSourceParameters(
+            index_name=azure_aisearch_settings.index_name,
+            index_language=azure_aisearch_settings.index_language,
+            fields_mapping=DataSourceFieldsMapping(
+                title_field=azure_aisearch_settings.title_column,
+                url_field=azure_aisearch_settings.url_column,
+                filepath_field=azure_aisearch_settings.filepath_column,
+                content_fields=azure_aisearch_settings.content_columns,
+                vector_fields=azure_aisearch_settings.vector_columns
+            ),
+            in_scope=azure_aisearch_settings.enable_in_domain,
+            top_n_documents=azure_aisearch_settings.top_k,
+            strictness=azure_aisearch_settings.strictness,
+            semantic_configuration=azure_aisearch_settings.semantic_search_config,
+            filter=azure_aisearch_settings.filter,
+            embedding_dependency=embedding_dependency,
+            authentication=ApiKeyAuthentication(
+                key=azure_aisearch_settings.api_key
+            ),
+            query_type=azure_aisearch_settings.query_type,
+            endpoint=azure_aisearch_settings.url
+        )
 
 
 class AzureAISearchDataSource(AzureChatRequestBase):

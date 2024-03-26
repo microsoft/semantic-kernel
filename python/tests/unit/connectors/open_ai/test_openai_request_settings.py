@@ -3,9 +3,8 @@
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
-    AzureAISearchDataSources,
+    AzureAISearchDataSource,
     AzureChatPromptExecutionSettings,
-    AzureDataSources,
     ExtraBody,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -54,7 +53,8 @@ def test_custom_openai_chat_prompt_execution_settings():
 
 def test_openai_chat_prompt_execution_settings_from_default_completion_config():
     settings = PromptExecutionSettings(service_id="test_service")
-    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings)
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature == 0.0
     assert chat_settings.top_p == 1.0
@@ -67,8 +67,10 @@ def test_openai_chat_prompt_execution_settings_from_default_completion_config():
 
 
 def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
-    chat_settings = OpenAIChatPromptExecutionSettings(service_id="test_service", temperature=1.0)
-    new_settings = OpenAIChatPromptExecutionSettings(service_id="test_2", temperature=0.0)
+    chat_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service", temperature=1.0)
+    new_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_2", temperature=0.0)
     chat_settings.update_from_prompt_execution_settings(new_settings)
     assert chat_settings.service_id == "test_2"
     assert chat_settings.temperature == 0.0
@@ -80,7 +82,8 @@ def test_openai_text_prompt_execution_settings_validation():
 
 
 def test_openai_text_prompt_execution_settings_validation_manual():
-    text_oai = OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=1)
+    text_oai = OpenAITextPromptExecutionSettings(
+        best_of=1, number_of_responses=1)
     with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
         text_oai.number_of_responses = 2
 
@@ -101,7 +104,8 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config():
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings)
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -128,7 +132,8 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings)
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -157,7 +162,8 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
-    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings)
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -195,12 +201,13 @@ def test_create_options():
 
 
 def test_create_options_azure_data():
-    az_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
-    az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
-    extra = ExtraBody(dataSources=[az_data])
+    az_source = AzureAISearchDataSource(parameters={
+        "indexName": "test-index", "endpoint": "test-endpoint", "authentication": {"type": "api_key", "api_key": "test-key"}})
+    extra = ExtraBody(dataSources=[az_source])
     settings = AzureChatPromptExecutionSettings(extra_body=extra)
     options = settings.prepare_settings_dict()
-    assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
+    assert options["extra_body"] == extra.model_dump(
+        exclude_none=True, by_alias=True)
 
 
 def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources():  # noqa: E501
@@ -228,7 +235,8 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources
             ]
         },
     }
-    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    settings = AzureChatPromptExecutionSettings.model_validate(
+        input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"
 
 
@@ -257,5 +265,6 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
             ]
         },
     }
-    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
+    settings = AzureChatPromptExecutionSettings.model_validate(
+        input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"

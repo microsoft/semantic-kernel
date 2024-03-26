@@ -9,8 +9,8 @@ import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
-    AzureAISearchDataSources,
-    AzureDataSources,
+    AzureAISearchDataSource,
+    AzureAISearchDataSourceParameters,
     ExtraBody,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -93,30 +93,31 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
 
         extra = ExtraBody(
             data_sources=[
-                AzureDataSources(
-                    type="AzureCognitiveSearch",
-                    parameters=AzureAISearchDataSources(
-                        indexName=collection,
+                AzureAISearchDataSource(
+                    parameters=AzureAISearchDataSourceParameters(
+                        index_name=collection,
                         endpoint=search_endpoint,
-                        key=search_api_key,
-                        queryType="simple",
-                        fieldsMapping={
+                        authentication={
+                            "type": "api_key",
+                            "api_key": search_api_key
+                        },
+                        query_type="simple",
+                        fields_mapping={
                             "titleField": "Description",
                             "contentFields": ["Text"],
                         },
-                        topNDocuments=1,
+                        top_n_documents=1,
                     ),
                 )
             ]
         )
-
+        print(f"deployment: {deployment_name}, endpoint: {endpoint}")
         chat_service = sk_oai.AzureChatCompletion(
             service_id="chat-gpt-extensions",
             deployment_name=deployment_name,
             api_key=api_key,
             endpoint=endpoint,
-            api_version="2023-12-01-preview",
-            use_extensions=True,
+            api_version="2024-02-15-preview",
         )
         kernel.add_service(chat_service)
 
@@ -124,7 +125,8 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
 
         exec_settings = PromptExecutionSettings(
             service_id="chat-gpt-extensions",
-            extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8, "extra_body": extra},
+            extension_data={"max_tokens": 2000, "temperature": 0.7,
+                            "top_p": 0.8, "extra_body": extra},
         )
 
         prompt_template_config = PromptTemplateConfig(
@@ -143,7 +145,6 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="The test is failing a 400 saying the request body is invalid. Will investigate.")
 @pytestmark
 async def test_azure_e2e_chat_completion_with_extensions(
     create_with_data_chat_function,
@@ -158,7 +159,8 @@ async def test_azure_e2e_chat_completion_with_extensions(
 
     chat_history = ChatHistory()
     chat_history.add_user_message("A story about Emily and David...")
-    arguments = KernelArguments(input="who are Emily and David?", chat_history=chat_history)
+    arguments = KernelArguments(
+        input="who are Emily and David?", chat_history=chat_history)
 
     # TODO: get streaming working for this test
     use_streaming = False

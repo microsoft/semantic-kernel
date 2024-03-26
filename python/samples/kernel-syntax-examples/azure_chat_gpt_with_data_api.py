@@ -9,6 +9,7 @@ from semantic_kernel.connectors.ai.open_ai.contents.function_call import Functio
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSource,
+    AzureAISearchDataSourceParameters,
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
@@ -17,17 +18,13 @@ from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.settings import (
-    azure_aisearch_settings_from_dot_env_as_dict,
-    azure_openai_settings_from_dot_env_as_dict,
-)
+from semantic_kernel.utils.settings import AzureChatCompletionSettings
 
 kernel = sk.Kernel()
 logging.basicConfig(level=logging.DEBUG)
 
 # Load Azure OpenAI Settings
-aoai_settings = azure_openai_settings_from_dot_env_as_dict(
-    include_api_version=True)
+aoai_settings = AzureChatCompletionSettings()
 
 # For example, AI Search index may contain the following document:
 
@@ -35,7 +32,7 @@ aoai_settings = azure_openai_settings_from_dot_env_as_dict(
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
+datasource_parameters_dict = AzureAISearchDataSourceParameters.from_dotenv().model_dump()
 
 # Our example index has fields "source_title", "source_text", "source_url", and "source_file".
 # Add fields mapping to the settings to indicate which fields to use for the title, content, URL, and file path.
@@ -45,15 +42,17 @@ azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
 #     "contentFields": ["source_text"],
 #     "filepathField": "source_file",
 # }
-azure_ai_search_settings["fields_mapping"] = {
-    "title_field": "title",
-    "url_field": "url",
-    "content_fields": ["content"],
-    "filepath_field": "filepath"
+
+datasource_parameters_dict["fieldsMapping"] = {
+    "titleField": "title",
+    "urlField": "url",
+    "contentFields": ["content"],
+    "filepathField": "filepath"
 }
 
 # Create the data source settings
-az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
+
+az_source = AzureAISearchDataSource(parameters=datasource_parameters_dict)
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(
     service_id="default", extra_body=extra)
@@ -61,7 +60,7 @@ req_settings = AzureChatPromptExecutionSettings(
 # When using data, use the 2024-02-15-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
     service_id="chat-gpt",
-    **aoai_settings,
+    **aoai_settings.model_dump(),
 )
 kernel.add_service(chat_service)
 
