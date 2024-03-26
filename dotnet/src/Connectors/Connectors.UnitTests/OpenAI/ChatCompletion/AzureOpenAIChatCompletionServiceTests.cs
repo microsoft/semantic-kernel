@@ -276,6 +276,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(55, usage.PromptTokens);
         Assert.Equal(100, usage.CompletionTokens);
         Assert.Equal(155, usage.TotalTokens);
+
+        Assert.Equal("stop", result[0].Metadata?["FinishReason"]);
     }
 
     [Fact]
