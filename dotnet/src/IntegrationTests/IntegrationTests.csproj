@@ -46,6 +46,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
