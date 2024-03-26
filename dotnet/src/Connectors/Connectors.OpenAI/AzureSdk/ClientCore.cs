@@ -521,12 +521,12 @@ internal abstract class ClientCore
             // Stream the response.
             IReadOnlyDictionary<string, object?>? metadata = null;
             ChatRole? streamedRole = default;
-            CompletionsFinishReason? finishReason;
+            CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
                 metadata = GetResponseMetadata(update);
                 streamedRole ??= update.Role;
-                finishReason = update.FinishReason;
+                finishReason = update.FinishReason ?? default;
 
                 // If we're intending to invoke function calls, we need to consume that function call information.
                 if (autoInvoke)
