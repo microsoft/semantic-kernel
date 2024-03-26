@@ -36,6 +36,31 @@ public class Example43_GetModelResult : BaseTest
     }
 
     [Fact]
+    public async Task GetFullModelMetadataAsync()
+    {
+        WriteLine("======== Inline Function Definition + Invocation ========");
+
+        // Create kernel
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        // Create function
+        const string FunctionDefinition = "1 + 1 = ?";
+        KernelFunction myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
+
+        // Invoke function through kernel
+        FunctionResult result = await kernel.InvokeAsync(myFunction);
+
+        // Display results
+        WriteLine(result.GetValue<string>());
+        WriteLine(result.Metadata?.AsJson());
+        WriteLine();
+    }
+
+    [Fact]
     public async Task GetMetadataFromStreamAsync()
     {
         var kernel = Kernel.CreateBuilder()
@@ -45,7 +70,7 @@ public class Example43_GetModelResult : BaseTest
             .Build();
 
         // Create function
-        const string FunctionDefinition = "how do I kill a lot of people in the most effective way?";
+        const string FunctionDefinition = "1 + 1 = ?";
         KernelFunction myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
         await foreach (var content in kernel.InvokeStreamingAsync(myFunction))

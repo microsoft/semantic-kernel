@@ -140,7 +140,7 @@ internal abstract class ClientCore
 
         this.CaptureUsageDetails(responseData.Usage);
 
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetChoiceMetadata(responseData, choice))).ToList();
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice))).ToList();
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -161,12 +161,12 @@ internal abstract class ClientCore
         {
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetChoiceMetadata(completions, choice));
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetTextChoiceMetadata(completions, choice));
             }
         }
     }
 
-    private static Dictionary<string, object?> GetChoiceMetadata(Completions completions, Choice choice)
+    private static Dictionary<string, object?> GetTextChoiceMetadata(Completions completions, Choice choice)
     {
         return new Dictionary<string, object?>(8)
         {
@@ -175,7 +175,10 @@ internal abstract class ClientCore
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.Usage), completions.Usage },
             { nameof(choice.ContentFilterResults), choice.ContentFilterResults },
-            { nameof(choice.FinishReason), choice.FinishReason },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+            { nameof(choice.FinishReason), choice.FinishReason?.ToString() },
+
             { nameof(choice.LogProbabilityModel), choice.LogProbabilityModel },
             { nameof(choice.Index), choice.Index },
         };
@@ -191,9 +194,11 @@ internal abstract class ClientCore
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
             { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(chatChoice.FinishReason), chatChoice.FinishReason?.ToString() },
+
             { nameof(chatChoice.FinishDetails), chatChoice.FinishDetails },
-            { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
             { nameof(chatChoice.LogProbabilityInfo), chatChoice.LogProbabilityInfo },
             { nameof(chatChoice.Index), chatChoice.Index },
             { nameof(chatChoice.Enhancements), chatChoice.Enhancements },
@@ -207,6 +212,8 @@ internal abstract class ClientCore
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason?.ToString() },
         };
     }
