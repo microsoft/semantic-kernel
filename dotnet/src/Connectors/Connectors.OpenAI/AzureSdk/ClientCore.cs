@@ -310,7 +310,26 @@ internal abstract class ClientCore
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice))).ToList();
+                return responseData.Choices.Select(chatChoice =>
+                {
+                    var message = new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice));
+
+                    foreach (var toolCall in chatChoice.Message.ToolCalls)
+                    {
+                        if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
+                        {
+                            var content = FunctionCallContent.Create(
+                                fullyQualifiedName: functionToolCall.Name,
+                                id: functionToolCall.Id,
+                                arguments: functionToolCall.Arguments,
+                                functionNameSeparator: OpenAIFunction.NameSeparator);
+
+                            message.Items.Add(content);
+                        }
+                    }
+
+                    return message;
+                }).ToList();
             }
 
             Debug.Assert(kernel is not null);
@@ -910,12 +929,64 @@ internal abstract class ClientCore
             options.Messages.Add(GetRequestMessage(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt)));
         }
 
-        foreach (var message in chatHistory)
+        var messages = GetRequestMessages(chatHistory, executionSettings.ToolCallBehavior);
+        foreach (var message in messages)
         {
-            options.Messages.Add(GetRequestMessage(message));
+            options.Messages.Add(message);
         }
 
         return options;
+    }
+
+    private static IEnumerable<ChatRequestMessage> GetRequestMessages(ChatHistory chatHistory, ToolCallBehavior? toolCallBehavior)
+    {
+        List<ChatRequestMessage> result = new();
+
+        foreach (var historyMessage in chatHistory)
+        {
+            if (historyMessage.Role == AuthorRole.Tool)
+            {
+                // Handling function calls results represented by the FunctionResultContent type.
+                if (historyMessage.Items.OfType<FunctionResultContent>() is { } resultContents && resultContents.Any())
+                {
+                    foreach (var resultContent in resultContents)
+                    {
+                        // Making sure that the function result is not already in the chat history.
+                        if (resultContent.Id is { } functionId && ChatHistoryHasToolResult(chatHistory, functionId))
+                        {
+                            // Fail if chat history has already the function call result.
+                            throw new KernelException($"More than one result found for the function - '{resultContent.FullyQualifiedName ?? resultContent.Id}." +
+                                    "Please either supply the function result via chat history by adding a chat message content with the role 'tool', or" +
+                                    "add the function result content as an item to a chat message content.");
+                        }
+
+                        if (resultContent.Result is Exception ex)
+                        {
+                            result.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
+                            continue;
+                        }
+
+                        var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
+
+                        result.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
+                    }
+
+                    continue;
+                }
+            }
+
+            result.Add(GetRequestMessage(historyMessage));
+        }
+
+        return result;
+    }
+
+    private static bool ChatHistoryHasToolResult(ChatHistory chatHistory, string toolId)
+    {
+        return chatHistory.Any(m => m.Role == AuthorRole.Tool &&
+                m.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolIdProperty, out object? id) is true &&
+                id?.ToString() is string toolIdString &&
+                toolId == toolIdString);
     }
 
     private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, ChatCompletionsFunctionToolCall[]? tools)
@@ -1001,6 +1072,22 @@ internal abstract class ClientCore
                     }
                     tools = ftcs;
                 }
+            }
+
+            // Handling function calls represented by FunctionCallContent type.
+            if (message.Items.OfType<FunctionCallContent>() is { } functionCallContents && functionCallContents.Any())
+            {
+                var ftcs = new List<ChatCompletionsToolCall>(tools);
+
+                foreach (var fcContent in functionCallContents)
+                {
+                    if (!ftcs.Any(ftc => ftc.Id == fcContent.Id))
+                    {
+                        ftcs.Add(new ChatCompletionsFunctionToolCall(fcContent.Id, fcContent.FullyQualifiedName, fcContent.Arguments ?? string.Empty));
+                    }
+                }
+
+                tools = ftcs;
             }
 
             if (tools is not null)
