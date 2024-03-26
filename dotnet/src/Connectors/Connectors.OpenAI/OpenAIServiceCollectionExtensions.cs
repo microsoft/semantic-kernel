@@ -1049,7 +1049,85 @@ public static class OpenAIServiceCollectionExtensions
     #region Images
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE text to image service to the list
+    /// Add the  Azure OpenAI Dall-E text to image service to the list
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="apiVersion">Azure OpenAI API version</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAITextToImage(
+        this IServiceCollection services,
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? modelId = null,
+        string? serviceId = null,
+        string? apiVersion = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNull(credentials);
+
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                endpoint,
+                credentials,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                apiVersion));
+    }
+
+    /// <summary>
+    /// Add the  Azure OpenAI Dall-E text to image service to the list
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="apiVersion">Azure OpenAI API version</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAITextToImage(
+        this IKernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? modelId = null,
+        string? serviceId = null,
+        string? apiVersion = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNull(credentials);
+
+        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                endpoint,
+                credentials,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                apiVersion));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add the  Azure OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name</param>
@@ -1089,7 +1167,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add the  Azure OpenAI DallE text to image service to the list
+    /// Add the  Azure OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name</param>
@@ -1176,6 +1254,64 @@ public static class OpenAIServiceCollectionExtensions
                 orgId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
+    }
+
+    /// <summary>
+    /// Add the OpenAI Dall-E text to image service to the list
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAITextToImage(
+        this IServiceCollection services,
+        string deploymentName,
+        OpenAIClient? openAIClient = null,
+        string? modelId = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
+                modelId,
+                serviceProvider.GetService<ILoggerFactory>()));
+    }
+
+    /// <summary>
+    /// Add the OpenAI Dall-E text to image service to the list
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAITextToImage(
+        this IKernelBuilder builder,
+        string deploymentName,
+        OpenAIClient? openAIClient = null,
+        string? modelId = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+
+        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
+                modelId,
+                serviceProvider.GetService<ILoggerFactory>()));
+
+        return builder;
     }
 
     #endregion
