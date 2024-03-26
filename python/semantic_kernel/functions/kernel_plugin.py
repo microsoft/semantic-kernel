@@ -53,6 +53,10 @@ class KernelPlugin(KernelBaseModel):
         Raises:
             ValueError: If the functions list contains duplicate function names.
         """
+        from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
+
+        self.model_rebuild()
+
         functions_dict = {}
         if functions is not None:
             if isinstance(functions, list):

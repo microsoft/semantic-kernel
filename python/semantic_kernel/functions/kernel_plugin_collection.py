@@ -41,6 +41,11 @@ class KernelPluginCollection(KernelBaseModel):
         Raises:
             ValueError: If the plugins is not None, a KernelPluginCollection, or an iterable of KernelPlugin.
         """
+        from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
+        from semantic_kernel.functions.kernel_plugin import KernelPlugin  # noqa: F401
+
+        self.model_rebuild()
+
         if plugins is None:
             plugins = {}
         elif isinstance(plugins, KernelPluginCollection):

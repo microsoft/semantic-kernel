@@ -88,4 +88,4 @@ class AzureChatPromptExecutionSettings(OpenAIChatPromptExecutionSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
     response_format: str | None = None
-    extra_body: dict[str | Any, ExtraBody] | None = None
+    extra_body: dict[str, Any] | ExtraBody | None = None

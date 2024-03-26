@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import os
 from unittest.mock import AsyncMock, patch
 

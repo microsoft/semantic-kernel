@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import semantic_kernel as sk
 from semantic_kernel.core_plugins.text_plugin import TextPlugin
 

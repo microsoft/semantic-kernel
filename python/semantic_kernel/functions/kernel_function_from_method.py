@@ -150,17 +150,17 @@ class KernelFunctionFromMethod(KernelFunction):
                     if hasattr(param.type_object, "model_validate"):
                         try:
                             value = param.type_object.model_validate(value)
-                        except Exception as exc:
-                            raise FunctionExecutionException(
+                        except Exception:
+                            logger.warning(
                                 f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
-                            ) from exc
+                            )
                     else:
                         try:
                             value = param.type_object(value)
-                        except Exception as exc:
-                            raise FunctionExecutionException(
+                        except Exception:
+                            logger.warning(
                                 f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
-                            ) from exc
+                            )
                 function_arguments[param.name] = value
                 continue
             if param.is_required:

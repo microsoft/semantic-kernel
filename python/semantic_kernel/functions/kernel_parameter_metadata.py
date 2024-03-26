@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Type
 
 from pydantic import Field
 
@@ -15,4 +15,4 @@ class KernelParameterMetadata(KernelBaseModel):
     default_value: Any = None
     type_: str | None = Field(default="str", alias="type")
     is_required: bool | None = False
-    type_object: Any = None
+    type_object: Type | None = None
