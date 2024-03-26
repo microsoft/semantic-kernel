@@ -419,10 +419,13 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         });
 
         // Act & Assert
-        await foreach (var chunk in service.GetStreamingTextContentsAsync("Prompt"))
-        {
-            Assert.Equal("Test chat streaming response", chunk.Text);
-        }
+        var enumerator = service.GetStreamingTextContentsAsync("Prompt").GetAsyncEnumerator();
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("Test chat streaming response", enumerator.Current.Text);
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("stop", enumerator.Current.Metadata?["FinishReason"]);
     }
 
     [Fact]
@@ -477,9 +480,18 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act & Assert
-        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        var enumerator = service.GetStreamingChatMessageContentsAsync([], settings, kernel).GetAsyncEnumerator();
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("Test chat streaming response", enumerator.Current.Content);
+        Assert.Equal("tool_calls", enumerator.Current.Metadata?["FinishReason"]);
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("tool_calls", enumerator.Current.Metadata?["FinishReason"]);
+
+        // Keep looping until the end of stream
+        while (await enumerator.MoveNextAsync())
         {
-            Assert.Equal("Test chat streaming response", chunk.Content);
         }
 
         Assert.Equal(2, functionCallCount);
@@ -551,10 +563,20 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act & Assert
-        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
-        {
-            Assert.Equal("Test chat streaming response", chunk.Content);
-        }
+        var enumerator = service.GetStreamingChatMessageContentsAsync([], settings, kernel).GetAsyncEnumerator();
+
+        // Function Tool Call Streaming (One Chunk)
+        await enumerator.MoveNextAsync();
+        Assert.Equal("Test chat streaming response", enumerator.Current.Content);
+        Assert.Equal("tool_calls", enumerator.Current.Metadata?["FinishReason"]);
+
+        // Chat Completion Streaming (1st Chunk)
+        await enumerator.MoveNextAsync();
+        Assert.Null(enumerator.Current.Metadata?["FinishReason"]);
+
+        // Chat Completion Streaming (2nd Chunk)
+        await enumerator.MoveNextAsync();
+        Assert.Equal("stop", enumerator.Current.Metadata?["FinishReason"]);
 
         Assert.Equal(1, functionCallCount);
 
