@@ -18,24 +18,16 @@ internal sealed class ThreadRunModel
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Always "thread.run"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "thread.run";
-#pragma warning restore CA1720 // Identifier contains type name
-
-    /// <summary>
     /// Unix timestamp (in seconds) for when the run was created.
     /// </summary>
     [JsonPropertyName("created_at")]
     public long CreatedAt { get; set; }
 
     /// <summary>
-    /// ID of the agent used for execution of this run.
+    /// ID of the assistant used for execution of this run.
     /// </summary>
-    [JsonPropertyName("agent_id")]
-    public string AgentId { get; set; } = string.Empty;
+    [JsonPropertyName("assistant_id")]
+    public string AssistantId { get; set; } = string.Empty;
 
     /// <summary>
     /// ID of the thread that was executed on as a part of this run.
@@ -87,25 +79,25 @@ internal sealed class ThreadRunModel
     public ErrorModel? LastError { get; set; }
 
     /// <summary>
-    /// The model that the agent used for this run.
+    /// The model that the assistant used for this run.
     /// </summary>
     [JsonPropertyName("model")]
     public string Model { get; set; } = string.Empty;
 
     /// <summary>
-    /// The instructions that the agent used for this run.
+    /// The instructions that the assistant used for this run.
     /// </summary>
     [JsonPropertyName("instructions")]
     public string Instructions { get; set; } = string.Empty;
 
     /// <summary>
-    /// The list of tools that the agent used for this run.
+    /// The list of tools that the assistant used for this run.
     /// </summary>
     [JsonPropertyName("tools")]
     public List<ToolModel> Tools { get; set; } = new List<ToolModel>();
 
     /// <summary>
-    /// The list of File IDs the agent used for this run.
+    /// The list of File IDs the assistant used for this run.
     /// </summary>
     [JsonPropertyName("file_ids")]
     public List<string> FileIds { get; set; } = new List<string>();

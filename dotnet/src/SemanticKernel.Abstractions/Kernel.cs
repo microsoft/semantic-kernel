@@ -32,6 +32,10 @@ public sealed class Kernel
     private CultureInfo _culture = CultureInfo.InvariantCulture;
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
+    /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IFunctionFilter>? _functionFilters;
+    /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IPromptFilter>? _promptFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -54,6 +58,7 @@ public sealed class Kernel
 
         // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
         this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
@@ -66,6 +71,22 @@ public sealed class Kernel
             {
                 this._plugins = new(e);
             }
+        }
+
+        // Enumerate any function filters that may have been registered.
+        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
+
+        if (functionFilters is not ICollection<IFunctionFilter> functionFilterCollection || functionFilterCollection.Count != 0)
+        {
+            this._functionFilters = new(functionFilters);
+        }
+
+        // Enumerate any prompt filters that may have been registered.
+        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
+
+        if (promptFilters is not ICollection<IPromptFilter> promptFilterCollection || promptFilterCollection.Count != 0)
+        {
+            this._promptFilters = new(promptFilters);
         }
     }
 
@@ -117,6 +138,24 @@ public sealed class Kernel
         this._plugins;
 
     /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public IList<IFunctionFilter> FunctionFilters =>
+        this._functionFilters ??
+        Interlocked.CompareExchange(ref this._functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
+        this._functionFilters;
+
+    /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public IList<IPromptFilter> PromptFilters =>
+        this._promptFilters ??
+        Interlocked.CompareExchange(ref this._promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
+        this._promptFilters;
+
+    /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
     /// </summary>
     public IServiceProvider Services { get; }
@@ -165,30 +204,6 @@ public sealed class Kernel
         this._data ??
         Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
         this._data;
-
-    /// <summary>
-    /// Provides an event that's raised prior to a function's invocation.
-    /// </summary>
-    [Experimental("SKEXP0004")]
-    public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
-
-    /// <summary>
-    /// Provides an event that's raised after a function's invocation.
-    /// </summary>
-    [Experimental("SKEXP0004")]
-    public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
-
-    /// <summary>
-    /// Provides an event that's raised prior to a prompt being rendered.
-    /// </summary>
-    [Experimental("SKEXP0004")]
-    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
-
-    /// <summary>
-    /// Provides an event that's raised after a prompt is rendered.
-    /// </summary>
-    [Experimental("SKEXP0004")]
-    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
     #region GetServices
     /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
@@ -264,58 +279,80 @@ public sealed class Kernel
 
     #endregion
 
-    #region Internal Event Helpers
-    [Experimental("SKEXP0004")]
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
+    #region Internal Filtering
+
+    [Experimental("SKEXP0001")]
+    internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
     {
-        FunctionInvokingEventArgs? eventArgs = null;
-        if (this.FunctionInvoking is { } functionInvoking)
+        FunctionInvokingContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
         {
-            eventArgs = new(function, arguments);
-            functionInvoking.Invoke(this, eventArgs);
+            context = new(function, arguments);
+
+            for (int i = 0; i < this._functionFilters.Count; i++)
+            {
+                this._functionFilters[i].OnFunctionInvoking(context);
+            }
         }
 
-        return eventArgs;
+        return context;
     }
 
-    [Experimental("SKEXP0004")]
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
+    [Experimental("SKEXP0001")]
+    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
     {
-        FunctionInvokedEventArgs? eventArgs = null;
-        if (this.FunctionInvoked is { } functionInvoked)
+        FunctionInvokedContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
         {
-            eventArgs = new(function, arguments, result);
-            functionInvoked.Invoke(this, eventArgs);
+            context = new(arguments, result);
+
+            for (int i = 0; i < this._functionFilters.Count; i++)
+            {
+                this._functionFilters[i].OnFunctionInvoked(context);
+            }
         }
 
-        return eventArgs;
+        return context;
     }
 
-    [Experimental("SKEXP0004")]
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
+    [Experimental("SKEXP0001")]
+    internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
     {
-        PromptRenderingEventArgs? eventArgs = null;
-        if (this.PromptRendering is { } promptRendering)
+        PromptRenderingContext? context = null;
+
+        if (this._promptFilters is { Count: > 0 })
         {
-            eventArgs = new(function, arguments);
-            promptRendering.Invoke(this, eventArgs);
+            context = new(function, arguments);
+
+            for (int i = 0; i < this._promptFilters.Count; i++)
+            {
+                this._promptFilters[i].OnPromptRendering(context);
+            }
         }
 
-        return eventArgs;
+        return context;
     }
 
-    [Experimental("SKEXP0004")]
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+    [Experimental("SKEXP0001")]
+    internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
-        PromptRenderedEventArgs? eventArgs = null;
-        if (this.PromptRendered is { } promptRendered)
+        PromptRenderedContext? context = null;
+
+        if (this._promptFilters is { Count: > 0 })
         {
-            eventArgs = new(function, arguments, renderedPrompt);
-            promptRendered.Invoke(this, eventArgs);
+            context = new(function, arguments, renderedPrompt);
+
+            for (int i = 0; i < this._promptFilters.Count; i++)
+            {
+                this._promptFilters[i].OnPromptRendered(context);
+            }
         }
 
-        return eventArgs;
+        return context;
     }
+
     #endregion
 
     #region InvokeAsync
@@ -522,5 +559,85 @@ public sealed class Kernel
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
+    #endregion
+
+    #region Obsolete
+
+    /// <summary>
+    /// Provides an event that's raised prior to a function's invocation.
+    /// </summary>
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
+
+    /// <summary>
+    /// Provides an event that's raised after a function's invocation.
+    /// </summary>
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
+
+    /// <summary>
+    /// Provides an event that's raised prior to a prompt being rendered.
+    /// </summary>
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
+
+    /// <summary>
+    /// Provides an event that's raised after a prompt is rendered.
+    /// </summary>
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
+    {
+        FunctionInvokingEventArgs? eventArgs = null;
+        if (this.FunctionInvoking is { } functionInvoking)
+        {
+            eventArgs = new(function, arguments);
+            functionInvoking.Invoke(this, eventArgs);
+        }
+
+        return eventArgs;
+    }
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
+    {
+        FunctionInvokedEventArgs? eventArgs = null;
+        if (this.FunctionInvoked is { } functionInvoked)
+        {
+            eventArgs = new(function, arguments, result);
+            functionInvoked.Invoke(this, eventArgs);
+        }
+
+        return eventArgs;
+    }
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
+    {
+        PromptRenderingEventArgs? eventArgs = null;
+        if (this.PromptRendering is { } promptRendering)
+        {
+            eventArgs = new(function, arguments);
+            promptRendering.Invoke(this, eventArgs);
+        }
+
+        return eventArgs;
+    }
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+    {
+        PromptRenderedEventArgs? eventArgs = null;
+        if (this.PromptRendered is { } promptRendered)
+        {
+            eventArgs = new(function, arguments, renderedPrompt);
+            promptRendered.Invoke(this, eventArgs);
+        }
+
+        return eventArgs;
+    }
+
     #endregion
 }

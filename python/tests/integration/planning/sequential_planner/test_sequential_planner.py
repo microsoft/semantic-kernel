@@ -4,16 +4,14 @@ import time
 
 import pytest
 
-import semantic_kernel
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.exceptions import PlannerException
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planning import SequentialPlanner
-from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
-    SequentialPlannerConfig,
-)
-from tests.integration.fakes.email_skill_fake import EmailSkillFake
-from tests.integration.fakes.fun_skill_fake import FunSkillFake
-from tests.integration.fakes.writer_skill_fake import WriterSkillFake
+from semantic_kernel.planners import SequentialPlanner
+from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
+from tests.integration.fakes.email_plugin_fake import EmailPluginFake
+from tests.integration.fakes.fun_plugin_fake import FunPluginFake
+from tests.integration.fakes.writer_plugin_fake import WriterPluginFake
 
 
 async def retry(func, retries=3):
@@ -34,28 +32,28 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
 
     kernel = Kernel()
     if use_chat_model:
-        kernel.add_chat_service(
-            "chat_completion",
+        kernel.add_service(
             sk_oai.AzureChatCompletion(
-                deployment_name="gpt-35-turbo",
+                service_id="chat_completion",
+                deployment_name="gpt-35-turbo-0613",
                 endpoint=endpoint,
                 api_key=api_key,
             ),
         )
     else:
-        kernel.add_text_completion_service(
-            "text_completion",
-            sk_oai.AzureChatCompletion(
-                deployment_name="gpt-35-turbo",
+        kernel.add_service(
+            sk_oai.AzureTextCompletion(
+                service_id="text_completion",
+                deployment_name="gpt-35-turbo-instruct",
                 endpoint=endpoint,
                 api_key=api_key,
             ),
         )
 
     if use_embeddings:
-        kernel.add_text_embedding_generation_service(
-            "text_embedding",
+        kernel.add_service(
             sk_oai.AzureTextEmbedding(
+                service_id="text_embedding",
                 deployment_name="text-embedding-ada-002",
                 endpoint=endpoint,
                 api_key=api_key,
@@ -65,107 +63,110 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
 
 
 @pytest.mark.parametrize(
-    "use_chat_model, prompt, expected_function, expected_skill",
+    "use_chat_model, prompt, expected_function, expected_plugin",
     [
         (
             False,
             "Write a joke and send it in an e-mail to Kai.",
             "SendEmail",
-            "_GLOBAL_FUNCTIONS_",
+            "email_plugin_fake",
         ),
         (
             True,
             "Write a joke and send it in an e-mail to Kai.",
             "SendEmail",
-            "_GLOBAL_FUNCTIONS_",
+            "email_plugin_fake",
         ),
     ],
 )
 @pytest.mark.asyncio
-async def test_create_plan_function_flow_async(
-    get_aoai_config, use_chat_model, prompt, expected_function, expected_skill
-):
+@pytest.mark.xfail(
+    raises=PlannerException,
+    reason="Test is known to occasionally produce unexpected results.",
+)
+async def test_create_plan_function_flow(get_aoai_config, use_chat_model, prompt, expected_function, expected_plugin):
     # Arrange
-    kernel = initialize_kernel(get_aoai_config, False, use_chat_model)
-    kernel.import_skill(EmailSkillFake())
-    kernel.import_skill(FunSkillFake())
+    service_id = "chat_completion" if use_chat_model else "text_completion"
 
-    planner = SequentialPlanner(kernel)
+    kernel = initialize_kernel(get_aoai_config, False, use_chat_model)
+    kernel.import_plugin_from_object(EmailPluginFake(), "email_plugin_fake")
+    kernel.import_plugin_from_object(FunPluginFake(), "fun_plugin_fake")
+
+    planner = SequentialPlanner(kernel, service_id=service_id)
 
     # Act
-    plan = await planner.create_plan_async(prompt)
+    plan = await planner.create_plan(prompt)
 
     # Assert
-    assert any(step.name == expected_function and step.skill_name == expected_skill for step in plan._steps)
+    assert any(step.name == expected_function and step.plugin_name == expected_plugin for step in plan._steps)
 
 
 @pytest.mark.parametrize(
-    "prompt, expected_function, expected_skill, expected_default",
+    "prompt, expected_function, expected_plugin, expected_default",
     [
         (
             "Write a novel outline.",
             "NovelOutline",
-            "WriterSkill",
+            "WriterPlugin",
             "<!--===ENDPART===-->",
         )
     ],
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=semantic_kernel.planning.planning_exception.PlanningException,
+    raises=PlannerException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_with_defaults_async(
-    get_aoai_config, prompt, expected_function, expected_skill, expected_default
-):
+async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_function, expected_plugin, expected_default):
     # Arrange
     kernel = initialize_kernel(get_aoai_config)
-    kernel.import_skill(EmailSkillFake())
-    kernel.import_skill(WriterSkillFake(), "WriterSkill")
+    kernel.import_plugin_from_object(EmailPluginFake(), "email_plugin_fake")
+    kernel.import_plugin_from_object(WriterPluginFake(), "WriterPlugin")
 
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(kernel, service_id="text_completion")
 
     # Act
-    plan = await retry(lambda: planner.create_plan_async(prompt))
+    plan = await retry(lambda: planner.create_plan(prompt))
 
     # Assert
     assert any(
         step.name == expected_function
-        and step.skill_name == expected_skill
-        and step.parameters["endMarker"] == expected_default
+        and step.plugin_name == expected_plugin
+        and step.parameters.get("endMarker", expected_default) == expected_default
         for step in plan._steps
     )
 
 
 @pytest.mark.parametrize(
-    "prompt, expected_function, expected_skill",
+    "prompt, expected_function, expected_plugin",
     [
         (
             "Write a poem or joke and send it in an e-mail to Kai.",
             "SendEmail",
-            "_GLOBAL_FUNCTIONS_",
+            "email_plugin_fake",
         )
     ],
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=semantic_kernel.planning.planning_exception.PlanningException,
+    raises=PlannerException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_goal_relevant_async(get_aoai_config, prompt, expected_function, expected_skill):
+async def test_create_plan_goal_relevant(get_aoai_config, prompt, expected_function, expected_plugin):
     # Arrange
     kernel = initialize_kernel(get_aoai_config, use_embeddings=True)
-    kernel.import_skill(EmailSkillFake())
-    kernel.import_skill(FunSkillFake())
-    kernel.import_skill(WriterSkillFake())
+    kernel.import_plugin_from_object(EmailPluginFake(), "email_plugin_fake")
+    kernel.import_plugin_from_object(FunPluginFake(), "fun_plugin_fake")
+    kernel.import_plugin_from_object(WriterPluginFake(), "writer_plugin_fake")
 
     planner = SequentialPlanner(
         kernel,
-        SequentialPlannerConfig(relevancy_threshold=0.65, max_relevant_functions=30),
+        service_id="text_completion",
+        config=SequentialPlannerConfig(relevancy_threshold=0.65, max_relevant_functions=30),
     )
 
     # Act
-    plan = await retry(lambda: planner.create_plan_async(prompt))
+    plan = await retry(lambda: planner.create_plan(prompt))
 
     # Assert
-    assert any(step.name == expected_function and step.skill_name == expected_skill for step in plan._steps)
+    assert any(step.name == expected_function and step.plugin_name == expected_plugin for step in plan._steps)

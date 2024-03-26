@@ -50,6 +50,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this._logger = loggerFactory?.CreateLogger(typeof(BingConnector)) ?? NullLogger.Instance;
         this._httpClient = httpClient;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderValues.UserAgent);
+        this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingConnector)));
         this._uri = uri ?? new Uri(DefaultUri);
     }
 

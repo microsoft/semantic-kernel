@@ -3,18 +3,26 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-// This example shows how to using Dependency Injection with the Semantic Kernel
-public static class Step4_Dependency_Injection
+namespace GettingStarted;
+
+/// <summary>
+/// This example shows how to using Dependency Injection with the Semantic Kernel
+/// </summary>
+public sealed class Step4_Dependency_Injection : BaseTest
 {
     /// <summary>
     /// Show how to create a <see cref="Kernel"/> that participates in Dependency Injection.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the KernelClient class to a class that references it.
         // DI container guidelines - https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations
@@ -23,19 +31,20 @@ public static class Step4_Dependency_Injection
 
         // Invoke the kernel with a templated prompt and stream the results to the display
         KernelArguments arguments = new() { { "topic", "earth when viewed from space" } };
-        await foreach (var update in kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
+        await foreach (var update in
+                       kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
         {
-            Console.Write(update);
+            Write(update);
         }
     }
 
     /// <summary>
-    /// Build a ServiceProvdier that can be used to resolve services.
+    /// Build a ServiceProvider that can be used to resolve services.
     /// </summary>
-    private static ServiceProvider BuildServiceProvider()
+    private ServiceProvider BuildServiceProvider()
     {
         var collection = new ServiceCollection();
-        collection.AddSingleton<ILoggerFactory>(ConsoleLogger.LoggerFactory);
+        collection.AddSingleton<ILoggerFactory>(new XunitLogger(this.Output));
 
         var kernelBuilder = collection.AddKernel();
         kernelBuilder.Services.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
@@ -64,5 +73,9 @@ public static class Step4_Dependency_Injection
             this._logger.LogInformation("Returning current time {0}", utcNow);
             return utcNow;
         }
+    }
+
+    public Step4_Dependency_Injection(ITestOutputHelper output) : base(output)
+    {
     }
 }

@@ -1,37 +1,43 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Internal;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 internal static partial class OpenAIRestExtensions
 {
-    private const string BaseUrl = "https://api.openai.com/v1";
     private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
     private const string HeaderNameAuthorization = "Authorization";
+    private const string HeaderNameUserAgent = "User-Agent";
     private const string HeaderOpenAIValueAssistant = "assistants=v1";
 
-    private static async Task<TResult> ExecuteGetAsync<TResult>(
+    private static Task<TResult> ExecuteGetAsync<TResult>(
         this OpenAIRestContext context,
         string url,
         CancellationToken cancellationToken = default)
     {
-        using var request = HttpRequest.CreateGetRequest(url);
+        return context.ExecuteGetAsync<TResult>(url, query: null, cancellationToken);
+    }
 
-        request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
-        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
+    private static async Task<TResult> ExecuteGetAsync<TResult>(
+        this OpenAIRestContext context,
+        string url,
+        string? query = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var request = HttpRequest.CreateGetRequest(context.FormatUrl(url, query));
 
-        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new AgentException($"Unexpected failure: {response.StatusCode} [{url}]");
-        }
+        request.AddHeaders(context);
 
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        using var response = await context.GetHttpClient().SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+
+        var responseBody = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         // Common case is for failure exception to be raised by REST invocation.
         // Null result is a logical possibility, but unlikely edge case.
@@ -55,18 +61,14 @@ internal static partial class OpenAIRestExtensions
         object? payload,
         CancellationToken cancellationToken = default)
     {
-        using var request = HttpRequest.CreatePostRequest(url, payload);
+        using var request = HttpRequest.CreatePostRequest(context.FormatUrl(url), payload);
 
-        request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
-        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
+        request.AddHeaders(context);
 
-        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new AgentException($"Unexpected failure: {response.StatusCode} [{url}]");
-        }
+        using var response = await context.GetHttpClient().SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var responseBody = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
             throw new AgentException($"Null result processing: {typeof(TResult).Name}");
@@ -77,15 +79,46 @@ internal static partial class OpenAIRestExtensions
         string url,
         CancellationToken cancellationToken = default)
     {
-        using var request = HttpRequest.CreateDeleteRequest(url);
+        using var request = HttpRequest.CreateDeleteRequest(context.FormatUrl(url));
 
+        request.AddHeaders(context);
+
+        using var response = await context.GetHttpClient().SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void AddHeaders(this HttpRequestMessage request, OpenAIRestContext context)
+    {
+        request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
+
+        if (context.HasVersion)
+        {
+            // OpenAI
+            request.Headers.Add("api-key", context.ApiKey);
+            return;
+        }
+
+        // Azure OpenAI
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
+    }
 
-        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
+    private static string FormatUrl(
+        this OpenAIRestContext context,
+        string url,
+        string? query = null)
+    {
+        var hasQuery = !string.IsNullOrWhiteSpace(query);
+        var delimiter = hasQuery ? "?" : string.Empty;
+
+        if (!context.HasVersion)
         {
-            throw new AgentException($"Unexpected failure: {response.StatusCode} [{url}]");
+            // OpenAI
+            return $"{url}{delimiter}{query}";
         }
+
+        // Azure OpenAI
+        var delimiterB = hasQuery ? "&" : "?";
+
+        return $"{url}{delimiter}{query}{delimiterB}api-version={context.Version}";
     }
 }

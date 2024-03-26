@@ -5,14 +5,19 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // This example shows how to create a mutable <see cref="KernelPlugin"/>.
-public static class Example69_MutableKernelPlugin
+public class Example69_MutableKernelPlugin : BaseTest
 {
     /// <summary>
     /// Show how to create a mutable <see cref="KernelPlugin"/>.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         var plugin = new MutableKernelPlugin("Plugin");
         plugin.AddFunction(KernelFunctionFactory.CreateFromMethod(() => "Plugin.Function", "Function"));
@@ -22,7 +27,7 @@ public static class Example69_MutableKernelPlugin
 
         var result = await kernel.InvokeAsync(kernel.Plugins["Plugin"]["Function"]);
 
-        Console.WriteLine($"Result: {result}");
+        WriteLine($"Result: {result}");
     }
 
     /// <summary>
@@ -47,7 +52,9 @@ public static class Example69_MutableKernelPlugin
                 foreach (KernelFunction f in functions)
                 {
                     ArgumentNullException.ThrowIfNull(f);
-                    this._functions.Add(f.Name, f);
+
+                    var cloned = f.Clone(name);
+                    this._functions.Add(cloned.Name, cloned);
                 }
             }
         }
@@ -67,10 +74,16 @@ public static class Example69_MutableKernelPlugin
         public void AddFunction(KernelFunction function)
         {
             ArgumentNullException.ThrowIfNull(function);
-            this._functions.Add(function.Name, function);
+
+            var cloned = function.Clone(this.Name);
+            this._functions.Add(cloned.Name, cloned);
         }
 
         /// <inheritdoc/>
         public override IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
+    }
+
+    public Example69_MutableKernelPlugin(ITestOutputHelper output) : base(output)
+    {
     }
 }

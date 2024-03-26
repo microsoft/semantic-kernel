@@ -4,6 +4,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Experimental.Orchestration.Flow</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Experimental.Orchestration</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionSuffix>alpha</VersionSuffix>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -23,9 +24,7 @@
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Orchestration.Flow.UnitTests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="YamlDotNet" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>

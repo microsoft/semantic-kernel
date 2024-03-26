@@ -3,15 +3,15 @@
 from abc import abstractmethod
 from typing import List, Optional, TypeVar
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
-from semantic_kernel.sk_pydantic import SKBaseModel
 
 SemanticTextMemoryT = TypeVar("SemanticTextMemoryT", bound="SemanticTextMemoryBase")
 
 
-class SemanticTextMemoryBase(SKBaseModel):
+class SemanticTextMemoryBase(KernelBaseModel):
     @abstractmethod
-    async def save_information_async(
+    async def save_information(
         self,
         collection: str,
         text: str,
@@ -34,7 +34,7 @@ class SemanticTextMemoryBase(SKBaseModel):
         pass
 
     @abstractmethod
-    async def save_reference_async(
+    async def save_reference(
         self,
         collection: str,
         text: str,
@@ -58,10 +58,10 @@ class SemanticTextMemoryBase(SKBaseModel):
         pass
 
     @abstractmethod
-    async def get_async(
+    async def get(
         self,
         collection: str,
-        query: str,
+        key: str,
         # TODO: with_embedding: bool,
     ) -> Optional[MemoryQueryResult]:
         """Get information from the memory (calls the memory store's get method).
@@ -76,7 +76,7 @@ class SemanticTextMemoryBase(SKBaseModel):
         pass
 
     @abstractmethod
-    async def search_async(
+    async def search(
         self,
         collection: str,
         query: str,
@@ -99,7 +99,7 @@ class SemanticTextMemoryBase(SKBaseModel):
         pass
 
     @abstractmethod
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         """Get the list of collections in the memory (calls the memory store's get_collections method).
 
         Returns:

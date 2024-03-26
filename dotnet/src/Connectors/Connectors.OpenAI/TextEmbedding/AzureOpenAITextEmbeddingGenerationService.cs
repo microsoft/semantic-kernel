@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Azure OpenAI text embedding service.
 /// </summary>
-[Experimental("SKEXP0011")]
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly AzureOpenAIClientCore _core;
@@ -93,7 +93,6 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
         return this._core.GetEmbeddingsAsync(data, kernel, cancellationToken);
     }
 }

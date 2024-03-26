@@ -24,7 +24,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
@@ -33,13 +33,13 @@ public static class OpenAIMemoryBuilderExtensions
         string? modelId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
             new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 apiKey,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpClient),
+                HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory));
     }
 
@@ -54,7 +54,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
@@ -63,13 +63,13 @@ public static class OpenAIMemoryBuilderExtensions
         string? modelId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
             new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 credential,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpClient),
+                HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory));
     }
 
@@ -83,7 +83,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
@@ -91,12 +91,12 @@ public static class OpenAIMemoryBuilderExtensions
         string? orgId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
             new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(httpClient),
+                HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory));
     }
 }

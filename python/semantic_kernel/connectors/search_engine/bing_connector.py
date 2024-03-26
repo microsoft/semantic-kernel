@@ -7,6 +7,7 @@ from typing import List
 import aiohttp
 
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -18,15 +19,15 @@ class BingConnector(ConnectorBase):
 
     _api_key: str
 
-    def __init__(self, api_key: str, **kwargs) -> None:
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+    def __init__(self, api_key: str) -> None:
         self._api_key = api_key
 
         if not self._api_key:
-            raise ValueError("Bing API key cannot be null. Please set environment variable BING_API_KEY.")
+            raise ServiceInitializationError(
+                "Bing API key cannot be null. Please set environment variable BING_API_KEY."
+            )
 
-    async def search_async(self, query: str, num_results: str, offset: str) -> List[str]:
+    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:
         """
         Returns the search results of the query provided by pinging the Bing web search API.
         Returns `num_results` results and ignores the first `offset`.
@@ -37,23 +38,15 @@ class BingConnector(ConnectorBase):
         :return: list of search results
         """
         if not query:
-            raise ValueError("query cannot be 'None' or empty.")
-
-        if not num_results:
-            num_results = 1
-        if not offset:
-            offset = 0
-
-        num_results = int(num_results)
-        offset = int(offset)
+            raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 
         if num_results <= 0:
-            raise ValueError("num_results value must be greater than 0.")
+            raise ServiceInvalidRequestError("num_results value must be greater than 0.")
         if num_results >= 50:
-            raise ValueError("num_results value must be less than 50.")
+            raise ServiceInvalidRequestError("num_results value must be less than 50.")
 
         if offset < 0:
-            raise ValueError("offset must be greater than 0.")
+            raise ServiceInvalidRequestError("offset must be greater than 0.")
 
         logger.info(
             f"Received request for bing web search with \
@@ -71,10 +64,8 @@ class BingConnector(ConnectorBase):
             async with session.get(_request_url, headers=headers, raise_for_status=True) as response:
                 if response.status == 200:
                     data = await response.json()
-                    pages = data["webPages"]["value"]
-                    logger.info(pages)
-                    result = list(map(lambda x: x["snippet"], pages))
-                    logger.info(result)
-                    return result
+                    pages = data.get("webPages", {}).get("value")
+                    if pages:
+                        return list(map(lambda x: x["snippet"], pages)) or []
                 else:
                     return []

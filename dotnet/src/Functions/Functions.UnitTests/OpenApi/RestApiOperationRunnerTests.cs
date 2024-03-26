@@ -226,7 +226,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         // Assert - 13 headers: 12 from the test and the User-Agent added internally
         Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
-        Assert.Equal(13, this._httpMessageHandlerStub.RequestHeaders.Count());
+        Assert.Equal(14, this._httpMessageHandlerStub.RequestHeaders.Count());
 
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "User-Agent" && h.Value.Contains("fake-agent"));
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "X-HS-1" && h.Value.Contains("fake-header-value"));
@@ -241,6 +241,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "X-HD-1" && h.Value.Contains("2023-12-06T11:53:36Z"));
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "X-HD-2" && h.Value.Contains("2023-12-06T11:53:36Z"));
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "X-HD-3" && h.Value.Contains("2023-12-06T11:53:36-02:00"));
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "Semantic-Kernel-Version");
     }
 
     [Fact]
@@ -279,10 +280,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
-        Assert.Equal(2, this._httpMessageHandlerStub.RequestHeaders.Count());
+        Assert.Equal(3, this._httpMessageHandlerStub.RequestHeaders.Count());
 
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "User-Agent" && h.Value.Contains("fake-user-agent"));
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "Semantic-Kernel-Version");
     }
 
     [Fact]

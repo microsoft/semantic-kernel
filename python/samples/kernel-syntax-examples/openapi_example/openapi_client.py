@@ -1,13 +1,13 @@
 import asyncio
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.openapi import register_openapi_skill
+from semantic_kernel.connectors.openapi import register_openapi_plugin
 
 if __name__ == "__main__":
     """Client"""
     kernel = sk.Kernel()
 
-    openapi_skill = register_openapi_skill(kernel, "openApiSkill", "openapi.yaml")
+    openapi_plugin = register_openapi_plugin(kernel, "openApiPlugin", "openapi.yaml")
 
     context_variables = sk.ContextVariables(
         variables={
@@ -19,6 +19,6 @@ if __name__ == "__main__":
     )
     result = asyncio.run(
         # Call the function defined in openapi.yaml
-        openapi_skill["helloWorld"].invoke_async(variables=context_variables)
+        openapi_plugin["helloWorld"].invoke(variables=context_variables)
     )
     print(result)

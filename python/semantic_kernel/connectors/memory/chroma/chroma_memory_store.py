@@ -5,11 +5,8 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.memory.chroma.utils import (
-    camel_to_snake,
-    chroma_compute_similarity_scores,
-    query_results_to_records,
-)
+from semantic_kernel.connectors.memory.chroma.utils import chroma_compute_similarity_scores, query_results_to_records
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -56,13 +53,11 @@ class ChromaMemoryStore(MemoryStoreBase):
             import chromadb
             import chromadb.config
 
-        except ImportError:
-            raise ValueError(
+        except ImportError as exc:
+            raise ServiceInitializationError(
                 "Could not import chromadb python package. " "Please install it with `pip install chromadb`."
-            )
+            ) from exc
 
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if client_settings:
             self._client_settings = client_settings
         else:
@@ -75,9 +70,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         self._persist_directory = persist_directory
         self._default_query_includes = ["embeddings", "metadatas", "documents"]
 
-        self._default_embedding_function = "DisableChromaEmbeddingFunction"
-
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in Chroma if it does not exist.
             To prevent downloading model file from embedding_function,
             embedding_function is set to "DoNotUseChromaEmbeddingFunction".
@@ -89,24 +82,16 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        self._client.create_collection(
-            # Current version of ChromeDB reject camel case collection names.
-            name=camel_to_snake(collection_name),
-            # ChromaMemoryStore will get embeddings from SemanticTextMemory. Never use this.
-            embedding_function=self._default_embedding_function,
-        )
+        self._client.create_collection(name=collection_name)
 
-    async def get_collection_async(self, collection_name: str) -> Optional["Collection"]:
+    async def get_collection(self, collection_name: str) -> Optional["Collection"]:
         try:
             # Current version of ChromeDB rejects camel case collection names.
-            return self._client.get_collection(
-                name=camel_to_snake(collection_name),
-                embedding_function=self._default_embedding_function,
-            )
+            return self._client.get_collection(name=collection_name)
         except ValueError:
             return None
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         """Gets the list of collections.
 
         Returns:
@@ -114,7 +99,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         return [collection.name for collection in self._client.list_collections()]
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
         Arguments:
@@ -123,10 +108,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        # Current version of ChromeDB reject camel case collection names.
-        self._client.delete_collection(name=camel_to_snake(collection_name))
+        self._client.delete_collection(name=collection_name)
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
         Arguments:
@@ -135,12 +119,12 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
-        if await self.get_collection_async(collection_name) is None:
+        if await self.get_collection(collection_name) is None:
             return False
         else:
             return True
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a single MemoryRecord.
 
         Arguments:
@@ -150,9 +134,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unique database key of the record.
         """
-        collection = await self.get_collection_async(collection_name)
+        collection = await self.get_collection(collection_name)
         if collection is None:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         record._key = record._id
         metadata = {
@@ -173,7 +157,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         )
         return record._key
 
-    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -183,10 +167,10 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unique database keys of the records. In Pinecone, these are the record IDs.
         """
-        # upsert_async is checking collection existence
-        return [await self.upsert_async(collection_name, record) for record in records]
+        # upsert is checking collection existence
+        return [await self.upsert(collection_name, record) for record in records]
 
-    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -197,13 +181,15 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord -- The record.
         """
-        records = await self.get_batch_async(collection_name, [key], with_embedding)
+        records = await self.get_batch(collection_name, [key], with_embedding)
         try:
             return records[0]
-        except IndexError:
-            raise Exception(f"Record with key '{key}' does not exist in collection '{collection_name}'")
+        except IndexError as exc:
+            raise ServiceResourceNotFoundError(
+                f"Record with key '{key}' does not exist in collection '{collection_name}'"
+            ) from exc
 
-    async def get_batch_async(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -214,9 +200,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             List[MemoryRecord] -- The records.
         """
-        collection = await self.get_collection_async(collection_name)
+        collection = await self.get_collection(collection_name)
         if collection is None:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         query_includes = ["embeddings", "metadatas", "documents"] if with_embeddings else ["metadatas", "documents"]
 
@@ -224,7 +210,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         record = query_results_to_records(value, with_embeddings)
         return record
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
         Arguments:
@@ -234,9 +220,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        await self.remove_batch_async(collection_name, [key])
+        await self.remove_batch(collection_name, [key])
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -246,11 +232,11 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        collection = await self.get_collection_async(collection_name=collection_name)
+        collection = await self.get_collection(collection_name=collection_name)
         if collection is not None:
             collection.delete(ids=keys)
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -275,7 +261,7 @@ class ChromaMemoryStore(MemoryStoreBase):
                 "Chroma returns distance score not cosine similarity score.\
                 So embeddings are automatically queried from database for calculation."
             )
-        collection = await self.get_collection_async(collection_name)
+        collection = await self.get_collection(collection_name)
         if collection is None:
             return []
 
@@ -318,7 +304,7 @@ class ChromaMemoryStore(MemoryStoreBase):
 
         return top_results
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -336,7 +322,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        results = await self.get_nearest_matches_async(
+        results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
@@ -371,11 +357,11 @@ if __name__ == "__main__":
         timestamp="timestamp",
     )
 
-    asyncio.run(memory.create_collection_async("test_collection"))
-    collection = asyncio.run(memory.get_collection_async("test_collection"))
+    asyncio.run(memory.create_collection("test_collection"))
+    collection = asyncio.run(memory.get_collection("test_collection"))
 
-    asyncio.run(memory.upsert_batch_async(collection.name, [memory_record1, memory_record2]))
+    asyncio.run(memory.upsert_batch(collection.name, [memory_record1, memory_record2]))
 
-    result = asyncio.run(memory.get_async(collection.name, "test_id1", True))
-    results = asyncio.run(memory.get_nearest_match_async("test_collection", np.array([0.5, 0.5])))
+    result = asyncio.run(memory.get(collection.name, "test_id1", True))
+    results = asyncio.run(memory.get_nearest_match("test_collection", np.array([0.5, 0.5])))
     print(results)

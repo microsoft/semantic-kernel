@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import logging
+from importlib import metadata
 from typing import Any, List, Mapping, Optional, Tuple
 
-from motor import MotorCommandCursor, core, motor_asyncio
+from motor import core, motor_asyncio
 from numpy import ndarray
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
+from pymongo.driver_info import DriverInfo
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
@@ -17,6 +19,7 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     document_to_memory_record,
     memory_record_to_mongo_document,
 )
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.settings import mongodb_atlas_settings_from_dot_env
@@ -46,6 +49,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
             connection_string or mongodb_atlas_settings_from_dot_env(),
             read_preference=read_preference,
+            driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
         )
         self.__database_name = database_name or DEFAULT_DB_NAME
         self.__index_name = index_name or DEFAULT_SEARCH_INDEX_NAME
@@ -66,13 +70,13 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     def num_candidates(self) -> int:
         return self.__num_candidates
 
-    async def close_async(self):
+    async def close(self):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()"""
         if self._mongo_client:
             self._mongo_client.close()
             self._mongo_client = None
 
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.
 
         Arguments:
@@ -81,10 +85,10 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if not await self.does_collection_exist_async(collection_name):
+        if not await self.does_collection_exist(collection_name):
             await self.database.create_collection(collection_name)
 
-    async def get_collections_async(
+    async def get_collections(
         self,
     ) -> List[str]:
         """Gets all collection names in the data store.
@@ -94,7 +98,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         """
         return await self.database.list_collection_names()
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection from the data store.
 
         Arguments:
@@ -105,7 +109,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         """
         await self.database[collection_name].drop()
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Determines if a collection exists in the data store.
 
         Arguments:
@@ -114,9 +118,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if given collection exists, False if not.
         """
-        return collection_name in (await self.get_collections_async())
+        return collection_name in (await self.get_collections())
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a memory record into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -138,7 +142,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         assert update_result.acknowledged
         return record._id
 
-    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -168,7 +172,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         assert bulk_update_result.matched_count + bulk_update_result.upserted_count == len(records)
         return [record._id for record in records]
 
-    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -183,7 +187,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
         return document_to_memory_record(document, with_embedding) if document else None
 
-    async def get_batch_async(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -200,7 +204,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             document_to_memory_record(result, with_embeddings) for result in await results.to_list(length=len(keys))
         ]
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Removes a memory record from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -210,11 +214,11 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if not await self.does_collection_exist_async(collection_name):
-            raise Exception(f"collection {collection_name} not found")
+        if not await self.does_collection_exist(collection_name):
+            raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
         await self.database[collection_name].delete_one({MONGODB_FIELD_ID: key})
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -224,13 +228,13 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if not await self.does_collection_exist_async(collection_name):
-            raise Exception(f"collection {collection_name} not found")
+        if not await self.does_collection_exist(collection_name):
+            raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
         deletes: List[DeleteOne] = [DeleteOne({MONGODB_FIELD_ID: key}) for key in keys]
         bulk_write_result = await self.database[collection_name].bulk_write(deletes, ordered=False)
         logger.debug("%s entries deleted", bulk_write_result.deleted_count)
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -265,10 +269,10 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         # add meta search scoring
         pipeline.append({"$set": {"score": {"$meta": "vectorSearchScore"}}})
 
-        if min_relevance_score:
-            pipeline.append({"$match": {"$gte": ["$score", min_relevance_score]}})
+        if min_relevance_score is not None:
+            pipeline.append({"$match": {"score": {"$gte": min_relevance_score}}})
 
-        cursor: MotorCommandCursor = self.database[collection_name].aggregate(pipeline)
+        cursor = self.database[collection_name].aggregate(pipeline)
 
         return [
             (
@@ -278,7 +282,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             for doc in await cursor.to_list(length=limit)
         ]
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -296,7 +300,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
         """
-        matches: List[Tuple[MemoryRecord, float]] = await self.get_nearest_matches_async(
+        matches: List[Tuple[MemoryRecord, float]] = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,

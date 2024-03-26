@@ -38,7 +38,7 @@
         "OPENAI",
         "pydantic",
         "retrywrites",
-        "skfunction",
+        "kernelfunction",
         "skprompt",
         "templating",
         "vectordb"

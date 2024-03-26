@@ -4,13 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using Resources;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Examples;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
 /// Showcase usage of code_interpreter and retrieval tools.
 /// </summary>
-public static class Example75_AgentTools
+public sealed class Example75_AgentTools : BaseTest
 {
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
@@ -19,31 +26,21 @@ public static class Example75_AgentTools
     private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
 
     // Track agents for clean-up
-    private static readonly List<IAgent> s_agents = new();
+    private readonly List<IAgent> _agents = new();
 
     /// <summary>
-    /// Show how to utilize code_interpreter and retrieval tools.
+    /// Show how to utilize code_interpreter tool.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunCodeInterpreterToolAsync()
     {
-        Console.WriteLine("======== Example75_AgentTools ========");
+        this.WriteLine("======== Using CodeInterpreter tool ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
-            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
+            this.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
-
-        // Run agent with 'code_interpreter' tool
-        await RunCodeInterpreterToolAsync();
-
-        // Run agent with 'retrieval' tool
-        await RunRetrievalToolAsync();
-    }
-
-    private static async Task RunCodeInterpreterToolAsync()
-    {
-        Console.WriteLine("======== Run:CodeInterpreterTool ========");
 
         var builder =
             new AgentBuilder()
@@ -63,55 +60,75 @@ public static class Example75_AgentTools
             await ChatAsync(
                 defaultAgent,
                 codeInterpreterAgent,
+                fileId: null,
                 "What is the solution to `3x + 2 = 14`?",
                 "What is the fibinacci sequence until 101?");
         }
         finally
         {
-            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()));
         }
     }
 
-    private static async Task RunRetrievalToolAsync()
+    /// <summary>
+    /// Show how to utilize retrieval tool.
+    /// </summary>
+    [Fact]
+    public async Task RunRetrievalToolAsync()
     {
-        Console.WriteLine("======== Run:RunRetrievalTool ========");
+        // Set to "true" to pass fileId via thread invocation.
+        // Set to "false" to associate fileId with agent definition.
+        const bool PassFileOnRequest = false;
 
-        // REQUIRED:
-        //
-        // Use `curl` to upload document prior to running example and assign the
-        // identifier to `fileId`.
-        //
-        // Powershell:
-        // curl https://api.openai.com/v1/files `
-        // -H "Authorization: Bearer $Env:OPENAI_APIKEY" `
-        // -F purpose="assistants" `
-        // -F file="@Resources/travelinfo.txt"
+        this.WriteLine("======== Using Retrieval tool ========");
 
-        var fileId = "<see comment>";
+        if (TestConfiguration.OpenAI.ApiKey == null)
+        {
+            this.WriteLine("OpenAI apiKey not found. Skipping example.");
+            return;
+        }
+
+        var kernel = Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build();
+        var fileService = kernel.GetRequiredService<OpenAIFileService>();
+        var result =
+            await fileService.UploadContentAsync(
+                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
+
+        var fileId = result.Id;
+        this.WriteLine($"! {fileId}");
 
         var defaultAgent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .BuildAsync();
+            Track(
+                await new AgentBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .BuildAsync());
 
         var retrievalAgent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .WithRetrieval(fileId)
-                .BuildAsync();
+            Track(
+                await new AgentBuilder()
+                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                    .WithRetrieval()
+                    .BuildAsync());
+
+        if (!PassFileOnRequest)
+        {
+            await retrievalAgent.AddFileAsync(fileId);
+        }
 
         try
         {
             await ChatAsync(
                 defaultAgent,
                 retrievalAgent,
+                PassFileOnRequest ? fileId : null,
                 "Where did sam go?",
                 "When does the flight leave Seattle?",
                 "What is the hotel contact info at the destination?");
         }
         finally
         {
-            await Task.WhenAll(s_agents.Select(a => a.DeleteAsync()));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).Append(fileService.DeleteFileAsync(fileId)));
         }
     }
 
@@ -119,23 +136,30 @@ public static class Example75_AgentTools
     /// Common chat loop used for: RunCodeInterpreterToolAsync and RunRetrievalToolAsync.
     /// Processes each question for both "default" and "enabled" agents.
     /// </summary>
-    private static async Task ChatAsync(
+    private async Task ChatAsync(
         IAgent defaultAgent,
         IAgent enabledAgent,
+        string? fileId = null,
         params string[] questions)
     {
+        string[]? fileIds = null;
+        if (fileId != null)
+        {
+            fileIds = new string[] { fileId };
+        }
+
         foreach (var question in questions)
         {
-            Console.WriteLine("\nDEFAULT AGENT:");
+            this.WriteLine("\nDEFAULT AGENT:");
             await InvokeAgentAsync(defaultAgent, question);
 
-            Console.WriteLine("\nTOOL ENABLED AGENT:");
+            this.WriteLine("\nTOOL ENABLED AGENT:");
             await InvokeAgentAsync(enabledAgent, question);
         }
 
-        static async Task InvokeAgentAsync(IAgent agent, string question)
+        async Task InvokeAgentAsync(IAgent agent, string question)
         {
-            await foreach (var message in agent.InvokeAsync(question))
+            await foreach (var message in agent.InvokeAsync(question, null, fileIds))
             {
                 string content = message.Content;
                 foreach (var annotation in message.Annotations)
@@ -143,26 +167,28 @@ public static class Example75_AgentTools
                     content = content.Replace(annotation.Label, string.Empty, StringComparison.Ordinal);
                 }
 
-                Console.WriteLine($"# {message.Role}: {content}");
+                this.WriteLine($"# {message.Role}: {content}");
 
                 if (message.Annotations.Count > 0)
                 {
-                    Console.WriteLine("\n# files:");
+                    this.WriteLine("\n# files:");
                     foreach (var annotation in message.Annotations)
                     {
-                        Console.WriteLine($"* {annotation.FileId}");
+                        this.WriteLine($"* {annotation.FileId}");
                     }
                 }
             }
 
-            Console.WriteLine();
+            this.WriteLine();
         }
     }
 
-    private static IAgent Track(IAgent agent)
+    private IAgent Track(IAgent agent)
     {
-        s_agents.Add(agent);
+        this._agents.Add(agent);
 
         return agent;
     }
+
+    public Example75_AgentTools(ITestOutputHelper output) : base(output) { }
 }

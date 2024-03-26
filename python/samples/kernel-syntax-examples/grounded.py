@@ -58,9 +58,10 @@ def setup(use_azure: bool = False):
     # Configure AI service used by the kernel
     if useAzureOpenAI:
         deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-        kernel.add_chat_service(
-            "chat_completion",
+        service_id = ("chat_completion",)
+        kernel.add_service(
             AzureChatCompletion(
+                service_id=service_id,
                 deployment_name=deployment,
                 endpoint=endpoint,
                 api_key=api_key,
@@ -70,19 +71,18 @@ def setup(use_azure: bool = False):
         )
     else:
         api_key, org_id = sk.openai_settings_from_dot_env()
-        kernel.add_chat_service(
-            "chat-gpt",
-            OpenAIChatCompletion(ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
+        service_id = "chat-gpt"
+        kernel.add_service(
+            OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
         )
 
-    # note: using skills from the samples folder
-    skills_directory = "../samples/skills/"
+    # note: using plugins from the samples folder
+    plugins_directory = "../samples/plugins/"
 
-    grounding_semantic_functions = kernel.import_semantic_skill_from_directory(skills_directory, "GroundingSkill")
+    grounding_semantic_functions = kernel.import_plugin_from_prompt_directory(
+        service_id, plugins_directory, "GroundingPlugin"
+    )
 
-    # entity_extraction = grounding_semantic_functions["ExtractEntities"]
-    # reference_check = grounding_semantic_functions["ReferenceCheckEntities"]
-    # entity_excision = grounding_semantic_functions["ExciseEntities"]
     return kernel, grounding_semantic_functions
 
 
@@ -118,7 +118,7 @@ async def run_entity_excision(semantic_functions, summary_text, context):
 
 async def run_grounding(use_azure: bool = False):
     kernel, semantic_functions = setup(use_azure)
-    print(f"\n{Colors.CBOLD}Groundingsness Checking Skills\n{Colors.CEND}")
+    print(f"\n{Colors.CBOLD}Groundingsness Checking Plugins\n{Colors.CEND}")
     print(f"\n{ '-'*80 }\n")
     print(
         f"""{Colors.CGREEN}A well-known problem with large language models (LLMs) is that they make things up. These are sometimes called 'hallucinations' but a safer (and less anthropomorphic) term is 'ungrounded addition' - something in the text which cannot be firmly established. When attempting to establish whether or not something in an LLM response is 'true' we can either check for it in the supplied prompt (this is called 'narrow grounding') or use our general knowledge ('broad grounding'). Note that narrow grounding can lead to things being classified as 'true, but ungrounded.' For example "I live in Switzerland" is **not** _narrowly_ grounded in "I live in Geneva" even though it must be true (it **is** _broadly_ grounded).  # noqa: E501
@@ -147,7 +147,7 @@ What is an 'entity' in this context? In its simplest form, it's a named object s
 - A reference to Rome has been added
 
 
-The grounding skill has three stages:
+The grounding plugin has three stages:
 
 1. Extract entities from a summary text
 2. Perform a reference check against the grounding text
