@@ -174,19 +174,13 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Defaults to "Assistant is a large language model."
     /// </summary>
     [JsonPropertyName("chat_system_prompt")]
-    public string ChatSystemPrompt
+    public string? ChatSystemPrompt
     {
         get => this._chatSystemPrompt;
 
         set
         {
             this.ThrowIfFrozen();
-
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                value = DefaultChatSystemPrompt;
-            }
-
             this._chatSystemPrompt = value;
         }
     }
@@ -306,11 +300,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// Default value for chat system property.
-    /// </summary>
-    internal static string DefaultChatSystemPrompt { get; } = "Assistant is a large language model.";
-
-    /// <summary>
     /// Default max tokens for a text generation
     /// </summary>
     internal static int DefaultTextMaxTokens { get; } = 256;
@@ -381,7 +370,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private IDictionary<int, int>? _tokenSelectionBiases;
     private ToolCallBehavior? _toolCallBehavior;
     private string? _user;
-    private string _chatSystemPrompt = DefaultChatSystemPrompt;
+    private string? _chatSystemPrompt;
 
     #endregion
 }

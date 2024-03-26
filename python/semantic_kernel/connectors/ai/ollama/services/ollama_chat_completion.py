@@ -53,6 +53,8 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = False
         async with AsyncSession(self.session) as session:
@@ -87,6 +89,8 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         Yields:
             List[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.
         """
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = True
         async with AsyncSession(self.session) as session:
@@ -122,6 +126,8 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         Returns:
             List["TextContent"] -- The completion result(s).
         """
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
         settings.messages = [{"role": "user", "content": prompt}]
         settings.stream = False
         async with AsyncSession(self.session) as session:
@@ -153,6 +159,8 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
         """
 
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
         settings.messages = [{"role": "user", "content": prompt}]
         settings.stream = True
         async with AsyncSession(self.session) as session:
