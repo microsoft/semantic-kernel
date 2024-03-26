@@ -21,7 +21,7 @@ public static class ChatHistoryExtensions
     /// <param name="streamingMessageContents"><see cref="IAsyncEnumerator{T}"/> list of streaming message contents</param>
     /// <returns>Returns the original streaming results with some message processing</returns>
     [Experimental("SKEXP0010")]
-    public static async IAsyncEnumerable<StreamingChatMessageContent> AddStreamingMessageAsync(this ChatHistory chatHistory, IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents)
+    public static async IAsyncEnumerable<OpenAIStreamingChatMessageContent> AddStreamingMessageAsync(this ChatHistory chatHistory, IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents)
     {
         List<StreamingChatMessageContent> messageContents = new();
 
@@ -31,7 +31,9 @@ public static class ChatHistoryExtensions
         Dictionary<int, string>? functionNamesByIndex = null;
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
         Dictionary<string, object?>? metadata = null;
-        AuthorRole? streamedRole = default;
+        AuthorRole? streamedRole = null;
+        string? streamedName = null;
+
         await foreach (var chatMessage in streamingMessageContents.ConfigureAwait(false))
         {
             metadata ??= (Dictionary<string, object?>?)chatMessage.Metadata;
@@ -45,6 +47,7 @@ public static class ChatHistoryExtensions
 
             // Is always expected to have at least one chunk with the role provided from a streaming message
             streamedRole ??= chatMessage.Role;
+            streamedName ??= chatMessage.Name;
 
             messageContents.Add(chatMessage);
             yield return chatMessage;
@@ -52,12 +55,16 @@ public static class ChatHistoryExtensions
 
         if (messageContents.Count != 0)
         {
+            var role = streamedRole ?? AuthorRole.Assistant;
+            var name = streamedName ?? (role == AuthorRole.Assistant ? chatHistory.SystemName : null);
+
             chatHistory.Add(new OpenAIChatMessageContent(
-                streamedRole ?? AuthorRole.Assistant,
+                role,
                 contentBuilder?.ToString() ?? string.Empty,
                 messageContents[0].ModelId!,
                 OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
-                metadata));
+                metadata,
+                name));
         }
     }
 }
