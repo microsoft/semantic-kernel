@@ -37,7 +37,7 @@ public static class RestApiOperationResponseExtensions
         {
             var ct when ct.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) => ValidateJson(response),
             var ct when ct.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase) => ValidateXml(response),
-            var ct when ct.StartsWith("text/plain", StringComparison.OrdinalIgnoreCase) or ct.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) => ValidateTextHtml(response),
+            var ct when ct.StartsWith("text/plain", StringComparison.OrdinalIgnoreCase) || ct.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) => ValidateTextHtml(response),
             _ => true,
         };
     }
