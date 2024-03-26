@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace Microsoft.SemanticKernel;
 
@@ -90,5 +91,42 @@ public static class KernelPluginExtensions
         }
 
         return metadata;
+    }
+
+    /// <summary>
+    /// Given an <see cref="FunctionCallContent"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="KernelArguments"/> with its parameters.
+    /// </summary>
+    /// <param name="plugins">The plugins.</param>
+    /// <param name="functionCallContent">The <see cref="FunctionCallContent"/> object.</param>
+    /// <param name="function">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/></param>
+    /// <param name="arguments">When this method returns, the arguments for the function; otherwise, <see langword="null"/></param>
+    /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
+    public static bool TryGetFunctionAndArguments(this IReadOnlyKernelPluginCollection plugins, FunctionCallContent functionCallContent, [NotNullWhen(true)] out KernelFunction? function, out KernelArguments? arguments)
+    {
+        Verify.NotNull(plugins);
+        Verify.NotNull(functionCallContent);
+
+        if (plugins.TryGetFunction(functionCallContent.PluginName, functionCallContent.FunctionName, out function))
+        {
+            // Add parameters to arguments
+            arguments = null;
+            if (functionCallContent.Arguments is not null)
+            {
+                if (JsonSerializer.Deserialize<IDictionary<string, object?>>(functionCallContent.Arguments) is { } args)
+                {
+                    arguments = new KernelArguments();
+                    foreach (var argument in args)
+                    {
+                        arguments[argument.Key] = argument.Value?.ToString();
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        // Function not found in collection
+        arguments = null;
+        return false;
     }
 }
