@@ -126,38 +126,6 @@ async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, de
     "function, input, expected",
     [
         ("array", "'test1', 'test2', 'test3'", "['test1', 'test2', 'test3']"),
-        ("range", "5", "[0, 1, 2, 3, 4]"),
-        ("range", "0, 5", "[0, 1, 2, 3, 4]"),
-        ("range", "0, '5'", "[0, 1, 2, 3, 4]"),
-        ("range", "0, 5, 1", "[0, 1, 2, 3, 4]"),
-        ("range", "0, 5, 2", "[0, 2, 4]"),
-        ("range", "0, 5, 1, 1", "[]"),
-        ("range", "'a', 5", "[0, 1, 2, 3, 4]"),
-        ("concat", "'test1', 'test2', 'test3'", "test1test2test3"),
-        ("or", "True, False", "True"),
-        ("add", "1, 2", "3.0"),
-        ("add", "1, 2, 3", "6.0"),
-        ("subtract", "1, 2, 3", "-4.0"),
-        ("equals", "1, 2", "False"),
-        ("equals", "1, 1", "True"),
-        ("equals", "'test1', 'test2'", "False"),
-        ("equals", "'test1', 'test1'", "True"),
-        ("less_than", "1, 2", "True"),
-        ("lessThan", "1, 2", "True"),
-        ("less_than", "2, 1", "False"),
-        ("less_than", "1, 1", "False"),
-        ("greater_than", "2, 1", "True"),
-        ("greaterThan", "2, 1", "True"),
-        ("greater_than", "1, 2", "False"),
-        ("greater_than", "2, 2", "False"),
-        ("less_than_or_equal", "1, 2", "True"),
-        ("lessThanOrEqual", "1, 2", "True"),
-        ("less_than_or_equal", "2, 1", "False"),
-        ("less_than_or_equal", "1, 1", "True"),
-        ("greater_than_or_equal", "1, 2", "False"),
-        ("greaterThanOrEqual", "1, 2", "False"),
-        ("greater_than_or_equal", "2, 1", "True"),
-        ("greater_than_or_equal", "1, 1", "True"),
         ("camel_case", "'test_string'", "TestString"),
         ("camelCase", "'test_string'", "TestString"),
         ("snake_case", "'TestString'", "test_string"),
@@ -167,6 +135,55 @@ async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, de
 @mark.asyncio
 async def test_helpers(function, input, expected, kernel: Kernel):
     template = f"{{{{ {function}({input}) }}}}"
+    target = create_jinja2_prompt_template(template)
+
+    rendered = await target.render(kernel, None)
+    assert rendered == expected
+
+
+@pytest.mark.parametrize(
+    "function, input, expected",
+    [
+        ("==", "1, 1", "True"),
+        ("==", "1, 2", "False"),
+        (">", "2, 1", "True"),
+        ("<", "1, 2", "True"),
+        ("<=", "1, 2", "True"),
+        (">=", "2, 1", "True"),
+        ("!=", "1, 1", "False"),
+        ("!=", "1, 2", "True"),
+        ("in", "'test', 'test'", "True"),
+        ("not in", "'test', 'test'", "False"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_builtin_test_filters(function, input, expected, kernel: Kernel):
+    input_values = input.split(", ")
+    template = f"""
+        {{%- if {input_values[0]} {function} {input_values[1]} -%}}
+        True
+        {{%- else -%}}
+        False
+        {{%- endif -%}}
+    """
+    target = create_jinja2_prompt_template(template)
+
+    rendered = await target.render(kernel, None)
+    assert rendered == expected
+
+
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        ("5", "[0, 1, 2, 3, 4]"),
+        ("0, 5", "[0, 1, 2, 3, 4]"),
+        ("0, 5, 1", "[0, 1, 2, 3, 4]"),
+        ("0, 5, 2", "[0, 2, 4]"),
+    ],
+)
+@mark.asyncio
+async def test_range_function(input, expected, kernel: Kernel):
+    template = f"{{{{ range({input}) | list }}}}"
     target = create_jinja2_prompt_template(template)
 
     rendered = await target.render(kernel, None)
@@ -228,30 +245,12 @@ async def test_helpers_double_open_close_style_two(kernel: Kernel):
 
 
 @mark.asyncio
-async def test_helpers_json(kernel: Kernel):
-    template = "{{json(input_json)}}"
-    target = create_jinja2_prompt_template(template)
-
-    rendered = await target.render(kernel, KernelArguments(input_json={"key": "value"}))
-    assert rendered == '{"key": "value"}'
-
-
-@mark.asyncio
 async def test_helpers_json_style_two(kernel: Kernel):
     template = "{{input_json | tojson}}"
     target = create_jinja2_prompt_template(template)
 
     rendered = await target.render(kernel, KernelArguments(input_json={"key": "value"}))
     assert rendered == '{"key": "value"}'
-
-
-@mark.asyncio
-async def test_helpers_json_empty(kernel: Kernel):
-    template = "{{json()}}"
-    target = create_jinja2_prompt_template(template)
-
-    rendered = await target.render(kernel, None)
-    assert rendered == ""
 
 
 @mark.asyncio
@@ -343,3 +342,17 @@ async def test_helpers_messageToPrompt_other(kernel: Kernel):
     other_list = ["test1", "test2"]
     rendered = await target.render(kernel, KernelArguments(other_list=other_list))
     assert rendered.strip() == """test1 test2"""
+
+
+@mark.asyncio
+async def test_helpers_chat_history_messages(kernel: Kernel):
+    template = """{{ messages(chat_history) }}"""
+    target = create_jinja2_prompt_template(template)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("User message")
+    chat_history.add_assistant_message("Assistant message")
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert (
+        rendered.strip()
+        == """<chat_history><message role="user">User message</message><message role="assistant">Assistant message</message></chat_history>"""  # noqa E501
+    )
