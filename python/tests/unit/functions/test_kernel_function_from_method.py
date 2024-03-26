@@ -4,6 +4,8 @@ from __future__ import annotations
 import sys
 from typing import AsyncIterable, Iterable
 
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -246,7 +248,7 @@ async def test_service_execution_with_complex_object():
         assert input_obj.arg2 == 5
         return f"{input_obj.arg1} {input_obj.arg2}"
 
-    func = KernelFunction.from_method(my_function, "test")
+    func = KernelFunctionFromMethod(my_function, "test")
 
     arguments = KernelArguments(input_obj=InputObject(arg1="test", arg2=5))
     result = await func.invoke(kernel, arguments)

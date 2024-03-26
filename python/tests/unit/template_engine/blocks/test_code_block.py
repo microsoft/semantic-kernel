@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 from pytest import mark, raises
 
 from semantic_kernel.exceptions import (

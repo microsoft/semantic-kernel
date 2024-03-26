@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import typing as t
 
 import pytest
@@ -167,7 +170,7 @@ class TestUsageInPydanticFields:
         class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: t.kernel_type | None = None
+            field: kernel_type | None = None
 
         assert_serializable(TestModel(), TestModel)
 

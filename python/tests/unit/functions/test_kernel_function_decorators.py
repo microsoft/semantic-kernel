@@ -11,7 +11,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.functions.kernel_function_decorator import _parse_annotation, kernel_function
+from semantic_kernel.functions.kernel_function_decorator import _parse_parameter, kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
@@ -277,21 +277,24 @@ def test_kernel_function_no_typing():
 
 
 @pytest.mark.parametrize(
-    ("annotation", "description", "type_", "is_required"),
+    ("name", "annotation", "description", "type_", "is_required"),
     [
-        (Annotated[str, "test"], "test", "str", True),
-        (Annotated[str | None, "test"], "test", "str", False),
-        (Annotated[AsyncIterable[str], "test"], "test", "str", True),
-        (Annotated[str | int | None, "test"], "test", "str, int", False),
-        (str, None, "str", True),
-        (Union[str, int, float, "KernelArguments"], None, "str, int, float, KernelArguments", True),
-        (str | None, None, "str", False),
-        (list[str], None, "list[str]", True),
-        (dict[str, str], None, "dict[str, str]", True),
+        ("anno_str", Annotated[str, "test"], "test", "str", True),
+        ("anno_opt_str", Annotated[str | None, "test"], "test", "str", False),
+        ("anno_iter_str", Annotated[AsyncIterable[str], "test"], "test", "str", True),
+        ("anno_opt_str_int", Annotated[str | int | None, "test"], "test", "str, int", False),
+        ("str", str, None, "str", True),
+        ("union", Union[str, int, float, "KernelArguments"], None, "str, int, float, KernelArguments", True),
+        ("new_union", "str | int | float | KernelArguments", None, "str, int, float, KernelArguments", True),
+        ("opt_str", str | None, None, "str", False),
+        ("list_str", list[str], None, "list[str]", True),
+        ("dict_str", dict[str, str], None, "dict[str, str]", True),
+        ("list_str_opt", list[str] | None, None, "list[str]", False),
+        ("anno_dict_str", Annotated[dict[str, str], "description"], "description", "dict[str, str]", True),
     ],
 )
-def test_annotation_parsing(annotation, description, type_, is_required):
-    annotations = _parse_annotation(annotation)
+def test_annotation_parsing(name, annotation, description, type_, is_required):
+    annotations = _parse_parameter(name, annotation)
 
     assert description == annotations.get("description")
     assert type_ == annotations["type_"]
