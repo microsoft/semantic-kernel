@@ -71,7 +71,7 @@ public sealed class WebSearchEnginePlugin
         }
 
         return count == 1
-            ? results[0] ?? string.Empty
+            ? results.First() ?? string.Empty
             : JsonSerializer.Serialize(results, s_jsonOptionsCache);
     }
 
