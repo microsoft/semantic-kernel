@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import json
 import logging
 from typing import Any, Dict, Mapping, Optional, Union, overload
 
@@ -208,10 +209,12 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
         if use_extensions and endpoint and deployment_name:
-            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions")
+            base_url = HttpsUrl(
+                f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions")
         super().__init__(
             deployment_name=deployment_name,
-            endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
+            endpoint=endpoint if not isinstance(
+                endpoint, str) else HttpsUrl(endpoint),
             base_url=base_url,
             api_version=api_version,
             service_id=service_id,
@@ -259,7 +262,8 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(choice.message.role) if choice.message.role is not None else None,
+            role=ChatRole(
+                choice.message.role) if choice.message.role is not None else None,
             content=choice.message.content,
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
@@ -280,9 +284,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(choice.delta.role) if choice.delta.role is not None else None,
+            role=ChatRole(
+                choice.delta.role) if choice.delta.role is not None else None,
             content=choice.delta.content,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason is not None else None,
+            finish_reason=FinishReason(
+                choice.finish_reason) if choice.finish_reason is not None else None,
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
             tool_message=self._get_tool_message_from_chat_choice(choice),
@@ -295,8 +301,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         else:
             content = choice.delta
         if content.model_extra is not None and "context" in content.model_extra:
-            if "messages" in content.model_extra["context"]:
-                for message in content.model_extra["context"]["messages"]:
-                    if "tool" in message["role"]:
-                        return message["content"]
+            return json.dumps(content.model_extra["context"])
+
         return None
