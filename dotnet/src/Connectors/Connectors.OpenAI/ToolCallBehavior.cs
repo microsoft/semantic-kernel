@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -93,6 +94,7 @@ public abstract class ToolCallBehavior
     /// Options to control tool call result serialization behavior.
     /// </summary>
     [Obsolete("This property is deprecated in favor of Kernel.SerializerOptions and will be removed in one of the following releases.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public virtual JsonSerializerOptions? ToolCallResultSerializerOptions { get; set; }
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
