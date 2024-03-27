@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -175,6 +176,12 @@ public sealed class Kernel
         get => this._culture;
         set => this._culture = value ?? CultureInfo.InvariantCulture;
     }
+
+    /// <summary>
+    /// Gets the Json serializer options currently associated with this <see cref="Kernel"/>.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public JsonSerializerOptions? SerializerOptions { get; set; }
 
     /// <summary>
     /// Gets the <see cref="ILoggerFactory"/> associated with this <see cref="Kernel"/>.
