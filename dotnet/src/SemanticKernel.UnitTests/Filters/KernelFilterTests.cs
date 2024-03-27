@@ -519,6 +519,52 @@ public class KernelFilterTests
         Assert.Equal("FunctionFilter2-Invoked", executionOrder[5]);
     }
 
+    [Fact]
+    public async Task FunctionFilterReceivesInvocationExceptionAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvoked: (context) =>
+            {
+                Assert.NotNull(context.Exception);
+                Assert.IsType<NotImplementedException>(context.Exception);
+            });
+
+        // Act
+        var exception = await Assert.ThrowsAsync<NotImplementedException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.IsType<NotImplementedException>(exception);
+    }
+
+    [Fact]
+    public async Task FunctionFilterCanCancelExceptionAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvoked: (context) =>
+            {
+                if (context.Exception is not null)
+                {
+                    context.CancelException();
+                }
+
+                context.SetResultValue("Result ignoring exception.");
+            });
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+        var resultValue = result.GetValue<string>();
+
+        // Assert
+        Assert.Equal("Result ignoring exception.", resultValue);
+    }
+
     private Kernel GetKernelWithFilters(
         Action<FunctionInvokingContext>? onFunctionInvoking = null,
         Action<FunctionInvokedContext>? onFunctionInvoked = null,
