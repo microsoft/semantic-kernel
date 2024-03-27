@@ -1212,7 +1212,9 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItShouldNotDeserializeIfParameterTypeAndArgumentTypeAreSameAsync()
     {
         // Arrange
-        var node = JsonNode.Parse(@"{""id"":28}");
+        const string FakeJson = @"{""id"":28}";
+
+        var node = JsonNode.Parse(FakeJson);
         JsonNode? actualArgValue = null;
 
         var func = KernelFunctionFactory.CreateFromMethod((JsonNode? param) => { actualArgValue = param; });
@@ -1233,12 +1235,14 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItCanDeserializeFunctionArgumentsAsync(Type paramType)
     {
         // Arrange
+        const string FakeJson = @"{""id"":28}";
+
         object? paramValue = paramType switch
         {
-            Type t when t == typeof(string) => @"{""id"":28}",
-            Type t when t == typeof(JsonNode) => JsonNode.Parse(@"{""id"":28}"),
-            Type t when t == typeof(JsonDocument) => JsonDocument.Parse(@"{""id"":28}"),
-            Type t when t == typeof(JsonElement) => JsonDocument.Parse(@"{""id"":28}").RootElement,
+            Type t when t == typeof(string) => FakeJson,
+            Type t when t == typeof(JsonNode) => JsonNode.Parse(FakeJson),
+            Type t when t == typeof(JsonDocument) => JsonDocument.Parse(FakeJson),
+            Type t when t == typeof(JsonElement) => JsonDocument.Parse(FakeJson).RootElement,
             _ => throw new ArgumentOutOfRangeException(nameof(paramType))
         };
 
@@ -1254,6 +1258,25 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(28, actualArgValue.Id);
     }
 
+    [Fact]
+    public async Task ItCanDeserializeThirdPartyJsonPrimitivesAsync()
+    {
+        // Arrange
+        const string FakeJson = @"{""id"":28}";
+
+        var thirdPartyJsonPrimitive = new ThirdPartyJsonPrimitive(FakeJson);
+        CustomTypeForJsonTests? actualArgValue = null;
+
+        var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
+
+        // Act
+        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = thirdPartyJsonPrimitive });
+
+        // Assert
+        Assert.NotNull(actualArgValue);
+        Assert.Equal(28, actualArgValue.Id);
+    }
+
     [Theory]
     [InlineData(typeof(string))]
     [InlineData(typeof(JsonNode))]
@@ -1262,12 +1285,14 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItCanUseKernelSerializerOptionsForArgumentsDeserializationAsync(Type paramType)
     {
         // Arrange
+        const string FakeJson = @"{""id"":28}";
+
         object? paramValue = paramType switch
         {
-            Type t when t == typeof(string) => @"{""id"":28}",
-            Type t when t == typeof(JsonNode) => JsonNode.Parse(@"{""id"":28}"),
-            Type t when t == typeof(JsonDocument) => JsonDocument.Parse(@"{""id"":28}"),
-            Type t when t == typeof(JsonElement) => JsonDocument.Parse(@"{""id"":28}").RootElement,
+            Type t when t == typeof(string) => FakeJson,
+            Type t when t == typeof(JsonNode) => JsonNode.Parse(FakeJson),
+            Type t when t == typeof(JsonDocument) => JsonDocument.Parse(FakeJson),
+            Type t when t == typeof(JsonElement) => JsonDocument.Parse(FakeJson).RootElement,
             _ => throw new ArgumentOutOfRangeException(nameof(paramType))
         };
 
