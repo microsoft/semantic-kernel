@@ -37,7 +37,7 @@ public class PromptFunctionConstants {
                     "actionItem": "Record a demo for the new feature",
                     "dueDate": "Friday",
                     "status": "Open",
-                    "notes": "
+                    "notes": ""
                 }
             ]
         }
