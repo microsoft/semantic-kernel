@@ -97,7 +97,6 @@ internal sealed class MistralClient
             chatRequest.AddMessage(chatChoice.Message!);
             chatHistory.Add(ToChatMessageContent(modelId, responseData, chatChoice));
 
-
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
             for (int i = 0; i < chatChoice.ToolCallCount; i++)

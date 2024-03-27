@@ -56,5 +56,4 @@ public static class MistralAIPluginCollectionExtensions
         arguments = null;
         return false;
     }
-
 }
