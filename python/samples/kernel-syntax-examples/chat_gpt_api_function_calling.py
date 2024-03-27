@@ -3,7 +3,7 @@
 import asyncio
 import os
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
@@ -89,7 +89,7 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 arguments = KernelArguments(settings=execution_settings)
 
 
-def print_tool_calls(message: Union[OpenAIChatMessageContent, OpenAIStreamingChatMessageContent]) -> None:
+def print_tool_calls(message: OpenAIChatMessageContent | OpenAIStreamingChatMessageContent) -> None:
     # A helper method to pretty print the tool calls from the message.
     # This is only triggered if auto invoke tool calls is disabled.
     if isinstance(message, (OpenAIChatMessageContent, OpenAIStreamingChatMessageContent)):
@@ -123,8 +123,8 @@ async def handle_streaming(
     )
 
     print("Mosscap:> ", end="")
-    streamed_chunks: List[OpenAIStreamingChatMessageContent] = []
-    tool_call_ids_by_index: Dict[str, Any] = {}
+    streamed_chunks: list[OpenAIStreamingChatMessageContent] = []
+    tool_call_ids_by_index: dict[str, Any] = {}
 
     async for message in response:
         if not execution_settings.auto_invoke_kernel_functions and isinstance(

@@ -1,14 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
-
-"""
-QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
-The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
-"""
+from __future__ import annotations
 
 import asyncio
 import logging
 import uuid
-from typing import List, Optional, Tuple
 
 from numpy import ndarray
 from qdrant_client import QdrantClient
@@ -22,14 +17,19 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class QdrantMemoryStore(MemoryStoreBase):
+    """
+    QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
+    The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
+    """
+
     _qdrantclient: QdrantClient
 
     def __init__(
         self,
         vector_size: int,
-        url: Optional[str] = None,
-        port: Optional[int] = 6333,
-        local: Optional[bool] = False,
+        url: str | None = None,
+        port: int | None = 6333,
+        local: bool | None = False,
         **kwargs,
     ) -> None:
         """Initializes a new instance of the QdrantMemoryStore class."""
@@ -51,7 +51,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         Arguments:
             collection_name {str} -- The name of the collection to create.
             vector_size {int} -- The size of the vector.
-            distance {Optional[str]} -- The distance metric to use. (default: {"Cosine"})
+            distance {str | None} -- The distance metric to use. (default: {"Cosine"})
         Returns:
             None
         """
@@ -64,11 +64,11 @@ class QdrantMemoryStore(MemoryStoreBase):
 
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            list[str] -- The list of collections.
         """
         collection_info = self._qdrantclient.get_collections()
         return [collection.name for collection in collection_info.collections]
@@ -134,7 +134,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             raise ServiceResponseException("Upsert failed")
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         tasks = []
         for record in records:
             tasks.append(
@@ -156,7 +156,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             raise ServiceResponseException("Batch upsert failed")
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> Optional[MemoryRecord]:
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord | None:
         result = await self._get_existing_record_by_payload_id(
             collection_name=collection_name,
             payload_id=key,
@@ -179,8 +179,8 @@ class QdrantMemoryStore(MemoryStoreBase):
             return None
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         tasks = []
         for key in keys:
             tasks.append(
@@ -205,7 +205,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
                 raise ServiceResponseException("Delete failed")
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         tasks = []
         for key in keys:
             tasks.append(
@@ -233,7 +233,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         match_results = self._qdrantclient.search(
             collection_name=collection_name,
             query_vector=embedding,
@@ -266,7 +266,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         result = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
@@ -281,7 +281,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         collection_name: str,
         payload_id: str,
         with_embedding: bool = False,
-    ) -> Optional[qdrant_models.ScoredPoint]:
+    ) -> qdrant_models.ScoredPoint | None:
         """Gets an existing record based upon payload id.
 
         Arguments:
@@ -289,7 +289,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             payload_id {str} -- The payload id to search for.
 
         Returns:
-            Optional[ScoredPoint] -- The existing record if found; otherwise, None.
+            ScoredPoint | None -- The existing record if found; otherwise, None.
         """
         filter = qdrant_models.Filter(
             must=[

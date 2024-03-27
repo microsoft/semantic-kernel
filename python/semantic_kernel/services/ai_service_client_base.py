@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import sys
 from abc import ABC
-from typing import Optional
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -29,7 +29,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     ai_model_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     service_id: str = Field("")
 
-    def model_post_init(self, __context: Optional[object] = None):
+    def model_post_init(self, __context: object | None = None):
         """Update the service_id if it is not set."""
         if not self.service_id:
             self.service_id = self.ai_model_id

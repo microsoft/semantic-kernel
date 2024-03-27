@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 import re
 from enum import Enum
-from typing import Callable, Dict
+from typing import Callable
 
 from semantic_kernel.contents.chat_history import ROOT_KEY_MESSAGE, ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -74,7 +75,7 @@ def _snake_case(*args, **kwargs):
     return arg.lower()
 
 
-JINJA2_SYSTEM_HELPERS: Dict[str, Callable] = {
+JINJA2_SYSTEM_HELPERS: dict[str, Callable] = {
     "get": _safe_get_wrapper,
     "double_open": _double_open,
     "doubleOpen": _double_open,

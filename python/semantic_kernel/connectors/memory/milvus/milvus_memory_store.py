@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from numpy import array, expand_dims, ndarray
 from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
@@ -47,13 +48,13 @@ OUTPUT_FIELDS_WO_EMBEDDING = [
 ]
 
 
-def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> Dict[str, Any]:
+def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict[str, Any]:
     """Convert a memoryrecord into a dict.
     Args:
         mem (MemoryRecord): MemoryRecord to convert.
 
     Returns:
-        dict: Dict result.
+        dict: dict result.
     """
     ret_dict = {}
     # Grab all the class vars
@@ -66,7 +67,7 @@ def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> Dict[str, Any]:
     return ret_dict
 
 
-def milvus_dict_to_memoryrecord(milvus_dict: Dict[str, Any]) -> MemoryRecord:
+def milvus_dict_to_memoryrecord(milvus_dict: dict[str, Any]) -> MemoryRecord:
     """Convert Milvus search result dict into MemoryRecord.
 
     Args:
@@ -92,7 +93,7 @@ def milvus_dict_to_memoryrecord(milvus_dict: Dict[str, Any]) -> MemoryRecord:
     )
 
 
-def create_fields(dimensions: int) -> List[FieldSchema]:
+def create_fields(dimensions: int) -> list[FieldSchema]:
     return [
         FieldSchema(
             name=SEARCH_FIELD_ID,
@@ -142,7 +143,7 @@ class MilvusMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         uri: str = "http://localhost:19530",
-        token: Optional[str] = None,
+        token: str | None = None,
         **kwargs,
     ) -> None:
         """MilvusMemoryStore allows for searching for records using Milvus/Zilliz Cloud.
@@ -155,17 +156,17 @@ class MilvusMemoryStore(MemoryStoreBase):
         Args:
             uri (str, optional): The uri of the cluster. Defaults to
                 "http://localhost:19530".
-            token (Optional[str], optional): The token to connect to the cluster if
+            token (str | None, optional): The token to connect to the cluster if
                 authentication is required. Defaults to None.
         """
         connections.connect("default", uri=uri, token=token)
-        self.collections: Dict[str, Collection] = {}
+        self.collections: dict[str, Collection] = {}
 
     async def create_collection(
         self,
         collection_name: str,
         dimension_num: int = 1536,
-        distance_type: Optional[str] = "IP",
+        distance_type: str | None = "IP",
         overwrite: bool = False,
         consistency: str = "Session",
     ) -> None:
@@ -173,9 +174,9 @@ class MilvusMemoryStore(MemoryStoreBase):
 
         Args:
             collection_name (str): The name of the collection.
-            dimension_num (Optional[int], optional): The size of the embeddings being
+            dimension_num (int | None, optional): The size of the embeddings being
                 stored. Defaults to 1536.
-            distance_type (Optional[str], optional): Which distance function, at the
+            distance_type (str | None, optional): Which distance function, at the
                 moment only "IP" and "L2" are supported. Defaults to "IP".
             overwrite (bool, optional): Whether to overwrite any existing collection
                 with the same name. Defaults to False.
@@ -198,15 +199,15 @@ class MilvusMemoryStore(MemoryStoreBase):
 
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Return a list of present collections.
 
         Returns:
-            List[str]: List of collection names.
+            list[str]: list of collection names.
         """
         return utility.list_collections()
 
-    async def delete_collection(self, collection_name: Optional[str] = None, all: bool = False) -> None:
+    async def delete_collection(self, collection_name: str | None = None, all: bool = False) -> None:
         """Delete the specified collection.
 
         If all is True, all collections in the cluster will be removed.
@@ -253,12 +254,12 @@ class MilvusMemoryStore(MemoryStoreBase):
         )
         return res[0]
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord], batch_size=100) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord], batch_size=100) -> list[str]:
         """_summary_
 
         Args:
             collection_name (str): The collection name.
-            records (List[MemoryRecord]): A list of memory records.
+            records (list[MemoryRecord]): A list of memory records.
             batch_size (int, optional): Batch size of the insert, 0 is a batch
                 size of total size. Defaults to 100.
 
@@ -267,7 +268,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             e: Failed to upsert a record.
 
         Returns:
-            List[str]: A list of inserted ID's.
+            list[str]: A list of inserted ID's.
         """
         # Check if the collection exists.
         if collection_name not in utility.list_collections():
@@ -297,12 +298,12 @@ class MilvusMemoryStore(MemoryStoreBase):
         res = await self.get_batch(collection_name=collection_name, keys=[key], with_embeddings=with_embedding)
         return res[0]
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Get the MemoryRecords corresponding to the keys
 
         Args:
             collection_name (str): _description_
-            keys (List[str]): _description_
+            keys (list[str]): _description_
             with_embeddings (bool): _description_
 
         Raises:
@@ -310,7 +311,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             e: _description_
 
         Returns:
-            List[MemoryRecord]: _description_
+            list[MemoryRecord]: _description_
         """
         # Check if the collection exists
         if not utility.has_collection(collection_name):
@@ -337,12 +338,12 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         await self.remove_batch(collection_name=collection_name, keys=[key])
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Remove multiple records based on keys.
 
         Args:
             collection_name (str): Collection to remove from
-            keys (List[str]): The list of keys.
+            keys (list[str]): The list of keys.
 
         Raises:
             Exception: Collection doesnt exist.
@@ -373,7 +374,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Find the nearest `limit` matches for an embedding.
 
         Args:
@@ -388,7 +389,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             e: Failure to search
 
         Returns:
-            List[Tuple[MemoryRecord, float]]: MemoryRecord and distance tuple.
+            list[tuple[MemoryRecord, float]]: MemoryRecord and distance tuple.
         """
         # Check if collection exists
         if collection_name not in utility.list_collections():
@@ -424,7 +425,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Find the nearest match for an embedding.
 
         Args:
@@ -434,7 +435,7 @@ class MilvusMemoryStore(MemoryStoreBase):
             with_embedding (bool, optional): Whether to include embedding in result. Defaults to False.
 
         Returns:
-            Tuple[MemoryRecord, float]: A tuple of record and distance.
+            tuple[MemoryRecord, float]: A tuple of record and distance.
         """
         m = await self.get_nearest_matches(
             collection_name,

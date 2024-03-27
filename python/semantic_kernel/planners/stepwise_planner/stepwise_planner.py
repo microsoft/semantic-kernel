@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import asyncio
 import json
@@ -6,7 +7,7 @@ import logging
 import os
 import re
 import sys
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -54,7 +55,7 @@ SCRATCH_PAD_PREFIX = (
 )
 
 
-def is_null_or_empty(value: Optional[str] = None) -> bool:
+def is_null_or_empty(value: str | None = None) -> bool:
     return value is None or value == ""
 
 
@@ -131,11 +132,11 @@ class StepwisePlanner:
     async def execute_plan(
         self,
         question: Annotated[str, "The question to answer"],
-        function_descriptions: Annotated[List[str], "List of tool descriptions"],
+        function_descriptions: Annotated[list[str], "list of tool descriptions"],
     ) -> FunctionResult:
         self._arguments["question"] = question
         self._arguments["function_descriptions"] = function_descriptions
-        steps_taken: List[SystemStep] = []
+        steps_taken: list[SystemStep] = []
         if not is_null_or_empty(question):
             for i in range(self.config.max_iterations):
                 scratch_pad = self.create_scratch_pad(question, steps_taken)
@@ -256,11 +257,11 @@ class StepwisePlanner:
 
         return result
 
-    def add_execution_stats_to_arguments(self, steps_taken: List[SystemStep], arguments: KernelArguments):
+    def add_execution_stats_to_arguments(self, steps_taken: list[SystemStep], arguments: KernelArguments):
         arguments["step_count"] = str(len(steps_taken))
         arguments["steps_taken"] = json.dumps([s.__dict__ for s in steps_taken], indent=4)
 
-        action_counts: Dict[str, int] = {}
+        action_counts: dict[str, int] = {}
         for step in steps_taken:
             if is_null_or_empty(step.action):
                 continue
@@ -274,11 +275,11 @@ class StepwisePlanner:
 
         arguments["plugin_count"] = f"{plugin_call_count_str} ({plugin_call_list_with_counts})"
 
-    def create_scratch_pad(self, question: str, steps_taken: List[SystemStep]) -> str:
+    def create_scratch_pad(self, question: str, steps_taken: list[SystemStep]) -> str:
         if len(steps_taken) == 0:
             return ""
 
-        scratch_pad_lines: List[str] = []
+        scratch_pad_lines: list[str] = []
 
         # Add the original first thought
         scratch_pad_lines.append(SCRATCH_PAD_PREFIX)
@@ -313,7 +314,7 @@ class StepwisePlanner:
 
         return scratch_pad
 
-    async def invoke_action(self, action_name: str, action_variables: Dict[str, str]) -> str:
+    async def invoke_action(self, action_name: str, action_variables: dict[str, str]) -> str:
         available_functions = self.get_available_functions()
         target_function = next(
             (f for f in available_functions if f.fully_qualified_name == action_name),
@@ -344,7 +345,7 @@ class StepwisePlanner:
             logger.error(error_msg)
             return error_msg
 
-    def create_action_arguments(self, action_variables: Dict[str, str]) -> KernelArguments:
+    def create_action_arguments(self, action_variables: dict[str, str]) -> KernelArguments:
         action_arguments = KernelArguments()
         if action_variables is not None:
             for k, v in action_variables.items():
@@ -352,7 +353,7 @@ class StepwisePlanner:
 
         return action_arguments
 
-    def get_available_functions(self) -> List[KernelFunctionMetadata]:
+    def get_available_functions(self) -> list[KernelFunctionMetadata]:
         if self._kernel.plugins is None:
             raise PlannerCreatePlanError("Plugin collection not found in the kernel")
 

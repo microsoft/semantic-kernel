@@ -1,13 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import json
-from typing import List, Tuple
 
 import numpy as np
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
-    AzureCosmosDBStoreApi,
-)
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
@@ -58,7 +56,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 )
         self.collection = self.database[collection_name]
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         return self.database.list_collection_names()
 
     async def delete_collection(self, collection_name: str) -> None:
@@ -71,9 +69,9 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         result = await self.upsert_batch(collection_name, [record])
         return result[0]
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
-        doc_ids: List[str] = []
-        cosmosRecords: List[dict] = []
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+        doc_ids: list[str] = []
+        cosmosRecords: list[dict] = []
         for record in records:
             cosmosRecord: dict = {
                 "_id": record.id,
@@ -104,7 +102,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             timestamp=result.get("timestamp", None),
         )
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         if not with_embeddings:
             results = self.collection.find({"_id": {"$in": keys}}, {"embedding": 0})
         else:
@@ -125,7 +123,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
     async def remove(self, collection_name: str, key: str) -> None:
         self.collection.delete_one({"_id": key})
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         self.collection.delete_many({"_id": {"$in": keys}})
 
     async def get_nearest_matches(
@@ -135,7 +133,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         pipeline = [
             {
                 "$search": {
@@ -177,7 +175,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         embedding: np.ndarray,
         min_relevance_score: float,
         with_embedding: bool,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         nearest_results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,

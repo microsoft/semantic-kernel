@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from re import compile
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
@@ -45,7 +46,7 @@ class VarBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.VARIABLE
-    name: Optional[str] = ""
+    name: str | None = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -65,7 +66,7 @@ class VarBlock(Block):
             fields["name"] = name
         return fields
 
-    def render(self, _: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+    def render(self, _: "Kernel", arguments: "KernelArguments" | None = None) -> str:
         """Render the variable block with the given arguments.
         If the variable is not found in the arguments, return an empty string."""
         if arguments is None:

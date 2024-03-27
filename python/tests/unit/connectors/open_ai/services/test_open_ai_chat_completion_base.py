@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
-from typing import List
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -13,9 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_messa
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.exceptions import (
-    FunctionCallInvalidArgumentsException,
-)
+from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
@@ -64,7 +62,7 @@ async def test_complete_chat_stream(kernel: Kernel):
 async def test_complete_chat(tool_call, kernel: Kernel):
     chat_history = MagicMock()
     settings = MagicMock()
-    mock_message_content = MagicMock(spec=List[OpenAIChatMessageContent])
+    mock_message_content = MagicMock(spec=list[OpenAIChatMessageContent])
     arguments = KernelArguments()
 
     with patch(

@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 import urllib
-from typing import List
 
 import aiohttp
 
@@ -30,7 +30,7 @@ class GoogleConnector(ConnectorBase):
         if not self._search_engine_id:
             raise ServiceInitializationError("Google search engine ID cannot be null.")
 
-    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:
+    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
         """
         Returns the search results of the query provided by pinging the Google Custom search API.
         Returns `num_results` results and ignores the first `offset`.

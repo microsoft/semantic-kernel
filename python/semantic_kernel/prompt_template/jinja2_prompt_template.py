@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from jinja2 import BaseLoader, Environment, TemplateError
 from pydantic import PrivateAttr, field_validator
@@ -62,7 +63,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
             logger.error(f"Invalid jinja2 template: {self.prompt_template_config.template}")
             raise Jinja2TemplateSyntaxError(f"Invalid jinja2 template: {self.prompt_template_config.template}") from e
 
-    async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+    async def render(self, kernel: "Kernel", arguments: "KernelArguments" | None = None) -> str:
         """
         Using the prompt template, replace the variables with their values
         and execute the functions replacing their reference with the

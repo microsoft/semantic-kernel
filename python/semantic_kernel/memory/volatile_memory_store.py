@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import Dict, List, Tuple
 
 from numpy import array, linalg, ndarray
 
@@ -14,7 +14,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class VolatileMemoryStore(MemoryStoreBase):
-    _store: Dict[str, Dict[str, MemoryRecord]]
+    _store: dict[str, dict[str, MemoryRecord]]
 
     def __init__(self) -> None:
         """Initializes a new instance of the VolatileMemoryStore class."""
@@ -36,11 +36,11 @@ class VolatileMemoryStore(MemoryStoreBase):
 
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            list[str] -- The list of collections.
         """
         return list(self._store.keys())
 
@@ -84,15 +84,15 @@ class VolatileMemoryStore(MemoryStoreBase):
         self._store[collection_name][record._key] = record
         return record._key
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+            records {list[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records.
+            list[str] -- The unique database keys of the records.
         """
         if collection_name not in self._store:
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -128,17 +128,17 @@ class VolatileMemoryStore(MemoryStoreBase):
         return result
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to get the records from.
-            keys {List[str]} -- The unique database keys of the records.
+            keys {list[str]} -- The unique database keys of the records.
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            list[MemoryRecord] -- The records.
         """
         if collection_name not in self._store:
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -170,12 +170,12 @@ class VolatileMemoryStore(MemoryStoreBase):
 
         del self._store[collection_name][key]
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]} -- The unique database keys of the records to remove.
+            keys {list[str]} -- The unique database keys of the records to remove.
 
         Returns:
             None
@@ -193,7 +193,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
@@ -203,7 +203,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            tuple[MemoryRecord, float] -- The record and the relevance score.
         """
         return self.get_nearest_matches(
             collection_name=collection_name,
@@ -220,7 +220,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -231,7 +231,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            list[tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
         if collection_name not in self._store:
             logger.warning(

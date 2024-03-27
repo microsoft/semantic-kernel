@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Final, Iterator, List, Optional, Type, Union
+from typing import Any, Final, Iterator, Type
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -28,10 +29,10 @@ class ChatHistory(KernelBaseModel):
     as a keyword argument, but not be part of the class definition.
 
     Attributes:
-        messages (List[ChatMessageContent]): The list of chat messages in the history.
+        messages (list[ChatMessageContent]): The list of chat messages in the history.
     """
 
-    messages: List[ChatMessageContent]
+    messages: list[ChatMessageContent]
 
     def __init__(self, **data: Any):
         """
@@ -47,8 +48,8 @@ class ChatHistory(KernelBaseModel):
 
         Parameters:
         - **data: Arbitrary keyword arguments. The constructor looks for two optional keys:
-            - 'messages': Optional[List[ChatMessageContent]], a list of chat messages to include in the history.
-            - 'system_message' Optional[str]: An optional string representing a system-generated message to be
+            - 'messages': list[ChatMessageContent] | None, a list of chat messages to include in the history.
+            - 'system_message' str | None: An optional string representing a system-generated message to be
                 included at the start of the chat history.
 
         Note: The 'system_message' is not retained as part of the class's attributes; it's used during
@@ -80,15 +81,15 @@ class ChatHistory(KernelBaseModel):
         """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.ASSISTANT, content))
 
-    def add_tool_message(self, content: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> None:
+    def add_tool_message(self, content: str | None = None, metadata: dict[str, Any] | None = None) -> None:
         """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.TOOL, content), metadata=metadata)
 
     def add_message(
         self,
-        message: Union[ChatMessageContent, Dict[str, Any]],
-        encoding: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        message: ChatMessageContent | dict[str, Any],
+        encoding: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Add a message to the history.
 
@@ -96,10 +97,10 @@ class ChatHistory(KernelBaseModel):
         dictionary with the necessary information to construct a ChatMessageContent instance.
 
         Args:
-            message (Union[ChatMessageContent, dict]): The message to add, either as
+            message (ChatMessageContent | dict): The message to add, either as
                 a pre-constructed ChatMessageContent instance or a dictionary specifying 'role' and 'content'.
-            encoding (Optional[str]): The encoding of the message. Required if 'message' is a dict.
-            metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
+            encoding (str | None): The encoding of the message. Required if 'message' is a dict.
+            metadata (dict[str, Any] | None): Any metadata to attach to the message. Required if 'message' is a dict.
         """
         if isinstance(message, ChatMessageContent) or isinstance(message, StreamingChatMessageContent):
             self.messages.append(message)
@@ -112,7 +113,7 @@ class ChatHistory(KernelBaseModel):
             message["metadata"] = metadata
         self.messages.append(ChatMessageContent(**message))
 
-    def _prepare_for_add(self, role: ChatRole, content: str) -> Dict[str, str]:
+    def _prepare_for_add(self, role: ChatRole, content: str) -> dict[str, str]:
         """Prepare a message to be added to the history."""
         return {"role": role, "content": content}
 
@@ -188,7 +189,7 @@ class ChatHistory(KernelBaseModel):
         Returns:
             ChatHistory: The ChatHistory instance created from the rendered prompt.
         """
-        messages: List[chat_message_content_type] = []
+        messages: list[chat_message_content_type] = []
         prompt = rendered_prompt.strip()
         try:
             xml_prompt = ET.fromstring(f"<prompt>{prompt}</prompt>")

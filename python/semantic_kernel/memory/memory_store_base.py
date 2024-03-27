@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple
 
 from numpy import ndarray
 
@@ -34,11 +34,11 @@ class MemoryStoreBase(ABC):
     @abstractmethod
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Gets all collection names in the data store.
 
         Returns:
-            List[str] -- A group of collection names.
+            list[str] -- A group of collection names.
         """
         pass
 
@@ -83,7 +83,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -93,7 +93,7 @@ class MemoryStoreBase(ABC):
             records {MemoryRecord} -- The memory records to upsert.
 
         Returns:
-            List[str] -- The unique identifiers for the memory records.
+            list[str] -- The unique identifiers for the memory records.
         """
         pass
 
@@ -112,16 +112,16 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
             collection_name {str} -- The name associated with a collection of embeddings.
-            keys {List[str]} -- The unique ids associated with the memory records to get.
+            keys {list[str]} -- The unique ids associated with the memory records to get.
             with_embeddings {bool} -- If true, the embedding will be returned in the memory records.
 
         Returns:
-            List[MemoryRecord] -- The memory records associated with the unique keys provided.
+            list[MemoryRecord] -- The memory records associated with the unique keys provided.
         """
         pass
 
@@ -139,12 +139,12 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
             collection_name {str} -- The name associated with a collection of embeddings.
-            keys {List[str]} -- The unique ids associated with the memory records to remove.
+            keys {list[str]} -- The unique ids associated with the memory records to remove.
 
         Returns:
             None
@@ -159,7 +159,7 @@ class MemoryStoreBase(ABC):
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding of type float. Does not guarantee that the collection exists.
 
         Arguments:
@@ -170,7 +170,7 @@ class MemoryStoreBase(ABC):
             with_embeddings {bool} -- If true, the embeddings will be returned in the memory records.
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- A list of tuples where item1 is a MemoryRecord and item2
+            list[tuple[MemoryRecord, float]] -- A list of tuples where item1 is a MemoryRecord and item2
                 is its similarity score as a float.
         """
         pass
@@ -182,7 +182,7 @@ class MemoryStoreBase(ABC):
         embedding: ndarray,
         min_relevance_score: float,
         with_embedding: bool,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding of type float. Does not guarantee that the collection exists.
 
         Arguments:
@@ -192,6 +192,6 @@ class MemoryStoreBase(ABC):
             with_embedding {bool} -- If true, the embeddings will be returned in the memory record.
 
         Returns:
-            Tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
+            tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
         """
         pass

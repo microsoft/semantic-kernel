@@ -1,16 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import List, Optional, Tuple
 
 import pinecone
 from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription
 
-from semantic_kernel.connectors.memory.pinecone.utils import (
-    build_payload,
-    parse_payload,
-)
+from semantic_kernel.connectors.memory.pinecone.utils import build_payload, parse_payload
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidRequestError,
@@ -68,12 +65,12 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = None,
-        distance_type: Optional[str] = "cosine",
-        num_of_pods: Optional[int] = 1,
-        replica_num: Optional[int] = 0,
-        type_of_pod: Optional[str] = "p1.x1",
-        metadata_config: Optional[dict] = None,
+        dimension_num: int | None = None,
+        distance_type: str | None = "cosine",
+        num_of_pods: int | None = 1,
+        replica_num: int | None = 0,
+        type_of_pod: str | None = "p1.x1",
+        metadata_config: dict | None = None,
     ) -> None:
         """Creates a new collection in Pinecone if it does not exist.
             This function creates an index, by default the following index
@@ -106,12 +103,12 @@ class PineconeMemoryStore(MemoryStoreBase):
                 metadata_config=metadata_config,
             )
 
-    async def describe_collection(self, collection_name: str) -> Optional[IndexDescription]:
+    async def describe_collection(self, collection_name: str) -> IndexDescription | None:
         """Gets the description of the index.
         Arguments:
             collection_name {str} -- The name of the index to get.
         Returns:
-            Optional[dict] -- The index.
+            dict | None -- The index.
         """
         if collection_name in pinecone.list_indexes():
             return pinecone.describe_index(collection_name)
@@ -119,11 +116,11 @@ class PineconeMemoryStore(MemoryStoreBase):
 
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            list[str] -- The list of collections.
         """
         return list(pinecone.list_indexes())
 
@@ -175,15 +172,15 @@ class PineconeMemoryStore(MemoryStoreBase):
 
         return record._id
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+            records {list[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records.
+            list[str] -- The unique database keys of the records.
         """
         if collection_name not in pinecone.list_indexes():
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -229,17 +226,17 @@ class PineconeMemoryStore(MemoryStoreBase):
         return parse_payload(fetch_response.vectors[key], with_embedding)
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to get the records from.
-            keys {List[str]} -- The unique database keys of the records.
+            keys {list[str]} -- The unique database keys of the records.
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            list[MemoryRecord] -- The records.
         """
         if collection_name not in pinecone.list_indexes():
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -263,12 +260,12 @@ class PineconeMemoryStore(MemoryStoreBase):
         collection = pinecone.Index(collection_name)
         collection.delete([key])
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
             collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]} -- The unique database keys of the records to remove.
+            keys {list[str]} -- The unique database keys of the records to remove.
 
         Returns:
             None
@@ -287,7 +284,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
@@ -297,7 +294,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            tuple[MemoryRecord, float] -- The record and the relevance score.
         """
         matches = await self.get_nearest_matches(
             collection_name=collection_name,
@@ -315,7 +312,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -326,7 +323,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            list[tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
         if collection_name not in pinecone.list_indexes():
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -373,7 +370,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         )
 
     async def __get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
     ) -> "FetchResponse":
         index = pinecone.Index(collection_name)
         if len(keys) > MAX_FETCH_BATCH_SIZE:

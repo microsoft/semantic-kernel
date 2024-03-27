@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -34,14 +35,14 @@ int_to_role = {1: ChatRole.USER, 2: ChatRole.SYSTEM, 3: ChatRole.ASSISTANT, 4: C
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
-    _message_history: Optional[ChatHistory] = PrivateAttr()
-    service_id: Optional[str] = None
+    _message_history: ChatHistory | None = PrivateAttr()
+    service_id: str | None = None
 
     def __init__(
         self,
         ai_model_id: str,
         api_key: str,
-        message_history: Optional[ChatHistory] = None,
+        message_history: ChatHistory | None = None,
     ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
@@ -51,7 +52,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
-            message_history {Optional[ChatHistory]} -- The message history to use for context. (Optional)
+            message_history {ChatHistory | None} -- The message history to use for context. (Optional)
         """
         super().__init__(
             ai_model_id=ai_model_id,
@@ -64,18 +65,18 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         chat_history: ChatHistory,
         settings: GooglePalmPromptExecutionSettings,
         **kwargs: Any,
-    ) -> List[ChatMessageContent]:
+    ) -> list[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            chat_history {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+            chat_history {list[ChatMessage]} -- A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
             settings {GooglePalmPromptExecutionSettings} -- Settings for the request.
-            kwargs {Dict[str, Any]} -- The optional arguments.
+            kwargs {dict[str, Any]} -- The optional arguments.
 
         Returns:
-            List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
+            list[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         if not settings.ai_model_id:
@@ -112,7 +113,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def complete_chat_stream(
         self,
-        messages: List[Tuple[str, str]],
+        messages: list[tuple[str, str]],
         settings: GooglePalmPromptExecutionSettings,
         **kwargs: Any,
     ):
@@ -122,7 +123,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -131,7 +132,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             settings {GooglePalmPromptExecutionSettings} -- Settings for the request.
 
         Returns:
-            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+            list[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
         settings.messages = [{"author": "user", "content": prompt}]
         if not settings.ai_model_id:
@@ -232,7 +233,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     def _prepare_chat_history_for_request(
         self,
         chat_history: ChatHistory,
-    ) -> List[Dict[str, Optional[str]]]:
+    ) -> list[dict[str, str]] | None:
         """
         Prepare the chat history for a request, allowing customization of the key names for role/author,
         and optionally overriding the role.

@@ -1,18 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from threading import Thread
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterable, Literal
 
 import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
-from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
-    HuggingFacePromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceResponseException
@@ -31,11 +28,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     def __init__(
         self,
         ai_model_id: str,
-        task: Optional[str] = "text2text-generation",
-        device: Optional[int] = -1,
-        service_id: Optional[str] = None,
-        model_kwargs: Optional[Dict[str, Any]] = None,
-        pipeline_kwargs: Optional[Dict[str, Any]] = None,
+        task: str | None = "text2text-generation",
+        device: int | None = -1,
+        service_id: str | None = None,
+        model_kwargs: dict[str, Any] | None = None,
+        pipeline_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextCompletion class.
@@ -43,20 +40,20 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Arguments:
             ai_model_id {str} -- Hugging Face model card string, see
                 https://huggingface.co/models
-            device {Optional[int]} -- Device to run the model on, defaults to CPU, 0+ for GPU,
+            device {int | None} -- Device to run the model on, defaults to CPU, 0+ for GPU,
                                    -- None if using device_map instead. (If both device and device_map
                                       are specified, device overrides device_map. If unintended,
                                       it can lead to unexpected behavior.)
-            service_id {Optional[str]} -- Service ID for the AI service.
-            task {Optional[str]} -- Model completion task type, options are:
+            service_id {str | None} -- Service ID for the AI service.
+            task {str | None} -- Model completion task type, options are:
                 - summarization: takes a long text and returns a shorter summary.
                 - text-generation: takes incomplete text and returns a set of completion candidates.
                 - text2text-generation (default): takes an input prompt and returns a completion.
                 text2text-generation is the default as it behaves more like GPT-3+.
             log  -- Logger instance. (Deprecated)
-            model_kwargs {Optional[Dict[str, Any]]} -- Additional dictionary of keyword arguments
+            model_kwargs {dict[str, Any] | None} -- Additional dictionary of keyword arguments
                 passed along to the model's `from_pretrained(..., **model_kwargs)` function.
-            pipeline_kwargs {Optional[Dict[str, Any]]} -- Additional keyword arguments passed along
+            pipeline_kwargs {dict[str, Any] | None} -- Additional keyword arguments passed along
                 to the specific pipeline init (see the documentation for the corresponding pipeline class
                 for possible values).
 
@@ -81,7 +78,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -90,7 +87,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             settings {HuggingFacePromptExecutionSettings} -- Settings for the request.
 
         Returns:
-            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+            list[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
         try:
             results = self.generator(prompt, **settings.prepare_settings_dict())
@@ -100,7 +97,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             return [self._create_text_content(results, result) for result in results]
         return [self._create_text_content(results, results)]
 
-    def _create_text_content(self, response: Any, candidate: Dict[str, str]) -> TextContent:
+    def _create_text_content(self, response: Any, candidate: dict[str, str]) -> TextContent:
         return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
@@ -111,7 +108,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-    ) -> AsyncIterable[List[StreamingTextContent]]:
+    ) -> AsyncIterable[list[StreamingTextContent]]:
         """
         Streams a text completion using a Hugging Face model.
         Note that this method does not support multiple responses.
@@ -121,7 +118,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             settings {HuggingFacePromptExecutionSettings} -- Request settings.
 
         Yields:
-            List[StreamingTextContent] -- List of StreamingTextContent objects.
+            list[StreamingTextContent] -- list of StreamingTextContent objects.
         """
         if settings.num_return_sequences > 1:
             raise ServiceInvalidExecutionSettingsError(

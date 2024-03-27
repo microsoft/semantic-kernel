@@ -1,16 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
-    OpenAIChatCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 
 
 def test_open_ai_chat_completion_init() -> None:

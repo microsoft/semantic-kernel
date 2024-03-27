@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import pytest
 from pytest import mark
@@ -104,11 +105,11 @@ async def test_it_renders_fail(kernel: Kernel):
 
 @mark.asyncio
 async def test_it_renders_list(kernel: Kernel):
-    template = "List: {{#each items}}{{this}}{{/each}}"
+    template = "list: {{#each items}}{{this}}{{/each}}"
     target = create_handlebars_prompt_template(template)
 
     rendered = await target.render(kernel, KernelArguments(items=["item1", "item2", "item3"]))
-    assert rendered == "List: item1item2item3"
+    assert rendered == "list: item1item2item3"
 
 
 @mark.asyncio

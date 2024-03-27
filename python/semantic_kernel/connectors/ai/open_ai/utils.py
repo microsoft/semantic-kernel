@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
+from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -19,12 +21,13 @@ TYPE_MAPPER = {
 }
 
 
-def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
+def _describe_tool_call(function: KernelFunction) -> dict[str, Any]:
     """Create the object used for the tool call.
 
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
     func_metadata = function.metadata
+    params = [parse_param(p) for p in func_metadata.parameters]
     return {
         "type": "function",
         "function": {
@@ -32,30 +35,38 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
             "description": func_metadata.description,
             "parameters": {
                 "type": "object",
-                "properties": {
-                    param.name: {
-                        "description": param.description,
-                        "type": parse_param(param.type_),
-                        **({"enum": param.enum} if hasattr(param, "enum") else {}),  # Added support for enum
-                    }
-                    for param in func_metadata.parameters
-                },
+                "properties": {name: details for p in params for name, details in p.items()},
                 "required": [p.name for p in func_metadata.parameters if p.is_required],
             },
         },
     }
 
 
-def parse_param(param_type: Optional[str]) -> str:
+def parse_param(param: KernelParameterMetadata) -> dict[str, str]:
+    """Parse the parameter type."""
+    details = {"description": param.description}
+    details["type"] = parse_individual_param(param.type_)
+    if hasattr(param, "enum"):
+        details["enum"] = param.enum
+    if "[" in param.type_:
+        subtype = param.type_.split("[")[1].split("]")[0]
+        details["items"] = {"type": parse_individual_param(subtype)}
+    return {param.name: details}
+
+
+def parse_individual_param(param_type: str | None) -> str:
     """Parse the parameter type."""
     if not param_type:
         return "string"
+    if "[" in param_type:
+        main_type = param_type.split("[")[0]
+        return TYPE_MAPPER.get(main_type.lower(), "array")
     if "," in param_type:
         param_type = param_type.split(",", maxsplit=1)[0]
-    return TYPE_MAPPER.get(param_type, "string")
+    return TYPE_MAPPER.get(param_type.lower(), "string")
 
 
-def _describe_function(function: KernelFunction) -> Dict[str, str]:
+def _describe_function(function: KernelFunction) -> dict[str, str]:
     """Create the object used for function_calling.
     Assumes that arguments for semantic functions are optional, for native functions required.
     """
@@ -74,7 +85,7 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
     }
 
 
-def get_tool_call_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[Dict[str, str]]:
+def get_tool_call_object(kernel: Kernel, filter: dict[str, list[str]] = {}) -> list[dict[str, str]]:
     """Create the object used for a tool call.
 
     This is the preferred method to create the tool call object.
@@ -105,8 +116,8 @@ def get_tool_call_object(kernel: Kernel, filter: Dict[str, List[str]]) -> List[D
 
 
 def get_function_calling_object(
-    kernel: Kernel, filter: Dict[str, List[str]], is_tool_call: Optional[bool] = False
-) -> List[Dict[str, str]]:
+    kernel: Kernel, filter: dict[str, list[str]] = {}, is_tool_call: bool | None = False
+) -> list[dict[str, str]]:
     """Create the object used for a function call.
 
     Note: although Azure has deprecated function calling, SK still supports it for the time being.
