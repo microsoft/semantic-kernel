@@ -40,7 +40,6 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0010 | OpenAI chat history extension | | | | | |
 | SKEXP0010 | OpenAI file service | | | | | |
 | | | | | | | |
-| SKEXP0020 | Hugging Face AI connector | | | | | |
 | SKEXP0020 | Azure AI Search memory connector | | | | | |
 | SKEXP0020 | Chroma memory connector | | | | | |
 | SKEXP0020 | DuckDB memory connector | | | | | |
@@ -73,6 +72,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0070 | Gemini AI connector | | | | | |
 | SKEXP0070 | Mistral AI connector | | | | | |
 | SKEXP0070 | ONNX AI connector | | | | | |
+| SKEXP0070 | Hugging Face AI connector | | | | | |
 | | | | | | | |
 | SKEXP0101 | Experiment with Assistants | | | | | |
 | SKEXP0101 | Experiment with Flow Orchestration | | | | | |
