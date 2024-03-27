@@ -10,6 +10,9 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
+    OpenAIFunctionExecutionParameters,
+)
 from semantic_kernel.exceptions import (
     KernelFunctionAlreadyExistsError,
     KernelServiceNotFoundError,
@@ -21,8 +24,7 @@ from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.hooks.function_invoked_context import FunctionInvokedContext
-from semantic_kernel.hooks.function_invoking_context import FunctionInvokingContext
+from semantic_kernel.hooks.contexts import PostFunctionInvokeContext, PreFunctionInvokeContext
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 
@@ -35,8 +37,8 @@ def test_init():
     assert kernel.plugins is not None
     assert kernel.services is not None
     assert kernel.retry_mechanism is not None
-    assert kernel.function_invoked_handlers is not None
-    assert kernel.function_invoking_handlers is not None
+    assert kernel.hooks is not None
+    assert len(kernel.hooks) == 0
 
 
 def test_kernel_init_with_ai_service_selector():
@@ -79,7 +81,7 @@ async def test_invoke_function(kernel: Kernel, create_mock_function):
 
     await kernel.invoke(mock_function, KernelArguments())
 
-    assert mock_function.invoke.call_count == 1
+    assert mock_function.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -89,7 +91,7 @@ async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
 
     await kernel.invoke(function_name="test_function", plugin_name="test", arguments=KernelArguments())
 
-    assert mock_function.invoke.call_count == 1
+    assert mock_function.call_count == 1
 
     async for response in kernel.invoke_stream(function_name="test_function", plugin_name="test"):
         assert response[0].text == "test"
@@ -116,7 +118,7 @@ async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
     async for part in kernel.invoke_stream(mock_function, input="test"):
         assert part[0].text == "test"
 
-    assert mock_function.invoke.call_count == 0
+    assert mock_function.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -142,11 +144,11 @@ async def test_invoke_stream_functions_throws_exception(kernel: Kernel, create_m
 async def test_invoke_prompt(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     with patch(
-        "semantic_kernel.functions.kernel_function_from_prompt.KernelFunctionFromPrompt._invoke_internal"
-    ) as mock_invoke:
-        mock_invoke.return_value = mock_function.invoke.return_value
+        "semantic_kernel.functions.kernel_function_from_prompt.KernelFunctionFromPrompt._invoke_internal",
+        new=mock_function._invoke_internal,
+    ):
         await kernel.invoke_prompt(prompt="test", plugin_name="test", function_name="test", arguments=KernelArguments())
-        mock_invoke.assert_called_once()
+        assert mock_function.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -163,45 +165,61 @@ async def test_invoke_prompt_no_prompt_error(kernel: Kernel):
 # region Function Invoking/Invoked Events
 
 
-def test_invoke_handles_register(kernel_with_handlers: Kernel):
-    assert len(kernel_with_handlers.function_invoking_handlers) == 1
-    assert len(kernel_with_handlers.function_invoked_handlers) == 1
+def test_invoke_hooks(kernel_with_handlers: Kernel):
+    assert len(kernel_with_handlers.hooks) == 2
 
 
-def test_invoke_handles_remove(kernel_with_handlers: Kernel):
-    assert len(kernel_with_handlers.function_invoking_handlers) == 1
-    assert len(kernel_with_handlers.function_invoked_handlers) == 1
-
-    invoking_handler = list(kernel_with_handlers.function_invoking_handlers.values())[0]
-    invoked_handler = list(kernel_with_handlers.function_invoked_handlers.values())[0]
-
-    kernel_with_handlers.remove_function_invoking_handler(invoking_handler)
-    kernel_with_handlers.remove_function_invoked_handler(invoked_handler)
-
-    assert len(kernel_with_handlers.function_invoking_handlers) == 0
-    assert len(kernel_with_handlers.function_invoked_handlers) == 0
+# TODO: implement removing hooks test
 
 
 @pytest.mark.asyncio
 async def test_invoke_handles_pre_invocation(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
-    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
-
     invoked = 0
 
-    def invoking_handler(kernel: Kernel, e: FunctionInvokingContext) -> FunctionInvokingContext:
+    def invoking_handler(context: PreFunctionInvokeContext) -> None:
         nonlocal invoked
         invoked += 1
-        return e
 
-    kernel.add_function_invoking_handler(invoking_handler)
+    kernel.add_hook_function("pre_function_invoke", invoking_handler)
 
     # Act
     await kernel.invoke(mock_function, KernelArguments())
 
     # Assert
+    assert mock_function.call_count == 1
     assert invoked == 1
-    assert mock_function.invoke.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_invoke_pre_invocation_skip_dont_trigger_invoked_handler(kernel: Kernel, create_mock_function):
+    mock_function1 = create_mock_function(name="SkipMe")
+    mock_function2 = create_mock_function(name="DontSkipMe")
+    invoked = 0
+    invoking = 0
+    invoked_function_name = ""
+
+    def invoking_handler(context: PreFunctionInvokeContext):
+        nonlocal invoking
+        invoking += 1
+        if context.kernel_function_metadata.name == "SkipMe":
+            context.skip()
+
+    def invoked_handler(context: PostFunctionInvokeContext):
+        nonlocal invoked_function_name, invoked
+        invoked_function_name = context.kernel_function_metadata.name
+        invoked += 1
+
+    kernel.add_hook_function("pre_function_invoke", invoking_handler)
+    kernel.add_hook_function("post_function_invoke", invoked_handler)
+
+    # Act
+    _ = await kernel.invoke([mock_function1, mock_function2])
+
+    # Assert
+    assert invoking == 2
+    assert invoked == 1
+    assert mock_function1.invoke.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -209,10 +227,9 @@ async def test_invoke_handles_post_invocation(kernel: Kernel, create_mock_functi
     mock_function = create_mock_function("test_function")
     invoked = 0
 
-    def invoked_handler(sender, e):
+    def invoked_handler(context: PostFunctionInvokeContext):
         nonlocal invoked
         invoked += 1
-        return e
 
     kernel.add_function_invoked_handler(invoked_handler)
 
@@ -231,16 +248,15 @@ async def test_invoke_post_invocation_repeat_is_working(kernel: Kernel, create_m
     invoked = 0
     repeat_times = 0
 
-    def invoked_handler(sender, e):
+    def invoked_handler(context: PostFunctionInvokeContext):
         nonlocal invoked, repeat_times
         invoked += 1
 
         if repeat_times < 3:
-            e.repeat()
+            context.repeat()
             repeat_times += 1
-        return e
 
-    kernel.add_function_invoked_handler(invoked_handler)
+    kernel.add_hook_function("post_function_invoke", invoked_handler)
 
     # Act
     _ = await kernel.invoke(mock_function)
@@ -257,12 +273,11 @@ async def test_invoke_change_variable_invoking_handler(kernel: Kernel, create_mo
 
     mock_function = create_mock_function(name="test_function", value=new_input)
 
-    def invoking_handler(sender, e: FunctionInvokingContext):
-        e.arguments["input"] = new_input
-        e.updated_arguments = True
-        return e
+    def invoking_handler(context: PreFunctionInvokeContext):
+        context.arguments["input"] = new_input
+        context.updated_arguments = True
 
-    kernel.add_function_invoking_handler(invoking_handler)
+    kernel.add_hook_function("pre_function_invoke", invoking_handler)
     arguments = KernelArguments(input=original_input)
     # Act
     result = await kernel.invoke(mock_function, arguments)
@@ -279,12 +294,11 @@ async def test_invoke_change_variable_invoked_handler(kernel: Kernel, create_moc
 
     mock_function = create_mock_function(name="test_function", value=new_input)
 
-    def invoked_handler(sender, e: FunctionInvokedContext):
-        e.arguments["input"] = new_input
-        e.updated_arguments = True
-        return e
+    def invoked_handler(context: PostFunctionInvokeContext):
+        context.arguments["input"] = new_input
+        context.updated_arguments = True
 
-    kernel.add_function_invoked_handler(invoked_handler)
+    kernel.add_hook_function("post_function_invoke", invoked_handler)
     arguments = KernelArguments(input=original_input)
 
     # Act

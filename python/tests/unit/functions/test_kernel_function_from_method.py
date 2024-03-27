@@ -129,68 +129,67 @@ def test_init_invalid_name():
 
 
 @pytest.mark.asyncio
-async def test_invoke_non_async():
+async def test_invoke_non_async(kernel: Kernel):
     @kernel_function()
     def non_async_function() -> str:
         return ""
 
     native_function = KernelFunction.from_method(method=non_async_function, plugin_name="MockPlugin")
 
-    result = await native_function.invoke(kernel=None, arguments=None)
+    result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == ""
 
-    async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
+    async for partial_result in native_function.invoke_stream(kernel=kernel, arguments=None):
         assert isinstance(partial_result.metadata["exception"], NotImplementedError)
 
 
 @pytest.mark.asyncio
-async def test_invoke_async():
+async def test_invoke_async(kernel: Kernel):
     @kernel_function()
     async def async_function() -> str:
         return ""
 
     native_function = KernelFunction.from_method(method=async_function, plugin_name="MockPlugin")
 
-    result = await native_function.invoke(kernel=None, arguments=None)
+    result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == ""
 
-    async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
+    async for partial_result in native_function.invoke_stream(kernel=kernel, arguments=None):
         assert isinstance(partial_result.metadata["exception"], NotImplementedError)
 
 
 @pytest.mark.asyncio
-async def test_invoke_gen():
+async def test_invoke_gen(kernel: Kernel):
     @kernel_function()
     def gen_function() -> Iterable[str]:
         yield ""
 
     native_function = KernelFunction.from_method(method=gen_function, plugin_name="MockPlugin")
 
-    result = await native_function.invoke(kernel=None, arguments=None)
+    result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == [""]
 
-    async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
+    async for partial_result in native_function.invoke_stream(kernel=kernel, arguments=None):
         assert partial_result == ""
 
 
 @pytest.mark.asyncio
-async def test_invoke_gen_async():
+async def test_invoke_gen_async(kernel: Kernel):
     @kernel_function()
     async def async_gen_function() -> AsyncGenerator[str, Any]:
         yield ""
 
     native_function = KernelFunction.from_method(method=async_gen_function, plugin_name="MockPlugin")
 
-    result = await native_function.invoke(kernel=None, arguments=None)
+    result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == [""]
 
-    async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
+    async for partial_result in native_function.invoke_stream(kernel=kernel, arguments=None):
         assert partial_result == ""
 
 
 @pytest.mark.asyncio
-async def test_service_execution():
-    kernel = Kernel()
+async def test_service_execution(kernel: Kernel):
     service = OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test")
     req_settings = service.get_prompt_execution_settings_class()(service_id="test")
     req_settings.temperature = 0.5
@@ -217,21 +216,19 @@ async def test_service_execution():
 
 
 @pytest.mark.asyncio
-async def test_required_param_not_supplied():
+async def test_required_param_not_supplied(kernel: Kernel):
     @kernel_function()
     def my_function(input: str) -> str:
         return input
 
     func = KernelFunction.from_method(my_function, "test")
 
-    result = await func.invoke(kernel=None, arguments=KernelArguments())
+    result = await func.invoke(kernel=kernel, arguments=KernelArguments())
     assert isinstance(result.metadata["exception"], FunctionExecutionException)
 
 
 @pytest.mark.asyncio
-async def test_service_execution_with_complex_object():
-    kernel = Kernel()
-
+async def test_service_execution_with_complex_object(kernel: Kernel):
     class InputObject(KernelBaseModel):
         arg1: str
         arg2: int
@@ -257,9 +254,7 @@ class InputObject(KernelBaseModel):
 
 
 @pytest.mark.asyncio
-async def test_service_execution_with_complex_object_from_str():
-    kernel = Kernel()
-
+async def test_service_execution_with_complex_object_from_str(kernel: Kernel):
     @kernel_function(name="function")
     def my_function(input_obj: InputObject) -> str:
         assert input_obj is not None
@@ -276,9 +271,7 @@ async def test_service_execution_with_complex_object_from_str():
 
 
 @pytest.mark.asyncio
-async def test_service_execution_with_complex_object_from_str_mixed():
-    kernel = Kernel()
-
+async def test_service_execution_with_complex_object_from_str_mixed(kernel: Kernel):
     @kernel_function(name="function")
     def my_function(input_obj: InputObject, input_str: str) -> str:
         assert input_obj is not None
@@ -295,9 +288,7 @@ async def test_service_execution_with_complex_object_from_str_mixed():
 
 
 @pytest.mark.asyncio
-async def test_service_execution_with_complex_object_from_str_mixed_multi():
-    kernel = Kernel()
-
+async def test_service_execution_with_complex_object_from_str_mixed_multi(kernel: Kernel):
     @kernel_function(name="function")
     def my_function(input_obj: InputObject, input_str: Union[str, int]) -> str:
         assert input_obj is not None

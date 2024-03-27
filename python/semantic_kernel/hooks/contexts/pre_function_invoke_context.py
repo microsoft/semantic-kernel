@@ -2,10 +2,10 @@
 
 from pydantic import Field
 
-from semantic_kernel.hooks.kernel_hook_context_base import KernelHookContextBase
+from semantic_kernel.hooks.contexts.kernel_hook_context_base import KernelHookContextBase
 
 
-class FunctionInvokingContext(KernelHookContextBase):
+class PreFunctionInvokeContext(KernelHookContextBase):
     """Function Invoking Event Args.
 
     Receives relevant parts of the the execution, either before (invoking) the function is executed.

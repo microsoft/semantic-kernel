@@ -7,13 +7,15 @@ import os
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.hooks import FunctionInvokedContext, FunctionInvokingContext, KernelHook
+from semantic_kernel.hooks import PostFunctionInvokeContext, PreFunctionInvokeContext
+from semantic_kernel.hooks.protocols.const import kernel_hook_filter
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
 
-class ChatHistoryHooked(ChatHistory, KernelHook):
-    def on_function_invoking(self, context: FunctionInvokingContext) -> None:
+class ChatHistoryHooked(ChatHistory):
+    @kernel_hook_filter(include_functions=["chat"])
+    async def pre_function_invoke(self, context: PreFunctionInvokeContext) -> None:
         try:
             user_input = input("User:> ")
         except KeyboardInterrupt:
@@ -27,12 +29,10 @@ class ChatHistoryHooked(ChatHistory, KernelHook):
             return
         self.add_user_message(user_input)
 
-    def on_function_invoked(self, context: FunctionInvokedContext) -> None:
+    @kernel_hook_filter(include_functions=["chat"])
+    async def post_function_invoke(self, context: PostFunctionInvokeContext) -> None:
         self.add_message(context.function_result.value[0])
         print(f"Mosscap:> {context.function_result}")
-
-    def on_exit(self):
-        print("\nExiting chat...")
 
 
 async def main() -> None:
@@ -47,7 +47,7 @@ async def main() -> None:
     )
     history = ChatHistoryHooked()
     kernel.add_hook(history)
-    kernel.add_hook_function("on_exit", lambda: print("\nExiting application..."))
+    kernel.add_hook_function("post_function_invoke", lambda context: print("\nRun after func..."))
 
     chatting = True
     while chatting:

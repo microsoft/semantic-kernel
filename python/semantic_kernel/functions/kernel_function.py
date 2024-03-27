@@ -145,6 +145,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: Kernel,
         arguments: KernelArguments | None = None,
+        metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> FunctionResult:
         """Invoke the function with the given arguments.
@@ -158,7 +159,7 @@ class KernelFunction(KernelBaseModel):
         Returns:
             FunctionResult: The result of the function
         """
-        return await self.invoke(kernel, arguments, **kwargs)
+        return await self.invoke(kernel, arguments, metadata, **kwargs)
 
     @abstractmethod
     async def _invoke_internal(
@@ -172,6 +173,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: Kernel,
         arguments: KernelArguments | None = None,
+        metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> FunctionResult:
         """Invoke the function with the given arguments.
@@ -187,13 +189,39 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        try:
-            return await self._invoke_internal(kernel, arguments)
-        except Exception as exc:
-            logger.error(f"Error occurred while invoking function {self.name}: {exc}")
-            return FunctionResult(
-                function=self.metadata, value=None, metadata={"exception": exc, "arguments": arguments}
+        while True:
+            function_invoking_args = await kernel.pre_function_invoke(
+                kernel_function_metadata=self.metadata, arguments=arguments, metadata=metadata
             )
+            arguments = function_invoking_args.arguments
+            if function_invoking_args.is_skip_requested:
+                return
+            metadata.update(function_invoking_args.metadata)
+            function_result = None
+            exception = None
+            try:
+                function_result = await self._invoke_internal(kernel, arguments)
+                function_result.metadata.update(metadata)
+            except Exception as exc:
+                exception = exc
+                logger.error(f"Error occurred while invoking function {self.name}: {exception}")
+                metadata["exception"] = exception
+                metadata["arguments"] = arguments
+                function_result = FunctionResult(function=self.metadata, value=None, metadata=metadata)
+
+            # this allows a hook to alter the results before returning.
+            function_invoked_args = await kernel.post_function_invoke(
+                kernel_function_metadata=self.metadata,
+                arguments=arguments,
+                function_result=function_result,
+                exception=exception,
+                metadata=metadata,
+            )
+            function_result = function_invoked_args.function_result
+            if function_invoked_args.is_repeat_requested:
+                arguments = function_invoked_args.arguments
+                continue
+            return function_result
 
     @abstractmethod
     def _invoke_internal_stream(
@@ -212,6 +240,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: Kernel,
         arguments: KernelArguments | None = None,
+        metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]:
         """
@@ -229,12 +258,27 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
+        function_invoking_args = await kernel.pre_function_invoke(
+            kernel_function_metadata=self.metadata, arguments=arguments, metadata=metadata
+        )
+        arguments = function_invoking_args.arguments
+        if function_invoking_args.is_skip_requested:
+            return
+        metadata.update(function_invoking_args.metadata)
+        exception = None
         try:
             async for partial_result in self._invoke_internal_stream(kernel, arguments):
+                if isinstance(partial_result, FunctionResult):
+                    yield partial_result
+                    break
                 yield partial_result
-        except Exception as e:
-            logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e, "arguments": arguments})
+        except Exception as exc:
+            exception = exc
+            logger.error(f"Error occurred while invoking function {self.name}: {exception}")
+            metadata["exception"] = exception
+            metadata["arguments"] = arguments
+            yield FunctionResult(function=self.metadata, value=None, metadata=metadata)
+        # The function_invoked event is not called for stream functions.
 
     def function_copy(self, plugin_name: str | None = None) -> KernelFunction:
         """Copy the function, can also override the plugin_name.

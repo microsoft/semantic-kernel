@@ -1,22 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
-
 from __future__ import annotations
 
 import os
 import warnings
-from typing import Callable, List
-from unittest.mock import Mock
+from typing import Any, AsyncIterable, Callable, List, Union
 
 import pytest
 
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.hooks.function_invoked_context import FunctionInvokedContext
-from semantic_kernel.hooks.function_invoking_context import FunctionInvokingContext
+from semantic_kernel.hooks.contexts import PostFunctionInvokeContext, PreFunctionInvokeContext
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.settings import (
@@ -55,14 +54,14 @@ def kernel_with_default_service(kernel: Kernel, default_service: AIServiceClient
 
 @pytest.fixture(scope="function")
 def kernel_with_handlers(kernel: Kernel) -> Kernel:
-    def invoking_handler(kernel: Kernel, e: FunctionInvokingContext) -> FunctionInvokingContext:
+    def invoking_handler(e: PreFunctionInvokeContext) -> None:
         pass
 
-    def invoked_handler(kernel: Kernel, e: FunctionInvokedContext) -> FunctionInvokedContext:
+    def invoked_handler(e: PostFunctionInvokeContext) -> None:
         pass
 
-    kernel.add_function_invoking_handler(invoking_handler)
-    kernel.add_function_invoked_handler(invoked_handler)
+    kernel.add_hook_function("pre_function_invoke", invoking_handler)
+    kernel.add_hook_function("post_function_invoke", invoked_handler)
 
     return kernel
 
@@ -96,9 +95,6 @@ def custom_plugin_class():
 
 @pytest.fixture(scope="session")
 def create_mock_function() -> Callable:
-    async def stream_func(*args, **kwargs) -> List[StreamingTextContent]:
-        yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
-
     def create_mock_function(name: str, value: str = "test") -> KernelFunction:
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
@@ -108,15 +104,27 @@ def create_mock_function() -> Callable:
             is_prompt=True,
             is_asynchronous=True,
         )
-        mock_function = Mock(spec=KernelFunction)
-        mock_function.metadata = kernel_function_metadata
-        mock_function.name = kernel_function_metadata.name
-        mock_function.plugin_name = kernel_function_metadata.plugin_name
-        mock_function.description = kernel_function_metadata.description
-        mock_function.invoke.return_value = FunctionResult(function=mock_function.metadata, value=value, metadata={})
-        mock_function.invoke_stream = stream_func
-        mock_function.function_copy.return_value = mock_function
-        mock_function.__kernel_function__ = True
+
+        class CustomKernelFunction(KernelFunction):
+            call_count: int = 0
+
+            async def _invoke_internal_stream(
+                self,
+                kernel: "Kernel",
+                arguments: "KernelArguments",
+            ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+                self.call_count += 1
+                yield [StreamingTextContent(choice_index=0, text=value, metadata={})]
+
+            async def _invoke_internal(
+                self,
+                kernel: "Kernel",
+                arguments: "KernelArguments",
+            ) -> "FunctionResult":
+                self.call_count += 1
+                return FunctionResult(function=kernel_function_metadata, value=value, metadata={})
+
+        mock_function = CustomKernelFunction(metadata=kernel_function_metadata)
 
         return mock_function
 

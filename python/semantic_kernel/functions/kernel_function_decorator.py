@@ -102,7 +102,7 @@ def _parse_internal_annotation(annotation: Parameter, required: bool) -> dict[st
     if hasattr(annotation, "__args__"):
         if getattr(annotation, "__name__", None) in ["list", "dict"]:
             return {
-                "type_": f"{annotation.__name__}[{', '.join([_parse_internal_annotation(arg, required)['type_'] for arg in annotation.__args__])}]",
+                "type_": f"{annotation.__name__}[{', '.join([_parse_internal_annotation(arg, required)['type_'] for arg in annotation.__args__])}]",  # noqa: E501
                 "is_required": required,
             }
         results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]
