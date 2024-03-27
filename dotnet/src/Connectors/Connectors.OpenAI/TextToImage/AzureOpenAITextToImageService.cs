@@ -74,7 +74,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        this._client = new(new Uri(endpoint),
+        this._client = new(new Uri(connectorEndpoint),
             new AzureKeyCredential(apiKey),
             GetClientOptions(httpClient, apiVersion));
     }
@@ -117,7 +117,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        this._client = new(new Uri(endpoint),
+        this._client = new(new Uri(connectorEndpoint),
             credential,
             GetClientOptions(httpClient, apiVersion));
     }
