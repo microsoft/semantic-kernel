@@ -121,7 +121,7 @@ public sealed class OpenAIFileService
     /// </summary>
     /// <param name="id">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Thet metadata associated with the specified file identifier.</returns>
+    /// <returns>The metadata associated with the specified file identifier.</returns>
     public async Task<OpenAIFileReference> GetFileAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
@@ -135,7 +135,7 @@ public sealed class OpenAIFileService
     /// Retrieve metadata for all previously uploaded files.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Thet metadata of all uploaded files.</returns>
+    /// <returns>The metadata of all uploaded files.</returns>
     public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
     {
         var result = await this.ExecuteGetRequestAsync<FileInfoList>(this._serviceUri.ToString(), cancellationToken).ConfigureAwait(false);
