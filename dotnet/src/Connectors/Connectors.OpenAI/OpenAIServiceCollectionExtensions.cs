@@ -1058,8 +1058,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="apiVersion">Azure OpenAI API version</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
@@ -1068,8 +1067,7 @@ public static class OpenAIServiceCollectionExtensions
         TokenCredential credentials,
         string? modelId = null,
         string? serviceId = null,
-        string? apiVersion = null,
-        HttpClient? httpClient = null)
+        string? apiVersion = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -1081,7 +1079,7 @@ public static class OpenAIServiceCollectionExtensions
                 endpoint,
                 credentials,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 apiVersion));
     }
@@ -1096,7 +1094,6 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="apiVersion">Azure OpenAI API version</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToImage(
@@ -1106,8 +1103,7 @@ public static class OpenAIServiceCollectionExtensions
         TokenCredential credentials,
         string? modelId = null,
         string? serviceId = null,
-        string? apiVersion = null,
-        HttpClient? httpClient = null)
+        string? apiVersion = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -1119,7 +1115,7 @@ public static class OpenAIServiceCollectionExtensions
                 endpoint,
                 credentials,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 apiVersion));
 
@@ -1264,7 +1260,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="modelId">Model identifier</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
