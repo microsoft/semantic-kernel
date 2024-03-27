@@ -21,7 +21,6 @@ public sealed class PromptTests : IDisposable
     public PromptTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -66,12 +65,10 @@ public sealed class PromptTests : IDisposable
     private readonly IKernelBuilder _kernelBuilder;
     private readonly IConfigurationRoot _configuration;
     private readonly XunitLogger<Kernel> _logger;
-    private readonly RedirectOutput _testOutputHelper;
 
     public void Dispose()
     {
         this._logger.Dispose();
-        this._testOutputHelper.Dispose();
     }
 
     private void ConfigureAzureOpenAI(IKernelBuilder kernelBuilder)
