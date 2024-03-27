@@ -121,8 +121,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(TResult)}");
-
-        // We don't invoke the hook here as the InvokeCoreAsync will do that for us
     }
 
     /// <inheritdoc/>
