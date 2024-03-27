@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 
@@ -17,14 +18,16 @@ public static class PostgresMemoryBuilderExtensions
     /// <param name="connectionString">Postgres database connection string.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
     /// <param name="schema">Schema of collection tables.</param>
+    /// <param name="serviceId">A local identifier for the given memory store.</param>
     /// <returns>Updated Memory builder including Postgres memory connector.</returns>
     public static MemoryBuilder WithPostgresMemoryStore(
         this MemoryBuilder builder,
         string connectionString,
         int vectorSize,
-        string schema = PostgresMemoryStore.DefaultSchema)
+        string schema = PostgresMemoryStore.DefaultSchema,
+        string? serviceId = null)
     {
-        builder.WithMemoryStore((_) =>
+        builder.Services.AddKeyedSingleton<IMemoryStore>(serviceId, (_, _) =>
         {
             return new PostgresMemoryStore(connectionString, vectorSize, schema);
         });
@@ -39,14 +42,16 @@ public static class PostgresMemoryBuilderExtensions
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
     /// <param name="schema">Schema of collection tables.</param>
+    /// <param name="serviceId">A local identifier for the given memory store.</param>
     /// <returns>Updated Memory builder including Postgres memory connector.</returns>
     public static MemoryBuilder WithPostgresMemoryStore(
         this MemoryBuilder builder,
         NpgsqlDataSource dataSource,
         int vectorSize,
-        string schema = PostgresMemoryStore.DefaultSchema)
+        string schema = PostgresMemoryStore.DefaultSchema,
+        string? serviceId = null)
     {
-        builder.WithMemoryStore((_) =>
+        builder.Services.AddKeyedSingleton<IMemoryStore>(serviceId, (_, _) =>
         {
             return new PostgresMemoryStore(dataSource, vectorSize, schema);
         });
@@ -59,15 +64,14 @@ public static class PostgresMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance.</param>
     /// <param name="postgresDbClient">Postgres database client.</param>
+    /// <param name="serviceId">A local identifier for the given memory store.</param>
     /// <returns>Updated Memory builder including Postgres memory connector.</returns>
     public static MemoryBuilder WithPostgresMemoryStore(
         this MemoryBuilder builder,
-        IPostgresDbClient postgresDbClient)
+        IPostgresDbClient postgresDbClient,
+        string? serviceId = null)
     {
-        builder.WithMemoryStore((_) =>
-        {
-            return new PostgresMemoryStore(postgresDbClient);
-        });
+        builder.Services.AddKeyedSingleton<IMemoryStore, PostgresMemoryStore>(serviceId);
 
         return builder;
     }

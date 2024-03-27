@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
@@ -35,7 +36,8 @@ public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent("{\"result\":{\"collections\":[]}}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new MemoryBuilder();
-        builder.WithQdrantMemoryStore(this._httpClient, 123);
+        builder.Services.AddSingleton(this._httpClient);
+        builder.WithQdrantMemoryStore(123);
         builder.WithTextEmbeddingGeneration(embeddingGenerationMock);
         var memory = builder.Build(); //This call triggers the internal factory registered by WithQdrantMemoryStore method to create an instance of the QdrantMemoryStore class.
 

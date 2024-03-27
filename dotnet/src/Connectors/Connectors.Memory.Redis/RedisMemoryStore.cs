@@ -266,35 +266,35 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-    #region private ================================================================================
-
     /// <summary>
     /// Vector similarity index algorithm. Supported algorithms are {FLAT, HNSW}. The default value is "HNSW".
     /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#create-a-vector-field"/>
     /// </summary>
-    private const VectorAlgo DefaultIndexAlgorithm = VectorAlgo.HNSW;
+    internal const VectorAlgo DefaultIndexAlgorithm = VectorAlgo.HNSW;
+
+    /// <summary>
+    /// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
+    /// </summary>
+    internal const VectorDistanceMetric DefaultDistanceMetric = VectorDistanceMetric.COSINE;
+
+    /// <summary>
+    /// Query dialect. To use a vector similarity query, specify DIALECT 2 or higher. The default value is "2".
+    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#querying-vector-fields"/>
+    /// </summary>
+    internal const int DefaultQueryDialect = 2;
+
+    /// <summary>
+    /// Embedding vector size.
+    /// </summary>
+    internal const int DefaultVectorSize = 1536;
+
+    #region private ================================================================================
 
     /// <summary>
     /// Vector type. Available values are {FLOAT32, FLOAT64}.
     /// Value "FLOAT32" is used by default based on <see cref="MemoryRecord.Embedding"/> <see cref="float"/> type.
     /// </summary>
     private const string DefaultVectorType = "FLOAT32";
-
-    /// <summary>
-    /// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
-    /// </summary>
-    private const VectorDistanceMetric DefaultDistanceMetric = VectorDistanceMetric.COSINE;
-
-    /// <summary>
-    /// Query dialect. To use a vector similarity query, specify DIALECT 2 or higher. The default value is "2".
-    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#querying-vector-fields"/>
-    /// </summary>
-    private const int DefaultQueryDialect = 2;
-
-    /// <summary>
-    /// Embedding vector size.
-    /// </summary>
-    private const int DefaultVectorSize = 1536;
 
     /// <summary>
     /// Message when index does not exist.

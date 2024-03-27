@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
@@ -55,59 +53,5 @@ public sealed class MemoryBuilderTests
 
         // Assert
         Assert.NotNull(memory);
-    }
-
-    [Fact]
-    public void ItUsesProvidedLoggerFactory()
-    {
-        // Arrange
-        var loggerFactoryUsed = Mock.Of<ILoggerFactory>();
-        var loggerFactoryUnused = Mock.Of<ILoggerFactory>();
-
-        // Act & Assert
-        var builder = new MemoryBuilder()
-            .WithLoggerFactory(loggerFactoryUsed)
-            .WithMemoryStore((loggerFactory) =>
-            {
-                Assert.Same(loggerFactoryUsed, loggerFactory);
-                Assert.NotSame(loggerFactoryUnused, loggerFactory);
-
-                return Mock.Of<IMemoryStore>();
-            })
-            .WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
-            {
-                Assert.Same(loggerFactoryUsed, loggerFactory);
-                Assert.NotSame(loggerFactoryUnused, loggerFactory);
-
-                return Mock.Of<ITextEmbeddingGenerationService>();
-            })
-            .Build();
-    }
-
-    [Fact]
-    public void ItUsesProvidedHttpClientFactory()
-    {
-        // Arrange
-        using var httpClientUsed = new HttpClient();
-        using var httpClientUnused = new HttpClient();
-
-        // Act & Assert
-        var builder = new MemoryBuilder()
-            .WithHttpClient(httpClientUsed)
-            .WithMemoryStore((loggerFactory, httpClient) =>
-            {
-                Assert.Same(httpClientUsed, httpClient);
-                Assert.NotSame(httpClientUnused, httpClient);
-
-                return Mock.Of<IMemoryStore>();
-            })
-            .WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
-            {
-                Assert.Same(httpClientUsed, httpClient);
-                Assert.NotSame(httpClientUnused, httpClient);
-
-                return Mock.Of<ITextEmbeddingGenerationService>();
-            })
-            .Build();
     }
 }

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
@@ -16,38 +18,16 @@ public static class ChromaMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance.</param>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
+    /// <param name="serviceId">A local identifier for the given memory store.</param>
     /// <returns>Updated Memory builder including Chroma memory connector.</returns>
-    public static MemoryBuilder WithChromaMemoryStore(this MemoryBuilder builder, string endpoint)
+    public static MemoryBuilder WithChromaMemoryStore(this MemoryBuilder builder, string endpoint, string? serviceId = null)
     {
-        builder.WithMemoryStore((loggerFactory, injectedClient) =>
+        builder.Services.AddKeyedSingleton<IMemoryStore>(serviceId, (provider, _) =>
         {
             return new ChromaMemoryStore(
-                HttpClientProvider.GetHttpClient(injectedClient),
+                HttpClientProvider.GetHttpClient(provider.GetService<HttpClient>()),
                 endpoint,
-                loggerFactory);
-        });
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Registers Chroma memory connector.
-    /// </summary>
-    /// <param name="builder">The <see cref="MemoryBuilder"/> instance.</param>
-    /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
-    /// <param name="endpoint">Chroma server endpoint URL. If not specified, the base address of the HTTP client is used.</param>
-    /// <returns>Updated Memory builder including Chroma memory connector.</returns>
-    public static MemoryBuilder WithChromaMemoryStore(
-        this MemoryBuilder builder,
-        HttpClient httpClient,
-        string? endpoint = null)
-    {
-        builder.WithMemoryStore((loggerFactory, injectedClient) =>
-        {
-            return new ChromaMemoryStore(
-                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient),
-                endpoint,
-                loggerFactory);
+                provider.GetService<ILoggerFactory>());
         });
 
         return builder;

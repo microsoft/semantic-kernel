@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
@@ -17,24 +19,26 @@ public static class PineconeMemoryBuilderExtensions
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance.</param>
     /// <param name="environment">The environment for Pinecone.</param>
     /// <param name="apiKey">The API key for accessing Pinecone services.</param>
-    /// <param name="httpClient">An optional HttpClient instance for making HTTP requests.</param>
+    /// <param name="serviceId">A local identifier for the given memory store.</param>
     /// <returns>Updated Memory builder including Pinecone memory connector.</returns>
     public static MemoryBuilder WithPineconeMemoryStore(
         this MemoryBuilder builder,
         string environment,
         string apiKey,
-        HttpClient? httpClient = null)
+        string? serviceId = null)
     {
-        builder.WithMemoryStore((loggerFactory, injectedClient) =>
+        builder.Services.AddKeyedSingleton(serviceId, (provider, _) =>
         {
             var client = new PineconeClient(
                 environment,
                 apiKey,
-                loggerFactory,
-                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient));
+                provider.GetService<ILoggerFactory>(),
+                HttpClientProvider.GetHttpClient(provider.GetService<HttpClient>()));
 
-            return new PineconeMemoryStore(client, loggerFactory);
+            return client;
         });
+
+        builder.Services.AddKeyedSingleton<IMemoryStore, PineconeMemoryStore>(serviceId);
 
         return builder;
     }
