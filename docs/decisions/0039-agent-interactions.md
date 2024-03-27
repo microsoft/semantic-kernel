@@ -20,9 +20,9 @@ informed:
 > Note: Desire to establish AutoGen.Net alignment with SemanticKernel not limit to existing AutoGen definitions.
 
 ### Agent Modalities:
-- **SemanticKernel - IChatCompletionService**: No storage (local history and agent definitions)
-- **SemanticKernel - ITextGenerationService**: Not needed / Out of scope (SLM?)
-- **OpenAI Assistant API**: Remote storage managed by Assistant API (OpenAI & Azure OpenAI)
+- **SemanticKernel - IChatCompletionService**: An agent based soley on the *SemanticKernel* IChatCompletionService.
+- **SemanticKernel - ITextGenerationService**: Not needed / Out of scope.
+- **OpenAI Assistant API**: Remote storage managed by Assistant API (OpenAI & Azure OpenAI).
 - **AutoGen.Net**: Further specialization of the _Agent Architecture_
 
 ## Design Concept

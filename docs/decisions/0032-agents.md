@@ -29,7 +29,7 @@ Current agent functionality lacks the necessary building blocks and a unified ag
 
 ## Agents Overview
 Fundamentally an agent possesses the following characteristics:
-- Identity: How one agent differentiated from another within a conversation.
+- Identity: Allows each agent to be uniquely identified.
 - Behavior: The manner in which an agent participates in a conversation
 - Interaction: That an agent behavior is in response to other agents or input.
 
