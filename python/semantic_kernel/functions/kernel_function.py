@@ -4,7 +4,6 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
 
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -22,6 +21,7 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
     from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
     from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
     from semantic_kernel.kernel import Kernel
@@ -197,7 +197,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[Union["StreamingContentMixin", Any]]]]:
         pass
 
     async def invoke_stream(
@@ -205,7 +205,7 @@ class KernelFunction(KernelBaseModel):
         kernel: "Kernel",
         arguments: Optional[KernelArguments] = None,
         **kwargs: Any,
-    ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[Union["StreamingContentMixin", Any]]]]:
         """
         Invoke a stream async function with the given arguments.
 
