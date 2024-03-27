@@ -12,7 +12,7 @@ from tests.unit.connectors.ollama.utils import MockResponse
 @pytest.mark.asyncio
 @patch("aiohttp.ClientSession.post")
 async def test_embedding(mock_post):
-    mock_post.return_value = MockResponse(response=[0.1, 0.2, 0.3])
+    mock_post.return_value = MockResponse(response={"embedding": [0.1, 0.2, 0.3]})
     ollama = OllamaTextEmbedding(ai_model_id="test_model")
     response = await ollama.generate_embeddings(
         ["test_prompt"],
@@ -22,7 +22,7 @@ async def test_embedding(mock_post):
         "http://localhost:11434/api/embeddings",
         json={
             "model": "test_model",
-            "texts": ["test_prompt"],
+            "prompt": "test_prompt",
             "options": {},
         },
     )
