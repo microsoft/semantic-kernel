@@ -36,7 +36,17 @@ class KernelPluginCollection {
      * plugins.
      */
     KernelPluginCollection(List<KernelPlugin> plugins) {
-        plugins.forEach(plugin -> this.plugins.put(plugin.getName(), plugin));
+        plugins.forEach(plugin -> putOrMerge(plugin.getName(), plugin));
+    }
+
+    private void putOrMerge(String pluginName, KernelPlugin plugin) {
+        if (plugins.containsKey(pluginName)) {
+            plugin.getFunctions()
+                .entrySet()
+                .forEach(entry -> plugins.get(pluginName).addFunction(entry.getValue()));
+        } else {
+            plugins.put(pluginName, plugin);
+        }
     }
 
     /**

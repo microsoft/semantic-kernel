@@ -322,7 +322,8 @@ public class KernelPluginFactory {
                     // configuration, unable to parse {configPath}");
                 }
 
-                KernelFunction<?> plugin = getKernelFunction(promptTemplateFactory, configPath,
+                KernelFunction<?> plugin = getKernelFunction(dir.getName(), promptTemplateFactory,
+                    configPath,
                     promptPath);
 
                 plugins.put(dir.getName(), plugin);
@@ -338,6 +339,7 @@ public class KernelPluginFactory {
     }
 
     private static KernelFunction<?> getKernelFunction(
+        @Nullable String functionName,
         @Nullable PromptTemplateFactory promptTemplateFactory,
         File configPath,
         File promptPath)
@@ -350,7 +352,7 @@ public class KernelPluginFactory {
             String template = new String(Files.readAllBytes(promptPath.toPath()),
                 Charset.defaultCharset());
 
-            return getKernelFunction(promptTemplateFactory, config, template);
+            return getKernelFunction(functionName, promptTemplateFactory, config, template);
         } catch (Exception e) {
             LOGGER.error("Failed to read file " + configPath.getAbsolutePath(), e);
 
@@ -360,6 +362,7 @@ public class KernelPluginFactory {
 
     @SuppressWarnings("unchecked")
     private static <T> KernelFunction<T> getKernelFunction(
+        @Nullable String functionName,
         @Nullable PromptTemplateFactory promptTemplateFactory,
         PromptTemplateConfig config,
         String template) {
@@ -373,8 +376,12 @@ public class KernelPluginFactory {
             promptTemplate = new KernelPromptTemplateFactory().tryCreate(config);
         }
 
+        if (config.getName() != null) {
+            functionName = config.getName();
+        }
+
         return (KernelFunction<T>) new KernelFunctionFromPrompt.Builder<>()
-            .withName(config.getName())
+            .withName(functionName)
             .withDescription(config.getDescription())
             .withExecutionSettings(config.getExecutionSettings())
             .withInputParameters(config.getInputVariables())
@@ -439,7 +446,7 @@ public class KernelPluginFactory {
                 + pluginDirectoryName);
             return null;
         }
-        KernelFunction<?> function = getKernelFunction(promptTemplateFactory,
+        KernelFunction<?> function = getKernelFunction(functionName, promptTemplateFactory,
             promptTemplateConfig, template);
 
         HashMap<String, KernelFunction<?>> plugins = new HashMap<>();
