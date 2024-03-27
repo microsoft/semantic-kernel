@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 
 public class Prompts {
+
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -48,7 +49,7 @@ public class Prompts {
             """.formatted(request);
 
         /*
-         * Uncomment this block to make this example interactive
+         * // Uncomment this block to make this example interactive
          * // <InitialPrompt>
          * System.out.println("Your request: ");
          * String request = new Scanner(System.in).nextLine();

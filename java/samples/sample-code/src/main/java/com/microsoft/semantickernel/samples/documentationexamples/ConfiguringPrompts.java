@@ -59,7 +59,7 @@ public class ConfiguringPrompts {
             .build();
         // </CreateKernel>
 
-        // <CreateFromPrompt
+        // <CreateFromPrompt>
         KernelFunction<String> chat = KernelFunction.<String>createFromPrompt(
             PromptTemplateConfig.builder()
                 .withName("Chat")
@@ -96,6 +96,6 @@ public class ConfiguringPrompts {
                 })
                 .build())
             .build();
-        // <CreateFromPrompt
+        // </CreateFromPrompt>
     }
 }
