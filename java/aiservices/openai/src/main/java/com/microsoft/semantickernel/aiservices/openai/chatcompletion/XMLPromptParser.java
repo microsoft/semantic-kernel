@@ -7,9 +7,9 @@ import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
-import com.microsoft.semantickernel.exceptions.SKException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -53,8 +54,13 @@ class XMLPromptParser {
             }
         }
 
-        return new ParsedPrompt(Collections.singletonList(
-            new ChatRequestUserMessage(rawPrompt)), null);
+        ChatRequestUserMessage message = new ChatRequestUserMessage(rawPrompt);
+
+        if (message.getName() == null) {
+            message.setName(UUID.randomUUID().toString());
+        }
+
+        return new ParsedPrompt(Collections.singletonList(message), null);
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(String prompt) {
