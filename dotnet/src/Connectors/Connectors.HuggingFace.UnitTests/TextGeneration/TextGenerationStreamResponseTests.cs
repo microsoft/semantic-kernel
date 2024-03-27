@@ -3,17 +3,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+using Microsoft.SemanticKernel.Text;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests.TextGeneration;
 public class TextGenerationStreamResponseTests
 {
     [Fact]
-    public void SerializationShouldPopulateAllProperties()
+    public async Task SerializationShouldPopulateAllPropertiesAsync()
     {
         // Arrange
-        var parser = new TextGenerationStreamJsonParser();
+        var parser = new StreamJsonParser();
         var stream = new MemoryStream();
         var huggingFaceStreamExample = """
                     {
@@ -44,7 +46,7 @@ public class TextGenerationStreamResponseTests
 
         // Act
         var chunks = new List<TextGenerationStreamResponse>();
-        foreach (var chunk in parser.Parse(stream))
+        await foreach (var chunk in parser.ParseAsync(stream))
         {
             chunks.Add(JsonSerializer.Deserialize<TextGenerationStreamResponse>(chunk)!);
         }

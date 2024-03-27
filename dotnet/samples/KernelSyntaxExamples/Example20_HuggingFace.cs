@@ -55,6 +55,28 @@ public class Example20_HuggingFace : BaseTest
         this.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
     }
 
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task RunStreamingExampleAsync()
+    {
+        WriteLine("\n======== HuggingFace zephyr-7b-beta streaming example ========\n");
+
+        const string Model = "HuggingFaceH4/zephyr-7b-beta";
+
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddHuggingFaceTextGeneration(
+                model: Model,
+                //endpoint: Endpoint,
+                apiKey: TestConfiguration.HuggingFace.ApiKey)
+            .Build();
+
+        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
+
+        await foreach (string text in kernel.InvokeStreamingAsync<string>(questionAnswerFunction, new() { ["input"] = "What is New York?" }))
+        {
+            this.Write(text);
+        }
+    }
+
     /// <summary>
     /// This example uses HuggingFace Llama 2 model and local HTTP server from Semantic Kernel repository.
     /// How to setup local HTTP server: <see href="https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/hugging-face-http-server/README.md"/>.
